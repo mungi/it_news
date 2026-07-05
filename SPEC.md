@@ -1,0 +1,311 @@
+# AI / Cloud / Infra Weekly News Website Spec
+
+Created: 2026-07-06 KST
+Status: confirmed implementation spec
+
+## 1. Product Goal
+
+Build a Korean static weekly news website for developers, engineers, and technical leaders.
+The site helps a presenter explain the most important AI, Cloud, Infra, and selected IT news within 30 minutes.
+
+The repository serves two roles:
+
+1. `docs/`: GitHub Pages static website.
+2. LLM Wiki: source capture and accumulated knowledge under `raw/`, `entities/`, `concepts/`, `comparisons/`, `weekly/`.
+
+## 2. Confirmed Requirements
+
+- Site root: `docs/`.
+- Deployment: GitHub Pages / static website.
+- Updates: automatic.
+- News update cadence: every 30 minutes.
+- Presentation freeze: every Monday 13:00-17:00 KST. No file changes, commits, or pushes during this window.
+- Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
+- Audience: developers, engineers, technical leaders.
+- Language: Korean UI and Korean summaries.
+- Title policy: Korean title plus original title when available.
+- Topics: AI, Cloud, Infra first; Security, Developer Tools, Data/DB, Open Source, Korea, General IT second.
+- Total visible news items: fewer than 30; target 18-24.
+- Deep Dive: 1 by default, 2 only when unusually important.
+- Each news item needs title, short summary, detailed summary, source link, image, category/tags, and publication time when available.
+- Updates should automatically commit and push when GitHub auth/remotes are available.
+
+## 3. UX / Information Architecture
+
+Single-page static application:
+
+1. Header
+   - Product title
+   - Current ISO week
+   - Coverage window in KST
+   - Last updated KST
+   - Frozen/presentation status
+2. Executive Summary
+   - 3-5 bullets summarizing the week.
+3. Deep Dive
+   - 1 highlighted story, max 2.
+4. Controls
+   - Search text input
+   - Category filters: All, AI, Cloud, Infra, Security, DevTools, Data, Open Source, Korea, IT
+   - Importance filters: All, Must Know, High, Medium
+   - Region filters: All, Global, Korea
+   - Presentation mode toggle
+5. News Cards
+   - Responsive card grid.
+   - Each card contains image, badges, Korean title, original title, short summary, why it matters, source, published time.
+6. Detail Modal
+   - Opens when a card is clicked.
+   - Contains image, detailed summary, engineering implication, Korea implication, tags, source links, related links.
+
+## 4. Visual Design
+
+Design language: developer-oriented dark briefing dashboard, inspired by Linear/Vercel/Supabase style.
+
+Tokens:
+
+```text
+Background: #080b12
+Background elevated: #0d111b
+Surface: #111827
+Surface strong: #182033
+Border: #263244
+Text primary: #f8fafc
+Text secondary: #a3b1c6
+Muted: #64748b
+AI accent: #a78bfa
+Cloud accent: #38bdf8
+Infra accent: #34d399
+Security accent: #fb7185
+Korea accent: #f59e0b
+```
+
+Typography:
+- System font stack for Korean readability.
+- Monospace for metadata, timestamps, and source labels.
+- Large enough for projector presentation.
+
+UX priorities:
+- Fast skimming.
+- Clear hierarchy.
+- Stable presentation view.
+- No heavy framework or build step.
+
+## 5. Data Contract
+
+Main website data file:
+
+```text
+docs/data/weekly-news.json
+```
+
+Top-level shape:
+
+```json
+{
+  "week": "YYYY-Www",
+  "coverage_start_kst": "YYYY-MM-DD HH:mm",
+  "coverage_end_kst": "YYYY-MM-DD HH:mm",
+  "last_updated_kst": "YYYY-MM-DD HH:mm",
+  "frozen": false,
+  "presentation_window_kst": "Monday 13:00-17:00 KST",
+  "audience": "developers and engineers",
+  "executive_summary": [],
+  "deep_dives": [],
+  "items": []
+}
+```
+
+Item shape:
+
+```json
+{
+  "id": "news-001",
+  "rank": 1,
+  "title_ko": "한국어 제목",
+  "title_original": "Original title",
+  "summary": "2-3문장 요약",
+  "detail": "상세 요약",
+  "why_it_matters": "왜 중요한가",
+  "engineering_implication": "개발자/엔지니어 관점 시사점",
+  "korea_implication": "한국 시장/조직 관점 시사점",
+  "category": "AI",
+  "tags": ["AI", "Agent"],
+  "region": "Global",
+  "importance": "must-know",
+  "score": 90,
+  "published_kst": "YYYY-MM-DD HH:mm",
+  "source_name": "Source",
+  "source_url": "https://example.com",
+  "image_url": "https://example.com/image.jpg",
+  "local_image": "assets/images/news-001.jpg",
+  "related_links": []
+}
+```
+
+## 6. News Search Strategy
+
+Use a curated-source-first strategy, then web search fallback.
+
+### Mandatory Korean/community sources
+
+These must be included in the recurring search set:
+
+- https://news.hada.io/ — GeekNews / Korean developer and startup community signal.
+- https://www.aitimes.kr/ — Korean AI industry news.
+- https://www.aitimes.com/ — AI Times global/Korean AI news.
+
+### Global AI sources
+
+- OpenAI Blog
+- Anthropic News
+- Google DeepMind Blog
+- Google AI Blog
+- Meta AI Blog
+- Microsoft AI Blog
+- NVIDIA Blog
+- Hugging Face Blog
+- arXiv cs.AI / cs.CL / cs.LG
+- Papers with Code
+
+### Global Cloud / Infra sources
+
+- AWS News Blog
+- AWS What’s New
+- Azure Updates
+- Google Cloud Blog
+- Google Cloud Release Notes
+- Cloudflare Blog
+- Kubernetes Blog
+- CNCF Blog
+- Docker Blog
+- HashiCorp Blog
+- Datadog Blog
+
+### Security / Developer / IT sources
+
+- GitHub Blog
+- GitLab Blog
+- JetBrains Blog
+- Stack Overflow Blog
+- The Hacker News
+- BleepingComputer
+- CISA Alerts
+- Google Security Blog
+- Microsoft Security Blog
+
+### Korea sources
+
+- Naver Cloud Blog
+- Kakao Enterprise Blog
+- Samsung Newsroom
+- SK Telecom Newsroom
+- KT Cloud
+- 과기정통부 보도자료
+- KISA 보안공지
+- 전자신문
+- ZDNet Korea
+- ITWorld Korea
+- Bloter
+- Byline Network
+
+### Web search fallback examples
+
+- `AI infrastructure news past week`
+- `cloud infrastructure Kubernetes news past week`
+- `AWS Azure Google Cloud announcement past week`
+- `AI agent enterprise news past week`
+- `site:news.hada.io AI 클라우드 인프라`
+- `site:aitimes.kr AI 클라우드 반도체`
+- `site:aitimes.com AI cloud infrastructure`
+- `site:zdnet.co.kr AI 클라우드 인프라`
+- `site:etnews.com AI 클라우드 인프라`
+- `site:itworld.co.kr 클라우드 보안 AI`
+
+## 7. Ranking and Filtering
+
+Score each candidate:
+
+- impact
+- developer/engineer relevance
+- novelty
+- credibility
+- Korea relevance
+- technical depth
+- presentation value
+
+Drop:
+
+- unverified rumors
+- weak vendor marketing
+- duplicated coverage of the same story
+- minor product releases with low engineering value
+- stories older than the weekly window unless necessary context
+- items without source URL
+
+Final output:
+
+- 18-24 preferred items.
+- Hard cap: 29 items.
+- Must Know: about 5 items.
+- Deep Dive: 1 preferred, 2 max.
+
+## 8. Image Policy
+
+Image priority:
+
+1. Original article `og:image`.
+2. Official blog thumbnail.
+3. Credible article image.
+4. Category fallback SVG under `docs/assets/images/`.
+
+Rules:
+- Do not fabricate image URLs.
+- If hotlink reliability is unknown, keep a fallback.
+- Preserve source attribution by keeping `source_url` and `image_url`.
+
+## 9. Automation Schedule
+
+### News update job
+
+- Schedule: every 30 minutes.
+- Workdir: `/home/ubuntu/projects/it_news`.
+- Toolsets: web/browser, terminal, file, skills.
+- Must read `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, `index.md`, recent `log.md` before updating.
+- Must not change files Monday 13:00-17:00 KST.
+- Must validate JSON before commit.
+- Must commit and push only when files changed.
+
+### Optional pre-presentation finalizer
+
+The 30-minute job usually creates a 12:30 KST final update before Monday 13:00 KST.
+A separate 12:50 KST finalizer can be added later if stricter freshness is needed.
+
+## 10. Continuous Code Improvement Schedule
+
+A separate Hermes cron job runs every 2 hours.
+
+Purpose:
+- Review and improve current project code, UI, UX, security, accessibility, data validation, performance, and automation efficiency.
+
+Rules:
+- Think and plan first; do not churn code blindly.
+- Inspect current code and site before editing.
+- Prefer small, verifiable improvements.
+- Do not run during Monday 13:00-17:00 KST freeze window if it would alter presentation files or deployed site.
+- Run validation after changes.
+- Commit and push only when an actual improvement is made.
+- Never fabricate news data.
+- Do not modify cron schedules unless explicitly necessary to fix broken automation.
+
+## 11. Acceptance Criteria
+
+MVP is complete when:
+
+- `docs/index.html` renders `docs/data/weekly-news.json`.
+- Card list, filters, search, and detail modal work without a build step.
+- JSON validation passes.
+- Sample data contains images/fallbacks, source links, and Korean summaries.
+- `SPEC.md`, `README.md`, `AGENTS.md`, and `SCHEMA.md` agree on the schedule and source strategy.
+- Changes are committed and pushed.
+- News update cron is registered for every 30 minutes.
+- Code improvement cron is registered for every 2 hours.
