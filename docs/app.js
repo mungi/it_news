@@ -231,8 +231,8 @@ function renderCards() {
     const node = template.content.firstElementChild.cloneNode(true);
     const title = item.title_ko || item.title_original || "뉴스";
     node.dataset.newsId = item.id || "";
-    node.setAttribute("role", "button");
     node.setAttribute("aria-label", `${title} 상세 보기`);
+    node.setAttribute("aria-roledescription", "상세 보기 카드");
     if (isRead(item)) {
       node.classList.add("is-read");
       node.setAttribute("aria-label", `${title} 상세 보기, 읽음`);
@@ -351,6 +351,7 @@ function openModal(item) {
   (item.related_links || []).forEach((link) => links.appendChild(makeLink(link.title || "관련 링크", link.url)));
 
   modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
   $(".modal-close")?.focus();
 }
@@ -379,6 +380,7 @@ function openDeepDiveModal(item) {
   (item.sources || []).forEach((url, index) => links.appendChild(makeLink(`출처 ${index + 1}`, url)));
 
   modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
   $(".modal-close")?.focus();
 }
@@ -396,6 +398,7 @@ function closeModal() {
   const modal = $("#modal");
   if (modal.classList.contains("hidden")) return;
   modal.classList.add("hidden");
+  modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
   state.modalReturnFocus?.focus?.();
   state.modalReturnFocus = null;
