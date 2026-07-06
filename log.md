@@ -58,3 +58,8 @@
 - Expanded current Deep Dive content with AI/Infra expert and consultant perspectives: architecture, operations, FinOps, security, governance, rollout, and presenter guidance.
 - Updated automation prompt, spec, schema, and README so future news refreshes generate richer Deep Dive sections instead of short summaries.
 - Hardened `scripts/validate_weekly_news.py` to require substantial Deep Dive sections, concrete bullets, and expert/checklist/presenter headings.
+
+## [2026-07-07] site | Link modal titles to source articles
+- Reduced modal title font size to about 70% of the previous scale.
+- Changed news and Deep Dive modal titles into external source links.
+- Bumped static CSS/JS cache keys in `docs/index.html`.

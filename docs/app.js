@@ -344,7 +344,7 @@ function openModal(item) {
   img.src = imageFor(item);
   img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
   img.onerror = () => { img.src = FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg"; };
-  $("#modalTitle").textContent = item.title_ko || item.title_original || "제목 없음";
+  setModalTitleLink(item.title_ko || item.title_original || "제목 없음", item.source_url);
   $("#modalOriginal").textContent = item.title_original ? `Original: ${item.title_original}` : "";
   $("#modalSummary").textContent = item.summary || "";
   renderRichDetail($("#modalDetail"), itemDetailSections(item), item.detail || item.summary || "");
@@ -375,7 +375,7 @@ function openDeepDiveModal(item) {
   img.alt = `${item.title || "Deep Dive"} 이미지`;
   img.onerror = () => { img.src = "assets/images/fallback-ai.svg"; };
 
-  $("#modalTitle").textContent = item.title || "Deep Dive";
+  setModalTitleLink(item.title || "Deep Dive", (item.sources || [])[0]);
   $("#modalOriginal").textContent = "Deep Dive";
   $("#modalSummary").textContent = item.summary || "";
   renderRichDetail($("#modalDetail"), item.detailed_content, item.details || item.summary || "");
@@ -404,6 +404,18 @@ function makeLink(title, url) {
   a.rel = "noopener";
   a.textContent = title;
   return a;
+}
+
+function setModalTitleLink(title, url) {
+  const titleLink = $("#modalTitle");
+  titleLink.textContent = title;
+  if (url) {
+    titleLink.href = url;
+    titleLink.removeAttribute("aria-disabled");
+  } else {
+    titleLink.removeAttribute("href");
+    titleLink.setAttribute("aria-disabled", "true");
+  }
 }
 
 function closeModal() {
