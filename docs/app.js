@@ -180,7 +180,7 @@ function renderDeepDives() {
     div.tabIndex = 0;
     div.setAttribute("role", "button");
     div.setAttribute("aria-label", `${item.title || "Deep Dive"} 상세 보기`);
-    div.innerHTML = `<div class="deep-dive-image-wrap"><img class="deep-dive-image" src="${escapeHtml(deepDiveImageFor(item))}" alt="${escapeHtml(item.title || "Deep Dive")} 이미지" loading="lazy" /></div>
+    div.innerHTML = `<div class="deep-dive-image-wrap"><img class="deep-dive-image" src="${escapeHtml(deepDiveImageFor(item))}" alt="${escapeHtml(item.title || "Deep Dive")} 이미지" loading="lazy" decoding="async" /></div>
       <div class="deep-dive-body"><h3>${escapeHtml(item.title || "Deep Dive")}</h3>
       <p><strong>요약:</strong> ${escapeHtml(item.summary || "")}</p>
       <p>${escapeHtml(item.why_it_matters || item.details || "")}</p>
@@ -235,6 +235,7 @@ function renderCards() {
     const node = template.content.firstElementChild.cloneNode(true);
     const title = item.title_ko || item.title_original || "뉴스";
     node.dataset.newsId = item.id || "";
+    node.setAttribute("role", "button");
     node.setAttribute("aria-label", `${title} 상세 보기`);
     node.setAttribute("aria-roledescription", "상세 보기 카드");
     if (isRead(item)) {

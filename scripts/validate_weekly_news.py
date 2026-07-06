@@ -146,21 +146,28 @@ def main() -> int:
         errors.append(f"deep_dives must be <= 2, got {len(deep_dives)}")
     if not (1 <= len(summary) <= 5):
         errors.append(f"executive_summary should have 1-5 bullets, got {len(summary)}")
+    for summary_idx, summary_item in enumerate(summary, start=1):
+        if not isinstance(summary_item, str) or not summary_item.strip():
+            errors.append(f"executive_summary[{summary_idx}] must be a non-empty string")
 
     seen_ids: set[str] = set()
     seen_ranks: set[int] = set()
     seen_urls: set[str] = set()
     for idx, item in enumerate(items, start=1):
         prefix = f"items[{idx}]"
+        if not isinstance(item, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
         for key in REQUIRED_ITEM:
             if not item.get(key):
                 errors.append(f"{prefix} missing required field: {key}")
         item_id = item.get("id")
-        if item_id and not ITEM_ID_RE.match(str(item_id)):
-            errors.append(f"{prefix} id must match news-XXX, got: {item_id}")
-        if item_id in seen_ids:
-            errors.append(f"duplicate id: {item_id}")
-        seen_ids.add(item_id)
+        if item_id:
+            if not ITEM_ID_RE.match(str(item_id)):
+                errors.append(f"{prefix} id must match news-XXX, got: {item_id}")
+            if str(item_id) in seen_ids:
+                errors.append(f"duplicate id: {item_id}")
+            seen_ids.add(str(item_id))
         rank = item.get("rank")
         if not isinstance(rank, int) or rank < 1:
             errors.append(f"{prefix} rank must be a positive integer")
@@ -223,15 +230,19 @@ def main() -> int:
     seen_deep_dive_ids: set[str] = set()
     for idx, item in enumerate(deep_dives, start=1):
         prefix = f"deep_dives[{idx}]"
+        if not isinstance(item, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
         for key in ("id", "title", "summary", "details", "why_it_matters"):
             if not item.get(key):
                 errors.append(f"{prefix} missing required field: {key}")
         deep_dive_id = item.get("id")
-        if deep_dive_id and not DEEP_DIVE_ID_RE.match(str(deep_dive_id)):
-            errors.append(f"{prefix} id must match deep-dive-XXX, got: {deep_dive_id}")
-        if deep_dive_id in seen_deep_dive_ids:
-            errors.append(f"duplicate deep dive id: {deep_dive_id}")
-        seen_deep_dive_ids.add(deep_dive_id)
+        if deep_dive_id:
+            if not DEEP_DIVE_ID_RE.match(str(deep_dive_id)):
+                errors.append(f"{prefix} id must match deep-dive-XXX, got: {deep_dive_id}")
+            if str(deep_dive_id) in seen_deep_dive_ids:
+                errors.append(f"duplicate deep dive id: {deep_dive_id}")
+            seen_deep_dive_ids.add(str(deep_dive_id))
         sources = item.get("sources", [])
         if not isinstance(sources, list) or not sources:
             errors.append(f"{prefix} sources must be a non-empty list")
