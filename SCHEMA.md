@@ -15,7 +15,7 @@ Primary output:
 - LLM Wiki pages under `entities/`, `concepts/`, `comparisons/`, `queries/`
 
 ## Operating Cadence
-- Automated news update cadence: every 30 minutes.
+- Automated news update cadence: every 6 hours.
 - Each run should prioritize sources published or updated within the weekly window.
 - Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
 - Presentation/freeze window: Monday 13:00-17:00 KST. Do not update, commit, or push during this window.

@@ -5,7 +5,7 @@ Respond in Korean in the final summary. Work until the update is verified, commi
 
 ## Mission
 
-Every 30 minutes, update the AI / Cloud / Infra weekly news static site and LLM wiki.
+Every 6 hours, update the AI / Cloud / Infra weekly news static site and LLM wiki.
 
 ## Hard Safety Rules
 
@@ -98,7 +98,7 @@ Each item must have:
 - image_url or local_image
 - related_links list
 
-Use fallback images from `docs/assets/images/` when no reliable original image is available.
+For images, inspect the source page metadata first and prefer a reliable article-specific `og:image` or `twitter:image` URL in `image_url`. When practical, download that source image into `docs/assets/images/news-XXX.ext` and set `local_image` to the local copy for stable rendering. Use fallback images from `docs/assets/images/` only when no reliable original image is available. Do not set `local_image` to a fallback in a way that hides a valid source image in the UI.
 
 UI/content policy:
 - Display `must-know` as `중요 소식` in Korean UI; keep the internal JSON value as `must-know` for compatibility.

@@ -18,7 +18,7 @@ The repository serves two roles:
 - Site root: `docs/`.
 - Deployment: GitHub Pages / static website.
 - Updates: automatic.
-- News update cadence: every 30 minutes.
+- News update cadence: every 6 hours.
 - Presentation freeze: every Monday 13:00-17:00 KST. No file changes, commits, or pushes during this window.
 - Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
 - Audience: developers, engineers, technical leaders.
@@ -284,14 +284,16 @@ Image priority:
 
 Rules:
 - Do not fabricate image URLs.
-- If hotlink reliability is unknown, keep a fallback.
+- Prefer source-page `og:image` or `twitter:image` when available.
+- When practical, store a local copy under `docs/assets/images/news-XXX.ext` and set `local_image` to that file for stable static-site rendering.
+- If hotlink reliability is unknown, keep a fallback in `local_image`, but do not let it hide a valid source image in the UI.
 - Preserve source attribution by keeping `source_url` and `image_url`.
 
 ## 9. Automation Schedule
 
 ### News update job
 
-- Schedule: every 30 minutes.
+- Schedule: every 6 hours.
 - Workdir: `/home/ubuntu/projects/it_news`.
 - Toolsets: web/browser, terminal, file, skills.
 - Must read `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, `index.md`, recent `log.md` before updating.
@@ -301,7 +303,7 @@ Rules:
 
 ### Optional pre-presentation finalizer
 
-The 30-minute job usually creates a 12:30 KST final update before Monday 13:00 KST.
+The 6-hour job should still create a final update before Monday 13:00 KST when the schedule aligns.
 A separate 12:50 KST finalizer can be added later if stricter freshness is needed.
 
 ## 10. Continuous Code Improvement Schedule
@@ -331,5 +333,5 @@ MVP is complete when:
 - Sample data contains images/fallbacks, source links, and Korean summaries.
 - `SPEC.md`, `README.md`, `AGENTS.md`, and `SCHEMA.md` agree on the schedule and source strategy.
 - Changes are committed and pushed.
-- News update cron is registered for every 30 minutes.
+- News update cron is registered for every 6 hours.
 - Code improvement cron is registered for every 2 hours.

@@ -43,3 +43,7 @@
 - Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; also sampled global AI/Cloud/Infra/Security feeds.
 - Added Samsung’s reported 60 trillion KRW Yeongnam physical AI cluster investment, published 2026-07-04 17:06 KST, and removed a lower-priority code review culture item to keep the site at 30 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, concept wiki, and wiki index.
+## [2026-07-06] update | Prefer article source images over fallbacks
+- Extracted article-specific Open Graph/Twitter images from source pages for 29 of 30 weekly news items.
+- Updated `docs/data/weekly-news.json` image_url values where reliable source images were available; kept fallback for AWS What’s New item without image metadata.
+- Downloaded 29 source images into `docs/assets/images/` and changed the UI image selection order so local article images are shown before fallback or remote image URLs.

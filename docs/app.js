@@ -80,7 +80,12 @@ function displayLabel(value) {
 }
 
 function imageFor(item) {
-  return item.local_image || item.image_url || FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg";
+  const fallback = FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg";
+  const imageUrl = item.image_url || "";
+  const localImage = item.local_image || "";
+  if (localImage && !localImage.includes("fallback-")) return localImage;
+  if (imageUrl && !imageUrl.includes("fallback-")) return imageUrl;
+  return imageUrl || localImage || fallback;
 }
 
 function badgeClass(value) {
@@ -245,7 +250,9 @@ function renderCards() {
     const sourceLink = node.querySelector(".source");
     sourceLink.textContent = item.source_name || "Source";
     sourceLink.href = item.source_url || "#";
+    sourceLink.setAttribute("aria-label", `${title} 원문 열기: ${item.source_name || "Source"}`);
     sourceLink.addEventListener("click", (event) => event.stopPropagation());
+    sourceLink.addEventListener("keydown", (event) => event.stopPropagation());
     node.querySelector(".published").textContent = item.published_kst || "";
     node.addEventListener("click", () => openModal(item));
     node.addEventListener("keydown", (event) => {

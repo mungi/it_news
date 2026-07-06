@@ -17,7 +17,7 @@ The site summarizes important AI, Cloud, Infra, and selected general IT news fro
 - Site root: `docs/`
 - Deployment target: GitHub Pages / static website
 - Update mode: automatic
-- Update cadence: every 30 minutes
+- Update cadence: every 6 hours
 - Freeze window: Monday 13:00-17:00 KST; do not update during this window
 - Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST
 - Audience: developers, engineers, and technical leaders

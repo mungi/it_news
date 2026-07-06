@@ -132,6 +132,15 @@ def main() -> int:
             errors.append(f"{prefix} published_kst must use YYYY-MM-DD HH:mm format")
         if not (item.get("image_url") or item.get("local_image")):
             errors.append(f"{prefix} needs image_url or local_image")
+        image_url = item.get("image_url", "")
+        if image_url and not is_probably_link(str(image_url)):
+            errors.append(f"{prefix} image_url is not a valid link/path: {image_url}")
+        local_image = item.get("local_image", "")
+        if local_image:
+            if not is_probably_link(str(local_image)):
+                errors.append(f"{prefix} local_image is not a valid link/path: {local_image}")
+            elif str(local_image).startswith("assets/") and not (ROOT / "docs" / str(local_image)).exists():
+                errors.append(f"{prefix} local_image file does not exist: {local_image}")
         if not isinstance(item.get("tags", []), list):
             errors.append(f"{prefix} tags must be a list")
         validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
