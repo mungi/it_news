@@ -22,11 +22,19 @@ REQUIRED_ITEM = [
 ALLOWED_IMPORTANCE = {"must-know", "high", "medium", "low"}
 ALLOWED_REGIONS = {"Global", "Korea"}
 KST_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$")
+WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
+ITEM_ID_RE = re.compile(r"^news-\d{3}$")
+DEEP_DIVE_ID_RE = re.compile(r"^deep-dive-\d{3}$")
 
 
 def is_probably_link(value: str) -> bool:
     if value.startswith("../") or value.startswith("./") or value.startswith("assets/"):
         return True
+    parsed = urlparse(value)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def is_http_url(value: str) -> bool:
     parsed = urlparse(value)
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
@@ -70,6 +78,12 @@ def main() -> int:
         if key not in data:
             errors.append(f"missing top-level field: {key}")
 
+    week = data.get("week")
+    if week and not WEEK_RE.match(str(week)):
+        errors.append(f"week must use YYYY-Www format, got: {week}")
+    if "frozen" in data and not isinstance(data.get("frozen"), bool):
+        errors.append("frozen must be a boolean")
+
     for key in ("coverage_start_kst", "coverage_end_kst", "last_updated_kst"):
         value = data.get(key)
         if value and not KST_TIMESTAMP_RE.match(str(value)):
@@ -104,6 +118,8 @@ def main() -> int:
             if not item.get(key):
                 errors.append(f"{prefix} missing required field: {key}")
         item_id = item.get("id")
+        if item_id and not ITEM_ID_RE.match(str(item_id)):
+            errors.append(f"{prefix} id must match news-XXX, got: {item_id}")
         if item_id in seen_ids:
             errors.append(f"duplicate id: {item_id}")
         seen_ids.add(item_id)
@@ -116,11 +132,14 @@ def main() -> int:
             seen_ranks.add(rank)
         source_url = item.get("source_url", "")
         if source_url:
-            if not is_probably_link(source_url):
-                errors.append(f"{prefix} source_url is not a valid link/path: {source_url}")
+            if not is_http_url(str(source_url)):
+                errors.append(f"{prefix} source_url must be an absolute http(s) URL: {source_url}")
             if source_url in seen_urls:
                 errors.append(f"duplicate source_url: {source_url}")
             seen_urls.add(source_url)
+        score = item.get("score")
+        if score is not None and (not isinstance(score, (int, float)) or not 0 <= score <= 100):
+            errors.append(f"{prefix} score must be a number between 0 and 100")
         importance = item.get("importance")
         if importance and importance not in ALLOWED_IMPORTANCE:
             errors.append(f"{prefix} invalid importance: {importance}")
@@ -153,21 +172,35 @@ def main() -> int:
                     errors.append(f"{prefix} related_links[{link_idx}] must be an object")
                     continue
                 link_url = link.get("url", "")
-                if link_url and not is_probably_link(link_url):
-                    errors.append(f"{prefix} related_links[{link_idx}].url is not a valid link/path: {link_url}")
+                if link_url and not is_http_url(str(link_url)):
+                    errors.append(f"{prefix} related_links[{link_idx}].url must be an absolute http(s) URL: {link_url}")
+                if link_url and not link.get("title"):
+                    errors.append(f"{prefix} related_links[{link_idx}] missing title")
 
+    if seen_ranks and seen_ranks != set(range(1, len(items) + 1)):
+        missing = sorted(set(range(1, len(items) + 1)) - seen_ranks)
+        extra = sorted(rank for rank in seen_ranks if rank > len(items))
+        errors.append(f"item ranks must be contiguous from 1 to {len(items)}; missing={missing}, extra={extra}")
+
+    seen_deep_dive_ids: set[str] = set()
     for idx, item in enumerate(deep_dives, start=1):
         prefix = f"deep_dives[{idx}]"
         for key in ("id", "title", "summary", "details", "why_it_matters"):
             if not item.get(key):
                 errors.append(f"{prefix} missing required field: {key}")
+        deep_dive_id = item.get("id")
+        if deep_dive_id and not DEEP_DIVE_ID_RE.match(str(deep_dive_id)):
+            errors.append(f"{prefix} id must match deep-dive-XXX, got: {deep_dive_id}")
+        if deep_dive_id in seen_deep_dive_ids:
+            errors.append(f"duplicate deep dive id: {deep_dive_id}")
+        seen_deep_dive_ids.add(deep_dive_id)
         sources = item.get("sources", [])
         if not isinstance(sources, list) or not sources:
             errors.append(f"{prefix} sources must be a non-empty list")
         else:
             for source_idx, source in enumerate(sources, start=1):
-                if not is_probably_link(str(source)):
-                    errors.append(f"{prefix} sources[{source_idx}] is not a valid link/path: {source}")
+                if not is_http_url(str(source)):
+                    errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
         validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
 
     if errors:
