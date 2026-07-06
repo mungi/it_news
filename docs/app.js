@@ -154,7 +154,10 @@ function getLiveFreezeState() {
 function updateHeader() {
   const data = state.data;
   const liveFreeze = getLiveFreezeState();
-  $("#topUpdatedBadge").textContent = `최종 업데이트: ${data.last_updated_kst || "-"} KST`;
+  const updatedBadge = $("#topUpdatedBadge");
+  updatedBadge.textContent = `${liveFreeze.frozen ? "발표 Freeze" : "최종 업데이트"}: ${data.last_updated_kst || "-"} KST`;
+  updatedBadge.classList.toggle("pill-frozen", liveFreeze.frozen);
+  updatedBadge.classList.toggle("pill-muted", !liveFreeze.frozen);
   $("#coverageText").textContent = `${data.coverage_start_kst || "-"} → ${data.coverage_end_kst || "-"}`;
   $("#updatedText").textContent = `${data.last_updated_kst || "-"} KST`;
   $("#presentationText").textContent = `${data.presentation_window_kst || "Monday 13:00-17:00 KST"} · ${liveFreeze.label}`;
@@ -235,7 +238,6 @@ function renderCards() {
     const node = template.content.firstElementChild.cloneNode(true);
     const title = item.title_ko || item.title_original || "뉴스";
     node.dataset.newsId = item.id || "";
-    node.setAttribute("role", "button");
     node.setAttribute("aria-label", `${title} 상세 보기`);
     node.setAttribute("aria-roledescription", "상세 보기 카드");
     if (isRead(item)) {
