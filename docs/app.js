@@ -60,7 +60,7 @@ function markRead(item) {
   saveReadItems();
   document.querySelectorAll(`[data-news-id="${CSS.escape(item.id)}"]`).forEach((node) => {
     node.classList.add("is-read");
-    node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 읽음`);
+    node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 상세 보기, 읽음`);
     const stateLabel = node.querySelector(".read-state");
     if (stateLabel) stateLabel.textContent = "읽음";
   });
@@ -114,16 +114,44 @@ function renderFilterButtons(container, values, active, onClick) {
   });
 }
 
+function getKstClockParts(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    weekday: "short",
+    hour: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const valueByType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return {
+    weekday: valueByType.weekday,
+    hour: Number(valueByType.hour),
+  };
+}
+
+function getLiveFreezeState() {
+  const { weekday, hour } = getKstClockParts();
+  const frozen = weekday === "Mon" && hour >= 13 && hour < 17;
+  return {
+    frozen,
+    label: frozen ? "발표 Freeze 진행 중" : "자동 업데이트 가능",
+  };
+}
+
 function updateHeader() {
   const data = state.data;
+  const liveFreeze = getLiveFreezeState();
+  const dataFrozen = Boolean(data.frozen);
   $("#weekBadge").textContent = data.week || "-";
   $("#coverageText").textContent = `${data.coverage_start_kst || "-"} → ${data.coverage_end_kst || "-"}`;
   $("#updatedText").textContent = `${data.last_updated_kst || "-"} KST`;
-  $("#presentationText").textContent = data.presentation_window_kst || "Monday 13:00-17:00 KST";
+  $("#presentationText").textContent = `${data.presentation_window_kst || "Monday 13:00-17:00 KST"} · ${liveFreeze.label}`;
   $("#itemCountText").textContent = `${(data.items || []).length}개`;
   const freezeBadge = $("#freezeBadge");
-  freezeBadge.textContent = data.frozen ? "Presentation Frozen" : "Auto Update Active";
-  freezeBadge.className = `pill ${data.frozen ? "pill-frozen" : "pill-hot"}`;
+  freezeBadge.textContent = liveFreeze.frozen ? "발표 중 Freeze" : dataFrozen ? "데이터 Freeze" : "업데이트 가능";
+  freezeBadge.className = `pill ${liveFreeze.frozen || dataFrozen ? "pill-frozen" : "pill-hot"}`;
+  freezeBadge.title = liveFreeze.frozen
+    ? "현재 KST 기준 월요일 13:00-17:00 발표 보호 시간입니다."
+    : "현재 KST 기준 발표 보호 시간이 아닙니다.";
 }
 
 function renderSummary() {
@@ -194,10 +222,13 @@ function renderCards() {
 
   items.forEach((item) => {
     const node = template.content.firstElementChild.cloneNode(true);
+    const title = item.title_ko || item.title_original || "뉴스";
     node.dataset.newsId = item.id || "";
+    node.setAttribute("role", "button");
+    node.setAttribute("aria-label", `${title} 상세 보기`);
     if (isRead(item)) {
       node.classList.add("is-read");
-      node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 읽음`);
+      node.setAttribute("aria-label", `${title} 상세 보기, 읽음`);
     }
     const img = node.querySelector(".card-image");
     img.src = imageFor(item);
