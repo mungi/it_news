@@ -89,6 +89,14 @@ function imageFor(item) {
   return imageUrl || localImage || fallback;
 }
 
+function deepDiveImageFor(item) {
+  const imageUrl = item.image_url || "";
+  const localImage = item.local_image || "";
+  if (localImage && !localImage.includes("fallback-")) return localImage;
+  if (imageUrl && !imageUrl.includes("fallback-")) return imageUrl;
+  return localImage || imageUrl || "assets/images/fallback-ai.svg";
+}
+
 function badgeClass(value) {
   const v = normalize(value).replace(/\s+/g, "-");
   if (v.includes("ai")) return "ai";
@@ -179,10 +187,13 @@ function renderDeepDives() {
     div.tabIndex = 0;
     div.setAttribute("role", "button");
     div.setAttribute("aria-label", `${item.title || "Deep Dive"} 상세 보기`);
-    div.innerHTML = `<h3>${escapeHtml(item.title || "Deep Dive")}</h3>
+    div.innerHTML = `<div class="deep-dive-image-wrap"><img class="deep-dive-image" src="${escapeHtml(deepDiveImageFor(item))}" alt="${escapeHtml(item.title || "Deep Dive")} 이미지" loading="lazy" /></div>
+      <div class="deep-dive-body"><h3>${escapeHtml(item.title || "Deep Dive")}</h3>
       <p><strong>요약:</strong> ${escapeHtml(item.summary || "")}</p>
       <p>${escapeHtml(item.why_it_matters || item.details || "")}</p>
-      <span class="read-more">클릭해서 상세 설명 보기 →</span>`;
+      <span class="read-more">클릭해서 상세 설명 보기 →</span></div>`;
+    const img = div.querySelector(".deep-dive-image");
+    img.onerror = () => { img.src = "assets/images/fallback-ai.svg"; };
     div.addEventListener("click", () => openDeepDiveModal(item));
     div.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -360,8 +371,9 @@ function openDeepDiveModal(item) {
   const modal = $("#modal");
   state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
-  img.src = "assets/images/fallback-ai.svg";
+  img.src = deepDiveImageFor(item);
   img.alt = `${item.title || "Deep Dive"} 이미지`;
+  img.onerror = () => { img.src = "assets/images/fallback-ai.svg"; };
 
   $("#modalTitle").textContent = item.title || "Deep Dive";
   $("#modalOriginal").textContent = "Deep Dive";
