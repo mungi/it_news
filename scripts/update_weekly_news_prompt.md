@@ -36,10 +36,10 @@ Also allow the last 7 days when exact weekly boundary is hard to apply.
 Mandatory sources to include in each research pass:
 - https://news.hada.io/
 - https://news.hada.io/plus
-- https://news.hada.io/topic?id=30992
-- https://news.hada.io/topic?id=31123
 - https://www.aitimes.kr/
 - https://www.aitimes.com/
+
+User-provided specific news URLs are editorial examples/candidate stories, not permanent recurring sources. Analyze them once and include them if relevant to the current weekly window; do not keep old individual article links as mandatory recurring sources.
 
 Also search beyond them:
 - OpenAI, Anthropic, Google DeepMind, Google AI, Meta AI, Microsoft AI, NVIDIA, Hugging Face, arXiv, Papers with Code

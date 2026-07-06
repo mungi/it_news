@@ -152,10 +152,16 @@ These must be included in the recurring search set:
 
 - https://news.hada.io/ — GeekNews / Korean developer and startup community signal.
 - https://news.hada.io/plus — GeekNews Plus; include as a recurring reference/source surface.
-- https://news.hada.io/topic?id=30992 — user-provided GeekNews seed topic; re-check when relevant to the current weekly window.
-- https://news.hada.io/topic?id=31123 — user-provided GeekNews seed topic; re-check when relevant to the current weekly window.
 - https://www.aitimes.kr/ — Korean AI industry news.
 - https://www.aitimes.com/ — AI Times global/Korean AI news.
+
+
+### User-provided editorial examples
+
+When the user provides specific older or current news URLs, treat them as editorial examples/candidate stories, not as permanent recurring sources. Analyze the content once, include it in the current weekly news if it falls in the coverage window or is contextually important, and derive future selection criteria from it. Example GeekNews topics that illustrate desired coverage quality:
+
+- https://news.hada.io/topic?id=30992 — model release / agent capability and cost-performance story.
+- https://news.hada.io/topic?id=31123 — AI inference economics / GPU performance-per-dollar story.
 
 ### Global AI sources
 
@@ -219,8 +225,6 @@ These must be included in the recurring search set:
 - `AI agent enterprise news past week`
 - `site:news.hada.io AI 클라우드 인프라`
 - `site:news.hada.io/plus AI 클라우드 인프라`
-- `https://news.hada.io/topic?id=30992`
-- `https://news.hada.io/topic?id=31123`
 - `site:aitimes.kr AI 클라우드 반도체`
 - `site:aitimes.com AI cloud infrastructure`
 - `site:zdnet.co.kr AI 클라우드 인프라`

@@ -26,10 +26,10 @@ Primary output:
 Recurring update jobs must include these sources and also search beyond them:
 - https://news.hada.io/
 - https://news.hada.io/plus
-- https://news.hada.io/topic?id=30992
-- https://news.hada.io/topic?id=31123
 - https://www.aitimes.kr/
 - https://www.aitimes.com/
+
+User-provided links are one-off editorial examples/candidate stories unless explicitly promoted to recurring sources. Do not keep old individual article links in the recurring source list.
 
 Other source classes:
 - Global AI: OpenAI, Anthropic, Google DeepMind, Google AI, Meta AI, Microsoft AI, NVIDIA, Hugging Face, arXiv, Papers with Code

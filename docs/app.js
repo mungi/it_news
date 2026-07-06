@@ -117,7 +117,8 @@ function renderCards() {
   const template = $("#cardTemplate");
   grid.innerHTML = "";
   const items = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
-  $("#resultText").textContent = `${items.length}개 표시 / 전체 ${(state.data.items || []).length}개`;
+  const mustKnowCount = items.filter((item) => item.importance === "must-know").length;
+  $("#resultText").textContent = `${items.length}개 표시 / 전체 ${(state.data.items || []).length}개 · Must Know ${mustKnowCount}개`;
 
   if (!items.length) {
     const empty = document.createElement("div");
@@ -140,7 +141,10 @@ function renderCards() {
     node.querySelector(".original-title").textContent = item.title_original ? `Original: ${item.title_original}` : "";
     node.querySelector(".summary").textContent = item.summary || "";
     node.querySelector(".why").textContent = item.why_it_matters ? `왜 중요한가: ${item.why_it_matters}` : "";
-    node.querySelector(".source").textContent = item.source_name || "Source";
+    const sourceLink = node.querySelector(".source");
+    sourceLink.textContent = item.source_name || "Source";
+    sourceLink.href = item.source_url || "#";
+    sourceLink.addEventListener("click", (event) => event.stopPropagation());
     node.querySelector(".published").textContent = item.published_kst || "";
     node.addEventListener("click", () => openModal(item));
     node.addEventListener("keydown", (event) => {

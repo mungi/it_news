@@ -9,14 +9,7 @@
 - Site root: `docs/` for GitHub Pages.
 - Presentation freeze: Monday 13:00-17:00 KST.
 - Coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
-- Required recurring sources include news.hada.io, aitimes.kr, and aitimes.com.
-
-## [2026-07-06] update | Add GeekNews Plus and user seed topics to source list
-- Added recurring reference source: https://news.hada.io/plus
-- Added user-provided GeekNews seed topics:
-  - https://news.hada.io/topic?id=30992
-  - https://news.hada.io/topic?id=31123
-- Updated SPEC.md, SCHEMA.md, README.md, and scripts/update_weekly_news_prompt.md so future automated news runs include them.
+- Required recurring sources include news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com.
 
 
 ## [2026-07-06] briefing | 2026-W28 weekly news refreshed
@@ -24,3 +17,9 @@
 - Reviewed 299 RSS/feed candidates across mandatory Korean sources and global AI/Cloud/Infra/Security/DevTools sources.
 - Updated `docs/data/weekly-news.json` with 22 sourced items and 1 Deep Dive.
 - Added weekly archive, raw article metadata summaries, and concept notes for AI agent security and AI infrastructure energy.
+## [2026-07-06] update | Add GeekNews examples as current major news
+- Corrected interpretation: topic?id=30992 and topic?id=31123 are example/candidate news links, not recurring sources.
+- Removed individual topic URLs from recurring mandatory source lists.
+- Added both GeekNews stories to the current weekly news set and weekly briefing.
+- Kept https://news.hada.io/plus as a recurring reference surface.
+

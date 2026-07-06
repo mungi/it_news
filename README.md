@@ -91,6 +91,9 @@ docs/
 
 ## 뉴스 선별 기준
 
+사용자가 개별 뉴스 URL을 예시로 제공하면 반복 소스가 아니라 후보 뉴스/편집 방향 예시로 분석합니다. 현재 주간 범위에 맞고 발표 가치가 있으면 주요 뉴스에 포함합니다.
+
+
 뉴스 후보는 다음 기준으로 선별합니다.
 
 - 업계 영향도
@@ -117,7 +120,7 @@ docs/
 예시:
 
 - OpenAI, Anthropic, Google DeepMind, Meta AI, Microsoft AI, NVIDIA, Hugging Face
-- GeekNews: `https://news.hada.io/`, `https://news.hada.io/plus`, user seed topics `https://news.hada.io/topic?id=30992`, `https://news.hada.io/topic?id=31123`
+- GeekNews: `https://news.hada.io/`, `https://news.hada.io/plus`
 - AWS, Azure, Google Cloud, Cloudflare, Kubernetes, CNCF, Docker, HashiCorp, Datadog
 - GitHub, GitLab, JetBrains, Stack Overflow, CISA, Google Security, Microsoft Security
 - Naver Cloud, Kakao Enterprise, Samsung Newsroom, SK Telecom, KT Cloud, KISA, 전자신문, ZDNet Korea, ITWorld Korea, Bloter, Byline Network
