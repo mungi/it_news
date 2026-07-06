@@ -23,6 +23,11 @@ const FALLBACK_BY_CATEGORY = {
 
 const $ = (selector) => document.querySelector(selector);
 
+function on(selector, eventName, handler) {
+  const element = $(selector);
+  if (element) element.addEventListener(eventName, handler);
+}
+
 function normalize(value) {
   return String(value || "").toLowerCase();
 }
@@ -242,19 +247,19 @@ function escapeHtml(value) {
 }
 
 function wireEvents() {
-  $("#searchInput").addEventListener("input", (event) => {
+  on("#searchInput", "input", (event) => {
     state.query = event.target.value;
     renderCards();
   });
-  $("#mustKnowButton").addEventListener("click", () => {
+  on("#mustKnowButton", "click", () => {
     state.importance = state.importance === "must-know" ? "All" : "must-know";
     renderFilters();
     renderCards();
   });
-  $("#summaryModeButton").addEventListener("click", () => {
+  on("#summaryModeButton", "click", () => {
     state.summaryMode = !state.summaryMode;
     document.body.classList.toggle("summary-mode", state.summaryMode);
-    $("#summaryModeButton").setAttribute("aria-pressed", String(state.summaryMode));
+    $("#summaryModeButton")?.setAttribute("aria-pressed", String(state.summaryMode));
   });
   document.querySelectorAll("[data-close='modal']").forEach((el) => el.addEventListener("click", closeModal));
   document.addEventListener("keydown", (event) => {
