@@ -4,7 +4,7 @@ const state = {
   category: "All",
   importance: "All",
   region: "All",
-  summaryMode: false,
+  viewMode: "list",
 };
 
 const CATEGORY_ORDER = ["All", "AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"];
@@ -256,15 +256,22 @@ function wireEvents() {
     renderFilters();
     renderCards();
   });
-  on("#summaryModeButton", "click", () => {
-    state.summaryMode = !state.summaryMode;
-    document.body.classList.toggle("summary-mode", state.summaryMode);
-    $("#summaryModeButton")?.setAttribute("aria-pressed", String(state.summaryMode));
-  });
+  on("#listViewButton", "click", () => setViewMode("list"));
+  on("#cardViewButton", "click", () => setViewMode("card"));
   document.querySelectorAll("[data-close='modal']").forEach((el) => el.addEventListener("click", closeModal));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeModal();
   });
+}
+
+function setViewMode(mode) {
+  state.viewMode = mode === "card" ? "card" : "list";
+  document.body.classList.toggle("card-mode", state.viewMode === "card");
+  document.body.classList.toggle("list-mode", state.viewMode === "list");
+  $("#listViewButton")?.classList.toggle("active", state.viewMode === "list");
+  $("#cardViewButton")?.classList.toggle("active", state.viewMode === "card");
+  $("#listViewButton")?.setAttribute("aria-pressed", String(state.viewMode === "list"));
+  $("#cardViewButton")?.setAttribute("aria-pressed", String(state.viewMode === "card"));
 }
 
 function renderFilters() {
@@ -284,6 +291,7 @@ async function boot() {
     renderFilters();
     renderCards();
     wireEvents();
+    setViewMode("list");
   } catch (error) {
     console.error(error);
     document.body.innerHTML = `<main class="panel"><h1>데이터를 불러오지 못했습니다</h1><p>${escapeHtml(error.message)}</p></main>`;
