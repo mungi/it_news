@@ -4,6 +4,7 @@ const state = {
   category: "All",
   importance: "All",
   region: "All",
+  summaryMode: false,
 };
 
 const CATEGORY_ORDER = ["All", "AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"];
@@ -88,9 +89,20 @@ function renderDeepDives() {
   (state.data.deep_dives || []).slice(0, 2).forEach((item) => {
     const div = document.createElement("article");
     div.className = "deep-dive";
+    div.tabIndex = 0;
+    div.setAttribute("role", "button");
+    div.setAttribute("aria-label", `${item.title || "Deep Dive"} 상세 보기`);
     div.innerHTML = `<h3>${escapeHtml(item.title || "Deep Dive")}</h3>
       <p><strong>요약:</strong> ${escapeHtml(item.summary || "")}</p>
-      <p>${escapeHtml(item.why_it_matters || item.details || "")}</p>`;
+      <p>${escapeHtml(item.why_it_matters || item.details || "")}</p>
+      <span class="read-more">클릭해서 상세 설명 보기 →</span>`;
+    div.addEventListener("click", () => openDeepDiveModal(item));
+    div.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openDeepDiveModal(item);
+      }
+    });
     container.appendChild(div);
   });
 }
@@ -184,6 +196,32 @@ function openModal(item) {
   document.body.style.overflow = "hidden";
 }
 
+function openDeepDiveModal(item) {
+  const modal = $("#modal");
+  const img = $("#modalImage");
+  img.src = "assets/images/fallback-ai.svg";
+  img.alt = `${item.title || "Deep Dive"} 이미지`;
+
+  $("#modalTitle").textContent = item.title || "Deep Dive";
+  $("#modalOriginal").textContent = "Deep Dive";
+  $("#modalSummary").textContent = item.summary || "";
+  $("#modalDetail").textContent = item.details || item.summary || "";
+  $("#modalWhy").textContent = item.why_it_matters || "";
+  $("#modalEngineering").textContent = "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.";
+  $("#modalKorea").textContent = "국내 개발 조직과 인프라 팀은 도입 비용, 운영 복잡도, 보안 경계를 함께 검토하는 관점으로 참고할 수 있습니다.";
+
+  const badges = $("#modalBadges");
+  badges.innerHTML = "";
+  ["Deep Dive", "Summary"].forEach((value) => badges.appendChild(makeBadge(value)));
+
+  const links = $("#modalLinks");
+  links.innerHTML = "";
+  (item.sources || []).forEach((url, index) => links.appendChild(makeLink(`출처 ${index + 1}`, url)));
+
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
 function makeLink(title, url) {
   const a = document.createElement("a");
   a.href = url;
@@ -213,7 +251,11 @@ function wireEvents() {
     renderFilters();
     renderCards();
   });
-  $("#presentationButton").addEventListener("click", () => document.body.classList.toggle("presentation"));
+  $("#summaryModeButton").addEventListener("click", () => {
+    state.summaryMode = !state.summaryMode;
+    document.body.classList.toggle("summary-mode", state.summaryMode);
+    $("#summaryModeButton").setAttribute("aria-pressed", String(state.summaryMode));
+  });
   document.querySelectorAll("[data-close='modal']").forEach((el) => el.addEventListener("click", closeModal));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeModal();

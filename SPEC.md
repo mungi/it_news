@@ -49,13 +49,15 @@ Single-page static application:
    - Category filters: All, AI, Cloud, Infra, Security, DevTools, Data, Open Source, Korea, IT
    - Importance filters: All, Must Know, High, Medium
    - Region filters: All, Global, Korea
-   - Presentation mode toggle
-5. News Cards
-   - Responsive card grid.
-   - Each card contains image, badges, Korean title, original title, short summary, why it matters, source, published time.
+   - Summary mode toggle for a very compact title/summary/thumbnail list.
+5. News List
+   - Single vertical list; no pagination.
+   - Each item contains thumbnail, Korean title, short summary, source, and published time.
+   - The layout should stay compact enough that multiple items are visible on one screen.
 6. Detail Modal
    - Opens when a card is clicked.
    - Contains image, detailed summary, engineering implication, Korea implication, tags, source links, related links.
+   - Deep Dive entries also open the same detail modal with full explanation, summary, and source links.
 
 ## 4. Visual Design
 
@@ -88,6 +90,8 @@ UX priorities:
 - Fast skimming.
 - Clear hierarchy.
 - Stable presentation view.
+- Compact list reading similar to mungi.kr: title, summary, thumbnail, and source first.
+- No oversized presentation cards and no JSON-view button in the primary UI.
 - No heavy framework or build step.
 
 ## 5. Data Contract
