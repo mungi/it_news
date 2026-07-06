@@ -39,6 +39,21 @@ def is_http_url(value: str) -> bool:
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
+def validate_local_image(value: object, prefix: str, field: str, errors: list[str]) -> None:
+    """Validate site-local image paths without allowing traversal outside docs/."""
+    if not value:
+        return
+    path = str(value)
+    if not path.startswith("assets/"):
+        errors.append(f"{prefix} {field} must be a docs-local assets/... path: {path}")
+        return
+    if ".." in Path(path).parts:
+        errors.append(f"{prefix} {field} must not contain path traversal: {path}")
+        return
+    if not (ROOT / "docs" / path).exists():
+        errors.append(f"{prefix} {field} file does not exist: {path}")
+
+
 def validate_detailed_content(value: object, prefix: str, errors: list[str], *, required: bool = False) -> None:
     if value is None:
         if required:
@@ -110,6 +125,10 @@ def main() -> int:
         data = json.loads(DATA.read_text(encoding="utf-8"))
     except Exception as exc:
         print(f"ERROR: invalid JSON: {exc}")
+        return 1
+
+    if not isinstance(data, dict):
+        print("ERROR: top-level JSON value must be an object")
         return 1
 
     for key in REQUIRED_TOP:
@@ -201,10 +220,7 @@ def main() -> int:
             errors.append(f"{prefix} image_url is not a valid link/path: {image_url}")
         local_image = item.get("local_image", "")
         if local_image:
-            if not is_probably_link(str(local_image)):
-                errors.append(f"{prefix} local_image is not a valid link/path: {local_image}")
-            elif str(local_image).startswith("assets/") and not (ROOT / "docs" / str(local_image)).exists():
-                errors.append(f"{prefix} local_image file does not exist: {local_image}")
+            validate_local_image(local_image, prefix, "local_image", errors)
         if not isinstance(item.get("tags", []), list):
             errors.append(f"{prefix} tags must be a list")
         validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
@@ -250,6 +266,14 @@ def main() -> int:
             for source_idx, source in enumerate(sources, start=1):
                 if not is_http_url(str(source)):
                     errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
+        image_url = item.get("image_url", "")
+        local_image = item.get("local_image", "")
+        if not (image_url or local_image):
+            errors.append(f"{prefix} needs image_url or local_image")
+        if image_url and not is_http_url(str(image_url)):
+            errors.append(f"{prefix} image_url must be an absolute http(s) URL: {image_url}")
+        if local_image:
+            validate_local_image(local_image, prefix, "local_image", errors)
         validate_deep_dive_content(item.get("detailed_content"), prefix, errors)
 
     if errors:
