@@ -88,3 +88,8 @@
 - Added writing rules: top-loaded summary, factual/objective tone, minimal rhetoric, precise terminology, and bullet/fragment structure.
 - Standardized `engineering_implication` as the rendered `시사점` item for industry/developer impact.
 - Updated modal heading from `엔지니어링 시사점` to `시사점`.
+
+## [2026-07-07] update | Convert visible summaries to non-narrative fragments
+- Rewrote all visible story summaries and modal detail sections into labeled fragments/bullets.
+- Replaced source-led prose with `핵심`, `변화`, `볼 것`, `영향`, and `시사점` structure.
+- Regenerated `weekly/2026-W28.md` from the updated data style.
