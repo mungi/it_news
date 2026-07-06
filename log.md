@@ -30,6 +30,6 @@
 
 ## [2026-07-06] update | Expand weekly list to 30 and localize importance labels
 - Expanded weekly news from 24 to 30 sourced items using current GeekNews/GN⁺ developer and infra stories.
-- Changed UI copy from `Must Know` to `중요 소식` while keeping JSON `importance: must-know` for compatibility.
+- Changed UI copy to `중요 소식` while keeping JSON `importance: must-know` for compatibility.
 - Updated validation/spec/prompt rules to allow up to 30 final items and require richer `상세 내용` sections.
 - Updated the 30-minute autonomous news updater cron prompt with the new 30-item, detailed_content, and 중요 소식 rules.
