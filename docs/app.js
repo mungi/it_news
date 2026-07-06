@@ -5,6 +5,7 @@ const state = {
   importance: "All",
   region: "All",
   viewMode: "list",
+  topOnly: false,
   modalReturnFocus: null,
   readItems: new Set(),
 };
@@ -214,8 +215,9 @@ function renderCards() {
   const grid = $("#newsGrid");
   const template = $("#cardTemplate");
   grid.innerHTML = "";
-  const items = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
-  updateResultText(items);
+  const matchedItems = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  const items = state.topOnly ? matchedItems.slice(0, 6) : matchedItems;
+  updateResultText(items, matchedItems.length);
 
   if (!items.length) {
     const empty = document.createElement("div");
@@ -265,12 +267,15 @@ function renderCards() {
   });
 }
 
-function updateResultText(items = null) {
+function updateResultText(items = null, matchedCount = null) {
   if (!state.data) return;
-  const visibleItems = items || (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  const matchedItems = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  const visibleItems = items || (state.topOnly ? matchedItems.slice(0, 6) : matchedItems);
   const mustKnowCount = visibleItems.filter((item) => item.importance === "must-know").length;
   const readCount = visibleItems.filter(isRead).length;
-  $("#resultText").textContent = `${visibleItems.length}개 표시 / 전체 ${(state.data.items || []).length}개 · 중요 소식 ${mustKnowCount}개 · 읽음 ${readCount}개`;
+  const baseText = `${visibleItems.length}개 표시 / 전체 ${(state.data.items || []).length}개`;
+  const topText = state.topOnly ? ` · Top 6 적용${Number.isInteger(matchedCount) ? `, 조건 일치 ${matchedCount}개` : ""}` : "";
+  $("#resultText").textContent = `${baseText}${topText} · 중요 소식 ${mustKnowCount}개 · 읽음 ${readCount}개`;
 }
 
 function renderRichDetail(container, sections, fallbackText) {
@@ -423,8 +428,9 @@ function wireEvents() {
     renderCards();
   });
   on("#mustKnowButton", "click", () => {
-    state.importance = state.importance === "must-know" ? "All" : "must-know";
-    renderFilters();
+    state.topOnly = !state.topOnly;
+    $("#mustKnowButton")?.classList.toggle("active", state.topOnly);
+    $("#mustKnowButton")?.setAttribute("aria-pressed", String(state.topOnly));
     renderCards();
   });
   on("#listViewButton", "click", () => setViewMode("list"));
