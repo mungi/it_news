@@ -448,8 +448,8 @@ function setViewMode(mode) {
   document.body.classList.toggle("list-mode", state.viewMode === "list");
   $("#listViewButton")?.classList.toggle("active", state.viewMode === "list");
   $("#cardViewButton")?.classList.toggle("active", state.viewMode === "card");
-  $("#listViewButton")?.setAttribute("aria-pressed", String(state.viewMode === "list"));
-  $("#cardViewButton")?.setAttribute("aria-pressed", String(state.viewMode === "card"));
+  $("#listViewButton")?.setAttribute("aria-checked", String(state.viewMode === "list"));
+  $("#cardViewButton")?.setAttribute("aria-checked", String(state.viewMode === "card"));
 }
 
 function renderFilters() {
