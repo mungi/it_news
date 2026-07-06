@@ -147,25 +147,18 @@ function getLiveFreezeState() {
   const frozen = weekday === "Mon" && hour >= 13 && hour < 17;
   return {
     frozen,
-    label: frozen ? "발표 Freeze 진행 중" : "자동 업데이트 가능",
+    label: frozen ? "발표 Freeze 진행 중" : "발표 보호 시간 아님",
   };
 }
 
 function updateHeader() {
   const data = state.data;
   const liveFreeze = getLiveFreezeState();
-  const dataFrozen = Boolean(data.frozen);
-  $("#weekBadge").textContent = data.week || "-";
+  $("#topUpdatedBadge").textContent = `최종 업데이트: ${data.last_updated_kst || "-"} KST`;
   $("#coverageText").textContent = `${data.coverage_start_kst || "-"} → ${data.coverage_end_kst || "-"}`;
   $("#updatedText").textContent = `${data.last_updated_kst || "-"} KST`;
   $("#presentationText").textContent = `${data.presentation_window_kst || "Monday 13:00-17:00 KST"} · ${liveFreeze.label}`;
   $("#itemCountText").textContent = `${(data.items || []).length}개`;
-  const freezeBadge = $("#freezeBadge");
-  freezeBadge.textContent = liveFreeze.frozen ? "발표 중 Freeze" : dataFrozen ? "데이터 Freeze" : "업데이트 가능";
-  freezeBadge.className = `pill ${liveFreeze.frozen || dataFrozen ? "pill-frozen" : "pill-hot"}`;
-  freezeBadge.title = liveFreeze.frozen
-    ? "현재 KST 기준 월요일 13:00-17:00 발표 보호 시간입니다."
-    : "현재 KST 기준 발표 보호 시간이 아닙니다.";
 }
 
 function renderSummary() {
