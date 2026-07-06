@@ -169,6 +169,10 @@ Korea:
 - Do not fabricate news, dates, source links, or images.
 - If a claim cannot be verified from a source, mark it as uncertain or omit it.
 - Keep Korean summaries natural and concise.
+- Keep generated Korean prose concise, technical, and source-grounded.
+- Avoid LLM-style filler and inflated wording: `주목할 만합니다`, `시사합니다`, `보여줍니다`, `중요한 것은`, `핵심은`, `패러다임 전환`, `게임 체인저`, `새로운 시대`, `빠르게 진화하는 환경`, `중요한 이정표`, `향후 귀추가 주목됩니다`.
+- Prefer concrete facts, affected systems, operational risks, metrics, and engineering actions.
+- Do not add generic conclusions. End with a specific implication or action.
 - Preserve original URLs.
 - Use KST for displayed times.
 - Avoid low-signal vendor marketing unless there is real technical or market impact.

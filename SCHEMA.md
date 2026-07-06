@@ -134,6 +134,11 @@ Rules:
 - Prefer clear headings and bullets over long unstructured paragraphs.
 - For Deep Dive entries, include the original/source contents in a structured way: what happened, source claims, easy explanation, engineering checklist, and presenter message.
 - The UI label is `상세 내용`, not `상세 요약`.
+- Keep prose compact and professional. Use direct technical wording instead of generic LLM-style filler.
+- Avoid AI-sounding phrases such as `핵심은`, `중요한 것은`, `주목할 만합니다`, `시사합니다`, `보여줍니다` when they add no information. Replace them with the actual technical fact or operational consequence.
+- Avoid inflated trend language such as `패러다임 전환`, `게임 체인저`, `새로운 시대`, `혁신적인`, `복잡한 환경`, `빠르게 진화하는`, `중요한 이정표` unless the source uses it and the claim is justified.
+- Prefer short Korean sentences. One sentence should usually carry one claim: source, fact, impact, or action.
+- Do not end sections with generic upbeat conclusions. End with a concrete engineering implication, risk, metric, or next action.
 
 ## Weekly Markdown Archive Format
 Each weekly file in `weekly/YYYY-Www.md` should include:

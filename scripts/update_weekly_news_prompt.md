@@ -104,6 +104,11 @@ UI/content policy:
 - Display `must-know` as `중요 소식` in Korean UI; keep the internal JSON value as `must-know` for compatibility.
 - The modal section label is `상세 내용`, not `상세 요약`.
 - Deep Dive detailed_content should include source contents in a structured way: what happened, source claims, easy explanation, engineering checklist, and presenter message.
+- Writing must be concise, professional Korean. Remove LLM-style filler before writing JSON or markdown.
+- Avoid inflated or generic phrases: `주목할 만합니다`, `시사합니다`, `보여줍니다`, `중요한 것은`, `핵심은`, `패러다임 전환`, `게임 체인저`, `새로운 시대`, `빠르게 진화하는 환경`, `중요한 이정표`, `향후 귀추가 주목됩니다`, `앞으로가 기대됩니다`.
+- Replace those phrases with specific facts, risks, metrics, affected systems, or concrete engineering actions.
+- Prefer short Korean sentences. One sentence should carry one claim.
+- Before committing, scan generated Korean text and rewrite any sentence that sounds like generic LLM prose.
 
 ## Commit and Push
 
