@@ -98,3 +98,9 @@
 - Corrected the writing rule from over-compressed fragments to 개조식 bullet-style briefing prose.
 - Updated skill, prompt, schema, and spec to require complete useful clauses under `핵심`, `배경`, `변화`, `영향`, and `시사점` labels.
 - Explicitly warned against awkward keyword fragments that lose context.
+
+## [2026-07-07] update | Add Argo CD repo-server security story
+- Freeze check passed at 2026-07-07 06:55 KST; updates allowed.
+- Reviewed 745 feed entries and 161 relevant new candidates across mandatory sources plus global AI/Cloud/Infra/Security/DevTools feeds.
+- Added The Hacker News Argo CD repo-server 미패치 결함 story and removed lower-priority OpenTag item to keep the site at 30 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source image, and wiki index.
