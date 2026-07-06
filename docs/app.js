@@ -6,7 +6,10 @@ const state = {
   region: "All",
   viewMode: "list",
   modalReturnFocus: null,
+  readItems: new Set(),
 };
+
+const READ_STORAGE_KEY = "it-news-read-items-v1";
 
 const CATEGORY_ORDER = ["All", "AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"];
 const IMPORTANCE_ORDER = ["All", "must-know", "high", "medium"];
@@ -27,6 +30,41 @@ const $ = (selector) => document.querySelector(selector);
 function on(selector, eventName, handler) {
   const element = $(selector);
   if (element) element.addEventListener(eventName, handler);
+}
+
+function loadReadItems() {
+  try {
+    const raw = window.localStorage?.getItem(READ_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    state.readItems = new Set(Array.isArray(parsed) ? parsed.filter(Boolean) : []);
+  } catch {
+    state.readItems = new Set();
+  }
+}
+
+function saveReadItems() {
+  try {
+    window.localStorage?.setItem(READ_STORAGE_KEY, JSON.stringify([...state.readItems]));
+  } catch {
+    // localStorage can be unavailable in private or restricted browser contexts.
+  }
+}
+
+function isRead(item) {
+  return Boolean(item?.id && state.readItems.has(item.id));
+}
+
+function markRead(item) {
+  if (!item?.id || state.readItems.has(item.id)) return;
+  state.readItems.add(item.id);
+  saveReadItems();
+  document.querySelectorAll(`[data-news-id="${CSS.escape(item.id)}"]`).forEach((node) => {
+    node.classList.add("is-read");
+    node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 읽음`);
+    const stateLabel = node.querySelector(".read-state");
+    if (stateLabel) stateLabel.textContent = "읽음";
+  });
+  updateResultText();
 }
 
 function normalize(value) {
@@ -144,8 +182,7 @@ function renderCards() {
   const template = $("#cardTemplate");
   grid.innerHTML = "";
   const items = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
-  const mustKnowCount = items.filter((item) => item.importance === "must-know").length;
-  $("#resultText").textContent = `${items.length}개 표시 / 전체 ${(state.data.items || []).length}개 · 중요 소식 ${mustKnowCount}개`;
+  updateResultText(items);
 
   if (!items.length) {
     const empty = document.createElement("div");
@@ -157,6 +194,11 @@ function renderCards() {
 
   items.forEach((item) => {
     const node = template.content.firstElementChild.cloneNode(true);
+    node.dataset.newsId = item.id || "";
+    if (isRead(item)) {
+      node.classList.add("is-read");
+      node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 읽음`);
+    }
     const img = node.querySelector(".card-image");
     img.src = imageFor(item);
     img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
@@ -168,6 +210,7 @@ function renderCards() {
     node.querySelector(".original-title").textContent = item.title_original ? `Original: ${item.title_original}` : "";
     node.querySelector(".summary").textContent = item.summary || "";
     node.querySelector(".why").textContent = item.why_it_matters ? `왜 중요한가: ${item.why_it_matters}` : "";
+    node.querySelector(".read-state").textContent = isRead(item) ? "읽음" : "";
     const sourceLink = node.querySelector(".source");
     sourceLink.textContent = item.source_name || "Source";
     sourceLink.href = item.source_url || "#";
@@ -182,6 +225,14 @@ function renderCards() {
     });
     grid.appendChild(node);
   });
+}
+
+function updateResultText(items = null) {
+  if (!state.data) return;
+  const visibleItems = items || (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  const mustKnowCount = visibleItems.filter((item) => item.importance === "must-know").length;
+  const readCount = visibleItems.filter(isRead).length;
+  $("#resultText").textContent = `${visibleItems.length}개 표시 / 전체 ${(state.data.items || []).length}개 · 중요 소식 ${mustKnowCount}개 · 읽음 ${readCount}개`;
 }
 
 function renderRichDetail(container, sections, fallbackText) {
@@ -233,6 +284,7 @@ function itemDetailSections(item) {
 
 function openModal(item) {
   const modal = $("#modal");
+  markRead(item);
   state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.src = imageFor(item);
@@ -367,6 +419,7 @@ async function boot() {
     const response = await fetch("data/weekly-news.json", { cache: "no-store" });
     if (!response.ok) throw new Error(`weekly-news.json load failed: ${response.status}`);
     state.data = await response.json();
+    loadReadItems();
     updateHeader();
     renderSummary();
     renderDeepDives();
