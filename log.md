@@ -83,3 +83,8 @@
 - Corrected GeekNews체 definition: not prose, but compact fragments and decision bullets.
 - Rewrote current GeekNews/GN⁺ items to use `변화`, `볼 것`, `피할 것`, and team-action style.
 - Updated project prompt/spec/schema and skill guidance to prevent 서술형 GeekNews summaries.
+
+## [2026-07-07] update | Add briefing writing principles and 시사점
+- Added writing rules: top-loaded summary, factual/objective tone, minimal rhetoric, precise terminology, and bullet/fragment structure.
+- Standardized `engineering_implication` as the rendered `시사점` item for industry/developer impact.
+- Updated modal heading from `엔지니어링 시사점` to `시사점`.

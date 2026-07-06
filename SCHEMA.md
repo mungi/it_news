@@ -131,6 +131,8 @@ Each `docs/data/weekly-news.json` should include:
 
 Rules:
 - Use Korean.
+- Writing principles: minimal rhetoric, top-loaded conclusion, factual/objective tone, accurate technical terminology, and bullets/fragments instead of long paragraphs.
+- Include a `시사점` item for each story: the industry's likely impact or a short developer/engineer implication grounded in the source. Store it in `engineering_implication`.
 - Prefer clear headings and bullets over long unstructured paragraphs.
 - For Deep Dive entries, go beyond a summary. Write from an AI/Infra expert and consultant perspective with at least 7 structured sections and 1,800+ Korean characters. Required angles: original/source facts, AI/Infra expert interpretation, architecture/operations impact, cost/FinOps or security/governance perspective, adoption roadmap when relevant, developer/infra checklist, and `강조 메세지`.
 - For GeekNews/GN⁺ source summaries, use GeekNews체: **not narrative prose**. Use compact Korean fragments/bullets, noun phrases, `변화/볼 것/피할 것/팀 액션` decision points, concrete facts first, no filler, and **bold** only decision-critical terms or metrics.

@@ -289,6 +289,11 @@ Final output:
 
 Writing style:
 
+- No greetings, emotional openers, or rhetorical warm-ups. Start with the conclusion and core fact.
+- Use a factual, objective tone: information essence, trade-offs, core technology, and operational impact.
+- Keep accurate domain terminology instead of over-simplifying technical terms.
+- Use bullets/fragments and short sections over long narrative paragraphs.
+- Include a `시사점` item for each story: industry impact or a short developer/engineer-facing implication grounded in the source. Store it in `engineering_implication` and render it as `시사점`.
 - Korean prose should be concise, technical, and source-grounded.
 - Avoid LLM-style filler and inflated phrasing: `주목할 만합니다`, `시사합니다`, `보여줍니다`, `중요한 것은`, `핵심은`, `패러다임 전환`, `게임 체인저`, `새로운 시대`, `빠르게 진화하는 환경`, `중요한 이정표`.
 - Do not use generic conclusions such as `향후 귀추가 주목됩니다`, `앞으로가 기대됩니다`, `중요성이 커질 전망입니다` unless they are replaced by a specific next action or measurable implication.

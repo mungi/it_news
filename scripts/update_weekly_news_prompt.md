@@ -103,6 +103,8 @@ For images, inspect the source page metadata first and prefer a reliable article
 UI/content policy:
 - Display `must-know` as `중요 소식` in Korean UI; keep the internal JSON value as `must-know` for compatibility.
 - The modal section label is `상세 내용`, not `상세 요약`.
+- Writing principles: no greetings or emotional openers; top-load the conclusion and core summary; keep rhetoric minimal; use a factual, objective tone; preserve accurate domain terminology; prefer bullets/fragments over long paragraphs.
+- Every item should include a short `시사점`: the issue's industry impact or a developer/engineer-facing implication/opinion grounded in the source. Store it in `engineering_implication` and render it as `시사점`.
 - Deep Dive detailed_content must be substantially richer than normal news items and written from an AI/Infra expert and consultant perspective. Include at least 7 structured sections and 1,800+ Korean characters: `한 줄 결론`, `원문과 관련 뉴스의 핵심 내용`, `AI/Infra 전문가 해석`, at least one architecture/operations/cost/security `관점` section, `도입 로드맵` when relevant, `개발팀/인프라팀 체크리스트`, and `강조 메세지`. Use concrete bullets for cost, security, architecture, SRE/FinOps, governance, and adoption actions.
 - Use GeekNews체 for GeekNews/GN⁺ source summaries: **not narrative prose**. Write compact fragments/bullets with noun phrases and decision points. Use `변화: ...`, `볼 것: ...`, `피할 것: ...`, `팀 액션: ...` patterns. No two-sentence explanatory paragraphs, no generic wrap-up. Put concrete source facts first, engineering implication second, and **bold** only the words or metrics that decide the story.
 - Do not render a separate `한국 관점` section in article modal body. If Korea relevance is needed, fold it into why-it-matters or engineering implication in one concrete sentence.

@@ -330,7 +330,7 @@ function itemDetailSections(item) {
   return [
     { heading: "무슨 일이 있었나", body: item.detail || item.summary || "" },
     {
-      heading: "핵심 포인트",
+      heading: "시사점",
       items: [item.why_it_matters, item.engineering_implication].filter(Boolean),
     },
   ];
