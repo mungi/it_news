@@ -132,7 +132,7 @@ Each `docs/data/weekly-news.json` should include:
 Rules:
 - Use Korean.
 - Prefer clear headings and bullets over long unstructured paragraphs.
-- For Deep Dive entries, include the original/source contents in a structured way: what happened, source claims, easy explanation, engineering checklist, and presenter message.
+- For Deep Dive entries, go beyond a summary. Write from an AI/Infra expert and consultant perspective with at least 7 structured sections and 1,800+ Korean characters. Required angles: original/source facts, AI/Infra expert interpretation, architecture/operations impact, cost/FinOps or security/governance perspective, adoption roadmap when relevant, developer/infra checklist, and presenter message.
 - The UI label is `상세 내용`, not `상세 요약`.
 - Keep prose compact and professional. Use direct technical wording instead of generic LLM-style filler.
 - Avoid AI-sounding phrases such as `핵심은`, `중요한 것은`, `주목할 만합니다`, `시사합니다`, `보여줍니다` when they add no information. Replace them with the actual technical fact or operational consequence.

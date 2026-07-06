@@ -62,6 +62,44 @@ def validate_detailed_content(value: object, prefix: str, errors: list[str], *, 
             errors.append(f"{section_prefix}.items must be a list")
 
 
+def validate_deep_dive_content(value: object, prefix: str, errors: list[str]) -> None:
+    """Require Deep Dive modals to be substantive enough for a presenter."""
+    validate_detailed_content(value, prefix, errors, required=True)
+    if not isinstance(value, list):
+        return
+
+    headings = [str(section.get("heading", "")) for section in value if isinstance(section, dict)]
+    joined_headings = " ".join(headings)
+    total_chars = 0
+    bullet_count = 0
+    for section in value:
+        if not isinstance(section, dict):
+            continue
+        total_chars += len(str(section.get("body", "")))
+        items = section.get("items")
+        if isinstance(items, list):
+            bullet_count += len(items)
+            total_chars += sum(len(str(item)) for item in items)
+
+    if len(value) < 7:
+        errors.append(f"{prefix} detailed_content should have at least 7 expert-level sections")
+    if total_chars < 1800:
+        errors.append(f"{prefix} detailed_content should be at least 1800 Korean chars, got {total_chars}")
+    if bullet_count < 12:
+        errors.append(f"{prefix} detailed_content should include at least 12 concrete bullets, got {bullet_count}")
+
+    required_heading_keywords = {
+        "원문": "source/original-news section",
+        "전문가": "AI/Infra expert interpretation section",
+        "관점": "consulting or operational perspective section",
+        "체크리스트": "developer/infra checklist section",
+        "발표": "presenter message section",
+    }
+    for keyword, description in required_heading_keywords.items():
+        if keyword not in joined_headings:
+            errors.append(f"{prefix} detailed_content missing {description} (heading containing '{keyword}')")
+
+
 def main() -> int:
     errors: list[str] = []
     if not DATA.exists():
@@ -201,7 +239,7 @@ def main() -> int:
             for source_idx, source in enumerate(sources, start=1):
                 if not is_http_url(str(source)):
                     errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
-        validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
+        validate_deep_dive_content(item.get("detailed_content"), prefix, errors)
 
     if errors:
         print("weekly-news validation failed:")

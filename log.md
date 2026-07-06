@@ -53,3 +53,8 @@
 - Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; also sampled AWS, Docker, GitHub, Hugging Face, Google Research, NVIDIA, The Hacker News, CNCF, and Microsoft Security feeds.
 - Added AWS Security Hub CSPM AI Security Best Practices standard with 31 automated controls and removed the lower-priority MemNixFS tool item to keep the site at 30 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, and wiki index.
+
+## [2026-07-07] update | Strengthen Deep Dive expert detail standard
+- Expanded current Deep Dive content with AI/Infra expert and consultant perspectives: architecture, operations, FinOps, security, governance, rollout, and presenter guidance.
+- Updated automation prompt, spec, schema, and README so future news refreshes generate richer Deep Dive sections instead of short summaries.
+- Hardened `scripts/validate_weekly_news.py` to require substantial Deep Dive sections, concrete bullets, and expert/checklist/presenter headings.

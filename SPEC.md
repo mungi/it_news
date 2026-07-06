@@ -26,7 +26,7 @@ The repository serves two roles:
 - Title policy: Korean title plus original title when available.
 - Topics: AI, Cloud, Infra first; Security, Developer Tools, Data/DB, Open Source, Korea, General IT second.
 - Total visible news items: up to 30; target 24-30 when enough high-value sourced items exist.
-- Deep Dive: 1 by default, 2 only when unusually important.
+- Deep Dive: 1 by default, 2 only when unusually important. Each Deep Dive must be detailed enough for AI/Infra experts and consultants to use in a 30-minute briefing: source facts, expert interpretation, architecture/operations impact, cost/security view, adoption roadmap, checklist, and presenter message.
 - Each news item needs title, short summary, detailed summary, source link, image, category/tags, and publication time when available.
 - Updates should automatically commit and push when GitHub auth/remotes are available.
 
@@ -58,7 +58,7 @@ Single-page static application:
 6. Detail Modal
    - Opens when a card is clicked.
    - Contains image, detailed summary, engineering implication, Korea implication, tags, source links, related links.
-   - Deep Dive entries also open the same detail modal with full explanation, summary, and source links.
+   - Deep Dive entries also open the same detail modal with a richer expert/consultant-level explanation, source facts, architecture/operations implications, cost/security trade-offs, adoption checklist, and source links.
 
 ## 4. Visual Design
 
@@ -147,6 +147,27 @@ Item shape:
   "related_links": []
 }
 ```
+
+Deep Dive shape and content standard:
+
+```json
+{
+  "id": "deep-dive-001",
+  "title": "Deep Dive 제목",
+  "summary": "짧은 요약",
+  "details": "전문가 관점의 상세 설명",
+  "why_it_matters": "왜 중요한가",
+  "sources": ["https://example.com/source"],
+  "detailed_content": []
+}
+```
+
+Deep Dive `detailed_content` requirements:
+
+- At least 7 sections and 1,800+ Korean characters.
+- Include `원문과 관련 뉴스의 핵심 내용`, `AI/Infra 전문가 해석`, one or more `관점` sections, `개발팀/인프라팀 체크리스트`, and `발표에서 강조할 메시지`.
+- Treat the topic like an advisory briefing: connect source facts to architecture, operations, security, FinOps, governance, rollout order, and measurable next actions.
+- Avoid generic trend commentary. End each section with a concrete engineering implication, risk, metric, or decision point.
 
 ## 6. News Search Strategy
 
