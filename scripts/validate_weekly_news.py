@@ -93,7 +93,7 @@ def validate_deep_dive_content(value: object, prefix: str, errors: list[str]) ->
         "전문가": "AI/Infra expert interpretation section",
         "관점": "consulting or operational perspective section",
         "체크리스트": "developer/infra checklist section",
-        "발표": "presenter message section",
+        "강조": "presenter emphasis section",
     }
     for keyword, description in required_heading_keywords.items():
         if keyword not in joined_headings:

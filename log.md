@@ -73,3 +73,8 @@
 - Increased PC-only modal title size by about 10% from the previous setting.
 - Kept mobile and tablet modal title sizing unchanged.
 - Bumped static CSS/JS cache keys in `docs/index.html`.
+
+## [2026-07-07] update | Add GeekNews체 and modal body cleanup
+- Analyzed GeekNews topic 31170, `덜한 것이 더 낫다, 대체로`, and captured its less-is-more style as GeekNews체 in the reusable skill.
+- Updated project prompt/spec/schema to use GeekNews체 for GeekNews/GN⁺ summaries and `강조 메세지` for Deep Dive emphasis headings.
+- Removed the separate `한국 관점` block from article modals and added `**bold**` rendering support for important modal body text.

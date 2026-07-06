@@ -309,14 +309,14 @@ function renderRichDetail(container, sections, fallbackText) {
     }
     if (section.body) {
       const p = document.createElement("p");
-      p.textContent = section.body;
+      appendRichText(p, section.body);
       block.appendChild(p);
     }
     if (Array.isArray(section.items) && section.items.length) {
       const ul = document.createElement("ul");
       section.items.forEach((text) => {
         const li = document.createElement("li");
-        li.textContent = text;
+        appendRichText(li, text);
         ul.appendChild(li);
       });
       block.appendChild(ul);
@@ -331,7 +331,7 @@ function itemDetailSections(item) {
     { heading: "무슨 일이 있었나", body: item.detail || item.summary || "" },
     {
       heading: "핵심 포인트",
-      items: [item.why_it_matters, item.engineering_implication, item.korea_implication].filter(Boolean),
+      items: [item.why_it_matters, item.engineering_implication].filter(Boolean),
     },
   ];
 }
@@ -350,7 +350,6 @@ function openModal(item) {
   renderRichDetail($("#modalDetail"), itemDetailSections(item), item.detail || item.summary || "");
   $("#modalWhy").textContent = item.why_it_matters || "";
   $("#modalEngineering").textContent = item.engineering_implication || "";
-  $("#modalKorea").textContent = item.korea_implication || "";
 
   const badges = $("#modalBadges");
   badges.innerHTML = "";
@@ -381,7 +380,6 @@ function openDeepDiveModal(item) {
   renderRichDetail($("#modalDetail"), item.detailed_content, item.details || item.summary || "");
   $("#modalWhy").textContent = item.why_it_matters || "";
   $("#modalEngineering").textContent = "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.";
-  $("#modalKorea").textContent = "국내 개발 조직과 인프라 팀은 도입 비용, 운영 복잡도, 보안 경계를 함께 검토하는 관점으로 참고할 수 있습니다.";
 
   const badges = $("#modalBadges");
   badges.innerHTML = "";
@@ -404,6 +402,18 @@ function makeLink(title, url) {
   a.rel = "noopener";
   a.textContent = title;
   return a;
+}
+
+function appendRichText(parent, text) {
+  String(text || "").split(/(\*\*[^*]+\*\*)/g).filter(Boolean).forEach((part) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+      const strong = document.createElement("strong");
+      strong.textContent = part.slice(2, -2);
+      parent.appendChild(strong);
+    } else {
+      parent.appendChild(document.createTextNode(part));
+    }
+  });
 }
 
 function setModalTitleLink(title, url) {
