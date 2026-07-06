@@ -151,6 +151,9 @@ Use a curated-source-first strategy, then web search fallback.
 These must be included in the recurring search set:
 
 - https://news.hada.io/ — GeekNews / Korean developer and startup community signal.
+- https://news.hada.io/plus — GeekNews Plus; include as a recurring reference/source surface.
+- https://news.hada.io/topic?id=30992 — user-provided GeekNews seed topic; re-check when relevant to the current weekly window.
+- https://news.hada.io/topic?id=31123 — user-provided GeekNews seed topic; re-check when relevant to the current weekly window.
 - https://www.aitimes.kr/ — Korean AI industry news.
 - https://www.aitimes.com/ — AI Times global/Korean AI news.
 
@@ -215,6 +218,9 @@ These must be included in the recurring search set:
 - `AWS Azure Google Cloud announcement past week`
 - `AI agent enterprise news past week`
 - `site:news.hada.io AI 클라우드 인프라`
+- `site:news.hada.io/plus AI 클라우드 인프라`
+- `https://news.hada.io/topic?id=30992`
+- `https://news.hada.io/topic?id=31123`
 - `site:aitimes.kr AI 클라우드 반도체`
 - `site:aitimes.com AI cloud infrastructure`
 - `site:zdnet.co.kr AI 클라우드 인프라`

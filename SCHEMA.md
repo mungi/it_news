@@ -25,6 +25,9 @@ Primary output:
 ## Required Source Coverage
 Recurring update jobs must include these sources and also search beyond them:
 - https://news.hada.io/
+- https://news.hada.io/plus
+- https://news.hada.io/topic?id=30992
+- https://news.hada.io/topic?id=31123
 - https://www.aitimes.kr/
 - https://www.aitimes.com/
 

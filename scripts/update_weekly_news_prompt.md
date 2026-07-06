@@ -35,6 +35,9 @@ Also allow the last 7 days when exact weekly boundary is hard to apply.
 
 Mandatory sources to include in each research pass:
 - https://news.hada.io/
+- https://news.hada.io/plus
+- https://news.hada.io/topic?id=30992
+- https://news.hada.io/topic?id=31123
 - https://www.aitimes.kr/
 - https://www.aitimes.com/
 

@@ -11,6 +11,13 @@
 - Coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
 - Required recurring sources include news.hada.io, aitimes.kr, and aitimes.com.
 
+## [2026-07-06] update | Add GeekNews Plus and user seed topics to source list
+- Added recurring reference source: https://news.hada.io/plus
+- Added user-provided GeekNews seed topics:
+  - https://news.hada.io/topic?id=30992
+  - https://news.hada.io/topic?id=31123
+- Updated SPEC.md, SCHEMA.md, README.md, and scripts/update_weekly_news_prompt.md so future automated news runs include them.
+
 
 ## [2026-07-06] briefing | 2026-W28 weekly news refreshed
 - Freeze check passed at 2026-07-06 10:00 KST; updates allowed.
