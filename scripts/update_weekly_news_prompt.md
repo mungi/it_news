@@ -13,7 +13,7 @@ Every 30 minutes, update the AI / Cloud / Infra weekly news static site and LLM 
 2. If it exits with code 2 or says freeze is active, stop immediately. Do not edit files, commit, or push.
 3. Never fabricate news, dates, links, images, or claims.
 4. Only include sourced items with `source_url`.
-5. Keep `docs/data/weekly-news.json` under 30 items.
+5. Keep `docs/data/weekly-news.json` at or below 30 items; target 24-30 when enough high-value sourced items exist.
 6. Deep Dive count must be 1 by default and never more than 2.
 7. Validate with `python3 scripts/validate_weekly_news.py` before commit.
 8. If validation fails, fix before commit. If you cannot fix, do not commit.
@@ -83,6 +83,7 @@ Each item must have:
 - title_original when available
 - summary
 - detail
+- detailed_content list for click-through `상세 내용`; use Korean headings and bullets so cards and Deep Dive modals are not thin
 - why_it_matters
 - engineering_implication
 - korea_implication when relevant
@@ -98,6 +99,11 @@ Each item must have:
 - related_links list
 
 Use fallback images from `docs/assets/images/` when no reliable original image is available.
+
+UI/content policy:
+- Display `must-know` as `중요 소식` in Korean UI; keep the internal JSON value as `must-know` for compatibility.
+- The modal section label is `상세 내용`, not `상세 요약`.
+- Deep Dive detailed_content should include source contents in a structured way: what happened, source claims, easy explanation, engineering checklist, and presenter message.
 
 ## Commit and Push
 

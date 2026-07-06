@@ -25,7 +25,7 @@ The site summarizes important AI, Cloud, Infra, and selected general IT news fro
 - News title policy: Korean title plus original title preserved when available
 - Main topics: AI, Cloud, Infra
 - Secondary topics: Security, Developer Tools, Data/Database, Open Source, Korea, General IT
-- Total weekly items: fewer than 30; target 18-24 high-value stories
+- Total weekly items: up to 30; target 24-30 high-value stories when enough sourced items exist
 - Deep Dive: normally 1 item, maximum 2 only when necessary
 - Required per news item: title, short summary, detailed summary, source link, image, tags/category, publication time if available
 
@@ -72,7 +72,7 @@ Minimum UI features:
 - Card click opens detailed summary
 - Category/tag filters
 - Search
-- Important/Must Know highlighting
+- 중요 소식 highlighting
 - Deep Dive section
 - Source links
 - Main image per story
@@ -143,7 +143,7 @@ Every automated update run must:
 4. Prefer primary sources and official blogs, then credible technical media.
 5. Deduplicate by URL, title, and story/event similarity.
 6. Score stories by impact, relevance, novelty, credibility, Korea relevance, technical depth, and presentation value.
-7. Keep fewer than 30 final items.
+7. Keep up to 30 final items.
 8. Select 1 Deep Dive by default, maximum 2.
 9. Update the LLM wiki files and `docs/data/weekly-news.json`.
 10. Preserve source links and image attribution/source metadata.

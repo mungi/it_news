@@ -25,7 +25,7 @@ The repository serves two roles:
 - Language: Korean UI and Korean summaries.
 - Title policy: Korean title plus original title when available.
 - Topics: AI, Cloud, Infra first; Security, Developer Tools, Data/DB, Open Source, Korea, General IT second.
-- Total visible news items: fewer than 30; target 18-24.
+- Total visible news items: up to 30; target 24-30 when enough high-value sourced items exist.
 - Deep Dive: 1 by default, 2 only when unusually important.
 - Each news item needs title, short summary, detailed summary, source link, image, category/tags, and publication time when available.
 - Updates should automatically commit and push when GitHub auth/remotes are available.
@@ -47,7 +47,7 @@ Single-page static application:
 4. Controls
    - Search text input
    - Category filters: All, AI, Cloud, Infra, Security, DevTools, Data, Open Source, Korea, IT
-   - Importance filters: All, Must Know, High, Medium
+   - Importance filters: All, 중요 소식, 높음, 보통
    - Region filters: All, Global, Korea
    - View mode toggle: `목록 보기` and `카드 보기`.
 5. News List / Cards
@@ -130,7 +130,7 @@ Item shape:
   "title_ko": "한국어 제목",
   "title_original": "Original title",
   "summary": "2-3문장 요약",
-  "detail": "상세 요약",
+  "detail": "상세 내용",
   "why_it_matters": "왜 중요한가",
   "engineering_implication": "개발자/엔지니어 관점 시사점",
   "korea_implication": "한국 시장/조직 관점 시사점",
@@ -260,9 +260,9 @@ Drop:
 
 Final output:
 
-- 18-24 preferred items.
-- Hard cap: 29 items.
-- Must Know: about 5 items.
+- 24-30 preferred items when enough high-value sourced stories exist.
+- Hard cap: 30 items.
+- 중요 소식: about 5-8 items.
 - Deep Dive: 1 preferred, 2 max.
 
 ## 8. Image Policy

@@ -110,11 +110,30 @@ Use only these tags unless this schema is updated first:
 ## Weekly Website Format
 Each `docs/data/weekly-news.json` should include:
 1. Executive summary: 3-5 Korean bullets
-2. Must Know stories: about 5
-3. Total stories: fewer than 30, target 18-24
+2. 중요 소식 stories: about 5-8
+3. Total stories: up to 30, target 24-30 when enough high-value sourced items exist
 4. Deep dives: 1 by default, 2 maximum
 5. KST timeline metadata
 6. Source appendix via `source_url` and `related_links`
+7. Modal detail content: use `detailed_content` when possible so card and Deep Dive click-through views are not thin.
+
+`detailed_content` shape:
+
+```json
+[
+  {
+    "heading": "무슨 일이 있었나",
+    "body": "한글 상세 설명",
+    "items": ["핵심 bullet 1", "핵심 bullet 2"]
+  }
+]
+```
+
+Rules:
+- Use Korean.
+- Prefer clear headings and bullets over long unstructured paragraphs.
+- For Deep Dive entries, include the original/source contents in a structured way: what happened, source claims, easy explanation, engineering checklist, and presenter message.
+- The UI label is `상세 내용`, not `상세 요약`.
 
 ## Weekly Markdown Archive Format
 Each weekly file in `weekly/YYYY-Www.md` should include:

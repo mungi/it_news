@@ -31,6 +31,29 @@ def is_probably_link(value: str) -> bool:
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
+def validate_detailed_content(value: object, prefix: str, errors: list[str], *, required: bool = False) -> None:
+    if value is None:
+        if required:
+            errors.append(f"{prefix} detailed_content is required")
+        return
+    if not isinstance(value, list) or not value:
+        errors.append(f"{prefix} detailed_content must be a non-empty list")
+        return
+    for section_idx, section in enumerate(value, start=1):
+        section_prefix = f"{prefix} detailed_content[{section_idx}]"
+        if not isinstance(section, dict):
+            errors.append(f"{section_prefix} must be an object")
+            continue
+        if not section.get("heading"):
+            errors.append(f"{section_prefix} missing heading")
+        body = section.get("body")
+        items = section.get("items")
+        if not body and not items:
+            errors.append(f"{section_prefix} needs body or items")
+        if items is not None and not isinstance(items, list):
+            errors.append(f"{section_prefix}.items must be a list")
+
+
 def main() -> int:
     errors: list[str] = []
     if not DATA.exists():
@@ -65,8 +88,8 @@ def main() -> int:
     if not isinstance(summary, list):
         errors.append("executive_summary must be a list")
         summary = []
-    if len(items) >= 30:
-        errors.append(f"items must be fewer than 30, got {len(items)}")
+    if len(items) > 30:
+        errors.append(f"items must be <= 30, got {len(items)}")
     if len(deep_dives) > 2:
         errors.append(f"deep_dives must be <= 2, got {len(deep_dives)}")
     if not (1 <= len(summary) <= 5):
@@ -111,6 +134,7 @@ def main() -> int:
             errors.append(f"{prefix} needs image_url or local_image")
         if not isinstance(item.get("tags", []), list):
             errors.append(f"{prefix} tags must be a list")
+        validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
         related_links = item.get("related_links", [])
         if not isinstance(related_links, list):
             errors.append(f"{prefix} related_links must be a list")
@@ -135,6 +159,7 @@ def main() -> int:
             for source_idx, source in enumerate(sources, start=1):
                 if not is_probably_link(str(source)):
                     errors.append(f"{prefix} sources[{source_idx}] is not a valid link/path: {source}")
+        validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
 
     if errors:
         print("weekly-news validation failed:")

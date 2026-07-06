@@ -22,4 +22,14 @@
 - Removed individual topic URLs from recurring mandatory source lists.
 - Added both GeekNews stories to the current weekly news set and weekly briefing.
 - Kept https://news.hada.io/plus as a recurring reference surface.
+## [2026-07-06] update | Expand Deep Dive and card detail content
+- Renamed modal detail section from 상세 요약 to 상세 내용.
+- Added structured Korean detailed_content sections for both Deep Dive items.
+- Added structured 상세 내용 sections for news card modals.
+- Regenerated weekly/2026-W28.md from enriched data.
 
+## [2026-07-06] update | Expand weekly list to 30 and localize importance labels
+- Expanded weekly news from 24 to 30 sourced items using current GeekNews/GN⁺ developer and infra stories.
+- Changed UI copy from `Must Know` to `중요 소식` while keeping JSON `importance: must-know` for compatibility.
+- Updated validation/spec/prompt rules to allow up to 30 final items and require richer `상세 내용` sections.
+- Updated the 30-minute autonomous news updater cron prompt with the new 30-item, detailed_content, and 중요 소식 rules.

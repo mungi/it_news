@@ -33,6 +33,14 @@ function normalize(value) {
   return String(value || "").toLowerCase();
 }
 
+function displayLabel(value) {
+  if (value === "must-know") return "중요 소식";
+  if (value === "high") return "높음";
+  if (value === "medium") return "보통";
+  if (value === "low") return "낮음";
+  return value;
+}
+
 function imageFor(item) {
   return item.local_image || item.image_url || FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg";
 }
@@ -51,7 +59,7 @@ function badgeClass(value) {
 function makeBadge(text) {
   const span = document.createElement("span");
   span.className = `badge ${badgeClass(text)}`;
-  span.textContent = text;
+  span.textContent = displayLabel(text);
   return span;
 }
 
@@ -62,7 +70,7 @@ function renderFilterButtons(container, values, active, onClick) {
     button.className = `filter-button ${value === active ? "active" : ""}`;
     button.type = "button";
     button.setAttribute("aria-pressed", String(value === active));
-    button.textContent = value;
+    button.textContent = displayLabel(value);
     button.addEventListener("click", () => onClick(value));
     container.appendChild(button);
   });
@@ -137,7 +145,7 @@ function renderCards() {
   grid.innerHTML = "";
   const items = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
   const mustKnowCount = items.filter((item) => item.importance === "must-know").length;
-  $("#resultText").textContent = `${items.length}개 표시 / 전체 ${(state.data.items || []).length}개 · Must Know ${mustKnowCount}개`;
+  $("#resultText").textContent = `${items.length}개 표시 / 전체 ${(state.data.items || []).length}개 · 중요 소식 ${mustKnowCount}개`;
 
   if (!items.length) {
     const empty = document.createElement("div");
