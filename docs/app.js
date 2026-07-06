@@ -5,6 +5,7 @@ const state = {
   importance: "All",
   region: "All",
   viewMode: "list",
+  modalReturnFocus: null,
 };
 
 const CATEGORY_ORDER = ["All", "AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"];
@@ -60,6 +61,7 @@ function renderFilterButtons(container, values, active, onClick) {
     const button = document.createElement("button");
     button.className = `filter-button ${value === active ? "active" : ""}`;
     button.type = "button";
+    button.setAttribute("aria-pressed", String(value === active));
     button.textContent = value;
     button.addEventListener("click", () => onClick(value));
     container.appendChild(button);
@@ -174,8 +176,56 @@ function renderCards() {
   });
 }
 
+function renderRichDetail(container, sections, fallbackText) {
+  container.innerHTML = "";
+  const normalizedSections = Array.isArray(sections) ? sections.filter(Boolean) : [];
+  if (!normalizedSections.length) {
+    const p = document.createElement("p");
+    p.textContent = fallbackText || "상세 내용이 준비되지 않았습니다.";
+    container.appendChild(p);
+    return;
+  }
+
+  normalizedSections.forEach((section) => {
+    const block = document.createElement("section");
+    block.className = "rich-section";
+    if (section.heading) {
+      const h4 = document.createElement("h4");
+      h4.textContent = section.heading;
+      block.appendChild(h4);
+    }
+    if (section.body) {
+      const p = document.createElement("p");
+      p.textContent = section.body;
+      block.appendChild(p);
+    }
+    if (Array.isArray(section.items) && section.items.length) {
+      const ul = document.createElement("ul");
+      section.items.forEach((text) => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        ul.appendChild(li);
+      });
+      block.appendChild(ul);
+    }
+    container.appendChild(block);
+  });
+}
+
+function itemDetailSections(item) {
+  if (Array.isArray(item.detailed_content)) return item.detailed_content;
+  return [
+    { heading: "무슨 일이 있었나", body: item.detail || item.summary || "" },
+    {
+      heading: "핵심 포인트",
+      items: [item.why_it_matters, item.engineering_implication, item.korea_implication].filter(Boolean),
+    },
+  ];
+}
+
 function openModal(item) {
   const modal = $("#modal");
+  state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.src = imageFor(item);
   img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
@@ -183,7 +233,7 @@ function openModal(item) {
   $("#modalTitle").textContent = item.title_ko || item.title_original || "제목 없음";
   $("#modalOriginal").textContent = item.title_original ? `Original: ${item.title_original}` : "";
   $("#modalSummary").textContent = item.summary || "";
-  $("#modalDetail").textContent = item.detail || "";
+  renderRichDetail($("#modalDetail"), itemDetailSections(item), item.detail || item.summary || "");
   $("#modalWhy").textContent = item.why_it_matters || "";
   $("#modalEngineering").textContent = item.engineering_implication || "";
   $("#modalKorea").textContent = item.korea_implication || "";
@@ -199,10 +249,12 @@ function openModal(item) {
 
   modal.classList.remove("hidden");
   document.body.style.overflow = "hidden";
+  $(".modal-close")?.focus();
 }
 
 function openDeepDiveModal(item) {
   const modal = $("#modal");
+  state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.src = "assets/images/fallback-ai.svg";
   img.alt = `${item.title || "Deep Dive"} 이미지`;
@@ -210,7 +262,7 @@ function openDeepDiveModal(item) {
   $("#modalTitle").textContent = item.title || "Deep Dive";
   $("#modalOriginal").textContent = "Deep Dive";
   $("#modalSummary").textContent = item.summary || "";
-  $("#modalDetail").textContent = item.details || item.summary || "";
+  renderRichDetail($("#modalDetail"), item.detailed_content, item.details || item.summary || "");
   $("#modalWhy").textContent = item.why_it_matters || "";
   $("#modalEngineering").textContent = "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.";
   $("#modalKorea").textContent = "국내 개발 조직과 인프라 팀은 도입 비용, 운영 복잡도, 보안 경계를 함께 검토하는 관점으로 참고할 수 있습니다.";
@@ -225,6 +277,7 @@ function openDeepDiveModal(item) {
 
   modal.classList.remove("hidden");
   document.body.style.overflow = "hidden";
+  $(".modal-close")?.focus();
 }
 
 function makeLink(title, url) {
@@ -237,8 +290,28 @@ function makeLink(title, url) {
 }
 
 function closeModal() {
-  $("#modal").classList.add("hidden");
+  const modal = $("#modal");
+  if (modal.classList.contains("hidden")) return;
+  modal.classList.add("hidden");
   document.body.style.overflow = "";
+  state.modalReturnFocus?.focus?.();
+  state.modalReturnFocus = null;
+}
+
+function keepFocusInModal(event) {
+  const modal = $("#modal");
+  if (modal.classList.contains("hidden") || event.key !== "Tab") return;
+  const focusable = Array.from(modal.querySelectorAll("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])"));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function escapeHtml(value) {
@@ -261,6 +334,7 @@ function wireEvents() {
   document.querySelectorAll("[data-close='modal']").forEach((el) => el.addEventListener("click", closeModal));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeModal();
+    keepFocusInModal(event);
   });
 }
 
