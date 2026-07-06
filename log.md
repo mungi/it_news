@@ -33,3 +33,8 @@
 - Changed UI copy to `중요 소식` while keeping JSON `importance: must-know` for compatibility.
 - Updated validation/spec/prompt rules to allow up to 30 final items and require richer `상세 내용` sections.
 - Updated the 30-minute autonomous news updater cron prompt with the new 30-item, detailed_content, and 중요 소식 rules.
+## [2026-07-06] update | Add SKT Blackwell AI cluster CSAP certification
+- Freeze check passed at 2026-07-06 17:17 KST; updates allowed after presentation freeze.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com.
+- Added SKT ‘해인’ Blackwell AI cluster CSAP certification, published 2026-07-06 11:38 KST, and removed lower-priority Zig toolchain item to keep the site at 30 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, and wiki index.
