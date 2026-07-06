@@ -166,7 +166,7 @@ Deep Dive `detailed_content` requirements:
 
 - At least 7 sections and 1,800+ Korean characters.
 - Include `원문과 관련 뉴스의 핵심 내용`, `AI/Infra 전문가 해석`, one or more `관점` sections, `개발팀/인프라팀 체크리스트`, and `강조 메세지`.
-- Use GeekNews체 for GeekNews/GN⁺ source summaries: concise Korean bullets/fragments, concrete source facts first, no generic conclusions, and **bold** only decision-critical terms or metrics.
+- Use GeekNews체 for GeekNews/GN⁺ source summaries: **not narrative prose**. Use concise Korean bullets/fragments, noun phrases, `변화/볼 것/피할 것/팀 액션` decision points, concrete source facts first, no generic conclusions, and **bold** only decision-critical terms or metrics.
 - Treat the topic like an advisory briefing: connect source facts to architecture, operations, security, FinOps, governance, rollout order, and measurable next actions.
 - Avoid generic trend commentary. End each section with a concrete engineering implication, risk, metric, or decision point.
 

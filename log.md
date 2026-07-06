@@ -78,3 +78,8 @@
 - Analyzed GeekNews topic 31170, `덜한 것이 더 낫다, 대체로`, and captured its less-is-more style as GeekNews체 in the reusable skill.
 - Updated project prompt/spec/schema to use GeekNews체 for GeekNews/GN⁺ summaries and `강조 메세지` for Deep Dive emphasis headings.
 - Removed the separate `한국 관점` block from article modals and added `**bold**` rendering support for important modal body text.
+
+## [2026-07-07] update | Make GeekNews체 non-narrative
+- Corrected GeekNews체 definition: not prose, but compact fragments and decision bullets.
+- Rewrote current GeekNews/GN⁺ items to use `변화`, `볼 것`, `피할 것`, and team-action style.
+- Updated project prompt/spec/schema and skill guidance to prevent 서술형 GeekNews summaries.
