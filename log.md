@@ -63,3 +63,8 @@
 - Reduced modal title font size to about 70% of the previous scale.
 - Changed news and Deep Dive modal titles into external source links.
 - Bumped static CSS/JS cache keys in `docs/index.html`.
+
+## [2026-07-07] site | Tune modal title size by viewport
+- Reduced modal title size by another ~30% only on PC-width screens.
+- Kept mobile modal titles larger for readability.
+- Bumped static CSS/JS cache keys in `docs/index.html`.
