@@ -93,3 +93,8 @@
 - Rewrote all visible story summaries and modal detail sections into labeled fragments/bullets.
 - Replaced source-led prose with `핵심`, `변화`, `볼 것`, `영향`, and `시사점` structure.
 - Regenerated `weekly/2026-W28.md` from the updated data style.
+
+## [2026-07-07] update | Clarify body style as 개조식
+- Corrected the writing rule from over-compressed fragments to 개조식 bullet-style briefing prose.
+- Updated skill, prompt, schema, and spec to require complete useful clauses under `핵심`, `배경`, `변화`, `영향`, and `시사점` labels.
+- Explicitly warned against awkward keyword fragments that lose context.

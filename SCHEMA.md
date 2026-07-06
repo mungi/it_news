@@ -131,8 +131,8 @@ Each `docs/data/weekly-news.json` should include:
 
 Rules:
 - Use Korean.
-- Writing principles: minimal rhetoric, top-loaded conclusion, factual/objective tone, accurate technical terminology, and bullets/fragments instead of long paragraphs.
-- All visible story summaries and modal detail bodies should be labeled fragments/bullets, not prose paragraphs. Prefer `핵심/변화/볼 것/영향/시사점` labels and avoid source-led sentence forms such as `OO는 ... 보도했습니다`.
+- Writing principles: minimal rhetoric, top-loaded conclusion, factual/objective tone, accurate technical terminology, and **개조식(箇條式)** instead of long prose paragraphs.
+- All visible story summaries and modal detail bodies should use structured bullet-style briefing text: labels such as `핵심/배경/변화/영향/시사점`, complete useful clauses, and no source-led sentence forms such as `OO는 ... 보도했습니다`. Do not reduce text to awkward keyword fragments that lose context.
 - Include a `시사점` item for each story: the industry's likely impact or a short developer/engineer implication grounded in the source. Store it in `engineering_implication`.
 - Prefer clear headings and bullets over long unstructured paragraphs.
 - For Deep Dive entries, go beyond a summary. Write from an AI/Infra expert and consultant perspective with at least 7 structured sections and 1,800+ Korean characters. Required angles: original/source facts, AI/Infra expert interpretation, architecture/operations impact, cost/FinOps or security/governance perspective, adoption roadmap when relevant, developer/infra checklist, and `강조 메세지`.
