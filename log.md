@@ -68,3 +68,8 @@
 - Reduced modal title size by another ~30% only on PC-width screens.
 - Kept mobile modal titles larger for readability.
 - Bumped static CSS/JS cache keys in `docs/index.html`.
+
+## [2026-07-07] site | Slightly increase PC modal title size
+- Increased PC-only modal title size by about 10% from the previous setting.
+- Kept mobile and tablet modal title sizing unchanged.
+- Bumped static CSS/JS cache keys in `docs/index.html`.
