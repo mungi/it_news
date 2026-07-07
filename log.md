@@ -125,3 +125,10 @@
 - Added a visible-on-focus skip link to jump from the header to the main briefing content.
 - Added `prefers-reduced-motion` CSS handling to minimize transitions for users who request reduced motion.
 - Bumped static CSS/JS cache keys in `docs/index.html`.
+
+## [2026-07-08] update | Expand weekly refresh to 40 sourced items
+- Checked current time at 2026-07-08 00:00 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; also sampled AWS, Cloudflare, Docker, GitHub, Hugging Face, NVIDIA, The Hacker News, BleepingComputer, CISA, Google Security, Microsoft Security, Kubernetes, CNCF, OpenAI, Google AI, Google Cloud, GitLab, JetBrains, and Stack Overflow feeds.
+- Reviewed 2,607 feed entries and 368 relevant candidates across reachable feeds; 2 feed endpoints failed or returned unavailable.
+- Added 10 sourced stories covering Writer AI session-token leakage, SkillCloak AI-agent skill evasion, Gitea Docker CVE probing, GitHub Actions CI attack chains, Alberta Claude code audit, ADD closed-network AI, Naver-KAI defense sovereign AI, ETRI open-source governance, EC2 Dedicated Hosts AMD SEV-SNP, and Hugging Face Kernels.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, and wiki index.
