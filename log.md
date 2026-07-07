@@ -120,3 +120,8 @@
 - Removed the website presentation status row and live presentation-protection JavaScript.
 - Removed the repository freeze guard script and freeze-guard references from automation prompts/specs.
 - Changed the news updater cadence from 6 hours to 4 hours and raised the weekly item cap from 30 to 50.
+
+## [2026-07-07] site | Improve keyboard navigation and reduced motion support
+- Added a visible-on-focus skip link to jump from the header to the main briefing content.
+- Added `prefers-reduced-motion` CSS handling to minimize transitions for users who request reduced motion.
+- Bumped static CSS/JS cache keys in `docs/index.html`.
