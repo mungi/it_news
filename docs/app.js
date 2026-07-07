@@ -432,15 +432,17 @@ function makeLink(title, url) {
   const a = document.createElement("a");
   a.href = safeUrl;
   a.target = "_blank";
-  a.rel = "noopener";
+  a.rel = "noopener noreferrer";
   a.textContent = title;
   return a;
 }
 
 function safeExternalUrl(value) {
+  const raw = String(value || "").trim();
+  if (!/^https?:\/\//i.test(raw)) return "";
   try {
-    const url = new URL(String(value || ""), window.location.href);
-    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    const url = new URL(raw);
+    return ["http:", "https:"].includes(url.protocol) && url.hostname ? url.href : "";
   } catch {
     return "";
   }
