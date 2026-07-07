@@ -12,7 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "data" / "weekly-news.json"
 REQUIRED_TOP = [
     "week", "coverage_start_kst", "coverage_end_kst", "last_updated_kst",
-    "presentation_window_kst", "executive_summary", "deep_dives", "items",
+    "frozen", "presentation_window_kst", "audience",
+    "executive_summary", "deep_dives", "items",
 ]
 REQUIRED_ITEM = [
     "id", "rank", "title_ko", "summary", "detail", "why_it_matters",
@@ -27,16 +28,23 @@ ITEM_ID_RE = re.compile(r"^news-\d{3}$")
 DEEP_DIVE_ID_RE = re.compile(r"^deep-dive-\d{3}$")
 
 
-def is_probably_link(value: str) -> bool:
-    if value.startswith("../") or value.startswith("./") or value.startswith("assets/"):
-        return True
-    parsed = urlparse(value)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
-
-
 def is_http_url(value: str) -> bool:
     parsed = urlparse(value)
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def validate_image_url(value: object, prefix: str, errors: list[str]) -> None:
+    """Validate an image_url as either an external URL or a safe legacy fallback path."""
+    if not value:
+        return
+    image_url = str(value)
+    if is_http_url(image_url):
+        return
+    if image_url.startswith("assets/") and ".." not in Path(image_url).parts:
+        if not (ROOT / "docs" / image_url).exists():
+            errors.append(f"{prefix} image_url fallback file does not exist: {image_url}")
+        return
+    errors.append(f"{prefix} image_url must be an absolute http(s) URL or safe assets/... fallback: {image_url}")
 
 
 def validate_local_image(value: object, prefix: str, field: str, errors: list[str]) -> None:
@@ -140,6 +148,10 @@ def main() -> int:
         errors.append(f"week must use YYYY-Www format, got: {week}")
     if "frozen" in data and not isinstance(data.get("frozen"), bool):
         errors.append("frozen must be a boolean")
+    for key in ("presentation_window_kst", "audience"):
+        value = data.get(key)
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            errors.append(f"{key} must be a non-empty string")
 
     for key in ("coverage_start_kst", "coverage_end_kst", "last_updated_kst"):
         value = data.get(key)
@@ -216,8 +228,7 @@ def main() -> int:
         if not (item.get("image_url") or item.get("local_image")):
             errors.append(f"{prefix} needs image_url or local_image")
         image_url = item.get("image_url", "")
-        if image_url and not is_probably_link(str(image_url)):
-            errors.append(f"{prefix} image_url is not a valid link/path: {image_url}")
+        validate_image_url(image_url, prefix, errors)
         local_image = item.get("local_image", "")
         if local_image:
             validate_local_image(local_image, prefix, "local_image", errors)
