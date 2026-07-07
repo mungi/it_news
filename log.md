@@ -148,3 +148,10 @@
 - Checked current time at 2026-07-08 05:15 KST; no freeze guard was run per current project policy.
 - Replaced static-app clearing operations from `innerHTML = ""` to `replaceChildren()` where nodes are rebuilt via DOM APIs.
 - Added Arrow/Home/End keyboard handling for the list/card view radiogroup and bumped static asset cache keys.
+
+## [2026-07-08] update | Expand weekly refresh to 50 sourced items
+- Checked current time at 2026-07-08 08:14 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS probe returned 404. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, Hugging Face, Kubernetes, CNCF, GitLab, JetBrains, and Stack Overflow feeds.
+- Reviewed 832 feed entries and 344 keyword-relevant candidates across reachable feeds; 1 feed endpoint failed or returned unavailable.
+- Added 6 sourced stories covering Dialogflow CX agent isolation, Gemini API Managed Agents, agentic AI infrastructure readiness, ECS GPU management fee reduction, Security Hub Azure monitoring, and NVIDIA Vera CPU AI factory throughput.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, and wiki index.
