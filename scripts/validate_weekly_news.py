@@ -33,13 +33,23 @@ def is_http_url(value: str) -> bool:
 
 
 def is_safe_assets_path(value: str) -> bool:
-    """Return True for docs-local assets/... paths that cannot escape docs/."""
+    """Return True for docs-local assets/... paths that cannot escape docs/.
+
+    Keep this aligned with docs/app.js safeImageSrc(): accept only plain
+    relative assets/... paths, and reject protocol-relative, absolute,
+    traversal, backslash, empty, or current-directory segments before any
+    filesystem normalization can hide them.
+    """
+    if not isinstance(value, str):
+        return False
     if not value.startswith("assets/"):
         return False
-    if value.startswith("//") or "\\" in value or value.startswith("/"):
+    if value.startswith("//") or value.startswith("/") or "\\" in value:
         return False
-    parts = Path(value).parts
-    return ".." not in parts and all(part not in {"", "."} for part in parts)
+    parts = value.split("/")
+    if any(part in {"", ".", ".."} for part in parts):
+        return False
+    return True
 
 
 def validate_image_url(value: object, prefix: str, errors: list[str]) -> None:
