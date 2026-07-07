@@ -81,20 +81,45 @@ function displayLabel(value) {
 }
 
 function imageFor(item) {
-  const fallback = FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg";
-  const imageUrl = item.image_url || "";
-  const localImage = item.local_image || "";
+  const fallback = fallbackImageFor(item.category);
+  const imageUrl = safeImageSrc(item.image_url || "");
+  const localImage = safeImageSrc(item.local_image || "");
   if (localImage && !localImage.includes("fallback-")) return localImage;
   if (imageUrl && !imageUrl.includes("fallback-")) return imageUrl;
   return imageUrl || localImage || fallback;
 }
 
 function deepDiveImageFor(item) {
-  const imageUrl = item.image_url || "";
-  const localImage = item.local_image || "";
+  const imageUrl = safeImageSrc(item.image_url || "");
+  const localImage = safeImageSrc(item.local_image || "");
   if (localImage && !localImage.includes("fallback-")) return localImage;
   if (imageUrl && !imageUrl.includes("fallback-")) return imageUrl;
-  return localImage || imageUrl || "assets/images/fallback-ai.svg";
+  return localImage || imageUrl || fallbackImageFor("AI");
+}
+
+function fallbackImageFor(category) {
+  return FALLBACK_BY_CATEGORY[category] || "assets/images/fallback-infra.svg";
+}
+
+function safeImageSrc(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const url = new URL(raw);
+      return ["http:", "https:"].includes(url.protocol) && url.hostname ? url.href : "";
+    } catch {
+      return "";
+    }
+  }
+  if (!raw.startsWith("assets/") || raw.startsWith("//") || raw.includes("\\")) return "";
+  if (raw.split("/").includes("..")) return "";
+  return raw;
+}
+
+function useFallbackImage(img, category = "Infra") {
+  img.onerror = null;
+  img.src = fallbackImageFor(category);
 }
 
 function badgeClass(value) {
@@ -167,7 +192,7 @@ function renderDeepDives() {
     img.alt = `${title} 이미지`;
     img.loading = "lazy";
     img.decoding = "async";
-    img.onerror = () => { img.src = "assets/images/fallback-ai.svg"; };
+    img.onerror = () => useFallbackImage(img, "AI");
     imageWrap.appendChild(img);
 
     const body = document.createElement("div");
@@ -243,7 +268,7 @@ function renderCards() {
     const img = node.querySelector(".card-image");
     img.src = imageFor(item);
     img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
-    img.onerror = () => { img.src = FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg"; };
+    img.onerror = () => useFallbackImage(img, item.category);
 
     const badges = node.querySelector(".badges");
     [item.category, item.region, item.importance].filter(Boolean).forEach((value) => badges.appendChild(makeBadge(value)));
@@ -342,7 +367,7 @@ function openModal(item) {
   const img = $("#modalImage");
   img.src = imageFor(item);
   img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
-  img.onerror = () => { img.src = FALLBACK_BY_CATEGORY[item.category] || "assets/images/fallback-infra.svg"; };
+  img.onerror = () => useFallbackImage(img, item.category);
   setModalTitleLink(item.title_ko || item.title_original || "제목 없음", item.source_url);
   $("#modalOriginal").textContent = item.title_original ? `Original: ${item.title_original}` : "";
   $("#modalSummary").textContent = item.summary || "";
@@ -371,7 +396,7 @@ function openDeepDiveModal(item) {
   const img = $("#modalImage");
   img.src = deepDiveImageFor(item);
   img.alt = `${item.title || "Deep Dive"} 이미지`;
-  img.onerror = () => { img.src = "assets/images/fallback-ai.svg"; };
+  img.onerror = () => useFallbackImage(img, "AI");
 
   setModalTitleLink(item.title || "Deep Dive", (item.sources || [])[0]);
   $("#modalOriginal").textContent = "Deep Dive";
