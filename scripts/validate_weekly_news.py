@@ -32,6 +32,16 @@ def is_http_url(value: str) -> bool:
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
+def is_safe_assets_path(value: str) -> bool:
+    """Return True for docs-local assets/... paths that cannot escape docs/."""
+    if not value.startswith("assets/"):
+        return False
+    if value.startswith("//") or "\\" in value or value.startswith("/"):
+        return False
+    parts = Path(value).parts
+    return ".." not in parts and all(part not in {"", "."} for part in parts)
+
+
 def validate_image_url(value: object, prefix: str, errors: list[str]) -> None:
     """Validate an image_url as either an external URL or a safe legacy fallback path."""
     if not value:
@@ -39,7 +49,7 @@ def validate_image_url(value: object, prefix: str, errors: list[str]) -> None:
     image_url = str(value)
     if is_http_url(image_url):
         return
-    if image_url.startswith("assets/") and ".." not in Path(image_url).parts:
+    if is_safe_assets_path(image_url):
         if not (ROOT / "docs" / image_url).exists():
             errors.append(f"{prefix} image_url fallback file does not exist: {image_url}")
         return
@@ -51,11 +61,8 @@ def validate_local_image(value: object, prefix: str, field: str, errors: list[st
     if not value:
         return
     path = str(value)
-    if not path.startswith("assets/"):
-        errors.append(f"{prefix} {field} must be a docs-local assets/... path: {path}")
-        return
-    if ".." in Path(path).parts:
-        errors.append(f"{prefix} {field} must not contain path traversal: {path}")
+    if not is_safe_assets_path(path):
+        errors.append(f"{prefix} {field} must be a safe docs-local assets/... path: {path}")
         return
     if not (ROOT / "docs" / path).exists():
         errors.append(f"{prefix} {field} file does not exist: {path}")
