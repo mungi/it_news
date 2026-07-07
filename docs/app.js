@@ -279,8 +279,15 @@ function renderCards() {
     node.querySelector(".why").textContent = item.why_it_matters ? `왜 중요한가: ${item.why_it_matters}` : "";
     node.querySelector(".read-state").textContent = isRead(item) ? "읽음" : "";
     const sourceLink = node.querySelector(".source");
+    const safeSourceUrl = safeExternalUrl(item.source_url);
     sourceLink.textContent = item.source_name || "Source";
-    sourceLink.href = item.source_url || "#";
+    if (safeSourceUrl) {
+      sourceLink.href = safeSourceUrl;
+      sourceLink.removeAttribute("aria-disabled");
+    } else {
+      sourceLink.removeAttribute("href");
+      sourceLink.setAttribute("aria-disabled", "true");
+    }
     sourceLink.setAttribute("aria-label", `${title} 원문 열기: ${item.source_name || "Source"}`);
     sourceLink.addEventListener("click", (event) => event.stopPropagation());
     sourceLink.addEventListener("keydown", (event) => event.stopPropagation());
@@ -414,12 +421,29 @@ function openDeepDiveModal(item) {
 }
 
 function makeLink(title, url) {
+  const safeUrl = safeExternalUrl(url);
+  if (!safeUrl) {
+    const span = document.createElement("span");
+    span.className = "disabled-link";
+    span.textContent = `${title} (링크 오류)`;
+    return span;
+  }
+
   const a = document.createElement("a");
-  a.href = url;
+  a.href = safeUrl;
   a.target = "_blank";
   a.rel = "noopener";
   a.textContent = title;
   return a;
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(String(value || ""), window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 
 function appendRichText(parent, text) {
@@ -436,9 +460,10 @@ function appendRichText(parent, text) {
 
 function setModalTitleLink(title, url) {
   const titleLink = $("#modalTitle");
+  const safeUrl = safeExternalUrl(url);
   titleLink.textContent = title;
-  if (url) {
-    titleLink.href = url;
+  if (safeUrl) {
+    titleLink.href = safeUrl;
     titleLink.removeAttribute("aria-disabled");
   } else {
     titleLink.removeAttribute("href");
@@ -470,11 +495,6 @@ function keepFocusInModal(event) {
     event.preventDefault();
     first.focus();
   }
-}
-
-function escapeHtml(value) {
-  const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
-  return String(value || "").replace(/[&<>'"]/g, (char) => entities[char]);
 }
 
 function wireEvents() {
@@ -528,7 +548,14 @@ async function boot() {
     setViewMode("list");
   } catch (error) {
     console.error(error);
-    document.body.innerHTML = `<main class="panel"><h1>데이터를 불러오지 못했습니다</h1><p>${escapeHtml(error.message)}</p></main>`;
+    const main = document.createElement("main");
+    main.className = "panel";
+    const heading = document.createElement("h1");
+    heading.textContent = "데이터를 불러오지 못했습니다";
+    const message = document.createElement("p");
+    message.textContent = error.message;
+    main.append(heading, message);
+    document.body.replaceChildren(main);
   }
 }
 
