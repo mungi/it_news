@@ -10,11 +10,10 @@ Review and improve this project’s code, UI, UX, accessibility, security, perfo
 ## Guardrails
 
 1. First inspect the project and make a short internal plan.
-2. Run `python3 scripts/freeze_check.py`. If Monday 13:00-17:00 KST freeze is active, do not alter deployed site files (`docs/`) or presentation data. You may still inspect only.
-3. Do not fabricate or alter real news content unless the task is specifically validating structure. News updates belong to the 30-minute news job.
-4. Avoid churn. If no meaningful improvement is found, do nothing and report that no commit was needed.
-5. Do not change cron schedules unless fixing a clear project bug and documenting it.
-6. Prefer small changes that can be validated.
+2. Do not fabricate or alter real news content unless the task is specifically validating structure. News updates belong to the recurring news job.
+3. Avoid churn. If no meaningful improvement is found, do nothing and report that no commit was needed.
+4. Do not change cron schedules unless fixing a clear project bug and documenting it.
+5. Prefer small changes that can be validated.
 
 ## Review Checklist
 
@@ -24,7 +23,7 @@ Consider improvements in this order:
 3. Security: unsafe DOM insertion, external links with rel=noopener, dependency-free static safety.
 4. Performance: unnecessary JS work, image fallbacks, CSS simplification.
 5. Data validation: stricter schema checks, clearer errors.
-6. Automation efficiency: better prompts, safer git behavior, freeze guard clarity.
+6. Automation efficiency: better prompts and safer git behavior.
 7. Documentation: README/SPEC alignment.
 
 ## Required Verification

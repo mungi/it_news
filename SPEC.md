@@ -18,14 +18,13 @@ The repository serves two roles:
 - Site root: `docs/`.
 - Deployment: GitHub Pages / static website.
 - Updates: automatic.
-- News update cadence: every 6 hours.
-- Presentation freeze: every Monday 13:00-17:00 KST. No file changes, commits, or pushes during this window.
+- News update cadence: every 4 hours.
 - Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
 - Audience: developers, engineers, technical leaders.
 - Language: Korean UI and Korean summaries.
 - Title policy: Korean title plus original title when available.
 - Topics: AI, Cloud, Infra first; Security, Developer Tools, Data/DB, Open Source, Korea, General IT second.
-- Total visible news items: up to 30; target 24-30 when enough high-value sourced items exist.
+- Total visible news items: up to 50; target 40-50 when enough high-value sourced items exist.
 - Deep Dive: 1 by default, 2 only when unusually important. Each Deep Dive must be detailed enough for AI/Infra experts and consultants to use in a 30-minute briefing: source facts, expert interpretation, architecture/operations impact, cost/security view, adoption roadmap, checklist, and presenter message.
 - Each news item needs title, short summary, detailed summary, source link, image, category/tags, and publication time when available.
 - Updates should automatically commit and push when GitHub auth/remotes are available.
@@ -39,7 +38,6 @@ Single-page static application:
    - Current ISO week
    - Coverage window in KST
    - Last updated KST
-   - Frozen/presentation status
 2. Executive Summary
    - 3-5 bullets summarizing the week.
 3. Deep Dive
@@ -112,8 +110,6 @@ Top-level shape:
   "coverage_start_kst": "YYYY-MM-DD HH:mm",
   "coverage_end_kst": "YYYY-MM-DD HH:mm",
   "last_updated_kst": "YYYY-MM-DD HH:mm",
-  "frozen": false,
-  "presentation_window_kst": "Monday 13:00-17:00 KST",
   "audience": "developers and engineers",
   "executive_summary": [],
   "deep_dives": [],
@@ -282,8 +278,8 @@ Drop:
 
 Final output:
 
-- 24-30 preferred items when enough high-value sourced stories exist.
-- Hard cap: 30 items.
+- 40-50 preferred items when enough high-value sourced stories exist.
+- Hard cap: 50 items.
 - 중요 소식: about 5-8 items.
 - Deep Dive: 1 preferred, 2 max.
 
@@ -321,11 +317,10 @@ Rules:
 
 ### News update job
 
-- Schedule: every 6 hours.
+- Schedule: every 4 hours.
 - Workdir: `/home/ubuntu/projects/it_news`.
 - Toolsets: web/browser, terminal, file, skills.
 - Must read `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, `index.md`, recent `log.md` before updating.
-- Must not change files Monday 13:00-17:00 KST.
 - Must validate JSON before commit.
 - Must commit and push only when files changed.
 
@@ -345,7 +340,6 @@ Rules:
 - Think and plan first; do not churn code blindly.
 - Inspect current code and site before editing.
 - Prefer small, verifiable improvements.
-- Do not run during Monday 13:00-17:00 KST freeze window if it would alter presentation files or deployed site.
 - Run validation after changes.
 - Commit and push only when an actual improvement is made.
 - Never fabricate news data.
@@ -361,5 +355,5 @@ MVP is complete when:
 - Sample data contains images/fallbacks, source links, and Korean summaries.
 - `SPEC.md`, `README.md`, `AGENTS.md`, and `SCHEMA.md` agree on the schedule and source strategy.
 - Changes are committed and pushed.
-- News update cron is registered for every 6 hours.
+- News update cron is registered for every 4 hours.
 - Code improvement cron is registered for every 2 hours.

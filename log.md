@@ -115,3 +115,8 @@
 - Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; also sampled AWS, Cloudflare, Docker, GitHub, Hugging Face, Google Research, NVIDIA, The Hacker News, CISA, Kubernetes, CNCF, OpenAI, and other global feeds.
 - Reviewed 340 relevant feed candidates across reachable feeds (4 feed endpoints failed or returned unavailable); added Amazon SageMaker HyperPod Disaggregated Prefill and Decode and removed lower-priority Google TabFM item to keep the site at 30 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, Deep Dive inference-economics detail, and wiki index.
+
+## [2026-07-07] site | Remove presentation protection status and adjust automation limits
+- Removed the website presentation status row and live presentation-protection JavaScript.
+- Removed the repository freeze guard script and freeze-guard references from automation prompts/specs.
+- Changed the news updater cadence from 6 hours to 4 hours and raised the weekly item cap from 30 to 50.

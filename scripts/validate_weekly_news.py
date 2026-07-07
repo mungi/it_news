@@ -12,8 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "data" / "weekly-news.json"
 REQUIRED_TOP = [
     "week", "coverage_start_kst", "coverage_end_kst", "last_updated_kst",
-    "frozen", "presentation_window_kst", "audience",
-    "executive_summary", "deep_dives", "items",
+    "audience", "executive_summary", "deep_dives", "items",
 ]
 REQUIRED_ITEM = [
     "id", "rank", "title_ko", "summary", "detail", "why_it_matters",
@@ -146,9 +145,7 @@ def main() -> int:
     week = data.get("week")
     if week and not WEEK_RE.match(str(week)):
         errors.append(f"week must use YYYY-Www format, got: {week}")
-    if "frozen" in data and not isinstance(data.get("frozen"), bool):
-        errors.append("frozen must be a boolean")
-    for key in ("presentation_window_kst", "audience"):
+    for key in ("audience",):
         value = data.get(key)
         if value is not None and (not isinstance(value, str) or not value.strip()):
             errors.append(f"{key} must be a non-empty string")
@@ -171,8 +168,8 @@ def main() -> int:
     if not isinstance(summary, list):
         errors.append("executive_summary must be a list")
         summary = []
-    if len(items) > 30:
-        errors.append(f"items must be <= 30, got {len(items)}")
+    if len(items) > 50:
+        errors.append(f"items must be <= 50, got {len(items)}")
     if len(deep_dives) > 2:
         errors.append(f"deep_dives must be <= 2, got {len(deep_dives)}")
     if not (1 <= len(summary) <= 5):

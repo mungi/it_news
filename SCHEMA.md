@@ -15,10 +15,9 @@ Primary output:
 - LLM Wiki pages under `entities/`, `concepts/`, `comparisons/`, `queries/`
 
 ## Operating Cadence
-- Automated news update cadence: every 6 hours.
+- Automated news update cadence: every 4 hours.
 - Each run should prioritize sources published or updated within the weekly window.
 - Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST.
-- Presentation/freeze window: Monday 13:00-17:00 KST. Do not update, commit, or push during this window.
 - Presentation language: Korean.
 - Times must be stated in KST unless quoting an original timestamp.
 
@@ -111,7 +110,7 @@ Use only these tags unless this schema is updated first:
 Each `docs/data/weekly-news.json` should include:
 1. Executive summary: 3-5 Korean bullets
 2. 중요 소식 stories: about 5-8
-3. Total stories: up to 30, target 24-30 when enough high-value sourced items exist
+3. Total stories: up to 50, target 40-50 when enough high-value sourced items exist
 4. Deep dives: 1 by default, 2 maximum
 5. KST timeline metadata
 6. Source appendix via `source_url` and `related_links`

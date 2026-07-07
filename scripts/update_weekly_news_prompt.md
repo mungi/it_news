@@ -1,22 +1,20 @@
 # Automated Weekly News Update Prompt
 
 You are running as an autonomous Hermes cron job for `/home/ubuntu/projects/it_news`.
-Respond in Korean in the final summary. Work until the update is verified, committed, and pushed, unless the freeze window or lack of changes prevents it.
+Respond in Korean in the final summary. Work until the update is verified, committed, and pushed, unless lack of changes prevents it.
 
 ## Mission
 
-Every 6 hours, update the AI / Cloud / Infra weekly news static site and LLM wiki.
+Every 4 hours, update the AI / Cloud / Infra weekly news static site and LLM wiki.
 
 ## Hard Safety Rules
 
-1. First run `python3 scripts/freeze_check.py`.
-2. If it exits with code 2 or says freeze is active, stop immediately. Do not edit files, commit, or push.
-3. Never fabricate news, dates, links, images, or claims.
-4. Only include sourced items with `source_url`.
-5. Keep `docs/data/weekly-news.json` at or below 30 items; target 24-30 when enough high-value sourced items exist.
-6. Deep Dive count must be 1 by default and never more than 2.
-7. Validate with `python3 scripts/validate_weekly_news.py` before commit.
-8. If validation fails, fix before commit. If you cannot fix, do not commit.
+1. Never fabricate news, dates, links, images, or claims.
+2. Only include sourced items with `source_url`.
+3. Keep `docs/data/weekly-news.json` at or below 50 items; target 40-50 when enough high-value sourced items exist.
+4. Deep Dive count must be 1 by default and never more than 2.
+5. Validate with `python3 scripts/validate_weekly_news.py` before commit.
+6. If validation fails, fix before commit. If you cannot fix, do not commit.
 
 ## Required Orientation
 
@@ -136,7 +134,6 @@ If there are no changes, do not commit.
 ## Final Response
 
 Summarize:
-- whether freeze window was active
 - number of candidates reviewed if known
 - number of final news items
 - deep dive count

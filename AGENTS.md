@@ -17,15 +17,14 @@ The site summarizes important AI, Cloud, Infra, and selected general IT news fro
 - Site root: `docs/`
 - Deployment target: GitHub Pages / static website
 - Update mode: automatic
-- Update cadence: every 6 hours
-- Freeze window: Monday 13:00-17:00 KST; do not update during this window
+- Update cadence: every 4 hours
 - Weekly coverage window: previous Monday 17:00 KST through current Monday 13:00 KST
 - Audience: developers, engineers, and technical leaders
 - Language: Korean UI and Korean summaries
 - News title policy: Korean title plus original title preserved when available
 - Main topics: AI, Cloud, Infra
 - Secondary topics: Security, Developer Tools, Data/Database, Open Source, Korea, General IT
-- Total weekly items: up to 30; target 24-30 high-value stories when enough sourced items exist
+- Total weekly items: up to 50; target 40-50 high-value stories when enough sourced items exist
 - Deep Dive: normally 1 item, maximum 2 only when necessary
 - Required per news item: title, short summary, detailed summary, source link, image, tags/category, publication time if available
 
@@ -77,13 +76,12 @@ Minimum UI features:
 - Source links
 - Main image per story
 - Last updated timestamp in KST
-- Visible frozen/presentation-window state
 
 Presentation UX:
 - A presenter should be able to introduce the week’s news within 30 minutes.
 - Prioritize clarity over density.
 - Keep summaries concise but technically useful.
-- Avoid more than 29 news items.
+- Avoid more than 50 news items.
 
 ## Data Contract
 
@@ -101,8 +99,6 @@ Recommended top-level JSON fields:
   "coverage_start_kst": "YYYY-MM-DD HH:mm",
   "coverage_end_kst": "YYYY-MM-DD HH:mm",
   "last_updated_kst": "YYYY-MM-DD HH:mm",
-  "frozen": false,
-  "presentation_window_kst": "Monday 13:00-17:00",
   "audience": "developers and engineers",
   "executive_summary": [],
   "deep_dives": [],
@@ -137,18 +133,17 @@ Each `items[]` entry should include:
 ## Automation Rules
 
 Every automated update run must:
-1. Check current time in KST.
-2. If it is Monday 13:00-17:00 KST, exit without changing files.
-3. Search for AI/Cloud/Infra/IT sources from the last 7 days, with Korean and global coverage.
-4. Prefer primary sources and official blogs, then credible technical media.
-5. Deduplicate by URL, title, and story/event similarity.
-6. Score stories by impact, relevance, novelty, credibility, Korea relevance, technical depth, and presentation value.
-7. Keep up to 30 final items.
-8. Select 1 Deep Dive by default, maximum 2.
-9. Update the LLM wiki files and `docs/data/weekly-news.json`.
-10. Preserve source links and image attribution/source metadata.
-11. Append a concise entry to `log.md`.
-12. Automatically commit and push changes to GitHub when repository credentials/remotes are available.
+1. Check current time in KST for logging and timestamp accuracy.
+2. Search for AI/Cloud/Infra/IT sources from the last 7 days, with Korean and global coverage.
+3. Prefer primary sources and official blogs, then credible technical media.
+4. Deduplicate by URL, title, and story/event similarity.
+5. Score stories by impact, relevance, novelty, credibility, Korea relevance, technical depth, and presentation value.
+6. Keep up to 50 final items.
+7. Select 1 Deep Dive by default, maximum 2.
+8. Update the LLM wiki files and `docs/data/weekly-news.json`.
+9. Preserve source links and image attribution/source metadata.
+10. Append a concise entry to `log.md`.
+11. Automatically commit and push changes to GitHub when repository credentials/remotes are available.
 
 ## Source Priorities
 

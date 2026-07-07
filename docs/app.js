@@ -128,39 +128,13 @@ function renderFilterButtons(container, values, active, onClick) {
   });
 }
 
-function getKstClockParts(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Seoul",
-    weekday: "short",
-    hour: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const valueByType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return {
-    weekday: valueByType.weekday,
-    hour: Number(valueByType.hour),
-  };
-}
-
-function getLiveFreezeState() {
-  const { weekday, hour } = getKstClockParts();
-  const frozen = weekday === "Mon" && hour >= 13 && hour < 17;
-  return {
-    frozen,
-    label: frozen ? "발표 Freeze 진행 중" : "발표 보호 시간 아님",
-  };
-}
-
 function updateHeader() {
   const data = state.data;
-  const liveFreeze = getLiveFreezeState();
   const updatedBadge = $("#topUpdatedBadge");
-  updatedBadge.textContent = `${liveFreeze.frozen ? "발표 Freeze" : "최종 업데이트"}: ${data.last_updated_kst || "-"} KST`;
-  updatedBadge.classList.toggle("pill-frozen", liveFreeze.frozen);
-  updatedBadge.classList.toggle("pill-muted", !liveFreeze.frozen);
+  updatedBadge.textContent = `최종 업데이트: ${data.last_updated_kst || "-"} KST`;
+  updatedBadge.classList.add("pill-muted");
   $("#coverageText").textContent = `${data.coverage_start_kst || "-"} → ${data.coverage_end_kst || "-"}`;
   $("#updatedText").textContent = `${data.last_updated_kst || "-"} KST`;
-  $("#presentationText").textContent = `${data.presentation_window_kst || "Monday 13:00-17:00 KST"} · ${liveFreeze.label}`;
   $("#itemCountText").textContent = `${(data.items || []).length}개`;
 }
 
