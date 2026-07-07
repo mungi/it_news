@@ -2,13 +2,13 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-07 13:04",
+  "last_updated_kst": "2026-07-07 19:09",
   "frozen": false,
   "presentation_window_kst": "Monday 13:00-17:00 KST",
   "audience": "developers and engineers",
   "executive_summary": [
     "AI 에이전트 운영 리스크 확대: 에너지·비용·권한 통제.",
-    "추론 경제성 경쟁 가속: Claude Sonnet 5와 AMD MI355X.",
+    "추론 경제성 경쟁 가속: Claude Sonnet 5, AMD MI355X, HyperPod DPD.",
     "클라우드·GitOps 운영 리스크: EKS 롤백·Argo CD 격리·CloudFormation Express.",
     "가상화·GitOps 보안 경고: KVM Januscape·Argo CD·AI IDE 격리.",
     "이번 주 발표 포인트: 비용, 보안, 운영 자동화, 인프라 조달."
@@ -100,12 +100,13 @@
     {
       "id": "deep-dive-002",
       "title": "AI 추론 경제성: 모델 가격과 GPU 성능/달러가 동시에 내려가는 구간",
-      "summary": "추론 비용 경쟁 본격화: 모델 라우팅과 대체 GPU가 FinOps 핵심 변수.",
-      "details": "AI 추론 비용 경쟁은 모델 API 가격, 추론 최적화, GPU 공급 선택지가 동시에 움직이는 국면입니다. 단일 최고 성능 모델을 모든 요청에 쓰거나 단일 GPU 벤더만 전제로 용량을 잡는 방식은 비용 최적화 여지가 줄어듭니다. AI/Infra 컨설턴트 관점에서는 작업 난이도별 모델 라우팅, 캐싱, 배치 처리, quantization, speculative decoding, GPU 벤더별 실제 벤치마크를 하나의 FinOps 체계로 묶어야 합니다. 의사결정 기준은 GPU 단가나 모델 벤치마크 점수가 아니라 cost per successful task, p95 latency, 장애 대응 가능성, 운영팀의 숙련도입니다.",
+      "summary": "추론 비용 경쟁 본격화: 모델 라우팅, 대체 GPU, prefill/decode 분리가 FinOps 핵심 변수.",
+      "details": "AI 추론 비용 경쟁은 모델 API 가격, 추론 최적화, GPU 공급 선택지, serving architecture가 동시에 움직이는 국면입니다. 단일 최고 성능 모델을 모든 요청에 쓰거나 단일 GPU 벤더만 전제로 용량을 잡는 방식은 비용 최적화 여지가 줄어듭니다. SageMaker HyperPod의 Disaggregated Prefill and Decode처럼 prefill과 decode를 분리하는 기능은 long-context 요청과 짧은 대화형 요청이 섞일 때 지연 시간과 goodput을 안정화하는 운영 패턴입니다. AI/Infra 컨설턴트 관점에서는 작업 난이도별 모델 라우팅, 캐싱, 배치 처리, quantization, speculative decoding, GPU 벤더별 실제 벤치마크, prefill/decode capacity planning을 하나의 FinOps 체계로 묶어야 합니다. 의사결정 기준은 GPU 단가나 모델 벤치마크 점수가 아니라 cost per successful task, p95 latency, 장애 대응 가능성, 운영팀의 숙련도입니다.",
       "why_it_matters": "AI 인프라 전략은 최고 성능보다 cost per successful task 최적화.",
       "sources": [
         "https://news.hada.io/topic?id=30992",
-        "https://news.hada.io/topic?id=31123"
+        "https://news.hada.io/topic?id=31123",
+        "https://aws.amazon.com/about-aws/whats-new/2026/7/amazon-sagemaker-hyperpod-dpd/"
       ],
       "detailed_content": [
         {
@@ -118,7 +119,8 @@
             "GeekNews의 Claude Sonnet 5 정리는 Anthropic이 Sonnet 가격대에서 더 높은 추론, 도구 사용, 코딩, 지식 작업 성능을 제공하려 한다는 흐름을 소개합니다. effort 조절은 작업 난이도에 따라 비용과 성능을 선택하는 운영 옵션입니다.",
             "GeekNews의 달러당 성능 글은 AMD MI355X가 NVIDIA B300 대비 GPU당 평균 **약 2.75배 저렴한** 저비용 추론 대안으로 부상한다는 분석을 소개합니다.",
             "GPU 가격만으로 결론을 내릴 수는 없습니다. NVIDIA는 CUDA, 프레임워크 최적화, day-0 지원, 운영 도구 측면에서 강한 소프트웨어 우위를 갖고 있습니다.",
-            "실제 의사결정은 모델별 처리량, 지연 시간, 메모리 사용량, 커널 지원, 장애 대응, 팀의 운영 숙련도를 함께 비교해야 합니다."
+            "실제 의사결정은 모델별 처리량, 지연 시간, 메모리 사용량, 커널 지원, 장애 대응, 팀의 운영 숙련도를 함께 비교해야 합니다.",
+            "AWS What’s New의 SageMaker HyperPod DPD 발표는 LLM 추론의 prefill과 decode를 별도 GPU 풀로 분리하고, KV cache를 EFA와 GPU-Direct RDMA로 전달해 long-context 요청이 동시 decode를 막는 문제를 줄이는 방식을 설명합니다."
           ]
         },
         {
@@ -140,7 +142,8 @@
             "모델 라우터를 애플리케이션 코드에 하드코딩하지 말고 정책 레이어로 분리합니다. 그래야 모델 가격, 품질, 장애 상황에 따라 신속히 전환할 수 있습니다.",
             "서빙 스택은 vLLM, TensorRT-LLM, SGLang, vendor API 같은 후보를 실제 워크로드로 비교해야 합니다. 벤치마크 숫자보다 운영 중 p95 latency와 장애 복구가 중요합니다.",
             "캐싱은 프롬프트·검색 결과·tool result 단위로 나눠 설계합니다. 캐시 hit ratio가 낮으면 저비용 모델 라우팅보다 효과가 작을 수 있습니다.",
-            "멀티벤더 전략은 추론 품질 회귀 테스트와 계약·보안·데이터 처리 조건 검토가 같이 있어야 합니다."
+            "멀티벤더 전략은 추론 품질 회귀 테스트와 계약·보안·데이터 처리 조건 검토가 같이 있어야 합니다.",
+            "long-context 비중이 높은 서비스는 prefill/decode를 같은 GPU에서 처리할지, 별도 pool로 분리할지 traffic replay로 검증해야 합니다."
           ]
         },
         {
@@ -169,7 +172,8 @@
             "모델별 cost per successful task, latency, error rate, tool-call success rate를 같은 대시보드에서 봅니다.",
             "GPU PoC는 실제 서비스 모델의 tokens/sec, p95 latency, 메모리 여유, batch 효율로 비교합니다.",
             "AMD/대체 가속기 검토 시 프레임워크 호환성, 커널 최적화, 배포 자동화, 장애 대응 런북까지 포함합니다.",
-            "캐싱, batching, speculative decoding, quantization 같은 추론 최적화를 비용 절감 우선순위에 둡니다."
+            "캐싱, batching, speculative decoding, quantization 같은 추론 최적화를 비용 절감 우선순위에 둡니다.",
+            "prefill/decode 분리 PoC에서는 prompt length histogram, KV cache 전송량, EFA 대역폭, p95 token latency, goodput을 같은 실험표에 기록합니다."
           ]
         },
         {
@@ -1411,51 +1415,52 @@
       ]
     },
     {
-      "id": "news-021",
+      "id": "news-036",
       "rank": 25,
-      "title_ko": "Google Research, 표 형식 데이터용 제로샷 파운데이션 모델 TabFM 소개",
-      "title_original": "Introducing TabFM: A zero-shot foundation model for tabular data",
-      "summary": "핵심: Google TabFM — 표 형식 데이터용 제로샷 파운데이션 모델",
-      "detail": "변화: 구조화 데이터 ML에 foundation model 접근 확대",
-      "why_it_matters": "AI 활용 범위가 문서·코드에서 BI, 예측, 운영 데이터 분석으로 확장되는 흐름입니다.",
-      "engineering_implication": "테이블 모델 도입 시 데이터 스키마 품질, 개인정보 처리, 기존 ML 파이프라인과의 평가 비교가 필요합니다.",
-      "korea_implication": "금융·커머스·제조처럼 테이블 데이터가 많은 국내 산업에 적용 가능성이 큽니다.",
-      "category": "Data",
+      "title_ko": "Amazon SageMaker HyperPod, LLM 추론용 Disaggregated Prefill/Decode 지원",
+      "title_original": "Amazon SageMaker HyperPod now supports disaggregated prefill and decode",
+      "summary": "핵심: SageMaker HyperPod DPD — prefill·decode를 별도 GPU 풀로 분리해 long-context 추론 경합 완화",
+      "detail": "변화: KV cache를 EFA와 GPU-Direct RDMA로 전달하고, 라우터가 긴 프롬프트만 분리 경로로 보냄",
+      "why_it_matters": "LLM 프로덕션 추론은 긴 입력과 짧은 대화가 섞일 때 per-token latency와 goodput이 흔들립니다. DPD는 컴퓨트 중심 prefill과 메모리 대역폭 중심 decode를 분리해 SLO 기반 용량 계획을 더 세밀하게 만듭니다.",
+      "engineering_implication": "HyperPod 운영팀은 pdSpec 기반 DPD 적용 전 traffic replay로 prompt length 분포, p95/p99 token latency, EFA 대역폭, KV cache 전송 오버헤드, prefill/decode GPU 비율을 측정해야 합니다.",
+      "korea_implication": "국내 LLM 서비스와 AI 데이터센터 운영팀은 GPU 증설만 보지 말고 prefill/decode 분리, KV cache offload, 라우팅 정책으로 추론 단가와 지연 시간을 동시에 줄이는 PoC를 설계할 수 있습니다.",
+      "category": "Infra",
       "tags": [
-        "Google Research",
-        "Tabular Data",
-        "Foundation Model",
-        "Data",
-        "ML"
+        "AWS",
+        "SageMaker HyperPod",
+        "LLM Inference",
+        "GPU",
+        "EFA",
+        "FinOps"
       ],
       "region": "Global",
-      "importance": "medium",
-      "score": 73,
-      "published_kst": "2026-06-30 19:26",
-      "source_name": "Google Research Blog",
-      "source_url": "https://research.google/blog/introducing-tabfm-a-zero-shot-foundation-model-for-tabular-data/",
-      "image_url": "https://storage.googleapis.com/gweb-research2023-media/images/HO_previewImage1.width-800.format-jpeg.jpg",
-      "local_image": "assets/images/news-021.jpg",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-07 06:29",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/7/amazon-sagemaker-hyperpod-dpd/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
       "detailed_content": [
         {
           "heading": "핵심 사실",
           "items": [
-            "핵심: Google TabFM — 표 형식 데이터용 제로샷 파운데이션 모델",
-            "변화: 구조화 데이터 ML에 foundation model 접근 확대"
+            "핵심: SageMaker HyperPod DPD는 LLM inference의 prefill 단계와 decode 단계를 별도 GPU 풀로 분리합니다",
+            "변화: KV cache를 Elastic Fabric Adapter(EFA)와 GPU-Direct RDMA로 전송해 두 단계가 같은 GPU에서 경합하지 않도록 설계했습니다"
           ]
         },
         {
           "heading": "볼 것",
           "items": [
-            "볼 것: 스키마 품질, 개인정보 처리, 기존 ML pipeline 대비 평가",
-            "영향: AI 활용 범위가 문서·코드에서 BI, 예측, 운영 데이터 분석으로 확장되는 흐름입니다"
+            "볼 것: prompt length 분포, per-token latency, goodput, EFA 대역폭, KV cache transfer overhead",
+            "영향: long-context 요청 하나가 동시 요청의 token generation을 지연시키는 문제를 줄이고, prefill·decode capacity를 독립적으로 확장할 수 있습니다"
           ]
         },
         {
           "heading": "시사점",
           "items": [
-            "시사점: 테이블 모델 도입 시 데이터 스키마 품질, 개인정보 처리, 기존 ML 파이프라인과의 평가 비교가 필요합니다"
+            "시사점: HyperPod 운영팀은 pdSpec 적용 전후의 p95/p99 latency와 GPU utilization을 비교하고, 짧은 프롬프트는 decoder 직접 경로로 보내는 라우팅 기준을 정해야 합니다"
           ]
         }
       ]
