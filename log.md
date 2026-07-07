@@ -104,3 +104,9 @@
 - Reviewed 745 feed entries and 161 relevant new candidates across mandatory sources plus global AI/Cloud/Infra/Security/DevTools feeds.
 - Added The Hacker News Argo CD repo-server 미패치 결함 story and removed lower-priority OpenTag item to keep the site at 30 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source image, and wiki index.
+
+## [2026-07-07] update | Add Linux KVM Januscape virtualization escape story
+- Freeze check passed at 2026-07-07 13:04 KST; updates allowed.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; also sampled AWS, Cloudflare, Kubernetes, CNCF, Docker, GitHub, Hugging Face, NVIDIA, OpenAI, The Hacker News, BleepingComputer, CISA, Google Security, and Microsoft Security feeds.
+- Reviewed 550 recent feed entries across reachable feeds (4 feed endpoints failed or returned unavailable); added Linux KVM Januscape CVE-2026-53359 guest-to-host risk and removed lower-priority ICML Seoul event item to keep the site at 30 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source image, and wiki index.
