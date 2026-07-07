@@ -137,3 +137,9 @@
 - Checked current time at 2026-07-08 03:10 KST; no freeze guard was run per current project policy.
 - Hardened the static UI image resolver to reject malformed docs-local paths with empty, `.`, absolute, traversal, or backslash segments before assigning image sources.
 - Bumped static CSS/JS cache keys in `docs/index.html`.
+## [2026-07-08] update | Add GLM 5.2 inference cost and cloud security/platform stories
+- Checked current time at 2026-07-08 04:07 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io/plus, aitimes.kr, and aitimes.com; news.hada.io RSS returned 403 in this probe. Also sampled AWS, Cloudflare, Docker, GitHub, Hugging Face, NVIDIA, The Hacker News, BleepingComputer, CISA, Google Security, Microsoft Security, Kubernetes, CNCF, OpenAI, Google AI, Google Cloud, GitLab, JetBrains, and Stack Overflow feeds.
+- Reviewed 2,560 feed entries and 1,886 keyword-relevant candidates across reachable feeds; 1 feed endpoint failed or returned unavailable.
+- Added 4 sourced stories covering GLM 5.2 inference margin pressure, AWS Security Hub exposure impact analysis, SageMaker Studio Hugging Face one-click integration, and Korea's 1.4 trillion KRW physical AI megaproject.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, and wiki index.
