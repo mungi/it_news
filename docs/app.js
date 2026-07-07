@@ -142,7 +142,7 @@ function makeBadge(text) {
 }
 
 function renderFilterButtons(container, values, active, onClick) {
-  container.innerHTML = "";
+  container.replaceChildren();
   values.forEach((value) => {
     const button = document.createElement("button");
     button.className = `filter-button ${value === active ? "active" : ""}`;
@@ -166,7 +166,7 @@ function updateHeader() {
 
 function renderSummary() {
   const list = $("#summaryList");
-  list.innerHTML = "";
+  list.replaceChildren();
   (state.data.executive_summary || []).forEach((item) => {
     const li = document.createElement("li");
     li.textContent = item;
@@ -176,7 +176,7 @@ function renderSummary() {
 
 function renderDeepDives() {
   const container = $("#deepDiveList");
-  container.innerHTML = "";
+  container.replaceChildren();
   (state.data.deep_dives || []).slice(0, 2).forEach((item) => {
     const div = document.createElement("article");
     const title = item.title || "Deep Dive";
@@ -243,7 +243,7 @@ function itemMatches(item) {
 function renderCards() {
   const grid = $("#newsGrid");
   const template = $("#cardTemplate");
-  grid.innerHTML = "";
+  grid.replaceChildren();
   const matchedItems = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
   const items = state.topOnly ? matchedItems.slice(0, 6) : matchedItems;
   updateResultText(items, matchedItems.length);
@@ -315,7 +315,7 @@ function updateResultText(items = null, matchedCount = null) {
 }
 
 function renderRichDetail(container, sections, fallbackText) {
-  container.innerHTML = "";
+  container.replaceChildren();
   const normalizedSections = Array.isArray(sections) ? sections.filter(Boolean) : [];
   if (!normalizedSections.length) {
     const p = document.createElement("p");
@@ -377,11 +377,11 @@ function openModal(item) {
   $("#modalEngineering").textContent = item.engineering_implication || "";
 
   const badges = $("#modalBadges");
-  badges.innerHTML = "";
+  badges.replaceChildren();
   [item.category, item.region, item.importance, ...(item.tags || [])].filter(Boolean).forEach((value) => badges.appendChild(makeBadge(value)));
 
   const links = $("#modalLinks");
-  links.innerHTML = "";
+  links.replaceChildren();
   if (item.source_url) links.appendChild(makeLink("원문 보기", item.source_url));
   (item.related_links || []).forEach((link) => links.appendChild(makeLink(link.title || "관련 링크", link.url)));
 
@@ -407,11 +407,11 @@ function openDeepDiveModal(item) {
   $("#modalEngineering").textContent = "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.";
 
   const badges = $("#modalBadges");
-  badges.innerHTML = "";
+  badges.replaceChildren();
   ["Deep Dive", "Summary"].forEach((value) => badges.appendChild(makeBadge(value)));
 
   const links = $("#modalLinks");
-  links.innerHTML = "";
+  links.replaceChildren();
   (item.sources || []).forEach((url, index) => links.appendChild(makeLink(`출처 ${index + 1}`, url)));
 
   modal.classList.remove("hidden");
@@ -512,11 +512,21 @@ function wireEvents() {
   });
   on("#listViewButton", "click", () => setViewMode("list"));
   on("#cardViewButton", "click", () => setViewMode("card"));
+  on(".view-toggle", "keydown", handleViewToggleKeydown);
   document.querySelectorAll("[data-close='modal']").forEach((el) => el.addEventListener("click", closeModal));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeModal();
     keepFocusInModal(event);
   });
+}
+
+function handleViewToggleKeydown(event) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  const nextMode = event.key === "ArrowRight" || event.key === "End" ? "card" : "list";
+  setViewMode(nextMode);
+  const target = nextMode === "card" ? $("#cardViewButton") : $("#listViewButton");
+  target?.focus();
 }
 
 function setViewMode(mode) {

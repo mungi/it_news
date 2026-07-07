@@ -143,3 +143,8 @@
 - Reviewed 2,560 feed entries and 1,886 keyword-relevant candidates across reachable feeds; 1 feed endpoint failed or returned unavailable.
 - Added 4 sourced stories covering GLM 5.2 inference margin pressure, AWS Security Hub exposure impact analysis, SageMaker Studio Hugging Face one-click integration, and Korea's 1.4 trillion KRW physical AI megaproject.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, and wiki index.
+
+## [2026-07-08] site | Reduce DOM injection surface and improve view-toggle keyboard UX
+- Checked current time at 2026-07-08 05:15 KST; no freeze guard was run per current project policy.
+- Replaced static-app clearing operations from `innerHTML = ""` to `replaceChildren()` where nodes are rebuilt via DOM APIs.
+- Added Arrow/Home/End keyboard handling for the list/card view radiogroup and bumped static asset cache keys.
