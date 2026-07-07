@@ -112,8 +112,9 @@ function safeImageSrc(value) {
       return "";
     }
   }
-  if (!raw.startsWith("assets/") || raw.startsWith("//") || raw.includes("\\")) return "";
-  if (raw.split("/").includes("..")) return "";
+  if (!raw.startsWith("assets/") || raw.startsWith("//") || raw.startsWith("/") || raw.includes("\\")) return "";
+  const parts = raw.split("/");
+  if (parts.some((part) => part === "" || part === "." || part === "..")) return "";
   return raw;
 }
 

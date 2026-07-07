@@ -132,3 +132,8 @@
 - Reviewed 2,607 feed entries and 368 relevant candidates across reachable feeds; 2 feed endpoints failed or returned unavailable.
 - Added 10 sourced stories covering Writer AI session-token leakage, SkillCloak AI-agent skill evasion, Gitea Docker CVE probing, GitHub Actions CI attack chains, Alberta Claude code audit, ADD closed-network AI, Naver-KAI defense sovereign AI, ETRI open-source governance, EC2 Dedicated Hosts AMD SEV-SNP, and Hugging Face Kernels.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, and wiki index.
+
+## [2026-07-08] site | Harden browser image path validation
+- Checked current time at 2026-07-08 03:10 KST; no freeze guard was run per current project policy.
+- Hardened the static UI image resolver to reject malformed docs-local paths with empty, `.`, absolute, traversal, or backslash segments before assigning image sources.
+- Bumped static CSS/JS cache keys in `docs/index.html`.
