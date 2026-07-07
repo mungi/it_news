@@ -179,17 +179,39 @@ function renderDeepDives() {
   container.innerHTML = "";
   (state.data.deep_dives || []).slice(0, 2).forEach((item) => {
     const div = document.createElement("article");
+    const title = item.title || "Deep Dive";
     div.className = "deep-dive";
     div.tabIndex = 0;
     div.setAttribute("role", "button");
-    div.setAttribute("aria-label", `${item.title || "Deep Dive"} 상세 보기`);
-    div.innerHTML = `<div class="deep-dive-image-wrap"><img class="deep-dive-image" src="${escapeHtml(deepDiveImageFor(item))}" alt="${escapeHtml(item.title || "Deep Dive")} 이미지" loading="lazy" decoding="async" /></div>
-      <div class="deep-dive-body"><h3>${escapeHtml(item.title || "Deep Dive")}</h3>
-      <p><strong>요약:</strong> ${escapeHtml(item.summary || "")}</p>
-      <p>${escapeHtml(item.why_it_matters || item.details || "")}</p>
-      <span class="read-more">클릭해서 상세 설명 보기 →</span></div>`;
-    const img = div.querySelector(".deep-dive-image");
+    div.setAttribute("aria-label", `${title} 상세 보기`);
+
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "deep-dive-image-wrap";
+    const img = document.createElement("img");
+    img.className = "deep-dive-image";
+    img.src = deepDiveImageFor(item);
+    img.alt = `${title} 이미지`;
+    img.loading = "lazy";
+    img.decoding = "async";
     img.onerror = () => { img.src = "assets/images/fallback-ai.svg"; };
+    imageWrap.appendChild(img);
+
+    const body = document.createElement("div");
+    body.className = "deep-dive-body";
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    const summary = document.createElement("p");
+    const summaryLabel = document.createElement("strong");
+    summaryLabel.textContent = "요약:";
+    summary.append(summaryLabel, ` ${item.summary || ""}`);
+    const why = document.createElement("p");
+    why.textContent = item.why_it_matters || item.details || "";
+    const more = document.createElement("span");
+    more.className = "read-more";
+    more.textContent = "클릭해서 상세 설명 보기 →";
+    body.append(heading, summary, why, more);
+
+    div.append(imageWrap, body);
     div.addEventListener("click", () => openDeepDiveModal(item));
     div.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
