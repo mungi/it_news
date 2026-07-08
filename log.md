@@ -210,3 +210,7 @@
 - Reviewed 385 feed entries and 325 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering NVIDIA Nemotron + LangChain Deep Agents harness, DeepSeek AI chip development, GitHub Copilot workflow-level jailbreak research, and Samsung PM1763 AI data-center SSD. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+
+## [2026-07-09] site | Harden category and tag validation
+- Checked current time at 2026-07-09 08:07 KST; no freeze guard was run per current project policy.
+- Added validator checks for allowed weekly-news categories and non-empty string tags so malformed data cannot silently break filters or search.

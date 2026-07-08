@@ -22,6 +22,7 @@ REQUIRED_ITEM = [
 ]
 ALLOWED_IMPORTANCE = {"must-know", "high", "medium", "low"}
 ALLOWED_REGIONS = {"Global", "Korea"}
+ALLOWED_CATEGORIES = {"AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"}
 KST_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$")
 WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
 ITEM_ID_RE = re.compile(r"^news-\d{3}$")
@@ -324,6 +325,9 @@ def main() -> int:
         importance = item.get("importance")
         if importance and importance not in ALLOWED_IMPORTANCE:
             errors.append(f"{prefix} invalid importance: {importance}")
+        category = item.get("category")
+        if category and category not in ALLOWED_CATEGORIES:
+            errors.append(f"{prefix} invalid category: {category}")
         region = item.get("region")
         if region and region not in ALLOWED_REGIONS:
             errors.append(f"{prefix} invalid region: {region}")
@@ -342,8 +346,13 @@ def main() -> int:
         local_image = item.get("local_image", "")
         if local_image:
             validate_local_image(local_image, prefix, "local_image", errors)
-        if not isinstance(item.get("tags", []), list):
+        tags = item.get("tags", [])
+        if not isinstance(tags, list):
             errors.append(f"{prefix} tags must be a list")
+        else:
+            for tag_idx, tag in enumerate(tags, start=1):
+                if not isinstance(tag, str) or not tag.strip():
+                    errors.append(f"{prefix} tags[{tag_idx}] must be a non-empty string")
         validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
         validate_item_detail_substance(item.get("detailed_content"), prefix, errors)
         related_links = item.get("related_links", [])
