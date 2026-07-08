@@ -115,6 +115,14 @@ function safeImageSrc(value) {
   if (!raw.startsWith("assets/") || raw.startsWith("//") || raw.startsWith("/") || raw.includes("\\")) return "";
   const parts = raw.split("/");
   if (parts.some((part) => part === "" || part === "." || part === "..")) return "";
+  try {
+    if (parts.some((part) => {
+      const decoded = decodeURIComponent(part);
+      return decoded === "." || decoded === ".." || decoded.includes("/") || decoded.includes("\\");
+    })) return "";
+  } catch {
+    return "";
+  }
   return raw;
 }
 

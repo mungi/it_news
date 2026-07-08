@@ -6,7 +6,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "docs" / "data" / "weekly-news.json"
@@ -52,6 +52,12 @@ def is_safe_assets_path(value: str) -> bool:
     parts = value.split("/")
     if any(part in {"", ".", ".."} for part in parts):
         return False
+    for part in parts:
+        if re.search(r"%(?![0-9A-Fa-f]{2})", part):
+            return False
+        decoded = unquote(part)
+        if decoded in {".", ".."} or "/" in decoded or "\\" in decoded:
+            return False
     return True
 
 
