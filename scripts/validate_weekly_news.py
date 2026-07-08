@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -33,6 +34,28 @@ MIN_ITEM_DETAIL_BULLETS = 8
 def is_http_url(value: str) -> bool:
     parsed = urlparse(value)
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def is_valid_week(value: str) -> bool:
+    if not WEEK_RE.match(value):
+        return False
+    year, week = value.split("-W", 1)
+    try:
+        datetime.fromisocalendar(int(year), int(week), 1)
+    except ValueError:
+        return False
+    return True
+
+
+def is_valid_kst_timestamp(value: object) -> bool:
+    text = str(value)
+    if not KST_TIMESTAMP_RE.match(text):
+        return False
+    try:
+        datetime.strptime(text, "%Y-%m-%d %H:%M")
+    except ValueError:
+        return False
+    return True
 
 
 def is_safe_assets_path(value: str) -> bool:
@@ -140,7 +163,7 @@ def validate_item_detail_substance(value: object, prefix: str, errors: list[str]
 
 
 def parse_kst_timestamp(value: object) -> tuple[int, int, int, int, int] | None:
-    if not value or not KST_TIMESTAMP_RE.match(str(value)):
+    if not value or not is_valid_kst_timestamp(value):
         return None
     year, month, day, hour, minute = map(int, re.split(r"[- :]", str(value)))
     return (year, month, day, hour, minute)
@@ -205,8 +228,8 @@ def main() -> int:
             errors.append(f"missing top-level field: {key}")
 
     week = data.get("week")
-    if week and not WEEK_RE.match(str(week)):
-        errors.append(f"week must use YYYY-Www format, got: {week}")
+    if week and not is_valid_week(str(week)):
+        errors.append(f"week must use a valid ISO YYYY-Www format, got: {week}")
     for key in ("audience",):
         value = data.get(key)
         if value is not None and (not isinstance(value, str) or not value.strip()):
@@ -214,8 +237,8 @@ def main() -> int:
 
     for key in ("coverage_start_kst", "coverage_end_kst", "last_updated_kst"):
         value = data.get(key)
-        if value and not KST_TIMESTAMP_RE.match(str(value)):
-            errors.append(f"{key} must use YYYY-MM-DD HH:mm KST format, got: {value}")
+        if value and not is_valid_kst_timestamp(value):
+            errors.append(f"{key} must use a valid YYYY-MM-DD HH:mm KST timestamp, got: {value}")
 
     items = data.get("items", [])
     deep_dives = data.get("deep_dives", [])
@@ -285,8 +308,8 @@ def main() -> int:
         if region and region not in ALLOWED_REGIONS:
             errors.append(f"{prefix} invalid region: {region}")
         published_kst = item.get("published_kst")
-        if published_kst and not KST_TIMESTAMP_RE.match(str(published_kst)):
-            errors.append(f"{prefix} published_kst must use YYYY-MM-DD HH:mm format")
+        if published_kst and not is_valid_kst_timestamp(published_kst):
+            errors.append(f"{prefix} published_kst must use a valid YYYY-MM-DD HH:mm timestamp")
         published_tuple = parse_kst_timestamp(published_kst)
         if published_tuple and previous_published and published_tuple > previous_published:
             errors.append(f"{prefix} published_kst must be sorted newest-first")
