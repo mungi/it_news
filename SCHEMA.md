@@ -110,7 +110,7 @@ Use only these tags unless this schema is updated first:
 Each `docs/data/weekly-news.json` should include:
 1. Executive summary: 3-5 Korean bullets
 2. 중요 소식 stories: about 5-8
-3. Total stories: up to 50, target 40-50 when enough high-value sourced items exist
+3. Total stories: up to 50, target 40-50 when enough high-value sourced items exist; final ordering is `published_kst` newest-first, and items beyond 50 are dropped from the oldest end
 4. Deep dives: 1 by default, 2 maximum
 5. KST timeline metadata
 6. Source appendix via `source_url` and `related_links`
@@ -130,6 +130,9 @@ Each `docs/data/weekly-news.json` should include:
 
 Rules:
 - Use Korean.
+- Regular item `detailed_content` must have at least 4 sections and 8 concrete bullets, covering `무슨 일이 있었나`, `본문 핵심 포인트`, `왜 중요한가`, and `시사점` or equivalent headings.
+- Regular item `상세 내용` must include the source article's main body facts, numbers, affected systems, scope, constraints, and engineering implications when present. The modal should not omit core content that a presenter needs.
+- End regular item detail bullets in 명사형 종결 / briefing fragments such as `확인`, `공개`, `추가`, `요구`, `필요`, `대상`, `가능성`, `리스크`, `운영 과제`; avoid repeated `합니다/했습니다/됩니다` endings.
 - Writing principles: minimal rhetoric, top-loaded conclusion, factual/objective tone, accurate technical terminology, and **개조식(箇條式)** instead of long prose paragraphs.
 - All visible story summaries and modal detail bodies should use structured bullet-style briefing text: labels such as `핵심/배경/변화/영향/시사점`, complete useful clauses, and no source-led sentence forms such as `OO는 ... 보도했습니다`. Do not reduce text to awkward keyword fragments that lose context.
 - Include a `시사점` item for each story: the industry's likely impact or a short developer/engineer implication grounded in the source. Store it in `engineering_implication`.

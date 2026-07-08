@@ -11,7 +11,7 @@ Every 4 hours, update the AI / Cloud / Infra weekly news static site and LLM wik
 
 1. Never fabricate news, dates, links, images, or claims.
 2. Only include sourced items with `source_url`.
-3. Keep `docs/data/weekly-news.json` at or below 50 items; target 40-50 when enough high-value sourced items exist.
+3. Keep `docs/data/weekly-news.json` at or below 50 items; target 40-50 when enough high-value sourced items exist. Sort the final list by `published_kst` newest-first, then assign contiguous `rank` values from 1. If a new item would push the list over 50, remove the oldest item at the end after sorting.
 4. Deep Dive count must be 1 by default and never more than 2.
 5. Validate with `python3 scripts/validate_weekly_news.py` before commit.
 6. If validation fails, fix before commit. If you cannot fix, do not commit.
@@ -81,7 +81,7 @@ Each item must have:
 - title_original when available
 - summary
 - detail
-- detailed_content list for click-through `상세 내용`; use Korean headings and bullets so cards and Deep Dive modals are not thin
+- detailed_content list for click-through `상세 내용`; use Korean headings and bullets so cards and Deep Dive modals are not thin. For every regular news item, include the source article's main body points without omitting decision-relevant facts: at least 4 sections, at least 8 concrete bullets, and enough substance for the modal to stand alone.
 - why_it_matters
 - engineering_implication
 - korea_implication when relevant
@@ -101,6 +101,8 @@ For images, inspect the source page metadata first and prefer a reliable article
 UI/content policy:
 - Display `must-know` as `중요 소식` in Korean UI; keep the internal JSON value as `must-know` for compatibility.
 - The modal section label is `상세 내용`, not `상세 요약`.
+- `상세 내용` must end in noun-style briefing fragments, not narrative polite prose. Prefer endings such as `확인`, `공개`, `추가`, `요구`, `필요`, `대상`, `가능성`, `리스크`, `검토 항목`, `운영 과제`, `비용 변수`; avoid repeated `합니다/했습니다/됩니다` endings in modal bullets.
+- Regular news item `detailed_content` should use sections such as `무슨 일이 있었나`, `본문 핵심 포인트`, `왜 중요한가`, `시사점`. Summarize the original article's core content fully enough that opening the source is for verification, not for discovering missing essentials.
 - Writing principles: no greetings or emotional openers; top-load the conclusion and core summary; keep rhetoric minimal; use a factual, objective tone; preserve accurate domain terminology; use **개조식(箇條式)** instead of long prose paragraphs.
 - This applies to every story, not only GeekNews: card summaries and modal details should be structured bullet-style briefing text, not source-led narrative and not broken keyword fragments. Prefer labels such as `핵심:`, `배경:`, `변화:`, `영향:`, `시사점:`. Each bullet should carry a complete, useful clause with subject/object/context. Avoid source-led sentences like `OO는 ... 보도했습니다`, but do not over-compress until the body becomes awkward or incomplete.
 - Every item should include a short `시사점`: the issue's industry impact or a developer/engineer-facing implication/opinion grounded in the source. Store it in `engineering_implication` and render it as `시사점`.

@@ -241,11 +241,20 @@ function itemMatches(item) {
   return categoryMatch && importanceMatch && regionMatch && queryMatch;
 }
 
+function compareItemsByPublishedDesc(a, b) {
+  const publishedA = Date.parse(String(a.published_kst || "").replace(" ", "T"));
+  const publishedB = Date.parse(String(b.published_kst || "").replace(" ", "T"));
+  const timeA = Number.isNaN(publishedA) ? -Infinity : publishedA;
+  const timeB = Number.isNaN(publishedB) ? -Infinity : publishedB;
+  if (timeA !== timeB) return timeB - timeA;
+  return (a.rank || 999) - (b.rank || 999);
+}
+
 function renderCards() {
   const grid = $("#newsGrid");
   const template = $("#cardTemplate");
   grid.replaceChildren();
-  const matchedItems = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  const matchedItems = (state.data.items || []).filter(itemMatches).sort(compareItemsByPublishedDesc);
   const items = state.topOnly ? matchedItems.slice(0, 6) : matchedItems;
   updateResultText(items, matchedItems.length);
 
@@ -306,7 +315,7 @@ function renderCards() {
 
 function updateResultText(items = null, matchedCount = null) {
   if (!state.data) return;
-  const matchedItems = (state.data.items || []).filter(itemMatches).sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  const matchedItems = (state.data.items || []).filter(itemMatches).sort(compareItemsByPublishedDesc);
   const visibleItems = items || (state.topOnly ? matchedItems.slice(0, 6) : matchedItems);
   const mustKnowCount = visibleItems.filter((item) => item.importance === "must-know").length;
   const readCount = visibleItems.filter(isRead).length;

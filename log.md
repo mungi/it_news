@@ -160,3 +160,7 @@
 - Checked current time at 2026-07-08 09:21 KST; no freeze guard was run per current project policy.
 - Rendered `**강조**` markup as safe DOM `<strong>` nodes in card summaries, Deep Dive summaries, and modal summary/implication text instead of exposing literal asterisks.
 - Added focused strong-text styling and bumped static CSS/JS cache keys in `docs/index.html`.
+## 2026-07-08 10:24 KST
+- 상세 내용 규칙 보강: 일반 뉴스 모달을 4개 섹션/8개 이상 핵심 bullet 구조로 확장하고 명사형 종결 중심으로 정리.
+- 목록 정렬 정책 변경: published_kst 최신순으로 rank 재부여, 50개 초과 시 오래된 항목부터 제외.
+- `docs/data/weekly-news.json`과 `weekly/2026-W28.md` 동기화.

@@ -25,6 +25,9 @@ KST_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$")
 WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
 ITEM_ID_RE = re.compile(r"^news-\d{3}$")
 DEEP_DIVE_ID_RE = re.compile(r"^deep-dive-\d{3}$")
+MIN_ITEM_DETAIL_CHARS = 500
+MIN_ITEM_DETAIL_SECTIONS = 4
+MIN_ITEM_DETAIL_BULLETS = 8
 
 
 def is_http_url(value: str) -> bool:
@@ -99,6 +102,42 @@ def validate_detailed_content(value: object, prefix: str, errors: list[str], *, 
             errors.append(f"{section_prefix} needs body or items")
         if items is not None and not isinstance(items, list):
             errors.append(f"{section_prefix}.items must be a list")
+
+
+def detailed_content_stats(value: object) -> tuple[int, int, int]:
+    if not isinstance(value, list):
+        return (0, 0, 0)
+    total_chars = 0
+    bullet_count = 0
+    section_count = 0
+    for section in value:
+        if not isinstance(section, dict):
+            continue
+        section_count += 1
+        total_chars += len(str(section.get("heading", "")))
+        total_chars += len(str(section.get("body", "")))
+        items = section.get("items")
+        if isinstance(items, list):
+            bullet_count += len(items)
+            total_chars += sum(len(str(item)) for item in items)
+    return (section_count, bullet_count, total_chars)
+
+
+def validate_item_detail_substance(value: object, prefix: str, errors: list[str]) -> None:
+    section_count, bullet_count, total_chars = detailed_content_stats(value)
+    if section_count < MIN_ITEM_DETAIL_SECTIONS:
+        errors.append(f"{prefix} detailed_content should have at least {MIN_ITEM_DETAIL_SECTIONS} sections, got {section_count}")
+    if bullet_count < MIN_ITEM_DETAIL_BULLETS:
+        errors.append(f"{prefix} detailed_content should include at least {MIN_ITEM_DETAIL_BULLETS} bullets, got {bullet_count}")
+    if total_chars < MIN_ITEM_DETAIL_CHARS:
+        errors.append(f"{prefix} detailed_content should be at least {MIN_ITEM_DETAIL_CHARS} chars, got {total_chars}")
+
+
+def parse_kst_timestamp(value: object) -> tuple[int, int, int, int, int] | None:
+    if not value or not KST_TIMESTAMP_RE.match(str(value)):
+        return None
+    year, month, day, hour, minute = map(int, re.split(r"[- :]", str(value)))
+    return (year, month, day, hour, minute)
 
 
 def validate_deep_dive_content(value: object, prefix: str, errors: list[str]) -> None:
@@ -198,6 +237,7 @@ def main() -> int:
     seen_ids: set[str] = set()
     seen_ranks: set[int] = set()
     seen_urls: set[str] = set()
+    previous_published: tuple[int, int, int, int, int] | None = None
     for idx, item in enumerate(items, start=1):
         prefix = f"items[{idx}]"
         if not isinstance(item, dict):
@@ -216,6 +256,8 @@ def main() -> int:
         rank = item.get("rank")
         if not isinstance(rank, int) or rank < 1:
             errors.append(f"{prefix} rank must be a positive integer")
+        elif rank != idx:
+            errors.append(f"{prefix} rank must match latest-first list position {idx}, got {rank}")
         elif rank in seen_ranks:
             errors.append(f"duplicate rank: {rank}")
         else:
@@ -239,6 +281,11 @@ def main() -> int:
         published_kst = item.get("published_kst")
         if published_kst and not KST_TIMESTAMP_RE.match(str(published_kst)):
             errors.append(f"{prefix} published_kst must use YYYY-MM-DD HH:mm format")
+        published_tuple = parse_kst_timestamp(published_kst)
+        if published_tuple and previous_published and published_tuple > previous_published:
+            errors.append(f"{prefix} published_kst must be sorted newest-first")
+        if published_tuple:
+            previous_published = published_tuple
         if not (item.get("image_url") or item.get("local_image")):
             errors.append(f"{prefix} needs image_url or local_image")
         image_url = item.get("image_url", "")
@@ -249,6 +296,7 @@ def main() -> int:
         if not isinstance(item.get("tags", []), list):
             errors.append(f"{prefix} tags must be a list")
         validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
+        validate_item_detail_substance(item.get("detailed_content"), prefix, errors)
         related_links = item.get("related_links", [])
         if not isinstance(related_links, list):
             errors.append(f"{prefix} related_links must be a list")

@@ -24,7 +24,7 @@ The repository serves two roles:
 - Language: Korean UI and Korean summaries.
 - Title policy: Korean title plus original title when available.
 - Topics: AI, Cloud, Infra first; Security, Developer Tools, Data/DB, Open Source, Korea, General IT second.
-- Total visible news items: up to 50; target 40-50 when enough high-value sourced items exist.
+- Total visible news items: up to 50; target 40-50 when enough high-value sourced items exist. The visible list is sorted by publication time, newest first; when the list would exceed 50, the oldest item at the end is removed.
 - Deep Dive: 1 by default, 2 only when unusually important. Each Deep Dive must be detailed enough for AI/Infra experts and consultants to use in a 30-minute briefing: source facts, expert interpretation, architecture/operations impact, cost/security view, adoption roadmap, checklist, and presenter message.
 - Each news item needs title, short summary, detailed summary, source link, image, category/tags, and publication time when available.
 - Updates should automatically commit and push when GitHub auth/remotes are available.
@@ -56,6 +56,7 @@ Single-page static application:
 6. Detail Modal
    - Opens when a card is clicked.
    - Contains image, detailed summary, engineering implication, Korea implication, tags, source links, related links.
+   - Regular news `상세 내용` must include the source article's main body points without omitting decision-relevant facts. Use at least 4 sections and 8 concrete bullets so the modal can stand alone; end bullets in noun-style briefing fragments rather than polite narrative prose.
    - Deep Dive entries also open the same detail modal with a richer expert/consultant-level explanation, source facts, architecture/operations implications, cost/security trade-offs, adoption checklist, and source links.
 
 ## 4. Visual Design
@@ -143,6 +144,14 @@ Item shape:
   "related_links": []
 }
 ```
+
+Regular item `detailed_content` requirements:
+
+- Minimum 4 sections and 8 concrete bullets.
+- Recommended sections: `무슨 일이 있었나`, `본문 핵심 포인트`, `왜 중요한가`, `시사점`.
+- Include the source article's main body facts, numbers, affected systems, scope, constraints, and engineering implications when present.
+- Use 명사형 종결 / briefing fragments such as `확인`, `공개`, `추가`, `요구`, `필요`, `대상`, `가능성`, `리스크`, `운영 과제`; avoid repeated `합니다/했습니다/됩니다` endings in modal bullets.
+- Opening the original source should be for verification and deeper reading, not because the modal omitted the article's core content.
 
 Deep Dive shape and content standard:
 
