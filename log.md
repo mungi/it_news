@@ -155,3 +155,8 @@
 - Reviewed 832 feed entries and 344 keyword-relevant candidates across reachable feeds; 1 feed endpoint failed or returned unavailable.
 - Added 6 sourced stories covering Dialogflow CX agent isolation, Gemini API Managed Agents, agentic AI infrastructure readiness, ECS GPU management fee reduction, Security Hub Azure monitoring, and NVIDIA Vera CPU AI factory throughput.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, and wiki index.
+
+## [2026-07-08] site | Render markdown emphasis in visible summaries
+- Checked current time at 2026-07-08 09:21 KST; no freeze guard was run per current project policy.
+- Rendered `**강조**` markup as safe DOM `<strong>` nodes in card summaries, Deep Dive summaries, and modal summary/implication text instead of exposing literal asterisks.
+- Added focused strong-text styling and bumped static CSS/JS cache keys in `docs/index.html`.

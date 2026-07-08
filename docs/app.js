@@ -203,7 +203,8 @@ function renderDeepDives() {
     const summary = document.createElement("p");
     const summaryLabel = document.createElement("strong");
     summaryLabel.textContent = "요약:";
-    summary.append(summaryLabel, ` ${item.summary || ""}`);
+    summary.append(summaryLabel, " ");
+    appendRichText(summary, item.summary || "");
     const why = document.createElement("p");
     why.textContent = item.why_it_matters || item.details || "";
     const more = document.createElement("span");
@@ -275,8 +276,8 @@ function renderCards() {
     [item.category, item.region, item.importance].filter(Boolean).forEach((value) => badges.appendChild(makeBadge(value)));
     node.querySelector("h3").textContent = item.title_ko || item.title_original || "제목 없음";
     node.querySelector(".original-title").textContent = item.title_original ? `Original: ${item.title_original}` : "";
-    node.querySelector(".summary").textContent = item.summary || "";
-    node.querySelector(".why").textContent = item.why_it_matters ? `왜 중요한가: ${item.why_it_matters}` : "";
+    setRichText(node.querySelector(".summary"), item.summary || "");
+    setRichText(node.querySelector(".why"), item.why_it_matters ? `왜 중요한가: ${item.why_it_matters}` : "");
     node.querySelector(".read-state").textContent = isRead(item) ? "읽음" : "";
     const sourceLink = node.querySelector(".source");
     const safeSourceUrl = safeExternalUrl(item.source_url);
@@ -371,10 +372,10 @@ function openModal(item) {
   img.onerror = () => useFallbackImage(img, item.category);
   setModalTitleLink(item.title_ko || item.title_original || "제목 없음", item.source_url);
   $("#modalOriginal").textContent = item.title_original ? `Original: ${item.title_original}` : "";
-  $("#modalSummary").textContent = item.summary || "";
+  setRichText($("#modalSummary"), item.summary || "");
   renderRichDetail($("#modalDetail"), itemDetailSections(item), item.detail || item.summary || "");
-  $("#modalWhy").textContent = item.why_it_matters || "";
-  $("#modalEngineering").textContent = item.engineering_implication || "";
+  setRichText($("#modalWhy"), item.why_it_matters || "");
+  setRichText($("#modalEngineering"), item.engineering_implication || "");
 
   const badges = $("#modalBadges");
   badges.replaceChildren();
@@ -401,10 +402,10 @@ function openDeepDiveModal(item) {
 
   setModalTitleLink(item.title || "Deep Dive", (item.sources || [])[0]);
   $("#modalOriginal").textContent = "Deep Dive";
-  $("#modalSummary").textContent = item.summary || "";
+  setRichText($("#modalSummary"), item.summary || "");
   renderRichDetail($("#modalDetail"), item.detailed_content, item.details || item.summary || "");
-  $("#modalWhy").textContent = item.why_it_matters || "";
-  $("#modalEngineering").textContent = "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.";
+  setRichText($("#modalWhy"), item.why_it_matters || "");
+  setRichText($("#modalEngineering"), "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.");
 
   const badges = $("#modalBadges");
   badges.replaceChildren();
@@ -446,6 +447,11 @@ function safeExternalUrl(value) {
   } catch {
     return "";
   }
+}
+
+function setRichText(parent, text) {
+  parent.replaceChildren();
+  appendRichText(parent, text);
 }
 
 function appendRichText(parent, text) {
