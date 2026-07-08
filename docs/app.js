@@ -555,6 +555,7 @@ function keepFocusInModal(event) {
 }
 
 function wireEvents() {
+  on(".skip-link", "click", focusMainContent);
   on("#searchInput", "input", (event) => {
     state.query = event.target.value;
     renderCards();
@@ -573,6 +574,17 @@ function wireEvents() {
     if (event.key === "Escape") closeModal();
     keepFocusInModal(event);
   });
+}
+
+function focusMainContent(event) {
+  const main = $("#mainContent");
+  if (!main) return;
+  event.preventDefault();
+  main.focus({ preventScroll: true });
+  main.scrollIntoView({ block: "start" });
+  if (window.location.hash !== "#mainContent") {
+    history.pushState(null, "", "#mainContent");
+  }
 }
 
 function handleViewToggleKeydown(event) {
