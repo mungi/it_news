@@ -120,7 +120,7 @@ function safeImageSrc(value) {
   try {
     if (parts.some((part) => {
       const decoded = decodeURIComponent(part);
-      return decoded === "." || decoded === ".." || decoded.includes("/") || decoded.includes("\\");
+      return decoded === "." || decoded === ".." || decoded.includes("/") || decoded.includes("\\") || hasUnsafeUrlWhitespace(decoded);
     })) return "";
   } catch {
     return "";

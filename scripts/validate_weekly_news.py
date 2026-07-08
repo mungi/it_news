@@ -86,7 +86,7 @@ def is_safe_assets_path(value: str) -> bool:
         if re.search(r"%(?![0-9A-Fa-f]{2})", part):
             return False
         decoded = unquote(part)
-        if decoded in {".", ".."} or "/" in decoded or "\\" in decoded:
+        if decoded in {".", ".."} or "/" in decoded or "\\" in decoded or has_unsafe_url_whitespace(decoded):
             return False
     return True
 
