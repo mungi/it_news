@@ -2,14 +2,14 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-08 16:27",
+  "last_updated_kst": "2026-07-08 20:36",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AI 에이전트 운영 리스크 확대: 비용·권한·테넌트 격리·챗봇 경계.",
+    "AI 에이전트 운영 경계 구체화: NGINX·OpenTelemetry egress 통제와 보안 guardrail 병행 필요.",
     "추론 경제성 경쟁 가속: 인프라 매출 집중, GLM 5.2, HyperPod DPD, GPU 수수료 인하.",
     "AI 주권·거버넌스 강화: 중국 모델 접근 통제 검토, 네이버 ASF 2.0, 국내 폐쇄망·방산 AI.",
     "AI 인프라 다변화: 퓨리오사AI·에퀴닉스 RNGD, SKT·삼성·피지컬 AI 투자.",
-    "보안 운영 우선순위 상향: Linux 커널 권한상승, CISA KEV, CI·에이전트 공급망 취약점."
+    "보안 운영 우선순위 상향: Linux 커널 권한상승, CISA KEV, UniFi OS edge 장비 패치."
   ],
   "deep_dives": [
     {
@@ -185,6 +185,132 @@
   ],
   "items": [
     {
+      "id": "news-063",
+      "rank": 1,
+      "title_ko": "CNCF, NGINX·OpenTelemetry로 AI 에이전트 네트워크 경계 패턴 제시",
+      "title_original": "Network boundary for AI agents using NGINX and OpenTelemetry",
+      "summary": "핵심: AI 에이전트 outbound 트래픽을 NGINX forward proxy와 iptables로 단일 경로화하고 OpenTelemetry span으로 감사하는 Kubernetes 패턴 공개. 영향: 프롬프트 guardrail만으로 부족한 네트워크 접근 통제를 cloud-native 운영 도구로 구현 가능.",
+      "detail": "CNCF 글은 OpenClaw 기반 AI 에이전트를 Kubernetes namespace에 배치하고 NGINX를 inbound reverse proxy와 outbound forward proxy로 쓰는 실험을 설명함. iptables로 다른 egress 경로를 차단하고 OpenTelemetry Collector로 request span을 남겨 Jaeger, Grafana, SIEM에 연결할 수 있는 감사 경계를 구성함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: CNCF 블로그가 AI 에이전트용 네트워크 경계를 **NGINX + OpenTelemetry** 조합으로 구성하는 Kubernetes 실험 공개",
+            "배경: OpenClaw 대화형 에이전트를 사내 네트워크에 넣기 어렵다는 운영자 우려에서 시작된 passion project 성격 확인",
+            "목표: 에이전트 의도 해석보다 네트워크 접근 경로를 강제·관측 가능한 구조로 만드는 데 초점"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "구성: NGINX가 inbound reverse proxy로 TLS를 종료하고 outbound forward proxy로 모든 agent request를 통과시키는 구조 제시",
+            "차단: iptables rules로 NGINX 외 egress traffic을 drop해 애플리케이션이 우회할 두 번째 경로를 갖지 못하도록 설계",
+            "관측: NGINX native OpenTelemetry module이 모든 request에 OTEL span을 emit하고 Collector가 audit log 또는 Jaeger·Grafana·SIEM으로 전달 가능",
+            "검증: single-node Kubernetes cluster에 NGINX, Ollama, OpenClaw, OpenTelemetry Collector 4개 workload를 같은 namespace로 배치해 실험",
+            "확장: consumer NVIDIA GPU 환경에서 검증했지만 Kubernetes workload를 실행할 수 있는 edge device부터 enterprise AI infrastructure까지 적용 가능성 언급"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "보안: 에이전트 guardrail은 생성 의도를 제어하지만 외부 네트워크 호출 권한까지 보장하지 못하는 한계 존재",
+            "운영: proxy 기반 enforcement는 open standard와 기존 cloud-native tooling을 활용해 감사·차단·트래픽 shaping을 한 경계에서 처리 가능",
+            "대안: NGINX 외에도 service mesh egress gateway, network policy, 다른 proxy technology로 같은 패턴 구현 가능"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 에이전트 PoC를 운영망에 붙이기 전 egress allowlist, span 기반 감사 로그, 우회 경로 차단을 아키텍처 요구사항으로 포함 필요",
+            "주의: 이 방식은 agent intent의 안전성을 판단하지 않으므로 identity, policy, runtime security, application guardrail과 함께 쓰는 방어 계층 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "AI 에이전트 보안 논의가 프롬프트와 모델 정책에 머무르면 실제 도구 호출·외부 API 호출 경로를 놓침. 네트워크 경계를 별도 아키텍처 속성으로 만들면 승인되지 않은 외부 호출과 감사 공백을 줄일 수 있음.",
+      "engineering_implication": "에이전트 런타임은 outbound proxy, egress deny-by-default, OTEL trace, SIEM 연동을 기본 플랫폼 기능으로 설계 필요.",
+      "korea_implication": "금융·공공·제조 폐쇄망 AI PoC는 모델 성능보다 egress 통제와 감사 로그 요구가 먼저 검토될 가능성 큼.",
+      "category": "Infra",
+      "tags": [
+        "AI Agent",
+        "Kubernetes",
+        "NGINX",
+        "OpenTelemetry",
+        "Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-08 20:00",
+      "source_name": "CNCF Blog",
+      "source_url": "https://www.cncf.io/blog/2026/07/08/network-boundary-for-ai-agents-using-nginx-and-opentelemetry/",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/06/Blog-Default-25.jpg",
+      "local_image": "assets/images/news-063.jpg",
+      "related_links": []
+    },
+    {
+      "id": "news-064",
+      "rank": 2,
+      "title_ko": "Ubiquiti, UniFi OS 최대 심각도 취약점 포함 7개 치명적 결함 패치",
+      "title_original": "Ubiquiti warns of new max severity UniFi OS vulnerability",
+      "summary": "핵심: Ubiquiti가 UniFi OS 계열의 7개 critical 취약점을 패치했고 CVE-2026-50746은 네트워크 접근만으로 host command injection 가능. 영향: Censys 기준 10만 대 이상 UniFi OS 인스턴스가 온라인 노출돼 지점·매장·스마트빌딩 네트워크 패치 우선순위 상승.",
+      "detail": "BleepingComputer 보도에 따르면 Ubiquiti는 UniFi Connect, Talk, Access, Protect, UniFi OS Server, 라우터·게이트웨이·NAS·감시 시스템에 걸친 critical 취약점 7개를 수정함. CVE-2026-50746은 UniFi Connect Application 3.4.16 이하에 영향을 주며 3.4.20 이상 업데이트가 필요함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Ubiquiti가 UniFi OS 관련 **7개 critical 취약점** 보안 업데이트 공개",
+            "최대 위험: CVE-2026-50746, UniFi Connect Application 3.4.16 이하에서 improper access control로 host command injection 가능",
+            "패치: 영향을 받는 UniFi Connect app은 3.4.20 이상으로 업데이트 필요"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "범위: UniFi Talk, UniFi Access, UniFi Protect, UniFi OS Server, Ubiquiti routers, gateways, NAS, surveillance systems까지 다수 제품군 대상",
+            "취약점: CVE-2026-50747, CVE-2026-50748, CVE-2026-54400, CVE-2026-54402, CVE-2026-55115, CVE-2026-55116 추가 패치",
+            "공격 조건: 6개 취약점은 low-complexity attack이며 user interaction 없이 악용 가능하다는 업체 설명 존재",
+            "노출 규모: Censys가 온라인에 노출된 UniFi OS instance를 **10만 대 이상** 추적하고 미국에서 약 5만 IP 확인",
+            "불확실성: Ubiquiti는 패치 전 실제 악용 여부를 공개하지 않았고 Censys historical scan에는 honeypot·이미 패치된 시스템 포함 가능성 존재"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "공격 표면: UniFi 장비는 지점망, 소매 매장, 스마트빌딩, 감시 카메라, EV charger 관리망과 연결될 수 있어 침해 시 물리 운영 영향 가능",
+            "이력: Ubiquiti Edge OS·UniFi OS 계열은 과거 GRU 연계 Moobot, CISA KEV, root/RCE 체인 사례에서 반복 표적 확인",
+            "운영 리스크: 라우터·게이트웨이·NAS·감시 시스템은 중앙 IT 자산 목록에서 누락되기 쉬워 패치 지연 가능성 큼"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: UniFi Controller와 OS application version inventory, 인터넷 노출 여부, remote management 접근 제어, 긴급 패치 여부를 같은 점검표로 확인 필요",
+            "탐지: 최근 UniFi OS max-severity flaw 악용 사례와 연계해 외부 접근 로그, 관리자 계정 변경, unknown device adoption, unexpected outbound proxy traffic 점검 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "네트워크 장비 취약점은 서버 패치보다 늦게 처리되지만 공격자는 edge device를 우회 프록시와 지속 거점으로 활용할 수 있음. UniFi 장비는 SMB·지점·매장·감시망에서 널리 쓰여 패치 누락 시 lateral movement 경로가 됨.",
+      "engineering_implication": "보안팀은 UniFi OS 노출 자산을 CMDB와 외부 attack surface scan에 포함하고 3.4.20 이상 적용, 관리 포트 접근 제한, 관리자 로그 리뷰를 즉시 수행 필요.",
+      "korea_implication": "국내 지점·매장·스마트오피스 운영 조직은 네트워크 장비를 서버 취약점과 동일한 긴급 패치 SLA로 관리 필요.",
+      "category": "Security",
+      "tags": [
+        "Ubiquiti",
+        "UniFi",
+        "CVE",
+        "Network Security",
+        "Edge Device"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-08 17:15",
+      "source_name": "BleepingComputer",
+      "source_url": "https://www.bleepingcomputer.com/news/security/ubiquiti-warns-of-new-max-severity-unifi-os-vulnerability/",
+      "image_url": "https://www.bleepstatic.com/content/hl-images/2026/07/08/Ubiquiti.jpg",
+      "local_image": "assets/images/news-064.jpg",
+      "related_links": []
+    },
+    {
       "id": "news-061",
       "title_ko": "Linux GhostLock 취약점, 로컬 사용자 root 권한 상승·컨테이너 탈출 가능",
       "title_original": "15-Year-Old GhostLock Flaw Enables Root and Container Escape on Most Linux Distros",
@@ -246,7 +372,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-062",
@@ -310,7 +436,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-057",
@@ -374,7 +500,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-058",
@@ -439,7 +565,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-059",
@@ -504,7 +630,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-060",
@@ -573,11 +699,11 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-055",
-      "rank": 7,
+      "rank": 9,
       "title_ko": "AWS Security Hub, Microsoft Azure 리소스 모니터링으로 멀티클라우드 보안 관리 확대",
       "title_original": "AWS Security Hub extends unified security management to Microsoft Azure",
       "summary": "핵심: AWS Security Hub, Microsoft Azure 리소스의 위험 분석·CSPM·취약점 관리·보안 대응 지원",
@@ -638,7 +764,7 @@
     },
     {
       "id": "news-054",
-      "rank": 8,
+      "rank": 10,
       "title_ko": "Amazon ECS Managed Instances, GPU 관리 수수료 최대 60% 인하",
       "title_original": "Amazon ECS Managed Instances reduces GPU management fees by up to 60%",
       "summary": "핵심: ECS Managed Instances, GPU·가속 인스턴스 관리 수수료 **최대 60%** 인하",
@@ -704,7 +830,7 @@
     },
     {
       "id": "news-051",
-      "rank": 9,
+      "rank": 11,
       "title_ko": "Google Dialogflow CX 취약점, 같은 프로젝트 내 챗봇 에이전트 탈취 가능성",
       "title_original": "Rogue Agent Flaw Could Have Let Attackers Hijack Google Dialogflow CX Chatbots",
       "summary": "핵심: Dialogflow CX Code Block 에이전트 결함 — 편집 권한 보유자가 같은 Google Cloud 프로젝트의 다른 에이전트까지 침해 가능",
@@ -765,7 +891,7 @@
     },
     {
       "id": "news-053",
-      "rank": 10,
+      "rank": 12,
       "title_ko": "Google Cloud 보고서, 조직 83%가 에이전틱 AI 지원 인프라 업그레이드 필요",
       "title_original": "Report: 83% of organizations need to upgrade their infrastructure to support agentic AI",
       "summary": "핵심: Google Cloud AI 인프라 보고서 — 조직 **83%**가 에이전틱 AI 지원을 위해 인프라 업그레이드 필요",
@@ -826,7 +952,7 @@
     },
     {
       "id": "news-056",
-      "rank": 11,
+      "rank": 13,
       "title_ko": "NVIDIA Vera CPU, 에이전틱 워크로드용 AI 팩토리 처리량 개선 강조",
       "title_original": "NVIDIA Vera CPU Boosts AI Factory Throughput to Accelerate Agentic Workloads",
       "summary": "핵심: NVIDIA Vera CPU — 대규모 AI 팩토리에서 에이전틱 워크로드 처리량과 CPU-GPU 균형 개선 강조",
@@ -887,7 +1013,7 @@
     },
     {
       "id": "news-040",
-      "rank": 12,
+      "rank": 14,
       "title_ko": "GitHub Actions 공격 체인, 일반 CI 보안 스캐너가 놓치는 패턴 경고",
       "title_original": "The GitHub Actions Attack Pattern Your CI Security Scanners Miss",
       "summary": "핵심: GitHub Actions 공격 체인 — 스캐너 통과가 파이프라인 안전을 보장하지 않음",
@@ -948,7 +1074,7 @@
     },
     {
       "id": "news-037",
-      "rank": 13,
+      "rank": 15,
       "title_ko": "Writer AI 취약점, 에이전트 미리보기에서 테넌트 간 세션 토큰 유출 가능",
       "title_original": "Writer AI Flaw Could Let Agent Previews Leak Session Tokens Across Tenants",
       "summary": "핵심: Writer AI WriteOut 결함 — sandbox preview가 session cookie를 공격자 제어 에이전트로 전달 가능",
@@ -1010,7 +1136,7 @@
     },
     {
       "id": "news-052",
-      "rank": 14,
+      "rank": 16,
       "title_ko": "Gemini API Managed Agents, 백그라운드 작업·원격 MCP 기능 확대",
       "title_original": "Expanding Managed Agents in Gemini API: background tasks, remote MCP and more",
       "summary": "핵심: Gemini API Managed Agents — 백그라운드 실행, 원격 MCP, 에이전트 작업 관리 기능 확대",
@@ -1071,7 +1197,7 @@
     },
     {
       "id": "news-047",
-      "rank": 15,
+      "rank": 17,
       "title_ko": "GLM 5.2, 오픈 가중치 모델로 AI 추론 마진 압박",
       "title_original": "GLM 5.2와 다가오는 AI 추론 마진 붕괴",
       "summary": "핵심: GLM 5.2 — 오픈 가중치 모델이 Opus·GPT급 에이전트 작업에 근접하며 고가 추론 API 마진 압박",
@@ -1134,7 +1260,7 @@
     },
     {
       "id": "news-041",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "앨버타주 정부, Claude로 4억6600만 줄 코드 보안 점검 사례 공개",
       "title_original": "加 앨버타주 정부, ‘클로드’로 4억6600만 줄 코드 점검… 사이버 보안 취약점 수년치 작업 20시간 만에 해결",
       "summary": "핵심: 공공부문 Claude Code 활용 — **4억6600만 줄** 코드 보안 점검을 **20시간**에 수행한 사례",
@@ -1195,7 +1321,7 @@
     },
     {
       "id": "news-050",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "과기정통부, 경남·전북에 5년간 1.4조원 피지컬 AI 메가프로젝트 개시",
       "title_original": "과기부, 경남·전북에 5년간 1.4조 투입…’피지컬 AI 메가프로젝트’ 개시",
       "summary": "핵심: 과기정통부·NIPA, 경남·전북 피지컬 AI 메가프로젝트에 **5년간 1.4조원** 투입",
@@ -1258,7 +1384,7 @@
     },
     {
       "id": "news-042",
-      "rank": 18,
+      "rank": 20,
       "title_ko": "ADD, 폐쇄망 생성형 AI ‘애디’ 전면 가동",
       "title_original": "ADD, 폐쇄망 생성형 AI ‘애디(Add+i)’ 전면 가동… 국방 연구개발 AI 전환 본격화",
       "summary": "핵심: 국방과학연구소, 폐쇄망 생성형 AI ‘Add+i’를 전 직원 대상 운영",
@@ -1319,7 +1445,7 @@
     },
     {
       "id": "news-043",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "팀네이버·KAI, 방산 특화 소버린 AI 모델 공동 개발 추진",
       "title_original": "팀네이버-KAI, 방산 특화 AI 모델 공동 개발…국방 소버린 AI 구현 나선다",
       "summary": "핵심: 네이버·네이버클라우드·KAI, 방산 특화 foundation model과 피지컬 AI 기반 미래전투체계 협력",
@@ -1380,7 +1506,7 @@
     },
     {
       "id": "news-044",
-      "rank": 20,
+      "rank": 22,
       "title_ko": "ETRI, 출연연 오픈소스 협의체 확대…AI 저작권·라이선스·보안 리스크 대응",
       "title_original": "ETRI, 출연연 오픈소스 협의체 범출연연으로 확대... AI저작권 등 오픈소스 리스크 공동대응",
       "summary": "핵심: 출연연 오픈소스 협의체 확대 — 라이선스 분쟁, 보안 취약점, AI 학습데이터 저작권 대응",
@@ -1441,7 +1567,7 @@
     },
     {
       "id": "news-048",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "AWS Security Hub, 노출 finding에 공격 영향 분석 추가",
       "title_original": "AWS Security Hub adds impact analysis for exposure findings",
       "summary": "핵심: Security Hub exposure finding에 downstream resource와 privilege escalation 경로 분석 추가",
@@ -1504,7 +1630,7 @@
     },
     {
       "id": "news-036",
-      "rank": 22,
+      "rank": 24,
       "title_ko": "Amazon SageMaker HyperPod, LLM 추론용 Disaggregated Prefill/Decode 지원",
       "title_original": "Amazon SageMaker HyperPod now supports disaggregated prefill and decode",
       "summary": "핵심: SageMaker HyperPod DPD — prefill·decode를 별도 GPU 풀로 분리해 long-context 추론 경합 완화",
@@ -1567,7 +1693,7 @@
     },
     {
       "id": "news-049",
-      "rank": 23,
+      "rank": 25,
       "title_ko": "SageMaker Studio, Hugging Face 모델 원클릭 배포·커스터마이징 통합",
       "title_original": "Amazon SageMaker Studio now integrates with Hugging Face for one-click model deployment and customization",
       "summary": "핵심: Hugging Face 모델 페이지에서 SageMaker AI 배포·커스터마이징 워크플로로 직접 이동",
@@ -1629,7 +1755,7 @@
     },
     {
       "id": "news-035",
-      "rank": 24,
+      "rank": 26,
       "title_ko": "Linux KVM Januscape 취약점, Intel·AMD x86 호스트에서 VM 탈출 위험",
       "title_original": "16-Year-Old Linux KVM Flaw Lets Guest VMs Escape to Host on Intel and AMD x86 Systems",
       "summary": "핵심: Linux KVM Januscape(CVE-2026-53359) — guest VM에서 host kernel shadow MMU 상태 손상 가능",
@@ -1697,7 +1823,7 @@
     },
     {
       "id": "news-039",
-      "rank": 25,
+      "rank": 27,
       "title_ko": "Gitea Docker 취약점 CVE-2026-20896, 공개 13일 만에 공격자 탐색 관측",
       "title_original": "Threat Actors Probe Gitea Docker Flaw CVE-2026-20896 13 Days After Disclosure",
       "summary": "핵심: Gitea Docker CVE-2026-20896 — reverse proxy auth 환경에서 spoofed X-WEBAUTH-USER 신뢰 위험",
@@ -1758,7 +1884,7 @@
     },
     {
       "id": "news-038",
-      "rank": 26,
+      "rank": 28,
       "title_ko": "SkillCloak, 악성 AI 에이전트 스킬이 정적 스캐너를 우회하는 기법 공개",
       "title_original": "SkillCloak Lets Malicious AI Agent Skills Evade Static Scanners with Self-Extracting Packing",
       "summary": "핵심: SkillCloak — self-extracting packing으로 악성 AI agent skill이 정적 검사를 우회",
@@ -1819,7 +1945,7 @@
     },
     {
       "id": "news-031",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "SKT 블랙웰 AI 클러스터 ‘해인’, 국내 최초 CSAP 인증 취득",
       "title_original": "SKT, 블랙웰 AI 클러스터 ‘해인’ 국내 최초 CSAP 인증 취득",
       "summary": "핵심: SKT 블랙웰 AI 클러스터 ‘해인’ — 국내 최초 **CSAP 인증**",
@@ -1887,7 +2013,7 @@
     },
     {
       "id": "news-046",
-      "rank": 28,
+      "rank": 30,
       "title_ko": "Hugging Face Kernels 업데이트, 모델 실행용 커스텀 커널 배포·공유 흐름 강화",
       "title_original": "🤗 Kernels: Major Updates",
       "summary": "핵심: Hugging Face Kernels 주요 업데이트 — 모델 페이지와 커스텀 커널 실행·공유 생태계 강화",
@@ -1948,7 +2074,7 @@
     },
     {
       "id": "news-015",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "AI 신뢰성 전문가 부족과 기업 AI 거버넌스 격차 부각",
       "title_original": "GPU보다 부족한 건 AI 신뢰성 전문가…규제는 발전과 동일 선상",
       "summary": "핵심: AI 신뢰성 인력·프로세스 부족 — 기업 AI 거버넌스 병목",
@@ -2010,7 +2136,7 @@
     },
     {
       "id": "news-016",
-      "rank": 30,
+      "rank": 32,
       "title_ko": "기업 AI, 모델 다변화는 성공했지만 거버넌스 통제 격차 노출",
       "title_original": "모델 다변화는 성공, 거버넌스는 낙제점…기업 AI '통제 격차' 본격화",
       "summary": "핵심: 멀티 모델 전략 확산, 통제·거버넌스는 **Control Gap** 노출",
@@ -2072,7 +2198,7 @@
     },
     {
       "id": "news-002",
-      "rank": 31,
+      "rank": 33,
       "title_ko": "SKT, 최대 15GW 규모 AI 데이터센터 구축 계획 발표",
       "title_original": "SKT, 15GW AI 데이터센터 구축 \"아시아 AI 인프라 허브 도약\"",
       "summary": "핵심: SKT AI 데이터센터 로드맵 **최대 15GW** 규모",
@@ -2139,7 +2265,7 @@
     },
     {
       "id": "news-001",
-      "rank": 32,
+      "rank": 34,
       "title_ko": "AI 에이전트, 생성형 AI보다 질문당 최대 136.5배 에너지 소비",
       "title_original": "AI 에이전트, 생성형 AI보다 질문 한 건당 최대 136.5배 에너지 소비",
       "summary": "핵심: AI 에이전트 질의 1건당 에너지 사용량 **최대 136.5배** 증가 가능",
@@ -2201,7 +2327,7 @@
     },
     {
       "id": "news-027",
-      "rank": 33,
+      "rank": 35,
       "title_ko": "Claude Code 비용 60% 절감 아이디어: 코드를 이미지로 변환해 OCR 활용",
       "title_original": "Fable 비용 60% 절감: 코드를 이미지로 변환하고 모델이 OCR하게 하기",
       "summary": "핵심: pxpipe — 코드 컨텍스트를 PNG로 바꿔 입력 비용 **약 59~70% 절감** 주장",
@@ -2263,7 +2389,7 @@
     },
     {
       "id": "news-024",
-      "rank": 34,
+      "rank": 36,
       "title_ko": "AI 추론 달러당 성능 개선, AMD MI355X가 저비용 대안으로 부상",
       "title_original": "달러당 성능이 더 빠르고 저렴해지고 있음",
       "summary": "핵심: AMD MI355X — NVIDIA B300 대비 GPU당 평균 **약 2.75배 저렴한** 대안",
@@ -2326,7 +2452,7 @@
     },
     {
       "id": "news-032",
-      "rank": 35,
+      "rank": 37,
       "title_ko": "삼성, 영남권에 60조원 투자해 피지컬 AI 혁신 클러스터 구축 계획",
       "title_original": "삼성, 영남에 60조원 투자… ‘글로벌 피지컬 AI 혁신 클러스터’ 구축",
       "summary": "핵심: 삼성 영남권 피지컬 AI 클러스터 — 투자 규모 **약 60조원**",
@@ -2389,7 +2515,7 @@
     },
     {
       "id": "news-026",
-      "rank": 36,
+      "rank": 38,
       "title_ko": "AI 에이전트 안정화를 위한 루프 엔지니어링의 미학",
       "title_original": "루프 엔지니어링의 미학 (The Art of Loop Engineering)",
       "summary": "핵심: 에이전트 안정화 — 좋은 모델보다 **루프·검증·종료 조건**",
@@ -2450,7 +2576,7 @@
     },
     {
       "id": "news-025",
-      "rank": 37,
+      "rank": 39,
       "title_ko": "ClickHouse가 Observability 전쟁에서 앞서가는 이유",
       "title_original": "ClickHouse가 Observability 전쟁에서 앞서가는 이유",
       "summary": "핵심: ClickHouse Observability — **대용량·비정형·추가 중심** 로그에 적합",
@@ -2512,7 +2638,7 @@
     },
     {
       "id": "news-018",
-      "rank": 38,
+      "rank": 40,
       "title_ko": "Linux Bad Epoll 취약점, 비권한 사용자의 root 권한 상승 가능성 보도",
       "title_original": "New Bad Epoll Linux Kernel Flaw Lets Unprivileged Users Gain Root, Hits Android",
       "summary": "핵심: Linux Bad Epoll 취약점 — 비권한 사용자 root 권한 상승 가능성",
@@ -2574,7 +2700,7 @@
     },
     {
       "id": "news-045",
-      "rank": 39,
+      "rank": 41,
       "title_ko": "Amazon EC2 Dedicated Hosts, AMD SEV-SNP 지원으로 기밀 컴퓨팅 선택지 확대",
       "title_original": "Amazon EC2 Dedicated Hosts now support AMD SEV-SNP",
       "summary": "핵심: EC2 Dedicated Hosts, AMD SEV-SNP 지원 — 전용 호스트 환경의 메모리 암호화·무결성 보호 강화",
@@ -2635,7 +2761,7 @@
     },
     {
       "id": "news-013",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "GitHub, 2만 개 이상 secret scanning 알림을 9개월 만에 정리한 방법 공개",
       "title_original": "How GitHub used secret scanning to reach inbox zero",
       "summary": "핵심: GitHub secret scanning 알림 **2만 개+**를 9개월 만에 inbox zero",
@@ -2696,7 +2822,7 @@
     },
     {
       "id": "news-004",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "AI 에이전트가 Langflow RCE를 악용해 데이터베이스 랜섬웨어 공격 자동화",
       "title_original": "AI Agent Exploits Langflow RCE to Automate Database Ransomware Attack",
       "summary": "핵심: Langflow RCE 악용 — AI 에이전트 기반 DB 랜섬웨어 자동화 사례",
@@ -2758,7 +2884,7 @@
     },
     {
       "id": "news-034",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "Argo CD repo-server 미패치 결함, Kubernetes 클러스터 장악 위험",
       "title_original": "Unpatched Argo CD Repo-Server Flaw Could Let Attackers Take Over Kubernetes Clusters",
       "summary": "핵심: Argo CD repo-server 내부 gRPC 포트 접근 시 미인증 RCE와 클러스터 장악 가능성",
@@ -2826,7 +2952,7 @@
     },
     {
       "id": "news-003",
-      "rank": 43,
+      "rank": 45,
       "title_ko": "Amazon EKS, Kubernetes 버전 업그레이드 롤백 지원",
       "title_original": "Upgrade Amazon EKS clusters with confidence using Kubernetes version rollbacks",
       "summary": "핵심: Amazon EKS, Kubernetes 업그레이드 후 **7일 이내 롤백** 지원",
@@ -2888,7 +3014,7 @@
     },
     {
       "id": "news-012",
-      "rank": 44,
+      "rank": 46,
       "title_ko": "GitHub, 오픈소스 유지관리자가 이번 주 켜야 할 6가지 무료 보안 설정 제안",
       "title_original": "6 security settings every GitHub maintainer should enable this week",
       "summary": "핵심: GitHub 오픈소스 보안 — 무료 설정 **6가지** 즉시 적용 권고",
@@ -2950,7 +3076,7 @@
     },
     {
       "id": "news-005",
-      "rank": 45,
+      "rank": 47,
       "title_ko": "Cursor 취약점, 프롬프트 주입으로 샌드박스 탈출·명령 실행 가능성 제기",
       "title_original": "Critical Cursor Flaws Could Let Prompt Injection Escape Sandbox and Run Commands",
       "summary": "핵심: Cursor 취약점 — 프롬프트 주입으로 샌드박스 탈출·명령 실행 가능성",
@@ -3012,7 +3138,7 @@
     },
     {
       "id": "news-010",
-      "rank": 46,
+      "rank": 48,
       "title_ko": "Docker, AI 에이전트 격리 필요성과 Sandbox Kits 강조",
       "title_original": "Why AI Agents Need Isolation",
       "summary": "핵심: Docker, AI 에이전트용 격리와 Sandbox Kits 강조",
@@ -3074,7 +3200,7 @@
     },
     {
       "id": "news-009",
-      "rank": 47,
+      "rank": 49,
       "title_ko": "Cloudflare, 에이전틱 인터넷과 콘텐츠 유료화 시장 보고",
       "title_original": "Content Independence Day, one year on: building the business model for the agentic Internet",
       "summary": "핵심: Cloudflare, autonomous AI agents와 콘텐츠 유료화 시장 보고",
@@ -3136,7 +3262,7 @@
     },
     {
       "id": "news-023",
-      "rank": 48,
+      "rank": 50,
       "title_ko": "Claude Sonnet 5 공개, Sonnet 가격대에서 Opus급 에이전트 성능 겨냥",
       "title_original": "Claude Sonnet 5 공개",
       "summary": "핵심: Claude Sonnet 5 — **Sonnet 가격대**에서 추론·도구 사용·코딩 강화",
@@ -3196,135 +3322,6 @@
           "heading": "시사점",
           "items": [
             "팀 액션: 작업별 라우팅 필요: 기본 작업은 Sonnet급, 고난도 추론·코딩은 상위 모델 fallback",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-006",
-      "rank": 49,
-      "title_ko": "AWS CloudFormation Express mode, 인프라 배포 최대 4배 가속",
-      "title_original": "Accelerate your infrastructure deployments by up to 4x with AWS CloudFormation Express mode",
-      "summary": "핵심: CloudFormation Express mode — 인프라 배포 확인 **최대 4배** 단축",
-      "detail": "핵심: 핵심: CloudFormation Express mode — 인프라 배포 확인 **최대 4배** 단축\n변화: 변화: 개발자·AI 에이전트의 IaC 반복 속도 개선\n영향: AI 에이전트가 인프라를 생성·수정하는 흐름에서는 배포 지연이 곧 생산성 병목이 됨\n시사점: Express mode 적용 시 배포 파이프라인에 별도 smoke test, drift detection, rollback 기준을 함께 둬야 필요",
-      "why_it_matters": "AI 에이전트가 인프라를 생성·수정하는 흐름에서는 배포 지연이 곧 생산성 병목이 됩니다.",
-      "engineering_implication": "Express mode 적용 시 배포 파이프라인에 별도 smoke test, drift detection, rollback 기준을 함께 둬야 합니다.",
-      "korea_implication": "AWS 기반 플랫폼 팀은 개발 환경·샌드박스 배포 시간을 줄이는 용도로 검토할 만합니다.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "CloudFormation",
-        "IaC",
-        "DevOps",
-        "AI Agent"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-01 06:30",
-      "source_name": "AWS News Blog",
-      "source_url": "https://aws.amazon.com/blogs/aws/accelerate-your-infrastructure-deployments-by-up-to-4x-with-aws-cloudformation-express-mode/",
-      "image_url": "https://d2908q01vomqb2.cloudfront.net/da4b9237bacccdf19c0760cab7aec4a8359010b0/2026/06/29/aws-cloudformation-express-2.jpg",
-      "local_image": "assets/images/news-006.jpg",
-      "related_links": [
-        {
-          "title": "AWS What’s New 발표",
-          "url": "https://aws.amazon.com/about-aws/whats-new/2026/06/aws-cloudformation-cdk/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: CloudFormation Express mode — 인프라 배포 확인 **최대 4배** 단축",
-            "변화: 변화: 개발자·AI 에이전트의 IaC 반복 속도 개선",
-            "원문: Accelerate your infrastructure deployments by up to 4x with AWS CloudFormation Express mode 기준 정리",
-            "시점: 2026-07-01 06:30 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AWS News Blog 원문 링크 기준 요약",
-            "범위: Cloud / Global / AWS, CloudFormation, IaC, DevOps, AI Agent 영역",
-            "주요 내용: 볼 것: smoke test, drift detection, rollback 기준",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 에이전트가 인프라를 생성·수정하는 흐름에서는 배포 지연이 곧 생산성 병목이 됨",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: Express mode 적용 시 배포 파이프라인에 별도 smoke test, drift detection, rollback 기준을 함께 둬야 필요",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-008",
-      "rank": 50,
-      "title_ko": "Amazon EC2 C9g/C9gd, Graviton5 기반 인스턴스 정식 출시",
-      "title_original": "Amazon EC2 C9g and C9gd instances powered by AWS Graviton5 processors are now available",
-      "summary": "핵심: EC2 C9g/C9gd — **Graviton5** 기반 인스턴스 정식 출시",
-      "detail": "핵심: 핵심: EC2 C9g/C9gd — **Graviton5** 기반 인스턴스 정식 출시\n변화: 변화: Graviton4 대비 컴퓨트 성능·캐시·메모리 개선\n영향: 인프라 비용 최적화와 성능 개선을 동시에 노릴 수 있는 새 컴퓨트 옵션임\n시사점: Arm64 이미지, 의존성 호환성, 성능 벤치마크, 스팟/예약 인스턴스 전략을 함께 검토필요",
-      "why_it_matters": "인프라 비용 최적화와 성능 개선을 동시에 노릴 수 있는 새 컴퓨트 옵션입니다.",
-      "engineering_implication": "Arm64 이미지, 의존성 호환성, 성능 벤치마크, 스팟/예약 인스턴스 전략을 함께 검토해야 합니다.",
-      "korea_implication": "AWS 비용이 큰 국내 서비스는 x86 대비 워크로드별 비용 절감 가능성을 재평가할 수 있습니다.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "EC2",
-        "Graviton",
-        "Arm",
-        "Compute"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-07-01 05:56",
-      "source_name": "AWS News Blog",
-      "source_url": "https://aws.amazon.com/blogs/aws/amazon-ec2-c9g-and-c9gd-instances-powered-by-aws-graviton5-processors-are-now-available/",
-      "image_url": "https://d2908q01vomqb2.cloudfront.net/da4b9237bacccdf19c0760cab7aec4a8359010b0/2025/10/07/EC2-F2b.png",
-      "local_image": "assets/images/news-008.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: EC2 C9g/C9gd — **Graviton5** 기반 인스턴스 정식 출시",
-            "변화: 변화: Graviton4 대비 컴퓨트 성능·캐시·메모리 개선",
-            "원문: Amazon EC2 C9g and C9gd instances powered by AWS Graviton5 processors are now available 기준 정리",
-            "시점: 2026-07-01 05:56 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AWS News Blog 원문 링크 기준 요약",
-            "범위: Cloud / Global / AWS, EC2, Graviton, Arm, Compute 영역",
-            "주요 내용: 볼 것: Arm64 이미지, 의존성 호환성, 워크로드별 벤치마크",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 인프라 비용 최적화와 성능 개선을 동시에 노릴 수 있는 새 컴퓨트 옵션임",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: Arm64 이미지, 의존성 호환성, 성능 벤치마크, 스팟/예약 인스턴스 전략을 함께 검토필요",
             "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
           ]
         }

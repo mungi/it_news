@@ -186,3 +186,10 @@
 - Checked current time at 2026-07-08 19:40 KST; no freeze guard was run per current project policy.
 - Changed the Top 6 presentation filter to select by importance, score, then rank instead of simply taking the six newest matching items.
 - Updated the result-count copy and JS cache-busting query string; verified syntax, weekly-news validation, Python compile, and browser smoke checks.
+
+## [2026-07-08] update | Add AI agent network boundary and UniFi OS security stories
+- Checked current time at 2026-07-08 20:36 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404, Kubernetes feed parsing failed, and Anthropic RSS returned 404 in this probe. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, Hugging Face, CNCF, GitLab, JetBrains, Stack Overflow, Microsoft Security, Google Security, and OpenAI feeds.
+- Reviewed 2,429 feed entries and 201 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 2 sourced stories covering CNCF's NGINX/OpenTelemetry AI-agent network boundary pattern and Ubiquiti UniFi OS critical vulnerability patches. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, and wiki index.
