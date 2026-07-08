@@ -21,3 +21,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 - 모델 교체 실험은 harness, prompt/tool schema, middleware, secure runtime, evaluation trace와 함께 실행 필요.
 - 반도체 선택은 GPU/ASIC 단가뿐 아니라 SDK, kernel, observability, 장애 대응, 공급망 리스크까지 포함 필요.
 - 대규모 추론 플랫폼은 GPU, HBM, NVMe, 네트워크, 냉각을 하나의 throughput chain으로 관측 필요.
+
+## 2026-07-09 업데이트: Cloud Native AI 데이터 경로
+- CNCF Cloud Native AI 스토리지 백서는 AI/ML 워크로드의 병목이 GPU뿐 아니라 data-heavy, stateful storage path에 있음을 정리했다.
+- 플랫폼팀은 checkpoint, model artifact, vector/feature data, cache, object/file/block storage 선택을 workload I/O profile과 비용 모델로 관리해야 한다.

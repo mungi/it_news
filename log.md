@@ -214,3 +214,9 @@
 ## [2026-07-09] site | Harden category and tag validation
 - Checked current time at 2026-07-09 08:07 KST; no freeze guard was run per current project policy.
 - Added validator checks for allowed weekly-news categories and non-empty string tags so malformed data cannot silently break filters or search.
+## 2026-07-09 08:54 KST
+
+- 자동 업데이트 실행: RSS/웹 피드 27개 중 23개 접근 성공, 2,545개 엔트리에서 최근·키워드 후보 269건 검토.
+- docs/data/weekly-news.json: 50건 유지, 신규 6건 추가, 하위/중복 6건 교체. Deep Dive 2건 유지.
+- 추가: AWS Security Hub Network Scanning, AI coding agents EDR 경보, CNCF Cloud Native AI Storage 백서, HalluSquatting, OpenAI 코딩 평가 분석, Docker 로컬 런타임 거버넌스.
+- LLM wiki 업데이트: weekly/2026-W28.md 재생성, raw/articles 후보 검토 노트 추가, ai-agent-security 및 ai-inference-infrastructure 개념 노트 보강.
