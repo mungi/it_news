@@ -203,3 +203,10 @@
 - Checked current time at 2026-07-08 23:52 KST; no freeze guard was run per current project policy.
 - Rejected raw whitespace/control characters in browser `safeImageSrc()` and `safeExternalUrl()` before URL parsing can normalize data-driven links or images.
 - Aligned `scripts/validate_weekly_news.py` `http(s)` URL checks with the browser hardening and bumped the app.js cache key.
+
+## [2026-07-09] update | Add Nemotron, DeepSeek chip, Copilot workflow, and PM1763 stories
+- Checked current time at 2026-07-09 00:43 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, Hugging Face, Kubernetes, CNCF, GitLab, JetBrains, Stack Overflow, Microsoft Security, Google Security, OpenAI, Anthropic, and Azure feeds.
+- Reviewed 385 feed entries and 325 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering NVIDIA Nemotron + LangChain Deep Agents harness, DeepSeek AI chip development, GitHub Copilot workflow-level jailbreak research, and Samsung PM1763 AI data-center SSD. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
