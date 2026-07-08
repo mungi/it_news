@@ -182,3 +182,7 @@
 - Reviewed 2,429 feed entries and 285 keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
 - Added 2 sourced security stories covering Linux GhostLock root/container escape and CISA KEV additions for Adobe ColdFusion, Joomla, and Langflow. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+## [2026-07-08] site | Make Top 6 filter priority-based
+- Checked current time at 2026-07-08 19:40 KST; no freeze guard was run per current project policy.
+- Changed the Top 6 presentation filter to select by importance, score, then rank instead of simply taking the six newest matching items.
+- Updated the result-count copy and JS cache-busting query string; verified syntax, weekly-news validation, Python compile, and browser smoke checks.
