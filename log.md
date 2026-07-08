@@ -176,3 +176,9 @@
 - Checked current time at 2026-07-08 13:28 KST; no freeze guard was run per current project policy.
 - Aligned `SPEC.md` optional finalizer wording with the current 4-hour news cadence and documented that the Monday 13:00-17:00 KST freeze guard is no longer used.
 - Added JS syntax and Python compile checks to `scripts/improve_project_prompt.md` so future improvement runs validate static code before serving the site.
+## [2026-07-08] update | Add Linux GhostLock and CISA KEV security stories
+- Checked current time at 2026-07-08 16:27 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews RSS returned 403 and GeekNews Plus RSS returned 404 in this probe. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, Hugging Face, Kubernetes, CNCF, GitLab, JetBrains, Stack Overflow, Microsoft Security, Google Security, OpenAI, Anthropic, and Azure feeds.
+- Reviewed 2,429 feed entries and 285 keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 2 sourced security stories covering Linux GhostLock root/container escape and CISA KEV additions for Adobe ColdFusion, Joomla, and Langflow. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
