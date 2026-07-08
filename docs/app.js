@@ -102,8 +102,9 @@ function fallbackImageFor(category) {
 }
 
 function safeImageSrc(value) {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
+  const raw = String(value || "");
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed !== raw) return "";
   if (hasUnsafeUrlWhitespace(raw)) return "";
   if (/^https?:\/\//i.test(raw)) {
     try {
@@ -481,8 +482,9 @@ function makeLink(title, url) {
 }
 
 function safeExternalUrl(value) {
-  const raw = String(value || "").trim();
-  if (hasUnsafeUrlWhitespace(raw)) return "";
+  const raw = String(value || "");
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed !== raw || hasUnsafeUrlWhitespace(raw)) return "";
   if (!/^https?:\/\//i.test(raw)) return "";
   try {
     const url = new URL(raw);
