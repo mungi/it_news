@@ -228,17 +228,30 @@ def main() -> int:
             errors.append(f"missing top-level field: {key}")
 
     week = data.get("week")
-    if week and not is_valid_week(str(week)):
+    if not isinstance(week, str) or not week.strip():
+        errors.append("week must be a non-empty ISO YYYY-Www string")
+    elif not is_valid_week(week):
         errors.append(f"week must use a valid ISO YYYY-Www format, got: {week}")
     for key in ("audience",):
         value = data.get(key)
         if value is not None and (not isinstance(value, str) or not value.strip()):
             errors.append(f"{key} must be a non-empty string")
 
+    timeline: dict[str, tuple[int, int, int, int, int]] = {}
     for key in ("coverage_start_kst", "coverage_end_kst", "last_updated_kst"):
         value = data.get(key)
-        if value and not is_valid_kst_timestamp(value):
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{key} must be a non-empty YYYY-MM-DD HH:mm KST timestamp")
+            continue
+        if not is_valid_kst_timestamp(value):
             errors.append(f"{key} must use a valid YYYY-MM-DD HH:mm KST timestamp, got: {value}")
+            continue
+        parsed = parse_kst_timestamp(value)
+        if parsed:
+            timeline[key] = parsed
+    if timeline.get("coverage_start_kst") and timeline.get("coverage_end_kst"):
+        if timeline["coverage_start_kst"] > timeline["coverage_end_kst"]:
+            errors.append("coverage_start_kst must be earlier than or equal to coverage_end_kst")
 
     items = data.get("items", [])
     deep_dives = data.get("deep_dives", [])
