@@ -130,6 +130,12 @@ Each `docs/data/weekly-news.json` should include:
 
 Rules:
 - Use Korean.
+- Use the user's GeekNews GN⁺ article-summary format as the default summarization standard: translated title, 4-6 chronological 핵심 요약 bullets, `---`, then `##` body sections sized to source length.
+- Preserve original numbered/level/step structures as section headings when present. Otherwise divide by argument, concept, technical component, phase, or chronological event.
+- Every summary/detail bullet must use noun-form endings such as `~함`, `~음`, `~임`, `~됨`, `확인`, `공개`, `요구`, `필요`, `리스크`, or `운영 과제`; do not use `~다`, `~습니다`, or `~해요` endings.
+- Each core-summary bullet must include one main claim plus one supporting fact, number, example, or condition. Keep core summaries to 4-6 bullets regardless of article length.
+- Use `- ` for section bullets and `  * ` nested bullets for examples, quotes, conditions, and implementation details. Preserve important fenced code blocks from source articles.
+- Avoid first-person and meta phrasing such as `나는`, `저는`, `이 글은`, `요약하면`, and `저자에 따르면`. Do not add opinions or interpretation not present in the source.
 - Regular item `detailed_content` must have at least 4 sections and 8 concrete bullets, covering `무슨 일이 있었나`, `본문 핵심 포인트`, `왜 중요한가`, and `시사점` or equivalent headings.
 - Regular item `상세 내용` must include the source article's main body facts, numbers, affected systems, scope, constraints, and engineering implications when present. The modal should not omit core content that a presenter needs.
 - End regular item detail bullets in 명사형 종결 / briefing fragments such as `확인`, `공개`, `추가`, `요구`, `필요`, `대상`, `가능성`, `리스크`, `운영 과제`; avoid repeated `합니다/했습니다/됩니다` endings.

@@ -147,6 +147,12 @@ Item shape:
 
 Regular item `detailed_content` requirements:
 
+- Use the user's GeekNews GN⁺ article-summary prompt as the default summary standard for source captures, card summaries, modal details, and weekly markdown.
+- Output structure: translated title, 4-6 chronological core-summary bullets, `---`, then `##` body sections. Preserve original numbered/level/step structures when present; otherwise create concise Korean section titles from the section's argument, concept, technical component, phase, or chronological event.
+- Every bullet should end in noun-form/briefing endings such as `~함`, `~음`, `~임`, `~됨`, `확인`, `공개`, `요구`, `필요`, `리스크`, or `운영 과제`; do not use `~다`, `~습니다`, or `~해요` endings.
+- Each core-summary bullet should contain one main claim plus one supporting fact, number, example, or condition. Bold only one decision-critical metric, proper noun, or concept per bullet when useful.
+- Use `- ` for section bullets and `  * ` nested bullets for examples, quotes, conditions, and implementation details. Preserve source code blocks when usage depends on them.
+- Avoid first-person and meta phrasing such as `나는`, `저는`, `이 글은`, `요약하면`, and `저자에 따르면`; do not add opinions not present in the source.
 - Minimum 4 sections and 8 concrete bullets.
 - Recommended sections: `무슨 일이 있었나`, `본문 핵심 포인트`, `왜 중요한가`, `시사점`.
 - Include the source article's main body facts, numbers, affected systems, scope, constraints, and engineering implications when present.

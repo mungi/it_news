@@ -101,6 +101,12 @@ For images, inspect the source page metadata first and prefer a reliable article
 UI/content policy:
 - Display `must-know` as `중요 소식` in Korean UI; keep the internal JSON value as `must-know` for compatibility.
 - The modal section label is `상세 내용`, not `상세 요약`.
+- Use the user's GeekNews GN⁺ summary prompt as the default article-summary standard for source captures, card summaries, modal details, and weekly markdown: translated title, 4-6 chronological core-summary bullets, `---`, then `##` sections sized by source length. Preserve the source article's existing numbered/level/step structure when present; otherwise create compressed Korean section titles by argument, concept, phase, or chronological event.
+- In GN⁺ style, every bullet must end in noun-form/briefing endings such as `~함`, `~음`, `~임`, `~됨`, `확인`, `공개`, `요구`, `필요`, `리스크`, or `운영 과제`. Do not use polite/full sentence endings such as `~다`, `~습니다`, or `~해요`.
+- Each GN⁺ core-summary bullet should contain one main claim plus one supporting fact, number, example, or condition. Keep 4-6 bullets regardless of article length.
+- Use `- ` bullets for section details and `  * ` nested bullets for examples, quotes, conditions, and implementation details. For APIs, tools, commands, parameters, file names, and settings, use `` `name`: description ``. Preserve fenced code blocks when source usage examples depend on them.
+- Do not add first-person or meta phrasing such as `나는`, `저는`, `이 글은`, `요약하면`, or `저자에 따르면`. Rewrite source claims as direct factual briefing statements without adding opinions not present in the source.
+- Bold only one decision-critical metric, proper noun, or concept per bullet when useful; do not overuse bold text.
 - `상세 내용` must end in noun-style briefing fragments, not narrative polite prose. Prefer endings such as `확인`, `공개`, `추가`, `요구`, `필요`, `대상`, `가능성`, `리스크`, `검토 항목`, `운영 과제`, `비용 변수`; avoid repeated `합니다/했습니다/됩니다` endings in modal bullets.
 - Regular news item `detailed_content` should use sections such as `무슨 일이 있었나`, `본문 핵심 포인트`, `왜 중요한가`, `시사점`. Summarize the original article's core content fully enough that opening the source is for verification, not for discovering missing essentials.
 - Writing principles: no greetings or emotional openers; top-load the conclusion and core summary; keep rhetoric minimal; use a factual, objective tone; preserve accurate domain terminology; use **개조식(箇條式)** instead of long prose paragraphs.
