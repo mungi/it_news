@@ -164,3 +164,10 @@
 - 상세 내용 규칙 보강: 일반 뉴스 모달을 4개 섹션/8개 이상 핵심 bullet 구조로 확장하고 명사형 종결 중심으로 정리.
 - 목록 정렬 정책 변경: published_kst 최신순으로 rank 재부여, 50개 초과 시 오래된 항목부터 제외.
 - `docs/data/weekly-news.json`과 `weekly/2026-W28.md` 동기화.
+
+## [2026-07-08] update | Add AI sovereignty, safety, and inference infrastructure stories
+- Checked current time at 2026-07-08 12:19 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS probe returned 404. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, Hugging Face, Kubernetes, CNCF, GitLab, JetBrains, Stack Overflow, Microsoft Security, Google Security, and OpenAI feeds.
+- Reviewed 2,521 feed entries and 627 keyword-relevant candidates across reachable feeds; 2 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering China frontier-model access controls, FuriosaAI-Equinix RNGD inference infrastructure, Naver ASF 2.0 AI safety governance, and AI economy infrastructure revenue concentration. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, and wiki index.
