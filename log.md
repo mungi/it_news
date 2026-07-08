@@ -198,3 +198,8 @@
 - Checked current time at 2026-07-08 21:47 KST; no freeze guard was run per current project policy.
 - Clarified `scripts/improve_project_prompt.md` so the improvement cron must not run legacy presentation/freeze-window guards.
 - Added commit-hygiene guidance to remove Python caches and inspect status/diff before staging changes.
+
+## [2026-07-08] site | Harden URL whitespace validation
+- Checked current time at 2026-07-08 23:52 KST; no freeze guard was run per current project policy.
+- Rejected raw whitespace/control characters in browser `safeImageSrc()` and `safeExternalUrl()` before URL parsing can normalize data-driven links or images.
+- Aligned `scripts/validate_weekly_news.py` `http(s)` URL checks with the browser hardening and bumped the app.js cache key.

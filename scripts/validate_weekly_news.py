@@ -32,8 +32,15 @@ MIN_ITEM_DETAIL_BULLETS = 8
 
 
 def is_http_url(value: str) -> bool:
+    if not isinstance(value, str) or has_unsafe_url_whitespace(value):
+        return False
     parsed = urlparse(value)
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def has_unsafe_url_whitespace(value: str) -> bool:
+    """Reject raw control/whitespace characters before URL parsing normalizes them."""
+    return any(ord(char) <= 0x20 or ord(char) == 0x7F for char in value)
 
 
 def is_valid_week(value: str) -> bool:

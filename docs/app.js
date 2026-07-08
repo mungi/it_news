@@ -104,6 +104,7 @@ function fallbackImageFor(category) {
 function safeImageSrc(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
+  if (hasUnsafeUrlWhitespace(raw)) return "";
   if (/^https?:\/\//i.test(raw)) {
     try {
       const url = new URL(raw);
@@ -481,6 +482,7 @@ function makeLink(title, url) {
 
 function safeExternalUrl(value) {
   const raw = String(value || "").trim();
+  if (hasUnsafeUrlWhitespace(raw)) return "";
   if (!/^https?:\/\//i.test(raw)) return "";
   try {
     const url = new URL(raw);
@@ -488,6 +490,10 @@ function safeExternalUrl(value) {
   } catch {
     return "";
   }
+}
+
+function hasUnsafeUrlWhitespace(value) {
+  return /[\u0000-\u0020\u007f]/.test(value);
 }
 
 function setRichText(parent, text) {
