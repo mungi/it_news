@@ -341,8 +341,8 @@ Rules:
 
 ### Optional pre-presentation finalizer
 
-The 6-hour job should still create a final update before Monday 13:00 KST when the schedule aligns.
-A separate 12:50 KST finalizer can be added later if stricter freshness is needed.
+The 4-hour news update job may still create a final update before Monday 13:00 KST when the schedule aligns.
+A separate 12:50 KST finalizer can be added later if stricter freshness is needed. The project no longer uses a Monday 13:00-17:00 KST update freeze guard.
 
 ## 10. Continuous Code Improvement Schedule
 

@@ -171,3 +171,8 @@
 - Reviewed 2,521 feed entries and 627 keyword-relevant candidates across reachable feeds; 2 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering China frontier-model access controls, FuriosaAI-Equinix RNGD inference infrastructure, Naver ASF 2.0 AI safety governance, and AI economy infrastructure revenue concentration. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, and wiki index.
+
+## [2026-07-08] site | Align improvement automation verification docs
+- Checked current time at 2026-07-08 13:28 KST; no freeze guard was run per current project policy.
+- Aligned `SPEC.md` optional finalizer wording with the current 4-hour news cadence and documented that the Monday 13:00-17:00 KST freeze guard is no longer used.
+- Added JS syntax and Python compile checks to `scripts/improve_project_prompt.md` so future improvement runs validate static code before serving the site.

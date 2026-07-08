@@ -31,7 +31,9 @@ Consider improvements in this order:
 Before committing:
 
 ```bash
+node --check docs/app.js
 python3 scripts/validate_weekly_news.py
+python3 -m py_compile scripts/validate_weekly_news.py
 python3 -m http.server 8765 --directory docs
 ```
 
