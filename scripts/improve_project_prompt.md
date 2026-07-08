@@ -12,8 +12,9 @@ Review and improve this project’s code, UI, UX, accessibility, security, perfo
 1. First inspect the project and make a short internal plan.
 2. Do not fabricate or alter real news content unless the task is specifically validating structure. News updates belong to the recurring news job.
 3. Avoid churn. If no meaningful improvement is found, do nothing and report that no commit was needed.
-4. Do not change cron schedules unless fixing a clear project bug and documenting it.
-5. Prefer small changes that can be validated.
+4. Do not run any presentation/freeze-window guard. The project no longer uses the Monday 13:00-17:00 KST update freeze.
+5. Do not change cron schedules unless fixing a clear project bug and documenting it.
+6. Prefer small changes that can be validated.
 
 ## Review Checklist
 
@@ -38,6 +39,7 @@ python3 -m http.server 8765 --directory docs
 ```
 
 For the server, start it only long enough to verify the site can be served; stop it afterwards. Use browser/terminal checks as available.
+Remove generated `__pycache__` files before committing, and inspect `git status --short` / `git diff --stat` so unrelated local artifacts are not committed accidentally.
 
 ## Commit and Push
 

@@ -193,3 +193,8 @@
 - Reviewed 2,429 feed entries and 201 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 2 sourced stories covering CNCF's NGINX/OpenTelemetry AI-agent network boundary pattern and Ubiquiti UniFi OS critical vulnerability patches. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, and wiki index.
+
+## [2026-07-08] site | Align improvement prompt with no-freeze policy
+- Checked current time at 2026-07-08 21:47 KST; no freeze guard was run per current project policy.
+- Clarified `scripts/improve_project_prompt.md` so the improvement cron must not run legacy presentation/freeze-window guards.
+- Added commit-hygiene guidance to remove Python caches and inspect status/diff before staging changes.
