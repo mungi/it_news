@@ -261,3 +261,8 @@
 - Reviewed 2,567 feed entries and 286 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering GodDamn ransomware PoisonX driver defense evasion, GPT-Live ChatGPT Voice, Microsoft RoguePlanet Defender patch, and Grok 4.5 coding-agent model economics. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+
+## [2026-07-09] docs | Align README with active project state
+- Checked current time at 2026-07-09 22:38 KST; no freeze guard was run per current project policy.
+- Replaced stale README next-step checklist with the current implemented site/data/automation status.
+- Added local validation commands and commit-hygiene notes so future small changes use the same verified path.

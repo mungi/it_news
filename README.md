@@ -139,11 +139,21 @@ docs/
 ## 현재 상태
 
 - 생성일: 2026-07-05 KST
-- 스펙: 사용자와 초기 요구사항 합의 완료
-- 다음 단계:
-  1. `SPEC.md` 작성
-  2. LLM Wiki 기본 구조 정리
-  3. `docs/` 정적 웹사이트 MVP 생성
-  4. 샘플 `weekly-news.json` 생성
-  5. 4시간 자동 업데이트 작업 등록
-  6. GitHub 자동 commit/push 동작 확인
+- 스펙: `SPEC.md`, `SCHEMA.md`, `AGENTS.md` 기준으로 운영 중
+- 사이트: `docs/index.html`에서 `docs/data/weekly-news.json`을 읽는 정적 GitHub Pages 구조
+- 데이터: 주간 뉴스 최대 50개, Deep Dive 최대 2개 기준으로 검증
+- 자동화: 뉴스 업데이트는 4시간마다, 코드/문서 개선 검토는 별도 작업으로 운영
+- 운영 정책: 현재 프로젝트는 월요일 13:00-17:00 KST 업데이트 freeze guard를 사용하지 않음
+
+## 로컬 검증
+
+변경 후 커밋 전 최소 검증:
+
+```bash
+node --check docs/app.js
+python3 scripts/validate_weekly_news.py
+python3 -m py_compile scripts/validate_weekly_news.py
+python3 -m http.server 8765 --directory docs
+```
+
+`http.server`는 정적 사이트가 열리는지만 확인하고 중지합니다. `py_compile` 뒤에는 `__pycache__/`가 커밋되지 않도록 `git status --short`를 확인합니다.
