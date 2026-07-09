@@ -271,3 +271,10 @@
 - Checked current time at 2026-07-10 00:42 KST; no freeze guard was run per current project policy.
 - Hardened `scripts/validate_weekly_news.py` so boolean ranks/scores are rejected and non-string `source_url` values report validation errors without crashing duplicate-URL checks.
 - Verified the malformed-fixture path, weekly data validation, JS syntax, Python bytecode compile, and local browser smoke checks.
+
+## [2026-07-10] update | Add Robostral, Cloudflare Drop, in-memory computing, and manufacturing RX stories
+- Checked current time at 2026-07-10 01:27 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google AI, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,440 feed entries and 251 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering Mistral Robostral Navigate, Cloudflare Drop, TetraMem-SK hynix in-memory computing, and SK AX manufacturing RX. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, physical AI/inference concept wiki, and wiki index.

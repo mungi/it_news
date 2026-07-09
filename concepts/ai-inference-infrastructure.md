@@ -1,10 +1,10 @@
 ---
 title: AI Inference Infrastructure
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-10
 type: concept
 tags: [ai, infra, inference, semiconductor]
-sources: [raw/articles/nvidia-nemotron-langchain-deep-agents-2026-07-09.md, raw/articles/aitimeskr-deepseek-ai-chip-2026-07-08.md, raw/articles/aitimeskr-samsung-pm1763-ssd-2026-07-08.md]
+sources: [raw/articles/nvidia-nemotron-langchain-deep-agents-2026-07-09.md, raw/articles/aitimeskr-deepseek-ai-chip-2026-07-08.md, raw/articles/aitimeskr-samsung-pm1763-ssd-2026-07-08.md, raw/articles/aitimeskr-tetramem-sk-hynix-in-memory-computing-2026-07-09.md]
 confidence: high
 ---
 
@@ -28,3 +28,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-09 업데이트: 에이전트 데이터와 CDC 경로
 - NVIDIA/Hugging Face의 Data for Agents는 agent trace, tool-use failure, retrieval, safety, user simulation 데이터가 에이전트 재현성과 복구 능력의 기반임을 강조했다.
 - Aurora DSQL CDC GA는 AI/데이터 애플리케이션의 transaction store와 event stream 연결을 관리형 경로로 제공한다. 설계 기준은 ordering, idempotency, replay, consumer lag다.
+
+## 2026-07-10 업데이트: 메모리 근접 연산
+- 테트라멤·SK하이닉스의 멤리스터 기반 인메모리 컴퓨팅 SoC 연구는 depthwise convolution을 대상으로 데이터 이동 에너지와 발열 병목을 줄이는 접근을 제시했다.
+- 추론 인프라 평가는 GPU/ASIC peak 성능뿐 아니라 메모리 대역폭, 데이터 이동 에너지, compiler/runtime 성숙도, workload별 연산 매핑까지 포함해야 한다.
