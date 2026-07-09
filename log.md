@@ -220,3 +220,8 @@
 - docs/data/weekly-news.json: 50건 유지, 신규 6건 추가, 하위/중복 6건 교체. Deep Dive 2건 유지.
 - 추가: AWS Security Hub Network Scanning, AI coding agents EDR 경보, CNCF Cloud Native AI Storage 백서, HalluSquatting, OpenAI 코딩 평가 분석, Docker 로컬 런타임 거버넌스.
 - LLM wiki 업데이트: weekly/2026-W28.md 재생성, raw/articles 후보 검토 노트 추가, ai-agent-security 및 ai-inference-infrastructure 개념 노트 보강.
+
+## [2026-07-09] site | Align Top 6 with visible list order
+- Checked current time at 2026-07-09 10:12 KST; no freeze guard was run per current project policy.
+- Changed the Top 6 control from a separate importance/score priority resort to a simple first-six slice after the current search/filter and newest-first list order.
+- Updated the Top 6 accessible label/result text and bumped the app.js cache key.

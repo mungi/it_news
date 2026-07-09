@@ -260,28 +260,8 @@ function compareItemsByPublishedDesc(a, b) {
   return (a.rank || 999) - (b.rank || 999);
 }
 
-function priorityWeight(item) {
-  if (item.importance === "must-know") return 3;
-  if (item.importance === "high") return 2;
-  if (item.importance === "medium") return 1;
-  return 0;
-}
-
 function topPriorityItems(items, limit = 6) {
-  const selectedIds = new Set(
-    [...items]
-      .sort((a, b) => {
-        const importanceDiff = priorityWeight(b) - priorityWeight(a);
-        if (importanceDiff) return importanceDiff;
-        const scoreDiff = (Number(b.score) || 0) - (Number(a.score) || 0);
-        if (scoreDiff) return scoreDiff;
-        return (a.rank || 999) - (b.rank || 999);
-      })
-      .slice(0, limit)
-      .map((item) => item.id)
-      .filter(Boolean)
-  );
-  return items.filter((item) => selectedIds.has(item.id)).sort(compareItemsByPublishedDesc);
+  return items.slice(0, limit);
 }
 
 function renderCards() {
@@ -354,7 +334,7 @@ function updateResultText(items = null, matchedCount = null) {
   const mustKnowCount = visibleItems.filter((item) => item.importance === "must-know").length;
   const readCount = visibleItems.filter(isRead).length;
   const baseText = `${visibleItems.length}개 표시 / 전체 ${(state.data.items || []).length}개`;
-  const topText = state.topOnly ? ` · Top 6 우선순위 적용${Number.isInteger(matchedCount) ? `, 조건 일치 ${matchedCount}개` : ""}` : "";
+  const topText = state.topOnly ? ` · Top 6 표시${Number.isInteger(matchedCount) ? `, 조건 일치 ${matchedCount}개` : ""}` : "";
   $("#resultText").textContent = `${baseText}${topText} · 중요 소식 ${mustKnowCount}개 · 읽음 ${readCount}개`;
 }
 
