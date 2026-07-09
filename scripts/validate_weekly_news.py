@@ -41,8 +41,28 @@ MIN_ITEM_DETAIL_BULLETS = 8
 def is_http_url(value: str) -> bool:
     if not isinstance(value, str) or has_unsafe_url_whitespace(value):
         return False
+    if has_malformed_percent_escape(value):
+        return False
     parsed = urlparse(value)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc) and not parsed.username and not parsed.password
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
+        return False
+    return not has_decoded_url_whitespace(parsed)
+
+
+def has_malformed_percent_escape(value: str) -> bool:
+    return bool(re.search(r"%(?![0-9A-Fa-f]{2})", value))
+
+
+def has_decoded_url_whitespace(parsed) -> bool:
+    """Reject percent-encoded controls/whitespace in URL components rendered by the browser."""
+    for component in (parsed.path, parsed.query, parsed.fragment):
+        try:
+            decoded = unquote(component)
+        except Exception:
+            return True
+        if has_unsafe_url_whitespace(decoded):
+            return True
+    return False
 
 
 def has_unsafe_url_whitespace(value: str) -> bool:

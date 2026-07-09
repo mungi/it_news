@@ -108,8 +108,15 @@ function safeImageSrc(value) {
   if (hasUnsafeUrlWhitespace(raw)) return "";
   if (/^https?:\/\//i.test(raw)) {
     try {
+      if (hasMalformedPercentEscape(raw)) return "";
       const url = new URL(raw);
-      return ["http:", "https:"].includes(url.protocol) && url.hostname && !url.username && !url.password ? url.href : "";
+      return ["http:", "https:"].includes(url.protocol) &&
+        url.hostname &&
+        !url.username &&
+        !url.password &&
+        !hasDecodedUrlWhitespace(url)
+        ? url.href
+        : "";
     } catch {
       return "";
     }
@@ -490,8 +497,15 @@ function safeExternalUrl(value) {
   if (!trimmed || trimmed !== raw || hasUnsafeUrlWhitespace(raw)) return "";
   if (!/^https?:\/\//i.test(raw)) return "";
   try {
+    if (hasMalformedPercentEscape(raw)) return "";
     const url = new URL(raw);
-    return ["http:", "https:"].includes(url.protocol) && url.hostname && !url.username && !url.password ? url.href : "";
+    return ["http:", "https:"].includes(url.protocol) &&
+      url.hostname &&
+      !url.username &&
+      !url.password &&
+      !hasDecodedUrlWhitespace(url)
+      ? url.href
+      : "";
   } catch {
     return "";
   }
@@ -499,6 +513,18 @@ function safeExternalUrl(value) {
 
 function hasUnsafeUrlWhitespace(value) {
   return /[\u0000-\u0020\u007f]/.test(value);
+}
+
+function hasMalformedPercentEscape(value) {
+  return /%(?![0-9A-Fa-f]{2})/.test(value);
+}
+
+function hasDecodedUrlWhitespace(url) {
+  try {
+    return [url.pathname, url.search, url.hash].some((component) => hasUnsafeUrlWhitespace(decodeURIComponent(component)));
+  } catch {
+    return true;
+  }
 }
 
 function setRichText(parent, text) {
