@@ -249,3 +249,8 @@
 - Reviewed 283 current feed entries and 232 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 3 sourced stories covering Friendly Fire AI-agent code execution, GhostApproval symlink file-write bypass, and Google Cloud C4N network/storage optimized VM GA. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, AI agent security concept wiki, and wiki index.
+
+## [2026-07-09] site | Harden image fallback handler ordering
+- Checked current time at 2026-07-09 20:34 KST; no freeze guard was run per current project policy.
+- Registered image fallback error handlers before assigning card, Deep Dive, and modal image sources so cached or immediately failing images still fall back consistently.
+- Bumped the app.js cache key so GitHub Pages serves the fallback-handler hardening.

@@ -229,11 +229,11 @@ function renderDeepDives() {
     imageWrap.className = "deep-dive-image-wrap";
     const img = document.createElement("img");
     img.className = "deep-dive-image";
-    img.src = deepDiveImageFor(item);
     img.alt = `${title} 이미지`;
     img.loading = "lazy";
     img.decoding = "async";
     img.onerror = () => useFallbackImage(img, "AI");
+    img.src = deepDiveImageFor(item);
     imageWrap.appendChild(img);
 
     const body = document.createElement("div");
@@ -321,9 +321,9 @@ function renderCards() {
       node.setAttribute("aria-label", `${title} 상세 보기, 읽음`);
     }
     const img = node.querySelector(".card-image");
-    img.src = imageFor(item);
     img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
     img.onerror = () => useFallbackImage(img, item.category);
+    img.src = imageFor(item);
 
     const badges = node.querySelector(".badges");
     [item.category, item.region, item.importance].filter(Boolean).forEach((value) => badges.appendChild(makeBadge(value)));
@@ -420,9 +420,9 @@ function openModal(item) {
   markRead(item);
   state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
-  img.src = imageFor(item);
   img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
   img.onerror = () => useFallbackImage(img, item.category);
+  img.src = imageFor(item);
   setModalTitleLink(item.title_ko || item.title_original || "제목 없음", item.source_url);
   $("#modalOriginal").textContent = item.title_original ? `Original: ${item.title_original}` : "";
   setRichText($("#modalSummary"), item.summary || "");
@@ -449,9 +449,9 @@ function openDeepDiveModal(item) {
   const modal = $("#modal");
   state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
-  img.src = deepDiveImageFor(item);
   img.alt = `${item.title || "Deep Dive"} 이미지`;
   img.onerror = () => useFallbackImage(img, "AI");
+  img.src = deepDiveImageFor(item);
 
   setModalTitleLink(item.title || "Deep Dive", (item.sources || [])[0]);
   $("#modalOriginal").textContent = "Deep Dive";
