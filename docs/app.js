@@ -265,19 +265,23 @@ function renderDeepDives() {
 }
 
 function itemMatches(item) {
+  const query = state.query.trim();
   const haystack = normalize([
     item.title_ko,
     item.title_original,
     item.summary,
     item.detail,
     item.why_it_matters,
+    item.engineering_implication,
+    item.korea_implication,
+    item.source_name,
     item.category,
     ...(item.tags || []),
   ].join(" "));
   const categoryMatch = state.category === "All" || item.category === state.category || (item.tags || []).includes(state.category);
   const importanceMatch = state.importance === "All" || item.importance === state.importance;
   const regionMatch = state.region === "All" || item.region === state.region || (item.tags || []).includes(state.region);
-  const queryMatch = !state.query || haystack.includes(normalize(state.query));
+  const queryMatch = !query || haystack.includes(normalize(query));
   return categoryMatch && importanceMatch && regionMatch && queryMatch;
 }
 
