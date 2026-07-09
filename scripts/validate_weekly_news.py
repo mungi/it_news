@@ -20,6 +20,12 @@ REQUIRED_ITEM = [
     "engineering_implication", "category", "tags", "region", "importance",
     "source_name", "source_url",
 ]
+REQUIRED_ITEM_TEXT = [
+    "id", "title_ko", "summary", "detail", "why_it_matters",
+    "engineering_implication", "category", "region", "importance",
+    "source_name", "source_url",
+]
+OPTIONAL_ITEM_TEXT = ["title_original", "published_kst", "image_url", "local_image", "korea_implication"]
 ALLOWED_IMPORTANCE = {"must-know", "high", "medium", "low"}
 ALLOWED_REGIONS = {"Global", "Korea"}
 ALLOWED_CATEGORIES = {"AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"}
@@ -42,6 +48,20 @@ def is_http_url(value: str) -> bool:
 def has_unsafe_url_whitespace(value: str) -> bool:
     """Reject raw control/whitespace characters before URL parsing normalizes them."""
     return any(ord(char) <= 0x20 or ord(char) == 0x7F for char in value)
+
+
+def require_non_empty_string(value: object, label: str, errors: list[str]) -> bool:
+    """Require a field to be a string with non-whitespace content."""
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"{label} must be a non-empty string")
+        return False
+    return True
+
+
+def validate_optional_string(value: object, label: str, errors: list[str]) -> None:
+    """If an optional text field is present, require it to be a string."""
+    if value is not None and not isinstance(value, str):
+        errors.append(f"{label} must be a string when present")
 
 
 def is_valid_week(value: str) -> bool:
@@ -131,14 +151,22 @@ def validate_detailed_content(value: object, prefix: str, errors: list[str], *, 
         if not isinstance(section, dict):
             errors.append(f"{section_prefix} must be an object")
             continue
-        if not section.get("heading"):
+        if section.get("heading") is not None:
+            require_non_empty_string(section.get("heading"), f"{section_prefix}.heading", errors)
+        else:
             errors.append(f"{section_prefix} missing heading")
         body = section.get("body")
         items = section.get("items")
         if not body and not items:
             errors.append(f"{section_prefix} needs body or items")
+        if body is not None and not isinstance(body, str):
+            errors.append(f"{section_prefix}.body must be a string")
         if items is not None and not isinstance(items, list):
             errors.append(f"{section_prefix}.items must be a list")
+        elif isinstance(items, list):
+            for item_idx, detail_item in enumerate(items, start=1):
+                if not isinstance(detail_item, str) or not detail_item.strip():
+                    errors.append(f"{section_prefix}.items[{item_idx}] must be a non-empty string")
 
 
 def detailed_content_stats(value: object) -> tuple[int, int, int]:
@@ -236,14 +264,10 @@ def main() -> int:
             errors.append(f"missing top-level field: {key}")
 
     week = data.get("week")
-    if not isinstance(week, str) or not week.strip():
-        errors.append("week must be a non-empty ISO YYYY-Www string")
-    elif not is_valid_week(week):
-        errors.append(f"week must use a valid ISO YYYY-Www format, got: {week}")
-    for key in ("audience",):
-        value = data.get(key)
-        if value is not None and (not isinstance(value, str) or not value.strip()):
-            errors.append(f"{key} must be a non-empty string")
+    if require_non_empty_string(week, "week", errors) and isinstance(week, str):
+        if not is_valid_week(week):
+            errors.append(f"week must use a valid ISO YYYY-Www format, got: {week}")
+    require_non_empty_string(data.get("audience"), "audience", errors)
 
     timeline: dict[str, tuple[int, int, int, int, int]] = {}
     for key in ("coverage_start_kst", "coverage_end_kst", "last_updated_kst"):
@@ -294,8 +318,14 @@ def main() -> int:
             errors.append(f"{prefix} must be an object")
             continue
         for key in REQUIRED_ITEM:
-            if not item.get(key):
+            if key not in item or item.get(key) in (None, ""):
                 errors.append(f"{prefix} missing required field: {key}")
+        for key in REQUIRED_ITEM_TEXT:
+            if key in item:
+                require_non_empty_string(item.get(key), f"{prefix} {key}", errors)
+        for key in OPTIONAL_ITEM_TEXT:
+            if key in item:
+                validate_optional_string(item.get(key), f"{prefix} {key}", errors)
         item_id = item.get("id")
         if item_id:
             if not ITEM_ID_RE.match(str(item_id)):
@@ -368,6 +398,8 @@ def main() -> int:
                     errors.append(f"{prefix} related_links[{link_idx}].url must be an absolute http(s) URL: {link_url}")
                 if link_url and not link.get("title"):
                     errors.append(f"{prefix} related_links[{link_idx}] missing title")
+                if "title" in link:
+                    validate_optional_string(link.get("title"), f"{prefix} related_links[{link_idx}].title", errors)
 
     if seen_ranks and seen_ranks != set(range(1, len(items) + 1)):
         missing = sorted(set(range(1, len(items) + 1)) - seen_ranks)
@@ -381,8 +413,13 @@ def main() -> int:
             errors.append(f"{prefix} must be an object")
             continue
         for key in ("id", "title", "summary", "details", "why_it_matters"):
-            if not item.get(key):
+            if key not in item or item.get(key) in (None, ""):
                 errors.append(f"{prefix} missing required field: {key}")
+            elif key in item:
+                require_non_empty_string(item.get(key), f"{prefix} {key}", errors)
+        for key in ("image_url", "local_image"):
+            if key in item:
+                validate_optional_string(item.get(key), f"{prefix} {key}", errors)
         deep_dive_id = item.get("id")
         if deep_dive_id:
             if not DEEP_DIVE_ID_RE.match(str(deep_dive_id)):
@@ -395,7 +432,10 @@ def main() -> int:
             errors.append(f"{prefix} sources must be a non-empty list")
         else:
             for source_idx, source in enumerate(sources, start=1):
-                if not is_http_url(str(source)):
+                if not isinstance(source, str) or not source.strip():
+                    errors.append(f"{prefix} sources[{source_idx}] must be a non-empty string")
+                    continue
+                if not is_http_url(source):
                     errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
         image_url = item.get("image_url", "")
         local_image = item.get("local_image", "")
