@@ -290,19 +290,8 @@ function compareItemsByPublishedDesc(a, b) {
   return (a.rank || 999) - (b.rank || 999);
 }
 
-function topPriorityItems(items, limit = 6) {
-  const importanceWeight = { "must-know": 3, high: 2, medium: 1, low: 0 };
-  return items
-    .slice()
-    .sort((a, b) => {
-      const importanceDelta = (importanceWeight[b.importance] ?? 0) - (importanceWeight[a.importance] ?? 0);
-      if (importanceDelta) return importanceDelta;
-      const scoreDelta = (Number(b.score) || 0) - (Number(a.score) || 0);
-      if (scoreDelta) return scoreDelta;
-      return (a.rank || 999) - (b.rank || 999);
-    })
-    .slice(0, limit)
-    .sort(compareItemsByPublishedDesc);
+function topRankItems(items, limit = 6) {
+  return items.slice(0, limit);
 }
 
 function renderCards() {
@@ -310,7 +299,7 @@ function renderCards() {
   const template = $("#cardTemplate");
   grid.replaceChildren();
   const matchedItems = (state.data.items || []).filter(itemMatches).sort(compareItemsByPublishedDesc);
-  const items = state.topOnly ? topPriorityItems(matchedItems) : matchedItems;
+  const items = state.topOnly ? topRankItems(matchedItems) : matchedItems;
   updateResultText(items, matchedItems.length);
 
   if (!items.length) {
@@ -371,7 +360,7 @@ function renderCards() {
 function updateResultText(items = null, matchedCount = null) {
   if (!state.data) return;
   const matchedItems = (state.data.items || []).filter(itemMatches).sort(compareItemsByPublishedDesc);
-  const visibleItems = items || (state.topOnly ? topPriorityItems(matchedItems) : matchedItems);
+  const visibleItems = items || (state.topOnly ? topRankItems(matchedItems) : matchedItems);
   const mustKnowCount = visibleItems.filter((item) => item.importance === "must-know").length;
   const readCount = visibleItems.filter(isRead).length;
   const baseText = `${visibleItems.length}개 표시 / 전체 ${(state.data.items || []).length}개`;
