@@ -278,3 +278,10 @@
 - Reviewed 2,440 feed entries and 251 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering Mistral Robostral Navigate, Cloudflare Drop, TetraMem-SK hynix in-memory computing, and SK AX manufacturing RX. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, physical AI/inference concept wiki, and wiki index.
+
+## [2026-07-10] update | Add sandbox, supply-chain, GitHub governance, PQC, and ICS stories
+- Checked current time at 2026-07-10 05:36 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,491 feed entries and 1,877 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 6 sourced stories covering GitHub dormant-account reconnaissance, npm 12 install-script hardening, Cloud Run Sandboxes, repository durable ownership, Cloudflare ML-DSA migration guidance, and OpenPLC v3 ICS risk. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, concept wiki, and wiki index.
