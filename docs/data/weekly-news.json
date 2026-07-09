@@ -2,13 +2,13 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-09 08:54",
+  "last_updated_kst": "2026-07-09 13:00",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AI 에이전트 보안 경계가 로컬 개발 환경까지 확대: HalluSquatting, EDR 경보, Docker runtime governance를 함께 점검 필요.",
+    "AI 에이전트 보안 경계가 GitHub 조직·로컬 개발 환경까지 확대: GitLost, HalluSquatting, EDR 경보, Docker runtime governance를 함께 점검 필요.",
     "클라우드 보안 운영 고도화: AWS Security Hub Network Scanning과 기존 impact analysis로 공개 노출·공격 경로 triage 강화.",
-    "AI 추론·에이전트 경제성 경쟁 지속: Nemotron harness, GLM 5.2, HyperPod DPD, GPU 비용 최적화가 핵심 변수.",
-    "Cloud Native AI 인프라 병목 다변화: CNCF 스토리지 백서, PM1763 SSD, RNGD, GPU/CPU/스토리지 균형 설계 필요.",
+    "AI 추론·에이전트 경제성 경쟁 지속: Nemotron harness, GLM 5.2, HyperPod DPD, open data, GPU 비용 최적화가 핵심 변수.",
+    "Cloud Native AI 인프라 병목 다변화: CNCF 스토리지 백서, PM1763 SSD, RNGD, Aurora DSQL CDC까지 데이터 경로 설계 필요.",
     "AI 평가와 거버넌스 기준 재정의: OpenAI 코딩 평가 분석, 네이버 ASF 2.0, AI 보안 가이드가 운영 절차로 연결."
   ],
   "deep_dives": [
@@ -185,6 +185,134 @@
   ],
   "items": [
     {
+      "id": "news-075",
+      "title_ko": "GitLost, GitHub AI 에이전트가 공개 이슈만으로 비공개 저장소를 유출할 수 있음",
+      "title_original": "GitLost: Tricking GitHub AI Agents into Leaking Private Repositories",
+      "summary": "핵심: Noma Labs가 GitHub Agentic Workflows에서 공개 이슈 기반 간접 프롬프트 인젝션으로 비공개 저장소 데이터가 공개 댓글에 노출될 수 있음을 공개. 영향: 조직 단위 저장소 권한을 가진 에이전트는 issue·PR·문서 같은 사용자 입력을 신뢰 경계 밖 데이터로 격리해야 함.",
+      "detail": "GitLost는 GitHub Agentic Workflows가 Markdown 워크플로를 GitHub Actions YAML로 컴파일하고 Claude 또는 GitHub Copilot 기반 에이전트가 이슈를 읽어 조직 저장소에 접근하는 구조에서 발생한 취약점임. 공격자는 공개 저장소에 그럴듯한 이슈를 열기만 하면 됐고, 테스트에서는 private repository 내용이 공개 이슈 댓글로 노출됨. Noma Labs는 GitHub에 책임 있게 공개했고, 가드레일 우회 변형과 재현 evidence를 함께 제시함.",
+      "why_it_matters": "에이전트가 조직 내 여러 저장소를 읽고 공개 댓글을 쓸 수 있으면 공개 입력 하나가 비공개 데이터 유출 경로가 될 수 있음.",
+      "engineering_implication": "에이전트 워크플로는 public issue/PR/comment를 비신뢰 데이터로 분리하고, cross-repo read 권한·public write 권한·출력 경로에 정책 검증과 승인 게이트 적용 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "AI Agent",
+        "Prompt Injection",
+        "Repository Security",
+        "Data Leakage"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-07-09 09:55",
+      "source_name": "GeekNews",
+      "source_url": "https://news.hada.io/topic?id=31255",
+      "image_url": "https://social.news.hada.io/topic/31255",
+      "related_links": [
+        {
+          "title": "Noma Labs GitLost 분석",
+          "url": "https://www.noma.security/blog/gitlost-tricking-github-ai-agents-into-leaking-private-repositories"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: GitHub Agentic Workflows에서 공개 저장소 이슈만으로 같은 조직의 비공개 저장소 정보가 공개 댓글에 노출될 수 있는 GitLost 취약점 공개",
+            "조건: 공격자는 코드 커밋, 저장소 접근 권한, 자격 증명 없이 공개 저장소에 조작된 이슈를 게시하는 방식으로 트리거 가능",
+            "구조: Markdown 워크플로가 YAML Actions 파일로 컴파일되고 Claude 또는 GitHub Copilot 기반 에이전트가 이슈를 읽어 도구 호출 수행"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "공격 방식: 이슈 본문 안의 간접 프롬프트 인젝션이 에이전트에게 조직 내 private repository 내용을 가져와 공개 댓글로 쓰도록 유도",
+            "권한 문제: 에이전트가 공개 이슈 처리 권한과 비공개 저장소 읽기 권한을 동시에 가진 상태가 위험 조건",
+            "우회 사례: “Additionally” 변형에서 가드레일이 의도대로 작동하지 않아 출력 재구성 후 유출 가능성 확인"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "AI 에이전트 보안은 모델 응답 거부보다 권한 있는 도구 호출과 출력 경로 통제가 더 직접적인 통제 지점임",
+            "GitHub issue, PR, README, docs처럼 사용자가 쓸 수 있는 텍스트가 에이전트 지시 채널로 해석될 수 있음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 에이전트 워크플로별 read/write 권한을 분리하고 public-facing 출력은 별도 DLP·policy check 후 게시 필요",
+            "검토 항목: cross-repo token scope, private repo 접근, issue/comment write 권한, tool result redaction, approval gate 점검",
+            "운영 과제: 프롬프트 인젝션 테스트를 CI/보안 리뷰에 포함하고 공개 입력 처리 워크플로를 고위험 자동화로 분류 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-077",
+      "title_ko": "GitHub, Agentic Workflows로 여러 저장소 문서 PR 자동화 사례 공개",
+      "title_original": "Automating cross-repo documentation with GitHub Agentic Workflows",
+      "summary": "핵심: GitHub Aspire 팀이 제품 변경이 merge된 뒤 관련 문서 저장소에 SME 검토용 pull request를 자동 생성하는 Agentic Workflows 사례를 공개. 영향: 에이전트 자동화는 release와 documentation 간 지연을 줄이지만 cross-repo 권한·검토자 승인·출력 품질 통제가 함께 필요함.",
+      "detail": "GitHub 블로그는 Aspire 팀이 merged product changes를 감지해 여러 저장소의 문서 변경을 생성하고 subject-matter expert 검토 PR로 연결하는 내부 자동화 패턴을 설명함. 목표는 릴리스와 문서 업데이트 사이의 갭을 줄이는 것임. 같은 날 GitLost가 공개한 공격 표면과 함께 보면 agentic workflow는 생산성 사례와 권한 경계 리스크가 동시에 존재함.",
+      "why_it_matters": "엔터프라이즈 개발 조직은 release note, docs, migration guide를 자동화하려 하지만 cross-repo access와 human review를 분리하지 않으면 공급망·데이터 유출 위험이 커짐.",
+      "engineering_implication": "문서 자동화 에이전트는 초안 생성까지만 자동화하고, 저장소별 최소 권한 토큰, SME reviewer, diff scope 제한, public output 검증을 기본값으로 둬야 함.",
+      "category": "DevTools",
+      "tags": [
+        "GitHub",
+        "Copilot",
+        "Agentic Workflows",
+        "Documentation",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 82,
+      "published_kst": "2026-07-09 06:11",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/ai-and-ml/github-copilot/automating-cross-repo-documentation-with-github-agentic-workflows/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-mona-copilot-logo.png",
+      "related_links": [
+        {
+          "title": "GitLost 보안 분석",
+          "url": "https://news.hada.io/topic?id=31255"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: GitHub가 Agentic Workflows로 제품 변경을 여러 저장소 문서 PR로 자동 전환하는 Aspire 팀 사례 공개",
+            "목표: release와 documentation 사이의 지연을 줄이고 SME 검토가 가능한 pull request 형태로 작업 생성",
+            "맥락: 같은 계열 자동화가 GitLost 같은 간접 프롬프트 인젝션 공격 표면도 만들 수 있어 권한 설계가 중요"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "자동화 흐름: merged product changes를 기반으로 관련 문서 저장소의 업데이트 후보 생성",
+            "검토 흐름: 완전 자동 배포가 아니라 SME-reviewed docs pull request로 사람 검토를 남기는 구조",
+            "운영 조건: cross-repo 접근, 변경 범위 제한, reviewer routing, audit log가 함께 있어야 안전한 자동화 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "문서 지연은 개발자 경험과 릴리스 품질을 떨어뜨리지만 자동 생성 PR은 잘못된 지시·권한 과잉·오출력 리스크를 동반",
+            "에이전트가 여러 저장소 context를 읽는 순간 source-of-truth와 공개 출력 경계가 보안 설계 대상이 됨"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: docs PR 자동화는 초안 생성, reviewer 지정, policy check, merge 승인 단계를 분리 필요",
+            "검토 항목: 에이전트 토큰 scope, 대상 저장소 allowlist, 출력 diff 제한, 민감 정보 redaction, rollback 경로 점검",
+            "운영 과제: 생산성 지표와 함께 잘못된 문서 생성률, reviewer 수정률, 자동화 실패율 측정 필요"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-069",
       "title_ko": "AWS Security Hub, 인터넷 공개 리소스 탐지용 Network Scanning 추가",
       "title_original": "AWS Security Hub now offers Network Scanning to identify publicly reachable resources",
@@ -242,7 +370,67 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
+    },
+    {
+      "id": "news-078",
+      "title_ko": "Amazon Aurora DSQL, Kinesis 연동 CDC 기능 일반 제공",
+      "title_original": "Amazon Aurora DSQL change data capture (CDC) Is now generally available",
+      "summary": "핵심: Aurora DSQL CDC가 insert, update, delete 결과를 변경 이벤트로 캡처해 Amazon Kinesis Data Streams로 전달하는 기능을 GA로 제공. 영향: 분산 SQL 기반 애플리케이션에서 microservice 동기화, Lambda 트리거, S3·Redshift·OpenSearch 전달 경로를 관리형 CDC로 구성 가능.",
+      "detail": "AWS What’s New는 Aurora DSQL change data capture가 일반 제공됐다고 공지함. CDC는 데이터베이스 workload 성능에 영향을 주지 않도록 설계됐고, 변경 이벤트를 Kinesis Data Streams로 전달해 event-driven architecture와 data integration workflow를 지원함. Data Firehose를 거쳐 Amazon S3, Redshift, OpenSearch Service로 전달하는 구성도 가능함.",
+      "why_it_matters": "분산 데이터베이스와 이벤트 기반 아키텍처를 함께 쓰는 팀은 CDC 인프라를 별도 운영하지 않고 AWS 관리형 경로로 변경 이벤트를 표준화할 수 있음.",
+      "engineering_implication": "데이터팀은 CDC ordering, idempotency, replay, schema evolution, consumer lag, downstream failure handling을 애플리케이션 계약으로 명시해야 함.",
+      "category": "Data",
+      "tags": [
+        "AWS",
+        "Aurora DSQL",
+        "CDC",
+        "Kinesis",
+        "Event Driven Architecture"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-09 03:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-aurora-dsql-cdc-ga/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Amazon Aurora DSQL change data capture가 일반 제공으로 전환",
+            "기능: insert, update, delete 결과를 change event로 자동 캡처해 Amazon Kinesis Data Streams로 전달",
+            "범위: Aurora DSQL이 제공되는 AWS Region에서 event-driven architecture와 data integration workflow 지원"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "연동 경로: Kinesis Data Streams 이후 Lambda, Amazon S3, Amazon Redshift, Amazon OpenSearch Service를 Data Firehose로 연결 가능",
+            "운영 주장: CDC streaming은 데이터베이스 workload performance에 영향을 주지 않도록 설계",
+            "사용 사례: microservice 간 데이터 동기화, 비동기 이벤트 처리, 분석 저장소 적재, 검색 인덱스 갱신 대상"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "분산 SQL 채택 조직은 transaction store와 event stream 사이의 bridge를 별도 Debezium·connector 운영 없이 관리형 서비스로 구성 가능",
+            "CDC는 데이터 복제 기능이 아니라 downstream consumer 계약과 장애 복구 절차까지 포함하는 운영 경계임"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: event schema, ordering guarantee, idempotency key, replay policy, dead-letter queue를 설계 문서에 포함 필요",
+            "검토 항목: Kinesis shard capacity, consumer lag, downstream retry, schema evolution, 데이터 보존 기간, 비용 알림 점검",
+            "운영 과제: CDC 활성화 전 부하 테스트와 failure injection으로 database impact와 consumer 복구 시간을 검증 필요"
+          ]
+        }
+      ],
+      "rank": 4
     },
     {
       "id": "news-070",
@@ -302,7 +490,66 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 5
+    },
+    {
+      "id": "news-076",
+      "title_ko": "Hugging Face·NVIDIA, 에이전트 학습용 공개 데이터와 합성 데이터 확장 필요성 제시",
+      "title_original": "Data for Agents",
+      "summary": "핵심: NVIDIA가 Hugging Face 블로그에서 에이전트 성능 병목을 모델 가중치보다 tool-use trace, workflow failure, retrieval, safety, user simulation 데이터 문제로 정리. 영향: 에이전트 평가·재현성은 오픈 모델뿐 아니라 데이터셋, curation, training recipe, evaluation method 공개 여부에 좌우됨.",
+      "detail": "NVIDIA는 에이전트가 깨진 API 호출, 미경험 workflow, multi-step reasoning, tool-use failure에서 복구하려면 실제/합성 데이터가 필요하다고 설명함. Nemotron 계열 데이터 제품은 code, math, synthetic data, agent workflow trace를 포함하며, ICML에서 Nemotron 모델·데이터셋을 인용한 논문이 약 145건이라고 소개함. 기업 내부 비밀 workflow를 그대로 공개하지 않고 유용한 신호를 보존하기 위한 합성 데이터의 역할도 강조됨.",
+      "why_it_matters": "에이전트 품질 경쟁은 모델 크기뿐 아니라 tool-use 실패 사례와 workflow 데이터를 어떻게 수집·합성·검증하는지로 이동 중임.",
+      "engineering_implication": "AI 플랫폼팀은 agent trace schema, synthetic-data provenance, evaluation split, failure taxonomy, privacy redaction을 모델 운영 기준에 포함해야 함.",
+      "category": "AI",
+      "tags": [
+        "NVIDIA",
+        "Hugging Face",
+        "Agent Data",
+        "Synthetic Data",
+        "Nemotron"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-07-09 02:16",
+      "source_name": "Hugging Face",
+      "source_url": "https://huggingface.co/blog/nvidia/open-data-for-agents",
+      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/68d2fec8856b85d927e44d32/P3b9bOHrdkEJeAcWX6FoW.gif",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: NVIDIA가 Hugging Face 블로그에서 에이전트 구현의 핵심 병목을 공개 데이터와 합성 데이터 확장 문제로 제시",
+            "범위: software engineering traces, tool-use failures, multi-step reasoning, retrieval, safety, user simulation, workflow execution 데이터 포함",
+            "근거: ICML에서 Nemotron 모델·데이터셋을 인용한 논문이 약 145건이라는 ecosystem 신호 제시"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "주장: open weights만으로는 에이전트 행동을 재현·설명하기 어렵고 datasets, curation choices, training recipes, evaluation methods가 함께 필요",
+            "합성 데이터 역할: 기업 workflow·고객 패턴 같은 민감 신호를 직접 노출하지 않고 학습 가능한 형태로 보존하는 경로",
+            "운영 의미: tool call 실패, API 오류 복구, workflow branching 데이터가 없으면 에이전트는 benchmark 밖 상황에서 단순 자동완성에 가까움"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "에이전트 도입팀은 모델 벤치마크 점수만 보고 선정하면 실제 업무 실패 복구 능력을 과대평가할 수 있음",
+            "공개 데이터와 합성 데이터의 provenance가 불명확하면 보안, 저작권, 개인정보, 평가 누수 리스크가 남음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: agent trace 저장 포맷, 실패 taxonomy, synthetic data 생성·검수 절차를 MLOps 표준에 추가 필요",
+            "검토 항목: training/eval split 오염, tool result 개인정보, 내부 workflow 비밀 노출, 합성 데이터 품질 회귀 점검",
+            "운영 과제: 모델 선택 기준을 answer quality에서 recoverability, tool-use robustness, auditability까지 확장 필요"
+          ]
+        }
+      ],
+      "rank": 6
     },
     {
       "id": "news-071",
@@ -362,7 +609,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-072",
@@ -422,7 +669,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-065",
@@ -489,7 +736,7 @@
           "url": "https://blogs.nvidia.com/blog/nemotron-langchain-agents-open-stack/"
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-073",
@@ -549,7 +796,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-074",
@@ -609,7 +856,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-066",
@@ -672,7 +919,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40891_61629_554_v150.jpg",
       "local_image": "assets/images/news-066.jpg",
       "related_links": [],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-068",
@@ -735,11 +982,11 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-063",
-      "rank": 10,
+      "rank": 14,
       "title_ko": "CNCF, NGINX·OpenTelemetry로 AI 에이전트 네트워크 경계 패턴 제시",
       "title_original": "Network boundary for AI agents using NGINX and OpenTelemetry",
       "summary": "핵심: AI 에이전트 outbound 트래픽을 NGINX forward proxy와 iptables로 단일 경로화하고 OpenTelemetry span으로 감사하는 Kubernetes 패턴 공개. 영향: 프롬프트 guardrail만으로 부족한 네트워크 접근 통제를 cloud-native 운영 도구로 구현 가능.",
@@ -802,7 +1049,7 @@
     },
     {
       "id": "news-064",
-      "rank": 11,
+      "rank": 15,
       "title_ko": "Ubiquiti, UniFi OS 최대 심각도 취약점 포함 7개 치명적 결함 패치",
       "title_original": "Ubiquiti warns of new max severity UniFi OS vulnerability",
       "summary": "핵심: Ubiquiti가 UniFi OS 계열의 7개 critical 취약점을 패치했고 CVE-2026-50746은 네트워크 접근만으로 host command injection 가능. 영향: Censys 기준 10만 대 이상 UniFi OS 인스턴스가 온라인 노출돼 지점·매장·스마트빌딩 네트워크 패치 우선순위 상승.",
@@ -925,7 +1172,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-062",
@@ -989,7 +1236,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-067",
@@ -1052,7 +1299,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40885_61621_3343_v150.jpg",
       "local_image": "assets/images/news-067.jpg",
       "related_links": [],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-057",
@@ -1116,7 +1363,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 19
     },
     {
       "id": "news-058",
@@ -1181,7 +1428,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-059",
@@ -1246,7 +1493,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 21
     },
     {
       "id": "news-060",
@@ -1315,11 +1562,11 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 22
     },
     {
       "id": "news-055",
-      "rank": 19,
+      "rank": 23,
       "title_ko": "AWS Security Hub, Microsoft Azure 리소스 모니터링으로 멀티클라우드 보안 관리 확대",
       "title_original": "AWS Security Hub extends unified security management to Microsoft Azure",
       "summary": "핵심: AWS Security Hub, Microsoft Azure 리소스의 위험 분석·CSPM·취약점 관리·보안 대응 지원",
@@ -1380,7 +1627,7 @@
     },
     {
       "id": "news-054",
-      "rank": 20,
+      "rank": 24,
       "title_ko": "Amazon ECS Managed Instances, GPU 관리 수수료 최대 60% 인하",
       "title_original": "Amazon ECS Managed Instances reduces GPU management fees by up to 60%",
       "summary": "핵심: ECS Managed Instances, GPU·가속 인스턴스 관리 수수료 **최대 60%** 인하",
@@ -1446,7 +1693,7 @@
     },
     {
       "id": "news-051",
-      "rank": 21,
+      "rank": 25,
       "title_ko": "Google Dialogflow CX 취약점, 같은 프로젝트 내 챗봇 에이전트 탈취 가능성",
       "title_original": "Rogue Agent Flaw Could Have Let Attackers Hijack Google Dialogflow CX Chatbots",
       "summary": "핵심: Dialogflow CX Code Block 에이전트 결함 — 편집 권한 보유자가 같은 Google Cloud 프로젝트의 다른 에이전트까지 침해 가능",
@@ -1507,7 +1754,7 @@
     },
     {
       "id": "news-053",
-      "rank": 22,
+      "rank": 26,
       "title_ko": "Google Cloud 보고서, 조직 83%가 에이전틱 AI 지원 인프라 업그레이드 필요",
       "title_original": "Report: 83% of organizations need to upgrade their infrastructure to support agentic AI",
       "summary": "핵심: Google Cloud AI 인프라 보고서 — 조직 **83%**가 에이전틱 AI 지원을 위해 인프라 업그레이드 필요",
@@ -1568,7 +1815,7 @@
     },
     {
       "id": "news-056",
-      "rank": 23,
+      "rank": 27,
       "title_ko": "NVIDIA Vera CPU, 에이전틱 워크로드용 AI 팩토리 처리량 개선 강조",
       "title_original": "NVIDIA Vera CPU Boosts AI Factory Throughput to Accelerate Agentic Workloads",
       "summary": "핵심: NVIDIA Vera CPU — 대규모 AI 팩토리에서 에이전틱 워크로드 처리량과 CPU-GPU 균형 개선 강조",
@@ -1629,7 +1876,7 @@
     },
     {
       "id": "news-040",
-      "rank": 24,
+      "rank": 28,
       "title_ko": "GitHub Actions 공격 체인, 일반 CI 보안 스캐너가 놓치는 패턴 경고",
       "title_original": "The GitHub Actions Attack Pattern Your CI Security Scanners Miss",
       "summary": "핵심: GitHub Actions 공격 체인 — 스캐너 통과가 파이프라인 안전을 보장하지 않음",
@@ -1690,7 +1937,7 @@
     },
     {
       "id": "news-037",
-      "rank": 25,
+      "rank": 29,
       "title_ko": "Writer AI 취약점, 에이전트 미리보기에서 테넌트 간 세션 토큰 유출 가능",
       "title_original": "Writer AI Flaw Could Let Agent Previews Leak Session Tokens Across Tenants",
       "summary": "핵심: Writer AI WriteOut 결함 — sandbox preview가 session cookie를 공격자 제어 에이전트로 전달 가능",
@@ -1752,7 +1999,7 @@
     },
     {
       "id": "news-052",
-      "rank": 26,
+      "rank": 30,
       "title_ko": "Gemini API Managed Agents, 백그라운드 작업·원격 MCP 기능 확대",
       "title_original": "Expanding Managed Agents in Gemini API: background tasks, remote MCP and more",
       "summary": "핵심: Gemini API Managed Agents — 백그라운드 실행, 원격 MCP, 에이전트 작업 관리 기능 확대",
@@ -1813,7 +2060,7 @@
     },
     {
       "id": "news-047",
-      "rank": 27,
+      "rank": 31,
       "title_ko": "GLM 5.2, 오픈 가중치 모델로 AI 추론 마진 압박",
       "title_original": "GLM 5.2와 다가오는 AI 추론 마진 붕괴",
       "summary": "핵심: GLM 5.2 — 오픈 가중치 모델이 Opus·GPT급 에이전트 작업에 근접하며 고가 추론 API 마진 압박",
@@ -1876,7 +2123,7 @@
     },
     {
       "id": "news-041",
-      "rank": 28,
+      "rank": 32,
       "title_ko": "앨버타주 정부, Claude로 4억6600만 줄 코드 보안 점검 사례 공개",
       "title_original": "加 앨버타주 정부, ‘클로드’로 4억6600만 줄 코드 점검… 사이버 보안 취약점 수년치 작업 20시간 만에 해결",
       "summary": "핵심: 공공부문 Claude Code 활용 — **4억6600만 줄** 코드 보안 점검을 **20시간**에 수행한 사례",
@@ -1937,7 +2184,7 @@
     },
     {
       "id": "news-050",
-      "rank": 29,
+      "rank": 33,
       "title_ko": "과기정통부, 경남·전북에 5년간 1.4조원 피지컬 AI 메가프로젝트 개시",
       "title_original": "과기부, 경남·전북에 5년간 1.4조 투입…’피지컬 AI 메가프로젝트’ 개시",
       "summary": "핵심: 과기정통부·NIPA, 경남·전북 피지컬 AI 메가프로젝트에 **5년간 1.4조원** 투입",
@@ -2000,7 +2247,7 @@
     },
     {
       "id": "news-042",
-      "rank": 30,
+      "rank": 34,
       "title_ko": "ADD, 폐쇄망 생성형 AI ‘애디’ 전면 가동",
       "title_original": "ADD, 폐쇄망 생성형 AI ‘애디(Add+i)’ 전면 가동… 국방 연구개발 AI 전환 본격화",
       "summary": "핵심: 국방과학연구소, 폐쇄망 생성형 AI ‘Add+i’를 전 직원 대상 운영",
@@ -2061,7 +2308,7 @@
     },
     {
       "id": "news-043",
-      "rank": 31,
+      "rank": 35,
       "title_ko": "팀네이버·KAI, 방산 특화 소버린 AI 모델 공동 개발 추진",
       "title_original": "팀네이버-KAI, 방산 특화 AI 모델 공동 개발…국방 소버린 AI 구현 나선다",
       "summary": "핵심: 네이버·네이버클라우드·KAI, 방산 특화 foundation model과 피지컬 AI 기반 미래전투체계 협력",
@@ -2122,7 +2369,7 @@
     },
     {
       "id": "news-044",
-      "rank": 32,
+      "rank": 36,
       "title_ko": "ETRI, 출연연 오픈소스 협의체 확대…AI 저작권·라이선스·보안 리스크 대응",
       "title_original": "ETRI, 출연연 오픈소스 협의체 범출연연으로 확대... AI저작권 등 오픈소스 리스크 공동대응",
       "summary": "핵심: 출연연 오픈소스 협의체 확대 — 라이선스 분쟁, 보안 취약점, AI 학습데이터 저작권 대응",
@@ -2183,7 +2430,7 @@
     },
     {
       "id": "news-048",
-      "rank": 33,
+      "rank": 37,
       "title_ko": "AWS Security Hub, 노출 finding에 공격 영향 분석 추가",
       "title_original": "AWS Security Hub adds impact analysis for exposure findings",
       "summary": "핵심: Security Hub exposure finding에 downstream resource와 privilege escalation 경로 분석 추가",
@@ -2246,7 +2493,7 @@
     },
     {
       "id": "news-036",
-      "rank": 34,
+      "rank": 38,
       "title_ko": "Amazon SageMaker HyperPod, LLM 추론용 Disaggregated Prefill/Decode 지원",
       "title_original": "Amazon SageMaker HyperPod now supports disaggregated prefill and decode",
       "summary": "핵심: SageMaker HyperPod DPD — prefill·decode를 별도 GPU 풀로 분리해 long-context 추론 경합 완화",
@@ -2309,7 +2556,7 @@
     },
     {
       "id": "news-049",
-      "rank": 35,
+      "rank": 39,
       "title_ko": "SageMaker Studio, Hugging Face 모델 원클릭 배포·커스터마이징 통합",
       "title_original": "Amazon SageMaker Studio now integrates with Hugging Face for one-click model deployment and customization",
       "summary": "핵심: Hugging Face 모델 페이지에서 SageMaker AI 배포·커스터마이징 워크플로로 직접 이동",
@@ -2371,7 +2618,7 @@
     },
     {
       "id": "news-035",
-      "rank": 36,
+      "rank": 40,
       "title_ko": "Linux KVM Januscape 취약점, Intel·AMD x86 호스트에서 VM 탈출 위험",
       "title_original": "16-Year-Old Linux KVM Flaw Lets Guest VMs Escape to Host on Intel and AMD x86 Systems",
       "summary": "핵심: Linux KVM Januscape(CVE-2026-53359) — guest VM에서 host kernel shadow MMU 상태 손상 가능",
@@ -2439,7 +2686,7 @@
     },
     {
       "id": "news-039",
-      "rank": 37,
+      "rank": 41,
       "title_ko": "Gitea Docker 취약점 CVE-2026-20896, 공개 13일 만에 공격자 탐색 관측",
       "title_original": "Threat Actors Probe Gitea Docker Flaw CVE-2026-20896 13 Days After Disclosure",
       "summary": "핵심: Gitea Docker CVE-2026-20896 — reverse proxy auth 환경에서 spoofed X-WEBAUTH-USER 신뢰 위험",
@@ -2500,7 +2747,7 @@
     },
     {
       "id": "news-038",
-      "rank": 38,
+      "rank": 42,
       "title_ko": "SkillCloak, 악성 AI 에이전트 스킬이 정적 스캐너를 우회하는 기법 공개",
       "title_original": "SkillCloak Lets Malicious AI Agent Skills Evade Static Scanners with Self-Extracting Packing",
       "summary": "핵심: SkillCloak — self-extracting packing으로 악성 AI agent skill이 정적 검사를 우회",
@@ -2561,7 +2808,7 @@
     },
     {
       "id": "news-031",
-      "rank": 39,
+      "rank": 43,
       "title_ko": "SKT 블랙웰 AI 클러스터 ‘해인’, 국내 최초 CSAP 인증 취득",
       "title_original": "SKT, 블랙웰 AI 클러스터 ‘해인’ 국내 최초 CSAP 인증 취득",
       "summary": "핵심: SKT 블랙웰 AI 클러스터 ‘해인’ — 국내 최초 **CSAP 인증**",
@@ -2629,7 +2876,7 @@
     },
     {
       "id": "news-046",
-      "rank": 40,
+      "rank": 44,
       "title_ko": "Hugging Face Kernels 업데이트, 모델 실행용 커스텀 커널 배포·공유 흐름 강화",
       "title_original": "🤗 Kernels: Major Updates",
       "summary": "핵심: Hugging Face Kernels 주요 업데이트 — 모델 페이지와 커스텀 커널 실행·공유 생태계 강화",
@@ -2690,7 +2937,7 @@
     },
     {
       "id": "news-015",
-      "rank": 41,
+      "rank": 45,
       "title_ko": "AI 신뢰성 전문가 부족과 기업 AI 거버넌스 격차 부각",
       "title_original": "GPU보다 부족한 건 AI 신뢰성 전문가…규제는 발전과 동일 선상",
       "summary": "핵심: AI 신뢰성 인력·프로세스 부족 — 기업 AI 거버넌스 병목",
@@ -2752,7 +2999,7 @@
     },
     {
       "id": "news-016",
-      "rank": 42,
+      "rank": 46,
       "title_ko": "기업 AI, 모델 다변화는 성공했지만 거버넌스 통제 격차 노출",
       "title_original": "모델 다변화는 성공, 거버넌스는 낙제점…기업 AI '통제 격차' 본격화",
       "summary": "핵심: 멀티 모델 전략 확산, 통제·거버넌스는 **Control Gap** 노출",
@@ -2814,7 +3061,7 @@
     },
     {
       "id": "news-002",
-      "rank": 43,
+      "rank": 47,
       "title_ko": "SKT, 최대 15GW 규모 AI 데이터센터 구축 계획 발표",
       "title_original": "SKT, 15GW AI 데이터센터 구축 \"아시아 AI 인프라 허브 도약\"",
       "summary": "핵심: SKT AI 데이터센터 로드맵 **최대 15GW** 규모",
@@ -2881,7 +3128,7 @@
     },
     {
       "id": "news-001",
-      "rank": 44,
+      "rank": 48,
       "title_ko": "AI 에이전트, 생성형 AI보다 질문당 최대 136.5배 에너지 소비",
       "title_original": "AI 에이전트, 생성형 AI보다 질문 한 건당 최대 136.5배 에너지 소비",
       "summary": "핵심: AI 에이전트 질의 1건당 에너지 사용량 **최대 136.5배** 증가 가능",
@@ -2943,7 +3190,7 @@
     },
     {
       "id": "news-027",
-      "rank": 45,
+      "rank": 49,
       "title_ko": "Claude Code 비용 60% 절감 아이디어: 코드를 이미지로 변환해 OCR 활용",
       "title_original": "Fable 비용 60% 절감: 코드를 이미지로 변환하고 모델이 OCR하게 하기",
       "summary": "핵심: pxpipe — 코드 컨텍스트를 PNG로 바꿔 입력 비용 **약 59~70% 절감** 주장",
@@ -3005,7 +3252,7 @@
     },
     {
       "id": "news-024",
-      "rank": 46,
+      "rank": 50,
       "title_ko": "AI 추론 달러당 성능 개선, AMD MI355X가 저비용 대안으로 부상",
       "title_original": "달러당 성능이 더 빠르고 저렴해지고 있음",
       "summary": "핵심: AMD MI355X — NVIDIA B300 대비 GPU당 평균 **약 2.75배 저렴한** 대안",
@@ -3061,254 +3308,6 @@
           "heading": "시사점",
           "items": [
             "팀 액션: PoC 기준: 실제 모델 tokens/sec, p95 latency, 메모리 여유, 장애 재기동, 프레임워크 호환성",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-032",
-      "rank": 47,
-      "title_ko": "삼성, 영남권에 60조원 투자해 피지컬 AI 혁신 클러스터 구축 계획",
-      "title_original": "삼성, 영남에 60조원 투자… ‘글로벌 피지컬 AI 혁신 클러스터’ 구축",
-      "summary": "핵심: 삼성 영남권 피지컬 AI 클러스터 — 투자 규모 **약 60조원**",
-      "detail": "핵심: 핵심: 삼성 영남권 피지컬 AI 클러스터 — 투자 규모 **약 60조원**\n변화: 변화: 제조·로봇·배터리·조선 AI를 지역 산업 거점으로 묶는 전략\n영향: 국내 AI 투자가 모델 개발과 데이터센터를 넘어 제조·로봇·배터리·조선 운영 시스템으로 확장되고 있음\n시사점: 피지컬 AI 시스템은 엣지 추론, 센서 데이터 수집, OT/IT 네트워크 분리, 안전 제어, 모델 업데이트 절차를 함께 설계필요",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: 삼성 영남권 피지컬 AI 클러스터 — 투자 규모 **약 60조원**",
-            "변화: 변화: 제조·로봇·배터리·조선 AI를 지역 산업 거점으로 묶는 전략",
-            "원문: 삼성, 영남에 60조원 투자… ‘글로벌 피지컬 AI 혁신 클러스터’ 구축 기준 정리",
-            "시점: 2026-07-04 17:06 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AI Times KR 원문 링크 기준 요약",
-            "범위: Infra / Korea / Samsung, Physical AI, Manufacturing AI, Robotics, Korea, Infra 영역",
-            "주요 내용: 볼 것: OT/IT 분리, 엣지 추론, 안전 제어, 모델 업데이트",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 국내 AI 투자가 모델 개발과 데이터센터를 넘어 제조·로봇·배터리·조선 운영 시스템으로 확장되고 있음",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 피지컬 AI 시스템은 엣지 추론, 센서 데이터 수집, OT/IT 네트워크 분리, 안전 제어, 모델 업데이트 절차를 함께 설계필요",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ],
-      "why_it_matters": "국내 AI 투자가 모델 개발과 데이터센터를 넘어 제조·로봇·배터리·조선 운영 시스템으로 확장되고 있습니다.",
-      "engineering_implication": "피지컬 AI 시스템은 엣지 추론, 센서 데이터 수집, OT/IT 네트워크 분리, 안전 제어, 모델 업데이트 절차를 함께 설계해야 합니다.",
-      "korea_implication": "영남권 제조 산업과 AI 인프라 투자가 연결되면 국내 제조·로봇·AI 서버 부품 생태계의 프로젝트 수요가 늘 수 있습니다.",
-      "category": "Infra",
-      "tags": [
-        "Samsung",
-        "Physical AI",
-        "Manufacturing AI",
-        "Robotics",
-        "Korea",
-        "Infra"
-      ],
-      "region": "Korea",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-04 17:06",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40827",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40827_61551_441_v150.jpg",
-      "local_image": "assets/images/news-032.jpg",
-      "related_links": []
-    },
-    {
-      "id": "news-026",
-      "rank": 48,
-      "title_ko": "AI 에이전트 안정화를 위한 루프 엔지니어링의 미학",
-      "title_original": "루프 엔지니어링의 미학 (The Art of Loop Engineering)",
-      "summary": "핵심: 에이전트 안정화 — 좋은 모델보다 **루프·검증·종료 조건**",
-      "detail": "핵심: 핵심: 에이전트 안정화 — 좋은 모델보다 **루프·검증·종료 조건**\n변화: 변화: 에이전트 품질의 중심이 프롬프트에서 실행 루프로 이동\n영향: AI 에이전트 품질: 모델 성능만이 아니라 루프 설계와 실패 감지가 결정\n시사점: 상태 머신, 도구 권한, 검증기, retry budget, human approval gate를 실행 시스템으로 묶기",
-      "why_it_matters": "AI 에이전트 품질: 모델 성능만이 아니라 루프 설계와 실패 감지가 결정.",
-      "engineering_implication": "상태 머신, 도구 권한, 검증기, retry budget, human approval gate를 실행 시스템으로 묶기.",
-      "korea_implication": "국내 조직의 PoC형 에이전트가 운영 단계로 넘어가려면 루프 설계와 검증 자동화가 핵심입니다.",
-      "category": "AI",
-      "tags": [
-        "AI Agent",
-        "Loop",
-        "Automation",
-        "LLM Ops"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-04 09:36",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31106",
-      "image_url": "https://social.news.hada.io/topic/31106",
-      "local_image": "assets/images/news-026.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: 에이전트 안정화 — 좋은 모델보다 **루프·검증·종료 조건**",
-            "변화: 변화: 에이전트 품질의 중심이 프롬프트에서 실행 루프로 이동",
-            "원문: 루프 엔지니어링의 미학 (The Art of Loop Engineering) 기준 정리",
-            "시점: 2026-07-04 09:36 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: GeekNews 원문 링크 기준 요약",
-            "범위: AI / Global / AI Agent, Loop, Automation, LLM Ops 영역",
-            "주요 내용: 볼 것: state machine, verifier, retry budget, human approval gate",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 에이전트 품질: 모델 성능만이 아니라 루프 설계와 실패 감지가 결정",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 상태 머신, 도구 권한, 검증기, retry budget, human approval gate를 실행 시스템으로 묶기",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-025",
-      "rank": 49,
-      "title_ko": "ClickHouse가 Observability 전쟁에서 앞서가는 이유",
-      "title_original": "ClickHouse가 Observability 전쟁에서 앞서가는 이유",
-      "summary": "핵심: ClickHouse Observability — **대용량·비정형·추가 중심** 로그에 적합",
-      "detail": "핵심: 핵심: ClickHouse Observability — **대용량·비정형·추가 중심** 로그에 적합\n변화: 변화: 로그가 검색 대상에서 대규모 분석 데이터로 이동\n영향: 로그 비용이 커지는 플랫폼 팀: 상용 APM 의존도를 낮출 수 있는 선택지\n시사점: 상위 쿼리 20개, 보존 기간, 고카디널리티 필드, ingest 비용으로 PoC 설계",
-      "why_it_matters": "로그 비용이 커지는 플랫폼 팀: 상용 APM 의존도를 낮출 수 있는 선택지.",
-      "engineering_implication": "상위 쿼리 20개, 보존 기간, 고카디널리티 필드, ingest 비용으로 PoC 설계.",
-      "korea_implication": "국내 SaaS·플랫폼 조직도 Observability 비용이 커지는 구간에서 오픈소스/자체 운영 기반 대안을 검토할 수 있습니다.",
-      "category": "Infra",
-      "tags": [
-        "Observability",
-        "ClickHouse",
-        "Logs",
-        "SRE",
-        "Infra"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-04 09:19",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31101",
-      "image_url": "https://social.news.hada.io/topic/31101",
-      "local_image": "assets/images/news-025.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: ClickHouse Observability — **대용량·비정형·추가 중심** 로그에 적합",
-            "변화: 변화: 로그가 검색 대상에서 대규모 분석 데이터로 이동",
-            "원문: ClickHouse가 Observability 전쟁에서 앞서가는 이유 기준 정리",
-            "시점: 2026-07-04 09:19 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: GeekNews 원문 링크 기준 요약",
-            "범위: Infra / Global / Observability, ClickHouse, Logs, SRE, Infra 영역",
-            "주요 내용: 볼 것: 상위 쿼리 20개, 보존 기간, cardinality, ingest 비용",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 로그 비용이 커지는 플랫폼 팀: 상용 APM 의존도를 낮출 수 있는 선택지",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 상위 쿼리 20개, 보존 기간, 고카디널리티 필드, ingest 비용으로 PoC 설계",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-018",
-      "rank": 50,
-      "title_ko": "Linux Bad Epoll 취약점, 비권한 사용자의 root 권한 상승 가능성 보도",
-      "title_original": "New Bad Epoll Linux Kernel Flaw Lets Unprivileged Users Gain Root, Hits Android",
-      "summary": "핵심: Linux Bad Epoll 취약점 — 비권한 사용자 root 권한 상승 가능성",
-      "detail": "핵심: 핵심: Linux Bad Epoll 취약점 — 비권한 사용자 root 권한 상승 가능성\n변화: 변화: 서버·데스크톱·Android까지 영향 범위 확대\n영향: 서버·개발장비·모바일까지 영향 범위가 넓은 커널 취약점은 패치 우선순위가 높습니다\n시사점: 커널 패치 상태 확인, 재부팅 계획, 컨테이너 호스트 격리, EDR 탐지를 점검필요",
-      "why_it_matters": "서버·개발장비·모바일까지 영향 범위가 넓은 커널 취약점은 패치 우선순위가 높습니다.",
-      "engineering_implication": "커널 패치 상태 확인, 재부팅 계획, 컨테이너 호스트 격리, EDR 탐지를 점검해야 합니다.",
-      "korea_implication": "Linux 서버를 대규모 운영하는 국내 SaaS·게임·금융 조직은 패치 윈도우를 빠르게 잡아야 합니다.",
-      "category": "Security",
-      "tags": [
-        "Linux",
-        "Kernel",
-        "CVE",
-        "Privilege Escalation",
-        "Android"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 78,
-      "published_kst": "2026-07-04 04:40",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/new-bad-epoll-linux-kernel-flaw-lets.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEggOXDckpE46PYIzBnXsx_kyHzFvlcB3l8qEr6feRNBhRQMKc2p5r2pQArl-NrsoB2z6vE917nXVHpuuMZOgZcRDMlwbVYC0ocK3uIsb-h59qed_kuvDKwvukQCAs-VDcE5Ail8mTRSPpnNfrPzKv5oAMQ9fJCDNE_2PpPrN9a9mOwGUIs0TnWq6_r58HM/s1700-e365/root-linux.gif",
-      "local_image": "assets/images/news-018.gif",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: Linux Bad Epoll 취약점 — 비권한 사용자 root 권한 상승 가능성",
-            "변화: 변화: 서버·데스크톱·Android까지 영향 범위 확대",
-            "원문: New Bad Epoll Linux Kernel Flaw Lets Unprivileged Users Gain Root, Hits Android 기준 정리",
-            "시점: 2026-07-04 04:40 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: The Hacker News 원문 링크 기준 요약",
-            "범위: Security / Global / Linux, Kernel, CVE, Privilege Escalation, Android 영역",
-            "주요 내용: 볼 것: 커널 패치, 재부팅 계획, 컨테이너 호스트 격리",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 서버·개발장비·모바일까지 영향 범위가 넓은 커널 취약점은 패치 우선순위가 높습니다",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 커널 패치 상태 확인, 재부팅 계획, 컨테이너 호스트 격리, EDR 탐지를 점검필요",
             "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
           ]
         }

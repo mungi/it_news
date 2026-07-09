@@ -230,3 +230,10 @@
 - Checked current time at 2026-07-09 12:15 KST; no freeze guard was run per current project policy.
 - Added Arrow/Home/End keyboard navigation to category, importance, and region filter segmented controls while preserving `aria-pressed` state.
 - Bumped the app.js cache key so the deployed static page picks up the interaction change.
+
+## [2026-07-09] update | Add GitLost, agent data, workflow docs, and Aurora DSQL CDC
+- Checked current time at 2026-07-09 13:00 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, GitHub, Hugging Face, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, Kubernetes, CNCF, GitLab, JetBrains, Stack Overflow, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, and Google Cloud feeds.
+- Reviewed 2,465 feed entries and 101 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering GitLost GitHub AI-agent repository leakage, NVIDIA/Hugging Face Data for Agents, GitHub Agentic Workflows documentation automation, and Aurora DSQL CDC GA. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source review, concept wiki, and wiki index.

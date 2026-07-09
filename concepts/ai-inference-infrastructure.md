@@ -25,3 +25,6 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-09 업데이트: Cloud Native AI 데이터 경로
 - CNCF Cloud Native AI 스토리지 백서는 AI/ML 워크로드의 병목이 GPU뿐 아니라 data-heavy, stateful storage path에 있음을 정리했다.
 - 플랫폼팀은 checkpoint, model artifact, vector/feature data, cache, object/file/block storage 선택을 workload I/O profile과 비용 모델로 관리해야 한다.
+## 2026-07-09 업데이트: 에이전트 데이터와 CDC 경로
+- NVIDIA/Hugging Face의 Data for Agents는 agent trace, tool-use failure, retrieval, safety, user simulation 데이터가 에이전트 재현성과 복구 능력의 기반임을 강조했다.
+- Aurora DSQL CDC GA는 AI/데이터 애플리케이션의 transaction store와 event stream 연결을 관리형 경로로 제공한다. 설계 기준은 ordering, idempotency, replay, consumer lag다.
