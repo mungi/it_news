@@ -242,3 +242,10 @@
 - Checked current time at 2026-07-09 14:19 KST; no freeze guard was run per current project policy.
 - Hardened browser and Python URL validation to reject `http(s)` links/images containing username or password components before rendering or accepting weekly data.
 - Bumped the app.js cache key so GitHub Pages serves the URL-safety change.
+
+## [2026-07-09] update | Add Friendly Fire, GhostApproval, and C4N I/O infrastructure stories
+- Checked current time at 2026-07-09 17:08 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google AI, Google Cloud, NVIDIA, The Hacker News, BleepingComputer, CISA, Cloudflare, Docker, GitHub, Hugging Face, Kubernetes, CNCF, GitLab, JetBrains, Stack Overflow, Microsoft Security, Google Security, OpenAI, Anthropic, and Azure feeds.
+- Reviewed 283 current feed entries and 232 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 3 sourced stories covering Friendly Fire AI-agent code execution, GhostApproval symlink file-write bypass, and Google Cloud C4N network/storage optimized VM GA. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, AI agent security concept wiki, and wiki index.

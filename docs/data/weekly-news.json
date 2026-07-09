@@ -2,13 +2,13 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-09 13:00",
+  "last_updated_kst": "2026-07-09 17:08",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AI 에이전트 보안 경계가 GitHub 조직·로컬 개발 환경까지 확대: GitLost, HalluSquatting, EDR 경보, Docker runtime governance를 함께 점검 필요.",
+    "AI 에이전트 보안 경계가 로컬 개발 환경과 조직 저장소로 확대: Friendly Fire, GhostApproval, GitLost, HalluSquatting을 같은 통제 모델로 점검 필요.",
     "클라우드 보안 운영 고도화: AWS Security Hub Network Scanning과 기존 impact analysis로 공개 노출·공격 경로 triage 강화.",
     "AI 추론·에이전트 경제성 경쟁 지속: Nemotron harness, GLM 5.2, HyperPod DPD, open data, GPU 비용 최적화가 핵심 변수.",
-    "Cloud Native AI 인프라 병목 다변화: CNCF 스토리지 백서, PM1763 SSD, RNGD, Aurora DSQL CDC까지 데이터 경로 설계 필요.",
+    "Cloud Native AI 인프라 병목 다변화: CNCF 스토리지 백서, PM1763 SSD, Google Cloud C4N, Aurora DSQL CDC까지 데이터 경로 설계 필요.",
     "AI 평가와 거버넌스 기준 재정의: OpenAI 코딩 평가 분석, 네이버 ASF 2.0, AI 보안 가이드가 운영 절차로 연결."
   ],
   "deep_dives": [
@@ -185,6 +185,136 @@
   ],
   "items": [
     {
+      "id": "news-079",
+      "title_ko": "Friendly Fire, 보안 검사용 AI 코딩 에이전트가 README 미끼로 공격자 코드를 실행할 수 있음",
+      "title_original": "Top AI Agents Built to Catch Malicious Code Can Be Tricked Into Running It",
+      "summary": "핵심: AI Now Institute가 Claude Code와 OpenAI Codex의 자율 명령 승인 모드에서 README 지시만으로 공격자 payload 실행이 가능하다는 Friendly Fire PoC 공개. 영향: untrusted repository 보안 점검은 에이전트 자동 승인보다 sandbox·read-only 분석·명령 승인 정책이 선행 필요.",
+      "detail": "Friendly Fire는 보안 검사용 AI 코딩 에이전트가 악성 오픈소스 저장소를 검사하다가 README에 심은 security.sh 실행 지시를 따르며 host에서 payload를 실행하는 설계 취약점 사례임. 연구진은 Claude Code CLI 2.1.116/2.1.196/2.1.198/2.1.199와 OpenAI Codex CLI 0.142.4를 자율 승인 모드로 테스트했고, geopy 라이브러리 형태의 미끼 프로젝트에서 숨겨진 바이너리 실행을 재현함. 공개 exploit은 payload가 제거된 연구용 PoC이며 야생 악용 보고는 없음.",
+      "why_it_matters": "AI 보안 에이전트가 untrusted code를 검토하는 순간 분석 도구가 실행 표면으로 바뀔 수 있음.",
+      "engineering_implication": "AI 코드 리뷰·보안 스캔 에이전트는 untrusted repo를 기본 read-only/sandbox로 열고, README·스크립트·바이너리 실행은 명시적 human approval과 egress 제한을 적용 필요.",
+      "category": "Security",
+      "tags": [
+        "AI Agent",
+        "Claude Code",
+        "Codex",
+        "Prompt Injection",
+        "Supply Chain Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-07-09 14:15",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/friendly-fire-ai-agents-built-to-catch.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgynXsBDNXYgGgYPWB6cmy9zuZDStl-XaVvlwMQsqa6AxvNCvi7qI9Xq3h1vdk30Tv1u-fOAtB_OZ_Q-i5O0z5D0KL1Eh0joKyFmuhIoH4-7Z16ubplbIcNQpXJ7P7Sl2xju-z6ZvbhSeJbGKiL1gzx-I151GVMAp5jpCS27zvn791sC2WYQllTRT8ye-0/s1600/Friendly-Fire-AI-demo.gif",
+      "related_links": [
+        {
+          "title": "AI Now Institute Friendly Fire 연구",
+          "url": "https://ainowinstitute.org/publication/friendly-fire"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: AI Now Institute가 보안 검사용 AI 코딩 에이전트를 속여 host에서 공격자 코드를 실행시키는 Friendly Fire PoC 공개",
+            "대상: Anthropic Claude Code와 OpenAI Codex가 자율 명령 승인 모드에서 untrusted repository를 검사하는 조건",
+            "범위: 연구진 테스트 빌드는 Claude Code CLI 2.1.116·2.1.196·2.1.198·2.1.199와 Codex CLI 0.142.4 대상"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "공격 경로: README.md에 security.sh 실행 권고를 넣고 에이전트가 보안 점검 업무로 판단해 스크립트 실행",
+            "은폐 방식: harmless Go 파일의 compiled build처럼 위장한 바이너리와 문자열 삽입으로 agent safety check 우회",
+            "중요 조건: auto-mode 또는 auto-review처럼 에이전트가 안전하다고 판단한 명령을 자체 승인하는 설정 필요",
+            "제한 사항: 공개 PoC는 payload 제거 상태이며 privilege escalation·lateral movement·야생 악용 보고 없음"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "위험 모델: 보안 스캔이라는 명분이 untrusted code 실행 승인으로 바뀌는 agentic workflow 위험 확인",
+            "설계 문제: 모델 업데이트만으로 코드와 지시문을 안정적으로 분리하기 어렵다는 연구진 주장 제기"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: AI 코드 리뷰 agent는 인터넷 차단 sandbox, read-only mount, disposable workspace, allowlisted commands로 실행 필요",
+            "검토 항목: README instructions, setup script, hidden binary, build artifact, shell script, network egress를 high-risk review 대상에 포함 필요",
+            "운영 과제: autonomous approval mode는 신뢰 저장소 내부 자동화에만 제한하고 외부 저장소 분석은 per-command approval 적용 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-080",
+      "title_ko": "GhostApproval, symlink로 AI 코딩 에이전트 승인창을 우회해 SSH 키·셸 시작 파일을 덮어쓸 수 있음",
+      "title_original": "GhostApproval Symlink Flaws Could Let Malicious Repos Run Code in AI Coding Agents",
+      "summary": "핵심: Wiz가 Amazon Q Developer, Claude Code, Augment, Cursor, Google Antigravity, Windsurf 등 AI 코딩 도구 6종에서 symlink 기반 GhostApproval 패턴을 공개. 영향: 에이전트가 보여주는 “수정 파일”과 실제 write target이 다를 수 있어 repository trust와 file-write approval UX 재검토 필요.",
+      "detail": "GhostApproval은 malicious repository가 project_settings.json 같은 무해한 경로를 ~/.ssh/authorized_keys 또는 ~/.zshrc로 향하는 symbolic link로 만들고 AI 코딩 에이전트가 해당 파일 수정을 승인받거나 자동 수행하게 하는 공격 패턴임. Wiz는 Amazon Q Developer, Claude Code, Augment, Cursor, Google Antigravity, Windsurf를 대상으로 공개했고, 보도 시점 기준 3개 도구는 수정, 2개는 미수정, Anthropic은 threat model 밖이라는 입장을 제시함. 실제 공격 악용 보고는 없고 연구 결과로 공개됨.",
+      "why_it_matters": "AI 코딩 에이전트의 human-in-the-loop 승인도 실제 target path와 symlink resolution을 보여주지 못하면 안전 장치가 아님.",
+      "engineering_implication": "코딩 에이전트는 write 전에 symlink canonical path, workspace escape, sensitive path match를 차단하고 개발자는 untrusted repo를 container/VM 내부에서만 열어야 함.",
+      "category": "Security",
+      "tags": [
+        "AI Agent",
+        "Symlink",
+        "Developer Security",
+        "SSH",
+        "IDE Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-07-09 13:27",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/ghostapproval-symlink-flaws-could-let.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEijymBd057efx1JbDRjjqh0RBYH7RA2pE75UYG8DDd7Vl2UyXMsMjXtgEaxoPyHt5wz8s0fT6B43ovQskxZBchyiYI9G34t7YjyC6_T0xwzs_0SOJaHnHI7vXfMTOqtDn1R6up52ol5UH_uT86b1dRjaJ-Bw6pa_lAX6igS_pFLV_z_0kRhyXuNo8Q2rFU/s1600/wiz-ai.jpg",
+      "related_links": [
+        {
+          "title": "Wiz GhostApproval 연구",
+          "url": "https://www.wiz.io/blog/ghostapproval-vulnerability-ai-coding-agents"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Wiz가 symbolic link를 악용해 AI 코딩 에이전트의 파일 수정 승인 경계를 우회하는 GhostApproval 패턴 공개",
+            "대상: Amazon Q Developer, Anthropic Claude Code, Augment, Cursor, Google Antigravity, Windsurf 등 6개 AI coding assistant",
+            "상태: 보도 시점 기준 3개 도구 수정, 2개 도구 미수정, Anthropic은 threat model 밖이라는 입장"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "공격 방식: project_settings.json symlink가 실제로 ~/.ssh/authorized_keys를 가리키고 README가 harmless setting 추가를 지시",
+            "결과: 에이전트가 무해한 project file 수정으로 표시하지만 실제 write는 SSH authorized_keys 또는 ~/.zshrc 같은 민감 파일에 반영",
+            "승인 UX 문제: human approval dialog가 resolved target path를 보여주지 않으면 informed consent가 성립하지 않는 구조",
+            "도구별 차이: 일부 도구는 승인 전 write, 일부 도구는 dialog 생략, 일부 도구는 잘못된 path 표시 가능성"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "개발자 노트북은 SSH key, cloud credential, shell startup file이 모인 고가치 endpoint라 agent file-write가 곧 endpoint risk로 연결됨",
+            "symlink는 오래된 Unix 기능이지만 AI 에이전트의 자동 setup/readme-following 패턴과 결합하면 supply-chain 진입점으로 재등장"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 에이전트 file write는 canonical path, symlink, workspace escape, sensitive directory denylist 검증 후 승인 필요",
+            "검토 항목: ~/.ssh, shell rc, cloud credential, git hooks, IDE config, package manager config에 대한 write 차단 정책 필요",
+            "운영 과제: unfamiliar repository는 dev container 또는 disposable VM에서 열고 host home directory mount를 기본 차단 필요"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-075",
       "title_ko": "GitLost, GitHub AI 에이전트가 공개 이슈만으로 비공개 저장소를 유출할 수 있음",
       "title_original": "GitLost: Tricking GitHub AI Agents into Leaking Private Repositories",
@@ -246,7 +376,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-077",
@@ -310,7 +440,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-069",
@@ -370,7 +500,67 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
+    },
+    {
+      "id": "news-081",
+      "title_ko": "Google Cloud C4N VM 일반 제공, x86 워크로드용 네트워크·블록 스토리지 I/O 특화 인스턴스 확대",
+      "title_original": "C4N, now GA: Delivering cloud’s highest per vCPU network and block storage I/O for x86 workloads",
+      "summary": "핵심: Google Cloud가 Titanium offload 기반 C4N VM을 GA로 전환하고 최대 400Gbps 네트워크, 95MPPS, Hyperdisk Extreme 기준 최대 25GiB/s·1M IOPS 블록 스토리지 성능을 제시. 영향: 방화벽·라우터·DDoS mitigation·대규모 analytics·CPU 기반 AI/ML inference는 vCPU 단가보다 I/O per vCPU와 storage bandwidth를 함께 비교 필요.",
+      "detail": "C4N은 Google Compute Engine의 network- and block-storage-optimized x86 instance family로, Google Cloud Next 26 preview 이후 2026년 7월 9일 GA로 공개됨. Google은 Titanium offload architecture를 통해 network/storage 작업을 전용 하드웨어로 분리하고 최대 400Gbps network bandwidth, 95 million packets per second, Hyperdisk Extreme 연동 시 최대 25GiB/s storage bandwidth와 1M IOPS를 제공한다고 설명함. 적용 대상은 virtual appliances, large-scale data analytics, telco 5G UPF, distributed compute, CPU-based AI/ML workloads.",
+      "why_it_matters": "AI/데이터 워크로드는 GPU뿐 아니라 네트워크·블록 스토리지 I/O 병목이 전체 처리량과 비용을 좌우함.",
+      "engineering_implication": "고성능 x86 워크로드는 compute SKU 비교 시 network bandwidth per vCPU, packets/sec, storage IOPS, Hyperdisk 비용, placement/zone 가용성을 같이 benchmark 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Google Cloud",
+        "Compute Engine",
+        "C4N",
+        "Network",
+        "Storage"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-09 05:00",
+      "source_name": "Google Cloud Blog",
+      "source_url": "https://cloud.google.com/blog/products/compute/c4n-network-and-storage-optimized-vms/",
+      "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/05_-_Compute.max-2600x2600.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Google Cloud가 Compute Engine C4N network- and block-storage-optimized VM family를 일반 제공으로 전환",
+            "기반: Google custom Titanium offload architecture로 network와 storage 작업을 dedicated hardware로 오프로딩",
+            "대상: high-throughput database, virtual appliance, real-time analytics, telco, distributed compute, CPU 기반 AI/ML inference 워크로드"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "네트워크 수치: 최대 400Gbps network bandwidth와 95MPPS 패킷 처리 성능 제시",
+            "스토리지 수치: Hyperdisk Extreme과 결합 시 최대 25GiB/s storage bandwidth와 1M IOPS 제공",
+            "비교 주장: Google은 comparable Intel-based hyperscaler offering 대비 per-vCPU network bandwidth 33% 높고 packet processing 224% 빠르다고 설명",
+            "활용 영역: next-gen firewall, virtual router, load balancer, DDoS mitigation, 5G UPF, data analytics에 적합"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "AI/ML inference와 analytics는 CPU보다 network path와 block storage queue가 먼저 병목이 되는 구간 존재",
+            "가상 네트워크 장비는 throughput, PPS, latency jitter가 장애와 비용을 동시에 좌우하는 인프라 구성요소임"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: C4N PoC는 vCPU price가 아니라 p95 latency, PPS, storage queue depth, Hyperdisk 비용을 포함한 workload replay로 비교 필요",
+            "검토 항목: appliance licensing, zone availability, Hyperdisk Extreme quota, network tier, autoscaling policy, failover runbook 확인 필요",
+            "운영 과제: AI 데이터 파이프라인·analytics cluster는 GPU/CPU 증설 전 NIC·block storage bottleneck 관측 지표를 먼저 분리 필요"
+          ]
+        }
+      ],
+      "rank": 6
     },
     {
       "id": "news-078",
@@ -430,7 +620,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-070",
@@ -490,7 +680,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-076",
@@ -549,7 +739,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-071",
@@ -609,7 +799,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-072",
@@ -669,7 +859,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 11
     },
     {
       "id": "news-065",
@@ -736,7 +926,7 @@
           "url": "https://blogs.nvidia.com/blog/nemotron-langchain-agents-open-stack/"
         }
       ],
-      "rank": 9
+      "rank": 12
     },
     {
       "id": "news-073",
@@ -796,7 +986,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 13
     },
     {
       "id": "news-074",
@@ -856,7 +1046,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 14
     },
     {
       "id": "news-066",
@@ -919,7 +1109,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40891_61629_554_v150.jpg",
       "local_image": "assets/images/news-066.jpg",
       "related_links": [],
-      "rank": 12
+      "rank": 15
     },
     {
       "id": "news-068",
@@ -982,11 +1172,11 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 13
+      "rank": 16
     },
     {
       "id": "news-063",
-      "rank": 14,
+      "rank": 17,
       "title_ko": "CNCF, NGINX·OpenTelemetry로 AI 에이전트 네트워크 경계 패턴 제시",
       "title_original": "Network boundary for AI agents using NGINX and OpenTelemetry",
       "summary": "핵심: AI 에이전트 outbound 트래픽을 NGINX forward proxy와 iptables로 단일 경로화하고 OpenTelemetry span으로 감사하는 Kubernetes 패턴 공개. 영향: 프롬프트 guardrail만으로 부족한 네트워크 접근 통제를 cloud-native 운영 도구로 구현 가능.",
@@ -1049,7 +1239,7 @@
     },
     {
       "id": "news-064",
-      "rank": 15,
+      "rank": 18,
       "title_ko": "Ubiquiti, UniFi OS 최대 심각도 취약점 포함 7개 치명적 결함 패치",
       "title_original": "Ubiquiti warns of new max severity UniFi OS vulnerability",
       "summary": "핵심: Ubiquiti가 UniFi OS 계열의 7개 critical 취약점을 패치했고 CVE-2026-50746은 네트워크 접근만으로 host command injection 가능. 영향: Censys 기준 10만 대 이상 UniFi OS 인스턴스가 온라인 노출돼 지점·매장·스마트빌딩 네트워크 패치 우선순위 상승.",
@@ -1172,7 +1362,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 19
     },
     {
       "id": "news-062",
@@ -1236,7 +1426,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 20
     },
     {
       "id": "news-067",
@@ -1299,7 +1489,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40885_61621_3343_v150.jpg",
       "local_image": "assets/images/news-067.jpg",
       "related_links": [],
-      "rank": 18
+      "rank": 21
     },
     {
       "id": "news-057",
@@ -1363,7 +1553,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 22
     },
     {
       "id": "news-058",
@@ -1428,7 +1618,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 23
     },
     {
       "id": "news-059",
@@ -1493,7 +1683,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 24
     },
     {
       "id": "news-060",
@@ -1562,11 +1752,11 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 25
     },
     {
       "id": "news-055",
-      "rank": 23,
+      "rank": 26,
       "title_ko": "AWS Security Hub, Microsoft Azure 리소스 모니터링으로 멀티클라우드 보안 관리 확대",
       "title_original": "AWS Security Hub extends unified security management to Microsoft Azure",
       "summary": "핵심: AWS Security Hub, Microsoft Azure 리소스의 위험 분석·CSPM·취약점 관리·보안 대응 지원",
@@ -1627,7 +1817,7 @@
     },
     {
       "id": "news-054",
-      "rank": 24,
+      "rank": 27,
       "title_ko": "Amazon ECS Managed Instances, GPU 관리 수수료 최대 60% 인하",
       "title_original": "Amazon ECS Managed Instances reduces GPU management fees by up to 60%",
       "summary": "핵심: ECS Managed Instances, GPU·가속 인스턴스 관리 수수료 **최대 60%** 인하",
@@ -1693,7 +1883,7 @@
     },
     {
       "id": "news-051",
-      "rank": 25,
+      "rank": 28,
       "title_ko": "Google Dialogflow CX 취약점, 같은 프로젝트 내 챗봇 에이전트 탈취 가능성",
       "title_original": "Rogue Agent Flaw Could Have Let Attackers Hijack Google Dialogflow CX Chatbots",
       "summary": "핵심: Dialogflow CX Code Block 에이전트 결함 — 편집 권한 보유자가 같은 Google Cloud 프로젝트의 다른 에이전트까지 침해 가능",
@@ -1754,7 +1944,7 @@
     },
     {
       "id": "news-053",
-      "rank": 26,
+      "rank": 29,
       "title_ko": "Google Cloud 보고서, 조직 83%가 에이전틱 AI 지원 인프라 업그레이드 필요",
       "title_original": "Report: 83% of organizations need to upgrade their infrastructure to support agentic AI",
       "summary": "핵심: Google Cloud AI 인프라 보고서 — 조직 **83%**가 에이전틱 AI 지원을 위해 인프라 업그레이드 필요",
@@ -1815,7 +2005,7 @@
     },
     {
       "id": "news-056",
-      "rank": 27,
+      "rank": 30,
       "title_ko": "NVIDIA Vera CPU, 에이전틱 워크로드용 AI 팩토리 처리량 개선 강조",
       "title_original": "NVIDIA Vera CPU Boosts AI Factory Throughput to Accelerate Agentic Workloads",
       "summary": "핵심: NVIDIA Vera CPU — 대규모 AI 팩토리에서 에이전틱 워크로드 처리량과 CPU-GPU 균형 개선 강조",
@@ -1876,7 +2066,7 @@
     },
     {
       "id": "news-040",
-      "rank": 28,
+      "rank": 31,
       "title_ko": "GitHub Actions 공격 체인, 일반 CI 보안 스캐너가 놓치는 패턴 경고",
       "title_original": "The GitHub Actions Attack Pattern Your CI Security Scanners Miss",
       "summary": "핵심: GitHub Actions 공격 체인 — 스캐너 통과가 파이프라인 안전을 보장하지 않음",
@@ -1937,7 +2127,7 @@
     },
     {
       "id": "news-037",
-      "rank": 29,
+      "rank": 32,
       "title_ko": "Writer AI 취약점, 에이전트 미리보기에서 테넌트 간 세션 토큰 유출 가능",
       "title_original": "Writer AI Flaw Could Let Agent Previews Leak Session Tokens Across Tenants",
       "summary": "핵심: Writer AI WriteOut 결함 — sandbox preview가 session cookie를 공격자 제어 에이전트로 전달 가능",
@@ -1999,7 +2189,7 @@
     },
     {
       "id": "news-052",
-      "rank": 30,
+      "rank": 33,
       "title_ko": "Gemini API Managed Agents, 백그라운드 작업·원격 MCP 기능 확대",
       "title_original": "Expanding Managed Agents in Gemini API: background tasks, remote MCP and more",
       "summary": "핵심: Gemini API Managed Agents — 백그라운드 실행, 원격 MCP, 에이전트 작업 관리 기능 확대",
@@ -2060,7 +2250,7 @@
     },
     {
       "id": "news-047",
-      "rank": 31,
+      "rank": 34,
       "title_ko": "GLM 5.2, 오픈 가중치 모델로 AI 추론 마진 압박",
       "title_original": "GLM 5.2와 다가오는 AI 추론 마진 붕괴",
       "summary": "핵심: GLM 5.2 — 오픈 가중치 모델이 Opus·GPT급 에이전트 작업에 근접하며 고가 추론 API 마진 압박",
@@ -2123,7 +2313,7 @@
     },
     {
       "id": "news-041",
-      "rank": 32,
+      "rank": 35,
       "title_ko": "앨버타주 정부, Claude로 4억6600만 줄 코드 보안 점검 사례 공개",
       "title_original": "加 앨버타주 정부, ‘클로드’로 4억6600만 줄 코드 점검… 사이버 보안 취약점 수년치 작업 20시간 만에 해결",
       "summary": "핵심: 공공부문 Claude Code 활용 — **4억6600만 줄** 코드 보안 점검을 **20시간**에 수행한 사례",
@@ -2184,7 +2374,7 @@
     },
     {
       "id": "news-050",
-      "rank": 33,
+      "rank": 36,
       "title_ko": "과기정통부, 경남·전북에 5년간 1.4조원 피지컬 AI 메가프로젝트 개시",
       "title_original": "과기부, 경남·전북에 5년간 1.4조 투입…’피지컬 AI 메가프로젝트’ 개시",
       "summary": "핵심: 과기정통부·NIPA, 경남·전북 피지컬 AI 메가프로젝트에 **5년간 1.4조원** 투입",
@@ -2247,7 +2437,7 @@
     },
     {
       "id": "news-042",
-      "rank": 34,
+      "rank": 37,
       "title_ko": "ADD, 폐쇄망 생성형 AI ‘애디’ 전면 가동",
       "title_original": "ADD, 폐쇄망 생성형 AI ‘애디(Add+i)’ 전면 가동… 국방 연구개발 AI 전환 본격화",
       "summary": "핵심: 국방과학연구소, 폐쇄망 생성형 AI ‘Add+i’를 전 직원 대상 운영",
@@ -2308,7 +2498,7 @@
     },
     {
       "id": "news-043",
-      "rank": 35,
+      "rank": 38,
       "title_ko": "팀네이버·KAI, 방산 특화 소버린 AI 모델 공동 개발 추진",
       "title_original": "팀네이버-KAI, 방산 특화 AI 모델 공동 개발…국방 소버린 AI 구현 나선다",
       "summary": "핵심: 네이버·네이버클라우드·KAI, 방산 특화 foundation model과 피지컬 AI 기반 미래전투체계 협력",
@@ -2369,7 +2559,7 @@
     },
     {
       "id": "news-044",
-      "rank": 36,
+      "rank": 39,
       "title_ko": "ETRI, 출연연 오픈소스 협의체 확대…AI 저작권·라이선스·보안 리스크 대응",
       "title_original": "ETRI, 출연연 오픈소스 협의체 범출연연으로 확대... AI저작권 등 오픈소스 리스크 공동대응",
       "summary": "핵심: 출연연 오픈소스 협의체 확대 — 라이선스 분쟁, 보안 취약점, AI 학습데이터 저작권 대응",
@@ -2430,7 +2620,7 @@
     },
     {
       "id": "news-048",
-      "rank": 37,
+      "rank": 40,
       "title_ko": "AWS Security Hub, 노출 finding에 공격 영향 분석 추가",
       "title_original": "AWS Security Hub adds impact analysis for exposure findings",
       "summary": "핵심: Security Hub exposure finding에 downstream resource와 privilege escalation 경로 분석 추가",
@@ -2493,7 +2683,7 @@
     },
     {
       "id": "news-036",
-      "rank": 38,
+      "rank": 41,
       "title_ko": "Amazon SageMaker HyperPod, LLM 추론용 Disaggregated Prefill/Decode 지원",
       "title_original": "Amazon SageMaker HyperPod now supports disaggregated prefill and decode",
       "summary": "핵심: SageMaker HyperPod DPD — prefill·decode를 별도 GPU 풀로 분리해 long-context 추론 경합 완화",
@@ -2556,7 +2746,7 @@
     },
     {
       "id": "news-049",
-      "rank": 39,
+      "rank": 42,
       "title_ko": "SageMaker Studio, Hugging Face 모델 원클릭 배포·커스터마이징 통합",
       "title_original": "Amazon SageMaker Studio now integrates with Hugging Face for one-click model deployment and customization",
       "summary": "핵심: Hugging Face 모델 페이지에서 SageMaker AI 배포·커스터마이징 워크플로로 직접 이동",
@@ -2618,7 +2808,7 @@
     },
     {
       "id": "news-035",
-      "rank": 40,
+      "rank": 43,
       "title_ko": "Linux KVM Januscape 취약점, Intel·AMD x86 호스트에서 VM 탈출 위험",
       "title_original": "16-Year-Old Linux KVM Flaw Lets Guest VMs Escape to Host on Intel and AMD x86 Systems",
       "summary": "핵심: Linux KVM Januscape(CVE-2026-53359) — guest VM에서 host kernel shadow MMU 상태 손상 가능",
@@ -2686,7 +2876,7 @@
     },
     {
       "id": "news-039",
-      "rank": 41,
+      "rank": 44,
       "title_ko": "Gitea Docker 취약점 CVE-2026-20896, 공개 13일 만에 공격자 탐색 관측",
       "title_original": "Threat Actors Probe Gitea Docker Flaw CVE-2026-20896 13 Days After Disclosure",
       "summary": "핵심: Gitea Docker CVE-2026-20896 — reverse proxy auth 환경에서 spoofed X-WEBAUTH-USER 신뢰 위험",
@@ -2747,7 +2937,7 @@
     },
     {
       "id": "news-038",
-      "rank": 42,
+      "rank": 45,
       "title_ko": "SkillCloak, 악성 AI 에이전트 스킬이 정적 스캐너를 우회하는 기법 공개",
       "title_original": "SkillCloak Lets Malicious AI Agent Skills Evade Static Scanners with Self-Extracting Packing",
       "summary": "핵심: SkillCloak — self-extracting packing으로 악성 AI agent skill이 정적 검사를 우회",
@@ -2808,7 +2998,7 @@
     },
     {
       "id": "news-031",
-      "rank": 43,
+      "rank": 46,
       "title_ko": "SKT 블랙웰 AI 클러스터 ‘해인’, 국내 최초 CSAP 인증 취득",
       "title_original": "SKT, 블랙웰 AI 클러스터 ‘해인’ 국내 최초 CSAP 인증 취득",
       "summary": "핵심: SKT 블랙웰 AI 클러스터 ‘해인’ — 국내 최초 **CSAP 인증**",
@@ -2876,7 +3066,7 @@
     },
     {
       "id": "news-046",
-      "rank": 44,
+      "rank": 47,
       "title_ko": "Hugging Face Kernels 업데이트, 모델 실행용 커스텀 커널 배포·공유 흐름 강화",
       "title_original": "🤗 Kernels: Major Updates",
       "summary": "핵심: Hugging Face Kernels 주요 업데이트 — 모델 페이지와 커스텀 커널 실행·공유 생태계 강화",
@@ -2937,7 +3127,7 @@
     },
     {
       "id": "news-015",
-      "rank": 45,
+      "rank": 48,
       "title_ko": "AI 신뢰성 전문가 부족과 기업 AI 거버넌스 격차 부각",
       "title_original": "GPU보다 부족한 건 AI 신뢰성 전문가…규제는 발전과 동일 선상",
       "summary": "핵심: AI 신뢰성 인력·프로세스 부족 — 기업 AI 거버넌스 병목",
@@ -2999,7 +3189,7 @@
     },
     {
       "id": "news-016",
-      "rank": 46,
+      "rank": 49,
       "title_ko": "기업 AI, 모델 다변화는 성공했지만 거버넌스 통제 격차 노출",
       "title_original": "모델 다변화는 성공, 거버넌스는 낙제점…기업 AI '통제 격차' 본격화",
       "summary": "핵심: 멀티 모델 전략 확산, 통제·거버넌스는 **Control Gap** 노출",
@@ -3061,7 +3251,7 @@
     },
     {
       "id": "news-002",
-      "rank": 47,
+      "rank": 50,
       "title_ko": "SKT, 최대 15GW 규모 AI 데이터센터 구축 계획 발표",
       "title_original": "SKT, 15GW AI 데이터센터 구축 \"아시아 AI 인프라 허브 도약\"",
       "summary": "핵심: SKT AI 데이터센터 로드맵 **최대 15GW** 규모",
@@ -3121,193 +3311,6 @@
           "heading": "시사점",
           "items": [
             "팀 액션: 대규모 AI 클러스터 설계에는 고밀도 전력, 액체냉각, 네트워크 패브릭, GPU 스케줄링, 멀티테넌트 보안이 함께 요구",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-001",
-      "rank": 48,
-      "title_ko": "AI 에이전트, 생성형 AI보다 질문당 최대 136.5배 에너지 소비",
-      "title_original": "AI 에이전트, 생성형 AI보다 질문 한 건당 최대 136.5배 에너지 소비",
-      "summary": "핵심: AI 에이전트 질의 1건당 에너지 사용량 **최대 136.5배** 증가 가능",
-      "detail": "핵심: 핵심: AI 에이전트 질의 1건당 에너지 사용량 **최대 136.5배** 증가 가능\n변화: 변화: 단일 답변형 LLM에서 계획·도구 호출·검증 반복형 워크로드로 이동\n영향: 에이전트 도입이 늘수록 추론 비용과 전력 사용량이 클라우드 예산과 ESG, 데이터센터 용량 계획의 핵심 변수가 됨\n시사점: 에이전트 워크플로는 토큰 사용량, 도구 호출 수, 재시도 횟수, 에너지/비용 메트릭을 관측하고 제한하는 FinOps/GreenOps 설계가 필요",
-      "why_it_matters": "에이전트 도입이 늘수록 추론 비용과 전력 사용량이 클라우드 예산과 ESG, 데이터센터 용량 계획의 핵심 변수가 됩니다.",
-      "engineering_implication": "에이전트 워크플로는 토큰 사용량, 도구 호출 수, 재시도 횟수, 에너지/비용 메트릭을 관측하고 제한하는 FinOps/GreenOps 설계가 필요합니다.",
-      "korea_implication": "국내 AI 서비스와 데이터센터 투자 논의에서 전력 효율과 에이전트 운영 비용이 중요한 평가 지표가 될 가능성이 큽니다.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Agent",
-        "Inference",
-        "Energy",
-        "Data Center"
-      ],
-      "region": "Korea",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-05 23:58",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40831",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40831_61556_5432_v150.jpg",
-      "local_image": "assets/images/news-001.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: AI 에이전트 질의 1건당 에너지 사용량 **최대 136.5배** 증가 가능",
-            "변화: 변화: 단일 답변형 LLM에서 계획·도구 호출·검증 반복형 워크로드로 이동",
-            "원문: AI 에이전트, 생성형 AI보다 질문 한 건당 최대 136.5배 에너지 소비 기준 정리",
-            "시점: 2026-07-05 23:58 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AI Times KR 원문 링크 기준 요약",
-            "범위: AI / Korea / AI, Agent, Inference, Energy, Data Center 영역",
-            "주요 내용: 볼 것: 에너지/비용 계측, retry budget, tool-call 상한",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 에이전트 도입이 늘수록 추론 비용과 전력 사용량이 클라우드 예산과 ESG, 데이터센터 용량 계획의 핵심 변수가 됨",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 에이전트 워크플로는 토큰 사용량, 도구 호출 수, 재시도 횟수, 에너지/비용 메트릭을 관측하고 제한하는 FinOps/GreenOps 설계가 필요",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-027",
-      "rank": 49,
-      "title_ko": "Claude Code 비용 60% 절감 아이디어: 코드를 이미지로 변환해 OCR 활용",
-      "title_original": "Fable 비용 60% 절감: 코드를 이미지로 변환하고 모델이 OCR하게 하기",
-      "summary": "핵심: pxpipe — 코드 컨텍스트를 PNG로 바꿔 입력 비용 **약 59~70% 절감** 주장",
-      "detail": "핵심: 핵심: pxpipe — 코드 컨텍스트를 PNG로 바꿔 입력 비용 **약 59~70% 절감** 주장\n변화: 변화: 긴 텍스트 컨텍스트 비용을 이미지/OCR 경로로 우회\n영향: AI 코딩 도구 사용량 증가: 컨텍스트 비용이 개발 생산성 비용의 일부가 됨\n시사점: 민감 코드 이미지화 경로, 저장 여부, OCR 오류율, 회귀 테스트를 검증한 뒤 선택 옵션으로 시작",
-      "why_it_matters": "AI 코딩 도구 사용량 증가: 컨텍스트 비용이 개발 생산성 비용의 일부가 됨.",
-      "engineering_implication": "민감 코드 이미지화 경로, 저장 여부, OCR 오류율, 회귀 테스트를 검증한 뒤 선택 옵션으로 시작.",
-      "korea_implication": "AI 코딩 도구를 조직 단위로 도입하는 국내 개발팀은 토큰 비용 최적화와 품질 검증 체계를 함께 마련해야 합니다.",
-      "category": "DevTools",
-      "tags": [
-        "Claude Code",
-        "Cost",
-        "OCR",
-        "Developer Tools",
-        "AI Coding"
-      ],
-      "region": "Global",
-      "importance": "medium",
-      "score": 82,
-      "published_kst": "2026-07-05 07:35",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31127",
-      "image_url": "https://social.news.hada.io/topic/31127",
-      "local_image": "assets/images/news-027.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: pxpipe — 코드 컨텍스트를 PNG로 바꿔 입력 비용 **약 59~70% 절감** 주장",
-            "변화: 변화: 긴 텍스트 컨텍스트 비용을 이미지/OCR 경로로 우회",
-            "원문: Fable 비용 60% 절감: 코드를 이미지로 변환하고 모델이 OCR하게 하기 기준 정리",
-            "시점: 2026-07-05 07:35 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: GeekNews 원문 링크 기준 요약",
-            "범위: DevTools / Global / Claude Code, Cost, OCR, Developer Tools, AI Coding 영역",
-            "주요 내용: 볼 것: OCR 오류율, 보안, 감사 가능성, 작업 성공률",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 코딩 도구 사용량 증가: 컨텍스트 비용이 개발 생산성 비용의 일부가 됨",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 민감 코드 이미지화 경로, 저장 여부, OCR 오류율, 회귀 테스트를 검증한 뒤 선택 옵션으로 시작",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-024",
-      "rank": 50,
-      "title_ko": "AI 추론 달러당 성능 개선, AMD MI355X가 저비용 대안으로 부상",
-      "title_original": "달러당 성능이 더 빠르고 저렴해지고 있음",
-      "summary": "핵심: AMD MI355X — NVIDIA B300 대비 GPU당 평균 **약 2.75배 저렴한** 대안",
-      "detail": "핵심: 핵심: AMD MI355X — NVIDIA B300 대비 GPU당 평균 **약 2.75배 저렴한** 대안\n변화: 변화: 추론 인프라 경쟁 축이 GPU 확보에서 성능/달러로 이동\n영향: 추론 비용이 커지는 팀: 단일 벤더 고정보다 **성능/달러 + 운영 리스크** 비교가 필요\n시사점: PoC 기준: 실제 모델 tokens/sec, p95 latency, 메모리 여유, 장애 재기동, 프레임워크 호환성",
-      "why_it_matters": "추론 비용이 커지는 팀: 단일 벤더 고정보다 **성능/달러 + 운영 리스크** 비교가 필요.",
-      "engineering_implication": "PoC 기준: 실제 모델 tokens/sec, p95 latency, 메모리 여유, 장애 재기동, 프레임워크 호환성.",
-      "korea_implication": "국내 AI 서비스·IDC 사업자는 NVIDIA 공급 제약과 비용 상승에 대비해 AMD/대체 가속기 PoC와 멀티벤더 서빙 전략을 검토할 수 있습니다.",
-      "category": "Infra",
-      "tags": [
-        "AI",
-        "Inference",
-        "GPU",
-        "AMD",
-        "NVIDIA",
-        "Cost"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-07-05 01:41",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31123",
-      "image_url": "https://social.news.hada.io/topic/31123",
-      "local_image": "assets/images/news-024.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: AMD MI355X — NVIDIA B300 대비 GPU당 평균 **약 2.75배 저렴한** 대안",
-            "변화: 변화: 추론 인프라 경쟁 축이 GPU 확보에서 성능/달러로 이동",
-            "원문: 달러당 성능이 더 빠르고 저렴해지고 있음 기준 정리",
-            "시점: 2026-07-05 01:41 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: GeekNews 원문 링크 기준 요약",
-            "범위: Infra / Global / AI, Inference, GPU, AMD, NVIDIA, Cost 영역",
-            "주요 내용: 볼 것: CUDA 의존도, 커널 최적화, 프레임워크 호환성",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 추론 비용이 커지는 팀: 단일 벤더 고정보다 **성능/달러 + 운영 리스크** 비교가 필요",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: PoC 기준: 실제 모델 tokens/sec, p95 latency, 메모리 여유, 장애 재기동, 프레임워크 호환성",
             "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
           ]
         }
