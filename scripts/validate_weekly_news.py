@@ -84,6 +84,16 @@ def validate_optional_string(value: object, label: str, errors: list[str]) -> No
         errors.append(f"{label} must be a string when present")
 
 
+def is_positive_int(value: object) -> bool:
+    """Return True only for real positive integers, not bool values."""
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
+def is_score_number(value: object) -> bool:
+    """Return True for numeric scores while rejecting bool-as-int edge cases."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
 def is_valid_week(value: str) -> bool:
     if not WEEK_RE.match(value):
         return False
@@ -354,23 +364,27 @@ def main() -> int:
                 errors.append(f"duplicate id: {item_id}")
             seen_ids.add(str(item_id))
         rank = item.get("rank")
-        if not isinstance(rank, int) or rank < 1:
+        if not is_positive_int(rank):
             errors.append(f"{prefix} rank must be a positive integer")
-        elif rank != idx:
-            errors.append(f"{prefix} rank must match latest-first list position {idx}, got {rank}")
-        elif rank in seen_ranks:
-            errors.append(f"duplicate rank: {rank}")
         else:
-            seen_ranks.add(rank)
+            assert isinstance(rank, int)
+            rank_value = rank
+            if rank_value != idx:
+                errors.append(f"{prefix} rank must match latest-first list position {idx}, got {rank_value}")
+            elif rank_value in seen_ranks:
+                errors.append(f"duplicate rank: {rank_value}")
+            else:
+                seen_ranks.add(rank_value)
         source_url = item.get("source_url", "")
         if source_url:
-            if not is_http_url(str(source_url)):
+            if not isinstance(source_url, str) or not is_http_url(source_url):
                 errors.append(f"{prefix} source_url must be an absolute http(s) URL: {source_url}")
-            if source_url in seen_urls:
+            elif source_url in seen_urls:
                 errors.append(f"duplicate source_url: {source_url}")
-            seen_urls.add(source_url)
+            else:
+                seen_urls.add(source_url)
         score = item.get("score")
-        if score is not None and (not isinstance(score, (int, float)) or not 0 <= score <= 100):
+        if score is not None and (not is_score_number(score) or not 0 <= score <= 100):
             errors.append(f"{prefix} score must be a number between 0 and 100")
         importance = item.get("importance")
         if importance and importance not in ALLOWED_IMPORTANCE:

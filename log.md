@@ -266,3 +266,8 @@
 - Checked current time at 2026-07-09 22:38 KST; no freeze guard was run per current project policy.
 - Replaced stale README next-step checklist with the current implemented site/data/automation status.
 - Added local validation commands and commit-hygiene notes so future small changes use the same verified path.
+
+## [2026-07-10] validation | Harden validator numeric and URL type checks
+- Checked current time at 2026-07-10 00:42 KST; no freeze guard was run per current project policy.
+- Hardened `scripts/validate_weekly_news.py` so boolean ranks/scores are rejected and non-string `source_url` values report validation errors without crashing duplicate-URL checks.
+- Verified the malformed-fixture path, weekly data validation, JS syntax, Python bytecode compile, and local browser smoke checks.
