@@ -109,7 +109,7 @@ function safeImageSrc(value) {
   if (/^https?:\/\//i.test(raw)) {
     try {
       const url = new URL(raw);
-      return ["http:", "https:"].includes(url.protocol) && url.hostname ? url.href : "";
+      return ["http:", "https:"].includes(url.protocol) && url.hostname && !url.username && !url.password ? url.href : "";
     } catch {
       return "";
     }
@@ -491,7 +491,7 @@ function safeExternalUrl(value) {
   if (!/^https?:\/\//i.test(raw)) return "";
   try {
     const url = new URL(raw);
-    return ["http:", "https:"].includes(url.protocol) && url.hostname ? url.href : "";
+    return ["http:", "https:"].includes(url.protocol) && url.hostname && !url.username && !url.password ? url.href : "";
   } catch {
     return "";
   }

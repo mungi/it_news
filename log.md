@@ -237,3 +237,8 @@
 - Reviewed 2,465 feed entries and 101 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering GitLost GitHub AI-agent repository leakage, NVIDIA/Hugging Face Data for Agents, GitHub Agentic Workflows documentation automation, and Aurora DSQL CDC GA. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source review, concept wiki, and wiki index.
+
+## [2026-07-09] site | Reject userinfo in data-driven URLs
+- Checked current time at 2026-07-09 14:19 KST; no freeze guard was run per current project policy.
+- Hardened browser and Python URL validation to reject `http(s)` links/images containing username or password components before rendering or accepting weekly data.
+- Bumped the app.js cache key so GitHub Pages serves the URL-safety change.

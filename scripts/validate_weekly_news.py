@@ -36,7 +36,7 @@ def is_http_url(value: str) -> bool:
     if not isinstance(value, str) or has_unsafe_url_whitespace(value):
         return False
     parsed = urlparse(value)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc) and not parsed.username and not parsed.password
 
 
 def has_unsafe_url_whitespace(value: str) -> bool:
