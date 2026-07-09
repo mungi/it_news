@@ -150,8 +150,9 @@ def validate_image_url(value: object, prefix: str, errors: list[str]) -> None:
     if is_http_url(image_url):
         return
     if is_safe_assets_path(image_url):
-        if not (ROOT / "docs" / image_url).exists():
-            errors.append(f"{prefix} image_url fallback file does not exist: {image_url}")
+        image_path = ROOT / "docs" / image_url
+        if not image_path.is_file():
+            errors.append(f"{prefix} image_url fallback file does not exist or is not a file: {image_url}")
         return
     errors.append(f"{prefix} image_url must be an absolute http(s) URL or safe assets/... fallback: {image_url}")
 
@@ -164,8 +165,9 @@ def validate_local_image(value: object, prefix: str, field: str, errors: list[st
     if not is_safe_assets_path(path):
         errors.append(f"{prefix} {field} must be a safe docs-local assets/... path: {path}")
         return
-    if not (ROOT / "docs" / path).exists():
-        errors.append(f"{prefix} {field} file does not exist: {path}")
+    image_path = ROOT / "docs" / path
+    if not image_path.is_file():
+        errors.append(f"{prefix} {field} file does not exist or is not a file: {path}")
 
 
 def validate_detailed_content(value: object, prefix: str, errors: list[str], *, required: bool = False) -> None:
@@ -475,8 +477,7 @@ def main() -> int:
         local_image = item.get("local_image", "")
         if not (image_url or local_image):
             errors.append(f"{prefix} needs image_url or local_image")
-        if image_url and not is_http_url(str(image_url)):
-            errors.append(f"{prefix} image_url must be an absolute http(s) URL: {image_url}")
+        validate_image_url(image_url, prefix, errors)
         if local_image:
             validate_local_image(local_image, prefix, "local_image", errors)
         validate_deep_dive_content(item.get("detailed_content"), prefix, errors)
