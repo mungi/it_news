@@ -225,3 +225,8 @@
 - Checked current time at 2026-07-09 10:12 KST; no freeze guard was run per current project policy.
 - Changed the Top 6 control from a separate importance/score priority resort to a simple first-six slice after the current search/filter and newest-first list order.
 - Updated the Top 6 accessible label/result text and bumped the app.js cache key.
+
+## [2026-07-09] site | Improve filter keyboard navigation
+- Checked current time at 2026-07-09 12:15 KST; no freeze guard was run per current project policy.
+- Added Arrow/Home/End keyboard navigation to category, importance, and region filter segmented controls while preserving `aria-pressed` state.
+- Bumped the app.js cache key so the deployed static page picks up the interaction change.

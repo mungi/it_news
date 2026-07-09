@@ -153,14 +153,37 @@ function makeBadge(text) {
 
 function renderFilterButtons(container, values, active, onClick) {
   container.replaceChildren();
-  values.forEach((value) => {
+  container.setAttribute("role", "group");
+  values.forEach((value, index) => {
     const button = document.createElement("button");
     button.className = `filter-button ${value === active ? "active" : ""}`;
     button.type = "button";
     button.setAttribute("aria-pressed", String(value === active));
+    button.dataset.filterIndex = String(index);
     button.textContent = displayLabel(value);
     button.addEventListener("click", () => onClick(value));
+    button.addEventListener("keydown", (event) => handleSegmentedButtonKeydown(event, container, values, onClick));
     container.appendChild(button);
+  });
+}
+
+function handleSegmentedButtonKeydown(event, container, values, onClick) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  const buttons = Array.from(container.querySelectorAll("button"));
+  if (!buttons.length) return;
+  const currentIndex = buttons.indexOf(event.currentTarget);
+  if (currentIndex < 0) return;
+  event.preventDefault();
+  const lastIndex = buttons.length - 1;
+  let nextIndex = currentIndex;
+  if (event.key === "Home") nextIndex = 0;
+  if (event.key === "End") nextIndex = lastIndex;
+  if (event.key === "ArrowLeft") nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+  if (event.key === "ArrowRight") nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+  onClick(values[nextIndex]);
+  window.requestAnimationFrame(() => {
+    const refreshedButtons = Array.from(container.querySelectorAll("button"));
+    refreshedButtons[nextIndex]?.focus();
   });
 }
 
