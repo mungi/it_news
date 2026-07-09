@@ -2,12 +2,12 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-09 17:08",
+  "last_updated_kst": "2026-07-09 21:18",
   "audience": "developers and engineers",
   "executive_summary": [
     "AI 에이전트 보안 경계가 로컬 개발 환경과 조직 저장소로 확대: Friendly Fire, GhostApproval, GitLost, HalluSquatting을 같은 통제 모델로 점검 필요.",
-    "클라우드 보안 운영 고도화: AWS Security Hub Network Scanning과 기존 impact analysis로 공개 노출·공격 경로 triage 강화.",
-    "AI 추론·에이전트 경제성 경쟁 지속: Nemotron harness, GLM 5.2, HyperPod DPD, open data, GPU 비용 최적화가 핵심 변수.",
+    "엔드포인트·클라우드 보안 운영 고도화: RoguePlanet Defender 권한 상승, GodDamn BYOVD, AWS Security Hub Network Scanning을 패치·EDR·노출 관리로 연결 필요.",
+    "AI 추론·에이전트 경제성 경쟁 지속: Grok 4.5, GPT-Live, Nemotron harness, HyperPod DPD, open data, GPU 비용 최적화가 핵심 변수.",
     "Cloud Native AI 인프라 병목 다변화: CNCF 스토리지 백서, PM1763 SSD, Google Cloud C4N, Aurora DSQL CDC까지 데이터 경로 설계 필요.",
     "AI 평가와 거버넌스 기준 재정의: OpenAI 코딩 평가 분석, 네이버 ASF 2.0, AI 보안 가이드가 운영 절차로 연결."
   ],
@@ -185,6 +185,204 @@
   ],
   "items": [
     {
+      "id": "news-082",
+      "title_ko": "GodDamn 랜섬웨어, PoisonX 커널 드라이버로 EDR·백업 방어를 무력화",
+      "title_original": "GodDamn Ransomware Uses PoisonX Driver to Disable Endpoint Defenses",
+      "summary": "핵심: Symantec Threat Hunter Team이 GodDamn 랜섬웨어가 PoisonX 커널 드라이버로 보안 소프트웨어를 중지하는 방어 회피 전략을 사용한다고 공개. 영향: 랜섬웨어 대응은 파일 암호화 탐지보다 취약 드라이버 차단, 원격 관리 도구 사용 감시, 백업 네트워크 분리까지 포함 필요.",
+      "detail": "GodDamn은 Beast·Monster 계열의 재브랜딩으로 평가되는 랜섬웨어이며, PoisonX 커널 드라이버를 이용해 endpoint defense를 비활성화하는 BYOVD 성격의 공격 흐름을 사용함. 보도는 AnyDesk, PsExec, NetScan, MegaSync, rclone, Mimikatz, GMER, RDPClip, WinSCP 같은 도구 사용과 vssadmin 기반 shadow copy 삭제를 함께 설명함. 운영팀은 EDR 이벤트뿐 아니라 합법 도구의 비정상 조합과 드라이버 로드 정책을 함께 봐야 함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Symantec Threat Hunter Team이 GodDamn 랜섬웨어의 PoisonX kernel driver 기반 endpoint defense 무력화 흐름 공개",
+            "계열: GodDamn은 2026-05-21 야생에서 공개 관측됐고 Beast·Monster 랜섬웨어 계열의 재브랜딩으로 평가",
+            "주체: Broadcom 보안 조직은 관련 개발자를 Hyadina라는 이름으로 추적 중"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "방어 회피: PoisonX 드라이버로 보안 소프트웨어를 중지해 암호화 전 탐지·차단 가능성 축소",
+            "도구 조합: AnyDesk, PsExec, NetScan, MegaSync, rclone, Mimikatz, GMER, RDPClip, WinSCP 등이 공격 흐름에 등장",
+            "복구 방해: vssadmin.exe로 volume shadow copy를 삭제해 백업 기반 복구 난도 상승",
+            "운영 신호: 원격 관리 도구, credential dumping, 파일 동기화 도구, kernel driver load가 짧은 시간에 결합되는 패턴 확인"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "위험 모델: 랜섬웨어가 userland malware 탐지를 넘어 kernel driver와 합법 관리 도구 조합으로 방어선을 우회하는 흐름 확인",
+            "인프라 영향: 백업 서버, 파일 서버, AD 관리 워크스테이션, 원격 접속 도구가 동시에 사고 범위에 포함될 가능성"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: vulnerable/suspicious driver blocklist, WDAC 또는 driver load policy, EDR tamper protection을 랜섬웨어 대응 기본값으로 적용 필요",
+            "검토 항목: AnyDesk·PsExec·rclone·MegaSync 사용 로그와 관리자 계정 lateral movement를 통합 탐지 룰로 묶을 필요",
+            "운영 과제: 백업 저장소는 domain admin 세션·일반 endpoint credential과 분리하고 immutable/offline 복구 경로 점검 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "랜섬웨어가 커널 드라이버와 합법 원격 관리 도구를 결합하면 EDR 알림 전 단계에서 방어 기능이 꺼질 수 있음.",
+      "engineering_implication": "Windows endpoint 운영팀은 드라이버 로드 정책, 원격 관리 도구 allowlist, 백업 격리, EDR tamper protection을 하나의 랜섬웨어 통제 묶음으로 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "Ransomware",
+        "BYOVD",
+        "Endpoint Security",
+        "Windows",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-09 19:43",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/goddamn-ransomware-uses-poisonx-driver.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEge_nKJNwSt3ZRkzfZ2qH61_1WFg5hyphenhyphenMSrC3-JM4AOXRKO-IVsJXFNiM926QnG25eTply3DRF57t61wi5Ucy4yxald1RpH1TRbItw83RqQ-K6UM670vpR76-kBl2xcntaDE7lxxNwurseG5iRM4sMhYK8Npb9COGNM_XjbwBLthnJjBfwqV7m96VKOnWb3Q/s1600/endpoint-ransomware.jpg",
+      "local_image": "assets/images/news-083.jpg",
+      "related_links": [
+        {
+          "title": "Symantec Threat Hunter Team 언급",
+          "url": "https://thehackernews.com/2026/07/goddamn-ransomware-uses-poisonx-driver.html"
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-083",
+      "title_ko": "OpenAI GPT-Live, 풀듀플렉스 음성 대화로 ChatGPT Voice 기본 모델 전환",
+      "title_original": "오픈AI, 맥락 이해하는 ‘챗GPT 보이스’ 공개...\"말이 끝날 때까지 기다리고, 끼어들어도 알아듣는다\"",
+      "summary": "핵심: OpenAI가 GPT-Live 기반 ChatGPT Voice를 공개하고 GPT-Live-1·GPT-Live-1 mini를 요금제별 기본 음성 모델로 배포. 영향: 음성 AI는 STT→LLM→TTS 파이프라인에서 연속 오디오 이해·도구 위임·응답 타이밍 제어가 결합된 실시간 agent interface로 이동.",
+      "detail": "GPT-Live는 사용자의 음성을 지속적으로 듣고 말할지, 기다릴지, 끼어들지, 도구를 호출할지 결정하는 풀듀플렉스 음성 모델로 설명됨. 보도는 기존 캐스케이드형 음성 시스템의 지연·정보 손실·턴 감지 문제를 줄이고, 복잡한 검색·추론 작업은 GPT-5.5 같은 후면 모델에 위임하는 구조를 소개함. iOS, Android, ChatGPT.com에서 배포되며 Go·Plus·Pro는 GPT-Live-1, Free는 GPT-Live-1 mini를 기본으로 사용.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: OpenAI가 GPT-Live-1과 GPT-Live-1 mini 기반 ChatGPT Voice 경험 공개",
+            "배포: iOS, Android, ChatGPT.com에서 제공되고 Go·Plus·Pro는 GPT-Live-1, Free는 GPT-Live-1 mini 기본 적용",
+            "목표: 실제 사람 대화처럼 듣기·짧은 반응·대기·끼어들기 처리를 자연스럽게 만드는 음성 UX 개선"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "구조 변화: 기존 STT→LLM→TTS 캐스케이드와 턴 기반 음성 모델의 지연·정보 손실·턴 감지 오류를 줄이는 풀듀플렉스 처리",
+            "상호작용: 사용자가 말하는 동안 짧은 맞장구, 빠른 주고받기, 생각할 때 기다림, 끼어들기 대응 지원",
+            "작업 분리: 자연스러운 대화 흐름은 GPT-Live가 유지하고 검색·추론·복잡한 작업은 후면 frontier model에 위임",
+            "운영 범위: 배경 소음 속 음성 집중, 화면 기반 정보 제공, 실시간 번역 같은 장시간 상호작용에 적용 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "제품 영향: 음성 인터페이스가 단순 TTS 출력이 아니라 agent 작업 실행의 primary control plane이 될 가능성 확대",
+            "기술 영향: latency budget, turn-taking, audio context retention, tool-call handoff가 LLM 앱 아키텍처의 새 품질 지표로 부상"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 음성 AI 도입팀은 speech latency, interruption handling, fallback model handoff, transcript retention 정책을 별도 SLO로 관리 필요",
+            "검토 항목: 녹음·전사·화면 공유 데이터의 보관, 민감 정보 마스킹, tool invocation approval UX 점검 필요",
+            "운영 과제: contact center·현장 업무 앱은 실시간 음성 UX와 후면 agent 작업 큐를 분리 설계 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "음성 AI가 자연어 UI를 넘어 장시간 에이전트 작업의 제어면이 되면 지연 시간, 개인정보, 도구 호출 승인 설계가 제품 품질을 좌우함.",
+      "engineering_implication": "음성 기반 agent UX는 오디오 모델 선택보다 transcript 보안, tool-call approval, latency SLO, fallback handoff를 함께 설계해야 함.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "GPT-Live",
+        "Voice AI",
+        "Multimodal",
+        "Agent UX"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-07-09 18:46",
+      "source_name": "AI Times KR",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40895",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40895_61636_467_v150.jpg",
+      "local_image": "assets/images/news-084.jpg",
+      "related_links": [
+        {
+          "title": "OpenAI GPT-Live system card",
+          "url": "https://deploymentsafety.openai.com/gpt-live"
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-084",
+      "title_ko": "Microsoft, RoguePlanet Defender 권한 상승 취약점 패치 공개",
+      "title_original": "Microsoft Patches RoguePlanet Defender Flaw That Can Grant SYSTEM Privileges",
+      "summary": "핵심: Microsoft가 Malware Protection Engine의 RoguePlanet 취약점 CVE-2026-50656을 엔진 버전 1.1.26060.3008에서 수정. 영향: Defender가 기본 탑재된 Windows fleet은 엔진 자동 업데이트 상태와 공개 PoC 노출 기간을 기준으로 endpoint 권한 상승 위험을 확인 필요.",
+      "detail": "RoguePlanet은 Microsoft Malware Protection Engine(mpengine.dll)의 권한 상승 취약점으로 CVSS 7.8로 추적됨. THN 보도에 따르면 결함 세부 내용이 공개된 지 약 한 달 뒤 Microsoft가 엔진 1.1.26060.3008에서 수정했고, 추가 defense-in-depth 보강도 포함됨. Defender 엔진은 endpoint 전반에 자동 배포되는 보안 구성요소라 패치 지연과 예외 정책이 곧 fleet-wide risk가 될 수 있음.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Microsoft가 Defender Malware Protection Engine의 RoguePlanet 권한 상승 취약점 CVE-2026-50656 패치 공개",
+            "영향 구성요소: antivirus·antispyware scan, detection, cleaning 기능을 제공하는 mpengine.dll 대상",
+            "수정 버전: Microsoft Malware Protection Engine 1.1.26060.3008에서 remediation 및 defense-in-depth 보강 포함"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "취약점 성격: CVSS 7.8 권한 상승 문제로 로컬 공격자가 SYSTEM 권한 획득 가능성",
+            "노출 기간: 결함 세부 내용이 공개된 뒤 약 한 달 후 정식 보안 업데이트 제공",
+            "운영 조건: Defender 엔진 자동 업데이트가 꺼졌거나 격리망·VDI·서버 예외 정책이 있는 fleet은 잔여 위험 가능",
+            "검증 지점: 엔진 버전, security intelligence update, Tamper Protection, EDR alert 상태를 함께 확인"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "위험 모델: 보안 제품 자체가 권한 상승 경로가 되면 모든 Windows endpoint가 공통 공격 표면이 될 수 있음",
+            "운영 영향: 중앙 관리 콘솔의 “Defender 사용 중” 상태만으로는 엔진 버전 최신성 확인을 대체할 수 없음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: Intune, Defender for Endpoint, WSUS/ConfigMgr에서 Malware Protection Engine 1.1.26060.3008 이상 배포율 확인 필요",
+            "검토 항목: 인터넷 차단망과 golden image의 Defender engine update 경로, 예외 정책, rollback 이미지를 점검 필요",
+            "운영 과제: 공개 PoC가 있는 보안 에이전트 취약점은 일반 OS 패치와 별도 SLA로 추적 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "Defender 엔진은 Windows endpoint 전반에 깔린 공통 보안 구성요소라 엔진 패치 지연이 곧 조직 전체 권한 상승 표면으로 연결될 수 있음.",
+      "engineering_implication": "Windows 운영팀은 OS 누적 업데이트와 별개로 Defender Malware Protection Engine 버전 배포율을 측정하고 격리망·이미지·VDI 예외를 우선 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "Microsoft Defender",
+        "Windows",
+        "CVE",
+        "Endpoint Security",
+        "Patch Management"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-07-09 17:48",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/microsoft-patches-rogueplanet-defender.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhuqwSaoB3zc0bIhf1aBmcHsVVAsGnRDBc681vhmlgHYy0xx5VSxyS2jqjmk-mq27QrSKPN3yorL3A7DffJYp3iMO7CY_8owm-Cn8r7IFuvqeGHTPSyiFM0KVTMTE8W0Qon84tCbzsLVNqoS5nLq1aX8_RNKg0sxa2ke4Su_p5qy9dAlFdakwYcjueBGNhD/s1600/windows.jpg",
+      "local_image": "assets/images/news-082.jpg",
+      "related_links": [
+        {
+          "title": "Microsoft Defender 보안 업데이트 참고",
+          "url": "https://thehackernews.com/2026/07/microsoft-patches-rogueplanet-defender.html"
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-079",
       "title_ko": "Friendly Fire, 보안 검사용 AI 코딩 에이전트가 README 미끼로 공격자 코드를 실행할 수 있음",
       "title_original": "Top AI Agents Built to Catch Malicious Code Can Be Tricked Into Running It",
@@ -247,7 +445,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 4
     },
     {
       "id": "news-080",
@@ -312,7 +510,77 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 5
+    },
+    {
+      "id": "news-085",
+      "title_ko": "Grok 4.5 공개, 코딩·에이전트 작업 성능과 출력 토큰 효율 전면 강조",
+      "title_original": "코딩 특화 '그록 4.5' 공개...\"오퍼스 4.7 성능에 가격은 10%\"",
+      "summary": "핵심: SpaceXAI가 코딩·에이전트 작업용 Grok 4.5를 공개하고 Grok Build, Cursor 플랜, SpaceXAI 콘솔 제공을 시작. 영향: 모델 선택 기준은 벤치마크 점수뿐 아니라 작업당 출력 토큰, TPS, 에이전트 rollout 안정성, IDE 통합 비용으로 이동.",
+      "detail": "Grok 4.5는 코딩, 과학, 엔지니어링, 수학 지식을 포함한 데이터셋과 수만 개 NVIDIA GB300 GPU 기반 학습 인프라를 내세움. GeekNews 정리는 Terminal Bench 2.1 83.3%, SWE Bench Pro 64.7%, DeepSWE 1.0 62.0%, DeepSWE 1.1 53%와 80 TPS, SWE Bench Pro 작업당 평균 출력 토큰 15,954개를 제시함. AI Times 보도는 Grok Build 기본 모델 적용과 Cursor 제공, EU 제공은 7월 중순 예정이라고 설명함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: SpaceXAI가 코딩·에이전트형 작업·지식 업무용 Grok 4.5 공개",
+            "제공 경로: Grok Build, 모든 Cursor 플랜, SpaceXAI 콘솔에서 사용 가능하고 EU 제공은 7월 중순 예정",
+            "학습 강조: 수만 개 NVIDIA GB300 GPU와 중복 제거·품질 점수화·도메인 중심 선택 등 데이터 큐레이션 전면 강조"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "벤치마크: Terminal Bench 2.1 83.3%, SWE Bench Pro 64.7%, DeepSWE 1.0 62.0%, DeepSWE 1.1 53% 수치 공개",
+            "효율 지표: 서빙 속도 80 TPS, SWE Bench Pro 작업당 평균 출력 토큰 15,954개로 Opus 4.8 max 대비 적은 출력 토큰 강조",
+            "학습 방식: 다단계 소프트웨어 엔지니어링과 기술 작업을 대상으로 강화학습과 자동·모델 기반 채점 사용",
+            "제품 포지션: 최고 점수 단독 경쟁보다 코딩 IDE·agent workflow에서 성능과 비용 효율을 함께 제시"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "선택 기준 변화: 코딩 모델 평가는 pass rate만이 아니라 작업 완료당 토큰, latency, tool-call 안정성, IDE 통합 비용까지 포함 필요",
+            "경쟁 구도: 프론티어 모델 가격 경쟁이 개발자 도구와 agent harness의 단가 경쟁으로 직접 연결됨"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 코딩 agent 모델 평가는 내부 repository replay, tool-call 실패율, PR 수정률, 작업당 비용으로 측정 필요",
+            "검토 항목: Cursor/Grok Build 같은 IDE 통합 경로의 데이터 처리 조건, 코드 보존 정책, 엔터프라이즈 제어 기능 확인 필요",
+            "운영 과제: 모델 라우팅은 고난도 코딩·단순 수정·문서화·테스트 생성 작업군별로 분리하는 정책 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "코딩 모델 경쟁이 단순 벤치마크에서 작업당 토큰과 IDE/agent 통합 비용으로 이동하면 개발 조직의 모델 라우팅과 거버넌스 설계가 달라짐.",
+      "engineering_implication": "개발팀은 Grok 4.5 같은 코딩 모델을 도입할 때 벤치마크보다 내부 작업 replay, 보안 정책, 비용/latency SLO, 코드 데이터 처리 조건을 우선 검증 필요.",
+      "category": "AI",
+      "tags": [
+        "Grok",
+        "Coding Agent",
+        "Benchmark",
+        "Inference Cost",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-09 12:13",
+      "source_name": "AI Times",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212563",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/212563_215854_4649.png",
+      "local_image": "assets/images/news-085.png",
+      "related_links": [
+        {
+          "title": "GeekNews Grok 4.5 정리",
+          "url": "https://news.hada.io/topic?id=31256"
+        },
+        {
+          "title": "xAI Grok 4.5 문서",
+          "url": "https://docs.x.ai/developers/models/grok-4.5"
+        }
+      ],
+      "rank": 6
     },
     {
       "id": "news-075",
@@ -376,7 +644,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-077",
@@ -440,7 +708,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-069",
@@ -500,7 +768,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-081",
@@ -560,7 +828,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-078",
@@ -620,7 +888,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-070",
@@ -680,7 +948,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-076",
@@ -739,7 +1007,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-071",
@@ -799,7 +1067,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-072",
@@ -859,7 +1127,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-065",
@@ -926,7 +1194,7 @@
           "url": "https://blogs.nvidia.com/blog/nemotron-langchain-agents-open-stack/"
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-073",
@@ -986,7 +1254,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-074",
@@ -1046,7 +1314,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-066",
@@ -1109,7 +1377,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40891_61629_554_v150.jpg",
       "local_image": "assets/images/news-066.jpg",
       "related_links": [],
-      "rank": 15
+      "rank": 19
     },
     {
       "id": "news-068",
@@ -1172,11 +1440,11 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-063",
-      "rank": 17,
+      "rank": 21,
       "title_ko": "CNCF, NGINX·OpenTelemetry로 AI 에이전트 네트워크 경계 패턴 제시",
       "title_original": "Network boundary for AI agents using NGINX and OpenTelemetry",
       "summary": "핵심: AI 에이전트 outbound 트래픽을 NGINX forward proxy와 iptables로 단일 경로화하고 OpenTelemetry span으로 감사하는 Kubernetes 패턴 공개. 영향: 프롬프트 guardrail만으로 부족한 네트워크 접근 통제를 cloud-native 운영 도구로 구현 가능.",
@@ -1239,7 +1507,7 @@
     },
     {
       "id": "news-064",
-      "rank": 18,
+      "rank": 22,
       "title_ko": "Ubiquiti, UniFi OS 최대 심각도 취약점 포함 7개 치명적 결함 패치",
       "title_original": "Ubiquiti warns of new max severity UniFi OS vulnerability",
       "summary": "핵심: Ubiquiti가 UniFi OS 계열의 7개 critical 취약점을 패치했고 CVE-2026-50746은 네트워크 접근만으로 host command injection 가능. 영향: Censys 기준 10만 대 이상 UniFi OS 인스턴스가 온라인 노출돼 지점·매장·스마트빌딩 네트워크 패치 우선순위 상승.",
@@ -1362,7 +1630,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 23
     },
     {
       "id": "news-062",
@@ -1426,7 +1694,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "id": "news-067",
@@ -1489,7 +1757,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40885_61621_3343_v150.jpg",
       "local_image": "assets/images/news-067.jpg",
       "related_links": [],
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-057",
@@ -1553,7 +1821,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-058",
@@ -1618,7 +1886,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-059",
@@ -1683,7 +1951,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 28
     },
     {
       "id": "news-060",
@@ -1752,11 +2020,11 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 29
     },
     {
       "id": "news-055",
-      "rank": 26,
+      "rank": 30,
       "title_ko": "AWS Security Hub, Microsoft Azure 리소스 모니터링으로 멀티클라우드 보안 관리 확대",
       "title_original": "AWS Security Hub extends unified security management to Microsoft Azure",
       "summary": "핵심: AWS Security Hub, Microsoft Azure 리소스의 위험 분석·CSPM·취약점 관리·보안 대응 지원",
@@ -1817,7 +2085,7 @@
     },
     {
       "id": "news-054",
-      "rank": 27,
+      "rank": 31,
       "title_ko": "Amazon ECS Managed Instances, GPU 관리 수수료 최대 60% 인하",
       "title_original": "Amazon ECS Managed Instances reduces GPU management fees by up to 60%",
       "summary": "핵심: ECS Managed Instances, GPU·가속 인스턴스 관리 수수료 **최대 60%** 인하",
@@ -1883,7 +2151,7 @@
     },
     {
       "id": "news-051",
-      "rank": 28,
+      "rank": 32,
       "title_ko": "Google Dialogflow CX 취약점, 같은 프로젝트 내 챗봇 에이전트 탈취 가능성",
       "title_original": "Rogue Agent Flaw Could Have Let Attackers Hijack Google Dialogflow CX Chatbots",
       "summary": "핵심: Dialogflow CX Code Block 에이전트 결함 — 편집 권한 보유자가 같은 Google Cloud 프로젝트의 다른 에이전트까지 침해 가능",
@@ -1944,7 +2212,7 @@
     },
     {
       "id": "news-053",
-      "rank": 29,
+      "rank": 33,
       "title_ko": "Google Cloud 보고서, 조직 83%가 에이전틱 AI 지원 인프라 업그레이드 필요",
       "title_original": "Report: 83% of organizations need to upgrade their infrastructure to support agentic AI",
       "summary": "핵심: Google Cloud AI 인프라 보고서 — 조직 **83%**가 에이전틱 AI 지원을 위해 인프라 업그레이드 필요",
@@ -2005,7 +2273,7 @@
     },
     {
       "id": "news-056",
-      "rank": 30,
+      "rank": 34,
       "title_ko": "NVIDIA Vera CPU, 에이전틱 워크로드용 AI 팩토리 처리량 개선 강조",
       "title_original": "NVIDIA Vera CPU Boosts AI Factory Throughput to Accelerate Agentic Workloads",
       "summary": "핵심: NVIDIA Vera CPU — 대규모 AI 팩토리에서 에이전틱 워크로드 처리량과 CPU-GPU 균형 개선 강조",
@@ -2066,7 +2334,7 @@
     },
     {
       "id": "news-040",
-      "rank": 31,
+      "rank": 35,
       "title_ko": "GitHub Actions 공격 체인, 일반 CI 보안 스캐너가 놓치는 패턴 경고",
       "title_original": "The GitHub Actions Attack Pattern Your CI Security Scanners Miss",
       "summary": "핵심: GitHub Actions 공격 체인 — 스캐너 통과가 파이프라인 안전을 보장하지 않음",
@@ -2127,7 +2395,7 @@
     },
     {
       "id": "news-037",
-      "rank": 32,
+      "rank": 36,
       "title_ko": "Writer AI 취약점, 에이전트 미리보기에서 테넌트 간 세션 토큰 유출 가능",
       "title_original": "Writer AI Flaw Could Let Agent Previews Leak Session Tokens Across Tenants",
       "summary": "핵심: Writer AI WriteOut 결함 — sandbox preview가 session cookie를 공격자 제어 에이전트로 전달 가능",
@@ -2189,7 +2457,7 @@
     },
     {
       "id": "news-052",
-      "rank": 33,
+      "rank": 37,
       "title_ko": "Gemini API Managed Agents, 백그라운드 작업·원격 MCP 기능 확대",
       "title_original": "Expanding Managed Agents in Gemini API: background tasks, remote MCP and more",
       "summary": "핵심: Gemini API Managed Agents — 백그라운드 실행, 원격 MCP, 에이전트 작업 관리 기능 확대",
@@ -2250,7 +2518,7 @@
     },
     {
       "id": "news-047",
-      "rank": 34,
+      "rank": 38,
       "title_ko": "GLM 5.2, 오픈 가중치 모델로 AI 추론 마진 압박",
       "title_original": "GLM 5.2와 다가오는 AI 추론 마진 붕괴",
       "summary": "핵심: GLM 5.2 — 오픈 가중치 모델이 Opus·GPT급 에이전트 작업에 근접하며 고가 추론 API 마진 압박",
@@ -2313,7 +2581,7 @@
     },
     {
       "id": "news-041",
-      "rank": 35,
+      "rank": 39,
       "title_ko": "앨버타주 정부, Claude로 4억6600만 줄 코드 보안 점검 사례 공개",
       "title_original": "加 앨버타주 정부, ‘클로드’로 4억6600만 줄 코드 점검… 사이버 보안 취약점 수년치 작업 20시간 만에 해결",
       "summary": "핵심: 공공부문 Claude Code 활용 — **4억6600만 줄** 코드 보안 점검을 **20시간**에 수행한 사례",
@@ -2374,7 +2642,7 @@
     },
     {
       "id": "news-050",
-      "rank": 36,
+      "rank": 40,
       "title_ko": "과기정통부, 경남·전북에 5년간 1.4조원 피지컬 AI 메가프로젝트 개시",
       "title_original": "과기부, 경남·전북에 5년간 1.4조 투입…’피지컬 AI 메가프로젝트’ 개시",
       "summary": "핵심: 과기정통부·NIPA, 경남·전북 피지컬 AI 메가프로젝트에 **5년간 1.4조원** 투입",
@@ -2437,7 +2705,7 @@
     },
     {
       "id": "news-042",
-      "rank": 37,
+      "rank": 41,
       "title_ko": "ADD, 폐쇄망 생성형 AI ‘애디’ 전면 가동",
       "title_original": "ADD, 폐쇄망 생성형 AI ‘애디(Add+i)’ 전면 가동… 국방 연구개발 AI 전환 본격화",
       "summary": "핵심: 국방과학연구소, 폐쇄망 생성형 AI ‘Add+i’를 전 직원 대상 운영",
@@ -2498,7 +2766,7 @@
     },
     {
       "id": "news-043",
-      "rank": 38,
+      "rank": 42,
       "title_ko": "팀네이버·KAI, 방산 특화 소버린 AI 모델 공동 개발 추진",
       "title_original": "팀네이버-KAI, 방산 특화 AI 모델 공동 개발…국방 소버린 AI 구현 나선다",
       "summary": "핵심: 네이버·네이버클라우드·KAI, 방산 특화 foundation model과 피지컬 AI 기반 미래전투체계 협력",
@@ -2559,7 +2827,7 @@
     },
     {
       "id": "news-044",
-      "rank": 39,
+      "rank": 43,
       "title_ko": "ETRI, 출연연 오픈소스 협의체 확대…AI 저작권·라이선스·보안 리스크 대응",
       "title_original": "ETRI, 출연연 오픈소스 협의체 범출연연으로 확대... AI저작권 등 오픈소스 리스크 공동대응",
       "summary": "핵심: 출연연 오픈소스 협의체 확대 — 라이선스 분쟁, 보안 취약점, AI 학습데이터 저작권 대응",
@@ -2620,7 +2888,7 @@
     },
     {
       "id": "news-048",
-      "rank": 40,
+      "rank": 44,
       "title_ko": "AWS Security Hub, 노출 finding에 공격 영향 분석 추가",
       "title_original": "AWS Security Hub adds impact analysis for exposure findings",
       "summary": "핵심: Security Hub exposure finding에 downstream resource와 privilege escalation 경로 분석 추가",
@@ -2683,7 +2951,7 @@
     },
     {
       "id": "news-036",
-      "rank": 41,
+      "rank": 45,
       "title_ko": "Amazon SageMaker HyperPod, LLM 추론용 Disaggregated Prefill/Decode 지원",
       "title_original": "Amazon SageMaker HyperPod now supports disaggregated prefill and decode",
       "summary": "핵심: SageMaker HyperPod DPD — prefill·decode를 별도 GPU 풀로 분리해 long-context 추론 경합 완화",
@@ -2746,7 +3014,7 @@
     },
     {
       "id": "news-049",
-      "rank": 42,
+      "rank": 46,
       "title_ko": "SageMaker Studio, Hugging Face 모델 원클릭 배포·커스터마이징 통합",
       "title_original": "Amazon SageMaker Studio now integrates with Hugging Face for one-click model deployment and customization",
       "summary": "핵심: Hugging Face 모델 페이지에서 SageMaker AI 배포·커스터마이징 워크플로로 직접 이동",
@@ -2808,7 +3076,7 @@
     },
     {
       "id": "news-035",
-      "rank": 43,
+      "rank": 47,
       "title_ko": "Linux KVM Januscape 취약점, Intel·AMD x86 호스트에서 VM 탈출 위험",
       "title_original": "16-Year-Old Linux KVM Flaw Lets Guest VMs Escape to Host on Intel and AMD x86 Systems",
       "summary": "핵심: Linux KVM Januscape(CVE-2026-53359) — guest VM에서 host kernel shadow MMU 상태 손상 가능",
@@ -2876,7 +3144,7 @@
     },
     {
       "id": "news-039",
-      "rank": 44,
+      "rank": 48,
       "title_ko": "Gitea Docker 취약점 CVE-2026-20896, 공개 13일 만에 공격자 탐색 관측",
       "title_original": "Threat Actors Probe Gitea Docker Flaw CVE-2026-20896 13 Days After Disclosure",
       "summary": "핵심: Gitea Docker CVE-2026-20896 — reverse proxy auth 환경에서 spoofed X-WEBAUTH-USER 신뢰 위험",
@@ -2937,7 +3205,7 @@
     },
     {
       "id": "news-038",
-      "rank": 45,
+      "rank": 49,
       "title_ko": "SkillCloak, 악성 AI 에이전트 스킬이 정적 스캐너를 우회하는 기법 공개",
       "title_original": "SkillCloak Lets Malicious AI Agent Skills Evade Static Scanners with Self-Extracting Packing",
       "summary": "핵심: SkillCloak — self-extracting packing으로 악성 AI agent skill이 정적 검사를 우회",
@@ -2998,7 +3266,7 @@
     },
     {
       "id": "news-031",
-      "rank": 46,
+      "rank": 50,
       "title_ko": "SKT 블랙웰 AI 클러스터 ‘해인’, 국내 최초 CSAP 인증 취득",
       "title_original": "SKT, 블랙웰 AI 클러스터 ‘해인’ 국내 최초 CSAP 인증 취득",
       "summary": "핵심: SKT 블랙웰 AI 클러스터 ‘해인’ — 국내 최초 **CSAP 인증**",
@@ -3061,258 +3329,6 @@
         {
           "title": "SKT 15GW AI 데이터센터 보도",
           "url": "https://www.aitimes.com/news/articleView.html?idxno=212447"
-        }
-      ]
-    },
-    {
-      "id": "news-046",
-      "rank": 47,
-      "title_ko": "Hugging Face Kernels 업데이트, 모델 실행용 커스텀 커널 배포·공유 흐름 강화",
-      "title_original": "🤗 Kernels: Major Updates",
-      "summary": "핵심: Hugging Face Kernels 주요 업데이트 — 모델 페이지와 커스텀 커널 실행·공유 생태계 강화",
-      "detail": "핵심: 핵심: Hugging Face Kernels 주요 업데이트 — 모델 페이지와 커스텀 커널 실행·공유 생태계 강화\n변화: 변화: 모델 최적화가 프레임워크 기본 연산만 쓰는 단계에서 커뮤니티 커널과 배포 가능한 성능 패치로 이동\n영향: 추론 비용 절감은 모델 크기 축소만으로 끝나지 않습니다. 커널 최적화와 배포 가능한 성능 패치가 모델 운영 비용을 직접 줄임\n시사점: 모델 운영팀은 커스텀 커널의 벤치마크, 하드웨어 호환성, 보안 리뷰, fallback 경로, 재현 가능한 빌드 절차를 관리필요",
-      "why_it_matters": "추론 비용 절감은 모델 크기 축소만으로 끝나지 않습니다. 커널 최적화와 배포 가능한 성능 패치가 모델 운영 비용을 직접 줄입니다.",
-      "engineering_implication": "모델 운영팀은 커스텀 커널의 벤치마크, 하드웨어 호환성, 보안 리뷰, fallback 경로, 재현 가능한 빌드 절차를 관리해야 합니다.",
-      "category": "AI",
-      "tags": [
-        "Hugging Face",
-        "Kernels",
-        "Inference",
-        "Optimization",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "medium",
-      "score": 75,
-      "published_kst": "2026-07-06 09:00",
-      "source_name": "Hugging Face Blog",
-      "source_url": "https://huggingface.co/blog/revamped-kernels",
-      "image_url": "https://huggingface.co/blog/assets/revamped-kernels/thumbnail.png",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: Hugging Face Kernels 주요 업데이트 — 모델 페이지와 커스텀 커널 실행·공유 생태계 강화",
-            "변화: 변화: 모델 최적화가 프레임워크 기본 연산만 쓰는 단계에서 커뮤니티 커널과 배포 가능한 성능 패치로 이동",
-            "원문: 🤗 Kernels: Major Updates 기준 정리",
-            "시점: 2026-07-06 09:00 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: Hugging Face Blog 원문 링크 기준 요약",
-            "범위: AI / Global / Hugging Face, Kernels, Inference, Optimization, Open Source 영역",
-            "주요 내용: 핵심: Hugging Face는 Kernels 업데이트를 통해 모델 실행 최적화용 커스텀 커널 배포·공유 흐름을 강화확인",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 추론 비용 절감은 모델 크기 축소만으로 끝나지 않습니다. 커널 최적화와 배포 가능한 성능 패치가 모델 운영 비용을 직접 줄임",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 모델 운영팀은 커스텀 커널의 벤치마크, 하드웨어 호환성, 보안 리뷰, fallback 경로, 재현 가능한 빌드 절차를 관리필요",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-015",
-      "rank": 48,
-      "title_ko": "AI 신뢰성 전문가 부족과 기업 AI 거버넌스 격차 부각",
-      "title_original": "GPU보다 부족한 건 AI 신뢰성 전문가…규제는 발전과 동일 선상",
-      "summary": "핵심: AI 신뢰성 인력·프로세스 부족 — 기업 AI 거버넌스 병목",
-      "detail": "핵심: 핵심: AI 신뢰성 인력·프로세스 부족 — 기업 AI 거버넌스 병목\n변화: 변화: 모델·GPU 확보 속도 대비 신뢰성 검증 체계 지연\n영향: AI 서비스의 신뢰성 검증은 규제 대응과 고객 신뢰, 장애 예방을 모두 좌우필요\n시사점: 모델 평가, red teaming, 데이터 품질, 감사 로그, 정책 준수를 개발 수명주기에 포함필요",
-      "why_it_matters": "AI 서비스의 신뢰성 검증은 규제 대응과 고객 신뢰, 장애 예방을 모두 좌우합니다.",
-      "engineering_implication": "모델 평가, red teaming, 데이터 품질, 감사 로그, 정책 준수를 개발 수명주기에 포함해야 합니다.",
-      "korea_implication": "AI 기본법과 기업 AX 확산 속에서 국내 조직의 AI 신뢰성 인력·프로세스 확보가 시급합니다.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Governance",
-        "Trustworthy AI",
-        "Regulation",
-        "Korea"
-      ],
-      "region": "Korea",
-      "importance": "high",
-      "score": 80,
-      "published_kst": "2026-07-06 04:42",
-      "source_name": "AI Times",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212448",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212448_215709_3921.jpg",
-      "local_image": "assets/images/news-015.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: AI 신뢰성 인력·프로세스 부족 — 기업 AI 거버넌스 병목",
-            "변화: 변화: 모델·GPU 확보 속도 대비 신뢰성 검증 체계 지연",
-            "원문: GPU보다 부족한 건 AI 신뢰성 전문가…규제는 발전과 동일 선상 기준 정리",
-            "시점: 2026-07-06 04:42 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AI Times 원문 링크 기준 요약",
-            "범위: AI / Korea / AI, Governance, Trustworthy AI, Regulation, Korea 영역",
-            "주요 내용: 볼 것: red teaming, 데이터 품질, 감사 로그, 정책 준수",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 서비스의 신뢰성 검증은 규제 대응과 고객 신뢰, 장애 예방을 모두 좌우필요",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 모델 평가, red teaming, 데이터 품질, 감사 로그, 정책 준수를 개발 수명주기에 포함필요",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-016",
-      "rank": 49,
-      "title_ko": "기업 AI, 모델 다변화는 성공했지만 거버넌스 통제 격차 노출",
-      "title_original": "모델 다변화는 성공, 거버넌스는 낙제점…기업 AI '통제 격차' 본격화",
-      "summary": "핵심: 멀티 모델 전략 확산, 통제·거버넌스는 **Control Gap** 노출",
-      "detail": "핵심: 핵심: 멀티 모델 전략 확산, 통제·거버넌스는 **Control Gap** 노출\n변화: 변화: 모델 다변화 이후 중앙 정책·사용량 추적 필요성 증가\n영향: AI 비용 최적화와 리스크 관리는 멀티 모델 운영 체계가 있어야 함께 달성됨\n시사점: 모델 게이트웨이, 정책 엔진, 평가 파이프라인, 사용량 추적을 중앙화필요",
-      "why_it_matters": "AI 비용 최적화와 리스크 관리는 멀티 모델 운영 체계가 있어야 함께 달성됩니다.",
-      "engineering_implication": "모델 게이트웨이, 정책 엔진, 평가 파이프라인, 사용량 추적을 중앙화해야 합니다.",
-      "korea_implication": "국내 기업의 ChatGPT·Gemini·Claude 병행 도입이 늘면서 통합 거버넌스 필요성이 커집니다.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Governance",
-        "Multi Model",
-        "Enterprise AI",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 79,
-      "published_kst": "2026-07-06 02:16",
-      "source_name": "AI Times",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212446",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212446_215706_3419.png",
-      "local_image": "assets/images/news-016.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: 멀티 모델 전략 확산, 통제·거버넌스는 **Control Gap** 노출",
-            "변화: 변화: 모델 다변화 이후 중앙 정책·사용량 추적 필요성 증가",
-            "원문: 모델 다변화는 성공, 거버넌스는 낙제점…기업 AI '통제 격차' 본격화 기준 정리",
-            "시점: 2026-07-06 02:16 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AI Times 원문 링크 기준 요약",
-            "범위: AI / Global / AI, Governance, Multi Model, Enterprise AI, FinOps 영역",
-            "주요 내용: 볼 것: 모델 게이트웨이, policy engine, 평가 파이프라인",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 비용 최적화와 리스크 관리는 멀티 모델 운영 체계가 있어야 함께 달성됨",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 모델 게이트웨이, 정책 엔진, 평가 파이프라인, 사용량 추적을 중앙화필요",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-002",
-      "rank": 50,
-      "title_ko": "SKT, 최대 15GW 규모 AI 데이터센터 구축 계획 발표",
-      "title_original": "SKT, 15GW AI 데이터센터 구축 \"아시아 AI 인프라 허브 도약\"",
-      "summary": "핵심: SKT AI 데이터센터 로드맵 **최대 15GW** 규모",
-      "detail": "핵심: 핵심: SKT AI 데이터센터 로드맵 **최대 15GW** 규모\n변화: 변화: 울산 1호 AI DC 이후 2029년부터 국내 5GW 단계 개방 계획\n영향: AI 서비스 경쟁은 모델뿐 아니라 데이터센터 전력·운영 역량으로 이동하고 있음\n시사점: 대규모 AI 클러스터 설계에는 고밀도 전력, 액체냉각, 네트워크 패브릭, GPU 스케줄링, 멀티테넌트 보안이 함께 요구",
-      "why_it_matters": "AI 서비스 경쟁은 모델뿐 아니라 데이터센터 전력·운영 역량으로 이동하고 있습니다.",
-      "engineering_implication": "대규모 AI 클러스터 설계에는 고밀도 전력, 액체냉각, 네트워크 패브릭, GPU 스케줄링, 멀티테넌트 보안이 함께 요구됩니다.",
-      "korea_implication": "국내 기업의 AI 인프라 조달 선택지와 지역 데이터센터 생태계에 영향을 줄 수 있습니다.",
-      "category": "Infra",
-      "tags": [
-        "AI",
-        "Data Center",
-        "SKT",
-        "Korea",
-        "Infra"
-      ],
-      "region": "Korea",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-07-06 02:15",
-      "source_name": "AI Times",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212447",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212447_215708_5532.jpg",
-      "local_image": "assets/images/news-002.jpg",
-      "related_links": [
-        {
-          "title": "AI Times KR 관련 보도",
-          "url": "https://www.aitimes.kr/news/articleView.html?idxno=40830"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 핵심: SKT AI 데이터센터 로드맵 **최대 15GW** 규모",
-            "변화: 변화: 울산 1호 AI DC 이후 2029년부터 국내 5GW 단계 개방 계획",
-            "원문: SKT, 15GW AI 데이터센터 구축 \"아시아 AI 인프라 허브 도약\" 기준 정리",
-            "시점: 2026-07-06 02:15 KST 기준 최신순 목록 반영"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "근거: AI Times 원문 링크 기준 요약",
-            "범위: Infra / Korea / AI, Data Center, SKT, Korea, Infra 영역",
-            "주요 내용: 볼 것: 전력 조달, 냉각, GPU 네트워크, 입지 리스크",
-            "확인 포인트: 수치, 적용 대상, 출시·공개 범위, 운영 제약 조건 중심 검토"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 서비스 경쟁은 모델뿐 아니라 데이터센터 전력·운영 역량으로 이동하고 있음",
-            "의사결정 포인트: 제품 로드맵, 인프라 비용, 보안 통제, 운영 자동화 계획 반영 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 대규모 AI 클러스터 설계에는 고밀도 전력, 액체냉각, 네트워크 패브릭, GPU 스케줄링, 멀티테넌트 보안이 함께 요구",
-            "발표 메모: 원문 사실 → 기술 영향 → 운영 점검 항목 순서로 설명"
-          ]
         }
       ]
     }

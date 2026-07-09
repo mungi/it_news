@@ -254,3 +254,10 @@
 - Checked current time at 2026-07-09 20:34 KST; no freeze guard was run per current project policy.
 - Registered image fallback error handlers before assigning card, Deep Dive, and modal image sources so cached or immediately failing images still fall back consistently.
 - Bumped the app.js cache key so GitHub Pages serves the fallback-handler hardening.
+
+## [2026-07-09] update | Add GPT-Live, Grok 4.5, RoguePlanet, and GodDamn stories
+- Checked current time at 2026-07-09 21:18 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google AI, Google Cloud, Google Security, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,567 feed entries and 286 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering GodDamn ransomware PoisonX driver defense evasion, GPT-Live ChatGPT Voice, Microsoft RoguePlanet Defender patch, and Grok 4.5 coding-agent model economics. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
