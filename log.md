@@ -292,3 +292,8 @@
 - Reviewed 2,471 feed entries and 334 current keyword-relevant candidates across reachable feeds; 5 feed endpoints failed or returned unavailable.
 - Added 2 sourced stories covering ChatGPT Work enterprise workflow agents and Tenda firmware backdoor authentication. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, and wiki index.
+
+## [2026-07-10] site | Localize UI metadata labels
+- Checked current time at 2026-07-10 10:57 KST; no freeze guard was run per current project policy.
+- Localized visible hero status labels and accessibility labels for site metadata, Top 6 display limit, view mode, update status, and filter groups.
+- No real news content, source URLs, timestamps, or images were altered.
