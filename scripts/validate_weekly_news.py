@@ -57,7 +57,7 @@ def has_decoded_url_whitespace(parsed) -> bool:
     """Reject percent-encoded controls/whitespace in URL components rendered by the browser."""
     for component in (parsed.path, parsed.query, parsed.fragment):
         try:
-            decoded = unquote(component)
+            decoded = unquote(component, errors="strict")
         except Exception:
             return True
         if has_unsafe_url_whitespace(decoded):
@@ -136,7 +136,10 @@ def is_safe_assets_path(value: str) -> bool:
     for part in parts:
         if re.search(r"%(?![0-9A-Fa-f]{2})", part):
             return False
-        decoded = unquote(part)
+        try:
+            decoded = unquote(part, errors="strict")
+        except Exception:
+            return False
         if decoded in {".", ".."} or "/" in decoded or "\\" in decoded or has_unsafe_url_whitespace(decoded):
             return False
     return True
