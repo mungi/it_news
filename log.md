@@ -303,3 +303,9 @@
 - Localized visible section labels and aria labels for weekly summary, Deep Dive, and news list.
 - Updated the search placeholder to reflect current searchable fields: title, summary, tags, source, and implications.
 - No real news content, source URLs, timestamps, or images were altered.
+## [2026-07-10] update | Add Hy3, Flint, AWS MCP OAuth, and ingress-NGINX lifecycle stories
+- Checked current time at 2026-07-10 13:53 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google AI, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 812 feed entries and 300 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering Tencent Hy3, Microsoft Flint, AWS MCP Server OAuth, and CNCF ingress-NGINX lifecycle guidance. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, concept wiki, and wiki index.

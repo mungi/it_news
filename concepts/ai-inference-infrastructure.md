@@ -32,3 +32,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-10 업데이트: 메모리 근접 연산
 - 테트라멤·SK하이닉스의 멤리스터 기반 인메모리 컴퓨팅 SoC 연구는 depthwise convolution을 대상으로 데이터 이동 에너지와 발열 병목을 줄이는 접근을 제시했다.
 - 추론 인프라 평가는 GPU/ASIC peak 성능뿐 아니라 메모리 대역폭, 데이터 이동 에너지, compiler/runtime 성숙도, workload별 연산 매핑까지 포함해야 한다.
+
+## 2026-07-10 refresh
+- Tencent Hy3 공개는 오픈 모델 경쟁이 토큰 단가, 에이전트 작업 성공률, tool-call 안정성, Apache 2.0 라이선스 비교로 확장되는 사례임.
+- 모델 게이트웨이는 closed/open 모델을 동일한 업무 시나리오에서 성공률, latency, MTok 단가, 데이터 거버넌스로 비교 필요.
