@@ -285,3 +285,10 @@
 - Reviewed 2,491 feed entries and 1,877 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 6 sourced stories covering GitHub dormant-account reconnaissance, npm 12 install-script hardening, Cloud Run Sandboxes, repository durable ownership, Cloudflare ML-DSA migration guidance, and OpenPLC v3 ICS risk. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, concept wiki, and wiki index.
+
+## [2026-07-10] update | Add ChatGPT Work and Tenda backdoor stories
+- Checked current time at 2026-07-10 09:45 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,471 feed entries and 334 current keyword-relevant candidates across reachable feeds; 5 feed endpoints failed or returned unavailable.
+- Added 2 sourced stories covering ChatGPT Work enterprise workflow agents and Tenda firmware backdoor authentication. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, and wiki index.
