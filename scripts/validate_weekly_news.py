@@ -426,16 +426,19 @@ def main() -> int:
             errors.append(f"{prefix} related_links must be a list")
         else:
             for link_idx, link in enumerate(related_links, start=1):
+                link_prefix = f"{prefix} related_links[{link_idx}]"
                 if not isinstance(link, dict):
-                    errors.append(f"{prefix} related_links[{link_idx}] must be an object")
+                    errors.append(f"{link_prefix} must be an object")
                     continue
-                link_url = link.get("url", "")
-                if link_url and not is_http_url(str(link_url)):
-                    errors.append(f"{prefix} related_links[{link_idx}].url must be an absolute http(s) URL: {link_url}")
-                if link_url and not link.get("title"):
-                    errors.append(f"{prefix} related_links[{link_idx}] missing title")
-                if "title" in link:
-                    validate_optional_string(link.get("title"), f"{prefix} related_links[{link_idx}].title", errors)
+                title = link.get("title")
+                link_url = link.get("url")
+                if not require_non_empty_string(title, f"{link_prefix}.title", errors):
+                    continue
+                if not require_non_empty_string(link_url, f"{link_prefix}.url", errors):
+                    continue
+                assert isinstance(link_url, str)
+                if not is_http_url(link_url):
+                    errors.append(f"{link_prefix}.url must be an absolute http(s) URL: {link_url}")
 
     if seen_ranks and seen_ranks != set(range(1, len(items) + 1)):
         missing = sorted(set(range(1, len(items) + 1)) - seen_ranks)

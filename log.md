@@ -317,3 +317,8 @@
 - Added 5 sourced stories covering HUMAIN-Cohere 50MW sovereign AI infrastructure, OpenAI/Google blacklist-customer access governance, Meta Iris AI chip/14GW capacity, Meta AI compute rental/model hosting options, and Anthropic-UST physical AI semiconductor verification.
 - Oldest items were dropped after newest-first sorting to keep 50 items; Deep Dive count stayed at 2.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+
+## [2026-07-10] validation | Require complete related links
+- Checked current time at 2026-07-10 19:14 KST; no freeze guard was run per current project policy.
+- Hardened `scripts/validate_weekly_news.py` so every `related_links[]` object must include non-empty string `title` and absolute `http(s)` `url` values.
+- No real news content, source URLs, timestamps, or images were altered.
