@@ -297,3 +297,9 @@
 - Checked current time at 2026-07-10 10:57 KST; no freeze guard was run per current project policy.
 - Localized visible hero status labels and accessibility labels for site metadata, Top 6 display limit, view mode, update status, and filter groups.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-10] site | Localize section labels and search hint
+- Checked current time at 2026-07-10 13:00 KST; no freeze guard was run per current project policy.
+- Localized visible section labels and aria labels for weekly summary, Deep Dive, and news list.
+- Updated the search placeholder to reflect current searchable fields: title, summary, tags, source, and implications.
+- No real news content, source URLs, timestamps, or images were altered.
