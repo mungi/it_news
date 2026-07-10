@@ -41,3 +41,8 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 - Meta Iris 양산 계획과 2026년 14GW AI 컴퓨팅 목표는 hyperscaler 추론 인프라가 custom silicon, 전력 capacity, 메모리·SSD·광통신 장기 공급 계약으로 수직통합되는 사례임.
 - HUMAIN-Cohere의 50MW 전용 AI 컴퓨팅 계약은 모델 개발사가 클라우드 on-demand보다 장기 capacity reservation과 sovereign AI 조건을 중시하는 흐름임.
 - 인프라팀은 GPU 단가뿐 아니라 전력·냉각·네트워크·스토리지 throughput chain, compiler/runtime 성숙도, 데이터 residency를 한 번에 평가 필요.
+
+## 2026-07-10 late refresh
+- 딥엑스·에브넷 APAC 15개국 공급망 구축은 엣지 NPU 상용화가 TOPS/W뿐 아니라 PoC, 현지 FAE, 응용 SW, RMA, 장기 부품 공급망으로 결정됨을 보여줌.
+- Google Cloud AlphaEvolve GA는 agent platform이 코드 보조를 넘어 algorithm search와 domain optimization workflow로 확장되는 사례임.
+- SageMaker HyperPod deep health check는 GPU cluster 비용 절감이 모델 최적화뿐 아니라 Slurm scheduling 전 hardware·network validation으로도 발생함을 보여줌.
