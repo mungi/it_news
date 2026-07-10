@@ -36,3 +36,8 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-10 refresh
 - Tencent Hy3 공개는 오픈 모델 경쟁이 토큰 단가, 에이전트 작업 성공률, tool-call 안정성, Apache 2.0 라이선스 비교로 확장되는 사례임.
 - 모델 게이트웨이는 closed/open 모델을 동일한 업무 시나리오에서 성공률, latency, MTok 단가, 데이터 거버넌스로 비교 필요.
+
+## 2026-07-10 evening refresh
+- Meta Iris 양산 계획과 2026년 14GW AI 컴퓨팅 목표는 hyperscaler 추론 인프라가 custom silicon, 전력 capacity, 메모리·SSD·광통신 장기 공급 계약으로 수직통합되는 사례임.
+- HUMAIN-Cohere의 50MW 전용 AI 컴퓨팅 계약은 모델 개발사가 클라우드 on-demand보다 장기 capacity reservation과 sovereign AI 조건을 중시하는 흐름임.
+- 인프라팀은 GPU 단가뿐 아니라 전력·냉각·네트워크·스토리지 throughput chain, compiler/runtime 성숙도, 데이터 residency를 한 번에 평가 필요.

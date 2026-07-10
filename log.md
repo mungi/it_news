@@ -309,3 +309,11 @@
 - Reviewed 812 feed entries and 300 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering Tencent Hy3, Microsoft Flint, AWS MCP Server OAuth, and CNCF ingress-NGINX lifecycle guidance. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, concept wiki, and wiki index.
+
+## [2026-07-10] update | Add sovereign AI, Meta infrastructure, and physical AI stories
+- Checked current time at 2026-07-10 18:01 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,553 feed entries and 261 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 5 sourced stories covering HUMAIN-Cohere 50MW sovereign AI infrastructure, OpenAI/Google blacklist-customer access governance, Meta Iris AI chip/14GW capacity, Meta AI compute rental/model hosting options, and Anthropic-UST physical AI semiconductor verification.
+- Oldest items were dropped after newest-first sorting to keep 50 items; Deep Dive count stayed at 2.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
