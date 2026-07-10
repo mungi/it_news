@@ -59,7 +59,8 @@ function markRead(item) {
   if (!item?.id || state.readItems.has(item.id)) return;
   state.readItems.add(item.id);
   saveReadItems();
-  document.querySelectorAll(`[data-news-id="${CSS.escape(item.id)}"]`).forEach((node) => {
+  document.querySelectorAll("[data-news-id]").forEach((node) => {
+    if (node.dataset.newsId !== item.id) return;
     node.classList.add("is-read");
     node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 상세 보기, 읽음`);
     const stateLabel = node.querySelector(".read-state");
