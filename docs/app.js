@@ -73,10 +73,12 @@ function normalize(value) {
 }
 
 function displayLabel(value) {
+  if (value === "All") return "전체";
   if (value === "must-know") return "중요 소식";
   if (value === "high") return "높음";
   if (value === "medium") return "보통";
   if (value === "low") return "낮음";
+  if (value === "Global") return "글로벌";
   return value;
 }
 
