@@ -264,6 +264,14 @@ function renderDeepDives() {
   });
 }
 
+function detailSearchText(sections) {
+  if (!Array.isArray(sections)) return "";
+  return sections.map((section) => {
+    if (!section || typeof section !== "object") return "";
+    return [section.heading, section.body, ...(Array.isArray(section.items) ? section.items : [])].join(" ");
+  }).join(" ");
+}
+
 function itemMatches(item) {
   const query = state.query.trim();
   const haystack = normalize([
@@ -276,6 +284,7 @@ function itemMatches(item) {
     item.korea_implication,
     item.source_name,
     item.category,
+    detailSearchText(item.detailed_content),
     ...(item.tags || []),
   ].join(" "));
   const categoryMatch = state.category === "All" || item.category === state.category || (item.tags || []).includes(state.category);
