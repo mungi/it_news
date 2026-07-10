@@ -51,3 +51,8 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 - NVIDIA hardware-friendly LLM design은 모델 폭·깊이·linear layer tile alignment·NVFP4·expert parallelism이 추론 비용과 latency를 좌우함을 정리.
 - Cloudflare public cloud Smart Tiered Cache region hint는 AI/서비스 origin 경로 최적화가 CDN, cloud anycast, cache topology, IaC 관리 문제로 연결됨을 보여줌.
 - AWS DMS Schema Conversion MCP 지원은 agent workflow가 database migration으로 확장되며 dry-run, generated SQL review, rollback gate가 필수 통제임을 보여줌.
+
+
+## 2026-07-11 HBM·host offloading 운영 변수
+- NVIDIA JAX host offloading 패턴은 GPU HBM 부족을 host memory와 data movement scheduling으로 완화하는 접근.
+- ML 플랫폼 capacity planning은 GPU 수량뿐 아니라 HBM usage, host memory bandwidth, PCIe/NVLink overlap, step time variance를 함께 추적 필요.

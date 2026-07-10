@@ -2,14 +2,14 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-11 02:18",
+  "last_updated_kst": "2026-07-11 06:31",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Agent 평가·운영 정밀화: Google Discovery Bench와 GitHub Copilot code review 사례가 pass/fail 대신 ambiguity, trace, tool-call cost를 관리 지표로 전환.",
-    "AI 인프라 효율 경쟁 심화: NVIDIA hardware-friendly LLM 설계와 HyperPod health check가 모델 구조·GPU 검증·정밀도 선택을 FinOps 변수로 연결.",
-    "Cloud edge 경로 최적화: Cloudflare Smart Tiered Cache region hint로 public cloud anycast origin의 hairpin traffic과 cache 효율 문제가 운영 항목화.",
-    "Identity·agent 보안 경계 재점검: Entra passkey 피싱, Lightwell, npm hardening, GitHub owner governance가 credential·supply-chain 통제를 강화.",
-    "Database migration도 agent workflow로 이동: AWS DMS Schema Conversion MCP 지원으로 IDE 기반 자동화와 human review gate 병행 필요."
+    "로컬·클라우드 에이전트 운영 확장: Mac mini 상시 실행 수요와 EMR on EKS troubleshooting agent가 endpoint·data platform까지 agent workflow를 확대.",
+    "AI 인프라 효율 경쟁 심화: NVIDIA JAX host offloading과 hardware-friendly LLM 설계가 HBM·tile alignment·정밀도 선택을 FinOps 변수로 연결.",
+    "Supply-chain 보안 재점검: Injective Labs GitHub compromise와 npm 악성 패키지 사례가 계정·registry·CI 권한 통합 관리를 요구.",
+    "Cloud edge·database 자동화 진전: Cloudflare Smart Tiered Cache와 AWS DMS MCP가 네트워크 경로와 migration 작업을 정책 기반 자동화 대상으로 전환.",
+    "Identity·agent 보안 경계 강화: Entra passkey 피싱, Lightwell, npm hardening, GitHub owner governance가 credential 통제와 audit trail 기준을 높임."
   ],
   "deep_dives": [
     {
@@ -185,6 +185,201 @@
   ],
   "items": [
     {
+      "id": "news-120",
+      "title_ko": "Apple Silicon 임원, Mac mini·Mac Studio의 AI 에이전트 상시 실행 수요 설명",
+      "title_original": "Apple Silicon Exec Explains Mac mini AI Demand and On-Device Future",
+      "summary": "핵심: GeekNews GN+가 Apple Silicon 임원 인터뷰를 정리하며 Mac mini·Mac Studio가 AI 에이전트 상시 실행용 데스크톱으로 주목받는 흐름을 소개. 영향: 로컬 에이전트 인프라는 GPU 성능만이 아니라 전력, 프라이버시, 도구 실행, 24/7 운영 통제 문제로 확대됨.",
+      "detail": "Apple Silicon 수석 제품 매니저 Doug Brooks 인터뷰 정리에 따르면 개발자들은 주 작업 머신과 분리해 AI 에이전트를 장시간 실행할 수 있는 Mac mini·Mac Studio에 관심을 보임. Apple은 온디바이스 AI를 프라이버시, 보안, 추론 비용과 연결하며 기기와 클라우드가 역할을 나누는 하이브리드 실행을 예상함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: GeekNews GN+가 MacRumors/Deep View 인터뷰 기반으로 Apple Silicon 임원의 Mac mini AI 수요 설명을 정리",
+            "수요: AI 에이전트를 주 작업 머신과 분리해 **24시간 7일** 실행하려는 개발자용 데스크톱 수요 확인",
+            "맥락: Mac-first 또는 Mac-only AI 도구와 프런티어 AI 연구소 개발자 사이의 Mac 사용 확대가 배경"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "변화: 에이전트형 작업은 단발성 채팅보다 긴 실행 시간, 도구 호출, 워크플로 처리를 요구",
+            "설계 관점: Brooks는 에이전트형 AI를 단순 GPU 문제가 아니라 LLM 실행, 도구 호출, workflow 처리까지 포함한 칩 설계 문제로 해석",
+            "하이브리드: Apple은 온디바이스 AI를 프라이버시·보안·추론 비용과 연결하고 기기/클라우드 역할 분담을 예상",
+            "운영 변수: 별도 장비는 사용자 통제, 전력 효율, 로컬 데이터 접근, 네트워크 지연 감소를 동시에 제공 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "개발 환경: AI 에이전트가 장시간 로컬에서 실행되면 개인 노트북·데스크톱도 작은 inference/automation node 역할을 수행",
+            "보안 경계: 로컬 에이전트는 소스 코드, credentials, 파일 시스템 권한에 가까워져 device policy와 audit log가 필요",
+            "비용 변수: 클라우드 API 호출을 줄이려는 조직은 온디바이스 실행의 전력·관리·성능 한계를 함께 계산 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 로컬 AI agent 실험은 Mac/PC 스펙 비교가 아니라 device management, secret isolation, network policy, idle power까지 포함 필요",
+            "검토 항목: local model, cloud fallback, remote sandbox, MCP tool permission을 하나의 실행 정책으로 정의 필요",
+            "운영 과제: 개발자별 상시 실행 노드가 늘면 업데이트, 취약점 패치, 로그 수집, 비용 추적 기준선 마련 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "AI 에이전트 실행 위치가 클라우드 API와 노트북 IDE 사이로 분산되며 로컬 장비도 보안·운영 통제 대상이 됨.",
+      "engineering_implication": "개발 플랫폼팀은 로컬 에이전트 장비를 unmanaged endpoint가 아니라 정책 적용 대상 실행 노드로 보고 MDM, secret isolation, sandbox, cloud fallback 기준을 설계 필요.",
+      "category": "AI",
+      "tags": [
+        "Apple Silicon",
+        "Mac mini",
+        "AI Agent",
+        "On-device AI",
+        "Developer Infrastructure"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-11 05:59",
+      "source_name": "GeekNews GN+",
+      "source_url": "https://news.hada.io/topic?id=31308",
+      "image_url": "https://social.news.hada.io/topic/31308",
+      "local_image": "assets/images/news-120.png",
+      "related_links": [
+        {
+          "title": "GeekNews Markdown",
+          "url": "https://news.hada.io/topic/31308.md"
+        },
+        {
+          "title": "MacRumors original",
+          "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-122",
+      "title_ko": "NVIDIA, JAX 기반 LLM 학습의 HBM 병목을 host offloading으로 줄이는 패턴 공개",
+      "title_original": "Reducing High-Bandwidth Memory Bottlenecks in JAX-Based LLM Training with Host Offloading",
+      "summary": "핵심: NVIDIA가 JAX 기반 LLM 학습에서 HBM pressure를 줄이기 위해 host memory offloading을 활용하는 패턴을 공개. 영향: 대형 모델 학습·fine-tuning 운영은 GPU HBM 용량, host memory bandwidth, 데이터 이동 스케줄링을 함께 설계해야 함.",
+      "detail": "NVIDIA Technical Blog는 JAX 기반 LLM training에서 high-bandwidth memory 병목을 줄이기 위한 host offloading workflow를 설명함. GPU HBM에 모든 activation·optimizer state·intermediate data를 고정하지 않고 host memory와 전송 경로를 활용하면 더 큰 모델이나 batch를 다룰 수 있지만, PCIe/NVLink 전송과 compute overlap 설계가 성능을 좌우함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: NVIDIA가 JAX 기반 LLM training의 HBM bottleneck을 host offloading으로 완화하는 기술 글 공개",
+            "대상: 대형 LLM training, fine-tuning, research workload를 JAX/XLA 스택에서 운영하는 팀",
+            "문제: GPU HBM은 빠르지만 용량이 제한적이며 activation, optimizer state, intermediate tensor가 동시에 공간을 요구"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "기법: 일부 데이터를 host memory로 offload하고 필요한 시점에 다시 가져와 HBM pressure 완화",
+            "성능 조건: offload가 이득이 되려면 데이터 이동과 GPU compute를 overlap하고 전송 병목을 scheduler가 숨겨야 함",
+            "트레이드오프: HBM 용량 여유는 늘지만 PCIe/NVLink 전송, host memory bandwidth, CPU NUMA 배치가 새로운 병목 가능성",
+            "운영 변수: batch size, sequence length, activation checkpointing, optimizer sharding, precision 선택과 함께 조정 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "비용 영향: HBM 부족 때문에 더 큰 GPU를 사는 대신 software memory management로 실험 범위를 넓힐 수 있음",
+            "플랫폼 영향: training infra팀은 GPU utilization뿐 아니라 host memory, interconnect, data movement trace까지 관측해야 함",
+            "재현성: offloading 설정은 throughput과 OOM 발생률을 바꾸므로 benchmark와 production training config를 분리 관리 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: JAX training pipeline에서 HBM usage, host memory usage, transfer overlap, step time variance를 함께 측정 필요",
+            "검토 항목: activation checkpointing, ZeRO/FSDP류 sharding, precision, offload 대상 tensor를 실험 매트릭스로 구성 필요",
+            "운영 과제: 메모리 최적화는 단일 플래그가 아니라 모델 구조·batch·interconnect·host topology가 얽힌 capacity planning 문제"
+          ]
+        }
+      ],
+      "why_it_matters": "LLM 학습 비용과 가능 모델 크기는 GPU 수량뿐 아니라 HBM·host memory·interconnect를 어떻게 조합하는지에 좌우됨.",
+      "engineering_implication": "ML 플랫폼팀은 HBM OOM 해결을 GPU 증설로만 보지 말고 offloading, checkpointing, sharding, interconnect 관측을 포함한 memory hierarchy 실험을 표준화 필요.",
+      "category": "Infra",
+      "tags": [
+        "NVIDIA",
+        "JAX",
+        "LLM Training",
+        "HBM",
+        "Host Offloading"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-11 03:17",
+      "source_name": "NVIDIA Technical Blog",
+      "source_url": "https://developer.nvidia.com/blog/reducing-high-bandwidth-memory-bottlenecks-in-jax-based-llm-training-with-host-offloading/",
+      "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
+      "local_image": "assets/images/news-122.webp",
+      "related_links": [],
+      "rank": 2
+    },
+    {
+      "id": "news-121",
+      "title_ko": "Amazon EMR on EKS, Apache Spark troubleshooting agent 지원",
+      "title_original": "Amazon EMR on EKS now supports Apache Spark troubleshooting agent",
+      "summary": "핵심: AWS가 EMR on EKS에서 Apache Spark troubleshooting agent 지원을 공개, Spark 애플리케이션 실패 분석과 권장 조치를 자동화하는 방향. 영향: 데이터 플랫폼 운영은 로그 수집을 넘어 agent 기반 원인 분석과 human review를 결합하는 형태로 이동.",
+      "detail": "AWS What’s New는 Amazon EMR on EKS가 Apache Spark troubleshooting agent를 지원한다고 발표함. Kubernetes 기반 Spark 운영팀은 job 실패, 성능 저하, 리소스 설정 문제를 진단하는 데 agent-assisted workflow를 적용할 수 있으며, 자동 권고와 운영자 검토 경계를 함께 설계해야 함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Amazon EMR on EKS가 Apache Spark troubleshooting agent 지원을 발표",
+            "대상: EKS 위에서 Spark 워크로드를 운영하는 데이터 플랫폼·ML 플랫폼 팀",
+            "목표: Spark application 장애·성능 이슈의 진단 시간을 줄이고 운영 권고를 제공하는 agent-assisted workflow 추가"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "운영 변화: Spark troubleshooting은 driver/executor log, Kubernetes event, resource request/limit, shuffle, skew, dependency 문제를 함께 봐야 함",
+            "자동화 범위: agent는 실패 증상과 관련 로그를 연결해 원인 후보와 next action을 제시하는 보조 계층으로 활용 가능",
+            "경계: 자동 권고가 cluster setting 변경이나 재실행 정책으로 이어질 때 human review와 audit trail 필요",
+            "연계: EMR on EKS 운영은 Kubernetes, IAM, S3, Glue, network, workload scheduling 지표를 함께 보는 구조"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "데이터 플랫폼: Spark 장애는 배치 SLA, feature pipeline, ML training data freshness에 직접 영향",
+            "운영 비용: 반복 장애 분석을 agent로 줄이면 SRE/DataOps 인력의 야간 대응과 MTTR 감소 가능",
+            "품질 리스크: agent 권고를 무검증 적용하면 과도한 리소스 증설이나 잘못된 재시도로 비용 증가 가능"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: Spark incident runbook을 agent 입력과 운영자 승인 단계로 나누고 권고 결과를 ticket/comment로 남기는 흐름 필요",
+            "검토 항목: IAM scope, 로그 보존, 민감 데이터 마스킹, 자동 재시도 상한, 리소스 증설 권한 분리 필요",
+            "운영 과제: troubleshooting agent 효과는 MTTR, 재발률, 권고 수용률, 추가 비용으로 측정 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "Kubernetes 기반 데이터 처리 장애 분석이 agent-assisted operations로 이동하며 DataOps 자동화 범위가 넓어짐.",
+      "engineering_implication": "EMR on EKS 운영팀은 agent 권고를 runbook, IAM 최소권한, 로그 마스킹, 변경 승인 흐름과 묶어 MTTR과 비용을 함께 추적 필요.",
+      "category": "Data",
+      "tags": [
+        "AWS",
+        "EMR on EKS",
+        "Apache Spark",
+        "Troubleshooting Agent",
+        "Data Platform"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 83,
+      "published_kst": "2026-07-11 03:16",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-emr-eks-spark-troubleshooting/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "rank": 3
+    },
+    {
       "id": "news-117",
       "title_ko": "NVIDIA, 하드웨어 친화 LLM 설계 지침 공개…폭·깊이·타일 정렬·NVFP4가 추론 효율 좌우",
       "title_original": "AI Model Co-Design: Hardware-Friendly LLM Design",
@@ -245,7 +440,69 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 4
+    },
+    {
+      "id": "news-123",
+      "title_ko": "Injective Labs GitHub 침해, 지갑 키 탈취 npm 패키지 배포로 이어짐",
+      "title_original": "Injective Labs GitHub Compromise Pushes Wallet-Key-Stealing npm Packages",
+      "summary": "핵심: Injective Labs GitHub compromise가 wallet key를 훔치는 npm packages 배포로 이어졌다고 The Hacker News가 보도. 영향: 오픈소스·Web3·CI/CD 조직은 GitHub 계정 보안과 package publishing 권한을 하나의 공급망 경계로 관리해야 함.",
+      "detail": "The Hacker News는 Injective Labs GitHub 침해가 wallet-key-stealing npm packages 배포로 이어진 사례를 보도함. 공격자는 신뢰된 조직/저장소 경로를 악용해 개발자 설치 경로에 악성 패키지를 밀어 넣을 수 있으며, GitHub 계정, npm publish token, package provenance, dependency review가 함께 통제돼야 함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Injective Labs GitHub compromise가 wallet key stealing npm packages 유포로 이어진 사례 공개",
+            "대상: Web3 개발자, npm 패키지 사용자, GitHub organization 운영팀",
+            "위험: 신뢰된 GitHub namespace와 package distribution path가 동시에 오염되면 dependency install 단계에서 credential theft 가능"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "공급망 경로: GitHub 계정 침해, repository 신뢰, npm package publication이 연결된 공격 흐름",
+            "피해 유형: wallet key와 developer secret 탈취 가능성이 핵심 위험",
+            "탐지 포인트: 새 package version, maintainer 변경, publish token 사용 위치, postinstall script, obfuscated payload 확인 필요",
+            "대응 범위: GitHub access token rotation, npm token rotation, package yanking, dependency lockfile audit, endpoint scan 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "개발자 위험: 패키지 설치는 CI runner와 로컬 노트북의 secret 접근권을 갖는 경우가 많아 단일 npm compromise가 조직 침해로 확대 가능",
+            "Web3 위험: wallet private key 탈취는 코드 품질 문제가 아니라 직접 자산 손실로 연결",
+            "거버넌스 위험: GitHub organization 보안과 package registry 보안을 분리 운영하면 침해 후 배포 차단 시간이 길어짐"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: npm publish 권한은 hardware key MFA, provenance, least privilege, short-lived token 중심으로 재정비 필요",
+            "검토 항목: CI에서 npm install 시 lifecycle script 제한, dependency diff review, package signature/provenance verification 적용 필요",
+            "운영 과제: GitHub compromise 탐지와 registry package revocation을 하나의 incident runbook으로 연결 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "신뢰된 GitHub 조직과 npm 배포 권한이 결합되면 개발자 supply chain이 직접 credential theft 경로가 됨.",
+      "engineering_implication": "보안팀은 GitHub SSO/MFA, npm provenance, publish token 수명, CI install policy, dependency review를 분리된 체크리스트가 아니라 통합 공급망 통제로 운영 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "npm",
+        "Supply Chain",
+        "Web3",
+        "Credential Theft"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 89,
+      "published_kst": "2026-07-11 01:29",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/injective-labs-github-compromise-pushes.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
+      "local_image": "assets/images/news-123.jpg",
+      "related_links": [],
+      "rank": 5
     },
     {
       "id": "news-115",
@@ -307,7 +564,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 6
     },
     {
       "id": "news-116",
@@ -370,7 +627,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-118",
@@ -435,7 +692,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-109",
@@ -499,7 +756,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-104",
@@ -561,7 +818,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-105",
@@ -623,7 +880,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-119",
@@ -686,7 +943,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-106",
@@ -748,7 +1005,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-107",
@@ -810,7 +1067,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-108",
@@ -872,7 +1129,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-110",
@@ -936,7 +1193,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-111",
@@ -1001,7 +1258,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-112",
@@ -1065,11 +1322,11 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-100",
-      "rank": 15,
+      "rank": 19,
       "title_ko": "Tencent Hy3 공개, Apache 2.0 오픈소스 모델로 에이전트·업무 작업 비용 경쟁 가세",
       "title_original": "Tencent, 오픈소스 모델 Hy3 공개",
       "summary": "핵심: Tencent Hy3는 Apache 2.0 공개 모델로 270명 전문가 블라인드 평가 2.67/4, GLM-5.1 2.51/4를 제시하며 업무·에이전트 작업 성능을 강조. 비용: API 가격은 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 공개되어 모델 라우팅과 추론 단가 비교 대상 추가.",
@@ -1145,7 +1402,7 @@
     },
     {
       "id": "news-101",
-      "rank": 16,
+      "rank": 20,
       "title_ko": "Microsoft Flint 공개, AI 에이전트용 차트 중간 언어와 MCP 서버 제공",
       "title_original": "Microsoft, AI 에이전트용 시각화 언어 Flint 공개",
       "summary": "핵심: Microsoft Research Flint는 AI 에이전트가 짧고 사람이 편집 가능한 명세로 차트를 만들도록 돕는 시각화 중간 언어임. 범위: 46개 차트 유형, 83개 갤러리 예제, Vega-Lite·ECharts·Chart.js 렌더링, TypeScript/JavaScript npm 설치와 MCP 서버 제공.",
@@ -1282,11 +1539,11 @@
           "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work/"
         }
       ],
-      "rank": 17
+      "rank": 21
     },
     {
       "id": "news-102",
-      "rank": 18,
+      "rank": 22,
       "title_ko": "AWS MCP Server, OAuth 지원으로 AI 에이전트와 AWS Sign-In 직접 연결",
       "title_original": "OAuth support for the AWS MCP Server",
       "summary": "핵심: AWS MCP Server가 AWS Sign-In 기반 OAuth를 지원해 AI 에이전트가 추가 인증 소프트웨어 없이 AWS 계정 권한으로 연결 가능. 관리: IAM 정책, global condition keys, token introspection/revocation API, dynamic client registration, CloudTrail audit events로 OAuth 접근 통제 가능.",
@@ -1348,7 +1605,7 @@
     },
     {
       "id": "news-103",
-      "rank": 19,
+      "rank": 23,
       "title_ko": "CNCF, ingress-NGINX 은퇴 전환 안내…Kubernetes Ingress API와 컨트롤러 수명주기 분리 필요",
       "title_original": "Navigating the ingress-NGINX retirement",
       "summary": "핵심: CNCF는 Kubernetes Ingress API가 은퇴하는 것이 아니라 ingress-NGINX 컨트롤러 프로젝트 수명주기 전환이 이슈라고 설명. 영향: 운영팀은 Ingress 리소스 자체보다 컨트롤러 구현체, 보안 패치, Gateway API 전환 경로, vendor 지원 상태를 분리해 점검 필요.",
@@ -1474,7 +1731,7 @@
           "url": "https://kb.cert.org/vuls/id/213560"
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "id": "news-092",
@@ -1535,7 +1792,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiDslymdYqhkFwIm3ZeaXVZweYVT_R1d6LCQhIm799y9-5hQ3C45cumIStxGYheFbwosbd_JtrB6FgOthR2KJgfe8PYs0k47eGV7263ATac5UR0t7OOaqOUGOf5DHAR4b0IaKTozk0UEiHJz5-nze3b1ureycPGqdPVlqrImWreOWwMpGxC8kgBvONCLGbH/s1600/github-ghost.jpg",
       "related_links": [],
       "local_image": "assets/images/news-092.jpg",
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-093",
@@ -1597,7 +1854,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhbP2w2lzNWbB041oSXvx2Nb1uOJaf81XNUBioDv_3K73S-JnzIU4OnUHfwG3Q3RLbf_p2wJBpHC0m2M4cQhCMfcSRRx1MY9n2vCVSNI4ddai3uJ3eE2Kb-d_ryU_HSEx_R2Rjoxz2D3TBcZCgLRWf-rOBf9k73Vi1Q04aWNG9Ux-A5AOf-v1HjSGD3YZcg/s1600/npm-security.jpg",
       "related_links": [],
       "local_image": "assets/images/news-093.jpg",
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-094",
@@ -1660,7 +1917,7 @@
       "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/sandbox_blog_hero_image.max-2500x2500.jpg",
       "related_links": [],
       "local_image": "assets/images/news-094.jpg",
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-095",
@@ -1720,7 +1977,7 @@
       "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-invertocat-mona-logo.png",
       "related_links": [],
       "local_image": "assets/images/news-095.png",
-      "rank": 24
+      "rank": 28
     },
     {
       "id": "news-113",
@@ -1784,7 +2041,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 29
     },
     {
       "id": "news-114",
@@ -1848,7 +2105,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 30
     },
     {
       "id": "news-088",
@@ -1915,7 +2172,7 @@
           "url": "https://mistral.ai/news/robostral-navigate/"
         }
       ],
-      "rank": 27
+      "rank": 31
     },
     {
       "id": "news-089",
@@ -1980,7 +2237,7 @@
           "url": "https://www.cloudflare.com/drop/"
         }
       ],
-      "rank": 28
+      "rank": 32
     },
     {
       "id": "news-096",
@@ -2042,7 +2299,7 @@
       "image_url": "https://cf-assets.www.cloudflare.com/zkvhlag99gkb/7FnkyOWGzxzznog9Kqw3zV/7c747b631184511eed931057e5db3dd0/Why_we_cannot_wait_for_better_post-quantum_signature_algorithms-OG.png",
       "related_links": [],
       "local_image": "assets/images/news-096.png",
-      "rank": 29
+      "rank": 33
     },
     {
       "id": "news-091",
@@ -2103,7 +2360,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40905_61651_5355_v150.jpg",
       "local_image": "assets/images/news-091.jpg",
       "related_links": [],
-      "rank": 30
+      "rank": 34
     },
     {
       "id": "news-090",
@@ -2164,7 +2421,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40904_61650_1711_v150.jpg",
       "local_image": "assets/images/news-090.jpg",
       "related_links": [],
-      "rank": 31
+      "rank": 35
     },
     {
       "id": "news-097",
@@ -2226,7 +2483,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "related_links": [],
       "local_image": "assets/images/fallback-security.svg",
-      "rank": 32
+      "rank": 36
     },
     {
       "id": "news-082",
@@ -2292,7 +2549,7 @@
           "url": "https://thehackernews.com/2026/07/goddamn-ransomware-uses-poisonx-driver.html"
         }
       ],
-      "rank": 33
+      "rank": 37
     },
     {
       "id": "news-083",
@@ -2358,7 +2615,7 @@
           "url": "https://deploymentsafety.openai.com/gpt-live"
         }
       ],
-      "rank": 34
+      "rank": 38
     },
     {
       "id": "news-084",
@@ -2424,7 +2681,7 @@
           "url": "https://thehackernews.com/2026/07/microsoft-patches-rogueplanet-defender.html"
         }
       ],
-      "rank": 35
+      "rank": 39
     },
     {
       "id": "news-079",
@@ -2489,7 +2746,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 40
     },
     {
       "id": "news-080",
@@ -2554,7 +2811,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 41
     },
     {
       "id": "news-085",
@@ -2624,7 +2881,7 @@
           "url": "https://docs.x.ai/developers/models/grok-4.5"
         }
       ],
-      "rank": 38
+      "rank": 42
     },
     {
       "id": "news-075",
@@ -2688,7 +2945,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 43
     },
     {
       "id": "news-077",
@@ -2752,7 +3009,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 44
     },
     {
       "id": "news-069",
@@ -2812,7 +3069,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 45
     },
     {
       "id": "news-081",
@@ -2872,7 +3129,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 46
     },
     {
       "id": "news-078",
@@ -2932,7 +3189,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 47
     },
     {
       "id": "news-070",
@@ -2992,7 +3249,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 48
     },
     {
       "id": "news-076",
@@ -3051,7 +3308,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 49
     },
     {
       "id": "news-071",
@@ -3108,253 +3365,6 @@
             "팀 액션: AI 코딩 에이전트 실행은 별도 OS 사용자, 샌드박스, 네트워크 제한, 감사 로그로 격리 필요",
             "검토 항목: EDR allowlist를 제품명 기준으로 열지 말고 명령 범위, 파일 경로, 네트워크 목적지, 승인 이벤트 기준으로 제한",
             "운영 과제: 경보 triage에 prompt/session ID와 git diff를 포함해 정상 자동화와 침해 행위를 구분해야 함"
-          ]
-        }
-      ],
-      "rank": 46
-    },
-    {
-      "id": "news-072",
-      "title_ko": "HalluSquatting 공격, AI 코딩 어시스턴트가 가짜 패키지·스킬을 설치하도록 유도 가능",
-      "title_original": "New HalluSquatting Attack Could Trick AI Coding Assistants Into Installing Botnet Malware",
-      "summary": "핵심: AI 코딩 어시스턴트의 환각 패키지명을 악용해 존재하지 않는 저장소·스킬을 공격자가 선점하고 악성 코드를 실행시키는 HalluSquatting 기법 공개. 영향: AI 생성 설치 명령과 dependency 제안은 사람의 리뷰와 provenance 검증을 거쳐야 함.",
-      "detail": "The Hacker News는 연구자들이 HalluSquatting 기법을 통해 AI 코딩 에이전트가 실제 존재하지 않는 프로젝트명이나 스킬명을 추천할 때 공격자가 이를 선점해 악성 저장소·패키지로 연결할 수 있음을 보도함. AI가 만든 명령을 그대로 실행하는 개발 환경에서는 패키지 설치와 스킬 다운로드가 공급망 공격 경로가 됨.",
-      "why_it_matters": "AI 코딩 도구는 의존성 이름과 설치 명령을 생성하지만, 생성된 이름이 실제 신뢰 가능한 프로젝트인지 보장하지 않음. 자동 실행형 에이전트에서는 이 문제가 곧 코드 실행 위험이 됨.",
-      "engineering_implication": "패키지 설치·스킬 추가·원격 스크립트 실행은 AI 에이전트가 자동 수행하지 못하게 approval gate, registry allowlist, lockfile review, provenance 서명을 적용해야 함.",
-      "category": "Security",
-      "tags": [
-        "AI Coding",
-        "Supply Chain",
-        "Package Security",
-        "Agent",
-        "Botnet"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-07-09 00:07",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/new-hallusquatting-attack-could-trick.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhFLRfTvakP4spTkbT8iiV9ndUR4EwlHOmGkZrO4JdBl3QsmWS5zA_sx081fvr3R11VEnZcjHOFcirZAQ5eaqB3n8sFJQ7m64edzVHNONHsD9j9Obds8E_Z9VC08y42TCyJV_3zpWam1LTHhiZBLX5WCLNp-4tdR-AwYzlyoifh1Seu-ND4OKbnZOEhMks/s1600/ai-botnet.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: HalluSquatting은 AI 코딩 어시스턴트가 만들어낸 존재하지 않는 패키지·저장소·스킬 이름을 공격자가 선점하는 공급망 공격 기법",
-            "공격 흐름: 사용자가 도구 설치를 요청하면 AI가 그럴듯한 이름을 제안하고, 공격자는 해당 이름으로 악성 프로젝트를 등록할 수 있음",
-            "위험 조건: 에이전트가 패키지 설치, git clone, 원격 스크립트 실행, skill 다운로드를 자동 수행할 때 코드 실행으로 이어질 수 있음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "보도 내용: 연구자들은 AI coding agent가 fake repository나 skill을 가져오고 attacker-supplied code를 실행할 가능성을 제시",
-            "연관 위험: typosquatting, dependency confusion, 악성 VS Code extension/agent skill과 같은 기존 공급망 공격과 결합 가능",
-            "방어 한계: 단순 정적 검사나 이름 기반 신뢰만으로는 신규 등록 악성 패키지를 구분하기 어려움"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "AI 코딩 도구가 의존성 추천과 설치를 자동화하면서 패키지 신뢰 검증이 개발자의 수동 판단에서 agent policy 문제로 이동함",
-            "조직 단위 AI 도구 도입 시 registry allowlist와 실행 승인 없이는 개발 PC가 공급망 공격의 실행 지점이 됨"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI가 제안한 install command, curl | sh, git clone, agent skill 추가는 human approval과 provenance 확인 뒤 실행",
-            "검토 항목: dependency lockfile, verified publisher, 다운로드 URL, 패키지 생성일, maintainer history를 리뷰 체크에 포함",
-            "운영 과제: 개발 컨테이너와 CI runner에서 네트워크 egress, package registry, secret 접근을 최소 권한으로 제한해야 함"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-065",
-      "title_ko": "NVIDIA Nemotron 3 Ultra, LangChain Deep Agents 벤치마크서 오픈 모델 선두",
-      "title_original": "NVIDIA Nemotron Achieves Benchmark-Leading Performance With LangChain Deep Agents Harness",
-      "summary": "핵심: LangChain Deep Agents harness를 Nemotron 3 Ultra에 맞춰 조정해 오픈 모델 최고 정확도와 폐쇄형 선두 모델 대비 10분의 1 추론 비용을 제시. 영향: 모델 재학습보다 system prompt·tool description·middleware 튜닝이 에이전트 성능/비용을 좌우하는 운영 변수로 부상.",
-      "detail": "NVIDIA와 LangChain은 Nemotron 3 Ultra용 Deep Agents harness 튜닝 결과를 공개함. 공개 벤치마크에서 오픈 모델 중 가장 높은 정확도, 폐쇄형 최상위 모델과의 business task parity, 더 높은 throughput, 실행당 10배 낮은 추론 비용을 주장하며, 모든 개선은 모델 재학습이 아니라 에이전트 실행 환경 조정에서 발생했다고 설명함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: NVIDIA가 LangChain Deep Agents harness를 **Nemotron 3 Ultra**에 맞춰 튜닝한 결과 공개",
-            "범위: LangChain의 public Deep Agents benchmark suite에서 실행 trace를 분석하고 system prompt·tool description·middleware 조정",
-            "결과: 오픈 모델 중 최고 정확도, closed model 최고권과 business task parity, 더 높은 throughput, 실행당 10분의 1 추론 비용 주장"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "재학습 없음: 성능 개선이 model retraining이 아니라 모델 주변 환경 engineering에서 발생했다는 설명",
-            "배포 경로: tuned profile은 LangChain에서 직접 사용 가능하고 NemoClaw for LangChain Deep Agents blueprint로 패키징",
-            "런타임: NVIDIA OpenShell secure runtime을 포함해 agent action 실행을 안전하게 다루는 참조 스택 제공",
-            "생태계: LangChain은 월 2억 회 이상 다운로드되는 agent engineering platform이라고 NVIDIA가 설명",
-            "호스팅: Baseten, Crusoe Cloud, DeepInfra, Fireworks, Nebius, Together AI에서 Nemotron 3 Ultra 접근 가능"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "성능 변수: 에이전트 품질이 모델 가중치뿐 아니라 memory, tool use, evaluation, middleware 조합에 의해 결정됨",
-            "비용 변수: continuous evaluation과 workflow별 agent tuning을 낮은 단가로 반복할 수 있는지가 기업 도입 속도에 영향",
-            "통제 변수: open model, open harness, open secure runtime 조합은 온프레미스·자체 클라우드·자체 governance 요구와 연결"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 모델 교체 PoC만 하지 말고 harness profile, tool schema, middleware, evaluation trace를 같은 실험 단위로 관리 필요",
-            "운영 과제: agent benchmark 점수는 실제 업무 trace, 안전 런타임, tool 권한 정책까지 포함해 재현해야 의미 있음",
-            "검토 항목: closed model API 의존도와 open stack 운영비를 cost per successful task 기준으로 비교 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "에이전트 성능 경쟁의 초점이 모델 크기에서 harness·runtime·평가 trace 최적화로 이동.",
-      "engineering_implication": "에이전트 PoC는 모델별 단순 벤치마크가 아니라 tool schema, middleware, secure runtime, 비용/성공률 로그를 포함한 full-stack 실험으로 설계 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Agent",
-        "Inference",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-09 00:00",
-      "source_name": "NVIDIA Blog",
-      "source_url": "https://blogs.nvidia.com/blog/nemotron-langchain-agents-open-stack/",
-      "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/07/Nemotron_LangChain-scaled.jpg",
-      "local_image": "assets/images/news-065.jpg",
-      "related_links": [
-        {
-          "title": "NVIDIA NemoClaw for LangChain Deep Agents",
-          "url": "https://blogs.nvidia.com/blog/nemotron-langchain-agents-open-stack/"
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-073",
-      "title_ko": "OpenAI, 코딩 평가 벤치마크의 신호와 잡음 분리 필요성 제기",
-      "title_original": "Separating signal from noise in coding evaluations",
-      "summary": "핵심: OpenAI가 SWE-Bench Pro 분석을 통해 AI 코딩 모델 평가에서 벤치마크 신뢰도와 정확도 문제가 결과 해석을 왜곡할 수 있다고 설명. 영향: 모델 선택은 리더보드 점수가 아니라 재현 가능한 내부 업무 평가와 실패 분석으로 보완해야 함.",
-      "detail": "OpenAI는 코딩 평가에서 널리 쓰이는 SWE-Bench Pro의 문제를 분석하며, 벤치마크가 실제 모델 성능 신호와 데이터·채점·문항 품질 잡음을 섞을 수 있다고 지적함. AI 코딩 도구를 도입하는 팀은 공개 점수를 그대로 구매 기준으로 쓰기보다 자체 repository, 테스트, 리뷰 기준으로 evaluation harness를 운영해야 함.",
-      "why_it_matters": "AI 코딩 모델 경쟁이 리더보드 중심으로 과열되면 데이터 오염, 불완전한 채점, 실제 업무와 다른 문항 구성이 모델 선택을 왜곡함.",
-      "engineering_implication": "플랫폼팀은 공개 벤치마크 점수와 별도로 사내 코드베이스 기반 평가, 테스트 통과율, 리뷰 수정률, 보안 finding, 비용/지연 시간을 같은 표로 비교해야 함.",
-      "category": "AI",
-      "tags": [
-        "OpenAI",
-        "Coding Evaluation",
-        "Benchmark",
-        "SWE-Bench",
-        "Developer Tools"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-07-08 22:00",
-      "source_name": "OpenAI",
-      "source_url": "https://openai.com/index/separating-signal-from-noise-coding-evaluations",
-      "image_url": "assets/images/fallback-ai.svg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: OpenAI가 coding evaluation에서 signal과 noise를 분리해야 한다는 분석을 공개",
-            "대상: SWE-Bench Pro 같은 코딩 벤치마크가 AI 모델 평가에 널리 쓰이지만 결과 해석에는 한계가 있음",
-            "문제: 벤치마크 점수에는 모델의 실제 해결 능력뿐 아니라 데이터 품질, 채점 기준, 테스트 누락, 문항 구성 잡음이 섞일 수 있음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "운영 영향: 공개 리더보드만 보고 모델을 고르면 실제 사내 코드 수정, 리뷰, 보안 기준과 맞지 않을 수 있음",
-            "평가 단위: issue 해결률뿐 아니라 재현 가능한 패치, 테스트 통과, diff 품질, reviewer 수정량, 실패 원인을 봐야 함",
-            "도입 조건: 모델·에이전트·하네스 버전, 프롬프트, tool 권한, 비용을 고정해야 비교가 가능함"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "AI 코딩 도구 선택은 생산성 구매 결정이기 때문에 부정확한 벤치마크 해석이 비용과 품질 리스크로 이어짐",
-            "실제 업무 평가는 공개 benchmark와 내부 repository replay를 함께 써야 모델 교체 효과를 판단할 수 있음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 사내 대표 repository와 이슈를 샘플링해 coding agent evaluation set을 만들고 주기적으로 재실행 필요",
-            "검토 항목: pass rate, security regression, hallucinated dependency, reviewer time, cost per accepted patch, latency를 함께 수집",
-            "운영 과제: benchmark 점수는 구매 참고 자료로만 쓰고, production adoption gate는 내부 재현 평가로 결정해야 함"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-074",
-      "title_ko": "Docker, AI 에이전트 시대 개발자 노트북을 새 프로덕션 경계로 규정",
-      "title_original": "Your Laptop Is the New Production Environment",
-      "summary": "핵심: Docker는 AI 에이전트가 로컬 개발 환경에서 코드를 실행·수정·빌드하면서 노트북이 사실상 새로운 production-like 실행 경계가 됐다고 설명. 영향: 개발 환경 보안은 편의 기능이 아니라 runtime governance, 격리, 정책 적용 문제로 격상.",
-      "detail": "Docker 블로그는 AI 에이전트가 개발자의 노트북에서 명령 실행, dependency 설치, 테스트, 파일 수정을 수행하면서 로컬 환경이 프로덕션과 유사한 위험을 갖는다고 설명함. 에이전트 도입은 개발 속도 향상과 동시에 runtime governance, 컨테이너 격리, 정책 기반 실행, 비밀정보 접근 제어를 요구함.",
-      "why_it_matters": "개발자 노트북에는 소스 코드, 토큰, 클라우드 자격증명, 내부 네트워크 접근권이 모여 있음. AI 에이전트가 이 환경에서 자동 실행되면 로컬 보안 사고가 공급망 사고로 커질 수 있음.",
-      "engineering_implication": "개발 플랫폼팀은 AI agent 작업을 dev container, policy-controlled runtime, secret isolation, network egress rule, audit log로 감싸야 함.",
-      "category": "DevTools",
-      "tags": [
-        "Docker",
-        "AI Agent",
-        "Developer Environment",
-        "Runtime Governance",
-        "Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-07-08 22:00",
-      "source_name": "Docker Blog",
-      "source_url": "https://www.docker.com/blog/your-laptop-is-the-new-production-environment/",
-      "image_url": "https://www.docker.com/app/uploads/2025/03/image.png",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Docker는 AI agents가 개발 환경에서 작업을 실행하면서 노트북이 새로운 production-like environment가 됐다고 설명",
-            "배경: 에이전트는 코드 생성뿐 아니라 shell command, dependency install, test run, file modification을 수행함",
-            "위험: 로컬 환경에는 source code, API key, cloud credential, SSH key, 내부 네트워크 접근권이 함께 존재할 수 있음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "해법 방향: runtime governance, container isolation, policy enforcement를 개발 환경에도 적용해야 함",
-            "연관성: HalluSquatting, EDR 경보, agent skill 공급망 위험과 같은 최근 보안 이슈와 같은 흐름",
-            "도입 포인트: 개발자의 자유도를 모두 막기보다 agent 작업 경로를 재현 가능하고 감사 가능한 컨테이너 경계로 옮기는 것이 현실적"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "AI 에이전트는 개발자 권한을 위임받아 실행하므로 로컬 런타임 통제가 공급망 보안의 일부가 됨",
-            "개발 환경 보안 기준선이 약하면 에이전트가 의도치 않게 악성 dependency나 비밀정보 노출 경로를 실행할 수 있음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI agent는 기본적으로 dev container나 임시 sandbox에서 실행하고 host filesystem과 secret 접근을 제한",
-            "검토 항목: package install 승인, 네트워크 egress, credential mount, file write scope, audit log 보존 정책",
-            "운영 과제: 개발자 경험을 해치지 않는 golden path를 만들어 보안 정책 우회 사용을 줄여야 함"
           ]
         }
       ],

@@ -342,3 +342,10 @@
 - Localized visible static-site category/region/importance labels such as Cloud, Infra, Security, DevTools, Open Source, Korea, and Global while preserving JSON filter values.
 - Updated the `app.js` cache-busting query string in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-11] update | Add local agent, Spark troubleshooting, HBM offload, and npm supply-chain stories
+- Checked current time at 2026-07-11 06:31 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,673 feed entries and 381 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering Apple Silicon local AI-agent runtime demand, EMR on EKS Spark troubleshooting agent, NVIDIA JAX HBM host offloading, and Injective Labs GitHub/npm supply-chain compromise. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
