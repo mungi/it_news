@@ -1,7 +1,7 @@
 ---
 title: AI Inference Infrastructure
 created: 2026-07-09
-updated: 2026-07-10
+updated: 2026-07-11
 type: concept
 tags: [ai, infra, inference, semiconductor]
 sources: [raw/articles/nvidia-nemotron-langchain-deep-agents-2026-07-09.md, raw/articles/aitimeskr-deepseek-ai-chip-2026-07-08.md, raw/articles/aitimeskr-samsung-pm1763-ssd-2026-07-08.md, raw/articles/aitimeskr-tetramem-sk-hynix-in-memory-computing-2026-07-09.md]
@@ -46,3 +46,8 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 - 딥엑스·에브넷 APAC 15개국 공급망 구축은 엣지 NPU 상용화가 TOPS/W뿐 아니라 PoC, 현지 FAE, 응용 SW, RMA, 장기 부품 공급망으로 결정됨을 보여줌.
 - Google Cloud AlphaEvolve GA는 agent platform이 코드 보조를 넘어 algorithm search와 domain optimization workflow로 확장되는 사례임.
 - SageMaker HyperPod deep health check는 GPU cluster 비용 절감이 모델 최적화뿐 아니라 Slurm scheduling 전 hardware·network validation으로도 발생함을 보여줌.
+
+## 2026-07-11 early refresh
+- NVIDIA hardware-friendly LLM design은 모델 폭·깊이·linear layer tile alignment·NVFP4·expert parallelism이 추론 비용과 latency를 좌우함을 정리.
+- Cloudflare public cloud Smart Tiered Cache region hint는 AI/서비스 origin 경로 최적화가 CDN, cloud anycast, cache topology, IaC 관리 문제로 연결됨을 보여줌.
+- AWS DMS Schema Conversion MCP 지원은 agent workflow가 database migration으로 확장되며 dry-run, generated SQL review, rollback gate가 필수 통제임을 보여줌.

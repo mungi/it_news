@@ -329,3 +329,10 @@
 - Reviewed 2,493 feed entries and 317 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 6 sourced stories covering Microsoft Entra passkey registration phishing, DeepX-Avnet APAC AI-chip supply chain, Red Hat/IBM Lightwell open-source security, Homan AI/semiconductor cluster power-grid gap, Google Cloud AlphaEvolve GA, and SageMaker HyperPod Slurm deep health checks. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+
+## [2026-07-11] update | Add agent evaluation, code-review workflow, LLM co-design, cache, and DMS agent stories
+- Checked current time at 2026-07-11 02:18 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 762 feed entries and 284 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 5 sourced stories covering Google Cloud Discovery Bench agent evaluation, GitHub Copilot code-review workflow tuning, NVIDIA hardware-friendly LLM design, Cloudflare Smart Tiered Cache public cloud region hints, and AWS DMS Schema Conversion MCP agent automation. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, concept wiki, and wiki index.

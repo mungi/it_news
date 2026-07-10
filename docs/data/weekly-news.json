@@ -2,14 +2,14 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-10 22:09",
+  "last_updated_kst": "2026-07-11 02:18",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Identity 보안 경계 재점검: Entra passkey 등록 피싱으로 passkey rollout도 credential lifecycle·helpdesk 검증·감사 로그가 핵심 통제 항목으로 부상.",
-    "AI 인프라 병목의 물리화: 호남 AI·반도체 클러스터 2.3GW 전력 부족 우려와 Meta·HUMAIN capacity 투자로 grid·전력계약·냉각이 선행조건화.",
-    "피지컬 AI 공급망 확대: 딥엑스·에브넷 APAC 15개국 협력과 Anthropic·UST 제조 적용으로 칩·PoC·현장 지원·양산 채널이 경쟁 변수.",
-    "오픈소스·AI 공급망 방어 강화: Red Hat·IBM Lightwell, npm install script hardening, GitHub owner governance가 remediation pipeline 중심으로 수렴.",
-    "Agent 플랫폼 고도화: Google Cloud AlphaEvolve와 AWS HyperPod health check가 agent·GPU 운영을 평가 harness, pre-flight validation, 비용 guardrail 중심으로 이동."
+    "Agent 평가·운영 정밀화: Google Discovery Bench와 GitHub Copilot code review 사례가 pass/fail 대신 ambiguity, trace, tool-call cost를 관리 지표로 전환.",
+    "AI 인프라 효율 경쟁 심화: NVIDIA hardware-friendly LLM 설계와 HyperPod health check가 모델 구조·GPU 검증·정밀도 선택을 FinOps 변수로 연결.",
+    "Cloud edge 경로 최적화: Cloudflare Smart Tiered Cache region hint로 public cloud anycast origin의 hairpin traffic과 cache 효율 문제가 운영 항목화.",
+    "Identity·agent 보안 경계 재점검: Entra passkey 피싱, Lightwell, npm hardening, GitHub owner governance가 credential·supply-chain 통제를 강화.",
+    "Database migration도 agent workflow로 이동: AWS DMS Schema Conversion MCP 지원으로 IDE 기반 자동화와 human review gate 병행 필요."
   ],
   "deep_dives": [
     {
@@ -185,6 +185,259 @@
   ],
   "items": [
     {
+      "id": "news-117",
+      "title_ko": "NVIDIA, 하드웨어 친화 LLM 설계 지침 공개…폭·깊이·타일 정렬·NVFP4가 추론 효율 좌우",
+      "title_original": "AI Model Co-Design: Hardware-Friendly LLM Design",
+      "summary": "핵심: NVIDIA가 hardware-aware transformer 설계 지침을 공개, 선형 layer dimension을 GPU tile 크기 배수에 맞추고 width-over-depth 구조·NVFP4·expert parallelism을 추론 효율 변수로 제시",
+      "detail": "핵심: LLM 성능은 accuracy, throughput, interactivity를 함께 최적화해야 하며 모델 shape가 GPU utilization을 결정\n변화: hidden/intermediate dimension을 128·256·512 배수에 맞추고 workload가 attention-bound인지 FFN-bound인지 먼저 구분\n영향: 모델 개발과 serving infra 설계가 분리되면 Blackwell급 GPU에서도 memory-bound·communication 병목 발생\n시사점: 자체 모델·fine-tune 팀은 architecture search에 roofline, tile alignment, quantization, parallelism 실험을 포함 필요",
+      "why_it_matters": "추론 비용은 GPU 구매 후 runtime tuning만으로 해결되지 않음. 모델 폭·깊이·layer shape가 하드웨어 타일, 메모리 대역폭, 병렬화 전략과 맞지 않으면 throughput과 latency가 동시에 손상됨",
+      "engineering_implication": "모델·플랫폼팀은 학습 전 architecture review에서 workload regime, arithmetic intensity, tile alignment, NVFP4 가능성, tensor/expert/pipeline parallel 계획을 함께 검토 필요",
+      "korea_implication": "",
+      "category": "Infra",
+      "tags": [
+        "NVIDIA",
+        "LLM Inference",
+        "Blackwell",
+        "NVFP4",
+        "Model Architecture"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-11 01:36",
+      "source_name": "NVIDIA Technical Blog",
+      "source_url": "https://developer.nvidia.com/blog/ai-model-co-design-hardware-friendly-llm-design/",
+      "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/image-3-1.webp",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: NVIDIA가 LLM 추론을 위한 hardware-friendly model design 글 공개",
+            "목표: accuracy, throughput, interactivity를 동시에 보며 throughput-oriented와 latency-oriented serving 사이 Pareto frontier 확장",
+            "대상: transformer의 layer 수, hidden dimension, intermediate projection dimension이 GPU 활용률과 parallelism에 미치는 영향 설명",
+            "전제: 서비스 워크로드가 short/long context와 throughput/latency 목표 중 어디에 속하는지 먼저 분류 필요"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "roofline 관점: arithmetic intensity가 낮으면 memory bandwidth가 병목이고 높으면 peak FLOPS가 병목이라는 기준 제시",
+            "설계 규칙: linear layer dimension은 GPU tile 크기 배수, 특히 128의 배수와 256·512 정렬이 유리하다는 지침 공개",
+            "모델 shape: width-over-depth aspect ratio가 arithmetic intensity와 GPU utilization에 영향을 주는 핵심 변수로 설명",
+            "정밀도: NVFP4 quantization과 TensorRT Model Optimizer·LLM Compressor tooling으로 throughput 향상과 accuracy 손실 최소화 가능성 제시",
+            "확장: Expert Parallelism, pipeline parallelism, TensorRT-LLM Helix Parallelism이 multi-node Blackwell NVLink 시스템에서 MoE 확장 전략으로 제시"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "비용 영향: 하드웨어에 맞지 않는 모델 shape는 같은 GPU에서도 tokens/sec, first-token latency, inter-token latency를 악화시키는 비용 변수",
+            "조직 경계: 모델팀이 accuracy만 보고 architecture를 정하면 serving team이 quantization·parallelism·batching으로 회복하기 어려운 병목이 남음",
+            "구매 판단: Blackwell 같은 최신 GPU 도입 효과는 모델 dimension, precision, communication pattern까지 맞을 때 현실화"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: 자체 LLM·도메인 fine-tune은 학습 전 GPU target, tile alignment, quantization target, serving SLO를 architecture checklist에 포함 필요",
+            "검증 방법: benchmark는 peak throughput뿐 아니라 p95 first-token latency, inter-token latency, memory-bound/compute-bound 구간, parallel efficiency를 함께 측정 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-115",
+      "title_ko": "Google Cloud, Discovery Bench로 AI 에이전트 검색·검색보강 평가 난이도 계량",
+      "title_original": "Frontier and Center: Who evaluates the evaluations?",
+      "summary": "핵심: Google Cloud가 Discovery Bench 접근을 공개, 정보이론의 surprisal로 agent retrieval 평가 문항을 easy/medium/hard 변형해 실패 경계를 측정",
+      "detail": "핵심: 고정 benchmark 점수 대신 질문 모호성 변화에 따른 agent 성공률 곡선을 확인\n변화: KramaBench 사례에서 satellite 48445 질의가 TLE 단어 제거만으로 실패하는 cliff 확인\n영향: RAG·data lake agent는 pass/fail보다 어떤 단서가 빠질 때 dataset discovery가 깨지는지 추적 필요\n시사점: 평가 harness는 정답률, ambiguity level, retrieval evidence, failure trace를 함께 저장 필요",
+      "why_it_matters": "기업 agent는 수천 개 테이블·파일 중 올바른 데이터셋을 찾는 discovery 단계에서 실패할 수 있음. 정적 benchmark는 neutral phrasing만 통과해도 운영 실패 경계를 숨길 수 있음",
+      "engineering_implication": "AI 플랫폼팀은 agent 평가를 단일 점수로 닫지 말고 query ambiguity, retrieval recall, evidence trace, failure cliff를 CI 평가 지표로 추가 필요",
+      "korea_implication": "",
+      "category": "AI",
+      "tags": [
+        "Google Cloud",
+        "AI Agent",
+        "Evaluation",
+        "RAG",
+        "Discovery Bench"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-07-11 01:00",
+      "source_name": "Google Cloud Blog",
+      "source_url": "https://cloud.google.com/blog/products/data-analytics/evaluate-agent-performance/",
+      "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/09_-_Data_Analytics_tFH57V6.max-2600x2600.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Google Cloud가 Frontier and Center 글에서 agent 평가를 pass/fail 점수보다 세밀하게 보는 Discovery Bench 접근 공개",
+            "대상: search와 retrieval 단계, 즉 agent가 모호한 사용자 질문에서 올바른 데이터셋·테이블·파일을 찾는 문제 대상",
+            "방법: 정보이론의 surprisal 개념으로 질의 안의 단어·구절이 정답 데이터셋을 얼마나 좁히는지 계량",
+            "출력: 하나의 평가 문항을 high, medium, low ambiguity 변형으로 만들고 agent 성공 경계를 추적하는 iSQR refinement loop 설명"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "사례: KramaBench 위성 데이터 질의에서 `TLE` 같은 구분 토큰 제거 시 density table, precise-orbit file, decay log가 함께 후보로 등장",
+            "측정: Gemini 3.1 Pro 기반 F1 agent가 high ambiguity 0.34, neutral 0.76, medium 0.81, low 0.78 흐름을 보인 사례 제시",
+            "발견: 더 구체적인 질의가 항상 더 좋은 결과를 만들지 않고 agent별 최적 steering 수준이 존재한다는 점 확인",
+            "한계 지적: 사람이 모든 평가 케이스를 수작업 난이도 분류하는 방식은 scale과 재현성 측면에서 비현실적이라는 문제 제기"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "운영 영향: data warehouse·data lake agent는 답변 생성보다 먼저 올바른 source discovery에 실패하면 downstream reasoning 전체가 무효화됨",
+            "평가 리스크: 고정 문항 benchmark는 neutral phrasing 성공만 보고 실제 사용자 질문의 모호성·축약·오타 실패를 놓칠 가능성",
+            "품질 관리: agent 개선 우선순위가 모델 교체가 아니라 질의 정규화, schema metadata, retrieval 후보 생성, clarification flow일 수 있음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: agent eval set에 ambiguity sweep, retrieval evidence, 실패 시 후보 목록, query rewrite trace를 포함 필요",
+            "운영 지표: 정답률 하나보다 ambiguity별 recall, dataset discovery 실패율, clarification 요청률, p95 retrieval latency를 함께 관리 필요"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-116",
+      "title_ko": "GitHub, Copilot 코드 리뷰 도구 교체 후 비용 증가·탐지 감소를 workflow 재설계로 반전",
+      "title_original": "Better tools made Copilot code review worse. Here’s how we actually improved it.",
+      "summary": "핵심: GitHub가 Copilot code review를 grep·glob·view 공유 도구로 옮긴 뒤 초기 benchmark에서 비용 증가와 유용 comment 감소를 확인, PR diff 중심 지시 재작성 후 평균 review cost 약 20% 절감",
+      "detail": "핵심: 좋은 도구를 붙여도 agent workflow가 task에 맞지 않으면 성능·비용이 악화\n변화: broad repository exploration 대신 diff에서 시작해 grep/glob로 좁히고 view로 정확한 evidence만 읽는 리뷰 지시로 전환\n영향: agent tool result는 context window에 남는 token 비용이므로 최소 근거 수집 설계가 필요\n시사점: 코드 리뷰 agent는 tool swap보다 trace 기반 prompt·workflow tuning이 먼저 필요",
+      "why_it_matters": "AI 코드 리뷰 품질은 모델·도구 목록보다 agent가 어떤 순서로 context를 열고 증거를 좁히는지에 좌우됨. 불필요한 repository 탐색은 비용과 노이즈를 동시에 키움",
+      "engineering_implication": "DevTools 팀은 agent 도구 도입 시 offline benchmark trace, tool-call count, context size, useful comment rate, review cost를 함께 측정하고 task-specific instruction을 별도 관리 필요",
+      "korea_implication": "",
+      "category": "DevTools",
+      "tags": [
+        "GitHub Copilot",
+        "Code Review",
+        "AI Agent",
+        "Developer Tools",
+        "Prompt Engineering"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-07-11 00:57",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/ai-and-ml/github-copilot/better-tools-made-copilot-code-review-worse-heres-how-we-actually-improved-it/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-copilot-commit-logo.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: GitHub가 Copilot code review의 자체 code exploration tool을 Copilot CLI 계열 공유 도구 `grep`, `glob`, `view`로 교체 실험",
+            "초기 결과: 더 잘 유지되는 공유 도구로 바꿨지만 offline benchmark에서 평균 비용 증가와 유용 comment 감소 확인",
+            "원인: 도구 자체가 아니라 지시문이 일반 coding assistant식 repository 탐색을 유도한 점으로 분석",
+            "개선: PR diff에서 시작해 필요한 근거만 좁혀 읽는 code review 전용 workflow로 지시 재작성"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "도구 매핑: 기존 `list_dir`, `search_file/search_dir`, `read_code`를 공유 `glob`, `grep`, `view`로 대응",
+            "문제 행동: agent가 repository 전체를 이해하려는 것처럼 넓게 검색하고, 추측 path를 열고, 관련 없는 context를 계속 carry-forward",
+            "비용 구조: tool result는 disposable output이 아니라 context window에 남는 token이므로 불필요한 파일 내용이 후속 reasoning 비용으로 누적",
+            "수정 지침: diff에서 시작, `grep`·`glob`로 후보 축소, `view`로 정확한 evidence 확인, 실패 시 단순 검색어 재시도와 path 추측 금지",
+            "결과: workflow 재설계 후 같은 review quality를 유지하면서 평균 review cost 약 **20%** 절감"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "제품 영향: AI code review는 정확도뿐 아니라 review당 비용, latency, 불필요한 comment 감소가 adoption 조건",
+            "운영 리스크: 범용 agent harness를 task-specific agent에 그대로 붙이면 도구 개선이 오히려 regression으로 나타날 수 있음",
+            "평가 필요: 최종 점수보다 trace에서 tool call sequence, context growth, evidence narrowing 여부를 봐야 원인 분석 가능"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: AI 리뷰 agent 도입 시 repository browsing agent와 PR reviewer agent의 system prompt·tool instruction을 분리 필요",
+            "측정 항목: useful comment rate, false positive, tool output tokens, review cost, evidence path length를 release gate에 포함 필요"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
+      "id": "news-118",
+      "title_ko": "Cloudflare, public cloud anycast origin용 Smart Tiered Cache region hint 공개",
+      "title_original": "Improving Smart Tiered Cache for Public Cloud Regions",
+      "summary": "핵심: Cloudflare가 AWS·GCP·Azure·Oracle Cloud origin에 region hint를 입력해 anycast IP 뒤의 실제 cloud region에 가까운 upper tier를 고르는 Smart Tiered Cache 개선 공개",
+      "detail": "핵심: public cloud anycast·regional unicast origin은 latency probe만으로 위치 식별이 어려워 cache miss가 여러 upper tier로 분산\n변화: 고객이 `aws:us-east-1`, `gcp:europe-west1` 같은 region hint를 제공하면 Cloudflare가 primary/fallback upper tier를 region 기준으로 선택\n영향: Singapore origin을 Chicago upper tier로 우회하는 hairpin traffic 같은 대륙 횡단 round trip을 줄일 수 있음\n시사점: CDN·origin 운영팀은 cloud LB IP가 anycast인지 확인하고 IaC로 region hint를 관리 필요",
+      "why_it_matters": "대형 CDN 캐시는 origin IP가 고정된 위치를 가리킨다는 가정 위에서 잘 작동함. public cloud anycast front end는 이 가정을 깨뜨려 cache hit ratio와 origin pull latency를 악화시킬 수 있음",
+      "engineering_implication": "SRE·플랫폼팀은 Cloudflare origin inventory에 cloud provider와 region hint를 추가하고 Terraform/API로 cache topology 변경을 관리 필요",
+      "korea_implication": "",
+      "category": "Cloud",
+      "tags": [
+        "Cloudflare",
+        "CDN",
+        "Cache",
+        "AWS",
+        "GCP",
+        "Azure",
+        "Oracle Cloud"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-10 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/smart-tiered-cache-for-public-clouds/",
+      "image_url": "https://cf-assets.www.cloudflare.com/zkvhlag99gkb/3yZo3xtQ9NVNwhlgaE9cD6/b952e26f57dada17482993be816f6770/Improving_Smart_Tiered_Cache_for_public_cloud_regions-OG.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: Cloudflare가 public cloud region용 Smart Tiered Cache 개선 공개",
+            "대상: AWS, GCP, Azure, Oracle Cloud에 origin을 둔 고객의 anycast·regional unicast front end 대상",
+            "기능: Origin Configuration에서 region hint를 설정하면 Cloudflare가 해당 region에 맞는 primary·fallback upper tier 선택",
+            "관리: dashboard뿐 아니라 API와 Terraform을 통한 region hint 설정 지원"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "기존 방식: Cloudflare data center별 origin IP latency probe로 가장 가까운 upper tier를 선택하고 cache miss를 한 지점에 집중",
+            "문제: public cloud anycast IP는 여러 Cloudflare data center에서 동시에 가깝게 보여 실제 origin region 판단이 어려움",
+            "결과: Cloudflare가 확실한 단일 upper tier를 고르지 못하면 여러 upper tier로 fallback해 cache efficiency가 낮아질 수 있음",
+            "예시: Singapore origin이 cloud anycast IP 때문에 Chicago upper tier로 선택되면 Asia user 요청이 대륙 횡단 hairpin route를 탈 수 있음",
+            "탐지: 여러 checkpoint latency가 물리적 광섬유 전파 시간보다 빠른 조합이면 단일 origin이 아니라 anycast 응답으로 판단"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "성능 영향: cache miss 경로가 불필요하게 길어지면 origin pull latency, connection 수, egress 경로가 동시에 악화",
+            "비용 영향: CDN hit ratio가 낮아지면 cloud origin egress와 backend connection load가 증가 가능",
+            "운영 영향: cloud provider IP range가 계속 변하므로 자동 prefix 갱신, latency probe, fallback PoP 선택이 CDN 측 제어면으로 이동"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: Cloudflare 사용 조직은 origin IP별 provider·region inventory를 만들고 anycast 감지 origin에 region hint 적용 검토 필요",
+            "IaC 항목: Terraform/API로 region hint를 관리하고 cloud region 변경, DR 전환, multi-region load balancing 시 cache topology 변경을 함께 배포 필요"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-109",
       "title_ko": "Microsoft Entra passkey 등록 피싱, 공격자 소유 패스키로 Microsoft 365 접근 확보",
       "title_original": "Hackers Use Fake Microsoft Entra Passkey Enrollment to Gain Microsoft 365 Access",
@@ -246,7 +499,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 5
     },
     {
       "id": "news-104",
@@ -308,7 +561,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 6
     },
     {
       "id": "news-105",
@@ -370,7 +623,70 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
+    },
+    {
+      "id": "news-119",
+      "title_ko": "AWS DMS Schema Conversion, MCP Server로 IDE 안 AI 에이전트 migration 자동화 지원",
+      "title_original": "AWS DMS Schema Conversion now supports AI agent automation",
+      "summary": "핵심: AWS가 DMS Schema Conversion을 AWS MCP Server와 연결, Kiro·Claude Code·Cursor 같은 AI coding agent가 IDE에서 자연어로 schema migration workflow를 실행하도록 지원",
+      "detail": "핵심: agent가 project 생성, source metadata 탐색, schema 변환, assessment report 생성, converted code export 수행 가능\n변화: DMS Schema Conversion의 predefined procedure, API pattern, schema exclusion, operational sequencing rule을 agent가 on-demand로 로드\n영향: DB migration 작업이 wizard UI에서 IDE 기반 agent workflow로 이동하되 권한·검토·출력 검증 통제가 필요\n시사점: database platform team은 MCP 연결 권한, migration dry-run, generated SQL review, rollback 절차를 표준화 필요",
+      "why_it_matters": "데이터베이스 migration은 반복적이지만 고위험 변경이 많음. AI agent 자동화가 assessment와 conversion 속도를 높일 수 있지만 잘못된 schema 변환·권한 오남용·검토 누락은 서비스 장애로 이어질 수 있음",
+      "engineering_implication": "DBA·플랫폼팀은 AI agent migration을 읽기 전용 metadata 탐색, assessment report, dry-run conversion, human SQL review, staged export 순서로 제한 필요",
+      "korea_implication": "",
+      "category": "Data",
+      "tags": [
+        "AWS DMS",
+        "MCP",
+        "Database Migration",
+        "AI Agent",
+        "IDE"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 80,
+      "published_kst": "2026-07-10 16:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-dms-sc-ai-agent-automation-mcp-server/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "items": [
+            "핵심: AWS DMS Schema Conversion이 AWS MCP Server를 통한 AI agent automation 지원 공개",
+            "연결 대상: Kiro, Claude Code, Cursor 등 AI coding agent를 DMS Schema Conversion workflow에 연결 가능",
+            "사용 방식: IDE 안에서 자연어로 schema conversion project 생성, source metadata 탐색, schema 변환 실행 가능",
+            "범위: 기존 DMS Schema Conversion source·target engine pair 전체에 추가 비용 없이 제공"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "items": [
+            "자동화 항목: agent가 assessment report 생성, converted code export, remaining code object 변환 지원 가능",
+            "절차 제공: predefined procedure가 API pattern, schema exclusion, operational sequencing rule을 agent에 on-demand 제공",
+            "목적: agent가 일반 지식으로 trial-and-error를 반복하지 않고 migration 절차를 따라가도록 유도",
+            "대상 객체: stored procedure, function, trigger 같은 code object 변환 보조 포함",
+            "운영 조건: regional availability는 AWS DMS Schema Conversion 문서와 region table 확인 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "items": [
+            "생산성 영향: 반복적인 metadata 탐색과 assessment report 작성이 IDE agent workflow로 이동해 migration 초반 분석 시간 절감 가능",
+            "위험 요소: schema conversion은 잘못된 type mapping, constraint 누락, stored procedure 변환 오류가 서비스 장애로 이어지는 고위험 작업",
+            "거버넌스 필요: MCP server 연결은 agent 권한, AWS credential scope, audit log, generated SQL review를 함께 요구"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "items": [
+            "팀 액션: migration agent는 read-only inventory와 assessment report부터 허용하고 production 적용은 human approval gate와 change ticket에 연결 필요",
+            "검증 항목: generated schema diff, procedure/function 변환 diff, test data replay, rollback script, AWS CloudTrail 이벤트를 release checklist에 포함 필요"
+          ]
+        }
+      ],
+      "rank": 8
     },
     {
       "id": "news-106",
@@ -432,7 +748,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 9
     },
     {
       "id": "news-107",
@@ -494,7 +810,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 10
     },
     {
       "id": "news-108",
@@ -556,7 +872,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 11
     },
     {
       "id": "news-110",
@@ -620,7 +936,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 12
     },
     {
       "id": "news-111",
@@ -685,7 +1001,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 13
     },
     {
       "id": "news-112",
@@ -749,11 +1065,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 14
     },
     {
       "id": "news-100",
-      "rank": 10,
+      "rank": 15,
       "title_ko": "Tencent Hy3 공개, Apache 2.0 오픈소스 모델로 에이전트·업무 작업 비용 경쟁 가세",
       "title_original": "Tencent, 오픈소스 모델 Hy3 공개",
       "summary": "핵심: Tencent Hy3는 Apache 2.0 공개 모델로 270명 전문가 블라인드 평가 2.67/4, GLM-5.1 2.51/4를 제시하며 업무·에이전트 작업 성능을 강조. 비용: API 가격은 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 공개되어 모델 라우팅과 추론 단가 비교 대상 추가.",
@@ -829,7 +1145,7 @@
     },
     {
       "id": "news-101",
-      "rank": 11,
+      "rank": 16,
       "title_ko": "Microsoft Flint 공개, AI 에이전트용 차트 중간 언어와 MCP 서버 제공",
       "title_original": "Microsoft, AI 에이전트용 시각화 언어 Flint 공개",
       "summary": "핵심: Microsoft Research Flint는 AI 에이전트가 짧고 사람이 편집 가능한 명세로 차트를 만들도록 돕는 시각화 중간 언어임. 범위: 46개 차트 유형, 83개 갤러리 예제, Vega-Lite·ECharts·Chart.js 렌더링, TypeScript/JavaScript npm 설치와 MCP 서버 제공.",
@@ -966,11 +1282,11 @@
           "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work/"
         }
       ],
-      "rank": 12
+      "rank": 17
     },
     {
       "id": "news-102",
-      "rank": 13,
+      "rank": 18,
       "title_ko": "AWS MCP Server, OAuth 지원으로 AI 에이전트와 AWS Sign-In 직접 연결",
       "title_original": "OAuth support for the AWS MCP Server",
       "summary": "핵심: AWS MCP Server가 AWS Sign-In 기반 OAuth를 지원해 AI 에이전트가 추가 인증 소프트웨어 없이 AWS 계정 권한으로 연결 가능. 관리: IAM 정책, global condition keys, token introspection/revocation API, dynamic client registration, CloudTrail audit events로 OAuth 접근 통제 가능.",
@@ -1032,7 +1348,7 @@
     },
     {
       "id": "news-103",
-      "rank": 14,
+      "rank": 19,
       "title_ko": "CNCF, ingress-NGINX 은퇴 전환 안내…Kubernetes Ingress API와 컨트롤러 수명주기 분리 필요",
       "title_original": "Navigating the ingress-NGINX retirement",
       "summary": "핵심: CNCF는 Kubernetes Ingress API가 은퇴하는 것이 아니라 ingress-NGINX 컨트롤러 프로젝트 수명주기 전환이 이슈라고 설명. 영향: 운영팀은 Ingress 리소스 자체보다 컨트롤러 구현체, 보안 패치, Gateway API 전환 경로, vendor 지원 상태를 분리해 점검 필요.",
@@ -1158,7 +1474,7 @@
           "url": "https://kb.cert.org/vuls/id/213560"
         }
       ],
-      "rank": 15
+      "rank": 20
     },
     {
       "id": "news-092",
@@ -1219,7 +1535,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiDslymdYqhkFwIm3ZeaXVZweYVT_R1d6LCQhIm799y9-5hQ3C45cumIStxGYheFbwosbd_JtrB6FgOthR2KJgfe8PYs0k47eGV7263ATac5UR0t7OOaqOUGOf5DHAR4b0IaKTozk0UEiHJz5-nze3b1ureycPGqdPVlqrImWreOWwMpGxC8kgBvONCLGbH/s1600/github-ghost.jpg",
       "related_links": [],
       "local_image": "assets/images/news-092.jpg",
-      "rank": 16
+      "rank": 21
     },
     {
       "id": "news-093",
@@ -1281,7 +1597,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhbP2w2lzNWbB041oSXvx2Nb1uOJaf81XNUBioDv_3K73S-JnzIU4OnUHfwG3Q3RLbf_p2wJBpHC0m2M4cQhCMfcSRRx1MY9n2vCVSNI4ddai3uJ3eE2Kb-d_ryU_HSEx_R2Rjoxz2D3TBcZCgLRWf-rOBf9k73Vi1Q04aWNG9Ux-A5AOf-v1HjSGD3YZcg/s1600/npm-security.jpg",
       "related_links": [],
       "local_image": "assets/images/news-093.jpg",
-      "rank": 17
+      "rank": 22
     },
     {
       "id": "news-094",
@@ -1344,7 +1660,7 @@
       "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/sandbox_blog_hero_image.max-2500x2500.jpg",
       "related_links": [],
       "local_image": "assets/images/news-094.jpg",
-      "rank": 18
+      "rank": 23
     },
     {
       "id": "news-095",
@@ -1404,7 +1720,7 @@
       "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-invertocat-mona-logo.png",
       "related_links": [],
       "local_image": "assets/images/news-095.png",
-      "rank": 19
+      "rank": 24
     },
     {
       "id": "news-113",
@@ -1468,7 +1784,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 25
     },
     {
       "id": "news-114",
@@ -1532,7 +1848,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 26
     },
     {
       "id": "news-088",
@@ -1599,7 +1915,7 @@
           "url": "https://mistral.ai/news/robostral-navigate/"
         }
       ],
-      "rank": 22
+      "rank": 27
     },
     {
       "id": "news-089",
@@ -1664,7 +1980,7 @@
           "url": "https://www.cloudflare.com/drop/"
         }
       ],
-      "rank": 23
+      "rank": 28
     },
     {
       "id": "news-096",
@@ -1726,7 +2042,7 @@
       "image_url": "https://cf-assets.www.cloudflare.com/zkvhlag99gkb/7FnkyOWGzxzznog9Kqw3zV/7c747b631184511eed931057e5db3dd0/Why_we_cannot_wait_for_better_post-quantum_signature_algorithms-OG.png",
       "related_links": [],
       "local_image": "assets/images/news-096.png",
-      "rank": 24
+      "rank": 29
     },
     {
       "id": "news-091",
@@ -1787,7 +2103,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40905_61651_5355_v150.jpg",
       "local_image": "assets/images/news-091.jpg",
       "related_links": [],
-      "rank": 25
+      "rank": 30
     },
     {
       "id": "news-090",
@@ -1848,7 +2164,7 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40904_61650_1711_v150.jpg",
       "local_image": "assets/images/news-090.jpg",
       "related_links": [],
-      "rank": 26
+      "rank": 31
     },
     {
       "id": "news-097",
@@ -1910,7 +2226,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "related_links": [],
       "local_image": "assets/images/fallback-security.svg",
-      "rank": 27
+      "rank": 32
     },
     {
       "id": "news-082",
@@ -1976,7 +2292,7 @@
           "url": "https://thehackernews.com/2026/07/goddamn-ransomware-uses-poisonx-driver.html"
         }
       ],
-      "rank": 28
+      "rank": 33
     },
     {
       "id": "news-083",
@@ -2042,7 +2358,7 @@
           "url": "https://deploymentsafety.openai.com/gpt-live"
         }
       ],
-      "rank": 29
+      "rank": 34
     },
     {
       "id": "news-084",
@@ -2108,7 +2424,7 @@
           "url": "https://thehackernews.com/2026/07/microsoft-patches-rogueplanet-defender.html"
         }
       ],
-      "rank": 30
+      "rank": 35
     },
     {
       "id": "news-079",
@@ -2173,7 +2489,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 36
     },
     {
       "id": "news-080",
@@ -2238,7 +2554,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 37
     },
     {
       "id": "news-085",
@@ -2308,7 +2624,7 @@
           "url": "https://docs.x.ai/developers/models/grok-4.5"
         }
       ],
-      "rank": 33
+      "rank": 38
     },
     {
       "id": "news-075",
@@ -2372,7 +2688,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 39
     },
     {
       "id": "news-077",
@@ -2436,7 +2752,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 40
     },
     {
       "id": "news-069",
@@ -2496,7 +2812,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 41
     },
     {
       "id": "news-081",
@@ -2556,7 +2872,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 42
     },
     {
       "id": "news-078",
@@ -2616,7 +2932,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 43
     },
     {
       "id": "news-070",
@@ -2676,7 +2992,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 44
     },
     {
       "id": "news-076",
@@ -2735,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 45
     },
     {
       "id": "news-071",
@@ -2795,7 +3111,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 46
     },
     {
       "id": "news-072",
@@ -2855,7 +3171,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 47
     },
     {
       "id": "news-065",
@@ -2922,7 +3238,7 @@
           "url": "https://blogs.nvidia.com/blog/nemotron-langchain-agents-open-stack/"
         }
       ],
-      "rank": 43
+      "rank": 48
     },
     {
       "id": "news-073",
@@ -2982,7 +3298,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 49
     },
     {
       "id": "news-074",
@@ -3039,322 +3355,6 @@
             "팀 액션: AI agent는 기본적으로 dev container나 임시 sandbox에서 실행하고 host filesystem과 secret 접근을 제한",
             "검토 항목: package install 승인, 네트워크 egress, credential mount, file write scope, audit log 보존 정책",
             "운영 과제: 개발자 경험을 해치지 않는 golden path를 만들어 보안 정책 우회 사용을 줄여야 함"
-          ]
-        }
-      ],
-      "rank": 45
-    },
-    {
-      "id": "news-066",
-      "title_ko": "딥시크, 자체 AI 칩 개발 추진…추론 비용·공급망 통제 경쟁 확대",
-      "title_original": "딥시크, 자체 AI 칩 개발 추진… 엔비디아 의존 탈피와 ‘AI 수직 통합’ 전략 본격화",
-      "summary": "핵심: 딥시크가 자체 AI 반도체 개발을 추진한다는 보도 확산, 미국 수출 규제와 GPU 비용 상승이 배경. 영향: 모델 기업의 경쟁 축이 모델 최적화에서 ASIC·소프트웨어 생태계·데이터센터 공급망까지 확장.",
-      "detail": "AI Times KR은 로이터 등 주요 외신 보도를 인용해 중국 AI 스타트업 딥시크가 자체 AI 칩 개발을 추진한다고 전함. 주요 내용은 엔비디아 GPU 의존 완화, 미국의 대중국 첨단 반도체 수출 제한, 추론 비용 절감, 특정 워크로드 최적화 ASIC 가능성임.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 딥시크가 자체 AI 반도체 개발을 추진한다는 외신 기반 보도 공개",
-            "배경: 중국 AI 기업은 미국의 첨단 AI 반도체 수출 제한으로 최신 GPU 확보 제약 확대",
-            "목표: 엔비디아 의존도와 GPU 비용을 낮추고 모델·반도체·인프라를 통합 운영하려는 전략"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "비용: 대규모 학습과 서비스 추론에서 GPU 구매·데이터센터 운영비가 AI 서비스 비용의 큰 비중 차지",
-            "기술 경로: 모델 기업이 직접 칩을 설계하면 특정 AI workload에 맞춘 ASIC 최적화 가능",
-            "비교 사례: Google TPU, AWS Trainium/Inferentia, Meta MTIA, Microsoft Maia가 자체/전용 AI 칩 흐름으로 제시됨",
-            "중국 공급망: Huawei Ascend, Alibaba Hanguang, Baidu Kunlun 등 중국 내 AI 칩 후보군 존재",
-            "제약: 최첨단 AI 칩에는 설계 인력, 수십억 달러급 투자, 제조·패키징·EDA·소프트웨어 생태계 역량 필요",
-            "현실적 출발점: 단기간 엔비디아 범용 GPU와 정면 경쟁보다 특정 추론 업무용 ASIC 가능성 언급"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "경쟁 구도: AI 모델 성능만으로는 비용·공급망·제재 리스크를 해결하기 어려운 구조 확인",
-            "인프라 전략: CUDA 생태계와 대체 칩 사이의 software portability, kernel 최적화, 운영 도구 격차가 의사결정 변수",
-            "시장 영향: 중국 AI 기업의 full-stack 전략은 HBM, 패키징, EDA, 데이터센터 조달까지 동시 압박 가능"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 중국계 모델/API 의존 워크로드는 칩·클라우드 공급망 제약과 서비스 지속성을 계약 조건에 반영 필요",
-            "검토 항목: 추론 전용 ASIC은 성능 단가가 좋아도 프레임워크·커널·관측·장애 대응 도구 성숙도 확인 필요",
-            "운영 과제: 모델 라우팅과 하드웨어 라우팅을 분리해 vendor lock-in과 제재 리스크를 낮추는 구조 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI 비용 경쟁이 모델 알고리즘에서 반도체·데이터센터·소프트웨어 생태계 통제로 확장됨.",
-      "engineering_implication": "엔지니어링 조직은 모델 선택표에 가격·성능뿐 아니라 가속기 공급망, SDK 호환성, 커널 최적화, 장애 대응 역량을 함께 넣어야 함.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "AI Chip",
-        "Inference",
-        "Semiconductor"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-08 20:55",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40891",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40891_61629_554_v150.jpg",
-      "local_image": "assets/images/news-066.jpg",
-      "related_links": [],
-      "rank": 46
-    },
-    {
-      "id": "news-068",
-      "title_ko": "GitHub Copilot 연구, 채팅 거부 후 코드 파일에는 유해 답변 생성 가능성 제기",
-      "title_original": "GitHub Copilot Refuses Harmful Requests in Chat, Then Writes Them in Code",
-      "summary": "핵심: Copilot 채팅은 직접 유해 요청을 거의 거부했지만, 벤치마크 harness 개선 작업으로 재구성하자 816/816 workflow에서 유해 답변이 코드에 생성된 연구 공개. 영향: AI 코딩 보안 검토는 채팅 응답이 아니라 생성 파일과 전체 세션 단위로 확장 필요.",
-      "detail": "The Hacker News는 Abhishek Kumar와 Carsten Maple의 GitHub Copilot 연구를 보도함. 연구는 Claude·Gemini 계열 Copilot 모델 4개를 대상으로 204개 harmful prompt와 816개 workflow run을 실험했고, 직접 채팅에서는 8/816만 유해 답변을 냈지만 workflow-level jailbreak 구성에서는 816/816 모두 유해 콘텐츠가 코드 파일에 들어갔다고 설명함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Copilot이 채팅에서는 유해 요청을 거부하지만 코드 편집 workflow 안에서는 유해 답변을 생성할 수 있다는 연구 보도",
-            "범위: Claude Sonnet 4.6, Claude Haiku 4.5, Gemini 3.1 Pro, Gemini 3.5 Flash를 GitHub Copilot 기본 설정으로 테스트",
-            "방법: harmful prompt를 직접 묻지 않고 benchmark scoring harness에 teaching shots를 채우는 평범한 코딩 작업으로 구성"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "데이터셋: Hammurabi’s Code, HarmBench, AdvBench의 harmful prompt 204개 사용",
-            "직접 채팅: 모델이 직접 요청에서는 816회 중 8회만 유해 답변 생성",
-            "workflow 조건: 전체 workflow에서는 816/816 실행 모두에서 유해 콘텐츠가 코드 파일에 생성",
-            "검증: 두 명의 expert reviewer가 구체적·사용 가능·요청 충족 기준으로 모든 출력 확인",
-            "환경: GitHub Copilot Chat 0.30.3, VS Code 1.103.0, 2026년 4월 2일~6월 22일 세션에서 실행",
-            "차이점: 유해 텍스트가 채팅 답변이 아니라 assistant가 작성한 파일 내부 plain text로 남는 구조"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "보안 한계: visible chat refusal만으로 AI coding session이 안전하다고 판단할 수 없음",
-            "공격 패턴: 점수 향상·benchmark 개선·예시 채우기 같은 정상 작업 목표가 safety guardrail보다 우선되는 metric optimization 문제",
-            "탐지 난점: 정당한 보안 연구와 악성 workflow가 같은 harmful prompt·evaluation harness 형식을 공유할 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI coding assistant 사용 시 채팅 로그뿐 아니라 생성·수정 파일 diff를 보안 검토 대상으로 포함 필요",
-            "정책: benchmark score 개선, test fixture 채우기, prompt/answer corpus 생성 요청은 추가 review gate 적용 필요",
-            "운영 과제: agent/coding assistant 안전성 평가는 메시지 단위가 아니라 전체 세션·파일 산출물·도구 호출 단위로 설계 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI 코딩 도구의 안전성 검증 범위가 채팅 거부율에서 파일 diff와 multi-turn workflow 검토로 확대됨.",
-      "engineering_implication": "개발 조직은 AI 생성 코드 리뷰에서 채팅 응답을 신뢰하지 말고 전체 diff, 테스트 fixture, benchmark data, prompt corpus를 포함해 정책 검사를 적용해야 함.",
-      "category": "Security",
-      "tags": [
-        "AI",
-        "Security",
-        "Developer Tools",
-        "Code Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-07-08 20:21",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/github-copilot-refuses-harmful-requests.html",
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "rank": 47
-    },
-    {
-      "id": "news-063",
-      "rank": 48,
-      "title_ko": "CNCF, NGINX·OpenTelemetry로 AI 에이전트 네트워크 경계 패턴 제시",
-      "title_original": "Network boundary for AI agents using NGINX and OpenTelemetry",
-      "summary": "핵심: AI 에이전트 outbound 트래픽을 NGINX forward proxy와 iptables로 단일 경로화하고 OpenTelemetry span으로 감사하는 Kubernetes 패턴 공개. 영향: 프롬프트 guardrail만으로 부족한 네트워크 접근 통제를 cloud-native 운영 도구로 구현 가능.",
-      "detail": "CNCF 글은 OpenClaw 기반 AI 에이전트를 Kubernetes namespace에 배치하고 NGINX를 inbound reverse proxy와 outbound forward proxy로 쓰는 실험을 설명함. iptables로 다른 egress 경로를 차단하고 OpenTelemetry Collector로 request span을 남겨 Jaeger, Grafana, SIEM에 연결할 수 있는 감사 경계를 구성함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: CNCF 블로그가 AI 에이전트용 네트워크 경계를 **NGINX + OpenTelemetry** 조합으로 구성하는 Kubernetes 실험 공개",
-            "배경: OpenClaw 대화형 에이전트를 사내 네트워크에 넣기 어렵다는 운영자 우려에서 시작된 passion project 성격 확인",
-            "목표: 에이전트 의도 해석보다 네트워크 접근 경로를 강제·관측 가능한 구조로 만드는 데 초점"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "구성: NGINX가 inbound reverse proxy로 TLS를 종료하고 outbound forward proxy로 모든 agent request를 통과시키는 구조 제시",
-            "차단: iptables rules로 NGINX 외 egress traffic을 drop해 애플리케이션이 우회할 두 번째 경로를 갖지 못하도록 설계",
-            "관측: NGINX native OpenTelemetry module이 모든 request에 OTEL span을 emit하고 Collector가 audit log 또는 Jaeger·Grafana·SIEM으로 전달 가능",
-            "검증: single-node Kubernetes cluster에 NGINX, Ollama, OpenClaw, OpenTelemetry Collector 4개 workload를 같은 namespace로 배치해 실험",
-            "확장: consumer NVIDIA GPU 환경에서 검증했지만 Kubernetes workload를 실행할 수 있는 edge device부터 enterprise AI infrastructure까지 적용 가능성 언급"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "보안: 에이전트 guardrail은 생성 의도를 제어하지만 외부 네트워크 호출 권한까지 보장하지 못하는 한계 존재",
-            "운영: proxy 기반 enforcement는 open standard와 기존 cloud-native tooling을 활용해 감사·차단·트래픽 shaping을 한 경계에서 처리 가능",
-            "대안: NGINX 외에도 service mesh egress gateway, network policy, 다른 proxy technology로 같은 패턴 구현 가능"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 에이전트 PoC를 운영망에 붙이기 전 egress allowlist, span 기반 감사 로그, 우회 경로 차단을 아키텍처 요구사항으로 포함 필요",
-            "주의: 이 방식은 agent intent의 안전성을 판단하지 않으므로 identity, policy, runtime security, application guardrail과 함께 쓰는 방어 계층 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI 에이전트 보안 논의가 프롬프트와 모델 정책에 머무르면 실제 도구 호출·외부 API 호출 경로를 놓침. 네트워크 경계를 별도 아키텍처 속성으로 만들면 승인되지 않은 외부 호출과 감사 공백을 줄일 수 있음.",
-      "engineering_implication": "에이전트 런타임은 outbound proxy, egress deny-by-default, OTEL trace, SIEM 연동을 기본 플랫폼 기능으로 설계 필요.",
-      "korea_implication": "금융·공공·제조 폐쇄망 AI PoC는 모델 성능보다 egress 통제와 감사 로그 요구가 먼저 검토될 가능성 큼.",
-      "category": "Infra",
-      "tags": [
-        "AI Agent",
-        "Kubernetes",
-        "NGINX",
-        "OpenTelemetry",
-        "Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-08 20:00",
-      "source_name": "CNCF Blog",
-      "source_url": "https://www.cncf.io/blog/2026/07/08/network-boundary-for-ai-agents-using-nginx-and-opentelemetry/",
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/06/Blog-Default-25.jpg",
-      "local_image": "assets/images/news-063.jpg",
-      "related_links": []
-    },
-    {
-      "id": "news-064",
-      "rank": 49,
-      "title_ko": "Ubiquiti, UniFi OS 최대 심각도 취약점 포함 7개 치명적 결함 패치",
-      "title_original": "Ubiquiti warns of new max severity UniFi OS vulnerability",
-      "summary": "핵심: Ubiquiti가 UniFi OS 계열의 7개 critical 취약점을 패치했고 CVE-2026-50746은 네트워크 접근만으로 host command injection 가능. 영향: Censys 기준 10만 대 이상 UniFi OS 인스턴스가 온라인 노출돼 지점·매장·스마트빌딩 네트워크 패치 우선순위 상승.",
-      "detail": "BleepingComputer 보도에 따르면 Ubiquiti는 UniFi Connect, Talk, Access, Protect, UniFi OS Server, 라우터·게이트웨이·NAS·감시 시스템에 걸친 critical 취약점 7개를 수정함. CVE-2026-50746은 UniFi Connect Application 3.4.16 이하에 영향을 주며 3.4.20 이상 업데이트가 필요함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Ubiquiti가 UniFi OS 관련 **7개 critical 취약점** 보안 업데이트 공개",
-            "최대 위험: CVE-2026-50746, UniFi Connect Application 3.4.16 이하에서 improper access control로 host command injection 가능",
-            "패치: 영향을 받는 UniFi Connect app은 3.4.20 이상으로 업데이트 필요"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "범위: UniFi Talk, UniFi Access, UniFi Protect, UniFi OS Server, Ubiquiti routers, gateways, NAS, surveillance systems까지 다수 제품군 대상",
-            "취약점: CVE-2026-50747, CVE-2026-50748, CVE-2026-54400, CVE-2026-54402, CVE-2026-55115, CVE-2026-55116 추가 패치",
-            "공격 조건: 6개 취약점은 low-complexity attack이며 user interaction 없이 악용 가능하다는 업체 설명 존재",
-            "노출 규모: Censys가 온라인에 노출된 UniFi OS instance를 **10만 대 이상** 추적하고 미국에서 약 5만 IP 확인",
-            "불확실성: Ubiquiti는 패치 전 실제 악용 여부를 공개하지 않았고 Censys historical scan에는 honeypot·이미 패치된 시스템 포함 가능성 존재"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "공격 표면: UniFi 장비는 지점망, 소매 매장, 스마트빌딩, 감시 카메라, EV charger 관리망과 연결될 수 있어 침해 시 물리 운영 영향 가능",
-            "이력: Ubiquiti Edge OS·UniFi OS 계열은 과거 GRU 연계 Moobot, CISA KEV, root/RCE 체인 사례에서 반복 표적 확인",
-            "운영 리스크: 라우터·게이트웨이·NAS·감시 시스템은 중앙 IT 자산 목록에서 누락되기 쉬워 패치 지연 가능성 큼"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: UniFi Controller와 OS application version inventory, 인터넷 노출 여부, remote management 접근 제어, 긴급 패치 여부를 같은 점검표로 확인 필요",
-            "탐지: 최근 UniFi OS max-severity flaw 악용 사례와 연계해 외부 접근 로그, 관리자 계정 변경, unknown device adoption, unexpected outbound proxy traffic 점검 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "네트워크 장비 취약점은 서버 패치보다 늦게 처리되지만 공격자는 edge device를 우회 프록시와 지속 거점으로 활용할 수 있음. UniFi 장비는 SMB·지점·매장·감시망에서 널리 쓰여 패치 누락 시 lateral movement 경로가 됨.",
-      "engineering_implication": "보안팀은 UniFi OS 노출 자산을 CMDB와 외부 attack surface scan에 포함하고 3.4.20 이상 적용, 관리 포트 접근 제한, 관리자 로그 리뷰를 즉시 수행 필요.",
-      "korea_implication": "국내 지점·매장·스마트오피스 운영 조직은 네트워크 장비를 서버 취약점과 동일한 긴급 패치 SLA로 관리 필요.",
-      "category": "Security",
-      "tags": [
-        "Ubiquiti",
-        "UniFi",
-        "CVE",
-        "Network Security",
-        "Edge Device"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-07-08 17:15",
-      "source_name": "BleepingComputer",
-      "source_url": "https://www.bleepingcomputer.com/news/security/ubiquiti-warns-of-new-max-severity-unifi-os-vulnerability/",
-      "image_url": "https://www.bleepstatic.com/content/hl-images/2026/07/08/Ubiquiti.jpg",
-      "local_image": "assets/images/news-064.jpg",
-      "related_links": []
-    },
-    {
-      "id": "news-061",
-      "title_ko": "Linux GhostLock 취약점, 로컬 사용자 root 권한 상승·컨테이너 탈출 가능",
-      "title_original": "15-Year-Old GhostLock Flaw Enables Root and Container Escape on Most Linux Distros",
-      "summary": "핵심: GhostLock(CVE-2026-43499), 2011년부터 Linux futex 코드에 포함된 use-after-free 취약점으로 로컬 사용자의 root 권한 상승 가능",
-      "detail": "핵심: GhostLock(CVE-2026-43499), Linux kernel futex 경로의 use-after-free로 로컬 root 권한 상승 가능\n변화: Nebula Security가 97% 신뢰도 exploit과 컨테이너 탈출 가능성을 공개했고 Google kernelCTF 보상 92,337달러 수령\n영향: 멀티테넌트 서버, 컨테이너 호스트, CI runner, 클라우드 VM은 로컬 foothold 이후 host 권한 상승 경로 노출\n시사점: 커널 패치 상태, 배포판 advisory, early fix 이후 CVE-2026-53166 보완 여부까지 확인 필요",
-      "why_it_matters": "로컬 권한 상승 취약점은 원격 침투 이후 피해 범위를 host와 컨테이너 경계까지 넓힘. exploit 코드 공개와 높은 재현성 때문에 shared Linux host와 CI/CD 실행 환경의 패치 우선순위가 높음",
-      "engineering_implication": "SRE·보안팀은 배포판별 fixed kernel 버전, cloud kernel 패치 상태, 컨테이너 host 재부팅 일정, CI runner 격리 수준을 같은 패치 런북으로 관리 필요",
-      "category": "Security",
-      "tags": [
-        "Linux",
-        "Kernel",
-        "CVE",
-        "Container Security",
-        "Cloud Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-07-08 15:16",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/15-year-old-ghostlock-flaw-enables-root.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid8ZRwAprNDN6zAPixm22IlrKWp03FJdQF0TxCV5v_jxckPLkOHRSzHQERbDNw_FZdnyluuhyphenhyphenGZ7pSX51cjBl-S8PrqhgARlAe8VfWPabk7t4hAy37ZSrRu6oXfRYlXP7s1x1OBYW9WHmgWobGS0wiC0mrO42xHWHrSI3ICLM5OFzsOA3tVCcs4_N1yPU/s1600/linux-root.gif",
-      "local_image": "assets/images/news-061.gif",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Nebula Security, GhostLock(CVE-2026-43499) Linux kernel 취약점 공개",
-            "범위: 2011년 이후 mainstream Linux 배포판에 기본 포함된 futex 코드 경로 영향",
-            "조건: 네트워크 접근이나 특수 설정 없이 로컬 프로그램의 일반 threading 호출만으로 trigger 가능",
-            "증거: 연구팀 테스트 기준 97% 신뢰도 exploit과 container escape 가능성 확인"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "취약점 유형: futex cleanup 경로의 use-after-free로 stale pointer 신뢰 발생",
-            "권한 영향: 일반 로그인 사용자에서 root 권한 상승 가능, multi-tenant host 위험 확대",
-            "패치 상태: Linux upstream은 4월 수정 commit 3bfdc63936dd 반영, 배포판별 적용 상태 차이 존재",
-            "추가 변수: 최초 수정이 별도 crash bug CVE-2026-53166을 만들었기 때문에 최종 보완 커널 확인 필요",
-            "완화 한계: RANDOMIZE_KSTACK_OFFSET, STATIC_USERMODE_HELPER는 exploit 난도만 높이며 완전한 우회책 아님"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "클라우드 리스크: 컨테이너 host, shared VM, bastion, CI runner에서 로컬 foothold가 host 장악으로 확대 가능",
-            "운영 리스크: exploit 코드 공개 이후 공격자가 post-exploitation 단계에 곧바로 편입할 수 있는 취약점",
-            "우선순위: 외부 노출 서비스보다 내부 실행 환경 패치가 늦어지는 조직에서 lateral movement 경로가 될 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 배포판 advisory와 실제 uname/kernel package 버전을 대조하고 shared host부터 재부팅 계획 수립 필요",
-            "점검 항목: container runtime host, self-hosted runner, build farm, VDI, GPU server의 커널 패치 상태 확인 필요",
-            "발표 메모: 원격 RCE가 아니어도 AI·클라우드 운영 환경에서는 local privilege escalation이 blast radius를 결정하는 보안 변수"
           ]
         }
       ],
