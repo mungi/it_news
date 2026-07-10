@@ -349,3 +349,9 @@
 - Reviewed 2,673 feed entries and 381 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering Apple Silicon local AI-agent runtime demand, EMR on EKS Spark troubleshooting agent, NVIDIA JAX HBM host offloading, and Injective Labs GitHub/npm supply-chain compromise. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+
+## [2026-07-11] site | Reset detail modal scroll on open
+- Checked current time at 2026-07-11 07:33 KST; no freeze guard was run per current project policy.
+- Reset the detail modal scroll position each time a news card or Deep Dive opens, preventing a previously scrolled modal from reopening midway through content.
+- Updated the `app.js` cache-busting query string in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.

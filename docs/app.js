@@ -464,10 +464,7 @@ function openModal(item) {
   if (item.source_url) links.appendChild(makeLink("원문 보기", item.source_url));
   (item.related_links || []).forEach((link) => links.appendChild(makeLink(link.title || "관련 링크", link.url)));
 
-  modal.classList.remove("hidden");
-  modal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-  $(".modal-close")?.focus();
+  showModal(modal);
 }
 
 function openDeepDiveModal(item) {
@@ -493,8 +490,14 @@ function openDeepDiveModal(item) {
   links.replaceChildren();
   (item.sources || []).forEach((url, index) => links.appendChild(makeLink(`출처 ${index + 1}`, url)));
 
+  showModal(modal);
+}
+
+function showModal(modal) {
   modal.classList.remove("hidden");
   modal.setAttribute("aria-hidden", "false");
+  const modalCard = modal.querySelector(".modal-card");
+  if (modalCard) modalCard.scrollTop = 0;
   document.body.style.overflow = "hidden";
   $(".modal-close")?.focus();
 }
