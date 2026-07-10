@@ -74,13 +74,22 @@ function normalize(value) {
 }
 
 function displayLabel(value) {
-  if (value === "All") return "전체";
-  if (value === "must-know") return "중요 소식";
-  if (value === "high") return "높음";
-  if (value === "medium") return "보통";
-  if (value === "low") return "낮음";
-  if (value === "Global") return "글로벌";
-  return value;
+  const labels = {
+    All: "전체",
+    Cloud: "클라우드",
+    Infra: "인프라",
+    Security: "보안",
+    DevTools: "개발도구",
+    Data: "데이터",
+    "Open Source": "오픈소스",
+    Korea: "한국",
+    Global: "글로벌",
+    "must-know": "중요 소식",
+    high: "높음",
+    medium: "보통",
+    low: "낮음",
+  };
+  return labels[value] || value;
 }
 
 function imageFor(item) {

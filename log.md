@@ -336,3 +336,9 @@
 - Reviewed 762 feed entries and 284 current keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
 - Added 5 sourced stories covering Google Cloud Discovery Bench agent evaluation, GitHub Copilot code-review workflow tuning, NVIDIA hardware-friendly LLM design, Cloudflare Smart Tiered Cache public cloud region hints, and AWS DMS Schema Conversion MCP agent automation. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, concept wiki, and wiki index.
+
+## [2026-07-11] site | Localize UI filter and badge labels
+- Checked current time at 2026-07-11 03:27 KST; no freeze guard was run per current project policy.
+- Localized visible static-site category/region/importance labels such as Cloud, Infra, Security, DevTools, Open Source, Korea, and Global while preserving JSON filter values.
+- Updated the `app.js` cache-busting query string in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.
