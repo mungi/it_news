@@ -420,3 +420,11 @@
 - Hardened `scripts/validate_weekly_news.py` so non-standard JSON constants (`NaN`, `Infinity`, `-Infinity`) are rejected during parsing.
 - Tightened score validation to require finite numeric values while continuing to reject bool-as-int edge cases.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-12] update | Add NEvo and AI 2040 governance stories
+- Checked current time at 2026-07-12 03:07 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 2,473 feed entries, 358 recent entries, and 306 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 2 sourced stories covering NEvo brain-response-optimized AI video generation and AI 2040 Plan A compute-governance scenario. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, AI governance concept wiki, and wiki index.
+- Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`.
