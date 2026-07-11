@@ -2,14 +2,14 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-12 03:07",
+  "last_updated_kst": "2026-07-12 07:30",
   "audience": "developers and engineers",
   "executive_summary": [
+    "공급망 보안 확대: jscrambler npm 침해가 CI·cloud credential·AI coding tool 설정까지 탈취 대상으로 확인.",
     "AI 안전·거버넌스 확대: AI 2040 Plan A, Apple-OpenAI 소송, 소버린 AI 배치 논의가 compute·IP·감사 가능성을 운영 요구사항으로 전환.",
-    "AI 에이전트 보안 경계 확대: Ghostcommit 이미지 프롬프트 주입, Cursor Sand, fenic, AWS DMS MCP가 agent runtime의 입력·권한·데이터 경계를 재정의.",
-    "AI 추론 비용 최적화 가속: NVIDIA Puzzle 압축, PrismML 온디바이스 27B, JAX HBM offloading이 cloud·edge·GPU 배치 기준을 흔듦.",
-    "웹·콘텐츠 인프라 압박: AI 스크레이퍼 주거용 프록시 트래픽이 독립 사이트의 bot mitigation·CDN 비용·개방성 균형을 요구.",
-    "엔터프라이즈 보안 패치 압박: Zimbra 저장 XSS, ShareFile controller shutdown, U-Boot 결함, passkey phishing이 edge·identity·firmware 점검을 요구."
+    "AI 에이전트 운영 경계 확대: Ghostcommit 이미지 프롬프트 주입, Cursor Sand, fenic, AWS DMS MCP가 입력·권한·데이터 경계를 재정의.",
+    "추론·모델 운영 현실화: 멀티 모델 오케스트레이션 공동 실패율, NVIDIA Puzzle, PrismML 온디바이스 27B가 품질·비용 평가 기준을 바꿈.",
+    "웹·콘텐츠 인프라 압박: AI 스크레이퍼 주거용 프록시 트래픽이 bot mitigation·CDN 비용·개방성 균형을 요구."
   ],
   "deep_dives": [
     {
@@ -185,8 +185,73 @@
   ],
   "items": [
     {
+      "id": "news-139",
+      "title_ko": "jscrambler 8.14.0 npm 릴리스, 설치 전 훅으로 Rust 정보탈취기 실행",
+      "title_original": "Compromised jscrambler 8.14.0 npm Release Drops Rust Infostealer During Install",
+      "summary": "핵심: jscrambler npm 패키지 8.14.0이 정상 maintainer 계정으로 게시됐지만 `preinstall` 훅이 Windows·macOS·Linux용 Rust 정보탈취기를 실행함. 영향: 클라우드 자격 증명, CI runner metadata endpoint, password manager, browser 세션, Claude Desktop·Cursor·Windsurf·VS Code·Zed 설정의 AI 도구/API 키까지 수집 대상 확인.",
+      "detail": "jscrambler 8.14.0은 공개 GitHub 저장소의 tag·commit·PR 없이 npm에 직접 게시된 악성 릴리스다. 설치 시 `dist/setup.js`가 `intro.js`에 포함된 약 7.8MB 컨테이너에서 OS별 native binary를 꺼내 임시 경로에 쓰고 숨김 실행한다. Socket은 게시 6분 뒤 탐지했지만, 해당 시간 동안 빌드 머신·개발자 노트북에서 실행된 경우 cloud key, wallet, password vault, AI coding tool config, MCP credential이 노출됐을 수 있다.",
+      "why_it_matters": "개발 dependency 하나가 CI·개발자 endpoint의 cloud credential과 AI coding tool credential을 동시에 훔치는 경로로 바뀐 사례다.",
+      "engineering_implication": "npm publish provenance, install script 차단, CI secret scope 축소, MCP/API key 저장 위치 점검, package diff 자동 검사를 공급망 기본 통제로 넣을 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "DevTools",
+        "npm",
+        "Supply Chain",
+        "AI Agent"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-07-12 02:59",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/compromised-jscrambler-8140-npm-release.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhodiWPXDsex6YL7v4e2n_D5MJFMht76GRRmHTdiG61tfEmsoZyow4tkiS3ORACILDl2fNP27YQkw1XLSBKGcom-DhCVzzPDdkdSgeMGdxcVL_rgO70x5LqZcjxKAPTtFOquB8LwSBPWrSpflqCzns-cFZ_EVm0WZfV7wSoPM3S-7_IGtCT3AjxY0rfITU/s1600/npm-js.jpg",
+      "local_image": "assets/images/news-139.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "jscrambler npm 패키지의 8.14.0 릴리스가 악성 install-time 실행 경로를 포함한 상태로 게시됨.",
+          "items": [
+            "패키지 설치만으로 `preinstall` 훅이 실행되고 Rust native infostealer가 host에서 실행됨",
+            "악성 릴리스는 2026-07-11 게시됐고 Socket이 게시 **6분 뒤** 탐지했지만 그 사이 설치된 build system은 이미 실행 가능성"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공개 소스와 npm 배포물 사이의 차이가 공격 신호로 확인됨.",
+          "items": [
+            "8.13.0에는 없던 `dist/setup.js`와 `dist/intro.js`가 8.14.0에 추가됨",
+            "`intro.js`는 JavaScript가 아니라 Linux·Windows·macOS용 gzip 압축 native binary 3개를 담은 약 **7.8MB** 컨테이너임",
+            "GitHub 공개 저장소에는 8.14.0과 일치하는 commit, tag, pull request가 없고 최신 tag는 8.13.0으로 확인",
+            "정상 maintainer 계정으로 npm에 직접 게시된 정황 때문에 maintainer account 또는 build pipeline 침해 가능성"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "개발 dependency가 agent·CI credential 탈취 경로로 확장됨.",
+          "items": [
+            "탈취 대상은 AWS·Azure·Google Cloud credential, CI runner metadata endpoint, browser password/cookie, Bitwarden vault, Slack·Discord·Telegram session 포함",
+            "Claude Desktop, Cursor, Windsurf, VS Code, Zed 설정 파일도 수집 대상이라 AI coding tool API key와 MCP server credential 노출 가능성",
+            "Linux payload는 BPF library를 연결하고 memory에서 eBPF program load가 가능해 userspace 파일 수집을 넘어 kernel foothold 리스크"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "패키지 설치 단계가 production credential boundary와 연결된 조직일수록 긴급 점검 필요.",
+          "items": [
+            "CI는 `npm install` 실행 계정의 cloud 권한과 metadata endpoint 접근을 최소화하고 job별 short-lived credential 사용 필요",
+            "npm publish provenance, package diff, install script allowlist, maintainer account MFA를 release gate로 강제 필요",
+            "AI coding agent 설정 파일과 MCP credential은 repository workspace 밖이라도 secret scanning·endpoint DLP 대상에 포함 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-137",
-      "rank": 1,
+      "rank": 2,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -257,7 +322,7 @@
     },
     {
       "id": "news-138",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -390,7 +455,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-134",
@@ -459,7 +524,72 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 4
+      "rank": 5
+    },
+    {
+      "id": "news-140",
+      "title_ko": "멀티 모델 오케스트레이션, 공동 실패율 때문에 성능 향상 한계 확인",
+      "title_original": "When Does Combining Language Models Help?",
+      "summary": "핵심: 21개 기업의 LLM 67개를 분석한 연구가 여러 모델을 섞어도 같은 문제에서 동시에 틀리는 `공동 실패` 때문에 라우팅·투표·cascade 성능 상한이 생긴다고 제시함. 영향: 기업 멀티 모델/멀티 에이전트 설계는 모델 수 확대보다 공동 실패율, routing signal, task별 검증 가능성을 먼저 측정해야 함.",
+      "detail": "KAIKAKU 등 공동 연구진은 MATH-500, 코드 생성, GPQA Diamond 변형 실험으로 멀티 모델 조합의 실제 상한을 분석했다. 기존 pairwise error correlation은 모든 모델이 같은 질문에서 동시에 실패하는 비율을 낮게 추정했고, MATH-500에서는 예측 2.3% 대비 실제 5.2%의 공동 실패율이 나왔다. 성능 차이가 큰 모델을 단순 다수결로 묶으면 낮은 성능 모델이 우수 모델의 정답을 뒤집어 평균 정확도가 약 10%p 감소한 사례도 제시됐다.",
+      "why_it_matters": "LLM gateway와 agent router를 구축하는 팀이 vendor 다변화만으로 품질이 오른다고 가정하면 비용·지연 시간만 늘고 정확도 상한은 그대로일 수 있다.",
+      "engineering_implication": "모델 라우팅 PoC는 기존 평가 로그에서 all-model failure를 집계하고 Clopper-Pearson bound로 상한을 계산한 뒤, 단일 최고 모델·비슷한 성능 모델 조합·router 개발 비용을 비교해야 함.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "LLM",
+        "Evaluation",
+        "Agent",
+        "Inference"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-07-11 17:04",
+      "source_name": "AI Times",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212625",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/212625_215983_60.jpg",
+      "local_image": "assets/images/news-140.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "멀티 모델 오케스트레이션의 성능 상한을 공동 실패율로 설명하는 연구 결과 공개.",
+          "items": [
+            "KAIKAKU 등 공동 연구진이 `When Does Combining Language Models Help?` 논문을 온라인 아카이브에 공개",
+            "코딩 특화 모델, 논리 추론 모델, 범용 모델 등 21개 기업의 첨단 LLM **67개**를 평가 대상으로 사용"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기존 pairwise error correlation만으로는 조합 효과를 과대평가할 수 있음.",
+          "items": [
+            "공동 실패 한계는 여러 모델이 같은 질문에서 동시에 틀리는 비율 β 때문에 어떤 라우팅·투표·cascade도 정확도 상한 `1-β`를 넘기 어렵다는 주장",
+            "MATH-500에서 기존 방식은 모든 모델 동시 실패 확률을 2.3%로 예상했지만 실제 측정은 **5.2%**로 2.25배 차이",
+            "코드 생성 과제의 공동 실패율은 7.9%, GPQA Diamond를 자유서술형으로 바꾼 경우 공동 실패율은 12.7%까지 상승",
+            "성능 차이가 큰 모델을 단순 다수결로 결합하면 낮은 성능 모델이 우수 모델의 정답을 뒤집어 평균 정확도가 약 10%p 감소"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "LLM gateway·agent router 비용 구조와 품질 평가 방식에 직접 연결됨.",
+          "items": [
+            "모델 수를 늘리거나 vendor를 섞는 전략은 공동 실패가 높은 task에서 latency와 비용만 늘릴 가능성",
+            "정답 검증이 명확한 SQL, JSON 생성, 정보 추출 업무는 여러 저가 모델보다 최고 성능 단일 모델이 더 효율적인 경우 확인",
+            "공동 실패가 낮은 task라도 질문별 최적 모델을 고르는 강한 routing signal이 없으면 단일 최고 모델을 넘기 어려움"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "멀티 모델 시스템 설계는 모델 다양성보다 실패 상관과 라우팅 증거를 먼저 검증해야 함.",
+          "items": [
+            "기존 평가 로그에서 모든 모델이 동시에 실패한 횟수를 집계해 Clopper-Pearson boundary로 성능 상한 산출 필요",
+            "router 개발 전 task별 공동 실패율, oracle routing gap, majority vote 손실, cost per correct answer를 대시보드화 필요",
+            "멀티 에이전트 제품은 모델 조합보다 evaluation trace, confidence signal, fallback policy, human review gate를 먼저 설계 필요"
+          ]
+        }
+      ],
+      "rank": 6
     },
     {
       "id": "news-133",
@@ -524,7 +654,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-135",
@@ -589,7 +719,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-136",
@@ -659,7 +789,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-124",
@@ -730,7 +860,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-125",
@@ -802,7 +932,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-126",
@@ -864,7 +994,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-127",
@@ -931,7 +1061,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-120",
@@ -1002,7 +1132,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-122",
@@ -1064,7 +1194,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-121",
@@ -1126,7 +1256,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-117",
@@ -1189,7 +1319,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-128",
@@ -1255,7 +1385,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-123",
@@ -1317,7 +1447,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-115",
@@ -1379,7 +1509,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-116",
@@ -1442,7 +1572,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-118",
@@ -1507,7 +1637,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-129",
@@ -1569,7 +1699,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-109",
@@ -1633,7 +1763,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-130",
@@ -1695,7 +1825,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-131",
@@ -1757,7 +1887,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-104",
@@ -1819,7 +1949,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-105",
@@ -1881,7 +2011,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-119",
@@ -1944,7 +2074,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-106",
@@ -2006,7 +2136,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-107",
@@ -2068,7 +2198,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-108",
@@ -2130,7 +2260,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-110",
@@ -2194,7 +2324,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-111",
@@ -2259,7 +2389,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-112",
@@ -2323,11 +2453,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-100",
-      "rank": 34,
+      "rank": 36,
       "title_ko": "Tencent Hy3 공개, Apache 2.0 오픈소스 모델로 에이전트·업무 작업 비용 경쟁 가세",
       "title_original": "Tencent, 오픈소스 모델 Hy3 공개",
       "summary": "핵심: Tencent Hy3는 Apache 2.0 공개 모델로 270명 전문가 블라인드 평가 2.67/4, GLM-5.1 2.51/4를 제시하며 업무·에이전트 작업 성능을 강조. 비용: API 가격은 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 공개되어 모델 라우팅과 추론 단가 비교 대상 추가.",
@@ -2403,7 +2533,7 @@
     },
     {
       "id": "news-101",
-      "rank": 35,
+      "rank": 37,
       "title_ko": "Microsoft Flint 공개, AI 에이전트용 차트 중간 언어와 MCP 서버 제공",
       "title_original": "Microsoft, AI 에이전트용 시각화 언어 Flint 공개",
       "summary": "핵심: Microsoft Research Flint는 AI 에이전트가 짧고 사람이 편집 가능한 명세로 차트를 만들도록 돕는 시각화 중간 언어임. 범위: 46개 차트 유형, 83개 갤러리 예제, Vega-Lite·ECharts·Chart.js 렌더링, TypeScript/JavaScript npm 설치와 MCP 서버 제공.",
@@ -2540,11 +2670,11 @@
           "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work/"
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-102",
-      "rank": 37,
+      "rank": 39,
       "title_ko": "AWS MCP Server, OAuth 지원으로 AI 에이전트와 AWS Sign-In 직접 연결",
       "title_original": "OAuth support for the AWS MCP Server",
       "summary": "핵심: AWS MCP Server가 AWS Sign-In 기반 OAuth를 지원해 AI 에이전트가 추가 인증 소프트웨어 없이 AWS 계정 권한으로 연결 가능. 관리: IAM 정책, global condition keys, token introspection/revocation API, dynamic client registration, CloudTrail audit events로 OAuth 접근 통제 가능.",
@@ -2606,7 +2736,7 @@
     },
     {
       "id": "news-103",
-      "rank": 38,
+      "rank": 40,
       "title_ko": "CNCF, ingress-NGINX 은퇴 전환 안내…Kubernetes Ingress API와 컨트롤러 수명주기 분리 필요",
       "title_original": "Navigating the ingress-NGINX retirement",
       "summary": "핵심: CNCF는 Kubernetes Ingress API가 은퇴하는 것이 아니라 ingress-NGINX 컨트롤러 프로젝트 수명주기 전환이 이슈라고 설명. 영향: 운영팀은 Ingress 리소스 자체보다 컨트롤러 구현체, 보안 패치, Gateway API 전환 경로, vendor 지원 상태를 분리해 점검 필요.",
@@ -2732,7 +2862,7 @@
           "url": "https://kb.cert.org/vuls/id/213560"
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-092",
@@ -2793,7 +2923,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiDslymdYqhkFwIm3ZeaXVZweYVT_R1d6LCQhIm799y9-5hQ3C45cumIStxGYheFbwosbd_JtrB6FgOthR2KJgfe8PYs0k47eGV7263ATac5UR0t7OOaqOUGOf5DHAR4b0IaKTozk0UEiHJz5-nze3b1ureycPGqdPVlqrImWreOWwMpGxC8kgBvONCLGbH/s1600/github-ghost.jpg",
       "related_links": [],
       "local_image": "assets/images/news-092.jpg",
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-093",
@@ -2855,7 +2985,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhbP2w2lzNWbB041oSXvx2Nb1uOJaf81XNUBioDv_3K73S-JnzIU4OnUHfwG3Q3RLbf_p2wJBpHC0m2M4cQhCMfcSRRx1MY9n2vCVSNI4ddai3uJ3eE2Kb-d_ryU_HSEx_R2Rjoxz2D3TBcZCgLRWf-rOBf9k73Vi1Q04aWNG9Ux-A5AOf-v1HjSGD3YZcg/s1600/npm-security.jpg",
       "related_links": [],
       "local_image": "assets/images/news-093.jpg",
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-094",
@@ -2918,7 +3048,7 @@
       "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/sandbox_blog_hero_image.max-2500x2500.jpg",
       "related_links": [],
       "local_image": "assets/images/news-094.jpg",
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-095",
@@ -2978,7 +3108,7 @@
       "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-invertocat-mona-logo.png",
       "related_links": [],
       "local_image": "assets/images/news-095.png",
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-113",
@@ -3042,7 +3172,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-114",
@@ -3106,7 +3236,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-088",
@@ -3173,7 +3303,7 @@
           "url": "https://mistral.ai/news/robostral-navigate/"
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-096",
@@ -3235,7 +3365,7 @@
       "image_url": "https://cf-assets.www.cloudflare.com/zkvhlag99gkb/7FnkyOWGzxzznog9Kqw3zV/7c747b631184511eed931057e5db3dd0/Why_we_cannot_wait_for_better_post-quantum_signature_algorithms-OG.png",
       "related_links": [],
       "local_image": "assets/images/news-096.png",
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-091",
@@ -3296,129 +3426,6 @@
       "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40905_61651_5355_v150.jpg",
       "local_image": "assets/images/news-091.jpg",
       "related_links": [],
-      "rank": 48
-    },
-    {
-      "id": "news-090",
-      "title_ko": "테트라멤·SK하이닉스, 멤리스터 기반 인메모리 컴퓨팅 SoC 연구 성과 공개",
-      "title_original": "테트라멤-SK하이닉스, ‘메모리에서 바로 계산’ AI 반도체 구현",
-      "summary": "핵심: 테트라멤과 SK하이닉스가 멤리스터 기반 인메모리 컴퓨팅 SoC로 depthwise convolution을 구현한 공동 연구 성과 공개. 변화: AI 추론의 데이터 이동, 전력, 발열 병목을 줄이는 compute-where-weights-live 구조 검증.",
-      "detail": "테트라멤과 SK하이닉스는 Analog In-Memory Computing 협력 결과로 멤리스터 기반 AI SoC 연구를 공개함. 논문은 Advanced Intelligent Systems 표지 논문으로 선정됐고, 모델 가중치가 저장된 위치에서 연산을 수행해 프로세서-메모리 데이터 이동 병목을 줄이는 접근을 제시함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 테트라멤과 SK하이닉스가 **A-IMC** 공동 기술 협력 완료 공개",
-            "논문: “A Memristor-based In-Memory Computing SoC with Efficient Depthwise Convolution”이 Advanced Intelligent Systems 게재",
-            "평가: 해당 논문이 기술 혁신성과 차세대 AI 컴퓨팅 잠재력을 인정받아 표지 논문 선정"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "문제: foundation model 규모 확대로 프로세서와 메모리 간 데이터 이동이 전력, 지연, 발열의 주요 병목으로 부상",
-            "구조: AI 모델 가중치가 저장된 위치에서 행렬 연산을 수행하는 compute where the AI model weights live 방식",
-            "구현: 현대 AI 추론 워크로드 구성요소인 **depthwise convolution**을 멤리스터 기반 SoC로 구현",
-            "범위: 차세대 메모리 소자, 회로 설계, AI 아키텍처, 소프트웨어·시스템 최적화 통합을 목표로 한 연구"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: GPU/HBM 중심 추론 인프라가 전력·발열 한계에 부딪힐수록 메모리 근접 연산과 인메모리 컴퓨팅 후보가 중요해짐",
-            "산업: SK하이닉스의 메모리 전문성과 테트라멤 A-IMC 플랫폼 결합은 AI 반도체 공급망 다변화 관점에서 의미 있음",
-            "제약: 연구 성과와 양산 칩은 다른 단계이며 정확도, 내구성, 수율, 프로그래밍 모델, 컴파일러 지원 검증 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 인프라 전략팀은 GPU 성능만 보지 말고 메모리 대역폭, 데이터 이동 에너지, 모델 연산 패턴별 accelerator 적합성 비교 필요",
-            "아키텍처: depthwise convolution 등 특정 연산 최적화가 실제 LLM/멀티모달 추론 병목에 얼마나 연결되는지 workload별 측정 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI 데이터센터 전력·냉각·지연 문제가 커지면서 연산을 메모리 가까이 옮기는 반도체 구조가 추론 비용 경쟁의 핵심 후보로 부상함.",
-      "engineering_implication": "AI 인프라팀은 차세대 accelerator 검토 시 TOPS보다 데이터 이동 에너지, compiler/runtime 성숙도, 모델별 연산 매핑, 공급 안정성을 같이 평가 필요.",
-      "category": "Infra",
-      "tags": [
-        "AI Chip",
-        "Semiconductor",
-        "Memory",
-        "Inference",
-        "SK hynix"
-      ],
-      "region": "Korea",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-09 21:21",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40904",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40904_61650_1711_v150.jpg",
-      "local_image": "assets/images/news-090.jpg",
-      "related_links": [],
-      "rank": 49
-    },
-    {
-      "id": "news-097",
-      "title_ko": "CISA, OpenPLC v3 임의 파일 쓰기·native code execution 위험 경고",
-      "title_original": "OpenPLC v3",
-      "summary": "핵심: CISA가 OpenPLC Runtime v3 legacy web UI upload workflow의 authenticated arbitrary file write 취약점 공지. 영향: 공격자가 writable path에 파일을 쓰고 OpenPLC compile flow를 통해 runtime user 권한 code execution으로 확장 가능.",
-      "detail": "핵심: OpenPLC Runtime v3는 legacy web UI program upload 과정에서 attacker-supplied `prog_file` 값을 검증 없이 destination path로 사용해 arbitrary file write가 가능함. CISA는 OpenPLC v3가 end-of-life라 v4 업그레이드를 권고하고, ICS 자산의 인터넷 노출 최소화와 네트워크 분리를 재강조함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: CISA가 OpenPLC v3에 대한 ICS Advisory ICSA-26-190-01 공개",
-            "취약점: legacy web UI program-upload workflow에서 `prog_file` 값을 검증 없이 Programs.File database field와 upload destination path에 사용",
-            "영향: 인증된 공격자가 임의 파일을 쓰고 정상 OpenPLC program compilation 흐름을 통해 native code execution으로 확장 가능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "제품: OpenPLC Runtime v3 대상 취약점이며 v3는 end-of-life 상태임",
-            "섹터: Critical Manufacturing, Energy, Transportation Systems, Water and Wastewater 등 주요 ICS 영역 영향",
-            "원인: Python `os.path.join()`이 공격자 제어 absolute path를 받아 destination path 제한을 우회하는 구조",
-            "조치: OpenPLC는 v4 업그레이드를 권고하며 v3는 패치·버그 수정·보안 업데이트를 받지 않음",
-            "완화: CISA는 control system internet exposure 최소화, firewall 뒤 배치, business network와 control network 분리, VPN 최신화 권고"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: PLC runtime은 실험실·교육·운영 자동화 경계에 쓰일 수 있어 code execution 취약점이 OT network pivot으로 이어질 수 있음",
-            "운영: EOL control software는 CVE 패치가 아니라 버전 교체와 network segmentation으로 위험을 줄여야 하는 대상임"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: OT/ICS 운영팀은 OpenPLC v3 inventory, web UI 노출, 인증 계정, compiler workflow 접근권한을 즉시 점검 필요",
-            "방어: 인터넷 노출 제거, jump host/VPN 경유, control/business network 분리, upgrade to v4 계획 수립 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "ICS 취약점은 인증 후 취약점이라도 현장 네트워크 노출·공용 계정·EOL 소프트웨어와 결합하면 운영 장애 위험이 커짐.",
-      "engineering_implication": "OT 보안팀은 OpenPLC v3 사용 여부와 네트워크 노출을 먼저 확인하고 v4 전환 또는 격리 완화책을 적용 필요.",
-      "korea_implication": "국내 스마트공장·교육용 PLC 실습망도 OpenPLC v3 노출 여부와 EOL 소프트웨어 교체 계획을 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "CISA",
-        "ICS",
-        "OpenPLC",
-        "OT Security",
-        "CVE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-09 21:00",
-      "source_name": "CISA",
-      "source_url": "https://www.cisa.gov/news-events/ics-advisories/icsa-26-190-01",
-      "image_url": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "local_image": "assets/images/fallback-security.svg",
       "rank": 50
     }
   ]

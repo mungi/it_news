@@ -1,7 +1,7 @@
 ---
 title: AI Inference Infrastructure
 created: 2026-07-09
-updated: 2026-07-11
+updated: 2026-07-12
 type: concept
 tags: [ai, infra, inference, semiconductor]
 sources: [raw/articles/nvidia-nemotron-langchain-deep-agents-2026-07-09.md, raw/articles/aitimeskr-deepseek-ai-chip-2026-07-08.md, raw/articles/aitimeskr-samsung-pm1763-ssd-2026-07-08.md, raw/articles/aitimeskr-tetramem-sk-hynix-in-memory-computing-2026-07-09.md]
@@ -64,3 +64,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-11 late refresh: 모델 압축·온디바이스 추론
 - NVIDIA Puzzle-75B 보도는 MoE pruning, 지식 증류, 양자화, MTP가 장문맥 추론 처리량과 GPU 비용을 직접 바꾸는 운영 변수임을 보여줌.
 - PrismML 27B 온디바이스 보도는 cloud-only 추론 전략이 edge/offline/privacy routing과 경쟁하게 됨을 보여줌. 검증 기준은 p95 latency, token/s, thermal budget, 배터리, 품질 회귀임.
+
+## 2026-07-12 refresh: 멀티 모델 오케스트레이션 평가
+- 공동 실패율 연구는 LLM gateway가 vendor 수와 모델 수만 늘려도 정확도가 오르지 않음을 보여줌. 평가 기준은 all-model failure, oracle routing gap, cost per correct answer임.
+- 플랫폼팀은 기존 eval log에서 공동 실패를 집계하고 Clopper-Pearson boundary로 성능 상한을 산출한 뒤 router 개발·단일 최고 모델·비슷한 성능 모델 조합을 비교 필요.

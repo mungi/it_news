@@ -434,3 +434,10 @@
 - Hardened browser and Python validation for data-driven external source/image URLs by rejecting raw or percent-decoded backslashes before URL rendering or JSON acceptance.
 - Updated static CSS/JS cache-busting query strings in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-12] update | Add jscrambler npm supply-chain and model orchestration stories
+- Checked current time at 2026-07-12 07:30 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 770 feed entries, 412 recent entries, and 359 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 2 sourced stories covering compromised jscrambler 8.14.0 npm Rust infostealer and multi-model orchestration co-failure limits. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI agent security and inference concept wiki, and wiki index.
