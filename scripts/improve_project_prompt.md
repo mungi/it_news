@@ -35,10 +35,9 @@ Before committing:
 node --check docs/app.js
 python3 scripts/validate_weekly_news.py
 python3 -m py_compile scripts/validate_weekly_news.py
-python3 -m http.server 8765 --directory docs
 ```
 
-For the server, start it only long enough to verify the site can be served; stop it afterwards. Use browser/terminal checks as available.
+For the server, start `python3 -m http.server 8765 --directory docs` as a tracked background process, verify the site with browser/terminal checks, then stop it. Do not leave the foreground server command hanging in the cron run.
 Remove generated `__pycache__` files before committing, and inspect `git status --short` / `git diff --stat` so unrelated local artifacts are not committed accidentally.
 
 ## Commit and Push

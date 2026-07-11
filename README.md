@@ -153,7 +153,6 @@ docs/
 node --check docs/app.js
 python3 scripts/validate_weekly_news.py
 python3 -m py_compile scripts/validate_weekly_news.py
-python3 -m http.server 8765 --directory docs
 ```
 
-`http.server`는 정적 사이트가 열리는지만 확인하고 중지합니다. `py_compile` 뒤에는 `__pycache__/`가 커밋되지 않도록 `git status --short`를 확인합니다.
+정적 서버 확인이 필요하면 `python3 -m http.server 8765 --directory docs`를 추적 가능한 백그라운드 프로세스로 띄워 브라우저/터미널에서 확인한 뒤 중지합니다. 크론 실행에서 foreground 서버 명령을 그대로 실행해 작업이 멈추지 않도록 합니다. `py_compile` 뒤에는 `__pycache__/`가 커밋되지 않도록 `git status --short`를 확인합니다.
