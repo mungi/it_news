@@ -542,7 +542,7 @@ function safeExternalUrl(value) {
 }
 
 function hasUnsafeUrlWhitespace(value) {
-  return /[\u0000-\u0020\u007f]/.test(value);
+  return /[\s\u0000-\u001f\u007f-\u009f]/u.test(value);
 }
 
 function hasMalformedPercentEscape(value) {

@@ -66,8 +66,11 @@ def has_decoded_url_whitespace(parsed) -> bool:
 
 
 def has_unsafe_url_whitespace(value: str) -> bool:
-    """Reject raw control/whitespace characters before URL parsing normalizes them."""
-    return any(ord(char) <= 0x20 or ord(char) == 0x7F for char in value)
+    """Reject raw control or Unicode whitespace before URL parsing normalizes them."""
+    return any(
+        char.isspace() or ord(char) <= 0x1F or ord(char) == 0x7F or 0x80 <= ord(char) <= 0x9F
+        for char in value
+    )
 
 
 def require_non_empty_string(value: object, label: str, errors: list[str]) -> bool:
