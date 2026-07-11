@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-11 | Total pages: 124
+> Last updated: 2026-07-11 | Total pages: 128
 
 ## Entities
 
@@ -13,6 +13,8 @@
 - [[concepts/ai-agent-security]] — AI 에이전트 보안: 프롬프트 주입, 도구 권한, 샌드박스 격리.
 - [[concepts/ai-infrastructure-energy]] — AI 인프라 전력·비용: 에이전트 추론과 데이터센터 용량.
 
+- [[concepts/ai-scraper-open-web-infrastructure]] — AI 스크레이퍼와 주거용 프록시 트래픽이 개방형 웹 인프라에 주는 운영 비용.
+
 ## Comparisons
 
 ## Queries
@@ -21,7 +23,7 @@
 - [[weekly/2026-W28]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 122건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 127건의 출처 메타데이터와 한국어 브리핑 요약.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.

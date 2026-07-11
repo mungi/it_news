@@ -407,3 +407,10 @@
 - Added explicit thumbnail dimensions and CSS aspect ratios for news and Deep Dive images to reduce layout shifts while images load.
 - Updated static CSS/JS cache-busting query strings in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-11] update | Add AI scraper, on-device inference, and Puzzle model stories
+- Checked current time at 2026-07-11 23:04 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404 in this probe. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 830 feed entries, 428 recent entries, and 379 keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 3 sourced stories covering LWN/GeekNews AI scraper pressure on open web, PrismML 27B on-device inference, and NVIDIA Nemotron Puzzle inference optimization. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.

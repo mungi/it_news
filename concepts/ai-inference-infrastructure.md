@@ -60,3 +60,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-11 업데이트: AI workload placement와 시맨틱 데이터 파이프라인
 - CNCF의 sovereign AI workload 논의는 external API, BYO model hosting, private cloud, on-prem cluster를 workload sensitivity와 compliance 기준으로 배치해야 함을 강조함.
 - fenic은 RAG·agent context 구성을 ad-hoc prompt가 아니라 재실행 가능한 typed DataFrame pipeline으로 운영하는 패턴을 제시함.
+
+## 2026-07-11 late refresh: 모델 압축·온디바이스 추론
+- NVIDIA Puzzle-75B 보도는 MoE pruning, 지식 증류, 양자화, MTP가 장문맥 추론 처리량과 GPU 비용을 직접 바꾸는 운영 변수임을 보여줌.
+- PrismML 27B 온디바이스 보도는 cloud-only 추론 전략이 edge/offline/privacy routing과 경쟁하게 됨을 보여줌. 검증 기준은 p95 latency, token/s, thermal budget, 배터리, 품질 회귀임.
