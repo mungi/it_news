@@ -244,6 +244,8 @@ function renderDeepDives() {
     const img = document.createElement("img");
     img.className = "deep-dive-image";
     img.alt = `${title} 이미지`;
+    img.width = 236;
+    img.height = 192;
     img.loading = "lazy";
     img.decoding = "async";
     img.onerror = () => useFallbackImage(img, "AI");

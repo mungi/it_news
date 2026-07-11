@@ -401,3 +401,9 @@
 - Improved the list/card view radiogroup so ArrowLeft/ArrowRight wrap between choices and Home/End move to the first/last choice while preserving roving `tabindex` state.
 - Updated the `app.js` cache-busting query string in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-11] site | Reserve news thumbnail dimensions
+- Checked current time at 2026-07-11 21:59 KST; no freeze guard was run per current project policy.
+- Added explicit thumbnail dimensions and CSS aspect ratios for news and Deep Dive images to reduce layout shifts while images load.
+- Updated static CSS/JS cache-busting query strings in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.
