@@ -661,6 +661,8 @@ function setViewMode(mode) {
   $("#cardViewButton")?.classList.toggle("active", state.viewMode === "card");
   $("#listViewButton")?.setAttribute("aria-checked", String(state.viewMode === "list"));
   $("#cardViewButton")?.setAttribute("aria-checked", String(state.viewMode === "card"));
+  $("#listViewButton")?.setAttribute("tabindex", state.viewMode === "list" ? "0" : "-1");
+  $("#cardViewButton")?.setAttribute("tabindex", state.viewMode === "card" ? "0" : "-1");
 }
 
 function renderFilters() {

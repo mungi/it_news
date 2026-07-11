@@ -355,3 +355,9 @@
 - Reset the detail modal scroll position each time a news card or Deep Dive opens, preventing a previously scrolled modal from reopening midway through content.
 - Updated the `app.js` cache-busting query string in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-11] site | Improve view-toggle keyboard focus
+- Checked current time at 2026-07-11 09:36 KST; no freeze guard was run per current project policy.
+- Added roving `tabindex` state to the 목록 보기/카드 보기 radiogroup so only the active view toggle is in the normal tab order while Arrow/Home/End navigation remains supported.
+- Updated the `app.js` cache-busting query string in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.
