@@ -387,3 +387,11 @@
 - Localized the visible original-title prefix from `Original:` to `원문 제목:` in news cards and regular news modals while preserving original titles from the data file.
 - Updated the `app.js` cache-busting query string in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## 2026-07-11 18:59 KST - 자동 주간 뉴스 업데이트
+
+- 피드 후보 검토: /tmp/probe_feeds.py 기준 2,358개 엔트리, 최근 7일 286개, 관련 후보 266개.
+- 신규 반영: Ghostcommit 이미지 프롬프트 주입, Zimbra Classic Web Client 저장 XSS.
+- 유지 정책: 기존 데이터에 신규 후보를 더한 뒤 최신 발행순으로 정렬하고 50건 상한을 유지.
+- 결과: docs/data/weekly-news.json 50건, Deep Dive 2건으로 갱신.
+- 검증: `python3 scripts/validate_weekly_news.py` 통과 (`weekly-news validation passed: 50 items, 2 deep dives`).

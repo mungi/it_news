@@ -2,14 +2,14 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-11 14:44",
+  "last_updated_kst": "2026-07-11 19:04",
   "audience": "developers and engineers",
   "executive_summary": [
+    "AI 에이전트 보안 경계 확대: Ghostcommit 이미지 프롬프트 주입, Cursor Sand, fenic, AWS DMS MCP가 agent runtime의 입력·권한·데이터 경계를 재정의.",
+    "엔터프라이즈 보안 패치 압박: Zimbra 저장 XSS, ShareFile controller shutdown, U-Boot 결함, passkey phishing이 edge·identity·firmware 점검을 요구.",
     "AI 하드웨어·피지컬 AI 확산: Apple-OpenAI 소송, Broadcom 공급계약, Qwen 하드웨어 채택이 IP·부품·edge 배포 리스크로 연결.",
-    "에이전트 업무 범위 확대: fenic, Cursor Sand, AWS DMS MCP가 개발·데이터·사무 workflow를 agent runtime으로 이동.",
     "AI 인프라 배치 기준 재정의: CNCF sovereign AI, NVIDIA 메모리 최적화, 영국 ACTS가 workload placement와 simulation platform 설계를 압박.",
-    "펌웨어·파일공유 edge 보안 경보: U-Boot 결함과 ShareFile controller shutdown 권고가 OS 아래 계층과 인터넷 노출 서버 점검 요구.",
-    "Supply-chain·identity 통제 강화: npm/GitHub 침해, passkey phishing, Lightwell, Cloudflare ML-DSA가 credential·registry·암호 전환 과제를 확대."
+    "Supply-chain 통제 강화: npm/GitHub 침해, Lightwell, Cloudflare ML-DSA가 credential·registry·암호 전환 과제를 확대."
   ],
   "deep_dives": [
     {
@@ -185,6 +185,137 @@
   ],
   "items": [
     {
+      "id": "news-132",
+      "title_ko": "Ghostcommit, 이미지 파일에 숨긴 프롬프트 주입으로 AI 코딩 에이전트의 비밀 정보 유출 가능성 제기",
+      "title_original": "'Ghostcommit' hides prompt injection in images to fool AI agents, steal secrets",
+      "summary": "BleepingComputer는 연구진이 PNG 이미지 안에 프롬프트 주입을 숨겨 AI 코드 리뷰 도구와 코딩 에이전트를 속이는 'Ghostcommit' 기법을 시연했다고 보도했다. 보도에 따르면 CodeRabbit과 Bugbot은 이미지 내용을 열어보지 못했고, 이후 코딩 에이전트가 저장소의 .env를 읽어 비밀 값을 파일에 기록하도록 유도됐다.",
+      "detail": "Ghostcommit은 텍스트 프롬프트만이 아니라 이미지·첨부 파일·리포지터리 자산도 에이전트 입력 경계가 된다는 점을 보여준다. 공격자는 코드 변경 자체보다 이미지 안의 지시문을 이용해 리뷰 단계를 통과하고, 이후 더 높은 권한을 가진 코딩 에이전트가 비밀 파일을 읽거나 결과물을 커밋하도록 만들 수 있다. 현재 공개 보도는 연구 시연 수준이지만, 이미지 diff를 사람과 도구가 별도로 검토하지 않는 CI·코드리뷰 환경에서는 비밀 스캔, 바이너리/이미지 검증, 에이전트 파일 접근 denylist가 필요하다.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "BleepingComputer 보도에 따르면 연구진은 PNG 파일 안에 프롬프트 주입을 숨겨 AI 코드 리뷰와 코딩 에이전트 흐름을 우회하는 Ghostcommit 기법을 시연했다.",
+          "items": [
+            "미끼는 코드가 아니라 이미지 파일이었고, 일부 AI 코드 리뷰 도구는 이미지 내용을 열람·해석하지 못한 것으로 보도됐다.",
+            "보도는 CodeRabbit과 Bugbot이 이미지 파일의 숨은 지시를 탐지하지 못했고, 이후 코딩 에이전트가 저장소의 .env를 읽도록 유도됐다고 설명한다.",
+            "공격 목표는 모델 답변 조작보다 개발 저장소 안의 비밀 정보, 설정, 산출물 파일로 이어지는 에이전트 실행 경로다."
+          ]
+        },
+        {
+          "heading": "기술적 의미",
+          "body": "에이전트 보안 경계는 prompt textarea가 아니라 repository 전체, 첨부 파일, 이미지, 문서, diff metadata까지 포함한다. 코드 리뷰 봇과 코딩 에이전트가 서로 다른 입력 가시성을 가지면 한 단계에서 보이지 않는 지시가 다음 단계 실행 권한으로 넘어갈 수 있다.",
+          "items": [
+            "이미지·바이너리·문서 파일도 untrusted input으로 분류하고 OCR/metadata/embedded text 검사를 적용해야 한다.",
+            "코딩 에이전트는 .env, SSH 키, cloud credential, package token 등 민감 경로 읽기를 기본 차단해야 한다.",
+            "리뷰 도구가 보지 못한 파일 유형은 자동 승인·자동 머지 조건에서 제외하는 정책이 필요하다."
+          ]
+        },
+        {
+          "heading": "개발팀 영향",
+          "body": "AI 코드 리뷰와 에이전트 자동 수정을 운영하는 팀은 비밀 스캔과 승인 정책을 텍스트 diff 중심에서 파일 유형·권한 중심으로 바꿔야 한다.",
+          "items": [
+            "PR에 이미지·문서·압축 파일이 포함되면 별도 보안 검토나 샌드박스 분석을 요구한다.",
+            "에이전트 실행 계정은 read-only clone과 임시 credential을 사용하고, 작업 후 workspace를 폐기한다.",
+            "에이전트가 생성한 파일에 secret-like pattern이 포함되면 commit·artifact 업로드 전에 차단한다."
+          ]
+        },
+        {
+          "heading": "운영 체크리스트",
+          "body": "즉시 적용할 통제는 파일 접근 최소화, 출력물 비밀 스캔, 이미지/첨부 파일 검사, 에이전트 로그 감사다.",
+          "items": [
+            ".env, ~/.ssh, cloud config, package registry token 경로를 denylist로 둔다.",
+            "이미지 OCR 또는 파일 유형별 보안 게이트를 PR workflow에 넣는다.",
+            "AI 리뷰가 보지 못한 파일 유형은 사람 승인 없이는 merge하지 않는다.",
+            "에이전트 tool-call 로그에 파일 읽기·쓰기 경로와 결과 artifact 목록을 남긴다."
+          ]
+        }
+      ],
+      "why_it_matters": "AI 코드 리뷰와 코딩 에이전트가 개발자의 저장소·비밀 파일·CI 권한을 공유하면 이미지 하나도 공급망 공격 입력이 될 수 있다.",
+      "engineering_implication": "PR 파일 유형별 검증, 이미지 OCR/metadata 검사, secret denylist, 에이전트 읽기 권한 제한, output secret scanning을 자동화해야 한다.",
+      "category": "Security",
+      "tags": [
+        "AI Agent",
+        "Security",
+        "Prompt Injection",
+        "DevTools",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-07-11 18:03",
+      "source_name": "BleepingComputer",
+      "source_url": "https://www.bleepingcomputer.com/news/security/ghostcommit-hides-prompt-injection-in-images-to-fool-ai-agents-steal-secrets/",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [],
+      "rank": 1
+    },
+    {
+      "id": "news-133",
+      "title_ko": "Zimbra Classic Web Client 저장 XSS 취약점, crafted email 열람만으로 세션 내 악성 코드 실행 가능",
+      "title_original": "Critical Zimbra Flaw Could Let Crafted Emails Run Malicious Code in User Sessions",
+      "summary": "The Hacker News는 Zimbra가 Classic Web Client의 critical 저장 XSS 취약점을 수정하라고 고객에게 권고했다고 보도했다. 특수 제작 이메일을 열면 사용자 세션에서 악성 스크립트가 실행돼 mailbox 정보, session data, account setting 접근으로 이어질 수 있으며, 보도 시점에는 CVE가 아직 배정되지 않았다.",
+      "detail": "이번 취약점은 메일 본문이 영구 저장되는 저장 XSS 경로를 통해 발생한다. 관리자가 Zimbra Collaboration Suite 10.1.19로 업데이트하지 않으면 사용자가 악성 메일을 여는 것만으로 브라우저 세션 안에서 JavaScript가 실행될 수 있다. 이메일 서버는 인증, 주소록, 파일 첨부, SSO와 연결되는 경우가 많아 메일 클라이언트 취약점이 계정 탈취와 내부 피싱 확산으로 이어질 수 있다.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Zimbra는 Classic Web Client에서 특수 제작 이메일이 열릴 때 악성 코드가 사용자 세션에서 실행될 수 있는 보안 문제를 수정했다. The Hacker News는 해당 문제가 저장 XSS이며 보도 시점에는 CVE가 배정되지 않았다고 설명했다.",
+          "items": [
+            "영향 범위는 Zimbra Collaboration Suite의 Classic Web Client 사용 환경이다.",
+            "공격자는 crafted email을 통해 악성 JavaScript를 사용자 브라우저 세션에서 실행할 수 있다.",
+            "Zimbra는 최적 보호를 위해 10.1.19 업데이트 적용을 권고했다."
+          ]
+        },
+        {
+          "heading": "위험 시나리오",
+          "body": "저장 XSS는 서버에 저장된 콘텐츠가 사용자의 브라우저에서 반복 실행되는 구조라 메일 서비스에서 피해 범위가 커질 수 있다.",
+          "items": [
+            "메일함 정보, session data, account setting 접근 위험이 보도됐다.",
+            "관리자·헬프데스크 계정이 Classic Web Client를 사용하면 계정 장악 후 내부 피싱이나 설정 변경으로 확장될 수 있다.",
+            "메일 보안 장비가 본문 rendering 단계의 JavaScript 위험을 완전히 차단하지 못하면 사용자 열람 행위가 트리거가 된다."
+          ]
+        },
+        {
+          "heading": "운영 영향",
+          "body": "Zimbra를 자체 운영하는 조직은 인터넷 노출 메일 시스템을 우선 패치해야 한다. 웹메일은 외부 메일을 직접 처리하는 경계 서비스라 일반 업무 앱보다 패치 지연 비용이 크다.",
+          "items": [
+            "Zimbra Collaboration Suite 10.1.19 적용 여부를 확인한다.",
+            "Classic Web Client 사용 조직은 패치 전까지 고위험 사용자와 관리자 계정의 웹메일 사용을 제한한다.",
+            "WAF·메일 보안 장비 로그에서 의심 HTML/스크립트 패턴과 비정상 계정 설정 변경을 확인한다."
+          ]
+        },
+        {
+          "heading": "체크리스트",
+          "body": "패치와 함께 세션·계정 변경 로그를 확인해야 한다. 저장 XSS는 메일 열람 후 계정 설정 변경이나 세션 탈취로 이어질 수 있다.",
+          "items": [
+            "패치 버전과 적용 시간을 CMDB·변경 이력에 기록한다.",
+            "패치 전후 관리자 로그인, forwarding rule, app password, recovery setting 변경을 점검한다.",
+            "의심 메일을 격리하고 동일 sender·subject·HTML 구조를 조직 전체에서 검색한다.",
+            "사용자에게 웹메일 재로그인과 세션 무효화를 안내한다."
+          ]
+        }
+      ],
+      "why_it_matters": "Zimbra는 자체 호스팅 메일 환경에서 널리 쓰이며, 웹메일 XSS는 단순 UI 결함이 아니라 세션·메일함·계정 설정 탈취 경로가 될 수 있다.",
+      "engineering_implication": "Zimbra 10.1.19 적용, Classic Web Client 사용 제한, 의심 메일 격리, 세션 무효화, forwarding/app-password 변경 로그 점검을 우선순위로 둬야 한다.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Zimbra",
+        "Email Security",
+        "XSS",
+        "Patch"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-11 15:45",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
+      "related_links": [],
+      "rank": 2
+    },
+    {
       "id": "news-124",
       "title_ko": "Apple, OpenAI와 전직 임원 상대로 영업비밀 탈취 소송 제기",
       "title_original": "Apple sues OpenAI, accuses ex-employees of stealing trade secrets",
@@ -253,7 +384,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-125",
@@ -325,7 +456,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-126",
@@ -387,7 +518,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-127",
@@ -454,7 +585,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-120",
@@ -525,7 +656,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-122",
@@ -587,7 +718,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-121",
@@ -649,7 +780,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-117",
@@ -712,7 +843,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-128",
@@ -778,7 +909,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-123",
@@ -840,7 +971,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-115",
@@ -902,7 +1033,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-116",
@@ -965,7 +1096,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-118",
@@ -1030,7 +1161,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-129",
@@ -1092,7 +1223,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-109",
@@ -1156,7 +1287,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-130",
@@ -1218,7 +1349,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-131",
@@ -1280,7 +1411,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-104",
@@ -1342,7 +1473,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-105",
@@ -1404,7 +1535,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-119",
@@ -1467,7 +1598,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-106",
@@ -1529,7 +1660,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-107",
@@ -1591,7 +1722,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-108",
@@ -1653,69 +1784,7 @@
           ]
         }
       ],
-      "rank": 23
-    },
-    {
-      "id": "news-132",
-      "title_ko": "Apple, Broadcom과 300억 달러 규모 미국 반도체 공급 계약 확대",
-      "title_original": "애플, 브로드컴에 45조원 추가 투자… AI 시대, 기술 주도권 확보 위한 전략적 투자",
-      "summary": "핵심: Apple이 Broadcom과 **300억 달러** 이상 규모 다년 공급 계약을 체결하고 미국 내 150억 개 이상 반도체 생산을 추진. 영향: AI 기기 경쟁은 모델뿐 아니라 RF·무선 연결 부품, 미국 내 제조 CAPEX, 공급망 회복탄력성 경쟁으로 이어짐.",
-      "detail": "AI Times KR 보도에 따르면 Apple은 맞춤형 실리콘과 차세대 무선 연결 기술 개발·생산을 위한 장기 협력 계약을 Broadcom과 체결. Broadcom은 Colorado Fort Collins 시설 확장을 위해 15억 달러 CAPEX를 투입하고 FBAR 필터 등 핵심 무선통신 부품 생산을 확대할 계획임.",
-      "why_it_matters": "AI 디바이스와 edge inference 제품은 NPU/GPU만으로 완성되지 않음. 무선 연결 품질, RF 필터, 미국 내 공급망, 장기 부품 조달 안정성이 제품 출시와 지역 규제 대응을 좌우함.",
-      "engineering_implication": "하드웨어·플랫폼 조직은 AI 기능 로드맵과 함께 RF component, connectivity latency, supplier concentration, regional manufacturing, BOM risk를 capacity planning에 포함해야 함.",
-      "category": "Infra",
-      "tags": [
-        "Apple",
-        "Broadcom",
-        "Semiconductor",
-        "Supply Chain",
-        "Edge AI"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 80,
-      "published_kst": "2026-07-10 14:07",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40929",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40929_61682_547_v150.jpg",
-      "local_image": "assets/images/news-132.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Apple이 Broadcom과 **300억 달러** 이상 규모 신규 다년간 공급 계약 체결",
-            "생산 계획: 향후 수년간 미국산 반도체 150억 개 이상 생산 계획 공개",
-            "시설 투자: Broadcom이 Colorado Fort Collins 제조시설 확장에 15억 달러 CAPEX 투입 예정"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "기술 범위: 맞춤형 실리콘과 차세대 무선 연결 기술 개발·생산을 위한 장기 협력",
-            "부품 초점: Apple 제품의 무선 통신 성능을 좌우하는 FBAR 필터 생산 확대 언급",
-            "정책 맥락: Apple American Manufacturing Program의 최대 규모 투자로 소개",
-            "공급망 의미: 지정학적 리스크와 공급망 재편 속에서 핵심 반도체 생산 역량을 미국 내로 집중하는 전략"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "AI 기기 병목: on-device AI 경험은 모델뿐 아니라 무선 연결 품질, 센서 데이터 전송, edge/cloud handoff 안정성에 좌우됨",
-            "제조 리스크: 장기 부품 계약과 CAPEX는 제품 로드맵, 지역 규제, 수급 충격 대응 능력에 직접 연결",
-            "플랫폼 경쟁: Apple의 AI 디바이스 전략은 자체 실리콘, RF 부품, 제조 생태계 통제가 결합된 형태로 전개 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: edge AI 제품 로드맵은 accelerator 성능표와 함께 RF/BOM 공급 안정성, 부품 lead time, regional manufacturing risk를 같이 관리 필요",
-            "검토 항목: 무선 연결 부품, sensor pipeline, on-device inference, cloud fallback 사이의 latency budget 재검토 필요",
-            "운영 과제: 특정 공급업체 의존도가 높은 부품은 대체 소싱, inventory policy, firmware 호환성 검증 계획 필요"
-          ]
-        }
-      ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-110",
@@ -1779,7 +1848,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-111",
@@ -1844,7 +1913,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-112",
@@ -1908,11 +1977,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-100",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "Tencent Hy3 공개, Apache 2.0 오픈소스 모델로 에이전트·업무 작업 비용 경쟁 가세",
       "title_original": "Tencent, 오픈소스 모델 Hy3 공개",
       "summary": "핵심: Tencent Hy3는 Apache 2.0 공개 모델로 270명 전문가 블라인드 평가 2.67/4, GLM-5.1 2.51/4를 제시하며 업무·에이전트 작업 성능을 강조. 비용: API 가격은 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 공개되어 모델 라우팅과 추론 단가 비교 대상 추가.",
@@ -1988,7 +2057,7 @@
     },
     {
       "id": "news-101",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Microsoft Flint 공개, AI 에이전트용 차트 중간 언어와 MCP 서버 제공",
       "title_original": "Microsoft, AI 에이전트용 시각화 언어 Flint 공개",
       "summary": "핵심: Microsoft Research Flint는 AI 에이전트가 짧고 사람이 편집 가능한 명세로 차트를 만들도록 돕는 시각화 중간 언어임. 범위: 46개 차트 유형, 83개 갤러리 예제, Vega-Lite·ECharts·Chart.js 렌더링, TypeScript/JavaScript npm 설치와 MCP 서버 제공.",
@@ -2125,11 +2194,11 @@
           "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work/"
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-102",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "AWS MCP Server, OAuth 지원으로 AI 에이전트와 AWS Sign-In 직접 연결",
       "title_original": "OAuth support for the AWS MCP Server",
       "summary": "핵심: AWS MCP Server가 AWS Sign-In 기반 OAuth를 지원해 AI 에이전트가 추가 인증 소프트웨어 없이 AWS 계정 권한으로 연결 가능. 관리: IAM 정책, global condition keys, token introspection/revocation API, dynamic client registration, CloudTrail audit events로 OAuth 접근 통제 가능.",
@@ -2191,7 +2260,7 @@
     },
     {
       "id": "news-103",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "CNCF, ingress-NGINX 은퇴 전환 안내…Kubernetes Ingress API와 컨트롤러 수명주기 분리 필요",
       "title_original": "Navigating the ingress-NGINX retirement",
       "summary": "핵심: CNCF는 Kubernetes Ingress API가 은퇴하는 것이 아니라 ingress-NGINX 컨트롤러 프로젝트 수명주기 전환이 이슈라고 설명. 영향: 운영팀은 Ingress 리소스 자체보다 컨트롤러 구현체, 보안 패치, Gateway API 전환 경로, vendor 지원 상태를 분리해 점검 필요.",
@@ -2317,7 +2386,7 @@
           "url": "https://kb.cert.org/vuls/id/213560"
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-092",
@@ -2378,7 +2447,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiDslymdYqhkFwIm3ZeaXVZweYVT_R1d6LCQhIm799y9-5hQ3C45cumIStxGYheFbwosbd_JtrB6FgOthR2KJgfe8PYs0k47eGV7263ATac5UR0t7OOaqOUGOf5DHAR4b0IaKTozk0UEiHJz5-nze3b1ureycPGqdPVlqrImWreOWwMpGxC8kgBvONCLGbH/s1600/github-ghost.jpg",
       "related_links": [],
       "local_image": "assets/images/news-092.jpg",
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-093",
@@ -2440,7 +2509,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhbP2w2lzNWbB041oSXvx2Nb1uOJaf81XNUBioDv_3K73S-JnzIU4OnUHfwG3Q3RLbf_p2wJBpHC0m2M4cQhCMfcSRRx1MY9n2vCVSNI4ddai3uJ3eE2Kb-d_ryU_HSEx_R2Rjoxz2D3TBcZCgLRWf-rOBf9k73Vi1Q04aWNG9Ux-A5AOf-v1HjSGD3YZcg/s1600/npm-security.jpg",
       "related_links": [],
       "local_image": "assets/images/news-093.jpg",
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-094",
@@ -2503,7 +2572,7 @@
       "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/sandbox_blog_hero_image.max-2500x2500.jpg",
       "related_links": [],
       "local_image": "assets/images/news-094.jpg",
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-095",
@@ -2563,7 +2632,7 @@
       "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-invertocat-mona-logo.png",
       "related_links": [],
       "local_image": "assets/images/news-095.png",
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-113",
@@ -2627,7 +2696,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-114",
@@ -2691,7 +2760,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-088",
@@ -2756,71 +2825,6 @@
         {
           "title": "Mistral original source",
           "url": "https://mistral.ai/news/robostral-navigate/"
-        }
-      ],
-      "rank": 40
-    },
-    {
-      "id": "news-089",
-      "title_ko": "Cloudflare Drop, 정적 사이트 폴더·ZIP을 즉시 글로벌 네트워크에 올리는 미리보기 서비스 공개",
-      "title_original": "Cloudflare Drop",
-      "summary": "핵심: Cloudflare Drop은 HTML·CSS·JS 정적 사이트 폴더나 ZIP을 올리면 몇 초 안에 Cloudflare 글로벌 네트워크에서 확인하는 서비스임. 볼 것: 빠른 공유·프로토타입 배포에는 유용하지만 업로드 콘텐츠 약관과 임시 배포 거버넌스 확인 필요.",
-      "detail": "Cloudflare Drop은 정적 사이트 파일을 브라우저에서 업로드해 별도 배포 절차 없이 Cloudflare 네트워크에서 즉시 라이브로 확인하게 하는 서비스임. GeekNews/HN 논의에서는 마찰 감소 효과와 함께 콘텐츠 라이선스·악성 콘텐츠 호스팅·내부 자료 업로드 통제 문제가 함께 제기됨.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: **Cloudflare Drop**이 폴더 또는 ZIP 업로드로 정적 사이트를 바로 실행하는 흐름 제공",
-            "대상: HTML, CSS, JS로 구성된 정적 웹사이트 파일 대상",
-            "결과: 업로드한 사이트가 Cloudflare 글로벌 네트워크에서 몇 초 안에 라이브 상태로 표시됨"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "사용 방식: Browse folders 또는 Browse zips로 로컬 정적 사이트를 업로드하는 단순 흐름임",
-            "목적: 정식 CI/CD 배포 전 결과물을 빠르게 공유하거나 미리 확인하는 용도에 적합",
-            "비교: HN 논의에서 Netlify Drop, BitBalloon, 오래된 FTP/정적 호스팅과 유사한 UX라는 의견 제기",
-            "약관 논점: 제출·게시 콘텐츠와 피드백에 대한 광범위한 라이선스 조항을 문제 삼는 댓글 다수 확인"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 프론트엔드 프로토타입, 문서 사이트, 데모 페이지 공유의 배포 마찰을 낮추는 개발자 도구 흐름임",
-            "리스크: 내부 자료, 고객 데이터, 미공개 디자인 파일이 임시 호스팅 경로로 유출될 수 있는 운영 리스크 존재",
-            "보안: 무료·즉시 호스팅이 phishing 또는 악성 정적 사이트 배포의 마찰도 낮출 수 있어 탐지 정책 검토 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 조직은 임시 배포 서비스 사용 기준, 업로드 금지 데이터, 외부 링크 공유 만료 정책을 문서화 필요",
-            "플랫폼: preview deployment는 편하지만 GitHub Pages/Workers/Pages 등 기존 배포 경로와 감사 로그·권한 모델 비교 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "정적 사이트 미리보기 배포는 개발 속도를 높이지만, 기업 환경에서는 임시 URL과 업로드 자료가 보안·컴플라이언스 통제 밖으로 나가기 쉬움.",
-      "engineering_implication": "플랫폼팀은 Drop류 도구를 허용할 경우 업로드 가능 데이터, 만료/삭제 절차, 도메인 차단·탐지 기준, 공식 preview 배포 대안을 함께 제공 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloudflare",
-        "Static Site",
-        "DevTools",
-        "Cloud"
-      ],
-      "region": "Global",
-      "importance": "medium",
-      "score": 76,
-      "published_kst": "2026-07-09 23:33",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31270",
-      "image_url": "https://social.news.hada.io/topic/31270",
-      "local_image": "assets/images/news-089.jpg",
-      "related_links": [
-        {
-          "title": "Cloudflare Drop",
-          "url": "https://www.cloudflare.com/drop/"
         }
       ],
       "rank": 41
