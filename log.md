@@ -395,3 +395,9 @@
 - 유지 정책: 기존 데이터에 신규 후보를 더한 뒤 최신 발행순으로 정렬하고 50건 상한을 유지.
 - 결과: docs/data/weekly-news.json 50건, Deep Dive 2건으로 갱신.
 - 검증: `python3 scripts/validate_weekly_news.py` 통과 (`weekly-news validation passed: 50 items, 2 deep dives`).
+
+## [2026-07-11] site | Improve view-toggle keyboard navigation
+- Checked current time at 2026-07-11 19:55 KST; no freeze guard was run per current project policy.
+- Improved the list/card view radiogroup so ArrowLeft/ArrowRight wrap between choices and Home/End move to the first/last choice while preserving roving `tabindex` state.
+- Updated the `app.js` cache-busting query string in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.

@@ -648,11 +648,21 @@ function focusMainContent(event) {
 
 function handleViewToggleKeydown(event) {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  const buttons = [$("#listViewButton"), $("#cardViewButton")].filter(Boolean);
+  if (!buttons.length) return;
   event.preventDefault();
-  const nextMode = event.key === "ArrowRight" || event.key === "End" ? "card" : "list";
+
+  const currentIndex = Math.max(0, buttons.indexOf(event.target));
+  const lastIndex = buttons.length - 1;
+  let nextIndex = currentIndex;
+  if (event.key === "Home") nextIndex = 0;
+  if (event.key === "End") nextIndex = lastIndex;
+  if (event.key === "ArrowLeft") nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+  if (event.key === "ArrowRight") nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+
+  const nextMode = buttons[nextIndex]?.id === "cardViewButton" ? "card" : "list";
   setViewMode(nextMode);
-  const target = nextMode === "card" ? $("#cardViewButton") : $("#listViewButton");
-  target?.focus();
+  buttons[nextIndex]?.focus();
 }
 
 function setViewMode(mode) {
