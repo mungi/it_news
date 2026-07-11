@@ -237,8 +237,8 @@ function renderDeepDives() {
     const title = item.title || "Deep Dive";
     div.className = "deep-dive";
     div.tabIndex = 0;
-    div.setAttribute("role", "button");
     div.setAttribute("aria-label", `${title} 상세 보기`);
+    div.setAttribute("aria-roledescription", "상세 보기 카드");
 
     const imageWrap = document.createElement("div");
     imageWrap.className = "deep-dive-image-wrap";
