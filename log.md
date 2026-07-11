@@ -414,3 +414,9 @@
 - Reviewed 830 feed entries, 428 recent entries, and 379 keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
 - Added 3 sourced stories covering LWN/GeekNews AI scraper pressure on open web, PrismML 27B on-device inference, and NVIDIA Nemotron Puzzle inference optimization. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, concept wiki, and wiki index.
+
+## [2026-07-12] site | Harden JSON number validation
+- Checked current time at 2026-07-12 00:02 KST; no freeze guard was run per current project policy.
+- Hardened `scripts/validate_weekly_news.py` so non-standard JSON constants (`NaN`, `Infinity`, `-Infinity`) are rejected during parsing.
+- Tightened score validation to require finite numeric values while continuing to reject bool-as-int edge cases.
+- No real news content, source URLs, timestamps, or images were altered.

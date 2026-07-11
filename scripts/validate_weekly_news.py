@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import sys
 from datetime import datetime
@@ -93,8 +94,8 @@ def is_positive_int(value: object) -> bool:
 
 
 def is_score_number(value: object) -> bool:
-    """Return True for numeric scores while rejecting bool-as-int edge cases."""
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    """Return True for finite numeric scores while rejecting bool-as-int edge cases."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
 def is_valid_week(value: str) -> bool:
@@ -281,6 +282,11 @@ def validate_deep_dive_content(value: object, prefix: str, errors: list[str]) ->
             errors.append(f"{prefix} detailed_content missing {description} (heading containing '{keyword}')")
 
 
+def reject_json_constant(value: str) -> None:
+    """Reject non-standard JSON constants such as NaN and Infinity."""
+    raise ValueError(f"non-standard JSON constant: {value}")
+
+
 def main() -> int:
     errors: list[str] = []
     if not DATA.exists():
@@ -288,7 +294,7 @@ def main() -> int:
         return 1
 
     try:
-        data = json.loads(DATA.read_text(encoding="utf-8"))
+        data = json.loads(DATA.read_text(encoding="utf-8"), parse_constant=reject_json_constant)
     except Exception as exc:
         print(f"ERROR: invalid JSON: {exc}")
         return 1
