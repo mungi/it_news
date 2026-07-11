@@ -374,3 +374,10 @@
 - Localized remaining Deep Dive modal metadata and badge labels (`Deep Dive`, `Summary`) to Korean UI labels while preserving data values.
 - Updated the `app.js` cache-busting query string in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-11] update | Add AI combat training, Qwen hardware, Cursor Sand, and Apple-Broadcom stories
+- Checked current time at 2026-07-11 14:44 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 1,112 feed entries and 318 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 4 sourced stories covering UK MOD ACTS AI combat training, Alibaba Qwen smart-hardware adoption, Cursor Sand enterprise agent, and Apple-Broadcom semiconductor supply-chain expansion. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, physical AI and AI-agent concept wiki, and wiki index.

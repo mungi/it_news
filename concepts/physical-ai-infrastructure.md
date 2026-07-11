@@ -1,7 +1,7 @@
 ---
 title: Physical AI Infrastructure
 created: 2026-07-06
-updated: 2026-07-10
+updated: 2026-07-11
 type: concept
 tags: [ai, infra, korea, semiconductor, edge]
 sources: [raw/articles/news-032-ai-times-kr-samsung-physical-ai-cluster.md, raw/articles/geeknews-mistral-robostral-navigate-2026-07-10.md, raw/articles/aitimeskr-sk-ax-manufacturing-rx-2026-07-09.md]
@@ -28,3 +28,7 @@ confidence: medium
 - Anthropic·UST 협력은 Claude를 반도체 검증, 제조 공정, 통신 네트워크, 의료·금융 운영 환경에 넣는 피지컬 AI 사례임.
 - UST iDEC은 closed-loop 검증으로 4일 이상 걸리던 작업을 약 48시간 수준으로 줄이고 검증 주기를 50~70% 단축한 성과를 제시함.
 - 제조·반도체 AI PoC는 시간 단축률뿐 아니라 defect escape, simulation parity, 장비 로그 검증, 승인 게이트, rollback 가능성을 함께 측정 필요.
+
+## 2026-07-11 refresh
+- Alibaba Qwen의 중국 스마트 하드웨어 제조사 15만 곳 이상 채택 보도는 피지컬 AI 확산이 모델 API보다 OEM 생태계, 멀티모달 I/O, edge 배포 옵션에 좌우됨을 보여줌.
+- 영국 국방부 ACTS 계약은 AI·데이터 분석·가상 시뮬레이션을 결합한 대규모 훈련 플랫폼 사례임. 국방·제조·재난대응 조직은 scenario versioning, telemetry schema, operator feedback loop, audit log를 함께 설계 필요.
