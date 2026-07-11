@@ -381,3 +381,9 @@
 - Reviewed 1,112 feed entries and 318 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 4 sourced stories covering UK MOD ACTS AI combat training, Alibaba Qwen smart-hardware adoption, Cursor Sand enterprise agent, and Apple-Broadcom semiconductor supply-chain expansion. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, physical AI and AI-agent concept wiki, and wiki index.
+
+## [2026-07-11] site | Localize original-title UI label
+- Checked current time at 2026-07-11 17:51 KST; no freeze guard was run per current project policy.
+- Localized the visible original-title prefix from `Original:` to `원문 제목:` in news cards and regular news modals while preserving original titles from the data file.
+- Updated the `app.js` cache-busting query string in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.

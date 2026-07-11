@@ -355,7 +355,7 @@ function renderCards() {
     const badges = node.querySelector(".badges");
     [item.category, item.region, item.importance].filter(Boolean).forEach((value) => badges.appendChild(makeBadge(value)));
     node.querySelector("h3").textContent = item.title_ko || item.title_original || "제목 없음";
-    node.querySelector(".original-title").textContent = item.title_original ? `Original: ${item.title_original}` : "";
+    node.querySelector(".original-title").textContent = item.title_original ? `원문 제목: ${item.title_original}` : "";
     setRichText(node.querySelector(".summary"), item.summary || "");
     setRichText(node.querySelector(".why"), item.why_it_matters ? `왜 중요한가: ${item.why_it_matters}` : "");
     node.querySelector(".read-state").textContent = isRead(item) ? "읽음" : "";
@@ -451,7 +451,7 @@ function openModal(item) {
   img.onerror = () => useFallbackImage(img, item.category);
   img.src = imageFor(item);
   setModalTitleLink(item.title_ko || item.title_original || "제목 없음", item.source_url);
-  $("#modalOriginal").textContent = item.title_original ? `Original: ${item.title_original}` : "";
+  $("#modalOriginal").textContent = item.title_original ? `원문 제목: ${item.title_original}` : "";
   setRichText($("#modalSummary"), item.summary || "");
   renderRichDetail($("#modalDetail"), itemDetailSections(item), item.detail || item.summary || "");
   setRichText($("#modalWhy"), item.why_it_matters || "");
