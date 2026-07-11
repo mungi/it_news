@@ -88,6 +88,8 @@ function displayLabel(value) {
     high: "높음",
     medium: "보통",
     low: "낮음",
+    "Deep Dive": "딥다이브",
+    Summary: "요약",
   };
   return labels[value] || value;
 }
@@ -476,7 +478,7 @@ function openDeepDiveModal(item) {
   img.src = deepDiveImageFor(item);
 
   setModalTitleLink(item.title || "Deep Dive", (item.sources || [])[0]);
-  $("#modalOriginal").textContent = "Deep Dive";
+  $("#modalOriginal").textContent = "딥다이브";
   setRichText($("#modalSummary"), item.summary || "");
   renderRichDetail($("#modalDetail"), item.detailed_content, item.details || item.summary || "");
   setRichText($("#modalWhy"), item.why_it_matters || "");

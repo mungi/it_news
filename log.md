@@ -368,3 +368,9 @@
 - Reviewed 2,593 feed entries and 225 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 5 sourced stories covering Apple-OpenAI trade-secret litigation, fenic Semantic DataFrames, CNCF sovereign AI workload placement, U-Boot firmware flaws, and ShareFile Storage Zone Controller emergency shutdown guidance. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, concept wiki, and wiki index.
+
+## [2026-07-11] site | Localize Deep Dive modal labels
+- Checked current time at 2026-07-11 11:41 KST; no freeze guard was run per current project policy.
+- Localized remaining Deep Dive modal metadata and badge labels (`Deep Dive`, `Summary`) to Korean UI labels while preserving data values.
+- Updated the `app.js` cache-busting query string in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.
