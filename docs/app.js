@@ -180,6 +180,7 @@ function renderFilterButtons(container, values, active, onClick) {
     button.className = `filter-button ${value === active ? "active" : ""}`;
     button.type = "button";
     button.setAttribute("aria-pressed", String(value === active));
+    button.setAttribute("aria-controls", "newsGrid");
     button.dataset.filterIndex = String(index);
     button.textContent = displayLabel(value);
     button.addEventListener("click", () => onClick(value));
