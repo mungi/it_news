@@ -56,3 +56,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-11 HBM·host offloading 운영 변수
 - NVIDIA JAX host offloading 패턴은 GPU HBM 부족을 host memory와 data movement scheduling으로 완화하는 접근.
 - ML 플랫폼 capacity planning은 GPU 수량뿐 아니라 HBM usage, host memory bandwidth, PCIe/NVLink overlap, step time variance를 함께 추적 필요.
+
+## 2026-07-11 업데이트: AI workload placement와 시맨틱 데이터 파이프라인
+- CNCF의 sovereign AI workload 논의는 external API, BYO model hosting, private cloud, on-prem cluster를 workload sensitivity와 compliance 기준으로 배치해야 함을 강조함.
+- fenic은 RAG·agent context 구성을 ad-hoc prompt가 아니라 재실행 가능한 typed DataFrame pipeline으로 운영하는 패턴을 제시함.

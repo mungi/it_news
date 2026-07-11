@@ -361,3 +361,10 @@
 - Added roving `tabindex` state to the 목록 보기/카드 보기 radiogroup so only the active view toggle is in the normal tab order while Arrow/Home/End navigation remains supported.
 - Updated the `app.js` cache-busting query string in `docs/index.html`.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-11] update | Add IP governance, semantic dataframes, sovereign AI, and firmware security stories
+- Checked current time at 2026-07-11 10:34 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, and JetBrains feeds.
+- Reviewed 2,593 feed entries and 225 current keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 5 sourced stories covering Apple-OpenAI trade-secret litigation, fenic Semantic DataFrames, CNCF sovereign AI workload placement, U-Boot firmware flaws, and ShareFile Storage Zone Controller emergency shutdown guidance. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, concept wiki, and wiki index.
