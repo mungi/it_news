@@ -40,7 +40,7 @@ MIN_ITEM_DETAIL_BULLETS = 8
 
 
 def is_http_url(value: str) -> bool:
-    if not isinstance(value, str) or has_unsafe_url_whitespace(value):
+    if not isinstance(value, str) or has_unsafe_url_whitespace(value) or "\\" in value:
         return False
     if has_malformed_percent_escape(value):
         return False
@@ -61,7 +61,7 @@ def has_decoded_url_whitespace(parsed) -> bool:
             decoded = unquote(component, errors="strict")
         except Exception:
             return True
-        if has_unsafe_url_whitespace(decoded):
+        if has_unsafe_url_whitespace(decoded) or "\\" in decoded:
             return True
     return False
 

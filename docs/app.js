@@ -119,7 +119,7 @@ function safeImageSrc(value) {
   const raw = String(value || "");
   const trimmed = raw.trim();
   if (!trimmed || trimmed !== raw) return "";
-  if (hasUnsafeUrlWhitespace(raw)) return "";
+  if (hasUnsafeUrlWhitespace(raw) || raw.includes("\\")) return "";
   if (/^https?:\/\//i.test(raw)) {
     try {
       if (hasMalformedPercentEscape(raw)) return "";
@@ -527,7 +527,7 @@ function makeLink(title, url) {
 function safeExternalUrl(value) {
   const raw = String(value || "");
   const trimmed = raw.trim();
-  if (!trimmed || trimmed !== raw || hasUnsafeUrlWhitespace(raw)) return "";
+  if (!trimmed || trimmed !== raw || hasUnsafeUrlWhitespace(raw) || raw.includes("\\")) return "";
   if (!/^https?:\/\//i.test(raw)) return "";
   try {
     if (hasMalformedPercentEscape(raw)) return "";
@@ -554,7 +554,10 @@ function hasMalformedPercentEscape(value) {
 
 function hasDecodedUrlWhitespace(url) {
   try {
-    return [url.pathname, url.search, url.hash].some((component) => hasUnsafeUrlWhitespace(decodeURIComponent(component)));
+    return [url.pathname, url.search, url.hash].some((component) => {
+      const decoded = decodeURIComponent(component);
+      return hasUnsafeUrlWhitespace(decoded) || decoded.includes("\\");
+    });
   } catch {
     return true;
   }

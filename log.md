@@ -428,3 +428,9 @@
 - Added 2 sourced stories covering NEvo brain-response-optimized AI video generation and AI 2040 Plan A compute-governance scenario. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, AI governance concept wiki, and wiki index.
 - Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`.
+
+## [2026-07-12] site | Harden backslash URL handling
+- Checked current time at 2026-07-12 06:14 KST; no freeze guard was run per current project policy.
+- Hardened browser and Python validation for data-driven external source/image URLs by rejecting raw or percent-decoded backslashes before URL rendering or JSON acceptance.
+- Updated static CSS/JS cache-busting query strings in `docs/index.html`.
+- No real news content, source URLs, timestamps, or images were altered.
