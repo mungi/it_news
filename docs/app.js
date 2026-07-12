@@ -164,6 +164,7 @@ function badgeClass(value) {
   if (v.includes("open-source")) return "open-source";
   if (v.includes("security")) return "security";
   if (v.includes("korea")) return "korea";
+  if (v === "it") return "it";
   if (v.includes("must")) return "must-know";
   return "";
 }
