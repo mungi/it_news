@@ -485,7 +485,7 @@ function openDeepDiveModal(item) {
   setRichText($("#modalSummary"), item.summary || "");
   renderRichDetail($("#modalDetail"), item.detailed_content, item.details || item.summary || "");
   setRichText($("#modalWhy"), item.why_it_matters || "");
-  setRichText($("#modalEngineering"), "발표에서는 이 항목을 중심축으로 삼아 관련 뉴스의 비용, 보안, 운영 영향까지 연결해 설명합니다.");
+  setRichText($("#modalEngineering"), deepDiveImplication(item));
 
   const badges = $("#modalBadges");
   badges.replaceChildren();
@@ -505,6 +505,17 @@ function showModal(modal) {
   if (modalCard) modalCard.scrollTop = 0;
   document.body.style.overflow = "hidden";
   $(".modal-close")?.focus();
+}
+
+function deepDiveImplication(item) {
+  const sections = Array.isArray(item.detailed_content) ? item.detailed_content : [];
+  const priorityKeywords = ["체크리스트", "관점", "강조", "시사점"];
+  const selected = sections.find((section) => {
+    const heading = String(section?.heading || "");
+    return priorityKeywords.some((keyword) => heading.includes(keyword));
+  });
+  const firstItem = Array.isArray(selected?.items) ? selected.items.find((value) => String(value || "").trim()) : "";
+  return firstItem || selected?.body || item.why_it_matters || item.details || "시사점 정보 없음";
 }
 
 function makeLink(title, url) {
