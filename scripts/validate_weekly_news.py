@@ -45,13 +45,32 @@ def is_http_url(value: str) -> bool:
     if has_malformed_percent_escape(value):
         return False
     parsed = urlparse(value)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
+    try:
+        # Accessing .port forces urllib to reject invalid port syntax, keeping
+        # validator behavior aligned with browser URL parsing in docs/app.js.
+        _ = parsed.port
+    except ValueError:
+        return False
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or not parsed.hostname:
+        return False
+    if parsed.username or parsed.password:
+        return False
+    if has_decoded_netloc_risk(parsed):
         return False
     return not has_decoded_url_whitespace(parsed)
 
 
 def has_malformed_percent_escape(value: str) -> bool:
     return bool(re.search(r"%(?![0-9A-Fa-f]{2})", value))
+
+
+def has_decoded_netloc_risk(parsed) -> bool:
+    """Reject encoded whitespace/backslash in host:port-like URL authority text."""
+    try:
+        decoded = unquote(parsed.netloc, errors="strict")
+    except Exception:
+        return True
+    return has_unsafe_url_whitespace(decoded) or "\\" in decoded
 
 
 def has_decoded_url_whitespace(parsed) -> bool:
