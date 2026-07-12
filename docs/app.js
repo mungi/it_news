@@ -183,9 +183,19 @@ function renderFilterButtons(container, values, active, onClick) {
     button.setAttribute("aria-controls", "newsGrid");
     button.dataset.filterIndex = String(index);
     button.textContent = displayLabel(value);
-    button.addEventListener("click", () => onClick(value));
+    button.addEventListener("click", () => {
+      onClick(value);
+      focusFilterButton(container, index);
+    });
     button.addEventListener("keydown", (event) => handleSegmentedButtonKeydown(event, container, values, onClick));
     container.appendChild(button);
+  });
+}
+
+function focusFilterButton(container, index) {
+  window.requestAnimationFrame(() => {
+    const refreshedButton = container.querySelector(`button[data-filter-index="${index}"]`);
+    refreshedButton?.focus();
   });
 }
 
@@ -203,10 +213,7 @@ function handleSegmentedButtonKeydown(event, container, values, onClick) {
   if (event.key === "ArrowLeft") nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
   if (event.key === "ArrowRight") nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
   onClick(values[nextIndex]);
-  window.requestAnimationFrame(() => {
-    const refreshedButtons = Array.from(container.querySelectorAll("button"));
-    refreshedButtons[nextIndex]?.focus();
-  });
+  focusFilterButton(container, nextIndex);
 }
 
 function updateHeader() {
