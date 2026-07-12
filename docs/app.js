@@ -129,7 +129,7 @@ function safeImageSrc(value) {
         url.hostname &&
         !url.username &&
         !url.password &&
-        !hasDecodedUrlWhitespace(url)
+        !hasDecodedUrlRisk(url)
         ? url.href
         : "";
     } catch {
@@ -558,7 +558,7 @@ function safeExternalUrl(value) {
       url.hostname &&
       !url.username &&
       !url.password &&
-      !hasDecodedUrlWhitespace(url)
+      !hasDecodedUrlRisk(url)
       ? url.href
       : "";
   } catch {
@@ -572,6 +572,16 @@ function hasUnsafeUrlWhitespace(value) {
 
 function hasMalformedPercentEscape(value) {
   return /%(?![0-9A-Fa-f]{2})/.test(value);
+}
+
+function hasDecodedUrlRisk(url) {
+  try {
+    const decodedHost = decodeURIComponent(url.host);
+    if (hasUnsafeUrlWhitespace(decodedHost) || decodedHost.includes("\\")) return true;
+  } catch {
+    return true;
+  }
+  return hasDecodedUrlWhitespace(url);
 }
 
 function hasDecodedUrlWhitespace(url) {

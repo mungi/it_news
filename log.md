@@ -477,3 +477,10 @@
 - Added 4 sourced stories covering Mesh LLM distributed inference, MS 365 Copilot GPT-5.6/MAI model routing, Chinese open-source AI policy risk, and GPT-5.6 Sol Ultra proof-generation claim. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images where available, AI inference infrastructure and AI governance concept wiki, and wiki index.
 - Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`; browser smoke rendered 50 cards and 2 Deep Dives.
+
+## [2026-07-13] site | Harden browser URL host decoding
+- Checked current time at 2026-07-13 00:41 KST; no freeze guard was run per current project policy.
+- Reviewed `scripts/improve_project_prompt.md`, `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, static UI URL helpers, and validator URL behavior.
+- Hardened browser-side external/image URL validation so percent-decoded host/authority text is checked for whitespace and backslashes, matching the Python validator's stricter URL contract.
+- Bumped static asset cache keys in `docs/index.html`; no real news content, source URLs, timestamps, or images were altered.
+- Validation passed: `node --check docs/app.js`, `python3 scripts/validate_weekly_news.py`, `python3 -m py_compile scripts/validate_weekly_news.py`, and local browser smoke test.
