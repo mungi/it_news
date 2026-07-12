@@ -441,3 +441,10 @@
 - Reviewed 770 feed entries, 412 recent entries, and 359 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
 - Added 2 sourced stories covering compromised jscrambler 8.14.0 npm Rust infostealer and multi-model orchestration co-failure limits. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI agent security and inference concept wiki, and wiki index.
+
+## [2026-07-12] update | Add Boko Haram frontier AI abuse and SambaNova inference ASIC stories
+- Checked current time at 2026-07-12 11:22 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 2,473 feed entries, 346 recent entries, and 303 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 2 sourced stories covering CASP/GeekNews Boko Haram frontier AI abuse interviews and SambaNova 110억달러 가치·JP모건 온프레미스 추론 인프라. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI agent security and inference concept wiki, and wiki index.

@@ -68,3 +68,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-12 refresh: 멀티 모델 오케스트레이션 평가
 - 공동 실패율 연구는 LLM gateway가 vendor 수와 모델 수만 늘려도 정확도가 오르지 않음을 보여줌. 평가 기준은 all-model failure, oracle routing gap, cost per correct answer임.
 - 플랫폼팀은 기존 eval log에서 공동 실패를 집계하고 Clopper-Pearson boundary로 성능 상한을 산출한 뒤 router 개발·단일 최고 모델·비슷한 성능 모델 조합을 비교 필요.
+
+## 2026-07-12 late-morning refresh: 온프레미스 추론 ASIC 수요
+- SambaNova의 JP모건 SN40L/SN50 도입 사례는 금융권 추론 인프라가 public API 단가뿐 아니라 data residency, auditability, on-prem capacity를 함께 평가함을 보여줌.
+- 추론 ASIC PoC는 벤더 주장 성능보다 실제 모델 tokens/sec, p95 latency, context length, compiler/runtime 성숙도, 장애 재기동, 공급망 리드타임을 기준으로 설계 필요.
