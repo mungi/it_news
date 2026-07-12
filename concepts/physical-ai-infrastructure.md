@@ -32,3 +32,7 @@ confidence: medium
 ## 2026-07-11 refresh
 - Alibaba Qwen의 중국 스마트 하드웨어 제조사 15만 곳 이상 채택 보도는 피지컬 AI 확산이 모델 API보다 OEM 생태계, 멀티모달 I/O, edge 배포 옵션에 좌우됨을 보여줌.
 - 영국 국방부 ACTS 계약은 AI·데이터 분석·가상 시뮬레이션을 결합한 대규모 훈련 플랫폼 사례임. 국방·제조·재난대응 조직은 scenario versioning, telemetry schema, operator feedback loop, audit log를 함께 설계 필요.
+
+## 2026-07-13 refresh: 로봇 정책 평가 기준
+- NVIDIA RoboLab은 로봇 파운데이션 모델 평가를 성공률 하나가 아니라 task generation, robot-agnostic benchmark, competency tag, partial score, trajectory smoothness, failure event log로 분해하는 접근임.
+- 제조·물류 로봇 PoC는 공급사 데모 영상보다 현장 객체·조명·언어 지시 변형·scene clutter를 반영한 rollout 기반 simulation benchmark와 실패 taxonomy를 release gate로 사용 필요.

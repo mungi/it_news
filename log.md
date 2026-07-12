@@ -484,3 +484,11 @@
 - Hardened browser-side external/image URL validation so percent-decoded host/authority text is checked for whitespace and backslashes, matching the Python validator's stricter URL contract.
 - Bumped static asset cache keys in `docs/index.html`; no real news content, source URLs, timestamps, or images were altered.
 - Validation passed: `node --check docs/app.js`, `python3 scripts/validate_weekly_news.py`, `python3 -m py_compile scripts/validate_weekly_news.py`, and local browser smoke test.
+
+## [2026-07-13] update | Add RedHook, memory capacity, and RoboLab evaluation stories
+- Checked current time at 2026-07-13 03:53 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404 and AI Times KR XML parsing failed in this probe. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 1,062 feed entries, 397 recent entries, and 343 keyword-relevant candidates across reachable feeds; 4 feed endpoints failed or returned unavailable.
+- Added 3 sourced stories covering RedHook Wireless ADB shell access, SK hynix 2027 memory supply shortage outlook, and NVIDIA RoboLab robot-policy evaluation. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI agent security, AI inference infrastructure, physical AI concept wiki, and wiki index.
+- Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`.

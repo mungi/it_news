@@ -86,3 +86,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 - Mesh LLM은 iroh 기반 P2P 네트워크로 보유 GPU·메모리를 하나의 OpenAI 호환 추론 API로 묶는 구조를 제시함.
 - MS 365 Copilot의 GPT-5.6 preferred model과 MAI 병행 보도는 엔터프라이즈 AI가 작업별 모델 라우팅·비용 제어 체계로 이동 중임을 보여줌.
 - 운영 기준은 단일 모델 성능보다 p95 latency, cost per task, peer trust, fallback, telemetry 보존 여부임.
+
+## 2026-07-13 refresh: 메모리 capacity 공급망
+- SK하이닉스의 2027년 메모리 공급난 전망은 AI capacity 병목이 GPU뿐 아니라 HBM, 일반 DRAM, 패키징, 웨이퍼 capacity, 전력·용수 조건으로 확장됨을 보여줌.
+- 추론·학습 플랫폼팀은 모델별 HBM 요구량, KV cache footprint, host offload, quantization, 장기 공급계약 조건을 capacity planning과 FinOps 모델에 함께 반영 필요.
