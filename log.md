@@ -492,3 +492,10 @@
 - Added 3 sourced stories covering RedHook Wireless ADB shell access, SK hynix 2027 memory supply shortage outlook, and NVIDIA RoboLab robot-policy evaluation. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI agent security, AI inference infrastructure, physical AI concept wiki, and wiki index.
 - Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`.
+
+## [2026-07-13] update | Roll weekly metadata to 2026-W29
+- Checked current time at 2026-07-13 08:03 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404, Anthropic RSS returned 404, and Azure Updates XML parsing failed in this probe.
+- Reviewed 2,575 feed entries, 375 recent entries, and 371 keyword-relevant candidates across reachable feeds; new high-signal candidates since the 03:53 KST run were mostly lower-priority education/local-policy items, so no additional story replaced the current 50-item list.
+- Corrected the active weekly metadata from 2026-W28 to 2026-W29 and set coverage to 2026-07-06 17:00 ~ 2026-07-13 13:00 KST.
+- Updated `docs/data/weekly-news.json`, created `weekly/2026-W29.md`, and updated wiki index; final data remains 50 items and 2 Deep Dives.
