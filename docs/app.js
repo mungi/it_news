@@ -378,6 +378,7 @@ function renderCards() {
     sourceLink.textContent = item.source_name || "Source";
     if (safeSourceUrl) {
       sourceLink.href = safeSourceUrl;
+      sourceLink.referrerPolicy = "strict-origin-when-cross-origin";
       sourceLink.removeAttribute("aria-disabled");
     } else {
       sourceLink.removeAttribute("href");
@@ -542,6 +543,7 @@ function makeLink(title, url) {
   a.href = safeUrl;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
+  a.referrerPolicy = "strict-origin-when-cross-origin";
   a.textContent = title;
   return a;
 }
@@ -618,6 +620,7 @@ function setModalTitleLink(title, url) {
   titleLink.textContent = title;
   if (safeUrl) {
     titleLink.href = safeUrl;
+    titleLink.referrerPolicy = "strict-origin-when-cross-origin";
     titleLink.removeAttribute("aria-disabled");
   } else {
     titleLink.removeAttribute("href");
