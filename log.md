@@ -462,3 +462,11 @@
 - Reviewed `scripts/improve_project_prompt.md`, `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, static UI, and validator behavior for the improvement cron.
 - Updated `AGENTS.md` current status from initial implementation-pending language to active automated operation so repository instructions match the implemented `docs/` site and cron split.
 - No real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-12] update | Add neocloud financing and Cerebras-Upstage inference stories
+- Checked current time at 2026-07-12 19:36 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; GeekNews Plus RSS returned 404. Also sampled AWS, Google Cloud, Cloudflare, Docker, GitHub, GitLab, Hugging Face, Kubernetes, CNCF, NVIDIA, The Hacker News, BleepingComputer, CISA, Microsoft Security, Google Security, OpenAI, Anthropic, Azure, Stack Overflow, JetBrains, and Google AI feeds.
+- Reviewed 810 feed entries, 338 recent entries, and 277 keyword-relevant candidates across reachable feeds; 3 feed endpoints failed or returned unavailable.
+- Added 2 sourced stories covering NVIDIA·CoreWeave·Nebius neocloud circular financing and Cerebras·Upstage Solar 31B 2,000 tokens/sec inference. Oldest items were dropped after newest-first sorting to keep 50 items.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI inference infrastructure concept wiki, and wiki index.
+- Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`; browser smoke rendered 50 cards and 2 Deep Dives.

@@ -76,3 +76,8 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-12 afternoon refresh: 코딩 모델 작업별 라우팅
 - tryai.dev의 12개 코딩 모델 build-off는 GPT-5.6 Sol, Claude Fable 5, Grok 4.5, Qwen 3.7 Plus, GLM-5.2의 강점이 과제별로 갈라짐을 보여줌.
 - AI coding 플랫폼 평가는 leaderboard 점수보다 작업군별 pass rate, cost per accepted PR, review time, diff size, retry count를 내부 harness로 측정 필요.
+
+## 2026-07-12 evening refresh: 네오클라우드 재무 리스크와 고속 추론 API
+- IO Fund/GeekNews GN+의 CoreWeave·Nebius 분석은 AI capacity 조달이 GPU 공급 속도만이 아니라 장기 약정, 전력 확보, 부채·주식 발행, 공급사 수요 보증까지 포함하는 counterparty risk임을 보여줌.
+- Cerebras·업스테이지 Solar 31B 협력은 한국어·기업용 LLM도 tokens/sec, p95 latency, API 호환성, 데이터 처리 조건을 기준으로 GPU 기반 추론과 웨이퍼 스케일 엔진 추론을 비교해야 함을 보여줌.
+- 플랫폼팀은 장기 GPU 계약과 고속 추론 API를 평가할 때 workload replay, exit clause, fallback provider, observability, 데이터 residency를 같은 평가표에 포함 필요.
