@@ -2,14 +2,14 @@
   "week": "2026-W28",
   "coverage_start_kst": "2026-06-29 17:00",
   "coverage_end_kst": "2026-07-06 13:00",
-  "last_updated_kst": "2026-07-12 19:37",
+  "last_updated_kst": "2026-07-12 23:45",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AI 인프라 재무 리스크 확대: 네오클라우드 GPU 약정·순환 금융·전력 확보가 capacity 조달 리스크로 이동.",
-    "추론 성능 경쟁 심화: Cerebras·업스테이지 Solar 31B와 SambaNova 온프레미스 ASIC이 latency·데이터 통제 기준을 재편.",
-    "AI 안전·평가 확대: Boko Haram AI 활용 정황, Ghost Font 시각 방어, 12개 코딩 모델 build-off가 abuse·멀티모달·eval 운영 의제로 이동.",
+    "추론 인프라 선택지 확대: Mesh LLM P2P 분산 추론과 Cerebras·SambaNova ASIC이 GPU API 단일 의존을 낮추는 후보로 부상.",
+    "엔터프라이즈 AI 운영 전환: MS 365 Copilot의 GPT-5.6·MAI 병행 사례가 작업별 멀티모델 라우팅과 FinOps 필요성을 확인.",
+    "AI 거버넌스 압력 확대: 중국산 오픈소스 모델 제한 검토와 Boko Haram AI 활용 정황이 모델 출처·abuse monitoring·공공 조달 통제를 요구.",
     "공급망 보안 확대: jscrambler npm 침해와 Ghostcommit 이미지 프롬프트 주입이 CI·AI coding tool credential 경계를 압박.",
-    "웹·콘텐츠 인프라 압박: AI 스크레이퍼 주거용 프록시 트래픽이 bot mitigation·CDN 비용·개방성 균형을 요구."
+    "AI 연구 검증 기준 강화: GPT-5.6 수학 증명 claim과 12개 코딩 모델 build-off가 agent trace·formal artefact·내부 eval harness 필요성을 제기."
   ],
   "deep_dives": [
     {
@@ -185,6 +185,82 @@
   ],
   "items": [
     {
+      "id": "news-147",
+      "title_ko": "Mesh LLM, iroh 기반 P2P로 여러 머신 GPU·메모리를 하나의 OpenAI 호환 API로 묶는 분산 추론 공개",
+      "title_original": "Mesh LLM: distributed AI computing on iroh",
+      "summary": "핵심: Mesh LLM은 여러 머신의 GPU와 메모리를 iroh P2P 네트워크로 묶고 `localhost:9337/v1` OpenAI 호환 API 하나로 로컬 실행·피어 전달·분할 실행을 제공함. 영향: 사내 유휴 GPU, edge 장비, 실험용 워크스테이션을 추론 capacity로 묶으려는 팀은 latency·trust boundary·activation 전송 비용을 함께 검증 필요.",
+      "detail": "Iroh 블로그와 GeekNews GN+ 정리는 Mesh LLM이 중앙 서버 없이 공개키 기반 iroh endpoint와 QUIC 연결을 사용해 모델 실행 위치를 자동 결정하는 구조를 설명함. 카탈로그에는 5억 파라미터급 노트북 모델부터 235B MoE 모델까지 40개 이상이 포함되고, Skippy 분할 실행은 한 머신에 들어가지 않는 모델 계층을 여러 노드로 나눠 activation을 전달함.",
+      "why_it_matters": "AI 추론 인프라가 대형 GPU 데이터센터와 외부 API만이 아니라 보유 장비를 묶는 P2P capacity pool로 확장될 수 있음을 보여주는 개발자용 실험임.",
+      "engineering_implication": "ML 플랫폼팀은 Mesh LLM류 분산 추론을 검토할 때 OpenAI API 호환성보다 p95 latency, activation bandwidth, peer trust, 모델 weight 배포, 로그·권한 경계를 먼저 측정 필요.",
+      "category": "Infra",
+      "tags": [
+        "AI Infrastructure",
+        "Inference",
+        "P2P",
+        "QUIC",
+        "GPU",
+        "OpenAI API"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-12 21:33",
+      "source_name": "Iroh / GeekNews GN+",
+      "source_url": "https://www.iroh.computer/blog/mesh-llm",
+      "image_url": "https://social.news.hada.io/topic/31351",
+      "local_image": "assets/images/news-147.png",
+      "related_links": [
+        {
+          "title": "GeekNews GN+ 요약",
+          "url": "https://news.hada.io/topic?id=31351"
+        },
+        {
+          "title": "Mesh LLM GitHub",
+          "url": "https://github.com/Mesh-LLM/mesh-llm"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Mesh LLM이 iroh 네트워크 위에서 여러 머신의 GPU·메모리를 하나의 추론 자원처럼 노출하는 구조를 공개함.",
+          "items": [
+            "핵심: 표준 OpenAI 클라이언트는 `http://localhost:9337/v1`만 호출하고 메시가 실제 실행 위치를 결정함",
+            "경로: 요청은 로컬 GPU 실행, 모델을 적재한 피어 전달, 여러 머신 파이프라인 분할 실행 중 하나로 처리됨",
+            "규모: 기본 카탈로그는 노트북용 5억 파라미터 모델부터 **235B MoE** 모델까지 40개 이상 포함"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "분산 실행은 API 호환성과 P2P 네트워크를 결합한 형태임.",
+          "items": [
+            "네트워크: 각 노드는 공개키를 ID이자 유일한 네트워크 표면으로 쓰는 iroh endpoint를 실행함",
+            "전송: 중앙 서버 없이 NAT 통과, 홀 펀칭, 릴레이 대체 경로를 거쳐 인증된 QUIC 연결 구성",
+            "분할: Skippy 모드는 모델 계층 범위를 여러 노드에 나누고 단계별 activation을 다음 노드로 전달함",
+            "프로토콜: QUIC ALPN으로 `mesh-llm/1`, `mesh-llm-control/1`, `skippy-stage/2`를 구분함"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "외부 GPU API 의존을 줄이려는 팀에 새로운 capacity pooling 실험 후보가 됨.",
+          "items": [
+            "비용: 이미 보유한 워크스테이션·사무실 GPU를 묶어 실험용 추론 capacity로 재사용 가능",
+            "통제: 모델 업데이트 시점, 데이터 위치, 하드웨어, 개인정보 처리 조건을 외부 API보다 직접 관리 가능",
+            "리스크: 분산 activation 전송은 대역폭·지연·peer 신뢰·모델 weight 보호 문제를 함께 만듦"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "P2P 추론은 로컬 실행의 확장이지만 운영 통제 없이는 새로운 장애·보안 경계가 됨.",
+          "items": [
+            "팀 액션: PoC는 tokens/sec보다 p95 latency, activation bandwidth, peer churn, 재시도 비용을 우선 측정 필요",
+            "보안: 공개키 기반 peer identity만으로 충분한지 확인하고 모델·데이터 접근 정책을 별도 registry로 관리 필요",
+            "운영: 사설 mesh는 노드 lifecycle, 버전 호환성, GPU memory pressure, 관측 로그를 표준 플랫폼 지표로 편입 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-145",
       "title_ko": "NVIDIA·CoreWeave·Nebius GPU 붐, 1,450억달러 약정과 순환 금융 구조가 네오클라우드 리스크로 부상",
       "title_original": "Nvidia, CoreWeave, and Nebius: Inside the Circular Financing of the GPU Boom",
@@ -251,7 +327,72 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-148",
+      "title_ko": "MS 365 Copilot 권장 모델로 GPT-5.6 채택, 자체 MAI 병행으로 멀티모델 라우팅 전략 확인",
+      "title_original": "MS adopts GPT-5.6 as preferred model for Microsoft 365 Copilot while expanding MAI usage",
+      "summary": "핵심: AI타임스는 OpenAI 발표와 Bloomberg 보도를 묶어 GPT-5.6이 MS 365 Copilot 권장 모델이 되고 Excel·Outlook 일부 요청은 MS 자체 MAI 모델이 처리 중이라고 정리함. 영향: 엔터프라이즈 AI 제품은 단일 모델 표준화보다 작업 난이도·비용·latency에 따른 모델 라우팅 체계로 이동 중임.",
+      "detail": "기사에 따르면 OpenAI는 GPT-5.6 정식 서비스와 함께 MS 365 Copilot의 preferred model 채택을 알렸고, MS는 운영비 절감을 위해 Excel·Outlook에서 자체 MAI 모델 요청 처리를 확대하고 있음. TechCrunch 해석처럼 preferred model은 모든 작업을 한 모델로 처리한다는 뜻이 아니라 성능이 중요한 작업에 우선 사용하는 의미로 설명됨.",
+      "why_it_matters": "대규모 업무용 AI는 최고 모델 하나의 도입보다 작업별 라우팅, 비용 최적화, fallback, 품질 회귀 테스트를 결합한 플랫폼 운영 문제로 바뀜.",
+      "engineering_implication": "기업 AI 플랫폼팀은 Copilot·사내 에이전트 조달 시 모델별 routing policy, telemetry, 품질 회귀, 비용 상한, 데이터 처리 조건을 계약과 운영 대시보드에 포함 필요.",
+      "category": "AI",
+      "tags": [
+        "Enterprise AI",
+        "Microsoft 365 Copilot",
+        "Model Routing",
+        "GPT-5.6",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-12 18:25",
+      "source_name": "AI Times",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212678",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/212678_215995_2114.jpeg",
+      "local_image": "assets/images/news-148.jpeg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "MS 365 Copilot에서 GPT-5.6 권장 모델 채택과 MS 자체 MAI 모델 확대가 동시에 보도됨.",
+          "items": [
+            "발표: OpenAI가 GPT-5.6 정식 서비스와 함께 MS 365 Copilot preferred model 채택을 공개",
+            "운영: Bloomberg 보도 기준 Excel·Outlook에서는 매주 수만 건의 AI 요청을 MS 자체 MAI 모델이 처리 중",
+            "해석: preferred model은 모든 요청을 한 모델로 처리한다는 뜻이 아니라 성능 민감 작업 우선 사용 의미"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "상반된 발표처럼 보이지만 실제로는 멀티모델 운영 전략에 가까움.",
+          "items": [
+            "비용: MS는 외부 모델 사용 비용을 낮추기 위해 자체 MAI 모델 적용 범위를 확대하는 전략",
+            "품질: GPT-5.6은 Word·Excel·PowerPoint 등 Copilot 전반에서 고난도 작업의 권장 모델로 배치",
+            "라우팅: 작업 성격, 품질 요구, 비용, latency에 따라 OpenAI 모델과 자체 모델을 병행하는 구조"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "업무용 AI의 비용 구조가 모델 계약보다 요청 라우팅 정책에 좌우됨.",
+          "items": [
+            "영향: 동일 제품 안에서도 요약·분류·생성·코딩·분석 작업별 최적 모델이 달라질 수 있음",
+            "리스크: 라우팅 로직이 불투명하면 사용자 품질 편차, 감사 어려움, 비용 폭증이 발생 가능",
+            "조달: 공급자 종속을 줄이려면 모델 교체 가능성과 telemetry access가 계약 조건이 됨"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI 플랫폼팀은 모델 선택을 제품 기능이 아니라 control-plane 설계로 관리해야 함.",
+          "items": [
+            "팀 액션: 작업군별 model selection policy와 fallback 기준을 코드가 아닌 정책 레이어로 분리 필요",
+            "측정: 모델별 성공률, 재시도율, p95 latency, cost per task, 사용자 재요청률을 같은 대시보드에 기록 필요",
+            "거버넌스: Copilot류 도구 조달 시 어떤 데이터가 어떤 모델로 전달되는지 감사 가능한 로그와 문서화 요구 필요"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-146",
@@ -315,7 +456,137 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
+    },
+    {
+      "id": "news-149",
+      "title_ko": "미국 행정부, 중국산 오픈소스 AI 모델의 정부 사용 제한 행정명령 검토 보도",
+      "title_original": "Trump administration reportedly considers executive order restricting Chinese open-source AI models",
+      "summary": "핵심: AI타임스는 Politico 보도를 인용해 미국 행정부가 중국산 오픈소스 AI 모델의 정부 사용 제한 가능성을 초기 검토 중이라고 전함. 영향: 오픈소스 LLM 도입은 라이선스와 성능 비교를 넘어 모델 출처, 공급망, 국가·기관별 사용 제한, compute provenance 검토 대상이 됨.",
+      "detail": "보도에 따르면 논의는 초기 단계이고 실제 행정명령으로 이어질지는 불확실함. 다만 중국 오픈소스 모델이 가격 경쟁력과 성능 향상으로 미국 내 사용을 늘리는 상황에서 정부 기관 사용 제한, 의회 차원의 도입 억제 전략, 국가 안보·사이버보안 관점의 검토가 함께 거론됨.",
+      "why_it_matters": "오픈소스 AI 채택 의사결정은 모델 품질·비용뿐 아니라 지정학적 리스크, 공급망 신뢰, 공공 조달 제한, 감사 가능성을 포함해야 함.",
+      "engineering_implication": "공공·규제 산업의 AI 플랫폼팀은 모델 registry에 origin, license, training-data disclosure, weight provenance, deployment jurisdiction, 대체 모델 경로를 기록 필요.",
+      "category": "AI",
+      "tags": [
+        "AI Governance",
+        "Open Source AI",
+        "Policy",
+        "China",
+        "Model Risk"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-07-12 12:57",
+      "source_name": "AI Times",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212674",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/212674_215994_2716.jpg",
+      "local_image": "assets/images/news-149.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "미국 행정부가 중국산 오픈소스 AI 모델 사용 제한을 초기 검토 중이라는 보도가 나옴.",
+          "items": [
+            "범위: 중국 기업이 개발한 오픈소스 AI 모델의 정부 사용 제한 행정명령 가능성이 거론됨",
+            "상태: 논의는 초기 단계이며 정책 방향이나 실제 규제 여부는 아직 불확실함",
+            "배경: 중국 오픈소스 모델이 가격 경쟁력과 성능 향상으로 미국 내 점유율을 높이는 상황"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "규제 논의는 국가 안보와 공공기관 AI 사용 지침을 함께 다룸.",
+          "items": [
+            "출처: Politico가 복수 관계자를 인용해 기존 미국 정책으로 대응하기 어려운 보안 위험 논의가 있다고 보도",
+            "의회: 하원 국토안보위에서도 중국 모델 도입 증가 억제 전략 검토 발언 확인",
+            "쟁점: 모델 weight 공개 여부만으로 신뢰가 보장되지 않고 개발 주체·데이터·배포 경로가 위험 평가 요소로 부상"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "오픈소스 LLM의 장점과 지정학적 공급망 리스크가 동시에 조달 기준에 들어옴.",
+          "items": [
+            "영향: 공공기관과 방산·금융 고객은 모델 성능보다 공급자 국적, 업데이트 경로, 데이터 처리 위치를 먼저 요구할 수 있음",
+            "리스크: 갑작스러운 사용 제한은 이미 배포한 모델·파생 모델·fine-tune artefact 교체 비용으로 이어질 수 있음",
+            "시장: 오픈소스 AI 생태계가 기술 커뮤니티 문제를 넘어 수출통제·조달 정책과 연결됨"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "모델 도입 문서는 성능 평가표와 별도로 governance artefact가 필요함.",
+          "items": [
+            "팀 액션: 모델 registry에 원 개발사, weight 출처, 라이선스, fine-tune 계보, 사용 부서, 데이터 위치 기록 필요",
+            "조달: 공공·규제 산업 고객에게는 금지 모델 목록, 대체 모델, rollback plan을 계약 부속서로 제공 필요",
+            "보안: 오픈소스 모델은 코드 스캔뿐 아니라 model card, dependency, inference runtime, remote telemetry 여부까지 평가 필요"
+          ]
+        }
+      ],
+      "rank": 5
+    },
+    {
+      "id": "news-150",
+      "title_ko": "OpenAI, GPT-5.6 Sol Ultra가 64개 서브에이전트로 50년 그래프 이론 난제 증명 생성했다고 발표",
+      "title_original": "OpenAI says GPT-5.6 Sol Ultra generated proof for Cycle Double Cover Conjecture",
+      "summary": "핵심: AI타임스는 OpenAI 연구원 발표를 인용해 GPT-5.6 Sol Ultra가 64개 subagent를 약 1시간 병렬 운용해 Cycle Double Cover Conjecture 증명을 생성했고 Lean 4 형식화 코드도 공개됐다고 보도함. 단서: 수학계 독립 검증이 남아 있어 연구 성과는 검증 대기 상태로 취급 필요.",
+      "detail": "보도에 따르면 OpenAI는 증명 전문과 사용 프롬프트, Lean 4 형식화 코드를 GitHub에 공개함. 대상 문제는 bridge 없는 그래프의 모든 간선을 정확히 두 번 포함하는 cycle 집합 존재 여부를 묻는 1970년대 그래프 이론 난제이며, 이번 주장은 상용 모델과 multi-agent reasoning을 연구 보조에 사용한 사례로 제시됨.",
+      "why_it_matters": "LLM 활용이 코드 생성·요약을 넘어 형식 증명, 병렬 subagent 탐색, 검증 가능한 artefact 공개로 확장될 가능성을 보여주지만 독립 검증 전에는 vendor claim으로 관리해야 함.",
+      "engineering_implication": "AI 연구·개발팀은 고난도 추론 워크플로를 도입할 때 prompt, agent trace, formal proof artefact, human review, independent verification gate를 함께 보존 필요.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "Reasoning",
+        "Formal Verification",
+        "Multi-agent",
+        "Research"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-07-12 09:48",
+      "source_name": "AI Times",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212668",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/212668_215986_4025.png",
+      "local_image": "assets/images/news-150.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "OpenAI 연구원이 GPT-5.6 Sol Ultra의 그래프 이론 난제 증명 생성 사례를 공개했다고 보도됨.",
+          "items": [
+            "주장: GPT-5.6 Sol Ultra가 Cycle Double Cover Conjecture의 완성된 증명을 생성했다는 발표",
+            "방법: **64개 subagent**를 병렬로 운용해 약 1시간 추론을 수행했다는 설명",
+            "공개: 증명 전문, 사용 프롬프트, Lean 4 형식화 코드가 공개됐다고 보도됨"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "대상 문제와 검증 상태를 분리해서 봐야 함.",
+          "items": [
+            "문제: bridge 없는 그래프에서 모든 간선을 정확히 두 번 포함하는 cycle 집합이 항상 존재하는지 묻는 1970년대 난제",
+            "검증: 수학계 독립 검증 절차가 남아 있어 현재는 vendor claim과 공개 artefact 단계로 취급 필요",
+            "의미: 내부 연구용 모델이 아니라 상용 모델 기반 고난도 추론 성과로 제시된 점이 차별점"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI 추론 시스템의 신뢰성 기준이 자연어 답변에서 검증 가능한 산출물로 이동할 수 있음.",
+          "items": [
+            "연구 영향: formal proof와 코드 artefact를 남기는 방식은 고난도 추론 결과의 재현성 검토에 유리함",
+            "운영 영향: multi-agent reasoning은 단일 호출보다 비용·시간·trace 관리 부담이 큰 워크플로임",
+            "리스크: 검증 전 성과 홍보가 제품 의사결정으로 과잉 전이되면 연구 claim과 production capability가 혼동될 수 있음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "고난도 AI 추론 도입은 결과보다 검증 파이프라인 설계가 먼저임.",
+          "items": [
+            "팀 액션: agent trace, prompt, intermediate proof, formal checker 결과, human reviewer sign-off를 하나의 artefact bundle로 보존 필요",
+            "평가: 성공 사례 하나보다 실패율, 재시도 비용, hallucinated proof 탐지율, reviewer time을 반복 측정 필요",
+            "거버넌스: 검증이 끝나지 않은 모델 성과는 문서와 대시보드에서 experimental/vendor-claim 상태로 명확히 표시 필요"
+          ]
+        }
+      ],
+      "rank": 6
     },
     {
       "id": "news-143",
@@ -383,7 +654,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-144",
@@ -451,7 +722,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-141",
@@ -521,7 +792,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-139",
@@ -586,11 +857,11 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-137",
-      "rank": 7,
+      "rank": 11,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -723,11 +994,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-138",
-      "rank": 9,
+      "rank": 13,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -860,7 +1131,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-134",
@@ -929,7 +1200,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-140",
@@ -994,7 +1265,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-133",
@@ -1059,7 +1330,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-135",
@@ -1124,7 +1395,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-136",
@@ -1194,7 +1465,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 15
+      "rank": 19
     },
     {
       "id": "news-124",
@@ -1265,7 +1536,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-125",
@@ -1337,7 +1608,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 17
+      "rank": 21
     },
     {
       "id": "news-126",
@@ -1399,7 +1670,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 18
+      "rank": 22
     },
     {
       "id": "news-127",
@@ -1466,7 +1737,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 19
+      "rank": 23
     },
     {
       "id": "news-120",
@@ -1537,7 +1808,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "id": "news-122",
@@ -1599,7 +1870,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-121",
@@ -1661,7 +1932,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-117",
@@ -1724,7 +1995,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-128",
@@ -1790,7 +2061,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 24
+      "rank": 28
     },
     {
       "id": "news-123",
@@ -1852,7 +2123,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 25
+      "rank": 29
     },
     {
       "id": "news-115",
@@ -1914,7 +2185,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 30
     },
     {
       "id": "news-116",
@@ -1977,7 +2248,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 31
     },
     {
       "id": "news-118",
@@ -2042,7 +2313,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 32
     },
     {
       "id": "news-129",
@@ -2104,7 +2375,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 33
     },
     {
       "id": "news-109",
@@ -2168,7 +2439,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 34
     },
     {
       "id": "news-130",
@@ -2230,7 +2501,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 35
     },
     {
       "id": "news-131",
@@ -2292,7 +2563,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 36
     },
     {
       "id": "news-104",
@@ -2354,7 +2625,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 37
     },
     {
       "id": "news-105",
@@ -2416,7 +2687,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 38
     },
     {
       "id": "news-119",
@@ -2479,7 +2750,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 39
     },
     {
       "id": "news-106",
@@ -2541,7 +2812,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 40
     },
     {
       "id": "news-107",
@@ -2603,7 +2874,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 41
     },
     {
       "id": "news-108",
@@ -2665,7 +2936,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 42
     },
     {
       "id": "news-110",
@@ -2729,7 +3000,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 43
     },
     {
       "id": "news-111",
@@ -2794,7 +3065,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 44
     },
     {
       "id": "news-112",
@@ -2858,11 +3129,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 45
     },
     {
       "id": "news-100",
-      "rank": 42,
+      "rank": 46,
       "title_ko": "Tencent Hy3 공개, Apache 2.0 오픈소스 모델로 에이전트·업무 작업 비용 경쟁 가세",
       "title_original": "Tencent, 오픈소스 모델 Hy3 공개",
       "summary": "핵심: Tencent Hy3는 Apache 2.0 공개 모델로 270명 전문가 블라인드 평가 2.67/4, GLM-5.1 2.51/4를 제시하며 업무·에이전트 작업 성능을 강조. 비용: API 가격은 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 공개되어 모델 라우팅과 추론 단가 비교 대상 추가.",
@@ -2938,7 +3209,7 @@
     },
     {
       "id": "news-101",
-      "rank": 43,
+      "rank": 47,
       "title_ko": "Microsoft Flint 공개, AI 에이전트용 차트 중간 언어와 MCP 서버 제공",
       "title_original": "Microsoft, AI 에이전트용 시각화 언어 Flint 공개",
       "summary": "핵심: Microsoft Research Flint는 AI 에이전트가 짧고 사람이 편집 가능한 명세로 차트를 만들도록 돕는 시각화 중간 언어임. 범위: 46개 차트 유형, 83개 갤러리 예제, Vega-Lite·ECharts·Chart.js 렌더링, TypeScript/JavaScript npm 설치와 MCP 서버 제공.",
@@ -3075,11 +3346,11 @@
           "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work/"
         }
       ],
-      "rank": 44
+      "rank": 48
     },
     {
       "id": "news-102",
-      "rank": 45,
+      "rank": 49,
       "title_ko": "AWS MCP Server, OAuth 지원으로 AI 에이전트와 AWS Sign-In 직접 연결",
       "title_original": "OAuth support for the AWS MCP Server",
       "summary": "핵심: AWS MCP Server가 AWS Sign-In 기반 OAuth를 지원해 AI 에이전트가 추가 인증 소프트웨어 없이 AWS 계정 권한으로 연결 가능. 관리: IAM 정책, global condition keys, token introspection/revocation API, dynamic client registration, CloudTrail audit events로 OAuth 접근 통제 가능.",
@@ -3141,7 +3412,7 @@
     },
     {
       "id": "news-103",
-      "rank": 46,
+      "rank": 50,
       "title_ko": "CNCF, ingress-NGINX 은퇴 전환 안내…Kubernetes Ingress API와 컨트롤러 수명주기 분리 필요",
       "title_original": "Navigating the ingress-NGINX retirement",
       "summary": "핵심: CNCF는 Kubernetes Ingress API가 은퇴하는 것이 아니라 ingress-NGINX 컨트롤러 프로젝트 수명주기 전환이 이슈라고 설명. 영향: 운영팀은 Ingress 리소스 자체보다 컨트롤러 구현체, 보안 패치, Gateway API 전환 경로, vendor 지원 상태를 분리해 점검 필요.",
@@ -3200,260 +3471,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "news-099",
-      "title_ko": "Tenda 펌웨어 여러 버전에서 문서화되지 않은 인증 백도어 발견",
-      "title_original": "Tenda firmware contains undocumented backdoor authentication mechanism",
-      "summary": "핵심: CERT/CC VU#213560과 GeekNews 정리에 따르면 일부 Tenda 네트워크 장비 펌웨어의 웹 관리 인터페이스에 문서화되지 않은 인증 우회 경로 존재. 영향: 사용자명 검증 없이 `sys.rzadmin.password` 값 일치만으로 role=2 관리자 세션 생성 가능.",
-      "detail": "핵심: CVE-2026-11405는 정상 비밀번호 검증 실패 뒤 장치 설정의 `sys.rzadmin.password` 값을 대체 비밀번호처럼 비교하는 백도어 인증 흐름임. 패치가 없는 상태라 원격 웹 관리 비활성화, 관리 인터페이스 노출 차단, 장비 교체 검토가 현실적 완화책임.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 일부 Tenda 라우터·네트워크 장비 펌웨어에서 문서화되지 않은 인증 백도어 메커니즘 확인",
-            "식별자: 취약점은 CVE-2026-11405와 CERT/CC VU#213560으로 공개",
-            "상태: 공급업체 조율 실패로 고정 버전이 제공되지 않아 운영 완화책 의존 필요"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "동작: `/bin/httpd`의 `login()` 함수가 일반 MD5 기반 비밀번호 검증 실패 뒤 `GetValue(\"sys.rzadmin.password\")` 호출",
-            "우회: 입력 비밀번호가 설정 저장값과 일치하면 사용자명 검증 없이 role=2 관리자 세션 생성",
-            "영향: 관리자 권한 획득 뒤 장치 재구성, 네트워크 설정 변경, 보안 기능 비활성화 가능",
-            "대상: FH1201, W15E, AC10, AC5, AC6 계열의 특정 펌웨어 버전 영향",
-            "제약: 기본 LAN IP 변경은 자동 스캐너 노출만 줄이며 표적 스캔과 내부자 접근을 막지는 못함"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: SOHO·지점 라우터의 웹 관리 인터페이스는 VPN, Wi-Fi, NAT, DNS 설정을 바꿀 수 있는 네트워크 경계 자산임",
-            "보안: 패치가 없으면 취약 장비 inventory와 관리 인터페이스 노출 차단이 취약점 대응의 실제 통제 수단임",
-            "운영: 원격 관리가 켜진 장비는 인터넷 스캔과 credential stuffing보다 낮은 비용으로 장악될 가능성 존재"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 네트워크 운영팀은 Tenda 모델·펌웨어 inventory, WAN 관리 비활성화, 관리 UI 접근 ACL, 교체 우선순위 지정 필요",
-            "탐지: 방화벽·NDR에서 Tenda 관리 포트 외부 접근, 설정 변경 이벤트, DNS/NAT 변경 로그를 별도 점검 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "패치 없는 네트워크 장비 백도어는 지점·소규모 사무실·홈오피스의 경계 장비를 장기 위험 자산으로 만듦.",
-      "engineering_implication": "네트워크·보안팀은 취약 Tenda 장비를 inventory화하고 원격 관리 차단, ACL, 교체 계획, 설정 변경 모니터링을 즉시 적용 필요.",
-      "korea_implication": "국내 중소기업·지점망도 저가 라우터 재고와 원격 관리 노출 여부를 점검해 ISP·협력사 네트워크 경계 리스크를 줄일 필요.",
-      "category": "Security",
-      "tags": [
-        "Tenda",
-        "CVE",
-        "Network Security",
-        "Router",
-        "Edge Device"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-10 04:34",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31274",
-      "image_url": "https://social.news.hada.io/topic/31274",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "CERT/CC VU#213560",
-          "url": "https://kb.cert.org/vuls/id/213560"
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-092",
-      "title_ko": "휴면 GitHub 계정·노출 PAT, 기업 조직·저장소 정찰에 악용",
-      "title_original": "Dormant GitHub Accounts Help Attackers Blend In While Mapping Corporate Orgs",
-      "summary": "핵심: Datadog Security Labs가 휴면 GitHub 계정과 노출된 PAT를 이용한 조직·저장소 API 정찰 캠페인 경고. 영향: 일부 사례는 공개 정보 열람을 넘어 private repository clone 시도까지 확인.",
-      "detail": "핵심: 공격자는 2~5년 전 만들어진 휴면 계정, 노출·탈취된 OAuth token/PAT, 자동화 스캐너를 조합해 GitHub API로 기업 조직과 저장소를 지도화함. 영향: 대부분은 공개 endpoint 정찰이지만 일부는 private repository clone까지 이어져 개발 조직의 계정·토큰·repository ownership 관리가 방어면으로 부상함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Datadog Security Labs가 기업 GitHub 조직·저장소·사용자 계정을 체계적으로 열람하는 복수 캠페인 경고",
-            "방식: 자동화 스캐너, 합법적으로 보이는 user agent, 휴면 GitHub ghost account, 노출된 OAuth token/PAT 조합 사용",
-            "범위: 대부분은 공개 API 기반 정찰이지만 일부 사례에서 private repository clone 시도 확인"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "계정: 공격에 쓰인 ghost account는 생성 후 2~5년간 비활성 상태로 남아 있다가 API traffic에 사용됨",
-            "규모: 50개 이상 휴면 계정과 다수의 정상 계정 token이 조직·repository enumeration에 동원됨",
-            "정보: public repository, 조직 구성원, 팔로우 관계, 수정 프로젝트 같은 개발 활동 그래프가 자동 수집 대상임",
-            "위험: 개별 요청은 정상 API 호출처럼 보이지만 여러 계정이 동기화된 패턴으로 움직일 때 조직 단위 정찰 신호가 됨"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: GitHub 정찰은 소스코드 탈취 전 단계뿐 아니라 secret 위치, maintainer 관계, CI/CD 진입점을 찾는 기반 데이터가 됨",
-            "운영: 오래된 외부 collaborator, 미사용 계정, 장기 PAT, OAuth app 권한이 repository 접근면으로 남을 가능성 큼"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: GitHub Enterprise/조직은 inactive user, fine-grained PAT, OAuth app grant, repository clone audit log를 주기 점검 필요",
-            "탐지: 단일 API 호출보다 여러 계정·user agent·조직을 가로지르는 enumeration sequence를 SIEM 규칙으로 묶는 방식 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "GitHub API 정찰은 소스 유출과 공급망 침해의 전 단계로, 휴면 계정과 장기 token 관리가 보안 운영 항목이 됨.",
-      "engineering_implication": "플랫폼·보안팀은 GitHub 조직 ownership, inactive user, PAT/OAuth grant, private repo clone audit을 한 번에 점검 필요.",
-      "korea_implication": "국내 개발 조직도 GitHub Enterprise와 SaaS 조직의 외부 협력자·장기 token 회수 기준을 명문화할 필요.",
-      "category": "Security",
-      "tags": [
-        "GitHub",
-        "Supply Chain",
-        "PAT",
-        "OAuth",
-        "Repository Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-07-10 03:38",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/dormant-github-accounts-help-attackers.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiDslymdYqhkFwIm3ZeaXVZweYVT_R1d6LCQhIm799y9-5hQ3C45cumIStxGYheFbwosbd_JtrB6FgOthR2KJgfe8PYs0k47eGV7263ATac5UR0t7OOaqOUGOf5DHAR4b0IaKTozk0UEiHJz5-nze3b1ureycPGqdPVlqrImWreOWwMpGxC8kgBvONCLGbH/s1600/github-ghost.jpg",
-      "related_links": [],
-      "local_image": "assets/images/news-092.jpg",
-      "rank": 48
-    },
-    {
-      "id": "news-093",
-      "title_ko": "npm 12, 공급망 위험 줄이기 위해 install script 기본 비활성화",
-      "title_original": "npm 12 Disables Install Scripts by Default to Reduce Supply Chain Risk",
-      "summary": "핵심: GitHub가 npm 12에서 dependency lifecycle script, git dependency, remote URL dependency 실행·해결을 기본 opt-in으로 변경. 변화: 2FA 우회 granular access token의 민감 작업과 직접 publish 권한도 단계적으로 축소.",
-      "detail": "핵심: npm 12는 preinstall/install/postinstall 같은 lifecycle script를 기본 실행하지 않고, git·remote URL dependency도 명시 허용 전까지 막음. 영향: 패키지 설치 단계의 임의 코드 실행과 장기 publish token 의존을 줄이는 대신, 조직은 allowlist와 trusted publishing/OIDC 전환 작업이 필요함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: GitHub가 npm 12에서 install script 자동 실행을 기본 비활성화한 공급망 보안 변경 공개",
-            "범위: dependency lifecycle script, implicit node-gyp build, git dependency, remote URL dependency가 명시 허용 전까지 실행·해결되지 않음",
-            "운영: 신뢰한 script는 `npm approve-scripts --allow-scripts-pending`로 검토 후 `package.json` allowlist에 기록 필요"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "설정: `allowScripts` 기본값 off로 변경되어 `preinstall`, `install`, `postinstall` 자동 실행 차단",
-            "설정: `--allow-git` 기본값 none으로 변경되어 direct/transitive Git dependency 해석 제한",
-            "설정: `--allow-remote` 기본값 none으로 변경되어 https tarball 같은 remote URL dependency 제한",
-            "토큰: 2FA 우회 GAT는 계정·패키지·조직 관리 등 민감 작업 권한이 2026년 8월부터 축소 예정",
-            "배포: GAT 직접 publish 권한은 2027년 1월 제한 예정이며 trusted publishing 또는 staged publishing 권장"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: npm 생태계의 대표 공격면인 install-time code execution과 장기 token 탈취 피해를 기본값에서 줄이는 변경임",
-            "마찰: 기존 빌드가 lifecycle script나 git dependency에 의존하면 CI 실패 가능성이 있어 사전 allowlist와 lockfile 검토 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: Node.js 프로젝트는 npm 12 전환 전 CI에서 script warning, native addon build, git dependency, remote tarball 사용 여부 점검 필요",
-            "보안: publish 자동화는 장기 npm token 대신 OIDC trusted publishing과 human approval stage로 전환 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "npm 설치 기본값이 보안 우선으로 이동하면서 CI/CD와 패키지 배포 자동화의 허용 목록·토큰 전략 재설계가 필요함.",
-      "engineering_implication": "프론트엔드·플랫폼팀은 npm 12 dry-run, install script allowlist, trusted publishing 전환 계획을 sprint backlog에 넣을 필요.",
-      "korea_implication": "국내 SaaS·커머스 개발 조직의 Node.js monorepo도 postinstall 의존성과 장기 npm token 회수 영향을 점검 필요.",
-      "category": "DevTools",
-      "tags": [
-        "npm",
-        "GitHub",
-        "Supply Chain",
-        "DevSecOps",
-        "2FA"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-07-10 01:49",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/npm-12-disables-install-scripts-by.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhbP2w2lzNWbB041oSXvx2Nb1uOJaf81XNUBioDv_3K73S-JnzIU4OnUHfwG3Q3RLbf_p2wJBpHC0m2M4cQhCMfcSRRx1MY9n2vCVSNI4ddai3uJ3eE2Kb-d_ryU_HSEx_R2Rjoxz2D3TBcZCgLRWf-rOBf9k73Vi1Q04aWNG9Ux-A5AOf-v1HjSGD3YZcg/s1600/npm-security.jpg",
-      "related_links": [],
-      "local_image": "assets/images/news-093.jpg",
-      "rank": 49
-    },
-    {
-      "id": "news-094",
-      "title_ko": "Google Cloud Run Sandboxes 공개 preview, AI 생성 코드·비신뢰 바이너리 격리 실행 지원",
-      "title_original": "Safely run AI-generated code in Cloud Run sandboxes",
-      "summary": "핵심: Google Cloud가 Cloud Run Sandboxes public preview 공개. 기능: AI 생성 Python/R/SQL 코드, headless browser, 사용자 제출 script를 Cloud Run 안에서 millisecond 단위로 격리 실행.",
-      "detail": "핵심: Cloud Run Sandboxes는 Cloud Run service instance 안에서 경량 격리 경계를 즉시 생성해 AI agent가 만든 코드나 비신뢰 바이너리를 실행하는 기능임. 보안 경계는 환경변수·metadata server 차단, 기본 outbound network deny, read-only filesystem과 임시 memory overlay로 구성됨.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Google Cloud가 WeAreDevelopers World Congress에서 Cloud Run Sandboxes public preview 발표",
-            "대상: AI agent code interpreter, headless browser automation, 사용자 제출 code/plugin/webhook 실행 workload",
-            "성능: 예시에서 Cloud Run service가 1,000개 sandbox를 시작·실행·종료하며 평균 500ms latency로 동작"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "실행: `--sandbox-launcher` flag 또는 YAML 구성으로 Cloud Run service에 sandbox launcher 활성화",
-            "개발: container 안에 mounted된 `sandbox` CLI를 `subprocess`로 호출해 비신뢰 Python script 실행 가능",
-            "격리: sandbox는 Cloud Run service 환경변수와 Google Cloud metadata server에 접근하지 못함",
-            "네트워크: outbound egress는 기본 deny이며 필요 시 `--allow-egress`로 명시 허용",
-            "파일시스템: container filesystem은 read-only로 보이고 쓰기는 격리된 임시 memory overlay에 기록 후 종료 시 폐기",
-            "통합: Agent Development Kit의 `CloudRunSandboxCodeExecutor`와 ComputeSDK 지원 예고"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI agent가 코드를 직접 작성·실행하는 제품에서 별도 Kubernetes cluster나 third-party microVM runtime 없이 serverless 격리 경계 제공",
-            "리스크: agent prompt injection이 shell, browser, network, credential 접근으로 이어지는 경로를 기본 deny 구조로 줄일 수 있음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: Cloud Run 기반 agent 서비스는 sandbox timeout, egress allowlist, file import/export, audit log를 정책으로 정의 필요",
-            "검증: 실제 workload에서 startup latency, memory overlay 크기, network deny 오탐, ADK executor 호환성 측정 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI agent의 코드 실행 기능이 제품화될수록 샌드박스는 선택 기능이 아니라 기본 런타임 보안 경계가 됨.",
-      "engineering_implication": "Cloud Run 사용자와 agent 플랫폼팀은 비신뢰 코드 실행을 별도 microVM/Kubernetes 구축과 Cloud Run Sandboxes 중 어떤 운영 모델로 둘지 PoC 필요.",
-      "korea_implication": "국내 SaaS의 AI 분석·자동화 기능도 고객 데이터와 cloud credential 보호를 위해 sandbox-first 설계 검토 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Google Cloud",
-        "Cloud Run",
-        "AI Agent",
-        "Sandbox",
-        "Serverless"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-07-10 01:30",
-      "source_name": "Google Cloud Blog",
-      "source_url": "https://cloud.google.com/blog/topics/developers-practitioners/google-cloud-run-sandboxes-are-in-public-preview/",
-      "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/sandbox_blog_hero_image.max-2500x2500.jpg",
-      "related_links": [],
-      "local_image": "assets/images/news-094.jpg",
-      "rank": 50
     }
   ]
 }

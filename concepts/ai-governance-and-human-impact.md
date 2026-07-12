@@ -26,3 +26,7 @@ confidence: medium
 - 사용자 반응 최적화 실험에는 동의, 노출 상한, 취약 사용자 보호, audit log, 중단 기준 포함 필요.
 - 생체·행동 신호를 쓰는 AI 미디어 제품은 safety review와 privacy impact assessment를 사전 게이트로 두는 운영 체계 필요.
 - Ghost Font류 방어는 CAPTCHA로 배포하기 전 시간축 평균화, 프레임 차분, optical flow, OCR, 사용자 접근성 테스트를 통과해야 함.
+
+## 2026-07-12 — 오픈소스 모델 출처·고난도 추론 검증 리스크
+- 중국산 오픈소스 AI 모델의 미국 정부 사용 제한 검토 보도는 모델 출처와 공급망 신뢰가 공공 조달 조건으로 이동할 가능성을 제기함.
+- GPT-5.6 Sol Ultra 수학 증명 claim은 독립 검증 전까지 vendor claim으로 관리하고 prompt, agent trace, formal artefact, reviewer sign-off를 함께 보존해야 함.
