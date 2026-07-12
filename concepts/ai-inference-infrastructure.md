@@ -72,3 +72,7 @@ AI 추론 인프라는 모델 API, agent harness, serving runtime, GPU/ASIC, SSD
 ## 2026-07-12 late-morning refresh: 온프레미스 추론 ASIC 수요
 - SambaNova의 JP모건 SN40L/SN50 도입 사례는 금융권 추론 인프라가 public API 단가뿐 아니라 data residency, auditability, on-prem capacity를 함께 평가함을 보여줌.
 - 추론 ASIC PoC는 벤더 주장 성능보다 실제 모델 tokens/sec, p95 latency, context length, compiler/runtime 성숙도, 장애 재기동, 공급망 리드타임을 기준으로 설계 필요.
+
+## 2026-07-12 afternoon refresh: 코딩 모델 작업별 라우팅
+- tryai.dev의 12개 코딩 모델 build-off는 GPT-5.6 Sol, Claude Fable 5, Grok 4.5, Qwen 3.7 Plus, GLM-5.2의 강점이 과제별로 갈라짐을 보여줌.
+- AI coding 플랫폼 평가는 leaderboard 점수보다 작업군별 pass rate, cost per accepted PR, review time, diff size, retry count를 내부 harness로 측정 필요.
