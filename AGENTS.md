@@ -176,4 +176,4 @@ Korea:
 ## Current Status
 
 Created: 2026-07-05 KST
-Spec status: initial requirements confirmed by user; implementation pending.
+Spec status: active automated operation. The static site is implemented under `docs/`, reads `docs/data/weekly-news.json`, and is maintained by separate news-update and code-improvement cron jobs.

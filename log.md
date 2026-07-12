@@ -456,3 +456,9 @@
 - Added 2 sourced stories covering Ghost Font adversarial visual text and tryai.dev 12-model coding build-off evaluation. Oldest items were dropped after newest-first sorting to keep 50 items.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W28.md`, raw source metadata, source images, AI governance and inference concept wiki, and wiki index.
 - Validation passed: `python3 scripts/validate_weekly_news.py` reported `weekly-news validation passed: 50 items, 2 deep dives`; browser smoke rendered 50 cards and 2 Deep Dives.
+
+## [2026-07-12] site | Align agent status documentation
+- Checked current time at 2026-07-12 18:32 KST; no freeze guard was run per current project policy.
+- Reviewed `scripts/improve_project_prompt.md`, `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, static UI, and validator behavior for the improvement cron.
+- Updated `AGENTS.md` current status from initial implementation-pending language to active automated operation so repository instructions match the implemented `docs/` site and cron split.
+- No real news content, source URLs, timestamps, or images were altered.
