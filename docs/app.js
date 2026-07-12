@@ -22,6 +22,7 @@ const FALLBACK_BY_CATEGORY = {
   Security: "assets/images/fallback-security.svg",
   DevTools: "assets/images/fallback-infra.svg",
   Data: "assets/images/fallback-cloud.svg",
+  "Open Source": "assets/images/fallback-infra.svg",
   Korea: "assets/images/fallback-ai.svg",
   IT: "assets/images/fallback-infra.svg",
 };
@@ -159,6 +160,8 @@ function badgeClass(value) {
   if (v.includes("ai")) return "ai";
   if (v.includes("cloud")) return "cloud";
   if (v.includes("infra") || v.includes("dev")) return "infra";
+  if (v.includes("data")) return "data";
+  if (v.includes("open-source")) return "open-source";
   if (v.includes("security")) return "security";
   if (v.includes("korea")) return "korea";
   if (v.includes("must")) return "must-know";
