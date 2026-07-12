@@ -499,3 +499,9 @@
 - Reviewed 2,575 feed entries, 375 recent entries, and 371 keyword-relevant candidates across reachable feeds; new high-signal candidates since the 03:53 KST run were mostly lower-priority education/local-policy items, so no additional story replaced the current 50-item list.
 - Corrected the active weekly metadata from 2026-W28 to 2026-W29 and set coverage to 2026-07-06 17:00 ~ 2026-07-13 13:00 KST.
 - Updated `docs/data/weekly-news.json`, created `weekly/2026-W29.md`, and updated wiki index; final data remains 50 items and 2 Deep Dives.
+
+## [2026-07-13] site | Strengthen modal focus trap
+- Checked current time at 2026-07-13 08:56 KST; no freeze guard was run per current project policy.
+- Reviewed `scripts/improve_project_prompt.md`, `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, static UI modal behavior, validation script, and current git state.
+- Hardened the detail-modal keyboard trap so Tab/Shift+Tab redirects focus back inside the modal even if focus is moved outside while the modal is open.
+- Bumped static asset cache keys in `docs/index.html`; no real news content, source URLs, timestamps, or images were altered.
