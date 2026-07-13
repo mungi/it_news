@@ -517,6 +517,7 @@ function openDeepDiveModal(item, opener = null) {
 function showModal(modal) {
   modal.classList.remove("hidden");
   modal.setAttribute("aria-hidden", "false");
+  setBackgroundInert(true);
   const modalCard = modal.querySelector(".modal-card");
   if (modalCard) modalCard.scrollTop = 0;
   document.body.style.overflow = "hidden";
@@ -648,9 +649,21 @@ function closeModal() {
   if (modal.classList.contains("hidden")) return;
   modal.classList.add("hidden");
   modal.setAttribute("aria-hidden", "true");
+  setBackgroundInert(false);
   document.body.style.overflow = "";
   state.modalReturnFocus?.focus?.();
   state.modalReturnFocus = null;
+}
+
+function setBackgroundInert(isInert) {
+  document.querySelectorAll("body > header, body > main").forEach((element) => {
+    element.inert = isInert;
+    if (isInert) {
+      element.setAttribute("aria-hidden", "true");
+    } else {
+      element.removeAttribute("aria-hidden");
+    }
+  });
 }
 
 function keepFocusInModal(event) {
