@@ -123,7 +123,7 @@ function safeImageSrc(value) {
   if (hasUnsafeUrlWhitespace(raw) || raw.includes("\\")) return "";
   if (/^https?:\/\//i.test(raw)) {
     try {
-      if (hasMalformedPercentEscape(raw)) return "";
+      if (hasMalformedPercentEscape(raw) || hasUnsafeUrlAuthority(raw)) return "";
       const url = new URL(raw);
       return ["http:", "https:"].includes(url.protocol) &&
         url.hostname &&
@@ -554,7 +554,7 @@ function safeExternalUrl(value) {
   if (!trimmed || trimmed !== raw || hasUnsafeUrlWhitespace(raw) || raw.includes("\\")) return "";
   if (!/^https?:\/\//i.test(raw)) return "";
   try {
-    if (hasMalformedPercentEscape(raw)) return "";
+    if (hasMalformedPercentEscape(raw) || hasUnsafeUrlAuthority(raw)) return "";
     const url = new URL(raw);
     return ["http:", "https:"].includes(url.protocol) &&
       url.hostname &&
@@ -574,6 +574,17 @@ function hasUnsafeUrlWhitespace(value) {
 
 function hasMalformedPercentEscape(value) {
   return /%(?![0-9A-Fa-f]{2})/.test(value);
+}
+
+function hasUnsafeUrlAuthority(value) {
+  const match = value.match(/^https?:\/\/([^/?#]*)/i);
+  if (!match) return true;
+  try {
+    const decoded = decodeURIComponent(match[1]);
+    return hasUnsafeUrlWhitespace(decoded) || decoded.includes("\\");
+  } catch {
+    return true;
+  }
 }
 
 function hasDecodedUrlRisk(url) {
