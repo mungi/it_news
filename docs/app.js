@@ -7,6 +7,7 @@ const state = {
   viewMode: "list",
   topOnly: false,
   modalReturnFocus: null,
+  bodyOverflowBeforeModal: null,
   readItems: new Set(),
 };
 
@@ -521,6 +522,7 @@ function showModal(modal) {
   setBackgroundInert(true);
   const modalCard = modal.querySelector(".modal-card");
   if (modalCard) modalCard.scrollTop = 0;
+  state.bodyOverflowBeforeModal = document.body.style.overflow;
   document.body.style.overflow = "hidden";
   $(".modal-close")?.focus();
 }
@@ -651,7 +653,8 @@ function closeModal() {
   modal.classList.add("hidden");
   modal.setAttribute("aria-hidden", "true");
   setBackgroundInert(false);
-  document.body.style.overflow = "";
+  document.body.style.overflow = state.bodyOverflowBeforeModal ?? "";
+  state.bodyOverflowBeforeModal = null;
   state.modalReturnFocus?.focus?.();
   state.modalReturnFocus = null;
 }
