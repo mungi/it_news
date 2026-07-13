@@ -505,3 +505,9 @@
 - Reviewed `scripts/improve_project_prompt.md`, `AGENTS.md`, `SPEC.md`, `SCHEMA.md`, static UI modal behavior, validation script, and current git state.
 - Hardened the detail-modal keyboard trap so Tab/Shift+Tab redirects focus back inside the modal even if focus is moved outside while the modal is open.
 - Bumped static asset cache keys in `docs/index.html`; no real news content, source URLs, timestamps, or images were altered.
+
+## [2026-07-13] policy | Refresh Deep Dive daily
+- Checked current time at 2026-07-13 09:59 KST.
+- Added KST daily Deep Dive replacement policy: select a new credible topic/event when available, rebuild source-grounded content, and record `refreshed_kst`.
+- Added no-replacement exception: retain a topic only with a verifiable material update and `refresh_note`; timestamp-only churn prohibited.
+- Updated the live 4-hour news updater job to read and enforce the policy on its next run.

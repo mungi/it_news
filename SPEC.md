@@ -25,7 +25,7 @@ The repository serves two roles:
 - Title policy: Korean title plus original title when available.
 - Topics: AI, Cloud, Infra first; Security, Developer Tools, Data/DB, Open Source, Korea, General IT second.
 - Total visible news items: up to 50; target 40-50 when enough high-value sourced items exist. The visible list is sorted by publication time, newest first; when the list would exceed 50, the oldest item at the end is removed.
-- Deep Dive: 1 by default, 2 only when unusually important. Each Deep Dive must be detailed enough for AI/Infra experts and consultants to use in a 30-minute briefing: source facts, expert interpretation, architecture/operations impact, cost/security view, adoption roadmap, checklist, and presenter message.
+- Deep Dive: 1 by default, 2 only when unusually important. Refresh the selected topic once per KST calendar day when a credible replacement exists; a retained topic requires a verifiable material update and recorded reason. Each Deep Dive must be detailed enough for AI/Infra experts and consultants to use in a 30-minute briefing: source facts, expert interpretation, architecture/operations impact, cost/security view, adoption roadmap, checklist, and presenter message.
 - Each news item needs title, short summary, detailed summary, source link, image, category/tags, and publication time when available.
 - Updates should automatically commit and push when GitHub auth/remotes are available.
 

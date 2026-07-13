@@ -111,7 +111,7 @@ Each `docs/data/weekly-news.json` should include:
 1. Executive summary: 3-5 Korean bullets
 2. 중요 소식 stories: about 5-8
 3. Total stories: up to 50, target 40-50 when enough high-value sourced items exist; final ordering is `published_kst` newest-first, and items beyond 50 are dropped from the oldest end
-4. Deep dives: 1 by default, 2 maximum
+4. Deep dives: 1 by default, 2 maximum; selection refreshes once per KST calendar day, replacing the prior day's topic when a credible new candidate exists
 5. KST timeline metadata
 6. Source appendix via `source_url` and `related_links`
 7. Modal detail content: use `detailed_content` when possible so card and Deep Dive click-through views are not thin.
@@ -126,6 +126,15 @@ Each `docs/data/weekly-news.json` should include:
     "items": ["핵심 bullet 1", "핵심 bullet 2"]
   }
 ]
+```
+
+Deep Dive refresh fields:
+
+```json
+{
+  "refreshed_kst": "YYYY-MM-DD HH:mm",
+  "refresh_note": "Optional; only when no credible replacement exists"
+}
 ```
 
 Rules:
@@ -144,6 +153,8 @@ Rules:
 - Include a `시사점` item for each story: the industry's likely impact or a short developer/engineer implication grounded in the source. Store it in `engineering_implication`.
 - Prefer clear headings and bullets over long unstructured paragraphs.
 - For Deep Dive entries, go beyond a summary. Write from an AI/Infra expert and consultant perspective with at least 7 structured sections and 1,800+ Korean characters. Required angles: original/source facts, AI/Infra expert interpretation, architecture/operations impact, cost/FinOps or security/governance perspective, adoption roadmap when relevant, developer/infra checklist, and `강조 메세지`.
+- On the first update run of each KST date, select a new Deep Dive story/event from the current coverage window when a credible replacement exists. Prefer a different topic and at least one source published or materially updated since the prior selection; rebuild the full Deep Dive content instead of timestamp-only churn.
+- Store the actual update time in `refreshed_kst`. Keep a topic only when no credible replacement exists and record the verifiable reason in `refresh_note`; do not fabricate a daily change.
 - For GeekNews/GN⁺ source summaries, use GeekNews체: **not narrative prose**. Use compact Korean fragments/bullets, noun phrases, `변화/볼 것/피할 것/팀 액션` decision points, concrete facts first, no filler, and **bold** only decision-critical terms or metrics.
 - The UI label is `상세 내용`, not `상세 요약`.
 - Keep prose compact and professional. Use direct technical wording instead of generic LLM-style filler.
