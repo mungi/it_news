@@ -526,3 +526,11 @@
 - Added Precursor and removed the oldest capped entry, Microsoft Flint (2026-07-10 09:52 KST), then re-sorted all 50 items newest-first and reassigned ranks.
 - Rolled metadata to 2026-W30 with coverage 2026-07-13 17:00 ~ 2026-07-20 13:00 KST; created `weekly/2026-W30.md`, captured the immutable raw source, cached its source image, and updated wiki index.
 - Deep Dive count remains 2; RedHook was already refreshed at 2026-07-13 10:11 KST, so no timestamp-only Deep Dive churn was made.
+
+## [2026-07-14] update | Add MemGhost agent-memory injection and refresh daily Deep Dive
+- Checked current time at 2026-07-14 02:26 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: news.hada.io, news.hada.io/plus, aitimes.kr, and aitimes.com; all endpoints were reachable in this probe. Also parsed AWS, Cloudflare, GitHub, Hugging Face, and The Hacker News feeds: 9 endpoints reachable, 0 unavailable; GeekNews/AI Times surfaces were inspected directly where their HTML was not RSS-compatible.
+- Reviewed 1,003 feed entries from parseable global feeds; mandatory Korean/community surfaces were checked directly. The Hacker News article published 2026-07-13 22:03 KST was source-page verified and selected: MemGhost uses a malicious email to induce persistent AI-agent memory writes; the reported success figures are isolated lab benchmarks, not evidence of real-world exploitation.
+- Added MemGhost and removed the oldest capped item (Tencent Hy3, 2026-07-10 09:56 KST), then re-sorted all 50 items newest-first and reassigned ranks.
+- Replaced the prior-day RedHook Deep Dive with source-grounded MemGhost content covering provenance, memory-write privilege separation, audit/rollback, background-agent controls, and rollout checks; set `refreshed_kst` to 2026-07-14 02:26 KST.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, raw source capture, AI agent security concept, and wiki index.

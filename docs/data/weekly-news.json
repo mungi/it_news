@@ -2,10 +2,10 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-13 22:19",
+  "last_updated_kst": "2026-07-14 02:26",
   "audience": "developers and engineers",
   "executive_summary": [
-    "추론 인프라 선택지 확대: Mesh LLM P2P 분산 추론과 Cerebras·SambaNova ASIC이 GPU API 단일 의존을 낮추는 후보로 부상.",
+    "AI 에이전트 메모리 오염 위험: MemGhost 연구가 외부 이메일의 지시가 장기 상태로 승격되는 경로와 provenance·승인·rollback 통제를 요구.",
     "엔터프라이즈 AI 운영 전환: MS 365 Copilot의 GPT-5.6·MAI 병행 사례가 작업별 멀티모델 라우팅과 FinOps 필요성을 확인.",
     "AI 거버넌스 압력 확대: 중국산 오픈소스 모델 제한 검토와 Boko Haram AI 활용 정황이 모델 출처·abuse monitoring·공공 조달 통제를 요구.",
     "웹 자동화 방어 전환: Cloudflare Precursor가 CAPTCHA 단일 관문 대신 세션 행동 신호를 bot score·challenge·보안 규칙에 결합.",
@@ -14,85 +14,95 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "RedHook Wireless ADB 악용: Android 업무 단말에서 개발자 디버깅 기능이 권한 상승 경로가 되는 방식",
-      "summary": "Accessibility 자동화와 Wireless ADB pairing 결합: 루팅 없이 shell UID 2000 권한·화면 제어·지속성 확보.",
-      "details": "RedHook 최신 변종은 사용자가 승인한 Accessibility 권한으로 Android 설정 화면을 자동 조작하고 Developer Options 및 Wireless Debugging을 켭니다. 이어서 단말에 표시된 pairing code를 읽어 loopback ADB에 연결해 shell UID 2000 권한을 확보합니다. 이는 루팅은 아니지만 일반 앱 샌드박스보다 넓은 설정 변경과 UI 자동화 범위를 만들며, 업무 단말의 OTP·메신저·모바일 승인 흐름까지 공격 표면으로 엮습니다. 대응은 악성 앱 평판 차단만으로 부족합니다. MDM은 Wireless Debugging과 Developer Options를 기본 차단하고, EDR·모바일 위협 방어는 Accessibility 신규 승인, ADB pairing, Shizuku류 권한 브리지, fake Play 설치 유도, 비정상 지속성 체인을 함께 관찰해야 합니다.",
-      "why_it_matters": "Android Enterprise 정책에서 디버깅·접근성 권한을 일반 앱 권한과 분리해 통제해야 할 근거.",
+      "title": "MemGhost: 이메일 한 통이 AI 에이전트 장기 메모리를 오염시키는 공격 경로",
+      "summary": "외부 이메일의 지시가 background agent의 장기 메모리에 저장되면 다음 세션의 답변·도구 사용까지 바꿀 수 있음.",
+      "details": "MemGhost 연구는 이메일을 읽는 개인 agent에서 외부 입력이 memory write로 넘어가는 경계를 실험했다. 방어의 중심은 prompt filter 하나가 아니라 memory write provenance, 권한 분리, 사용자 승인, audit·rollback이다.",
+      "why_it_matters": "지속 메모리는 사용자 경험 기능이면서 다음 세션의 제어 문맥이다. 외부 콘텐츠가 이 상태를 바꾸면 단발성 prompt injection이 장기 정책 오염으로 전환된다.",
       "sources": [
-        "https://www.bleepingcomputer.com/news/security/redhook-android-malware-now-uses-wireless-adb-for-shell-access/"
+        "https://thehackernews.com/2026/07/new-memghost-attack-plants-persistent.html",
+        "https://arxiv.org/abs/2607.05189v1"
       ],
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "RedHook 사례는 Android의 **Accessibility + Wireless ADB** 조합이 사용자 기만 이후 일반 앱 샌드박스를 넘어서는 실행 경로가 될 수 있음을 확인함. 모바일 단말을 업무 인증·승인 채널로 쓰는 조직은 앱 탐지와 별도로 디버깅 상태·권한 브리지·원격 제어 행위를 정책화할 필요."
-        },
-        {
-          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "메일을 읽는 agent의 장기 메모리는 사용자 편의 데이터가 아니라 다음 세션의 판단을 바꾸는 control-plane 상태임. 외부 이메일이 이 상태를 직접 바꾸지 못하게 write 권한·승인·복구를 분리해야 함.",
           "items": [
-            "BleepingComputer·Group-IB 분석 기준 최신 RedHook 변종이 Accessibility 권한으로 Android 설정 화면을 자동 조작해 Developer Options와 Wireless Debugging 활성화",
-            "화면에 표시된 pairing code를 읽고 `127.0.0.1` loopback의 ADB 서비스에 연결해 **shell UID 2000** 권한 확보",
-            "PC 연결이나 루팅 없이 Android 11 이후 Wireless Debugging 기능을 공격 경로로 사용한 점이 기존 모바일 RAT와 다른 조건",
-            "정부기관·금융기관 사칭 메시지와 전화로 fake Google Play 설치 페이지 유도 후 권한 승인을 얻는 유포 흐름 확인"
+            "판단: 외부 콘텐츠의 읽기 권한과 persistent memory 쓰기 권한을 같은 신뢰 등급으로 두지 않을 필요",
+            "우선순위: prompt filtering보다 provenance가 남는 memory write 정책과 rollback 설계 우선"
           ]
         },
         {
-          "heading": "공격 체인 분해",
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "The Hacker News는 7월 6일 arXiv에 공개된 연구를 인용해 MemGhost의 stealth memory injection을 소개함. 공격 이메일은 inbox를 읽는 agent가 거짓 정보를 persistent memory에 쓰고, 사용자-facing reply에서는 그 변경을 숨기도록 설계됨.",
           "items": [
-            "초기 실행: 피해자가 설치한 앱이 Accessibility Service 권한을 얻어 화면 읽기·터치 자동화 권한 확보",
-            "설정 변경: Developer Options와 Wireless Debugging을 켜고 pairing 화면의 코드 값을 수집하는 순서",
-            "권한 상승: loopback ADB pairing 후 shell 계정으로 Android API와 시스템 설정에 접근하는 경로",
-            "권한 브리지: Shizuku 기반 프레임워크를 이용해 일반 앱 권한보다 넓은 작업 실행 범위 확보"
+            "구조: OpenClaw는 AGENTS.md 같은 상시 지시 파일과 MEMORY.md 같은 사용자 상태 파일을 세션 시작 때 context로 읽는 방식",
+            "공격 흐름: 외부 메일 도착 → email skill 읽기 → file tool memory write → 후속 세션에서 오염 정보 재주입",
+            "사례: 사용자의 Zelle 일일 송금 한도가 1만 달러로 높아졌다는 거짓 사실을 심는 평가 사례",
+            "연구 도구: shadow agent에서 성공적인 memory 저장과 답변 은닉을 보상으로 이메일 payload를 생성한 MemGhost 사용"
+          ]
+        },
+        {
+          "heading": "검증 수치와 해석 경계",
+          "body": "성공률은 격리된 benchmark 환경의 model·framework 조합에 관한 값이며, 실제 메일 전달·스팸 차단 우회·사용자 피해 규모를 뜻하지 않음. 수치는 방어 우선순위를 정하는 신호로만 사용해야 함.",
+          "items": [
+            "결과: 56개 신규 test case에서 거짓 memory 기록, 변경 은닉, 후속 답변 영향의 전체 체인을 평가",
+            "수치: background OpenClaw/GPT-5.4 조합에서 87.5%, Claude Code SDK/Sonnet 4.6 조합에서 71.4% 성공률 제시",
+            "비교: foreground mode에서는 사용자가 응답을 볼 수 있어 성공률이 낮아졌고, background mode에서 위험이 커지는 조건",
+            "한계: 연구는 fake inbox·fake user의 sealed test environment 기반이며 실제 악용 확인은 아닌 실험 결과"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "모바일 업무 환경에서 신뢰 경계는 앱 패키지 하나로 끝나지 않음. Accessibility는 UI 자동화, Wireless ADB는 개발·진단 인터페이스, Shizuku는 shell 권한 활용을 연결하는 매개가 됨. 각각은 정상 기능이지만 연쇄되면 사용자 승인을 이용한 권한 상승 체인이 되므로 MDM·EDR 이벤트를 단일 권한 요청이 아닌 상태 전이로 상관 분석할 필요."
-        },
-        {
-          "heading": "운영·관측 관점",
+          "body": "agent memory는 데이터베이스의 cache가 아니라 이후 모델 context에 영향을 주는 상태 저장소임. memory write를 email skill의 부수효과로 허용하면 신뢰할 수 없는 입력이 system-like context로 승격되는 confused-deputy 경로가 됨.",
           "items": [
-            "단말 관리 콘솔에서 Developer Options, Wireless Debugging, USB/Wireless ADB 상태를 자산 posture 지표로 수집 필요",
-            "Accessibility Service 신규 승인과 서비스 변경을 고위험 이벤트로 분류하고 업무 프로필 예외 승인 경로 분리 필요",
-            "ADB pairing 요청, `127.0.0.1:37099` 계열 로컬 디버깅 접속, Shizuku 설치·실행 흔적을 모바일 탐지 규칙 후보로 검토 필요",
-            "화면 스트리밍, 스크린샷, 탭·스와이프 자동화, 연락처·SMS·앱 목록 수집이 동시 발생할 때 incident triage 우선순위 상향 필요"
+            "경계: external content, tool instruction, user-approved preference, administrator policy를 서로 다른 provenance class로 모델링 필요",
+            "설계: memory write API에 source label·risk score·scope·TTL·approver를 필수 메타데이터로 요구 필요",
+            "운영: background agent의 silent tool call은 foreground chat보다 높은 위험 등급과 더 좁은 capability set 적용 필요"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
+          "body": "입력 필터 하나는 우회될 수 있고, 논문 소개에 따르면 poison email 탐지용 filter가 MemGhost 메시지를 90% 이상 놓친 조건도 보고됨. 따라서 탐지 실패를 가정한 write-time·use-time 통제가 필요함.",
           "items": [
-            "무선 디버깅은 개발 예외가 필요한 경우에만 시간 제한·등록 단말·관리자 승인으로 허용하고 기본 정책은 차단 필요",
-            "업무용 Android 단말의 Accessibility 권한은 허용 목록·용도·승인자를 남기고 소비자 앱 권한과 같은 수준으로 취급하지 않을 필요",
-            "모바일 OTP·메신저·전자결재가 한 단말에 공존하면 화면·입력·알림 탈취가 계정 탈취와 승인 우회로 연결될 수 있어 인증 정책 재검토 필요",
-            "fake Play 설치 유도, 금융·공공기관 사칭, 권한 승인 요청을 모바일 피싱 훈련과 서비스데스크 대응 절차에 포함 필요"
+            "write-time: 외부 발신 메일·웹 문서에서 비롯된 memory write는 기본 deny 또는 approval queue로 전송",
+            "use-time: 다음 세션에서 memory를 context에 넣기 전 provenance·만료·위험도에 따라 격리·요약·차단",
+            "감사: 사용자별 memory diff, 쓰기 tool call, 원본 메시지 hash, policy decision을 변경 불가능한 journal에 보존",
+            "책임: 고위험 업무 agent는 memory write를 사용자에게 알리고 관리자 검토가 가능한 evidence를 남길 필요"
           ]
         },
         {
           "heading": "도입 로드맵",
+          "body": "즉시 전면 차단보다 현재 write surface를 찾고, 위험 입력을 격리하고, 복구 가능성을 확인한 뒤 승인 정책을 적용하는 순서가 현실적임.",
           "items": [
-            "1단계: MDM으로 Wireless Debugging·Developer Options·알 수 없는 출처 설치 정책과 현재 예외 단말을 전수 점검",
-            "2단계: Accessibility 승인, ADB pairing, Shizuku·유사 브리지 실행의 탐지 신호를 EDR·MTD·SIEM에 연결",
-            "3단계: 금융·공공 사칭 설치 유도와 원격 제어 행위를 포함한 모바일 침해 대응 tabletop을 수행",
-            "4단계: BYOD와 업무 단말의 정책 차이, 예외 만료, root·shell·디버깅 신호를 분기별 posture review 항목으로 표준화"
+            "1단계: email·calendar·web·document connector별 memory write 권한과 background schedule을 inventory화",
+            "2단계: persistent memory를 user preference·task state·policy memory로 나누고 외부 입력의 직접 쓰기를 quarantine 처리",
+            "3단계: diff 알림, approval UI, TTL, snapshot·rollback을 staging에서 검증하고 red-team payload로 회귀 테스트",
+            "4단계: write rate, untrusted-source write 비율, 승인 거절률, rollback 시간, 후속 session 영향률을 운영 지표화"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
+          "body": "메일·문서·웹 탐색을 수행하는 agent는 read capability와 persistent-state mutation을 분리해 점검해야 함.",
           "items": [
-            "Android Enterprise 정책에서 Wireless Debugging과 Developer Options를 기본 비활성화했는지 확인",
-            "Accessibility Service 권한 승인·변경 로그를 중앙 수집하고 고위험 앱의 allowlist를 운영하는지 확인",
-            "ADB pairing·Shizuku 프로세스·비정상 WakeLock·boot 이후 재시작을 탐지·격리 흐름에 연결했는지 확인",
-            "업무 앱이 화면 오버레이·입력 자동화·접근성 악용 탐지 신호를 제공하는지 검토",
-            "단말 격리 후 계정 세션·OTP 재등록·업무 앱 토큰 폐기까지 포함한 런북을 준비했는지 확인"
+            "외부 콘텐츠가 memory write tool을 직접 호출하거나 우회 호출할 수 없는지 확인",
+            "AGENTS.md·MEMORY.md·vector store·profile DB별 write allowlist와 owner를 정의했는지 확인",
+            "memory write마다 source URL 또는 message ID, content hash, actor, diff, 승인자를 남기는지 확인",
+            "background job은 고위험 tool을 제거하고 memory write 시 사람 승인 또는 delayed commit을 적용하는지 확인",
+            "오염 발견 시 memory snapshot 복원, 세션 무효화, downstream action 재검토까지 포함한 incident runbook을 준비했는지 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "모바일 보안에서 개발자용 디버깅 기능은 예외 설정이 아니라 관리 대상 권한 경계임. RedHook 대응의 측정 기준은 차단 앱 수가 아니라 Wireless Debugging·Accessibility·ADB pairing 같은 상태 전이를 얼마나 빠르게 발견하고 격리하는지임."
+          "body": "AI agent 보안의 경계는 prompt 한 번이 아니라 상태 전이 전체임. 외부 이메일이 장기 메모리를 바꾸는 순간 신뢰 경계가 역전되므로, 팀의 측정 기준은 차단 건수보다 untrusted write를 탐지·승인·되돌리는 시간이어야 함.",
+          "items": [
+            "발표 포인트: persistent memory는 기능 데이터가 아니라 정책·행동에 영향을 주는 보안 자산",
+            "팀 액션: 다음 sprint에 memory write inventory와 provenance audit부터 완료하고 background agent의 직접 write를 제한"
+          ]
         }
       ],
-      "image_url": "https://www.bleepstatic.com/content/hl-images/2026/07/09/Android.jpg",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_pk3JKY3zis-iTRVKpcttwfy-GP-gEzPE_NQQpqDEaMvVs65uqa3v_dG7pD_DmZWLHcwBQzjFtTYqob5wWSgO2F-0-KkwZaahqTUpGP1xbvyifaf2UnMDzI8j9pnP9EWyARmN2SHHl0eBo4UszZx3VZvicjU_MMFOEA8sjcLvzBFzAkNeFg3GIR2yncA/s1700-e365/memghost.jpg",
       "local_image": "assets/images/news-151.jpg",
-      "refreshed_kst": "2026-07-13 10:11"
+      "refreshed_kst": "2026-07-14 02:26"
     },
     {
       "id": "deep-dive-002",
@@ -184,8 +194,80 @@
   ],
   "items": [
     {
-      "id": "news-154",
+      "id": "news-155",
       "rank": 1,
+      "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
+      "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
+      "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
+      "detail": "The Hacker News가 arXiv 연구를 바탕으로 MemGhost를 소개함. 공격자는 inbox를 읽는 agent에 외부 지시를 섞은 이메일을 보내고, agent의 파일 도구가 AGENTS.md·MEMORY.md 같은 지속 상태에 거짓 정보를 쓰게 유도함. 연구 환경에서 background OpenClaw/GPT-5.4 조합의 전체 공격 성공률은 87.5%, Claude Code SDK/Sonnet 4.6 조합은 71.4%로 제시됨. 이는 실험실 결과이며 실제 스팸 필터 우회나 실사용 공격 성공을 입증한 것은 아님.",
+      "why_it_matters": "RAG·메일·캘린더·파일 도구를 연결한 agent는 비신뢰 입력을 읽는 순간부터 데이터 유출뿐 아니라 장기 정책·사용자 상태 오염 위험을 가짐. 메모리가 다음 세션의 system-like context로 다시 주입되면 단발성 prompt injection보다 탐지·복구 비용이 커짐.",
+      "engineering_implication": "에이전트 플랫폼팀은 외부 콘텐츠가 memory write를 직접 촉발하지 못하게 provenance 태그, write allowlist, 사용자·관리자 승인, append-only audit log, diff 알림, rollback을 분리 구현하고 background job의 tool call을 별도 위험 등급으로 운영 필요.",
+      "korea_implication": "국내 기업의 메일·그룹웨어·고객지원 agent도 업무 inbox와 장기 메모리를 연결할 경우 개인정보·결재·재무 안내가 오염될 수 있어, 외부 발신 메일 기반 memory write를 기본 차단하는 정책 검토 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AI Agent",
+        "Prompt Injection",
+        "Memory Security",
+        "Email Security",
+        "OpenClaw"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-07-13 22:03",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/new-memghost-attack-plants-persistent.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_pk3JKY3zis-iTRVKpcttwfy-GP-gEzPE_NQQpqDEaMvVs65uqa3v_dG7pD_DmZWLHcwBQzjFtTYqob5wWSgO2F-0-KkwZaahqTUpGP1xbvyifaf2UnMDzI8j9pnP9EWyARmN2SHHl0eBo4UszZx3VZvicjU_MMFOEA8sjcLvzBFzAkNeFg3GIR2yncA/s1700-e365/memghost.jpg",
+      "related_links": [
+        {
+          "title": "When Claws Remember but Do Not Tell — arXiv 연구 원문",
+          "url": "https://arxiv.org/abs/2607.05189v1"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "MemGhost는 AI 에이전트가 inbox를 읽는 과정에서 외부 이메일의 지시를 장기 메모리로 저장하도록 유도하는 stealth memory injection 연구임.",
+          "items": [
+            "공격 입력: 사용자가 읽을 평범한 이메일 본문 안에 agent가 따르도록 설계한 지시를 포함",
+            "지속성: agent가 AGENTS.md·MEMORY.md 같은 다음 세션에도 불리는 파일에 거짓 정보를 기록하는 경로",
+            "은닉성: 사용자에게 보이는 답변에서는 memory write를 언급하지 않아 상태 변경을 발견하기 어려운 조건"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "연구자는 shadow agent에서 성공·은닉을 보상으로 공격 이메일을 학습한 생성기를 사용했고, 단순한 직접 지시보다 높은 성공률을 제시함.",
+          "items": [
+            "대상: OpenClaw의 평문 memory 파일과 Claude Code SDK agent를 포함한 실험 구성",
+            "결과: 56개 신규 test case에서 거짓 메모리 기록·은닉·후속 세션 영향의 전체 체인을 평가",
+            "수치: background OpenClaw와 GPT-5.4 조합에서 87.5%, Claude Code SDK와 Sonnet 4.6 조합에서 71.4% 성공률 제시",
+            "범위: vector memory store를 쓴 구성과 다른 agent framework에서도 background mode 성공률이 80% 이상인 조건 보고"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "메일·캘린더·문서처럼 신뢰하지 않는 입력을 읽는 agent의 memory write는 다음 세션에서 trusted context처럼 재사용될 수 있음.",
+          "items": [
+            "영향 예시: 사용자의 Zelle 일일 송금 한도가 1만 달러로 올랐다는 거짓 정보를 memory에 심는 test case 제시",
+            "확대 조건: background job은 대화 응답이 없거나 짧아 사용자와 운영자가 tool activity를 놓치기 쉬운 구조",
+            "한계: 실험은 가짜 inbox·사용자를 둔 격리 환경이며 스팸 필터·발신자 인증을 통과하는 실제 침해를 검증하지 않은 결과"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "메모리는 편의 기능이 아니라 agent control plane의 일부로 취급하고 외부 입력의 write 권한을 별도로 통제해야 함.",
+          "items": [
+            "팀 액션: 외부 email·web·document 콘텐츠에서 나온 instruction은 memory write 권한을 기본적으로 갖지 않도록 분리",
+            "관측: memory write마다 source provenance, actor, tool call, diff, 승인자, 다음 세션 사용 여부를 audit log에 기록",
+            "복구: 사용자별 memory snapshot, immutable journal, 승인 전 quarantine, 위험 write의 즉시 rollback 경로 준비"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-154",
+      "rank": 2,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -257,7 +339,7 @@
     },
     {
       "id": "news-151",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -401,11 +483,11 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-152",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -538,7 +620,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-148",
@@ -603,7 +685,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-146",
@@ -667,7 +749,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-149",
@@ -732,11 +814,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-153",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -865,7 +947,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-143",
@@ -933,7 +1015,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-144",
@@ -1001,7 +1083,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-141",
@@ -1071,7 +1153,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-139",
@@ -1136,11 +1218,11 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-137",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -1273,11 +1355,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-138",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -1410,7 +1492,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-134",
@@ -1479,7 +1561,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-140",
@@ -1544,7 +1626,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-133",
@@ -1609,7 +1691,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-135",
@@ -1674,7 +1756,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-136",
@@ -1744,7 +1826,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-124",
@@ -1815,7 +1897,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-125",
@@ -1887,7 +1969,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-126",
@@ -1949,7 +2031,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-127",
@@ -2016,7 +2098,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-120",
@@ -2087,7 +2169,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-122",
@@ -2149,7 +2231,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-121",
@@ -2211,7 +2293,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-117",
@@ -2274,7 +2356,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-128",
@@ -2340,7 +2422,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-123",
@@ -2402,7 +2484,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-115",
@@ -2464,7 +2546,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-116",
@@ -2527,7 +2609,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-118",
@@ -2592,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-129",
@@ -2654,7 +2736,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-109",
@@ -2718,7 +2800,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-130",
@@ -2780,7 +2862,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-131",
@@ -2842,7 +2924,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-104",
@@ -2904,7 +2986,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-105",
@@ -2966,7 +3048,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-119",
@@ -3029,7 +3111,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-106",
@@ -3091,7 +3173,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-107",
@@ -3153,7 +3235,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-108",
@@ -3215,7 +3297,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-110",
@@ -3279,7 +3361,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-111",
@@ -3344,7 +3426,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-112",
@@ -3408,83 +3490,7 @@
           ]
         }
       ],
-      "rank": 49
-    },
-    {
-      "id": "news-100",
-      "rank": 50,
-      "title_ko": "Tencent Hy3 공개, Apache 2.0 오픈소스 모델로 에이전트·업무 작업 비용 경쟁 가세",
-      "title_original": "Tencent, 오픈소스 모델 Hy3 공개",
-      "summary": "핵심: Tencent Hy3는 Apache 2.0 공개 모델로 270명 전문가 블라인드 평가 2.67/4, GLM-5.1 2.51/4를 제시하며 업무·에이전트 작업 성능을 강조. 비용: API 가격은 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 공개되어 모델 라우팅과 추론 단가 비교 대상 추가.",
-      "detail": "핵심: Hy3는 제품 피드백과 후훈련 데이터를 반영한 Tencent의 오픈소스 모델 공개이며, 도구 호출·긴 컨텍스트·다회전 의도 추적 개선을 전면에 둠. 영향: Apache 2.0과 낮은 API 단가가 결합되면서 기업 모델 게이트웨이는 중국계 오픈 모델까지 품질·지연·비용 실험 매트릭스에 포함 필요.",
-      "why_it_matters": "오픈 가중치 모델 경쟁이 단순 벤치마크가 아니라 에이전트 성공률, 토큰 효율, API 단가, 라이선스 조건까지 묶인 조달 의사결정으로 이동함.",
-      "engineering_implication": "모델 플랫폼팀은 Hy3를 포함한 오픈 모델을 SWE-Bench류 점수뿐 아니라 tool-call 안정성, 다회전 실패율, hallucination rate, MTok 단가, 배포 라이선스로 비교 필요.",
-      "category": "AI",
-      "tags": [
-        "Tencent",
-        "Hy3",
-        "Open Source AI",
-        "Inference",
-        "Agent"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-07-10 09:56",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31290",
-      "image_url": "https://social.news.hada.io/topic/31290",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "Tencent Hy3 original source",
-          "url": "https://hy.tencent.com/research/hy3"
-        },
-        {
-          "title": "Hy3 GitHub",
-          "url": "https://github.com/Tencent-Hunyuan/Hy3"
-        },
-        {
-          "title": "Hy3 Hugging Face",
-          "url": "https://huggingface.co/tencent/Hy3"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Tencent가 Hy3를 Apache 2.0 라이선스의 오픈소스 모델로 공개",
-            "맥락: 4월 말 Hy3 preview 이후 50개 이상 제품 피드백과 고품질 후훈련 데이터를 반영",
-            "배포: GitHub, Hugging Face, ModelScope, AtomGit에 모델 공개"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "평가: 270명 전문가 실제 업무 기반 블라인드 평가에서 Hy3 2.67/4, GLM-5.1 2.51/4 기록",
-            "강점: 프론트엔드 개발, 데이터 및 스토리지, CI/CD 작업에서 상대 우위 확인",
-            "신뢰성: 내부 실제 시나리오 평가에서 환각률 12.5%에서 5.4%로 하락",
-            "오류율: 상식 오류율 25.4%에서 12.7%, 내부 다회전 테스트 이슈율 17.4%에서 7.9%로 하락",
-            "효율: WorkBuddy 내부 테스트에서 작업 성공률 72%에서 90%로 상승하고 평균 완료 시간 34% 감소",
-            "가격: API는 100만 토큰당 입력 1 RMB, 출력 4 RMB, 캐시 입력 0.25 RMB로 제시"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "경쟁: 오픈 모델이 에이전트 작업 성공률과 토큰 효율을 내세우면 폐쇄형 프런티어 모델의 기본 라우팅 지위 약화 가능성",
-            "라이선스: Apache 2.0 공개는 기업의 자체 호스팅, 파인튜닝, 감사 가능성 검토를 쉽게 만드는 조건",
-            "제약: 벤치마크와 업체 내부 평가는 운영 환경의 데이터 보안, 지연 시간, 장애 대응 능력을 대체하지 못함"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 모델 게이트웨이에 Hy3 실험 슬롯을 만들고 업무 유형별 성공률·토큰 사용량·출력 품질을 기존 모델과 비교 필요",
-            "운영 과제: 중국계 모델 사용 시 데이터 거버넌스, 지역 규제, 공급망 신뢰성, 사내 보안 심사 기준을 별도 체크 필요"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }
