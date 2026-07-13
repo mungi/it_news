@@ -347,6 +347,12 @@ def main() -> int:
     if timeline.get("coverage_start_kst") and timeline.get("coverage_end_kst"):
         if timeline["coverage_start_kst"] > timeline["coverage_end_kst"]:
             errors.append("coverage_start_kst must be earlier than or equal to coverage_end_kst")
+    # A generated timestamp predating its own coverage window signals stale or
+    # incorrectly assembled metadata. It may still precede coverage_end_kst on
+    # an in-progress weekly run, so only the start bound is enforced.
+    if timeline.get("coverage_start_kst") and timeline.get("last_updated_kst"):
+        if timeline["last_updated_kst"] < timeline["coverage_start_kst"]:
+            errors.append("last_updated_kst must not be earlier than coverage_start_kst")
 
     items = data.get("items", [])
     deep_dives = data.get("deep_dives", [])
