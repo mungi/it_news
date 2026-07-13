@@ -281,11 +281,11 @@ function renderDeepDives() {
     body.append(heading, summary, why, more);
 
     div.append(imageWrap, body);
-    div.addEventListener("click", () => openDeepDiveModal(item));
+    div.addEventListener("click", () => openDeepDiveModal(item, div));
     div.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        openDeepDiveModal(item);
+        openDeepDiveModal(item, div);
       }
     });
     container.appendChild(div);
@@ -388,11 +388,11 @@ function renderCards() {
     sourceLink.addEventListener("click", (event) => event.stopPropagation());
     sourceLink.addEventListener("keydown", (event) => event.stopPropagation());
     node.querySelector(".published").textContent = item.published_kst || "";
-    node.addEventListener("click", () => openModal(item));
+    node.addEventListener("click", () => openModal(item, node));
     node.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        openModal(item);
+        openModal(item, node);
       }
     });
     grid.appendChild(node);
@@ -457,10 +457,12 @@ function itemDetailSections(item) {
   ];
 }
 
-function openModal(item) {
+function openModal(item, opener = null) {
   const modal = $("#modal");
   markRead(item);
-  state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  state.modalReturnFocus = opener instanceof HTMLElement
+    ? opener
+    : document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
   img.onerror = () => useFallbackImage(img, item.category);
@@ -484,9 +486,11 @@ function openModal(item) {
   showModal(modal);
 }
 
-function openDeepDiveModal(item) {
+function openDeepDiveModal(item, opener = null) {
   const modal = $("#modal");
-  state.modalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  state.modalReturnFocus = opener instanceof HTMLElement
+    ? opener
+    : document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.alt = `${item.title || "Deep Dive"} 이미지`;
   img.onerror = () => useFallbackImage(img, "AI");
