@@ -119,8 +119,9 @@ function fallbackImageFor(category) {
 function safeImageSrc(value) {
   const raw = String(value || "");
   const trimmed = raw.trim();
-  if (!trimmed || trimmed !== raw) return "";
-  if (hasUnsafeUrlWhitespace(raw) || raw.includes("\\")) return "";
+  // Apply the same whitespace/control-character policy to docs-local assets
+  // as external URLs so malformed data cannot bypass validator assumptions.
+  if (!trimmed || trimmed !== raw || hasUnsafeUrlWhitespace(raw) || raw.includes("\\")) return "";
   if (/^https?:\/\//i.test(raw)) {
     try {
       if (hasMalformedPercentEscape(raw) || hasUnsafeUrlAuthority(raw)) return "";
