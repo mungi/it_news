@@ -11,7 +11,13 @@ const state = {
   readItems: new Set(),
 };
 
-const READ_STORAGE_KEY = "it-news-read-items-v1";
+const READ_STORAGE_KEY_PREFIX = "it-news-read-items-v2";
+
+function readStorageKey() {
+  // News IDs restart each week, so persist reading state per ISO week rather
+  // than incorrectly marking a freshly published week's items as already read.
+  return `${READ_STORAGE_KEY_PREFIX}:${String(state.data?.week || "unknown")}`;
+}
 
 const CATEGORY_ORDER = ["All", "AI", "Cloud", "Infra", "Security", "DevTools", "Data", "Open Source", "Korea", "IT"];
 const IMPORTANCE_ORDER = ["All", "must-know", "high", "medium"];
@@ -37,9 +43,16 @@ function on(selector, eventName, handler) {
 
 function loadReadItems() {
   try {
-    const raw = window.localStorage?.getItem(READ_STORAGE_KEY);
+    const raw = window.localStorage?.getItem(readStorageKey());
     const parsed = raw ? JSON.parse(raw) : [];
-    state.readItems = new Set(Array.isArray(parsed) ? parsed.filter(Boolean) : []);
+    // Keep persisted state bounded to IDs in the current data set. This avoids
+    // stale/corrupt local storage affecting another week's 50-item briefing.
+    const validIds = new Set((state.data?.items || [])
+      .map((item) => item?.id)
+      .filter((id) => typeof id === "string" && id));
+    state.readItems = new Set(Array.isArray(parsed)
+      ? parsed.filter((id) => typeof id === "string" && validIds.has(id))
+      : []);
   } catch {
     state.readItems = new Set();
   }
@@ -47,7 +60,7 @@ function loadReadItems() {
 
 function saveReadItems() {
   try {
-    window.localStorage?.setItem(READ_STORAGE_KEY, JSON.stringify([...state.readItems]));
+    window.localStorage?.setItem(readStorageKey(), JSON.stringify([...state.readItems]));
   } catch {
     // localStorage can be unavailable in private or restricted browser contexts.
   }
