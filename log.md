@@ -534,3 +534,11 @@
 - Added MemGhost and removed the oldest capped item (Tencent Hy3, 2026-07-10 09:56 KST), then re-sorted all 50 items newest-first and reassigned ranks.
 - Replaced the prior-day RedHook Deep Dive with source-grounded MemGhost content covering provenance, memory-write privilege separation, audit/rollback, background-agent controls, and rollout checks; set `refreshed_kst` to 2026-07-14 02:26 KST.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, raw source capture, AI agent security concept, and wiki index.
+
+## [2026-07-14] update | Add production-agent GPT-5.6 migration operations case
+- Checked current time at 2026-07-14 06:34 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: GeekNews RSS, GeekNews Plus, AI Times KR, and AI Times; GeekNews Plus RSS returned 404. Also sampled AWS, Cloudflare, GitHub, Hugging Face, NVIDIA, The Hacker News, CISA, Kubernetes, CNCF, and Docker feeds: 13 endpoints reachable and 2 unavailable.
+- Reviewed 50 top entries per reachable feed (1,003 entries in the previous directly comparable probe); GeekNews GN+ item 31404, published 2026-07-14 03:40 KST, was source-page verified through its linked Ploy article. It records a production agent migration with evaluation, tool-schema, prompt-cache, and reasoning-state changes rather than a model-score-only claim.
+- Added Ploy's GPT-5.6 migration case and removed the oldest capped item, 호남 AI·반도체 클러스터 전력망 부족 전망 (2026-07-10 10:15 KST); re-sorted all 50 items newest-first and reassigned ranks.
+- Deep Dive remained MemGhost because it was already replaced at 2026-07-14 02:26 KST; no timestamp-only churn was made.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, source image and raw capture, and wiki index.

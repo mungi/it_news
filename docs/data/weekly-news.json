@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-14 02:26",
+  "last_updated_kst": "2026-07-14 06:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "AI 에이전트 메모리 오염 위험: MemGhost 연구가 외부 이메일의 지시가 장기 상태로 승격되는 경로와 provenance·승인·rollback 통제를 요구.",
@@ -194,8 +194,90 @@
   ],
   "items": [
     {
-      "id": "news-155",
+      "id": "news-156",
       "rank": 1,
+      "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
+      "title_original": "Migrating a Production AI Agent to GPT-5.6",
+      "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
+      "detail": "Ploy의 사례는 모델 API를 바꿀 때 평가 규칙, 도구 인자 정규화, 캐시 파티셔닝, 추론 상태 재생을 함께 검증해야 한다는 운영 기록임. 공개 수치는 단일 회사의 웹 구축 워크로드 결과이므로 다른 업무·모델 조합에 일반화하지 말고 자체 traffic replay와 회귀 평가로 재검증이 필요함.",
+      "why_it_matters": "모델 마이그레이션의 비용·지연 시간 차이는 모델 점수만으로 결정되지 않음. 기존 공급자에 맞춘 tool budget·schema·cache 정책이 새 모델의 실패율과 비용을 왜곡할 수 있어, LLMOps의 평가·관측·롤백 경로를 함께 바꿔야 함.",
+      "engineering_implication": "플랫폼팀은 모델 교체 전후에 성공 작업당 비용, p95 실행 시간, 빈 도구 응답률, 캐시 적중률, 재시도율을 같은 trace로 비교하고, provider별 tool-schema adapter와 cache-key 정책을 버전 관리할 필요.",
+      "korea_implication": "국내 기업의 멀티모델 도입도 API 단가 비교에 그치지 말고 한국어 업무 흐름·도구 호출·데이터 경계가 포함된 자체 평가 세트와 공급자 전환 runbook을 운영 기준으로 둘 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "Agent",
+        "LLMOps",
+        "Inference",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-07-14 03:40",
+      "source_name": "Ploy / GeekNews GN+",
+      "source_url": "https://ploy.ai/blog/migrating-a-production-ai-agent-to-gpt-5-6",
+      "image_url": "https://storage.googleapis.com/ployai/d21bf4ad-2458-43ee-9561-54c28ab0e85f/user/fcebce5c-colorful-hero-opus-vs-gpt.png",
+      "local_image": "assets/images/news-156.png",
+      "related_links": [
+        {
+          "title": "GeekNews GN+ 요약 및 원문 연결",
+          "url": "https://news.hada.io/topic?id=31404"
+        },
+        {
+          "title": "OpenAI Prompt Caching 가이드",
+          "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Ploy는 웹사이트를 계획·구축·검증하는 프로덕션 에이전트의 기본 모델을 Claude Opus 4.8에서 GPT-5.6 Sol로 교체함. 단일 모델 벤치마크가 아니라 실제 고정 워크스페이스에서 실행 추적과 결과물을 비교한 사례임.",
+          "items": [
+            "평가 결과: 완료 빌드당 평균 실행 시간이 8분에서 3분 42초로 단축, 비용은 $3.06에서 $2.22로 감소",
+            "품질 지표: 시각 점수는 0.936에서 0.970으로 상승, 입력 토큰은 260만에서 170만으로 감소",
+            "범위: 수치는 Ploy의 마케팅 웹사이트 구축 워크로드와 표본 Opus 4.8 n=11, GPT-5.6 n=10에 한정된 운영 기록"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "초기 비교에서 새 모델의 실패 일부는 모델 품질이 아니라 기존 Opus 호출 패턴을 전제한 평가·도구 계층에서 발생함. 기존 실행 환경의 암묵적 가정을 분리하지 않으면 교체 대상 모델을 불리하게 측정할 수 있음.",
+          "items": [
+            "평가 하네스: 순차 호출 예산과 단일 파일 읽기 전제 때문에 GPT-5.6의 병렬·일괄 호출이 정상 작업이어도 실패로 분류된 조건",
+            "도구 스키마: 선택 필드 25개를 임의 값으로 채운 호출이 파일 읽기 빈 결과의 52~64%를 유발, 필수·nullable 변환 뒤 0%로 감소",
+            "호출 효율: null 정규화 후 같은 작업의 도구 호출 수가 약 30% 감소, 빈 결과 재시도 경로 축소"
+          ]
+        },
+        {
+          "heading": "캐시·상태 재생 설계",
+          "body": "공급자별 프롬프트 캐시 범위와 추론 상태 재생 방식이 모델 단가보다 큰 비용 차이를 만들 수 있음을 확인한 사례임. 캐시 키와 세션 상태를 모델별 계약 조건으로 다뤄야 함.",
+          "items": [
+            "캐시: 워크스페이스 단위 키와 계층형 breakpoint 적용 후 첫 호출 적중률이 0%에서 83.7%로 상승",
+            "비용: 미캐시 입력 토큰이 28% 감소, 이전에 관측된 약 50% 비용 열세가 캐시 구성 영향이었음을 확인",
+            "상태: server-side reasoning item 참조의 간헐적 not-found 오류에 대응해 `store: false`와 자체 완결형 reasoning blob 재생을 사용"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "모델 교체는 모델명 하나를 바꾸는 변경이 아니라 평가·도구·캐시·상태 관리의 호환성 시험임. 특정 공급자에 맞춰진 가정은 성능·비용·장애 복구 판단을 왜곡할 수 있음.",
+          "items": [
+            "측정: 성공 작업당 비용, p95 실행 시간, 재시도율, tool-call 오류, cache hit rate를 동일 trace 단위로 비교 필요",
+            "안정성: 새 모델의 병렬 호출·인자 생성·상태 재생이 기존 guardrail과 충돌하는지 staging에서 확인 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "모델 라우팅 정책은 가격표가 아니라 실제 업무 평가와 운영 제약을 반영해야 함. 모델별 adapter와 cache policy를 코드·설정으로 분리하면 품질 회귀와 공급자 장애에 더 빠르게 대응 가능.",
+          "items": [
+            "팀 액션: 프로덕션 trace를 익명화해 replay 가능한 모델 교체 평가 세트를 구축하고 release gate에 포함 필요",
+            "팀 액션: 도구 스키마의 optional·nullable 처리, cache key 범위, reasoning state 보존 방식을 provider별로 문서화·회귀 테스트 필요"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-155",
+      "rank": 2,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -267,7 +349,7 @@
     },
     {
       "id": "news-154",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -339,7 +421,7 @@
     },
     {
       "id": "news-151",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -483,11 +565,11 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-152",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -620,7 +702,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-148",
@@ -685,7 +767,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-146",
@@ -749,7 +831,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-149",
@@ -814,11 +896,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-153",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -947,7 +1029,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-143",
@@ -1015,7 +1097,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-144",
@@ -1083,7 +1165,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-141",
@@ -1153,7 +1235,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-139",
@@ -1218,11 +1300,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-137",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -1355,11 +1437,11 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-138",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -1492,7 +1574,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-134",
@@ -1561,7 +1643,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-140",
@@ -1626,7 +1708,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-133",
@@ -1691,7 +1773,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-135",
@@ -1756,7 +1838,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-136",
@@ -1826,7 +1908,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-124",
@@ -1897,7 +1979,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-125",
@@ -1969,7 +2051,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-126",
@@ -2031,7 +2113,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-127",
@@ -2098,7 +2180,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-120",
@@ -2169,7 +2251,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-122",
@@ -2231,7 +2313,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-121",
@@ -2293,7 +2375,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-117",
@@ -2356,7 +2438,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-128",
@@ -2422,7 +2504,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-123",
@@ -2484,7 +2566,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-115",
@@ -2546,7 +2628,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-116",
@@ -2609,7 +2691,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-118",
@@ -2674,7 +2756,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-129",
@@ -2736,7 +2818,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-109",
@@ -2800,7 +2882,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-130",
@@ -2862,7 +2944,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-131",
@@ -2924,7 +3006,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-104",
@@ -2986,7 +3068,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-105",
@@ -3048,7 +3130,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-119",
@@ -3111,7 +3193,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-106",
@@ -3173,7 +3255,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-107",
@@ -3235,7 +3317,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-108",
@@ -3297,7 +3379,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-110",
@@ -3361,7 +3443,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-111",
@@ -3423,70 +3505,6 @@
             "팀 액션: SBOM 생성, VEX/EPSS 우선순위, 내부 package mirror, patch provenance, CI policy gate를 remediation pipeline으로 연결 필요",
             "보안 지표: mean time to remediate, vulnerable package exposure, exception age, production rollout success rate를 공급망 보안 KPI로 관리 필요",
             "발표 메모: AI 기반 보안 자동화의 가치는 탐지보다 검증된 수정과 운영 중단 최소화에 있다는 관점"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-112",
-      "title_ko": "호남 AI·반도체 클러스터, 전력망 부족 2.3GW 우려",
-      "title_original": "호남 AI·반도체 클러스터, 전력망이 변수…우드매킨지 “2.3GW 부족 우려”",
-      "summary": "핵심: Wood Mackenzie가 호남 반도체·AI 데이터센터 클러스터 완성 시 피크 전력수요 19.1GW, 안정 공급 16.8GW로 2.3GW 부족 가능성 제시",
-      "detail": "핵심: 약 800조원 규모 호남권 반도체·AI 데이터센터 클러스터의 전력망 병목 분석\n수치: 최대 전력수요는 현재 11.8GW에서 19.1GW로 증가 가능, 2030년 안정 공급은 16.8GW 예상\n제약: 호남~중부 송전망 혼잡과 재생에너지 계통 접속 지연이 주요 병목\n시사점: AI 데이터센터 입지는 GPU 조달보다 grid interconnection, BESS, 송전망 투자 신호가 선행 조건",
-      "why_it_matters": "AI 데이터센터와 반도체 팹은 전력·송전망·시장 설계가 준비되지 않으면 투자 발표와 실제 capacity 사이에 큰 간극 발생",
-      "engineering_implication": "데이터센터·클라우드 팀은 location strategy에 전력 PPA, 계통 접속, BESS, 냉각수, grid congestion risk를 포함한 capacity model 필요",
-      "korea_implication": "",
-      "category": "Infra",
-      "tags": [
-        "AI Datacenter",
-        "Power Grid",
-        "Semiconductor",
-        "Energy",
-        "Korea"
-      ],
-      "region": "Korea",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-07-10 10:15",
-      "source_name": "AI Times",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212606",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212606_215915_1550.png",
-      "local_image": "assets/images/news-112.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Wood Mackenzie가 호남권 반도체·AI 데이터센터 클러스터의 전력 인프라 부족 가능성 제기",
-            "규모: 기사 기준 호남권 프로젝트는 약 800조원 규모 반도체·AI 데이터센터 클러스터로 언급",
-            "수요 변화: 클러스터 완성 시 호남권 최대 전력수요가 현재 11.8GW에서 19.1GW로 증가 가능",
-            "공급 전망: 2030년 안정 공급 가능 발전용량은 16.8GW로 피크 시간대 2.3GW 부족 가능성"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "핵심 발언: 과제는 발전설비 자체보다 전력망, 시장 설계, 투자 신호가 AI 인프라를 지원할 속도로 개선되는지 여부",
-            "송전 제약: 호남~중부 송전망 혼잡으로 태양광 등 신규 재생에너지 계통 접속 지연 가능성",
-            "태양광 한계: 2.3GW 공백을 태양광만으로 메우려면 5년 안에 약 19.5GW 신규 설비 필요",
-            "현실 수치: 2025년까지 호남권 추가 태양광 설비는 679MW 수준으로 기사 언급"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: AI 인프라 경쟁은 GPU·모델만이 아니라 grid interconnection과 전력시장 설계가 capacity 상한 결정",
-            "한국 관점: 지역 AI·반도체 클러스터는 송전망·BESS·전력 계약 없이는 데이터센터 착공과 가동률 사이에 지연 리스크",
-            "운영 변수: 전력망 혼잡은 PUE, 냉각, standby capacity, workload placement, DR region 설계까지 영향"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 신규 AI 데이터센터 검토 시 PPA, 계통 접속 대기열, 송전 제약, BESS, 수전 용량, 냉각수, 지역 DR을 초기 feasibility 항목으로 반영 필요",
-            "FinOps 관점: GPU cluster TCO에 전력 단가뿐 아니라 curtailment, backup power, idle capacity, grid delay 비용 포함 필요",
-            "발표 메모: AI 인프라 병목이 데이터센터 내부에서 전력망·시장 설계로 이동했다는 사례"
           ]
         }
       ],
