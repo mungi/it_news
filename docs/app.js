@@ -729,7 +729,9 @@ function renderFilters() {
 
 async function boot() {
   try {
-    const response = await fetch("data/weekly-news.json", { cache: "no-store" });
+    // Revalidate cached weekly data instead of bypassing the HTTP cache entirely.
+    // This preserves freshness on each load while allowing a lightweight 304 response.
+    const response = await fetch("data/weekly-news.json", { cache: "no-cache" });
     if (!response.ok) throw new Error(`weekly-news.json load failed: ${response.status}`);
     state.data = await response.json();
     loadReadItems();
