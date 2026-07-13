@@ -518,3 +518,11 @@
 - Reviewed 136 current entries and 127 keyword-relevant entries. No newly published candidate exceeded the capped 50-item list; existing latest credible RedHook coverage, published 2026-07-12 23:27 KST, was selected as the required daily Deep Dive replacement.
 - Replaced the prior AI-agent cost/security Deep Dive with source-grounded RedHook content covering Accessibility-to-Wireless-ADB escalation, shell UID 2000, mobile posture monitoring, governance controls, rollout steps, and incident-response checklist; set `refreshed_kst` to 2026-07-13 10:11 KST.
 - Updated `docs/data/weekly-news.json` and synchronized `weekly/2026-W29.md`; final data remains 50 items and 2 Deep Dives.
+
+## [2026-07-13] update | Roll to W30 and add Cloudflare Precursor session-based bot detection
+- Checked current time at 2026-07-13 22:19 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: GeekNews returned 403 and GeekNews Plus returned 404; AI Times KR and AI Times feeds were reachable. Also sampled AWS, Google Cloud, Cloudflare, GitHub, Hugging Face, NVIDIA, The Hacker News, CISA, Kubernetes, CNCF, and Docker feeds.
+- Reviewed 16 reachable feed endpoints: 13 reachable and 3 unavailable. Cloudflare's official post, published 2026-07-13 22:00 KST, was the only current-window candidate selected after source-page verification; it documents Precursor's session-scoped pointer, keyboard timing, focus, and visibility signals for Bot Management.
+- Added Precursor and removed the oldest capped entry, Microsoft Flint (2026-07-10 09:52 KST), then re-sorted all 50 items newest-first and reassigned ranks.
+- Rolled metadata to 2026-W30 with coverage 2026-07-13 17:00 ~ 2026-07-20 13:00 KST; created `weekly/2026-W30.md`, captured the immutable raw source, cached its source image, and updated wiki index.
+- Deep Dive count remains 2; RedHook was already refreshed at 2026-07-13 10:11 KST, so no timestamp-only Deep Dive churn was made.

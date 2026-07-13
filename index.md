@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-13 | Total pages: 156
+> Last updated: 2026-07-13 | Total pages: 158
 
 ## Entities
 
@@ -21,11 +21,12 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W30]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W29]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 144건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 145건의 출처 메타데이터와 한국어 브리핑 요약.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
