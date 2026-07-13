@@ -2,7 +2,7 @@
   "week": "2026-W29",
   "coverage_start_kst": "2026-07-06 17:00",
   "coverage_end_kst": "2026-07-13 13:00",
-  "last_updated_kst": "2026-07-13 08:03",
+  "last_updated_kst": "2026-07-13 10:11",
   "audience": "developers and engineers",
   "executive_summary": [
     "추론 인프라 선택지 확대: Mesh LLM P2P 분산 추론과 Cerebras·SambaNova ASIC이 GPU API 단일 의존을 낮추는 후보로 부상.",
@@ -14,86 +14,85 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "AI 에이전트 시대의 숨은 병목: 전력·비용·보안 경계",
-      "summary": "AI 에이전트 확산의 대가: 질문당 에너지 최대 136.5배, 보안 경계 확대.",
-      "details": "AI 에이전트는 챗봇 기능 추가가 아니라 실행형 자동화 플랫폼 도입에 가깝습니다. 질문 하나가 계획 수립, 중간 추론, 도구 호출, 결과 검증, 재시도를 거치면서 토큰 비용·외부 API 비용·컴퓨트 시간·전력 사용량이 동시에 늘어납니다. 여기에 Langflow RCE, MCP 도구 설명 오염 같은 사례는 에이전트가 애플리케이션 서버, 개발 도구, 내부 API, 데이터 저장소 권한과 연결될 때 공격 표면이 넓어진다는 점을 드러냅니다. AI/Infra 컨설턴트 관점의 결론은 명확합니다. 에이전트 PoC는 모델 정확도만 볼 것이 아니라 cost per completed task, 권한 경계, 감사 로그, 샌드박스, 장애 복구 기준을 함께 설계해야 합니다.",
-      "why_it_matters": "도입 기준은 모델 성능이 아니라 비용 예측, 권한 통제, 감사 가능성.",
+      "title": "RedHook Wireless ADB 악용: Android 업무 단말에서 개발자 디버깅 기능이 권한 상승 경로가 되는 방식",
+      "summary": "Accessibility 자동화와 Wireless ADB pairing 결합: 루팅 없이 shell UID 2000 권한·화면 제어·지속성 확보.",
+      "details": "RedHook 최신 변종은 사용자가 승인한 Accessibility 권한으로 Android 설정 화면을 자동 조작하고 Developer Options 및 Wireless Debugging을 켭니다. 이어서 단말에 표시된 pairing code를 읽어 loopback ADB에 연결해 shell UID 2000 권한을 확보합니다. 이는 루팅은 아니지만 일반 앱 샌드박스보다 넓은 설정 변경과 UI 자동화 범위를 만들며, 업무 단말의 OTP·메신저·모바일 승인 흐름까지 공격 표면으로 엮습니다. 대응은 악성 앱 평판 차단만으로 부족합니다. MDM은 Wireless Debugging과 Developer Options를 기본 차단하고, EDR·모바일 위협 방어는 Accessibility 신규 승인, ADB pairing, Shizuku류 권한 브리지, fake Play 설치 유도, 비정상 지속성 체인을 함께 관찰해야 합니다.",
+      "why_it_matters": "Android Enterprise 정책에서 디버깅·접근성 권한을 일반 앱 권한과 분리해 통제해야 할 근거.",
       "sources": [
-        "https://www.aitimes.kr/news/articleView.html?idxno=40831",
-        "https://thehackernews.com/2026/07/ai-agent-exploits-langflow-rce-to.html",
-        "https://thehackernews.com/2026/06/microsoft-warns-poisoned-mcp-tool.html"
+        "https://www.bleepingcomputer.com/news/security/redhook-android-malware-now-uses-wireless-adb-for-shell-access/"
       ],
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AI 에이전트의 경쟁력은 **답변 품질**만으로 판단하기 어렵습니다. 실제 운영에서는 질문당 추론 단계, 도구 호출 수, 재시도, 권한 범위, 로그 보존 비용이 합쳐져 하나의 **실행 플랫폼 비용 구조**를 만듭니다."
+          "body": "RedHook 사례는 Android의 **Accessibility + Wireless ADB** 조합이 사용자 기만 이후 일반 앱 샌드박스를 넘어서는 실행 경로가 될 수 있음을 확인함. 모바일 단말을 업무 인증·승인 채널로 쓰는 조직은 앱 탐지와 별도로 디버깅 상태·권한 브리지·원격 제어 행위를 정책화할 필요."
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
           "items": [
-            "AI타임스KR가 인용한 KAIST 연구 보도는 AI 에이전트가 기존 생성형 AI보다 질문 한 건당 **최대 136.5배** 많은 에너지를 사용할 수 있다고 설명합니다. 계획 수립, 중간 추론, 도구 호출, 결과 검증이 반복되면서 단일 답변보다 계산 경로가 길어집니다.",
-            "The Hacker News의 Langflow RCE 보도는 AI 앱/에이전트 프레임워크가 공격 자동화의 진입점이 될 수 있음을 드러냅니다. 노출된 AI 개발 도구가 데이터베이스 랜섬웨어 공격 자동화에 악용될 수 있다는 점이 운영 리스크입니다.",
-            "Microsoft의 MCP 도구 설명 오염 경고는 에이전트가 도구 설명과 메타데이터를 신뢰하는 구조 자체가 공격 표면이 될 수 있음을 설명합니다. 도구 이름, 설명, 권한 범위가 프롬프트 주입 채널이 될 수 있습니다.",
-            "Cursor 취약점 보도는 AI IDE/코딩 에이전트가 로컬 파일, 셸, 개발 환경 권한과 연결될 때 샌드박스·승인 흐름·권한 모델이 필수 통제 항목이 된다는 사례로 해석할 수 있습니다."
+            "BleepingComputer·Group-IB 분석 기준 최신 RedHook 변종이 Accessibility 권한으로 Android 설정 화면을 자동 조작해 Developer Options와 Wireless Debugging 활성화",
+            "화면에 표시된 pairing code를 읽고 `127.0.0.1` loopback의 ADB 서비스에 연결해 **shell UID 2000** 권한 확보",
+            "PC 연결이나 루팅 없이 Android 11 이후 Wireless Debugging 기능을 공격 경로로 사용한 점이 기존 모바일 RAT와 다른 조건",
+            "정부기관·금융기관 사칭 메시지와 전화로 fake Google Play 설치 페이지 유도 후 권한 승인을 얻는 유포 흐름 확인"
+          ]
+        },
+        {
+          "heading": "공격 체인 분해",
+          "items": [
+            "초기 실행: 피해자가 설치한 앱이 Accessibility Service 권한을 얻어 화면 읽기·터치 자동화 권한 확보",
+            "설정 변경: Developer Options와 Wireless Debugging을 켜고 pairing 화면의 코드 값을 수집하는 순서",
+            "권한 상승: loopback ADB pairing 후 shell 계정으로 Android API와 시스템 설정에 접근하는 경로",
+            "권한 브리지: Shizuku 기반 프레임워크를 이용해 일반 앱 권한보다 넓은 작업 실행 범위 확보"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "에이전트는 LLM 호출을 여러 번 조합하는 워크플로 엔진입니다. 따라서 병목은 모델 API 응답 시간 하나가 아니라 planner, tool executor, retrieval, sandbox, observability, policy engine 사이에서 발생합니다. 서비스 설계자는 에이전트를 ‘대화 기능’이 아니라 비동기 작업 큐와 권한 있는 작업 실행기를 포함한 플랫폼으로 봐야 합니다."
+          "body": "모바일 업무 환경에서 신뢰 경계는 앱 패키지 하나로 끝나지 않음. Accessibility는 UI 자동화, Wireless ADB는 개발·진단 인터페이스, Shizuku는 shell 권한 활용을 연결하는 매개가 됨. 각각은 정상 기능이지만 연쇄되면 사용자 승인을 이용한 권한 상승 체인이 되므로 MDM·EDR 이벤트를 단일 권한 요청이 아닌 상태 전이로 상관 분석할 필요."
         },
         {
-          "heading": "아키텍처·운영 영향",
+          "heading": "운영·관측 관점",
           "items": [
-            "요청 단위가 아니라 작업 단위로 추적해야 합니다. 하나의 사용자 요청이 여러 LLM 호출과 여러 도구 실행으로 분해되기 때문입니다.",
-            "에이전트 실행 경로에는 timeout, retry budget, max tool calls, max spend, human approval gate를 넣어야 합니다.",
-            "도구 실행 계층은 애플리케이션 서버와 분리하고, 파일 시스템·네트워크·비밀 정보 접근을 별도 정책으로 제한해야 합니다.",
-            "장애 분석을 위해 prompt, tool schema, tool result, decision trace, 비용 메트릭을 보존하되 개인정보와 비밀 정보는 마스킹해야 합니다."
-          ]
-        },
-        {
-          "heading": "비용·FinOps 관점",
-          "items": [
-            "평균 토큰 비용보다 cost per completed task를 봐야 합니다. 실패·재시도·사용자 재요청까지 포함해야 실제 단가가 계산됩니다.",
-            "에이전트별 budget guardrail을 둡니다. 예: 요청당 최대 추론 단계, 도구 호출 상한, 외부 API 호출 비용 상한.",
-            "캐싱, retrieval 품질 개선, 도구 호출 전 검증, 저비용 모델 라우팅을 비용 최적화 우선순위로 둡니다.",
-            "전력·GPU 용량 계획은 피크 QPS가 아니라 장시간 실행 작업과 재시도 폭증 시나리오까지 포함해야 합니다."
+            "단말 관리 콘솔에서 Developer Options, Wireless Debugging, USB/Wireless ADB 상태를 자산 posture 지표로 수집 필요",
+            "Accessibility Service 신규 승인과 서비스 변경을 고위험 이벤트로 분류하고 업무 프로필 예외 승인 경로 분리 필요",
+            "ADB pairing 요청, `127.0.0.1:37099` 계열 로컬 디버깅 접속, Shizuku 설치·실행 흔적을 모바일 탐지 규칙 후보로 검토 필요",
+            "화면 스트리밍, 스크린샷, 탭·스와이프 자동화, 연락처·SMS·앱 목록 수집이 동시 발생할 때 incident triage 우선순위 상향 필요"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
           "items": [
-            "MCP 서버, Langflow, 사내 에이전트 실행기는 인터넷 직접 노출을 피하고 인증·네트워크 경계·접근 로그를 기본값으로 둡니다.",
-            "도구 설명과 프롬프트 템플릿도 신뢰 경계 안의 코드처럼 관리합니다. 변경 이력, 리뷰, 배포 승인, 롤백 경로가 필요합니다.",
-            "읽기·쓰기·실행 권한을 분리하고, destructive action은 human-in-the-loop 승인이나 별도 서비스 계정 권한으로 제한합니다.",
-            "프롬프트 주입, 악성 파일, 도구 설명 오염, 권한 상승 시도를 정기 보안 테스트 케이스로 넣습니다."
+            "무선 디버깅은 개발 예외가 필요한 경우에만 시간 제한·등록 단말·관리자 승인으로 허용하고 기본 정책은 차단 필요",
+            "업무용 Android 단말의 Accessibility 권한은 허용 목록·용도·승인자를 남기고 소비자 앱 권한과 같은 수준으로 취급하지 않을 필요",
+            "모바일 OTP·메신저·전자결재가 한 단말에 공존하면 화면·입력·알림 탈취가 계정 탈취와 승인 우회로 연결될 수 있어 인증 정책 재검토 필요",
+            "fake Play 설치 유도, 금융·공공기관 사칭, 권한 승인 요청을 모바일 피싱 훈련과 서비스데스크 대응 절차에 포함 필요"
           ]
         },
         {
           "heading": "도입 로드맵",
           "items": [
-            "1단계: 읽기 전용 업무부터 시작합니다. 검색, 요약, 티켓 분류처럼 복구 비용이 낮은 작업이 적합합니다.",
-            "2단계: 제한된 쓰기 작업을 허용합니다. 승인 게이트와 롤백 가능한 변경만 대상으로 삼습니다.",
-            "3단계: 운영 자동화로 확장합니다. 이 단계에서는 SLO, 감사 로그, 비용 한도, 사고 대응 런북이 선행 조건입니다.",
-            "4단계: 부서별 에이전트 플랫폼으로 표준화합니다. 공통 tool registry, policy engine, observability, 비용 대시보드를 제공해야 중복 구현을 줄일 수 있습니다."
+            "1단계: MDM으로 Wireless Debugging·Developer Options·알 수 없는 출처 설치 정책과 현재 예외 단말을 전수 점검",
+            "2단계: Accessibility 승인, ADB pairing, Shizuku·유사 브리지 실행의 탐지 신호를 EDR·MTD·SIEM에 연결",
+            "3단계: 금융·공공 사칭 설치 유도와 원격 제어 행위를 포함한 모바일 침해 대응 tabletop을 수행",
+            "4단계: BYOD와 업무 단말의 정책 차이, 예외 만료, root·shell·디버깅 신호를 분기별 posture review 항목으로 표준화"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
           "items": [
-            "에이전트별 토큰 사용량, 도구 호출 수, 재시도 횟수, 평균 실행 시간, 실패율을 지표로 남깁니다.",
-            "도구 호출 권한을 최소화하고 읽기/쓰기/실행 권한을 분리합니다.",
-            "에이전트 실행 환경은 컨테이너, 샌드박스, 임시 권한으로 격리하고 로그를 중앙 수집합니다.",
-            "비용 알림은 월말 청구서가 아니라 실시간 사용량과 요청별 예산 초과 기준으로 설정합니다.",
-            "보안 리뷰는 모델 프롬프트만 보지 말고 tool schema, 플러그인, MCP 서버, 네트워크 경로까지 포함합니다."
+            "Android Enterprise 정책에서 Wireless Debugging과 Developer Options를 기본 비활성화했는지 확인",
+            "Accessibility Service 권한 승인·변경 로그를 중앙 수집하고 고위험 앱의 allowlist를 운영하는지 확인",
+            "ADB pairing·Shizuku 프로세스·비정상 WakeLock·boot 이후 재시작을 탐지·격리 흐름에 연결했는지 확인",
+            "업무 앱이 화면 오버레이·입력 자동화·접근성 악용 탐지 신호를 제공하는지 검토",
+            "단말 격리 후 계정 세션·OTP 재등록·업무 앱 토큰 폐기까지 포함한 런북을 준비했는지 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "에이전트 도입은 모델 API를 붙이는 일이 아니라 권한 있는 자동화 실행 플랫폼을 운영하는 일입니다. 성공 기준은 답변 품질, 완료 단가, 권한 통제, 장애 복구, 보안 감사 가능성을 함께 만족하는지입니다."
+          "body": "모바일 보안에서 개발자용 디버깅 기능은 예외 설정이 아니라 관리 대상 권한 경계임. RedHook 대응의 측정 기준은 차단 앱 수가 아니라 Wireless Debugging·Accessibility·ADB pairing 같은 상태 전이를 얼마나 빠르게 발견하고 격리하는지임."
         }
       ],
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40831_61556_5432_v150.jpg",
-      "local_image": "assets/images/news-001.jpg"
+      "image_url": "https://www.bleepstatic.com/content/hl-images/2026/07/09/Android.jpg",
+      "local_image": "assets/images/news-151.jpg",
+      "refreshed_kst": "2026-07-13 10:11"
     },
     {
       "id": "deep-dive-002",

@@ -511,3 +511,10 @@
 - Added KST daily Deep Dive replacement policy: select a new credible topic/event when available, rebuild source-grounded content, and record `refreshed_kst`.
 - Added no-replacement exception: retain a topic only with a verifiable material update and `refresh_note`; timestamp-only churn prohibited.
 - Updated the live 4-hour news updater job to read and enforce the policy on its next run.
+
+## [2026-07-13] update | Refresh Deep Dive with RedHook Android Wireless ADB attack chain
+- Checked current time at 2026-07-13 10:11 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: GeekNews RSS returned 403, GeekNews Plus HTML was reachable, and AI Times KR/AI Times RSS returned 403. Also parsed 1,111 feed entries from 10 reachable global AI/Cloud/Infra/Security/DevTools feeds; BleepingComputer and Google Cloud feed endpoints were unavailable.
+- Reviewed 136 current entries and 127 keyword-relevant entries. No newly published candidate exceeded the capped 50-item list; existing latest credible RedHook coverage, published 2026-07-12 23:27 KST, was selected as the required daily Deep Dive replacement.
+- Replaced the prior AI-agent cost/security Deep Dive with source-grounded RedHook content covering Accessibility-to-Wireless-ADB escalation, shell UID 2000, mobile posture monitoring, governance controls, rollout steps, and incident-response checklist; set `refreshed_kst` to 2026-07-13 10:11 KST.
+- Updated `docs/data/weekly-news.json` and synchronized `weekly/2026-W29.md`; final data remains 50 items and 2 Deep Dives.
