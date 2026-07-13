@@ -657,10 +657,18 @@ function closeModal() {
 }
 
 function setBackgroundInert(isInert) {
-  document.querySelectorAll("body > header, body > main").forEach((element) => {
+  const modal = $("#modal");
+  Array.from(document.body.children).forEach((element) => {
+    if (element === modal) return;
     element.inert = isInert;
     if (isInert) {
+      if (element.hasAttribute("aria-hidden")) {
+        element.dataset.modalPreviousAriaHidden = element.getAttribute("aria-hidden") || "";
+      }
       element.setAttribute("aria-hidden", "true");
+    } else if (Object.hasOwn(element.dataset, "modalPreviousAriaHidden")) {
+      element.setAttribute("aria-hidden", element.dataset.modalPreviousAriaHidden);
+      delete element.dataset.modalPreviousAriaHidden;
     } else {
       element.removeAttribute("aria-hidden");
     }
