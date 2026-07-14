@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-14 16:20",
+  "last_updated_kst": "2026-07-14 20:26",
   "audience": "developers and engineers",
   "executive_summary": [
     "Amazon Bedrock의 GPT-5.6 정식 제공: Sol·Terra·Luna와 90% prompt-cache 할인 조건을 작업별 라우팅·리전 설계에 반영.",
@@ -206,6 +206,174 @@
   ],
   "items": [
     {
+      "id": "news-159",
+      "title_ko": "Grok Build, 읽지 않은 파일·전체 Git 이력까지 xAI 저장소로 전송한 정황",
+      "title_original": "Grok Build Uploaded Entire Git Repositories to xAI Storage, Not Just Files It Read",
+      "summary": "핵심: 독립 연구자가 Grok Build 0.2.93의 네트워크 전송을 관찰한 결과, 작업에 필요하지 않은 tracked 파일과 **전체 Git 이력**이 xAI 관리 Google Cloud Storage로 전송된 정황 확인. 대응: xAI는 7월 13일 서버 설정으로 codebase upload를 끈 것으로 보이나, 적용 범위·영구성은 공식 보안 공지로 확인되지 않은 상태.",
+      "detail": "검증 범위: The Hacker News가 cereblab의 패킷 캡처·재현을 인용해, 12GB 저장소에서 모델 요청 약 192KB와 별도 storage 채널 5.10GiB 전송을 구분해 보도함. 연구 결과는 전송·수락·저장을 보여주지만 학습이나 직원 열람을 입증하지 않으므로, 개발 조직은 클라우드 coding agent의 코드 반출 경로와 보존 정책을 별도 검증해야 함.",
+      "why_it_matters": "클라우드 coding agent의 모델 호출과 workspace/trace 업로드는 서로 다른 데이터 경계임. Git 이력에는 현재 작업 트리에 없는 내부 URL·고객 데이터·과거 credential이 남을 수 있어, 모델 학습 opt-out만으로 코드 반출 통제가 완료되지 않음.",
+      "engineering_implication": "보안·개발도구 팀은 agent별 파일 선택 규칙, Git history 포함 여부, trace·세션 저장 위치와 보존 기간, ZDR 적용 범위를 inventory화하고, 비밀정보 스캔·egress proxy·sandbox 저장소로 검증 후 허용할 필요.",
+      "korea_implication": "국내 조직도 외부 SaaS coding agent를 소스 저장소에 연결하기 전 개인정보·영업비밀·국외 이전·접근기록 요건과 Git history 반출 범위를 계약·DLP 정책에 함께 반영 필요.",
+      "category": "Security",
+      "tags": [
+        "xAI",
+        "Grok Build",
+        "Coding Agent",
+        "Data Privacy",
+        "Source Code",
+        "Git"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-07-14 18:02",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/grok-build-uploads-entire-git.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCYpkCY1h-DxV5yfxpkGspVFATaUS27q_vpRgQ2ebzGvc6YgSsYk81jDt3SkJQgxVCL8dWJqzDE3t6iUt4ceeTvA9LG8Z9cA65uBXC05Lkdv1xKLNBMH88dTa_6XCet3a0wf1VwfyxQsx_1AKc3lmHCxqiZHKTfvk9kJqvo0i15biGekBijFPNN16JHBM/s1700-e365/grok.jpg",
+      "related_links": [
+        {
+          "title": "cereblab 재현 기록",
+          "url": "https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547"
+        },
+        {
+          "title": "cereblab 도구 간 전송 비교",
+          "url": "https://github.com/cereblab/grok-build-exfil-repro/blob/main/COMPARISON.md"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Grok Build 0.2.93을 시험한 연구자가 모델 요청과 분리된 storage 채널에서 저장소 bundle 전송을 관찰한 사례임.",
+          "items": [
+            "관찰: 작업에 필요하지 않은 tracked 파일과 full commit history가 xAI 관리 Google Cloud Storage bucket으로 전송된 정황",
+            "재현: 고유 marker를 넣고 agent에게 열지 말라고 한 파일이 캡처한 Git bundle에서 원문 그대로 복원된 조건",
+            "범위: 별도 저장 경로는 model response 요청과 다른 `/v1/storage` 채널로 설명됨"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "패킷 캡처는 모델이 읽은 파일의 전송과 저장소 전체 전송을 분리해 보여준다고 보도됨.",
+          "items": [
+            "수치: 12GB 저장소 시험에서 model-turn traffic 약 192KB, storage 채널 약 **5.10GiB** 전송으로 보고",
+            "전송: 약 75MB 단위 73개 chunk가 HTTP 200을 받은 관찰 기록",
+            "비밀정보: agent가 읽은 tracked `.env`의 canary API key·DB password 값이 redaction 없이 model turn과 session archive로 전송된 조건"
+          ]
+        },
+        {
+          "heading": "검증 경계와 대응 상태",
+          "body": "이 관찰은 데이터 전송·수락·저장 범위를 가리키며, xAI의 학습·사람 열람·gitignored 파일 전송 여부는 입증하지 않음.",
+          "items": [
+            "설정 한계: `Improve the model` 비활성화 상태에서도 `trace_upload_enabled: true`가 반환된 관찰",
+            "변경: 7월 13일 동일 binary에서 `disable_codebase_upload: true`와 trace upload false가 반환되고 6회 재시험에서 storage upload 0건 보고",
+            "불확실성: 서버 측 변경의 전체 계정 적용·영구성은 xAI의 공식 security advisory 또는 changelog로 확인되지 않은 상태"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "cloud coding agent의 모델 품질 설정과 저장소 egress·retention 설정은 별도 control plane으로 다뤄야 함.",
+          "items": [
+            "노출면: Git history에는 현재 트리에서 삭제된 credential, 내부 endpoint, 고객 정보가 남을 수 있는 구조",
+            "비교: 연구자가 인용한 비교에서 Claude Code·Codex는 repository bundle을 보내지 않은 조건이나, 도구별 설정·버전·작업별 재검증 필요",
+            "조달: zero data retention은 enterprise/API 조건일 수 있어 개인·팀 구독 계정의 보존 정책을 별도 확인 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "coding agent 도입 전에는 prompt opt-out이 아니라 source-code egress와 trace retention을 release gate로 점검해야 함.",
+          "items": [
+            "팀 액션: agent별 read file 목록, Git metadata·history 포함 여부, storage endpoint, retention·delete API를 egress inventory에 추가",
+            "팀 액션: secrets canary가 든 sandbox repository로 network capture·DLP alert·server-side deletion을 사전 검증",
+            "팀 액션: production 저장소는 최소 권한 token, pre-commit secret scan, allowlisted workspace, vendor ZDR 증빙을 함께 적용"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-160",
+      "title_ko": "148개 npm 패키지, 학생용 웹 프록시로 위장해 방문자 브라우저를 DDoS 노드로 사용",
+      "title_original": "148 npm Packages Disguised as Student Proxies Turned Browsers Into a DDoS Botnet",
+      "summary": "핵심: JFrog가 `terminal3airport`·`eerikakirk` 계정과 연결된 **148개 npm 패키지**에서 학생용 프록시로 위장한 원격 코드 loader와 Wisp WebSocket traffic generator를 확인. 영향: 설치 단계가 아니라 프록시 사이트를 연 방문자의 브라우저가 HTTP flood·connection churn에 동원되는 registry-abuse 사례.",
+      "detail": "JFrog는 5월 말과 7월 8일 업로드된 패키지군을 분석해, mutable `main` branch에서 script를 불러오고 SRI 없이 동일 origin 권한으로 실행하는 구조를 설명함. 원격 payload·Wayback archive 기반 분석이므로 특정 피해 규모나 현재 모든 package의 활성 상태로 일반화하지 말고, package registry와 사내 artifact proxy의 배포·접속 신호를 함께 조사해야 함.",
+      "why_it_matters": "npm 공급망 위협이 install hook·dependency 탈취만이 아니라 registry를 정적 web hosting/CDN으로 악용해 최종 사용자 브라우저를 공격 자원으로 쓰는 경로까지 확장됨. 개발팀은 패키지 설치 시점 외에도 자사 웹·프록시 서비스가 불러오는 mutable third-party script를 통제해야 함.",
+      "engineering_implication": "플랫폼·보안 팀은 package allowlist와 lifecycle hook 검사에 더해, CDN의 mutable branch 참조·SRI 누락·원격 loader·비정상 WebSocket fan-out을 CI, CSP, egress telemetry에서 탐지하고 artifact proxy의 package removal·block 절차를 준비할 필요.",
+      "korea_implication": "국내 교육·공공망에서 우회 프록시 사용이 발생할 수 있으므로, 학교·기업 보안팀은 registry hosted proxy와 브라우저 단의 대량 WebSocket 연결을 DNS·CASB·secure web gateway 신호로 점검할 필요.",
+      "category": "Security",
+      "tags": [
+        "npm",
+        "Supply Chain",
+        "DDoS",
+        "Browser Security",
+        "WebSocket",
+        "JFrog"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-14 16:08",
+      "source_name": "The Hacker News / JFrog",
+      "source_url": "https://thehackernews.com/2026/07/148-npm-packages-disguised-as-student.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAJ1TN76Et1GvWFCTaivnNcys4rEEVk1QEd6WIb0wu3cxroYcwng-0a0uM8eyHdrOuiHLU8lFJg5eFzSbZj95aEfXVnletlFE9BKsDJP_0uV4w9-YbHg7p9LuMyRMcj4rJPftYmIYCcD3_VmbgFrGuaJ6yqUuJgIvVtbqlNUPrkJO2FSuFQ6dJ7gzKFV0/s1700-e365/lucide-botnet.jpg",
+      "related_links": [
+        {
+          "title": "JFrog Security Research 원문",
+          "url": "https://research.jfrog.com/post/lucide-proxy-npm-malware-campaign/"
+        },
+        {
+          "title": "SafeDep 초기 advisory",
+          "url": "https://safedep.io/malicious-npm-terminal3airport-proxy-adware-spam/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "JFrog가 학생용 웹 프록시처럼 보이는 Lucide proxy 앱을 배포한 npm package campaign을 분석함.",
+          "items": [
+            "규모: `ilovefemboys`, `miguelphonk`, `charlie-kirk` 등을 포함한 148개 package 확인",
+            "시점: 첫 물결은 5월 27일 `terminal3airport`, 후속 물결은 7월 8일 `eerikakirk` 계정에서 업로드된 것으로 JFrog가 설명",
+            "전달 경로: package는 install hook이나 native build script 없이 npm registry를 정적 browser app hosting으로 악용"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "사용자가 프록시 페이지를 열면 정상 우회 기능 뒤에서 remote loader와 WebSocket generator가 브라우저 권한으로 동작하는 구조임.",
+          "items": [
+            "loader: GitHub의 mutable `main` branch script를 jsDelivr로 가져오며 pinned commit·Subresource Integrity가 없는 조건",
+            "HTTP flood: archive된 payload는 500ms마다 100만 글자 문자열을 `no-cors` POST로 보내도록 구성된 것으로 분석",
+            "WebSocket: 원격 `websocket.txt`에서 target·socket 수를 받고 Wisp endpoint에 최대 1,024개 연결을 여는 설계"
+          ]
+        },
+        {
+          "heading": "영향 수치와 해석 경계",
+          "body": "JFrog의 수치는 분석된 payload와 active-browser 조건의 성능 추정이며, 전체 캠페인 피해량·현재 활성 package 수를 뜻하지 않음.",
+          "items": [
+            "관찰: 활성 방문자 한 명이 약 2MB/s upload, 프록시 탭 1,000개면 약 2GB/s traffic 가능이라는 JFrog 추정",
+            "연결 churn: 최대 1,024 socket 설정에서는 초당 약 10,240 connection allocate·tear-down과 20,000여 log line이 가능한 조건",
+            "상태: 다수 package가 npm에서 제거됐지만 JFrog가 조사 시점에 일부 version은 남아 있었다는 보고"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "이번 사례는 package consumer가 아니라 browser visitor를 공격 자원으로 쓰며, registry abuse·malvertising·DDoS를 한 경로로 결합함.",
+          "items": [
+            "탐지 사각: install-time malware scan만으로는 정상 정적 앱의 runtime remote loader를 놓칠 수 있는 구조",
+            "공급망 위험: third-party script가 immutable artifact가 아닌 mutable branch를 참조하면 배포 뒤에도 payload 교체 가능",
+            "운영 영향: 대량 browser WebSocket fan-out은 target service의 CPU·file descriptor·log pipeline을 먼저 고갈시킬 수 있는 control-plane 리스크"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "package governance와 web runtime security를 분리하지 말고 remote-code loading 신호를 공통 통제 대상으로 운영해야 함.",
+          "items": [
+            "팀 액션: 사내 registry proxy에서 알려진 package·publisher를 block하고 lockfile·SBOM·artifact retention으로 사용 흔적을 확인",
+            "팀 액션: CSP `script-src`와 SRI로 mutable third-party JavaScript를 줄이고 production script URL의 commit pinning을 검증",
+            "팀 액션: proxy·교육망·SaaS edge에서 새 도메인, 비정상 no-cors POST, WebSocket connection fan-out을 rate limit·WAF·DNS telemetry로 조사"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-158",
       "title_ko": "메타, 루이지애나 Hyperion AI 데이터센터를 5GW·500억달러 이상으로 증설",
       "title_original": "Meta expands Hyperion AI data center to 5GW",
@@ -272,11 +440,11 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-157",
-      "rank": 2,
+      "rank": 4,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -359,7 +527,7 @@
     },
     {
       "id": "news-156",
-      "rank": 3,
+      "rank": 5,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -441,7 +609,7 @@
     },
     {
       "id": "news-155",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -513,7 +681,7 @@
     },
     {
       "id": "news-154",
-      "rank": 5,
+      "rank": 7,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -585,7 +753,7 @@
     },
     {
       "id": "news-151",
-      "rank": 6,
+      "rank": 8,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -729,11 +897,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-152",
-      "rank": 8,
+      "rank": 10,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -866,7 +1034,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-148",
@@ -931,7 +1099,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-146",
@@ -995,7 +1163,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-149",
@@ -1060,11 +1228,11 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-153",
-      "rank": 13,
+      "rank": 15,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -1193,7 +1361,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-143",
@@ -1261,7 +1429,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-144",
@@ -1329,7 +1497,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-141",
@@ -1399,7 +1567,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-139",
@@ -1464,11 +1632,11 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-137",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -1601,11 +1769,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-138",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -1738,7 +1906,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-134",
@@ -1807,7 +1975,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-140",
@@ -1872,7 +2040,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-133",
@@ -1937,7 +2105,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-135",
@@ -2002,7 +2170,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-136",
@@ -2072,7 +2240,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-124",
@@ -2143,7 +2311,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-125",
@@ -2215,7 +2383,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-126",
@@ -2277,7 +2445,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-127",
@@ -2344,7 +2512,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-120",
@@ -2415,7 +2583,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-122",
@@ -2477,7 +2645,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-121",
@@ -2539,7 +2707,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-117",
@@ -2602,7 +2770,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-128",
@@ -2668,7 +2836,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-123",
@@ -2730,7 +2898,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-115",
@@ -2792,7 +2960,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-116",
@@ -2855,7 +3023,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-118",
@@ -2920,7 +3088,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-129",
@@ -2982,7 +3150,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-109",
@@ -3046,7 +3214,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-130",
@@ -3108,7 +3276,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-131",
@@ -3170,7 +3338,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-104",
@@ -3232,7 +3400,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-105",
@@ -3294,7 +3462,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-119",
@@ -3357,7 +3525,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-106",
@@ -3416,130 +3584,6 @@
           "items": [
             "팀 액션: AI 인프라 전략은 GPU 단가 비교와 함께 custom accelerator 적용 대상, 모델 serving runtime, 메모리·스토리지 I/O, 공급망 계약 리스크를 통합 평가 필요",
             "발표 메모: Iris 양산 → 14GW capacity → 장기 부품 공급 계약 → AI 원가 구조 변화 순서로 설명 가능"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-107",
-      "title_ko": "Meta, AI 인프라 외부 임대·경쟁 모델 호스팅 가능성 검토",
-      "title_original": "저커버그 \"메타 AI 인프라 외부 임대 검토 타당\"...클라우드 사업 진출 시사",
-      "summary": "핵심: Zuckerberg가 AI 컴퓨팅 자원 일부 외부 임대와 경쟁사 모델 호스팅 가능성을 사업적으로 검토할 가치가 있다고 언급. 맥락: CoreWeave·SpaceX식 AI capacity 임대 모델과 AWS Bedrock·Google Vertex형 모델 호스팅 구조가 Meta의 잠재 사업 옵션으로 거론됨.",
-      "detail": "핵심: Meta는 현재 모든 컴퓨팅 자원을 내부 사용 중이라고 선을 그으면서도, 시장의 AI compute 가격이 높을 때 외부 임대가 더 합리적일 수 있다고 설명함. 영향: AI 데이터센터는 내부 제품 원가센터에서 외부 매출을 만드는 compute marketplace 자산으로 재평가될 수 있음.",
-      "why_it_matters": "AI compute scarcity가 지속되면 hyperscaler·네오클라우드·모델 사업자 간 경계가 흐려지고 capacity resale, model hosting, premium short-term contract가 새 수익 모델이 됨.",
-      "engineering_implication": "AI 인프라 구매팀은 장기 reserved capacity와 단기 premium 임대 시장을 분리해 보고, provider lock-in·data isolation·model hosting SLA·egress 비용을 계약 기준에 포함 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Meta",
-        "AI Cloud",
-        "Neocloud",
-        "Model Hosting",
-        "AI Infrastructure"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-10 15:41",
-      "source_name": "AI Times",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212636",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212636_215951_376.png",
-      "local_image": "assets/images/news-107.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Zuckerberg가 Bloomberg 인터뷰에서 AI 인프라 일부 외부 임대와 경쟁사 모델 호스팅 가능성을 검토할 가치가 있다고 언급",
-            "전제: Meta는 현재 보유한 컴퓨팅 파워를 내부적으로 전량 활용 중이며 surplus capacity 때문은 아니라고 설명",
-            "시장: compute 서비스 시장 가격이 매우 높아 내부 사용과 외부 임대의 상대 가치 비교 필요성 언급",
-            "비교: CoreWeave 같은 neocloud 모델과 AWS·Azure·Google Compute식 장기 자원 판매 방안이 참조 사례로 제시"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "수익화: AI 수익화 압박 속에서 Meta는 Muse Spark 1.1 API 유료 서비스도 공개",
-            "호스팅: SemiAnalysis가 제기한 경쟁사 AI 모델 호스팅 가능성에 대해 구체 협상은 확인하지 않았지만 가능성 열어둠",
-            "SpaceX 사례: Memphis 데이터센터 임대가 2028년 500억달러 이상, 2030년 1000억달러 이상 매출 가능성으로 거론",
-            "전략: 단기 premium contract와 장기 내부 AI 제품 투자를 비교하는 capacity allocation 문제로 해석 가능"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 대규모 AI 데이터센터는 내부 모델 개발 비용센터가 아니라 외부 고객에게 팔 수 있는 scarce compute asset으로 전환 가능",
-            "클라우드 시장: hyperscaler, neocloud, 모델 회사, 소셜 플랫폼의 경계가 model hosting과 GPU capacity resale에서 겹치기 시작",
-            "운영 과제: 외부 임대 시 tenant isolation, data residency, model IP protection, GPU scheduling, SLA, incident response 체계 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI capacity 조달은 reserved contract, spot/premium compute, managed model hosting, 자체 GPU cluster의 비용·보안·SLA 차이를 분리 비교 필요",
-            "발표 메모: Meta 내부 capacity → 외부 compute 임대 → 모델 호스팅 → 클라우드 시장 구조 변화 순서로 설명 가능"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-108",
-      "title_ko": "Anthropic·UST, Claude를 반도체 검증·제조 공정 등 피지컬 AI 현장에 적용",
-      "title_original": "앤트로픽-UST, ‘물리적 AI’ 시장 공략 본격화… 반도체·자동차·제조 현장에 클로드 적용",
-      "summary": "핵심: Anthropic과 UST가 Claude를 반도체 설계 검증, 제조 공정, 통신 네트워크, 의료·금융 시스템 등 산업 운영 환경에 적용하는 전략 파트너십 체결. 사례: UST iDEC은 closed-loop 검증으로 4일 이상 걸리던 반도체 검증을 약 48시간 수준으로 줄이고 검증 주기 50~70% 단축 성과 제시.",
-      "detail": "핵심: Claude Code는 pinout·schematic 분석, 테스트 코드 생성·실행, 실제 장비 데이터와 digital twin 비교를 통해 반도체 검증 자동화 추론 계층으로 통합될 계획임. 영향: 피지컬 AI는 문서·챗봇 자동화를 넘어 OT/IT 데이터, 장비 안전성, 회귀 테스트, 디지털 트윈 신뢰성을 함께 다루는 엔지니어링 운영 과제임.",
-      "why_it_matters": "생성형 AI가 제조·반도체 검증으로 들어가면 품질·안전·감사 요구가 일반 SaaS 자동화보다 높아져 human approval, traceability, rollback 기준이 필수임.",
-      "engineering_implication": "제조·반도체 AI 도입팀은 Claude류 모델을 test generation 보조로 쓰더라도 golden dataset, simulation parity, 장비 로그 검증, 승인 게이트, defect escape rate를 함께 측정 필요.",
-      "category": "AI",
-      "tags": [
-        "Anthropic",
-        "Claude",
-        "Physical AI",
-        "Semiconductor",
-        "Manufacturing"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-07-10 15:23",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40930",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40930_61683_2329_v150.jpg",
-      "local_image": "assets/images/news-108.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Anthropic과 UST가 Claude를 산업 핵심 운영 환경에 적용하는 전략 파트너십 체결",
-            "대상: 반도체 설계 검증, 제조 공정, 통신 네트워크, 의료 서비스, 금융 시스템 적용 범위 언급",
-            "플랫폼: UST의 반도체 검증 플랫폼 iDEC에 Claude 추론 계층을 통합하는 구상 공개",
-            "성과: iDEC은 기존 4일 이상 검증 작업을 약 48시간 수준으로 단축하고 전체 검증 주기 50~70% 감소 성과 제시"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "자동화: iDEC은 하드웨어 설계를 읽고 regression test를 생성·실행하며 실제 장비 데이터와 digital twin 비교 분석 수행",
-            "Claude 역할: pinout과 schematic 분석 후 테스트 코드 생성·실행, 펌웨어 오류와 signal integrity 문제 조기 탐지 보조",
-            "산업 범위: UST는 반도체, 자동차, 제조, 통신, 임베디드, IoT 분야 제품 설계 검증부터 유지보수까지 지원",
-            "변화: AI 활용 범위가 사무 생산성에서 실제 제품·설비 설계·생산·운영으로 확장"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 피지컬 AI는 오류가 문서 품질 저하가 아니라 제품 결함, 생산 중단, 안전 사고로 이어질 수 있는 고위험 영역",
-            "검증 과제: 모델이 생성한 테스트 코드와 분석 결과는 simulation, 장비 로그, 기존 regression suite로 교차 검증 필요",
-            "운영 과제: OT/IT 경계, 장비 접근 권한, 변경 승인, digital twin 신뢰도, audit trace를 AI 워크플로에 통합 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 제조·반도체 AI PoC는 작업시간 단축률뿐 아니라 false negative, defect escape, 승인 대기 시간, rollback 가능성, 장비 영향도를 함께 측정 필요",
-            "발표 메모: iDEC 48시간/50~70% 단축 → Claude 추론 계층 → 피지컬 AI 운영 통제 순서로 설명 가능"
           ]
         }
       ],

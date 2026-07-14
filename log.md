@@ -570,3 +570,11 @@
 - Applied the corrected two-entry daily policy: retained the already refreshed MemGhost security Deep Dive and rebuilt the second Deep Dive from the distinct, source-page-verified AI Times Hyperion report published 2026-07-14 13:52 KST. The two selections have no overlapping source URL.
 - Replaced the prior inference-economics Deep Dive with a source-grounded Hyperion briefing covering 2GW→5GW expansion, 500억달러 이상 투자 계획, 2030/2032 목표, energization·냉각·fabric 병목, FinOps, capacity ledger, rollout, and operator checklist; set `refreshed_kst` to 2026-07-14 16:20 KST.
 - Updated `docs/data/weekly-news.json` and synchronized `weekly/2026-W30.md`; final data remains 50 items and 2 Deep Dives.
+
+## [2026-07-14] update | Add Grok Build repository-egress and Lucide npm browser-DDoS findings
+- Checked current time at 2026-07-14 20:26 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory Korean/community surfaces: GeekNews RSS returned 403; AI Times RSS was reachable and GeekNews Plus was checked directly. Parsed 1,123 entries from 9 reachable global/official feed endpoints; 3 endpoints were unavailable.
+- Reviewed current candidates published no later than the run time. Source-page verification selected two higher-priority Security/DevTools stories: The Hacker News reported observed Grok Build repository/trace uploads, and JFrog's primary research documented 148 npm packages that used student proxy visitors as browser DDoS nodes.
+- Added both items, removed the two oldest capped entries (Anthropic·UST physical-AI deployment, 2026-07-10 15:23 KST; Meta external AI-capacity rental, 2026-07-10 15:41 KST), re-sorted 50 items newest-first, and reassigned ranks.
+- Deep Dives remain MemGhost and Hyperion because both were fully refreshed earlier on 2026-07-14; no timestamp-only churn made.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, two immutable raw captures, and wiki index; source images retain original article URLs.
