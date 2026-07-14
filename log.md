@@ -585,3 +585,10 @@
 - Applied the first-run daily policy to both entries: replaced MemGhost with Grok Build repository-egress analysis and replaced Hyperion with Lucide Proxy npm/browser-DDoS analysis. The selections are distinct current events and use non-overlapping primary research/source URLs.
 - Rebuilt both source-grounded Deep Dives with 8 structured sections each, including evidence boundaries, architecture/operations impact, governance, rollout steps, team checklists, and presenter messages; set both `refreshed_kst` values to 2026-07-15 00:34 KST.
 - Updated `docs/data/weekly-news.json` and synchronized `weekly/2026-W30.md`; regular news stays at 50 items.
+
+## [2026-07-15] update | Add OpenAI Codex·ChatGPT Work active-user operating signal
+- Checked current time at 2026-07-15 04:55 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory Korean/community surfaces: `news.hada.io`, GeekNews Plus, AI Times KR, and AI Times all returned HTTP 200. Also probed 10 official AI/Cloud/Infra/Security feed endpoints; 9 returned HTTP 200 and CISA returned HTTP 403.
+- Reviewed current source surfaces and source-page verified AI Times coverage published 2026-07-14 19:31 KST: OpenAI's Codex and ChatGPT Work combined active-user count reached 7 million; individual-product, paid-conversion, and causal model-impact figures remain undisclosed.
+- Added the Codex·ChatGPT Work developer-platform operations item and removed the older lower-score Cursor Sand item (2026-07-10 18:08 KST); re-sorted all 50 items newest-first and reassigned ranks.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.

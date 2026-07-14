@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-14 | Total pages: 162
+> Last updated: 2026-07-15 | Total pages: 163
 
 ## Entities
 
@@ -30,6 +30,7 @@
 - [[raw/articles/thn-grok-build-repository-upload-2026-07-14]] — Grok Build의 Git 저장소·trace 전송 범위와 coding agent egress 통제.
 - [[raw/articles/jfrog-lucide-proxy-npm-ddos-2026-07-14]] — npm registry를 악용한 Lucide Proxy 브라우저 DDoS 동원과 runtime 공급망 통제.
 - [[raw/articles/aitimes-meta-hyperion-5gw-2026-07-14]] — Meta Hyperion 5GW AI 데이터센터 증설 계획과 전력·냉각·capacity planning 변수.
+- [[raw/articles/aitimes-openai-codex-7m-users-2026-07-14]] — Codex·ChatGPT Work 합산 700만 활성 사용자 공개와 coding-agent 플랫폼 운영 지표.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
