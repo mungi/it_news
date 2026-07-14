@@ -563,3 +563,10 @@
 - Checked current time at 2026-07-14 16:19 KST.
 - Corrected singular Deep Dive refresh policy: when 2 entries exist, both must be refreshed with distinct current topics and non-overlapping primary sources.
 - Updated the live 4-hour news updater to refresh every existing Deep Dive entry and record per-entry `refreshed_kst` or a verified no-replacement `refresh_note`.
+
+## [2026-07-14] update | Refresh second daily Deep Dive with Meta Hyperion capacity planning
+- Checked current time at 2026-07-14 16:20 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory Korean/community surfaces (`news.hada.io`, GeekNews Plus, AI Times KR, AI Times) plus AWS, Cloudflare, and The Hacker News; all 7 endpoints returned HTTP 200 in this probe.
+- Applied the corrected two-entry daily policy: retained the already refreshed MemGhost security Deep Dive and rebuilt the second Deep Dive from the distinct, source-page-verified AI Times Hyperion report published 2026-07-14 13:52 KST. The two selections have no overlapping source URL.
+- Replaced the prior inference-economics Deep Dive with a source-grounded Hyperion briefing covering 2GW→5GW expansion, 500억달러 이상 투자 계획, 2030/2032 목표, energization·냉각·fabric 병목, FinOps, capacity ledger, rollout, and operator checklist; set `refreshed_kst` to 2026-07-14 16:20 KST.
+- Updated `docs/data/weekly-news.json` and synchronized `weekly/2026-W30.md`; final data remains 50 items and 2 Deep Dives.
