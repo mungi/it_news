@@ -483,6 +483,7 @@ def main() -> int:
         errors.append(f"item ranks must be contiguous from 1 to {len(items)}; missing={missing}, extra={extra}")
 
     seen_deep_dive_ids: set[str] = set()
+    seen_deep_dive_primary_sources: set[str] = set()
     for idx, item in enumerate(deep_dives, start=1):
         prefix = f"deep_dives[{idx}]"
         if not isinstance(item, dict):
@@ -493,9 +494,18 @@ def main() -> int:
                 errors.append(f"{prefix} missing required field: {key}")
             elif key in item:
                 require_non_empty_string(item.get(key), f"{prefix} {key}", errors)
-        for key in ("image_url", "local_image"):
+        for key in ("image_url", "local_image", "refresh_note"):
             if key in item:
                 validate_optional_string(item.get(key), f"{prefix} {key}", errors)
+        refreshed_kst = item.get("refreshed_kst")
+        if not isinstance(refreshed_kst, str) or not refreshed_kst.strip():
+            errors.append(f"{prefix} refreshed_kst must be a non-empty YYYY-MM-DD HH:mm KST timestamp")
+        elif not is_valid_kst_timestamp(refreshed_kst):
+            errors.append(f"{prefix} refreshed_kst must use a valid YYYY-MM-DD HH:mm KST timestamp")
+        else:
+            refreshed_time = parse_kst_timestamp(refreshed_kst)
+            if timeline.get("last_updated_kst") and refreshed_time and refreshed_time > timeline["last_updated_kst"]:
+                errors.append(f"{prefix} refreshed_kst must not be later than last_updated_kst")
         deep_dive_id = item.get("id")
         if deep_dive_id:
             if not DEEP_DIVE_ID_RE.match(str(deep_dive_id)):
@@ -513,6 +523,11 @@ def main() -> int:
                     continue
                 if not is_http_url(source):
                     errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
+            primary_source = sources[0]
+            if isinstance(primary_source, str) and is_http_url(primary_source):
+                if primary_source in seen_deep_dive_primary_sources:
+                    errors.append(f"duplicate deep dive primary source: {primary_source}")
+                seen_deep_dive_primary_sources.add(primary_source)
         image_url = item.get("image_url", "")
         local_image = item.get("local_image", "")
         if not (image_url or local_image):
