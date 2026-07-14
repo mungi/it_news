@@ -347,7 +347,18 @@ function compareItemsByPublishedDesc(a, b) {
 }
 
 function topRankItems(items, limit = 6) {
-  return items.slice(0, limit);
+  const importancePriority = { "must-know": 0, high: 1, medium: 2, low: 3 };
+  return [...items]
+    .sort((a, b) => {
+      const priorityA = importancePriority[a.importance] ?? Number.MAX_SAFE_INTEGER;
+      const priorityB = importancePriority[b.importance] ?? Number.MAX_SAFE_INTEGER;
+      if (priorityA !== priorityB) return priorityA - priorityB;
+      const scoreA = Number.isFinite(a.score) ? a.score : -Infinity;
+      const scoreB = Number.isFinite(b.score) ? b.score : -Infinity;
+      if (scoreA !== scoreB) return scoreB - scoreA;
+      return compareItemsByPublishedDesc(a, b);
+    })
+    .slice(0, limit);
 }
 
 function renderCards() {
