@@ -542,3 +542,11 @@
 - Added Ploy's GPT-5.6 migration case and removed the oldest capped item, 호남 AI·반도체 클러스터 전력망 부족 전망 (2026-07-10 10:15 KST); re-sorted all 50 items newest-first and reassigned ranks.
 - Deep Dive remained MemGhost because it was already replaced at 2026-07-14 02:26 KST; no timestamp-only churn was made.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, source image and raw capture, and wiki index.
+
+## [2026-07-14] update | Add Amazon Bedrock GPT-5.6 model-family availability
+- Checked current time at 2026-07-14 10:41 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory surfaces: GeekNews RSS returned 403, GeekNews Plus HTML and AI Times KR/AI Times feeds were reachable. Also sampled AWS, Cloudflare, GitHub, Hugging Face, The Hacker News, CNCF, and Kubernetes feeds: 10 endpoints reachable and 1 unavailable.
+- Reviewed the newly reachable feed surfaces; AWS's official announcement, published 2026-07-14 07:03 KST, was source-page verified and selected. It makes OpenAI GPT-5.6 Sol·Terra·Luna generally available in Bedrock through the Responses API, with explicit prompt-cache breakpoints and stated regional availability.
+- Added the Bedrock item and removed the oldest capped item, Red Hat·IBM Lightwell (2026-07-10 11:34 KST); re-sorted all 50 items newest-first and reassigned ranks.
+- Deep Dive remained MemGhost because it was already replaced at 2026-07-14 02:26 KST; no timestamp-only churn was made.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable AWS source capture, and wiki index.
