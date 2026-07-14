@@ -691,17 +691,24 @@ function setBackgroundInert(isInert) {
   const modal = $("#modal");
   Array.from(document.body.children).forEach((element) => {
     if (element === modal) return;
-    element.inert = isInert;
     if (isInert) {
+      // Preserve pre-existing inert state: decorative or asynchronously loaded
+      // content can already be intentionally unavailable before a modal opens.
+      element.dataset.modalPreviousInert = String(element.inert);
+      element.inert = true;
       if (element.hasAttribute("aria-hidden")) {
         element.dataset.modalPreviousAriaHidden = element.getAttribute("aria-hidden") || "";
       }
       element.setAttribute("aria-hidden", "true");
-    } else if (Object.hasOwn(element.dataset, "modalPreviousAriaHidden")) {
-      element.setAttribute("aria-hidden", element.dataset.modalPreviousAriaHidden);
-      delete element.dataset.modalPreviousAriaHidden;
     } else {
-      element.removeAttribute("aria-hidden");
+      element.inert = element.dataset.modalPreviousInert === "true";
+      delete element.dataset.modalPreviousInert;
+      if (Object.hasOwn(element.dataset, "modalPreviousAriaHidden")) {
+        element.setAttribute("aria-hidden", element.dataset.modalPreviousAriaHidden);
+        delete element.dataset.modalPreviousAriaHidden;
+      } else {
+        element.removeAttribute("aria-hidden");
+      }
     }
   });
 }
