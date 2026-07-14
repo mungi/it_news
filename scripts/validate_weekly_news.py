@@ -499,7 +499,9 @@ def main() -> int:
         errors.append(f"item ranks must be contiguous from 1 to {len(items)}; missing={missing}, extra={extra}")
 
     seen_deep_dive_ids: set[str] = set()
-    seen_deep_dive_primary_sources: set[str] = set()
+    # Fragments, hostname case, and default ports do not make a distinct source
+    # document. Apply the same canonical comparison used for item source URLs.
+    seen_deep_dive_primary_sources: set[tuple[str, str, int | None, str, str, str]] = set()
     for idx, item in enumerate(deep_dives, start=1):
         prefix = f"deep_dives[{idx}]"
         if not isinstance(item, dict):
@@ -541,9 +543,10 @@ def main() -> int:
                     errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
             primary_source = sources[0]
             if isinstance(primary_source, str) and is_http_url(primary_source):
-                if primary_source in seen_deep_dive_primary_sources:
+                canonical_primary_source = canonical_http_url(primary_source)
+                if canonical_primary_source in seen_deep_dive_primary_sources:
                     errors.append(f"duplicate deep dive primary source: {primary_source}")
-                seen_deep_dive_primary_sources.add(primary_source)
+                seen_deep_dive_primary_sources.add(canonical_primary_source)
         image_url = item.get("image_url", "")
         local_image = item.get("local_image", "")
         if not (image_url or local_image):
