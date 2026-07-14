@@ -558,3 +558,8 @@
 - Added Hyperion and removed the oldest capped item, 딥엑스·에브넷 APAC 15개국 AI 반도체 공급망 구축 (2026-07-10 12:19 KST); re-sorted all 50 items newest-first and reassigned ranks.
 - Deep Dive remained MemGhost because it was already refreshed at 2026-07-14 02:26 KST; no timestamp-only churn was made.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable source capture, cached source image, and wiki index.
+
+## [2026-07-14] policy | Refresh every Deep Dive daily
+- Checked current time at 2026-07-14 16:19 KST.
+- Corrected singular Deep Dive refresh policy: when 2 entries exist, both must be refreshed with distinct current topics and non-overlapping primary sources.
+- Updated the live 4-hour news updater to refresh every existing Deep Dive entry and record per-entry `refreshed_kst` or a verified no-replacement `refresh_note`.
