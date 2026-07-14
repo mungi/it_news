@@ -550,3 +550,11 @@
 - Added the Bedrock item and removed the oldest capped item, Red Hat·IBM Lightwell (2026-07-10 11:34 KST); re-sorted all 50 items newest-first and reassigned ranks.
 - Deep Dive remained MemGhost because it was already replaced at 2026-07-14 02:26 KST; no timestamp-only churn was made.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable AWS source capture, and wiki index.
+
+## [2026-07-14] update | Add Meta Hyperion 5GW AI data-center expansion
+- Checked current time at 2026-07-14 15:21 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory recurring surfaces: GeekNews RSS returned 403; GeekNews Plus HTML, AI Times KR, and AI Times were reachable. Also parsed AWS, Cloudflare, GitHub, The Hacker News, and BleepingComputer feeds: 8 endpoints reachable and 1 unavailable.
+- Parsed 295 feed entries from reachable XML feeds and inspected the mandatory Korean/community surfaces directly. AI Times' source-page-verified report, updated 2026-07-14 13:52 KST, was selected: Meta plans to expand the Louisiana Hyperion AI data center from 2GW to 5GW, with investment above $50 billion and a 2030/2032 staged build target.
+- Added Hyperion and removed the oldest capped item, 딥엑스·에브넷 APAC 15개국 AI 반도체 공급망 구축 (2026-07-10 12:19 KST); re-sorted all 50 items newest-first and reassigned ranks.
+- Deep Dive remained MemGhost because it was already refreshed at 2026-07-14 02:26 KST; no timestamp-only churn was made.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable source capture, cached source image, and wiki index.
