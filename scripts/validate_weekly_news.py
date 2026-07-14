@@ -60,6 +60,22 @@ def is_http_url(value: str) -> bool:
     return not has_decoded_url_whitespace(parsed)
 
 
+def canonical_http_url(value: str) -> tuple[str, str, int | None, str, str, str]:
+    """Create a comparison key for already validated HTTP(S) source URLs.
+
+    Fragments do not identify a distinct source document, while hostname case
+    and default ports are URL syntax variants. Keeping these variants out of
+    the duplicate check prevents the same source entering the briefing twice.
+    """
+    parsed = urlparse(value)
+    scheme = parsed.scheme.lower()
+    hostname = (parsed.hostname or "").lower()
+    port = parsed.port
+    if (scheme == "http" and port == 80) or (scheme == "https" and port == 443):
+        port = None
+    return (scheme, hostname, port, parsed.path or "/", parsed.params, parsed.query)
+
+
 def has_malformed_percent_escape(value: str) -> bool:
     return bool(re.search(r"%(?![0-9A-Fa-f]{2})", value))
 
@@ -379,7 +395,7 @@ def main() -> int:
 
     seen_ids: set[str] = set()
     seen_ranks: set[int] = set()
-    seen_urls: set[str] = set()
+    seen_urls: set[tuple[str, str, int | None, str, str, str]] = set()
     previous_published: tuple[int, int, int, int, int] | None = None
     for idx, item in enumerate(items, start=1):
         prefix = f"items[{idx}]"
@@ -418,10 +434,10 @@ def main() -> int:
         if source_url:
             if not isinstance(source_url, str) or not is_http_url(source_url):
                 errors.append(f"{prefix} source_url must be an absolute http(s) URL: {source_url}")
-            elif source_url in seen_urls:
+            elif canonical_http_url(source_url) in seen_urls:
                 errors.append(f"duplicate source_url: {source_url}")
             else:
-                seen_urls.add(source_url)
+                seen_urls.add(canonical_http_url(source_url))
         score = item.get("score")
         if score is not None and (not is_score_number(score) or not 0 <= score <= 100):
             errors.append(f"{prefix} score must be a number between 0 and 100")
