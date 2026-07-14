@@ -578,3 +578,10 @@
 - Added both items, removed the two oldest capped entries (Anthropic·UST physical-AI deployment, 2026-07-10 15:23 KST; Meta external AI-capacity rental, 2026-07-10 15:41 KST), re-sorted 50 items newest-first, and reassigned ranks.
 - Deep Dives remain MemGhost and Hyperion because both were fully refreshed earlier on 2026-07-14; no timestamp-only churn made.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, two immutable raw captures, and wiki index; source images retain original article URLs.
+
+## [2026-07-15] update | Refresh both daily Deep Dives with coding-agent egress and npm browser-DDoS analysis
+- Checked current time at 2026-07-15 00:34 KST; no freeze guard was run per current project policy.
+- Rechecked all four mandatory Korean/community surfaces and 8 official AI/Cloud/Infra/Security feeds: 12 endpoints returned HTTP 200. Source pages for The Hacker News Grok Build coverage and JFrog Lucide Proxy research were independently reachable and title-verified.
+- Applied the first-run daily policy to both entries: replaced MemGhost with Grok Build repository-egress analysis and replaced Hyperion with Lucide Proxy npm/browser-DDoS analysis. The selections are distinct current events and use non-overlapping primary research/source URLs.
+- Rebuilt both source-grounded Deep Dives with 8 structured sections each, including evidence boundaries, architecture/operations impact, governance, rollout steps, team checklists, and presenter messages; set both `refreshed_kst` values to 2026-07-15 00:34 KST.
+- Updated `docs/data/weekly-news.json` and synchronized `weekly/2026-W30.md`; regular news stays at 50 items.

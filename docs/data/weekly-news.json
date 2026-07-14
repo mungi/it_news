@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-14 20:26",
+  "last_updated_kst": "2026-07-15 00:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "Amazon Bedrock의 GPT-5.6 정식 제공: Sol·Terra·Luna와 90% prompt-cache 할인 조건을 작업별 라우팅·리전 설계에 반영.",
@@ -14,194 +14,189 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "MemGhost: 이메일 한 통이 AI 에이전트 장기 메모리를 오염시키는 공격 경로",
-      "summary": "외부 이메일의 지시가 background agent의 장기 메모리에 저장되면 다음 세션의 답변·도구 사용까지 바꿀 수 있음.",
-      "details": "MemGhost 연구는 이메일을 읽는 개인 agent에서 외부 입력이 memory write로 넘어가는 경계를 실험했다. 방어의 중심은 prompt filter 하나가 아니라 memory write provenance, 권한 분리, 사용자 승인, audit·rollback이다.",
-      "why_it_matters": "지속 메모리는 사용자 경험 기능이면서 다음 세션의 제어 문맥이다. 외부 콘텐츠가 이 상태를 바꾸면 단발성 prompt injection이 장기 정책 오염으로 전환된다.",
+      "title": "Grok Build 코드 반출 관찰: coding agent의 모델 호출과 저장소 egress를 분리해 통제해야 하는 이유",
+      "summary": "Grok Build 0.2.93 재현 관찰에서 모델 요청과 별개 storage 채널로 tracked 파일과 전체 Git 이력이 전송된 정황이 보고됨. xAI의 서버 측 차단 관찰은 있었지만 적용 범위·보존·삭제 보장은 별도 검증 대상임.",
+      "details": "cereblab의 패킷 캡처를 인용한 보도는 Grok Build가 읽지 않은 tracked 파일과 Git bundle을 xAI 관리 Google Cloud Storage로 보낸 정황을 제시한다. 이 관찰은 학습이나 사람 열람을 입증하지 않지만, cloud coding agent 도입에서 모델 학습 opt-out과 repository/trace egress·retention을 서로 다른 control plane으로 검증해야 함을 드러낸다.",
+      "why_it_matters": "Git 이력에는 현재 작업 트리에 없는 credential, 내부 endpoint, 고객 데이터가 남을 수 있다. 코드 agent의 권한 평가는 prompt 설정보다 파일 범위, metadata, 전송 endpoint, 보존·삭제 증빙까지 포함해야 한다.",
       "sources": [
-        "https://thehackernews.com/2026/07/new-memghost-attack-plants-persistent.html",
-        "https://arxiv.org/abs/2607.05189v1"
+        "https://thehackernews.com/2026/07/grok-build-uploads-entire-git.html",
+        "https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547"
       ],
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "메일을 읽는 agent의 장기 메모리는 사용자 편의 데이터가 아니라 다음 세션의 판단을 바꾸는 control-plane 상태임. 외부 이메일이 이 상태를 직접 바꾸지 못하게 write 권한·승인·복구를 분리해야 함.",
+          "body": "클라우드 coding agent의 모델 요청과 workspace·trace 업로드는 같은 보안 경계가 아님. 소스 연결 승인은 모델 학습 opt-out만으로 끝나지 않으며 파일 범위·Git metadata·storage endpoint·retention을 별도 release gate로 검증해야 함.",
           "items": [
-            "판단: 외부 콘텐츠의 읽기 권한과 persistent memory 쓰기 권한을 같은 신뢰 등급으로 두지 않을 필요",
-            "우선순위: prompt filtering보다 provenance가 남는 memory write 정책과 rollback 설계 우선"
+            "판단: 코드 생성 품질 설정과 source-code egress 정책을 서로 다른 control plane으로 관리 필요",
+            "팀 액션: production 저장소 연결 전 sandbox capture와 vendor 보존·삭제 증빙을 필수화 필요"
           ]
         },
         {
-          "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "The Hacker News는 7월 6일 arXiv에 공개된 연구를 인용해 MemGhost의 stealth memory injection을 소개함. 공격 이메일은 inbox를 읽는 agent가 거짓 정보를 persistent memory에 쓰고, 사용자-facing reply에서는 그 변경을 숨기도록 설계됨.",
+          "heading": "원문과 재현 관찰",
+          "body": "The Hacker News는 독립 연구자 cereblab의 패킷 캡처와 재현 기록을 인용해 Grok Build 0.2.93의 저장소 전송 경로를 설명함. 재현 기록은 모델 응답 요청과 분리된 storage 전송을 관찰한 자료이며, vendor의 공식 보안 공지가 아닌 외부 관찰임.",
           "items": [
-            "구조: OpenClaw는 AGENTS.md 같은 상시 지시 파일과 MEMORY.md 같은 사용자 상태 파일을 세션 시작 때 context로 읽는 방식",
-            "공격 흐름: 외부 메일 도착 → email skill 읽기 → file tool memory write → 후속 세션에서 오염 정보 재주입",
-            "사례: 사용자의 Zelle 일일 송금 한도가 1만 달러로 높아졌다는 거짓 사실을 심는 평가 사례",
-            "연구 도구: shadow agent에서 성공적인 memory 저장과 답변 은닉을 보상으로 이메일 payload를 생성한 MemGhost 사용"
+            "관찰: agent에게 열지 말라고 지시한 tracked 파일의 고유 marker가 캡처한 Git bundle에서 복원된 조건",
+            "경로: model turn과 별도의 `/v1/storage` 계열 전송으로 설명된 storage channel",
+            "범위: tracked 파일과 full commit history 전송 정황이며 gitignored 파일 전송 여부는 확인되지 않은 상태"
           ]
         },
         {
-          "heading": "검증 수치와 해석 경계",
-          "body": "성공률은 격리된 benchmark 환경의 model·framework 조합에 관한 값이며, 실제 메일 전달·스팸 차단 우회·사용자 피해 규모를 뜻하지 않음. 수치는 방어 우선순위를 정하는 신호로만 사용해야 함.",
+          "heading": "수치와 검증 경계",
+          "body": "전송량과 chunk 수는 재현 환경의 네트워크 관찰 값임. 이 값은 데이터가 전송·수락·저장된 정황을 뒷받침하지만, xAI의 학습 사용·직원 열람·전체 계정 적용 범위를 입증하지 않음.",
           "items": [
-            "결과: 56개 신규 test case에서 거짓 memory 기록, 변경 은닉, 후속 답변 영향의 전체 체인을 평가",
-            "수치: background OpenClaw/GPT-5.4 조합에서 87.5%, Claude Code SDK/Sonnet 4.6 조합에서 71.4% 성공률 제시",
-            "비교: foreground mode에서는 사용자가 응답을 볼 수 있어 성공률이 낮아졌고, background mode에서 위험이 커지는 조건",
-            "한계: 연구는 fake inbox·fake user의 sealed test environment 기반이며 실제 악용 확인은 아닌 실험 결과"
+            "수치: 12GB 시험 저장소에서 model-turn traffic 약 192KB, storage channel 약 **5.10GiB** 전송 보고",
+            "전송: 약 75MB 단위 73개 chunk가 HTTP 200을 받은 재현 기록",
+            "한계: 서버 측 설정 변경 뒤 6회 재시험에서 upload 0건이 관찰됐으나 영구성·tenant 범위는 미확인"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent memory는 데이터베이스의 cache가 아니라 이후 모델 context에 영향을 주는 상태 저장소임. memory write를 email skill의 부수효과로 허용하면 신뢰할 수 없는 입력이 system-like context로 승격되는 confused-deputy 경로가 됨.",
+          "body": "agent runtime은 prompt를 모델에 보내는 계층, workspace를 수집하는 계층, trace와 artifact를 저장하는 계층을 분리해 설계할 수 있음. 이 중 storage 계층이 repository bundle을 받으면 DLP·data residency·retention 의무가 모델 endpoint와 별도로 생김.",
           "items": [
-            "경계: external content, tool instruction, user-approved preference, administrator policy를 서로 다른 provenance class로 모델링 필요",
-            "설계: memory write API에 source label·risk score·scope·TTL·approver를 필수 메타데이터로 요구 필요",
-            "운영: background agent의 silent tool call은 foreground chat보다 높은 위험 등급과 더 좁은 capability set 적용 필요"
+            "아키텍처: file selection, Git history 포함, diff·terminal trace, artifact archive를 독립 telemetry로 기록 필요",
+            "보안: source repository connector를 SaaS egress connector로 분류하고 allowlist·proxy·CASB 정책 적용 필요",
+            "운영: agent version·server flag·계정 tier별 전송 동작을 release마다 재검증할 필요"
+          ]
+        },
+        {
+          "heading": "데이터 보안·거버넌스 관점",
+          "body": "현재 트리에서 삭제된 비밀정보도 Git history에 남을 수 있어 단순 secrets scan 통과만으로 노출면이 사라지지 않음. 국내외 고객 데이터, 영업비밀, 국외 이전, 감사 로그 요구를 repository history 단위로 평가해야 함.",
+          "items": [
+            "분류: source, Git object, issue·PR context, terminal output, trace를 서로 다른 민감도와 보존 기한으로 지정 필요",
+            "계약: ZDR 적용 대상이 model input만인지 storage·diagnostic·support artifact까지인지 서면 확인 필요",
+            "감사: upload object ID, byte count, destination, retention, delete receipt를 보안 증적에 남길 필요"
+          ]
+        },
+        {
+          "heading": "도입 로드맵",
+          "body": "도구를 전면 금지하기보다 낮은 민감도 sandbox에서 관찰하고, 조직별 egress 정책과 복구 절차를 확정한 뒤 허용 저장소를 넓히는 순서가 현실적임.",
+          "items": [
+            "1단계: agent별 read scope, Git history 포함 여부, trace·artifact endpoint, 계정별 retention을 inventory화",
+            "2단계: canary secret와 비공개 commit이 있는 sandbox로 packet capture·DLP alert·삭제 API를 검증",
+            "3단계: production은 allowlisted repository, 최소 권한 token, pre-commit scan, egress proxy를 적용",
+            "4단계: vendor 변경 공지와 실제 runtime 전송량 차이를 지속 모니터링하고 예외 승인 재검토"
+          ]
+        },
+        {
+          "heading": "개발팀/인프라팀 체크리스트",
+          "body": "coding agent 승인 흐름은 IDE 확장 설치 검토가 아니라 source egress와 데이터 수명주기 검토로 운영해야 함.",
+          "items": [
+            "agent가 읽는 파일·Git object·terminal output·trace의 allowlist가 있는지 확인",
+            "네트워크 로그에서 model API와 storage upload endpoint를 분리해 추적하는지 확인",
+            "history에 남은 secret·고객 데이터의 scan과 purge 절차가 있는지 확인",
+            "vendor의 disable flag가 계정·버전·리전에 적용됐는지 sandbox 재현으로 확인",
+            "incident 발생 시 token revoke, upload artifact 삭제 요청, repository history 대응을 묶은 runbook 보유 여부 확인"
+          ]
+        },
+        {
+          "heading": "강조 메세지",
+          "body": "코딩 agent의 위험 평가는 “모델이 코드를 학습하는가” 하나로 끝나지 않음. 실제 통제 단위는 어떤 파일과 Git history가 어느 endpoint로 나가며 언제 삭제 가능한가임.",
+          "items": [
+            "발표 포인트: **5.10GiB storage upload 관찰**은 prompt privacy와 repository egress가 별도 문제임을 보여주는 사례",
+            "팀 액션: 다음 sprint에 coding agent egress inventory와 sandbox network verification을 release gate에 추가 필요"
+          ]
+        }
+      ],
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCYpkCY1h-DxV5yfxpkGspVFATaUS27q_vpRgQ2ebzGvc6YgSsYk81jDt3SkJQgxVCL8dWJqzDE3t6iUt4ceeTvA9LG8Z9cA65uBXC05Lkdv1xKLNBMH88dTa_6XCet3a0wf1VwfyxQsx_1AKc3lmHCxqiZHKTfvk9kJqvo0i15biGekBijFPNN16JHBM/s1700-e365/grok.jpg",
+      "refreshed_kst": "2026-07-15 00:34"
+    },
+    {
+      "id": "deep-dive-002",
+      "title": "Lucide Proxy npm 캠페인: package registry와 브라우저 runtime을 함께 통제해야 하는 공급망 DDoS 경로",
+      "summary": "JFrog는 148개 npm 패키지가 학생용 웹 프록시로 위장해 방문자 브라우저를 HTTP flood·WebSocket 연결 churn에 동원한 구조를 분석함. install-time 검사만으로는 mutable remote loader와 browser runtime의 원격 payload 교체를 막기 어려움.",
+      "details": "JFrog의 1차 분석은 npm registry가 의존성 배포 경로뿐 아니라 정적 웹앱 호스팅과 remote-code loader 배포 채널로 악용된 사례를 다룬다. 대응은 악성 package 차단에 그치지 않고 CSP·SRI·commit pinning, WebSocket fan-out 관측, artifact proxy 대응을 하나의 운영 경로로 묶는 데 있음.",
+      "why_it_matters": "이 공격은 개발자가 패키지를 설치할 때뿐 아니라 일반 사용자가 registry-hosted proxy 페이지를 열 때도 실행된다. 공급망, 웹 보안, DDoS 대응 조직이 분리되어 있으면 mutable JavaScript와 비정상 browser egress 신호가 각자 사각지대에 남는다.",
+      "sources": [
+        "https://research.jfrog.com/post/lucide-proxy-npm-malware-campaign/",
+        "https://thehackernews.com/2026/07/148-npm-packages-disguised-as-student.html"
+      ],
+      "detailed_content": [
+        {
+          "heading": "한 줄 결론",
+          "body": "npm 공급망 통제는 lockfile과 install hook 검사만으로 충분하지 않음. registry에 올라간 정적 웹앱이 mutable remote script를 불러오면 사용자 브라우저가 이후 payload 교체와 DDoS 트래픽의 실행 환경이 될 수 있음.",
+          "items": [
+            "판단: package governance와 browser runtime security를 하나의 third-party code control로 운영 필요",
+            "팀 액션: mutable script·SRI 누락·WebSocket fan-out을 CI와 edge telemetry의 공통 탐지 신호로 추가 필요"
+          ]
+        },
+        {
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "JFrog Security Research는 Lucide proxy로 위장한 npm campaign을 분석해 148개 package와 두 publisher 계정의 배포 흐름을 제시함. The Hacker News는 이 1차 연구를 바탕으로 브라우저 기반 DDoS 동원 경로를 보도함.",
+          "items": [
+            "규모: `terminal3airport`와 `eerikakirk`에 연결된 **148개 npm package**를 JFrog가 식별",
+            "시점: 첫 물결은 5월 27일, 후속 물결은 7월 8일 업로드로 JFrog가 설명",
+            "전달: install hook 없이 registry를 정적 browser app hosting처럼 활용한 배포 구조"
+          ]
+        },
+        {
+          "heading": "실행 경로와 관찰 수치",
+          "body": "프록시 페이지는 정상 기능처럼 보이지만 remote loader가 GitHub mutable branch의 script를 jsDelivr를 통해 불러오는 구조임. 이후 payload는 HTTP request flood와 Wisp WebSocket 연결 생성을 수행하도록 분석됨.",
+          "items": [
+            "무결성 부재: pinned commit과 Subresource Integrity 없이 `main` branch script를 참조한 조건",
+            "HTTP: archive된 payload가 500ms마다 100만 글자 문자열의 no-cors POST를 보내도록 구성된 분석",
+            "WebSocket: target·socket 수를 원격 `websocket.txt`에서 받고 최대 1,024개 연결을 여는 설계",
+            "추정: 활성 방문자 한 명당 약 2MB/s upload, 1,000개 탭이면 약 2GB/s 가능이라는 JFrog 추정"
+          ]
+        },
+        {
+          "heading": "검증 경계와 현재 상태",
+          "body": "분석 수치는 확보된 payload와 active-browser 조건에 대한 연구 결과임. 전체 피해 트래픽, 모든 package의 현재 활성 여부, 개별 사용자 피해를 확정하는 수치로 읽으면 안 됨.",
+          "items": [
+            "범위: runtime payload 분석은 공격 가능 경로를 보여주며 실제 피해량의 전수 측정은 아님",
+            "상태: 다수 package가 제거됐지만 JFrog 조사 시점에 일부 version이 남아 있었다는 보고",
+            "운영: package 제거 뒤에도 cached CDN asset·fork·재게시 가능성을 별도 조사할 필요"
+          ]
+        },
+        {
+          "heading": "AI/Infra 전문가 해석",
+          "body": "이 사례의 제어점은 registry, CDN, browser, edge 네 계층에 분산됨. package scanner가 archive만 보면 runtime fetch를 놓치고, WAF가 request volume만 보면 mutable script 원인을 놓칠 수 있음.",
+          "items": [
+            "공급망: publisher 신뢰도·package manifest·lockfile·artifact proxy를 배포 전 통제로 유지 필요",
+            "웹 보안: CSP와 SRI로 외부 script 출처와 immutable version을 강제할 필요",
+            "SRE: WebSocket connection rate, file descriptor, egress bytes, log volume을 DDoS 조기 경보 지표로 결합 필요"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "입력 필터 하나는 우회될 수 있고, 논문 소개에 따르면 poison email 탐지용 filter가 MemGhost 메시지를 90% 이상 놓친 조건도 보고됨. 따라서 탐지 실패를 가정한 write-time·use-time 통제가 필요함.",
+          "body": "학생용 프록시라는 기능 표시는 소비자 신뢰를 이용한 social distribution layer임. 조직은 code provenance뿐 아니라 서비스가 방문자 브라우저에서 원격 코드를 불러오는 방식을 공급망 위험으로 분류해야 함.",
           "items": [
-            "write-time: 외부 발신 메일·웹 문서에서 비롯된 memory write는 기본 deny 또는 approval queue로 전송",
-            "use-time: 다음 세션에서 memory를 context에 넣기 전 provenance·만료·위험도에 따라 격리·요약·차단",
-            "감사: 사용자별 memory diff, 쓰기 tool call, 원본 메시지 hash, policy decision을 변경 불가능한 journal에 보존",
-            "책임: 고위험 업무 agent는 memory write를 사용자에게 알리고 관리자 검토가 가능한 evidence를 남길 필요"
+            "정책: production web asset은 immutable digest·commit pin·승인된 CDN origin을 요구 필요",
+            "탐지: 새 publisher, 유사 package 이름, remote loader, no-cors 대용량 POST를 risk score에 반영 필요",
+            "대응: 법무·보안·플랫폼이 package takedown, CDN purge, IOC 공유, 고객 공지를 하나의 playbook으로 준비 필요"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "즉시 전면 차단보다 현재 write surface를 찾고, 위험 입력을 격리하고, 복구 가능성을 확인한 뒤 승인 정책을 적용하는 순서가 현실적임.",
+          "body": "먼저 현재 서비스와 개발 환경의 mutable third-party code를 식별하고, 차단·대체·관측을 단계적으로 적용해야 함.",
           "items": [
-            "1단계: email·calendar·web·document connector별 memory write 권한과 background schedule을 inventory화",
-            "2단계: persistent memory를 user preference·task state·policy memory로 나누고 외부 입력의 직접 쓰기를 quarantine 처리",
-            "3단계: diff 알림, approval UI, TTL, snapshot·rollback을 staging에서 검증하고 red-team payload로 회귀 테스트",
-            "4단계: write rate, untrusted-source write 비율, 승인 거절률, rollback 시간, 후속 session 영향률을 운영 지표화"
+            "1단계: 사내 registry와 웹 asset inventory에서 외부 script URL, branch reference, SRI 누락을 수집",
+            "2단계: artifact proxy allowlist와 dependency scanning에 알려진 publisher·package·hash block 규칙 적용",
+            "3단계: CSP report-only로 위반을 관찰한 뒤 immutable URL과 SRI를 production policy로 승격",
+            "4단계: edge에서 browser-originated WebSocket fan-out·no-cors POST·새 도메인 egress를 rate limit과 alert에 연결"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "메일·문서·웹 탐색을 수행하는 agent는 read capability와 persistent-state mutation을 분리해 점검해야 함.",
+          "body": "개발 package와 public web asset의 코드 공급 경로를 같은 수준으로 검토해야 함.",
           "items": [
-            "외부 콘텐츠가 memory write tool을 직접 호출하거나 우회 호출할 수 없는지 확인",
-            "AGENTS.md·MEMORY.md·vector store·profile DB별 write allowlist와 owner를 정의했는지 확인",
-            "memory write마다 source URL 또는 message ID, content hash, actor, diff, 승인자를 남기는지 확인",
-            "background job은 고위험 tool을 제거하고 memory write 시 사람 승인 또는 delayed commit을 적용하는지 확인",
-            "오염 발견 시 memory snapshot 복원, 세션 무효화, downstream action 재검토까지 포함한 incident runbook을 준비했는지 확인"
+            "lockfile과 SBOM에서 해당 package·publisher·transitive dependency 사용 흔적을 확인",
+            "웹앱의 외부 script가 pinned version·SRI·허용 origin을 따르는지 확인",
+            "CSP report와 DNS·proxy telemetry에서 mutable loader와 새 CDN origin을 조사",
+            "WebSocket 동시 연결·연결 churn·egress bytes·log rate에 서비스별 상한을 두는지 확인",
+            "악성 package 발견 시 artifact block, cache purge, 사용자 session 조사, edge rule 적용의 순서를 runbook으로 보유 여부 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI agent 보안의 경계는 prompt 한 번이 아니라 상태 전이 전체임. 외부 이메일이 장기 메모리를 바꾸는 순간 신뢰 경계가 역전되므로, 팀의 측정 기준은 차단 건수보다 untrusted write를 탐지·승인·되돌리는 시간이어야 함.",
+          "body": "registry는 패키지 설치 경로만이 아니라 브라우저에서 실행되는 코드 배포면이 될 수 있음. 공급망 방어의 측정 단위는 설치 차단 건수뿐 아니라 production에서 immutable code만 실행되는 비율과 비정상 fan-out 탐지 시간이어야 함.",
           "items": [
-            "발표 포인트: persistent memory는 기능 데이터가 아니라 정책·행동에 영향을 주는 보안 자산",
-            "팀 액션: 다음 sprint에 memory write inventory와 provenance audit부터 완료하고 background agent의 직접 write를 제한"
+            "발표 포인트: **148개 package** 사례는 dependency scan과 browser security를 분리할 때 생기는 운영 공백",
+            "팀 액션: 다음 보안 점검에서 mutable third-party JavaScript와 WebSocket fan-out을 공통 control 목록에 추가 필요"
           ]
         }
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_pk3JKY3zis-iTRVKpcttwfy-GP-gEzPE_NQQpqDEaMvVs65uqa3v_dG7pD_DmZWLHcwBQzjFtTYqob5wWSgO2F-0-KkwZaahqTUpGP1xbvyifaf2UnMDzI8j9pnP9EWyARmN2SHHl0eBo4UszZx3VZvicjU_MMFOEA8sjcLvzBFzAkNeFg3GIR2yncA/s1700-e365/memghost.jpg",
-      "local_image": "assets/images/news-151.jpg",
-      "refreshed_kst": "2026-07-14 02:26"
-    },
-    {
-      "id": "deep-dive-002",
-      "title": "Meta Hyperion 5GW: AI 데이터센터 용량의 병목은 GPU 다음 단계에 있음",
-      "summary": "메타의 5GW Hyperion 증설 계획은 AI capacity의 실제 병목이 GPU 조달을 넘어 전력·냉각·송전·시공·운영 인력으로 확장됐음을 보여주는 사례임.",
-      "details": "AI타임스가 메타 발표를 인용해 보도한 Hyperion 계획은 루이지애나 Richland Parish에서 2GW를 5GW로 늘리고 500억달러 이상을 투입하는 내용임. 목표 용량은 2030년 2GW, 2032년 전후 5GW이지만 실제 서비스 capacity는 계통 연계, 냉각, 랙 commissioning, 네트워크 fabric, 운영 인력의 동시 준비에 달림. AI/Infra 팀은 GPU 수량과 전력·냉각·네트워크·리전 복원력을 하나의 capacity ledger와 FinOps 지표로 관리할 필요.",
-      "why_it_matters": "프런티어 AI의 공급 능력은 모델 성능이나 GPU 주문량만으로 결정되지 않음. 수 GW급 전력·냉각·송전·시공이 지연되면 가속기 확보분도 usable GPU-hour로 전환되지 못하는 리스크.",
-      "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=212727"
-      ],
-      "detailed_content": [
-        {
-          "heading": "한 줄 결론",
-          "body": "Hyperion의 5GW 계획은 GPU 조달 발표이면서 동시에 전력·냉각·송전·시공·운영 인력을 선확보하는 장기 capacity program임. AI 플랫폼의 실제 공급 능력은 구매한 가속기 수가 아니라 전기를 받아 안정적으로 가동하는 GPU-hour로 판단해야 함.",
-          "items": [
-            "판단: 2GW에서 5GW로의 확대는 가속기 수량보다 전력망 접속과 물리 인프라가 일정의 선행조건임을 확인",
-            "팀 액션: AI 수요 예측 표에 GPU 수량과 함께 MW 확보 시점·냉각 방식·네트워크 fabric·리전 fallback을 같은 제약 조건으로 기록 필요"
-          ]
-        },
-        {
-          "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스는 메타 발표를 인용해 루이지애나 Richland Parish의 Hyperion 계획이 기존 2GW에서 5GW로 확대됐다고 보도함. 총투자액은 500억달러 이상으로 제시됐으며, 2030년 2GW 우선 구축 뒤 2032년 전후 5GW 완성을 목표로 한다는 내용임.",
-          "items": [
-            "규모: 5GW 목표는 초기 2GW 계획의 2.5배이며 메타 최대 AI 학습 클러스터로 설명됨",
-            "투자: 초기 100억달러와 이후 270억달러 수준의 계획에서 500억달러 이상으로 재확대된 수치",
-            "용도: 대형 모델 학습·추론을 위한 GPU 기반 슈퍼클러스터 capacity 확보 목적",
-            "인력·지역: 건설 과정 최대 7,500개 일자리와 운영 단계 약 1,000명 상시 고용 전망이 함께 언급됨"
-          ]
-        },
-        {
-          "heading": "검증 경계와 일정 리스크",
-          "body": "용량·투자·완공 목표는 메타 발표를 인용한 보도 기준임. 발표된 설비 용량을 즉시 사용할 수 있는 GPU capacity와 동일시하면 안 되며, 실제 가동은 계통 연계·변전·송전·냉각 설비·시공·장비 납기 조건을 모두 통과해야 함.",
-          "items": [
-            "검증: 2030년 2GW와 2032년 전후 5GW는 목표 일정이며 실제 energization과 랙 가동률은 별도 확인 대상",
-            "제약: 수 GW급 부하는 발전원 확보뿐 아니라 송전선·변전소·계통 접속 승인과 지역 인프라 공사가 병목 가능성",
-            "운영: 전력 인입 뒤에도 랙 전력밀도·액체냉각·광 네트워크·예비 부품·현장 인력 준비가 service-ready 시점을 결정"
-          ]
-        },
-        {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "프런티어 AI의 capacity planning은 compute, power, cooling, land, construction, network, people을 하나의 의존성 그래프로 관리하는 문제임. GPU 주문서만으로 수요를 충족했다고 판단하면 전력·냉각·패브릭 준비 지연이 모델 학습과 추론 출시를 밀어내는 구조임.",
-          "items": [
-            "아키텍처: 학습과 추론의 랙 밀도·지연 시간·가용성 요구가 다르므로 동일 단지 안에서도 power envelope와 fabric 설계를 분리할 필요",
-            "운영: 단일 대형 캠퍼스는 규모 효율이 있으나 전력·네트워크·보안·재해의 공통 장애 도메인을 키우는 trade-off",
-            "관측: 계획 capacity, energized MW, commissioned rack, usable GPU-hour, 예약 quota를 서로 다른 단계 지표로 추적 필요"
-          ]
-        },
-        {
-          "heading": "전력·냉각·네트워크 관점",
-          "body": "5GW급 계획에서 전력은 단순 운영비가 아니라 출시 순서와 장애 범위를 결정하는 control variable임. 냉각과 네트워크는 전력 밀도를 실제 GPU 처리량으로 전환하는 계층이므로, 전력 계약과 분리해 나중에 최적화할 수 없는 설계 항목임.",
-          "items": [
-            "전력: MW/GW별 계약 용량, 계통 접속 단계, 예비 전력, peak load를 분기별 capacity review에 반영 필요",
-            "냉각: PUE·물 사용·열 배출·액체냉각 공급망을 랙 밀도와 GPU 세대별 열 설계 조건에 연결 필요",
-            "네트워크: 대형 학습 클러스터는 east-west traffic과 storage path를 포함한 fabric 증설이 rack commissioning과 동기화될 필요",
-            "복원력: 지역 전력·송전·수자원·시공 지연을 리전 분산과 workload placement의 failure scenario로 모델링 필요"
-          ]
-        },
-        {
-          "heading": "FinOps·조달·거버넌스 관점",
-          "body": "500억달러 이상 투자 수치는 시설 규모를 설명하지만 서비스 경제성을 보장하지 않음. AI 플랫폼 조직은 capex 발표액 대신 가동 GPU-hour, 전력 단가, 냉각·네트워크 overhead, 유휴 capacity, 예약·on-demand 조달 비중을 성공 작업당 비용과 연결해야 함.",
-          "items": [
-            "FinOps: 모델별 token 비용만 보지 말고 전력·냉각·네트워크·유휴 시간까지 포함한 cost per successful task 산정 필요",
-            "조달: GPU 납기와 변전·냉각·광모듈·랙 공급망의 lead time을 하나의 critical path로 관리 필요",
-            "거버넌스: 수요 예측 변경, 신규 모델 학습 예약, 리전 quota, 전력 제약을 제품·인프라·재무가 공유하는 승인 기준으로 운영 필요"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "대규모 AI capacity 계획은 큰 수치를 먼저 확정하는 방식보다 현재 workload와 물리 제약을 연결해 단계별로 검증하는 방식이 현실적임. 초기에는 가시성과 복원력을, 이후에는 확장 효율과 계약 최적화를 검증해야 함.",
-          "items": [
-            "1단계: 학습·추론·배치 작업별 GPU 수요, p95 지연 시간, 데이터 위치, 성장률을 기준선으로 확정",
-            "2단계: 리전별 energized MW, 랙 가동률, 냉각 여유, fabric headroom, quota를 하나의 capacity ledger로 통합",
-            "3단계: 전력·냉각·네트워크 지연을 가정한 traffic replay와 리전 failover 훈련으로 출시 영향 검증",
-            "4단계: 가동 GPU-hour, PUE, cooling overhead, job queue time, 유휴율을 비용·SLO 대시보드에 결합"
-          ]
-        },
-        {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "AI 서비스 로드맵은 데이터센터 외부의 용량 제약을 제품 출시 리스크로 취급해야 함. 특히 대형 모델 학습과 장문 추론의 동시 수요는 전력·냉각·네트워크 병목을 다른 시점에 드러낼 수 있음.",
-          "items": [
-            "GPU forecast와 MW 확보 일정이 같은 분기 capacity plan에서 검토되는지 확인",
-            "리전별 전력 제약·quota·데이터 경계·네트워크 지연을 포함한 workload placement 정책이 있는지 확인",
-            "energized MW, commissioned racks, usable GPU-hour, queue time, PUE를 구분해 보고하는지 확인",
-            "냉각 장애·송전 지연·fabric 포화 시 학습 중단과 추론 fallback을 위한 runbook이 있는지 확인",
-            "대형 capex의 실제 이용률과 성공 작업당 비용을 제품별 chargeback 또는 showback에 연결하는지 확인"
-          ]
-        },
-        {
-          "heading": "강조 메세지",
-          "body": "AI 데이터센터의 경쟁 단위는 발표된 GW가 아니라 고객·연구팀이 실제로 쓸 수 있는 안정적 GPU-hour임. Hyperion의 확대 계획은 모델·GPU·전력·냉각·송전·운영을 분리된 구매 항목이 아니라 하나의 capacity delivery chain으로 관리해야 한다는 사례임.",
-          "items": [
-            "발표 포인트: 5GW 숫자보다 2GW와 5GW가 실제로 energize되고 랙이 가동되는 시점이 서비스 공급을 결정",
-            "팀 액션: 다음 capacity review에 전력·냉각·fabric·인력·리전 복원력 지표를 GPU forecast와 함께 추가 필요"
-          ]
-        }
-      ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212727_216050_3115.png",
-      "local_image": "assets/images/news-157.png",
-      "refreshed_kst": "2026-07-14 16:20"
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAJ1TN76Et1GvWFCTaivnNcys4rEEVk1QEd6WIb0wu3cxroYcwng-0a0uM8eyHdrOuiHLU8lFJg5eFzSbZj95aEfXVnletlFE9BKsDJP_0uV4w9-YbHg7p9LuMyRMcj4rJPftYmIYCcD3_VmbgFrGuaJ6yqUuJgIvVtbqlNUPrkJO2FSuFQ6dJ7gzKFV0/s1700-e365/lucide-botnet.jpg",
+      "refreshed_kst": "2026-07-15 00:34"
     }
   ],
   "items": [
