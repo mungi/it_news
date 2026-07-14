@@ -468,10 +468,20 @@ def main() -> int:
         tags = item.get("tags", [])
         if not isinstance(tags, list):
             errors.append(f"{prefix} tags must be a list")
+        elif not tags:
+            # Tags drive the site filters, so a present-but-empty list does not
+            # satisfy the item contract's category/tag requirement.
+            errors.append(f"{prefix} tags must contain at least one non-empty string")
         else:
+            seen_tags: set[str] = set()
             for tag_idx, tag in enumerate(tags, start=1):
                 if not isinstance(tag, str) or not tag.strip():
                     errors.append(f"{prefix} tags[{tag_idx}] must be a non-empty string")
+                    continue
+                normalized_tag = tag.strip().casefold()
+                if normalized_tag in seen_tags:
+                    errors.append(f"{prefix} duplicate tag: {tag}")
+                seen_tags.add(normalized_tag)
         validate_detailed_content(item.get("detailed_content"), prefix, errors, required=True)
         validate_item_detail_substance(item.get("detailed_content"), prefix, errors)
         related_links = item.get("related_links", [])
