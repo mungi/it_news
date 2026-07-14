@@ -275,6 +275,7 @@ function renderDeepDives() {
     img.height = 192;
     img.loading = "lazy";
     img.decoding = "async";
+    img.referrerPolicy = "strict-origin-when-cross-origin";
     img.onerror = () => useFallbackImage(img, "AI");
     img.src = deepDiveImageFor(item);
     imageWrap.appendChild(img);
@@ -389,6 +390,7 @@ function renderCards() {
     }
     const img = node.querySelector(".card-image");
     img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
+    img.referrerPolicy = "strict-origin-when-cross-origin";
     img.onerror = () => useFallbackImage(img, item.category);
     img.src = imageFor(item);
 
@@ -491,6 +493,7 @@ function openModal(item, opener = null) {
     : document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
+  img.referrerPolicy = "strict-origin-when-cross-origin";
   img.onerror = () => useFallbackImage(img, item.category);
   img.src = imageFor(item);
   setModalTitleLink(item.title_ko || item.title_original || "제목 없음", item.source_url);
@@ -519,6 +522,7 @@ function openDeepDiveModal(item, opener = null) {
     : document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const img = $("#modalImage");
   img.alt = `${item.title || "Deep Dive"} 이미지`;
+  img.referrerPolicy = "strict-origin-when-cross-origin";
   img.onerror = () => useFallbackImage(img, "AI");
   img.src = deepDiveImageFor(item);
 
