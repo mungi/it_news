@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-15 | Total pages: 165
+> Last updated: 2026-07-15 | Total pages: 167
 
 ## Entities
 
@@ -26,7 +26,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 152건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 154건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/thn-grok-build-repository-upload-2026-07-14]] — Grok Build의 Git 저장소·trace 전송 범위와 coding agent egress 통제.
 - [[raw/articles/jfrog-lucide-proxy-npm-ddos-2026-07-14]] — npm registry를 악용한 Lucide Proxy 브라우저 DDoS 동원과 runtime 공급망 통제.
 - [[raw/articles/aitimes-meta-hyperion-5gw-2026-07-14]] — Meta Hyperion 5GW AI 데이터센터 증설 계획과 전력·냉각·capacity planning 변수.
@@ -36,6 +36,8 @@
 - [[raw/articles/thn-sonicwall-sma-1000-zero-days-2026-07-15]] — SonicWall SMA 1000의 활성 악용 SSRF·관리자 명령 실행 결함과 침해 복구 절차.
 - [[raw/articles/aitimeskr-upstage-daum-furiosa-sovereign-ai-2026-07-15]] — 다음 AI 요약의 국산 NPU·LLM 결합과 token·지연·비용 검증 조건.
 - [[raw/articles/aws-security-hub-ai-inventory-2026-07-15]] — AWS Security Hub AI inventory의 Config·SBOM·DNS 기반 AI asset 식별 범위.
+- [[raw/articles/mindgard-cursor-repository-git-exe-2026-07-15]] — Cursor Windows의 repository-root `git.exe` 자동 실행 관찰과 endpoint 완화.
+- [[raw/articles/ox-asyncapi-npm-supply-chain-2026-07-15]] — AsyncAPI npm 침해, module-load loader, OIDC provenance와 commit 보호 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.

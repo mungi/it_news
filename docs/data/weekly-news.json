@@ -2,13 +2,13 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-15 17:18",
+  "last_updated_kst": "2026-07-15 21:29",
   "audience": "developers and engineers",
   "executive_summary": [
+    "AsyncAPI npm 침해: 정상 GitHub Actions OIDC provenance가 push credential 침해를 막지 못해 dependency·runtime·CI commit 보호를 함께 점검.",
+    "Cursor Windows 저장소 open 취약점: repo-root `git.exe` 자동 실행 주장에 따라 untrusted repository를 Sandbox·VM으로 격리하고 workspace 실행 파일 차단.",
     "SonicWall SMA 1000 활성 악용: CVSS 10.0 SSRF와 AMC 관리자 명령 경로를 hotfix·IoC 조사·재이미징 기준으로 함께 처리.",
     "AWS AI inventory: Bedrock·SageMaker·EC2·ECR·외부 모델 API를 Config·SBOM·DNS telemetry로 연결해 AI asset exposure를 추적.",
-    "개발 에이전트 운영 규모 확대: Codex·ChatGPT Work 활성 사용자 700만명 공개가 quota·fallback·지원·권한을 개발자 플랫폼 지표로 관리할 필요를 제기.",
-    "Microsoft 7월 Patch Tuesday: **622개 CVE**와 악용 중인 SharePoint·AD FS 권한 상승 결함을 우선 처리하고, RC4 인증 변경의 service account 회귀 시험 병행.",
     "국산 소버린 AI 실운영 검증: 다음 AI 요약에 NPU·LLM을 연결한 사례가 token/s·p95 latency·비용·전력·GPU fallback 비교를 요구."
   ],
   "deep_dives": [
@@ -201,6 +201,188 @@
   ],
   "items": [
     {
+      "id": "news-167",
+      "title_ko": "Cursor Windows 저장소 열기 취약점 공개: repo-root `git.exe` 자동 실행 경로 미패치 경고",
+      "title_original": "Cursor Flaw Lets Malicious Cloned Repositories Trigger Windows Code Execution",
+      "summary": "핵심: Mindgard는 Windows용 Cursor가 프로젝트 root의 공격자 `git.exe`를 Git 탐색 과정에서 경고 없이 실행한다고 공개. 대응: 신뢰하지 않는 저장소는 VM·Windows Sandbox에서 열고, 관리형 단말은 workspace 경로의 실행 파일을 AppLocker·Windows App Control·EDR로 차단 필요.",
+      "detail": "Mindgard의 공개 기술 문서는 Windows용 Cursor가 workspace 자체를 Git binary 탐색 위치로 포함해 repository root의 `git.exe`를 자동 실행하는 동작을 설명한다. 2026년 4월 30일 Cursor 3.2.16에서 확인된 관찰이며, 7월 15일 기준 Cursor의 수정 릴리스·공식 advisory가 확인되지 않았다는 보도다. 새 버전 전체에 대한 독립 재현과 실제 조직 노출 범위는 별도 검증이 필요하다.",
+      "why_it_matters": "개발자가 외부 저장소를 clone·open하는 일상 작업이 사용자 권한 코드 실행으로 이어질 수 있다. SSH key·cloud token·소스 접근 권한을 가진 개발 단말은 repository provenance와 endpoint execution control을 함께 적용해야 한다.",
+      "engineering_implication": "Windows 개발 단말에서 Cursor workspace root의 `git.exe`·`npx.exe`·`node.exe` 같은 실행 파일을 사전 탐지하고, untrusted repository open은 격리 환경으로 분리 필요. Cursor 버전별 재현 결과와 vendor advisory를 release approval 증적으로 유지 필요.",
+      "korea_implication": "국내 개발 조직도 외부 오픈소스·협력사 저장소를 Windows IDE에서 여는 흐름이 있으면 endpoint 보안 정책과 개발자 온보딩 절차를 함께 점검할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Cursor",
+        "Windows",
+        "Developer Tools",
+        "Supply Chain",
+        "Code Execution"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-07-15 19:55",
+      "source_name": "Mindgard / The Hacker News",
+      "source_url": "https://mindgard.ai/blog/cursor-0day-when-full-disclosure-becomes-the-only-protection-left",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjyFnrtjbcXdDBTEYOhVnUpFO4CSqhCGj5xdvaYlhih4oUCd3phzBQTjjMogZeFDlYqTiO8Xt2jaHevba5peaV76dT417Vq9W-DZFSpu2_cEbAMtGwz-mqKZJcYgAAXmZT_Rnkdc0f3jAW-eANKWd6XZZJvYfYCt6l5Pp-2ZKjlnn4zG7G6gS7ivWruzeU/s1700-e365/git.png",
+      "related_links": [
+        {
+          "title": "The Hacker News 보도 — Cursor cloned repository code execution",
+          "url": "https://thehackernews.com/2026/07/cursor-flaw-lets-malicious-cloned.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Mindgard가 Windows용 Cursor의 repository-root 실행 경로를 공개함. 프로젝트를 열 때 Cursor가 Git binary를 탐색하며 workspace root의 공격자 `git.exe`를 경고·승인 없이 실행할 수 있다는 재현 주장임.",
+          "items": [
+            "조건: 공격자가 제어하는 저장소 root에 `git.exe`를 넣고 Windows에서 Cursor로 해당 프로젝트를 여는 흐름",
+            "동작: Cursor.exe가 `git rev-parse --show-toplevel` 명령으로 repository-root binary를 spawn한 Process Monitor 기록 제시",
+            "권한: 실행 파일은 로그인한 개발자 권한으로 동작해 source·SSH key·cloud token 접근 범위를 상속 가능한 조건"
+          ]
+        },
+        {
+          "heading": "검증 범위와 버전 경계",
+          "body": "Mindgard는 2025년 12월 15일 최초 보고 뒤 2026년 4월 30일 Cursor 3.2.16에서 마지막 날짜가 명시된 재현을 기록함. The Hacker News는 7월 15일 Cursor의 공개 advisory에 해당 이슈가 없다고 보도함.",
+          "items": [
+            "PoC: Windows Calculator를 `git.exe`로 이름 변경해 repository root에 둔 안전한 재현 방식",
+            "한계: 3.11 등 이후 모든 Cursor 버전에서의 독립 재현 여부는 원문 증거만으로 확정 불가",
+            "상태: 수정 릴리스·CVE·공식 Cursor advisory 부재는 보도 시점 기준이며 vendor 공지로 지속 확인 필요"
+          ]
+        },
+        {
+          "heading": "공격 표면과 영향",
+          "body": "이 경로는 prompt injection이나 agent tool 호출이 아니라 IDE의 로컬 Git 탐색 동작을 악용하는 endpoint execution 문제임. clone한 저장소를 열기만 해도 실행될 수 있어 코드 리뷰 전 격리 원칙과 충돌함.",
+          "items": [
+            "초기 접근: 공격자는 공개 repository에 실행 파일을 포함할 수 있으며 별도 endpoint foothold가 필요 없는 조건",
+            "영향: 개발자 세션의 Git credential helper·SSH agent·cloud CLI token·source tree가 후속 탈취 대상 가능성",
+            "지속성: 원문은 프로젝트가 열린 동안 binary가 반복 실행될 수 있는 관찰을 제시"
+          ]
+        },
+        {
+          "heading": "완화 조치",
+          "body": "원문은 패치 전 임시 통제로 workspace 실행 파일 차단과 격리 실행을 권고함. hash 차단은 공격자가 binary를 바꿀 수 있어 경로 기반 deny rule과 parent-aware EDR 관측을 결합하는 방식이 적절함.",
+          "items": [
+            "정책: AppLocker 또는 Windows App Control로 개발 workspace 경로의 지정 실행 파일을 차단하는 path rule 적용",
+            "격리: 신뢰하지 않는 repository·archive는 Windows Sandbox·일회성 VM에서 clone·open 수행",
+            "사전 점검: repository root의 `git.exe`, `npx.exe`, `node.exe`, `where.exe`와 PE file을 open 전 검사"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI 코딩 IDE의 권한 평가는 모델 prompt와 extension permission만으로 충분하지 않음. IDE가 repository file을 executable discovery path로 취급하면 source provenance와 endpoint application control이 같은 release gate에 포함돼야 함.",
+          "items": [
+            "보안: developer endpoint를 일반 업무 PC보다 높은 credential concentration 자산으로 분류 필요",
+            "운영: IDE update·security advisory·endpoint rule 적용 상태를 장비 inventory에서 함께 추적 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Cursor를 즉시 제거하는 판단보다 조직의 repository intake와 Windows execution policy를 먼저 측정해야 함. vendor 수정 여부가 확인될 때까지는 untrusted project open을 격리하고 alert·deny rule의 오탐을 검증하는 운영 과제임.",
+          "items": [
+            "팀 액션: Cursor 사용 Windows 단말에서 workspace-root executable 탐지와 block rule을 canary 적용",
+            "팀 액션: 외부 저장소 clone→open 흐름을 VM/EDR policy와 연결하고 Cursor 버전별 재현 시험을 변경 승인 조건에 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-168",
+      "title_ko": "AsyncAPI npm 패키지 침해: GitHub Actions OIDC provenance를 통과한 다단계 Miasma loader 유포",
+      "title_original": "Compromised AsyncAPI npm Packages Deliver Multi-Stage Botnet Malware",
+      "summary": "핵심: @asyncapi namespace의 침해된 npm 패키지가 install hook 없이 module load 시 Miasma loader를 실행한 정황 공개. 운영: 정상 GitHub Actions OIDC provenance도 push credential 침해를 막지 못하므로, dependency provenance·runtime egress·CI commit 보호를 함께 검증 필요.",
+      "detail": "OX Security·SafeDep·Socket·StepSecurity 분석을 인용한 보도는 @asyncapi namespace의 네 패키지가 난독화된 loader를 포함했고, Node.js가 감염 module을 load할 때 IPFS의 암호화된 후속 payload를 내려받았다고 설명한다. StepSecurity는 공격자가 npm token이 아니라 repository push 권한을 악용해 정상 GitHub Actions release workflow로 publish했다고 분석했다. 영향 버전·실행 여부는 lockfile과 CI·개발 단말 로그에서 별도 확인해야 한다.",
+      "why_it_matters": "SLSA/OIDC provenance는 승인된 workflow가 artifact를 만들었음을 증명하지만 triggering commit 자체가 정상임을 보장하지 않는다. install script 검사만 수행하는 조직은 normal import 시 발화하는 loader와 IPFS·P2P C2 egress를 놓칠 수 있다.",
+      "engineering_implication": "@asyncapi dependency와 affected version을 SBOM·lockfile·artifact proxy에서 즉시 조사하고, CI runner·개발 단말에서 module load 흔적, IPFS 연결, 비정상 child `node` process를 hunt 필요. protected branch·required review·release workflow 환경 보호를 함께 재검토 필요.",
+      "korea_implication": "국내 SaaS·플랫폼 팀도 GitHub Actions trusted publishing을 사용하는 경우 OIDC attestation을 commit 보호의 대체 수단으로 보지 말고 branch protection·runner credential·publish approval을 분리 점검할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "npm",
+        "AsyncAPI",
+        "GitHub Actions",
+        "OIDC",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-07-15 18:16",
+      "source_name": "OX Security / StepSecurity / The Hacker News",
+      "source_url": "https://www.ox.security/blog/asyncapi-npm-organization-compromised-2m-weekly-downloads-affected/",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgXEluWW9TuNGlzu9wVHSDBzAeUuoRS9Om8kX9yzH-HwCjggh-N5ycLyuJ82oY3MP4Uvf9yF_PqwKhcZepDBEH_pOb3td4dPRuuGSWi5XndfpeuqiMipzKIq0Vofc-hOBGj4nWxmXbjMS7RvHkZCUSHloOpsS6m7jpwwFX-2KUkYwrQdt-ClrGXpt2C9TxC/s1700-e365/async-npm.jpg",
+      "related_links": [
+        {
+          "title": "StepSecurity 분석 — compromised next-branch pushes and trusted publishing",
+          "url": "https://www.stepsecurity.io/blog/compromised-next-branch-pushes-malicious-asyncapi-generator-generator-helpers-and-generator-components-to-npm"
+        },
+        {
+          "title": "Socket 분석 — AsyncAPI supply-chain attack",
+          "url": "https://socket.dev/blog/asyncapi-supply-chain-attack"
+        },
+        {
+          "title": "The Hacker News 보도 — multi-stage botnet malware",
+          "url": "https://thehackernews.com/2026/07/compromised-asyncapi-npm-packages.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "보안 연구사들은 @asyncapi namespace의 침해된 npm 패키지가 multi-stage botnet loader를 유포한 정황을 공개함. 보도는 네 package를 영향 대상으로 열거했고, 모든 악성 version은 이후 npm registry에서 unpublish됐다고 설명함.",
+          "items": [
+            "범위: OX Security·SafeDep·Socket·StepSecurity가 침해된 @asyncapi package 배포를 독립 분석한 조건",
+            "실행: 악성 implant는 `preinstall`·`postinstall` 없이 감염 module이 Node.js에서 load될 때 발화하는 구조",
+            "대응: package unpublish는 새 설치를 줄이지만 이미 build·CI·개발 환경에서 import된 endpoint 조사는 별도 필요"
+          ]
+        },
+        {
+          "heading": "실행 체인",
+          "body": "원문 분석은 injected source가 같은 second-stage downloader로 decode되고, detached background Node process가 IPFS의 암호화된 payload를 받아 실행한다고 설명함. 단순 install-time hook 탐지만으로는 발화 시점을 놓칠 수 있음.",
+          "items": [
+            "1단계: 난독화 JavaScript implant가 module load 이후 downloader를 실행하는 경로",
+            "2단계: OS별 경로에 `sync.js`를 기록하고 encrypted loader를 실행하는 분석",
+            "C2: HTTP·Nostr relay·IPFS·BitTorrent DHT·libp2p GossipSub·Ethereum contract 등 6개 채널 지원이라는 연구 결과"
+          ]
+        },
+        {
+          "heading": "영향과 탐지 신호",
+          "body": "Miasma로 식별된 loader는 credential theft, AI tool poisoning, LAN lateral movement, registry worm-like propagation, OS별 autostart persistence 기능을 포함한다고 보도됨. 명칭·연계 캠페인 attribution은 연구사 사이에서 확정되지 않은 부분이 있어 행위 기반 탐지가 우선임.",
+          "items": [
+            "지속성: systemd·crontab·macOS launchd·Windows Registry autostart key 설정 가능성 보고",
+            "회피: sandbox·virtual environment·일부 보안 도구와 Russian locale을 피하는 조건이 분석에 포함",
+            "Hunt: IPFS gateway·비정상 child `node`·새 autostart artifact·CI runner outbound connection을 결합 조사"
+          ]
+        },
+        {
+          "heading": "OIDC provenance의 검증 경계",
+          "body": "StepSecurity 분석은 공격자가 npm token을 훔치지 않고 repository push access를 얻은 뒤 프로젝트의 정상 GitHub Actions release workflow와 OIDC trusted publisher를 사용했다고 설명함. 유효 provenance는 workflow identity를 증명하지만 malicious commit의 정당성까지 증명하지 않음.",
+          "items": [
+            "경로: placeholder Git identity의 commit과 authorized release workflow publish라는 분석",
+            "한계: SLSA provenance attestation이 있어도 branch protection·review·push credential 침해를 차단하지 못하는 조건",
+            "통제: protected branch, required review, environment approval, publish workflow permission 최소화가 별도 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "software supply chain 통제는 package install 시점에서 끝나지 않음. runtime import와 artifact delivery, CI commit provenance, runner egress를 한 경로로 관찰해야 dependency scanner와 EDR의 공백을 줄일 수 있음.",
+          "items": [
+            "SBOM: direct·transitive @asyncapi version과 build output 포함 여부를 lockfile 기준으로 식별 필요",
+            "관측: package manager audit, Node module load, DNS·proxy egress, runner process tree를 incident timeline으로 결합 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "OIDC trusted publishing을 도입한 팀은 attestation 검증을 유지하되 commit integrity control을 낮춰서는 안 됨. 이 사례는 정상 release pipeline이 침해된 source commit을 신뢰 artifact로 증폭시킬 수 있는 운영 리스크임.",
+          "items": [
+            "팀 액션: 영향 package/version을 artifact proxy에서 block하고 CI·developer endpoint의 import·IPFS·persistence evidence를 조사",
+            "팀 액션: release branch의 direct push 제한, mandatory review, environment approval, provenance verification과 rollback runbook을 함께 시험"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-164",
       "title_ko": "SonicWall SMA 1000 제로데이 2건 활성 악용: SSRF·관리자 명령 실행 경로 긴급 차단",
       "title_original": "Two SonicWall SMA 1000 Zero-Days Exploited, One Could Enable Admin Commands",
@@ -267,7 +449,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-165",
@@ -340,11 +522,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-162",
-      "rank": 3,
+      "rank": 5,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -432,7 +614,7 @@
     },
     {
       "id": "news-163",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -589,7 +771,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-161",
@@ -655,7 +837,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-159",
@@ -739,7 +921,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-160",
@@ -823,7 +1005,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-158",
@@ -892,11 +1074,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-157",
-      "rank": 10,
+      "rank": 12,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -979,7 +1161,7 @@
     },
     {
       "id": "news-156",
-      "rank": 11,
+      "rank": 13,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -1061,7 +1243,7 @@
     },
     {
       "id": "news-155",
-      "rank": 12,
+      "rank": 14,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -1133,7 +1315,7 @@
     },
     {
       "id": "news-154",
-      "rank": 13,
+      "rank": 15,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -1205,7 +1387,7 @@
     },
     {
       "id": "news-151",
-      "rank": 14,
+      "rank": 16,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -1349,11 +1531,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-152",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -1486,7 +1668,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-148",
@@ -1551,7 +1733,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-146",
@@ -1615,7 +1797,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-149",
@@ -1680,11 +1862,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-153",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -1813,7 +1995,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-143",
@@ -1881,7 +2063,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-144",
@@ -1949,7 +2131,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-141",
@@ -2019,7 +2201,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-139",
@@ -2084,11 +2266,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-137",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -2221,11 +2403,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-138",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -2358,7 +2540,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-134",
@@ -2427,7 +2609,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-140",
@@ -2492,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-133",
@@ -2557,7 +2739,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-135",
@@ -2622,7 +2804,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-136",
@@ -2692,7 +2874,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-124",
@@ -2763,7 +2945,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-125",
@@ -2835,7 +3017,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-126",
@@ -2897,7 +3079,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-127",
@@ -2964,7 +3146,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-120",
@@ -3035,7 +3217,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-122",
@@ -3097,7 +3279,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-121",
@@ -3159,7 +3341,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-117",
@@ -3222,7 +3404,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-128",
@@ -3288,7 +3470,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-123",
@@ -3350,7 +3532,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-115",
@@ -3412,7 +3594,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-116",
@@ -3475,7 +3657,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-118",
@@ -3537,132 +3719,6 @@
           "items": [
             "팀 액션: Cloudflare 사용 조직은 origin IP별 provider·region inventory를 만들고 anycast 감지 origin에 region hint 적용 검토 필요",
             "IaC 항목: Terraform/API로 region hint를 관리하고 cloud region 변경, DR 전환, multi-region load balancing 시 cache topology 변경을 함께 배포 필요"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-129",
-      "title_ko": "영국 국방부, 20억 파운드 AI 집단훈련 체계 ACTS 계약 체결",
-      "title_original": "AI가 만드는 미래 전장...英 국방부, 4조 원 투입 'AI 전투' 체계 구축",
-      "summary": "핵심: 영국 국방부가 Raytheon UK 주도 Omnia Training과 **20억 파운드** 규모 ACTS 장기 계약 체결. 영향: AI·데이터 분석·가상 시뮬레이션을 군 집단훈련 플랫폼으로 묶으면서 클라우드, simulation, data engineering, decision-support 운영 역량이 국방 인프라 요구사항으로 이동함.",
-      "detail": "영국 국방부는 Army Collective Training Service 구축을 위해 15년 계약을 체결하고 Combat Laboratory 기반 디지털 훈련 플랫폼을 도입한다고 발표. 연간 최대 6만 명 병력 훈련, 44개 이상 영국 기업 공급망, 약 400개 일자리와 270개 고급 기술 신규 일자리가 언급됨.",
-      "why_it_matters": "AI 전장훈련은 단일 모델 도입이 아니라 시뮬레이션, 전술 데이터, 클라우드 엔지니어링, 보안 감사, human decision support를 결합한 mission platform 과제임.",
-      "engineering_implication": "국방·제조·대규모 운영 조직은 AI 시뮬레이션 플랫폼 설계 시 data pipeline, model governance, scenario replay, audit log, 보안등급별 배포 경계를 먼저 정의 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Defense",
-        "Simulation",
-        "Cloud Engineering",
-        "Decision Support"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-07-10 20:36",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40934",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40934_61687_3552_v150.jpg",
-      "local_image": "assets/images/news-129.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: 영국 국방부가 AI 기반 육군 집단훈련 서비스 ACTS 구축을 위해 **20억 파운드** 장기 계약 체결",
-            "사업자: Raytheon UK 주도 Omnia Training 컨소시엄이 수행, Capita·Cervus·Rheinmetall UK·Skyral 등 참여",
-            "범위: 계약 기간 15년, 공급망 44개 이상 영국 기업, 약 400개 일자리 지원과 270개 고급 기술 신규 일자리 언급"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "플랫폼: Combat Laboratory가 AI, 고급 데이터 분석, 가상환경을 결합해 현대전 상황을 재현하는 디지털 훈련 플랫폼 역할",
-            "훈련 규모: 연간 최대 6만 명 병력이 가상전장 기반 집단훈련을 받는 계획 공개",
-            "데이터 활용: 훈련 과정 데이터를 분석해 전술 수행 패턴, 부대별 성과, 개선 요소를 지휘관 의사결정에 제공",
-            "전장 맥락: 드론, 네트워크전, 실시간 정보전, 분산형 전장 교훈을 훈련 시나리오 설계에 반영"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "AI 운영 전환: 국방 AI는 챗봇이 아니라 simulation engine, event data store, decision-support UI, security boundary가 결합된 mission system임",
-            "클라우드 요구: 대규모 가상훈련은 scenario replay, multi-tenant training, latency, classified data handling, audit log를 동시에 요구",
-            "산업 파급: 제조·재난대응·공항·항만 같은 복합 운영 환경도 유사한 digital twin/AI training stack 요구 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI 시뮬레이션 플랫폼 PoC는 모델 정확도보다 scenario versioning, telemetry schema, operator feedback loop, 권한 감사부터 설계 필요",
-            "검토 항목: 전술 데이터 보존 기간, synthetic data 생성, human override, model update 승인, 보안등급별 배포 경계 확인 필요",
-            "운영 과제: 훈련 결과가 실제 의사결정 보조로 쓰일 때 explainability, 책임 소재, 로그 무결성, red-team test 체계 필요"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-109",
-      "title_ko": "Microsoft Entra passkey 등록 피싱, 공격자 소유 패스키로 Microsoft 365 접근 확보",
-      "title_original": "Hackers Use Fake Microsoft Entra Passkey Enrollment to Gain Microsoft 365 Access",
-      "summary": "핵심: Okta가 O-UNC-066 캠페인을 추적, vishing으로 사용자를 유도해 Microsoft Entra passkey 등록 절차를 공격자 통제 패스키 등록으로 바꾸는 방식 확인",
-      "detail": "핵심: 공격자는 passkey 단어가 포함된 도메인과 Microsoft 등록 화면을 닮은 피싱 키트를 사용\n범위: 식음료, 기술, 의료, 자동차, 건설, 항공 등 여러 산업 대상\n영향: 피싱 저항성을 높이려는 passkey 전환 과정 자체가 사용자 교육·등록 캠페인과 충돌 가능\n시사점: passkey rollout은 등록 캠페인, helpdesk verification, 신규 credential 감사 로그, 위험 기반 승인 흐름을 함께 설계 필요",
-      "why_it_matters": "Passkey는 credential theft를 줄이는 강한 수단이지만 등록·복구 절차가 약하면 공격자가 새 인증 수단을 계정에 붙이는 경로가 됨",
-      "engineering_implication": "IdP 운영팀은 신규 passkey 등록 이벤트, 도메인 유사성, helpdesk 음성 요청, 고위험 계정 credential change를 SIEM 상관분석 규칙으로 연결 필요",
-      "korea_implication": "",
-      "category": "Security",
-      "tags": [
-        "Microsoft Entra",
-        "Passkey",
-        "Microsoft 365",
-        "Vishing",
-        "Identity Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-07-10 19:30",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/hackers-use-fake-microsoft-entra.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh1L4YdSw3-1jg88TMzYxjsqRmu3Bq-VkmyGg742mMsJaIyhyaBk5MBeEFOxagE4H6GFjfH8ey1114iqyT0LuKYFdu7ocZhOrA3WQCvtNZGBknEJ1wTdb5vJ-M8w5kLXaUoBi39TXducoH8jZVrQ1xQQsBtEf0rrGJGfappdR1CrSB3xvaJC8Dgos2XdC37/s1600/Microsoft-Entra-Passkey-Enrollment.jpg",
-      "local_image": "assets/images/news-109.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Okta가 O-UNC-066으로 추적하는 threat actor가 Microsoft 365 사용자를 대상으로 가짜 Entra passkey 등록 캠페인 수행 확인",
-            "공격 방식: 공격자가 passkey 단어가 포함된 도메인을 등록하고 음성 기반 보안 요청으로 사용자를 피싱 사이트에 유도",
-            "피싱 키트: Microsoft passkey 등록 절차와 유사한 화면을 제공해 사용자가 Microsoft에 passkey를 추가한다고 오인하도록 구성",
-            "결과: 실제로는 공격자 소유 passkey가 피해자 Microsoft 계정에 등록되어 무단 접근 권한 확보 가능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "대상 산업: 식음료, 기술, 의료, 자동차, 건설, 항공 등 다수 업종 피해 대상",
-            "차이점: 기존 AiTM 피싱처럼 비밀번호·MFA 토큰 탈취가 아니라 신규 passkey 등록 과정을 악용",
-            "배경: Microsoft가 조직의 passkey adoption을 높이기 위해 sign-in 중 등록 캠페인을 제공하는 흐름과 사회공학 유인이 겹침",
-            "후속 위험: 계정 접근 후 데이터 탈취와 extortion 활동으로 이어질 수 있는 계정 장악 경로"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "영향: 피싱 저항 인증도 등록·복구·helpdesk 절차가 약하면 공격자 credential enrollment로 전환 가능",
-            "운영 리스크: 사용자는 보안 강화 안내와 공격자 음성 요청을 구분하기 어렵고, 조직 캠페인 시기에는 오탐·혼선 증가 가능",
-            "검토 대상: Entra ID, Microsoft 365, Okta, helpdesk, IAM governance, SIEM 탐지 규칙 전반"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 신규 passkey 등록 이벤트, 등록 장치 fingerprint, 위치·ASN 변화, helpdesk ticket, 관리자 승인 로그를 하나의 탐지 시나리오로 묶을 필요",
-            "정책: 고권한 계정은 passkey 등록 전 별도 채널 확인, phishing-resistant MFA 재등록 제한, break-glass 계정 예외 검토 필요",
-            "발표 메모: 인증 기술 자체보다 credential lifecycle 통제가 공격면을 결정하는 사례로 설명"
           ]
         }
       ],

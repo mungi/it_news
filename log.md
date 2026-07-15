@@ -613,3 +613,10 @@
 - Source-page verified three current candidates: SonicWall SMA 1000 active exploitation of CVE-2026-15409 and CVE-2026-15410; AWS Security Hub AI inventory for managed, self-hosted, and external AI dependencies; and the Upstage·AXZ·FuriosaAI domestic NPU/LLM/search-serving collaboration. H200 parity and cost-reduction values in the Korean collaboration remain vendor claims, labeled accordingly.
 - Added 3 items, removed the three oldest capped items: OpenAI·Google blacklist-access report (2026-07-10 16:47 KST), HUMAIN·Cohere 50MW project (2026-07-10 17:05 KST), and Alibaba Qwen hardware adoption (2026-07-10 18:40 KST); re-sorted 50 items newest-first and reassigned ranks.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, three immutable raw captures, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
+
+## [2026-07-15] update | Add Cursor Windows repository execution and AsyncAPI npm supply-chain incidents
+- Checked current time at 2026-07-15 21:29 KST; no freeze guard was run per current project policy.
+- Inspected all four mandatory Korean/community surfaces directly and parsed 280 feed entries from The Hacker News, AWS, GitHub, Cloudflare, and Hugging Face feeds; all nine probed endpoints were reachable.
+- Source-page verification selected two current post-refresh Security candidates: Mindgard's Cursor Windows repository-root `git.exe` execution disclosure, reported by The Hacker News at 19:55 KST, and OX Security/StepSecurity's AsyncAPI npm compromise analysis, reported at 18:16 KST. Cursor version coverage after the dated 3.2.16 test remains explicitly uncertain.
+- Added two items, removed the two oldest capped items: 영국 국방부, 20억 파운드 AI 집단훈련 체계 ACTS 계약 체결 (2026-07-10 20:36 KST) and Microsoft Entra passkey 등록 피싱, 공격자 소유 패스키로 Microsoft 365 접근 확보 (2026-07-10 19:30 KST); re-sorted 50 items newest-first and reassigned ranks.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, two immutable raw captures, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
