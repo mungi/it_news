@@ -297,7 +297,10 @@ function renderDeepDives() {
     body.append(heading, summary, why, more);
 
     div.append(imageWrap, body);
-    div.addEventListener("click", () => openDeepDiveModal(item, div));
+    // The article remains pointer-clickable, but return focus to its native
+    // detail button so closing the dialog never strands keyboard focus on a
+    // non-focusable card container.
+    div.addEventListener("click", () => openDeepDiveModal(item, more));
     more.addEventListener("click", (event) => {
       event.stopPropagation();
       openDeepDiveModal(item, more);
