@@ -592,3 +592,10 @@
 - Reviewed current source surfaces and source-page verified AI Times coverage published 2026-07-14 19:31 KST: OpenAI's Codex and ChatGPT Work combined active-user count reached 7 million; individual-product, paid-conversion, and causal model-impact figures remain undisclosed.
 - Added the Codex·ChatGPT Work developer-platform operations item and removed the older lower-score Cursor Sand item (2026-07-10 18:08 KST); re-sorted all 50 items newest-first and reassigned ranks.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
+
+## [2026-07-15] update | Add Microsoft July Patch Tuesday exploited SharePoint·AD FS remediation
+- Checked current time at 2026-07-15 09:05 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory Korean/community surfaces: `news.hada.io`, GeekNews Plus, AI Times KR, and AI Times all returned HTTP 200. Parsed 2,068 entries from 7 reachable global XML feeds; BleepingComputer returned HTTP 403.
+- Reviewed newly published current candidates after the prior 04:55 KST refresh. The Hacker News source page and Microsoft Security Update Guide references were verified for the 05:25 KST report: 622 Microsoft CVEs, actively exploited SharePoint Server and AD FS privilege-escalation flaws, and the RC4 Kerberos change-management risk.
+- Added the Microsoft Patch Tuesday item and removed the oldest capped item, Meta Iris AI chip production plan (2026-07-10 15:55 KST); re-sorted 50 items newest-first and reassigned ranks.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, source image, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
