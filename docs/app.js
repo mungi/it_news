@@ -262,11 +262,6 @@ function renderDeepDives() {
     const div = document.createElement("article");
     const title = item.title || "Deep Dive";
     div.className = "deep-dive";
-    div.tabIndex = 0;
-    div.setAttribute("role", "button");
-    div.setAttribute("aria-haspopup", "dialog");
-    div.setAttribute("aria-label", `${title} 상세 보기`);
-    div.setAttribute("aria-roledescription", "상세 보기 카드");
 
     const imageWrap = document.createElement("div");
     imageWrap.className = "deep-dive-image-wrap";
@@ -293,18 +288,19 @@ function renderDeepDives() {
     appendRichText(summary, item.summary || "");
     const why = document.createElement("p");
     why.textContent = item.why_it_matters || item.details || "";
-    const more = document.createElement("span");
+    const more = document.createElement("button");
     more.className = "read-more";
-    more.textContent = "클릭해서 상세 설명 보기 →";
+    more.type = "button";
+    more.setAttribute("aria-haspopup", "dialog");
+    more.setAttribute("aria-label", `${title} 상세 보기`);
+    more.textContent = "상세 설명 보기 →";
     body.append(heading, summary, why, more);
 
     div.append(imageWrap, body);
     div.addEventListener("click", () => openDeepDiveModal(item, div));
-    div.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openDeepDiveModal(item, div);
-      }
+    more.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openDeepDiveModal(item, more);
     });
     container.appendChild(div);
   });
