@@ -488,6 +488,12 @@ def main() -> int:
         if not isinstance(related_links, list):
             errors.append(f"{prefix} related_links must be a list")
         else:
+            # The modal already presents source_url as "원문 보기". Reject the
+            # same document (including fragment-only variants) in related links
+            # so editorial data cannot render redundant source controls.
+            seen_item_links: set[tuple[str, str, int | None, str, str, str]] = set()
+            if isinstance(source_url, str) and is_http_url(source_url):
+                seen_item_links.add(canonical_http_url(source_url))
             for link_idx, link in enumerate(related_links, start=1):
                 link_prefix = f"{prefix} related_links[{link_idx}]"
                 if not isinstance(link, dict):
@@ -502,6 +508,11 @@ def main() -> int:
                 assert isinstance(link_url, str)
                 if not is_http_url(link_url):
                     errors.append(f"{link_prefix}.url must be an absolute http(s) URL: {link_url}")
+                    continue
+                canonical_link_url = canonical_http_url(link_url)
+                if canonical_link_url in seen_item_links:
+                    errors.append(f"{link_prefix}.url duplicates source_url or another related link: {link_url}")
+                seen_item_links.add(canonical_link_url)
 
     if seen_ranks and seen_ranks != set(range(1, len(items) + 1)):
         missing = sorted(set(range(1, len(items) + 1)) - seen_ranks)
@@ -545,12 +556,18 @@ def main() -> int:
         if not isinstance(sources, list) or not sources:
             errors.append(f"{prefix} sources must be a non-empty list")
         else:
+            seen_sources: set[tuple[str, str, int | None, str, str, str]] = set()
             for source_idx, source in enumerate(sources, start=1):
                 if not isinstance(source, str) or not source.strip():
                     errors.append(f"{prefix} sources[{source_idx}] must be a non-empty string")
                     continue
                 if not is_http_url(source):
                     errors.append(f"{prefix} sources[{source_idx}] must be an absolute http(s) URL: {source}")
+                    continue
+                canonical_source = canonical_http_url(source)
+                if canonical_source in seen_sources:
+                    errors.append(f"{prefix} sources[{source_idx}] duplicates another source: {source}")
+                seen_sources.add(canonical_source)
             primary_source = sources[0]
             if isinstance(primary_source, str) and is_http_url(primary_source):
                 canonical_primary_source = canonical_http_url(primary_source)
