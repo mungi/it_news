@@ -606,3 +606,10 @@
 - Source-page verified AWS's official announcement, published 2026-07-15 04:00 KST from the AWS feed timestamp: GuardDuty AI Protection analyzes Bedrock·SageMaker CloudTrail management/data events for anomalous invocation, cost harvesting, and Guardrails-linked prompt-injection signals, with Security Hub and Organizations integration.
 - Added the GuardDuty AI Protection item and removed the oldest capped item, AWS DMS Schema Conversion MCP Server (2026-07-10 16:00 KST); re-sorted 50 items newest-first and reassigned ranks.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable AWS source capture, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
+
+## [2026-07-15] update | Add SonicWall active zero-days, AWS AI inventory, and Korean sovereign AI serving case
+- Checked current time at 2026-07-15 17:18 KST; no freeze guard was run per current project policy.
+- Rechecked all mandatory Korean/community surfaces: `news.hada.io`, GeekNews Plus, AI Times KR, and AI Times returned HTTP 200. Parsed 280 feed entries from The Hacker News, AWS, Cloudflare, GitHub, AI Times, and AI Times KR feeds; no feed endpoint failed in this probe.
+- Source-page verified three current candidates: SonicWall SMA 1000 active exploitation of CVE-2026-15409 and CVE-2026-15410; AWS Security Hub AI inventory for managed, self-hosted, and external AI dependencies; and the Upstage·AXZ·FuriosaAI domestic NPU/LLM/search-serving collaboration. H200 parity and cost-reduction values in the Korean collaboration remain vendor claims, labeled accordingly.
+- Added 3 items, removed the three oldest capped items: OpenAI·Google blacklist-access report (2026-07-10 16:47 KST), HUMAIN·Cohere 50MW project (2026-07-10 17:05 KST), and Alibaba Qwen hardware adoption (2026-07-10 18:40 KST); re-sorted 50 items newest-first and reassigned ranks.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, three immutable raw captures, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
