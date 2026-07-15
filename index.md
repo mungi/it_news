@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-15 | Total pages: 167
+> Last updated: 2026-07-16 | Total pages: 168
 
 ## Entities
 
@@ -26,7 +26,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 154건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 155건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/cncf-hami-incubating-project-2026-07-16]] — HAMi CNCF incubation, 이기종 accelerator 분할·Kubernetes scheduling·운영 검증 경계.
 - [[raw/articles/thn-grok-build-repository-upload-2026-07-14]] — Grok Build의 Git 저장소·trace 전송 범위와 coding agent egress 통제.
 - [[raw/articles/jfrog-lucide-proxy-npm-ddos-2026-07-14]] — npm registry를 악용한 Lucide Proxy 브라우저 DDoS 동원과 runtime 공급망 통제.
 - [[raw/articles/aitimes-meta-hyperion-5gw-2026-07-14]] — Meta Hyperion 5GW AI 데이터센터 증설 계획과 전력·냉각·capacity planning 변수.
