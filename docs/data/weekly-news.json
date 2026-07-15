@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-15 21:29",
+  "last_updated_kst": "2026-07-16 01:37",
   "audience": "developers and engineers",
   "executive_summary": [
     "AsyncAPI npm 침해: 정상 GitHub Actions OIDC provenance가 push credential 침해를 막지 못해 dependency·runtime·CI commit 보호를 함께 점검.",
@@ -14,189 +14,183 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Grok Build 코드 반출 관찰: coding agent의 모델 호출과 저장소 egress를 분리해 통제해야 하는 이유",
-      "summary": "Grok Build 0.2.93 재현 관찰에서 모델 요청과 별개 storage 채널로 tracked 파일과 전체 Git 이력이 전송된 정황이 보고됨. xAI의 서버 측 차단 관찰은 있었지만 적용 범위·보존·삭제 보장은 별도 검증 대상임.",
-      "details": "cereblab의 패킷 캡처를 인용한 보도는 Grok Build가 읽지 않은 tracked 파일과 Git bundle을 xAI 관리 Google Cloud Storage로 보낸 정황을 제시한다. 이 관찰은 학습이나 사람 열람을 입증하지 않지만, cloud coding agent 도입에서 모델 학습 opt-out과 repository/trace egress·retention을 서로 다른 control plane으로 검증해야 함을 드러낸다.",
-      "why_it_matters": "Git 이력에는 현재 작업 트리에 없는 credential, 내부 endpoint, 고객 데이터가 남을 수 있다. 코드 agent의 권한 평가는 prompt 설정보다 파일 범위, metadata, 전송 endpoint, 보존·삭제 증빙까지 포함해야 한다.",
+      "title": "AsyncAPI npm 침해: trusted publishing 이후에도 commit·runtime·registry 경계를 분리해야 하는 이유",
+      "summary": "AsyncAPI npm 조직의 영향 버전 5개가 다단계 dropper를 포함한 채 배포됐고, OX Security는 주간 200만 다운로드 영향을 제시함. 정상 CI provenance는 artifact 발행 주체만 증명하므로, protected branch·package runtime egress·개발자 토큰 회전을 함께 검증해야 함.",
+      "details": "OX Security와 StepSecurity의 분석은 AsyncAPI 패키지 침해가 install hook 없이 module load에서 시작되고, IPFS·P2P·C2를 포함한 후속 경로로 확장될 수 있음을 설명한다. 대응은 악성 버전 차단만이 아니라 lockfile 영향 조사, developer/CI endpoint hunt, release-commit 보호와 registry 권한 복구를 같은 incident로 운영하는 데 있음.",
+      "why_it_matters": "SLSA/OIDC attestation은 승인 workflow가 artifact를 만들었음을 입증하지만, workflow를 유발한 commit과 maintainer 권한이 안전했음을 보장하지 않는다. import 시 발화하는 loader는 install-script 검사만으로 놓칠 수 있어 package provenance와 runtime telemetry를 결합해야 함.",
       "sources": [
-        "https://thehackernews.com/2026/07/grok-build-uploads-entire-git.html",
-        "https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547"
+        "https://www.ox.security/blog/asyncapi-npm-organization-compromised-2m-weekly-downloads-affected/",
+        "https://www.stepsecurity.io/blog/compromised-next-branch-pushes-malicious-asyncapi-generator-generator-helpers-and-generator-components-to-npm"
       ],
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgXEluWW9TuNGlzu9wVHSDBzAeUuoRS9Om8kX9yzH-HwCjggh-N5ycLyuJ82oY3MP4Uvf9yF_PqwKhcZepDBEH_pOb3td4dPRuuGSWi5XndfpeuqiMipzKIq0Vofc-hOBGj4nWxmXbjMS7RvHkZCUSHloOpsS6m7jpwwFX-2KUkYwrQdt-ClrGXpt2C9TxC/s1700-e365/async-npm.jpg",
+      "refreshed_kst": "2026-07-16 01:37",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "클라우드 coding agent의 모델 요청과 workspace·trace 업로드는 같은 보안 경계가 아님. 소스 연결 승인은 모델 학습 opt-out만으로 끝나지 않으며 파일 범위·Git metadata·storage endpoint·retention을 별도 release gate로 검증해야 함.",
+          "body": "정상 GitHub Actions OIDC trusted publishing은 release workflow의 신원을 증명할 뿐, repository push 권한이 탈취되지 않았거나 commit이 검토됐음을 증명하지 않음. package intake와 runtime 행동, release branch 통제를 하나의 공급망 control로 묶어야 함.",
           "items": [
-            "판단: 코드 생성 품질 설정과 source-code egress 정책을 서로 다른 control plane으로 관리 필요",
-            "팀 액션: production 저장소 연결 전 sandbox capture와 vendor 보존·삭제 증빙을 필수화 필요"
-          ]
-        },
-        {
-          "heading": "원문과 재현 관찰",
-          "body": "The Hacker News는 독립 연구자 cereblab의 패킷 캡처와 재현 기록을 인용해 Grok Build 0.2.93의 저장소 전송 경로를 설명함. 재현 기록은 모델 응답 요청과 분리된 storage 전송을 관찰한 자료이며, vendor의 공식 보안 공지가 아닌 외부 관찰임.",
-          "items": [
-            "관찰: agent에게 열지 말라고 지시한 tracked 파일의 고유 marker가 캡처한 Git bundle에서 복원된 조건",
-            "경로: model turn과 별도의 `/v1/storage` 계열 전송으로 설명된 storage channel",
-            "범위: tracked 파일과 full commit history 전송 정황이며 gitignored 파일 전송 여부는 확인되지 않은 상태"
-          ]
-        },
-        {
-          "heading": "수치와 검증 경계",
-          "body": "전송량과 chunk 수는 재현 환경의 네트워크 관찰 값임. 이 값은 데이터가 전송·수락·저장된 정황을 뒷받침하지만, xAI의 학습 사용·직원 열람·전체 계정 적용 범위를 입증하지 않음.",
-          "items": [
-            "수치: 12GB 시험 저장소에서 model-turn traffic 약 192KB, storage channel 약 **5.10GiB** 전송 보고",
-            "전송: 약 75MB 단위 73개 chunk가 HTTP 200을 받은 재현 기록",
-            "한계: 서버 측 설정 변경 뒤 6회 재시험에서 upload 0건이 관찰됐으나 영구성·tenant 범위는 미확인"
-          ]
-        },
-        {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "agent runtime은 prompt를 모델에 보내는 계층, workspace를 수집하는 계층, trace와 artifact를 저장하는 계층을 분리해 설계할 수 있음. 이 중 storage 계층이 repository bundle을 받으면 DLP·data residency·retention 의무가 모델 endpoint와 별도로 생김.",
-          "items": [
-            "아키텍처: file selection, Git history 포함, diff·terminal trace, artifact archive를 독립 telemetry로 기록 필요",
-            "보안: source repository connector를 SaaS egress connector로 분류하고 allowlist·proxy·CASB 정책 적용 필요",
-            "운영: agent version·server flag·계정 tier별 전송 동작을 release마다 재검증할 필요"
-          ]
-        },
-        {
-          "heading": "데이터 보안·거버넌스 관점",
-          "body": "현재 트리에서 삭제된 비밀정보도 Git history에 남을 수 있어 단순 secrets scan 통과만으로 노출면이 사라지지 않음. 국내외 고객 데이터, 영업비밀, 국외 이전, 감사 로그 요구를 repository history 단위로 평가해야 함.",
-          "items": [
-            "분류: source, Git object, issue·PR context, terminal output, trace를 서로 다른 민감도와 보존 기한으로 지정 필요",
-            "계약: ZDR 적용 대상이 model input만인지 storage·diagnostic·support artifact까지인지 서면 확인 필요",
-            "감사: upload object ID, byte count, destination, retention, delete receipt를 보안 증적에 남길 필요"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "도구를 전면 금지하기보다 낮은 민감도 sandbox에서 관찰하고, 조직별 egress 정책과 복구 절차를 확정한 뒤 허용 저장소를 넓히는 순서가 현실적임.",
-          "items": [
-            "1단계: agent별 read scope, Git history 포함 여부, trace·artifact endpoint, 계정별 retention을 inventory화",
-            "2단계: canary secret와 비공개 commit이 있는 sandbox로 packet capture·DLP alert·삭제 API를 검증",
-            "3단계: production은 allowlisted repository, 최소 권한 token, pre-commit scan, egress proxy를 적용",
-            "4단계: vendor 변경 공지와 실제 runtime 전송량 차이를 지속 모니터링하고 예외 승인 재검토"
-          ]
-        },
-        {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "coding agent 승인 흐름은 IDE 확장 설치 검토가 아니라 source egress와 데이터 수명주기 검토로 운영해야 함.",
-          "items": [
-            "agent가 읽는 파일·Git object·terminal output·trace의 allowlist가 있는지 확인",
-            "네트워크 로그에서 model API와 storage upload endpoint를 분리해 추적하는지 확인",
-            "history에 남은 secret·고객 데이터의 scan과 purge 절차가 있는지 확인",
-            "vendor의 disable flag가 계정·버전·리전에 적용됐는지 sandbox 재현으로 확인",
-            "incident 발생 시 token revoke, upload artifact 삭제 요청, repository history 대응을 묶은 runbook 보유 여부 확인"
-          ]
-        },
-        {
-          "heading": "강조 메세지",
-          "body": "코딩 agent의 위험 평가는 “모델이 코드를 학습하는가” 하나로 끝나지 않음. 실제 통제 단위는 어떤 파일과 Git history가 어느 endpoint로 나가며 언제 삭제 가능한가임.",
-          "items": [
-            "발표 포인트: **5.10GiB storage upload 관찰**은 prompt privacy와 repository egress가 별도 문제임을 보여주는 사례",
-            "팀 액션: 다음 sprint에 coding agent egress inventory와 sandbox network verification을 release gate에 추가 필요"
-          ]
-        }
-      ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCYpkCY1h-DxV5yfxpkGspVFATaUS27q_vpRgQ2ebzGvc6YgSsYk81jDt3SkJQgxVCL8dWJqzDE3t6iUt4ceeTvA9LG8Z9cA65uBXC05Lkdv1xKLNBMH88dTa_6XCet3a0wf1VwfyxQsx_1AKc3lmHCxqiZHKTfvk9kJqvo0i15biGekBijFPNN16JHBM/s1700-e365/grok.jpg",
-      "refreshed_kst": "2026-07-15 00:34"
-    },
-    {
-      "id": "deep-dive-002",
-      "title": "Lucide Proxy npm 캠페인: package registry와 브라우저 runtime을 함께 통제해야 하는 공급망 DDoS 경로",
-      "summary": "JFrog는 148개 npm 패키지가 학생용 웹 프록시로 위장해 방문자 브라우저를 HTTP flood·WebSocket 연결 churn에 동원한 구조를 분석함. install-time 검사만으로는 mutable remote loader와 browser runtime의 원격 payload 교체를 막기 어려움.",
-      "details": "JFrog의 1차 분석은 npm registry가 의존성 배포 경로뿐 아니라 정적 웹앱 호스팅과 remote-code loader 배포 채널로 악용된 사례를 다룬다. 대응은 악성 package 차단에 그치지 않고 CSP·SRI·commit pinning, WebSocket fan-out 관측, artifact proxy 대응을 하나의 운영 경로로 묶는 데 있음.",
-      "why_it_matters": "이 공격은 개발자가 패키지를 설치할 때뿐 아니라 일반 사용자가 registry-hosted proxy 페이지를 열 때도 실행된다. 공급망, 웹 보안, DDoS 대응 조직이 분리되어 있으면 mutable JavaScript와 비정상 browser egress 신호가 각자 사각지대에 남는다.",
-      "sources": [
-        "https://research.jfrog.com/post/lucide-proxy-npm-malware-campaign/",
-        "https://thehackernews.com/2026/07/148-npm-packages-disguised-as-student.html"
-      ],
-      "detailed_content": [
-        {
-          "heading": "한 줄 결론",
-          "body": "npm 공급망 통제는 lockfile과 install hook 검사만으로 충분하지 않음. registry에 올라간 정적 웹앱이 mutable remote script를 불러오면 사용자 브라우저가 이후 payload 교체와 DDoS 트래픽의 실행 환경이 될 수 있음.",
-          "items": [
-            "판단: package governance와 browser runtime security를 하나의 third-party code control로 운영 필요",
-            "팀 액션: mutable script·SRI 누락·WebSocket fan-out을 CI와 edge telemetry의 공통 탐지 신호로 추가 필요"
+            "판단: provenance 검증을 branch protection·environment approval의 대체 수단으로 취급하지 말 것",
+            "팀 액션: 영향 version 차단과 CI·개발 단말 hunt를 같은 incident ticket으로 개시 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "JFrog Security Research는 Lucide proxy로 위장한 npm campaign을 분석해 148개 package와 두 publisher 계정의 배포 흐름을 제시함. The Hacker News는 이 1차 연구를 바탕으로 브라우저 기반 DDoS 동원 경로를 보도함.",
+          "body": "OX Security는 2026년 7월 14일 AsyncAPI npm 조직 침해를 공개하고 영향 package와 version을 제시함. StepSecurity 분석은 npm token 대신 repository push access가 정상 release workflow와 OIDC trusted publisher를 통과하게 한 경로를 설명함.",
           "items": [
-            "규모: `terminal3airport`와 `eerikakirk`에 연결된 **148개 npm package**를 JFrog가 식별",
-            "시점: 첫 물결은 5월 27일, 후속 물결은 7월 8일 업로드로 JFrog가 설명",
-            "전달: install hook 없이 registry를 정적 browser app hosting처럼 활용한 배포 구조"
+            "영향: `@asyncapi/generator` 3.3.1, `generator-components` 0.7.1, `generator-helpers` 1.1.1, `specs` 6.11.2·6.11.2-alpha.1 확인",
+            "규모: OX Security가 영향 package의 합산 주간 다운로드를 **200만**으로 제시",
+            "경계: 감염·실행 여부는 조직별 lockfile, build artifact, module import 기록으로 별도 판정 필요"
           ]
         },
         {
-          "heading": "실행 경로와 관찰 수치",
-          "body": "프록시 페이지는 정상 기능처럼 보이지만 remote loader가 GitHub mutable branch의 script를 jsDelivr를 통해 불러오는 구조임. 이후 payload는 HTTP request flood와 Wisp WebSocket 연결 생성을 수행하도록 분석됨.",
+          "heading": "실행 체인과 탐지 경계",
+          "body": "OX 분석은 implant가 `preinstall`·`postinstall` 없이 감염 module을 Node.js가 load할 때 후속 downloader를 시작한다고 설명함. IPFS와 다수 backup channel 사용은 package manager의 설치 단계만 관찰하는 통제에 빈틈을 만듦.",
           "items": [
-            "무결성 부재: pinned commit과 Subresource Integrity 없이 `main` branch script를 참조한 조건",
-            "HTTP: archive된 payload가 500ms마다 100만 글자 문자열의 no-cors POST를 보내도록 구성된 분석",
-            "WebSocket: target·socket 수를 원격 `websocket.txt`에서 받고 최대 1,024개 연결을 여는 설계",
-            "추정: 활성 방문자 한 명당 약 2MB/s upload, 1,000개 탭이면 약 2GB/s 가능이라는 JFrog 추정"
-          ]
-        },
-        {
-          "heading": "검증 경계와 현재 상태",
-          "body": "분석 수치는 확보된 payload와 active-browser 조건에 대한 연구 결과임. 전체 피해 트래픽, 모든 package의 현재 활성 여부, 개별 사용자 피해를 확정하는 수치로 읽으면 안 됨.",
-          "items": [
-            "범위: runtime payload 분석은 공격 가능 경로를 보여주며 실제 피해량의 전수 측정은 아님",
-            "상태: 다수 package가 제거됐지만 JFrog 조사 시점에 일부 version이 남아 있었다는 보고",
-            "운영: package 제거 뒤에도 cached CDN asset·fork·재게시 가능성을 별도 조사할 필요"
+            "발화: install hook 부재로 dependency install 정책만으로 실행 시점 식별이 어려운 조건",
+            "통신: IPFS gateway와 BitTorrent bootstrap/DHT 계열을 backup 통신 경로로 사용한 분석",
+            "행위: crypto·정보 탈취, RAT, registry self-duplication 기능을 OX가 설명한 범위",
+            "한계: campaign attribution과 모든 endpoint의 실제 피해 범위는 1차 분석만으로 확정 불가"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 사례의 제어점은 registry, CDN, browser, edge 네 계층에 분산됨. package scanner가 archive만 보면 runtime fetch를 놓치고, WAF가 request volume만 보면 mutable script 원인을 놓칠 수 있음.",
+          "body": "이 사건은 build provenance, source provenance, runtime provenance가 서로 다른 증거임을 드러냄. signed artifact라도 악성 commit에서 나온 경우 유효 서명이 될 수 있고, runtime은 package manifest에 없는 network edge를 열 수 있음.",
           "items": [
-            "공급망: publisher 신뢰도·package manifest·lockfile·artifact proxy를 배포 전 통제로 유지 필요",
-            "웹 보안: CSP와 SRI로 외부 script 출처와 immutable version을 강제할 필요",
-            "SRE: WebSocket connection rate, file descriptor, egress bytes, log volume을 DDoS 조기 경보 지표로 결합 필요"
+            "아키텍처: dependency graph·commit SHA·release workflow run·artifact digest·import process tree를 하나의 evidence chain으로 보존 필요",
+            "보안: CI runner와 개발 단말의 Node child process, DNS, proxy egress를 SBOM 결과와 조인 필요",
+            "운영: registry package unpublish 뒤에도 cache, vendored artifact, 이미 실행된 runner를 별도 조사 대상화 필요"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "학생용 프록시라는 기능 표시는 소비자 신뢰를 이용한 social distribution layer임. 조직은 code provenance뿐 아니라 서비스가 방문자 브라우저에서 원격 코드를 불러오는 방식을 공급망 위험으로 분류해야 함.",
+          "heading": "거버넌스·자격증명 관점",
+          "body": "공개 package maintainer의 push credential과 release permission은 production deploy credential과 같은 수준의 blast radius를 가질 수 있음. 개발자 workstation에서 찾은 npm·PyPI·Cargo token은 개인 비밀이 아니라 registry publishing 권한으로 분류해야 함.",
           "items": [
-            "정책: production web asset은 immutable digest·commit pin·승인된 CDN origin을 요구 필요",
-            "탐지: 새 publisher, 유사 package 이름, remote loader, no-cors 대용량 POST를 risk score에 반영 필요",
-            "대응: 법무·보안·플랫폼이 package takedown, CDN purge, IOC 공유, 고객 공지를 하나의 playbook으로 준비 필요"
+            "권한: release branch direct push 금지, required review, CODEOWNERS, environment approval을 함께 적용 필요",
+            "비밀정보: suspected endpoint의 npm·PyPI·Cargo token과 cloud credential revoke·rotate 순서 확정 필요",
+            "감사: publish actor, workflow ref, commit signer, package digest, release approval을 변경 불가능한 로그로 보존 필요"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 현재 서비스와 개발 환경의 mutable third-party code를 식별하고, 차단·대체·관측을 단계적으로 적용해야 함.",
+          "body": "차단 우선순위는 영향 version의 재사용 방지, 실행 흔적 확인, release control 복구 순서로 잡아야 함. production 배포를 일괄 중단하기보다 정확한 dependency scope와 runtime evidence를 먼저 확보해야 rollback 범위를 줄일 수 있음.",
           "items": [
-            "1단계: 사내 registry와 웹 asset inventory에서 외부 script URL, branch reference, SRI 누락을 수집",
-            "2단계: artifact proxy allowlist와 dependency scanning에 알려진 publisher·package·hash block 규칙 적용",
-            "3단계: CSP report-only로 위반을 관찰한 뒤 immutable URL과 SRI를 production policy로 승격",
-            "4단계: edge에서 browser-originated WebSocket fan-out·no-cors POST·새 도메인 egress를 rate limit과 alert에 연결"
+            "1단계: lockfile·SBOM·artifact proxy에서 영향 package/version 및 transitive inclusion을 검색",
+            "2단계: CI·개발 단말에서 module load, 비정상 child `node`, IPFS·DHT·C2 egress를 hunt",
+            "3단계: package cache purge, clean rebuild, registry·cloud·VCS credential 회전 실행",
+            "4단계: protected branch와 publish environment approval을 canary repository에서 강제·감사"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발 package와 public web asset의 코드 공급 경로를 같은 수준으로 검토해야 함.",
+          "body": "패키지 의존성의 설치 여부와 실제 실행 여부를 분리해 확인해야 함. 보안팀은 IOC만 전달하지 말고 어떤 runner·developer image·build artifact를 증거 보존할지 함께 지정해야 함.",
           "items": [
-            "lockfile과 SBOM에서 해당 package·publisher·transitive dependency 사용 흔적을 확인",
-            "웹앱의 외부 script가 pinned version·SRI·허용 origin을 따르는지 확인",
-            "CSP report와 DNS·proxy telemetry에서 mutable loader와 새 CDN origin을 조사",
-            "WebSocket 동시 연결·연결 churn·egress bytes·log rate에 서비스별 상한을 두는지 확인",
-            "악성 package 발견 시 artifact block, cache purge, 사용자 session 조사, edge rule 적용의 순서를 runbook으로 보유 여부 확인"
+            "`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, SBOM에서 영향 version 확인",
+            "CI runner와 개발자 endpoint의 import 시각·process tree·outbound DNS/proxy log 보존",
+            "IPFS gateway·BitTorrent bootstrap·새 persistence artifact에 대한 탐지 rule 추가",
+            "release branch direct push, review bypass, workflow permission, OIDC subject condition 재점검",
+            "정상 artifact 재빌드·배포 전 credential rotation과 registry access review 완료 여부 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "registry는 패키지 설치 경로만이 아니라 브라우저에서 실행되는 코드 배포면이 될 수 있음. 공급망 방어의 측정 단위는 설치 차단 건수뿐 아니라 production에서 immutable code만 실행되는 비율과 비정상 fan-out 탐지 시간이어야 함.",
+          "body": "“OIDC로 publish됐으니 안전하다”는 판단은 workflow identity만 확인한 것임. 공급망 방어의 통제 단위는 source commit에서 package import와 outbound runtime까지 이어지는 실제 실행 경로임.",
           "items": [
-            "발표 포인트: **148개 package** 사례는 dependency scan과 browser security를 분리할 때 생기는 운영 공백",
-            "팀 액션: 다음 보안 점검에서 mutable third-party JavaScript와 WebSocket fan-out을 공통 control 목록에 추가 필요"
+            "발표 포인트: **200만 주간 다운로드 영향**과 install-hook 부재가 provenance·runtime 분리 문제를 압축",
+            "팀 액션: 다음 release review에 commit protection, dependency diff, runtime egress evidence를 함께 요구"
           ]
         }
+      ]
+    },
+    {
+      "id": "deep-dive-002",
+      "title": "Amazon GuardDuty AI Protection: AI 호출 telemetry를 보안·비용·가드레일 대응으로 연결하는 운영 설계",
+      "summary": "AWS는 GuardDuty AI Protection이 Bedrock·SageMaker의 CloudTrail management/data event를 분석해 비정상 invocation, cost harvesting, Guardrails 연계 prompt injection을 탐지한다고 발표함. AI workload 탐지는 model endpoint 단독 경보가 아니라 계정·모델·token/GPU 소비·정책 위반을 Security Hub 대응 흐름에 연결해야 함.",
+      "details": "AWS 공식 발표는 GuardDuty AI Protection을 Bedrock·SageMaker AI workload의 관리·데이터 이벤트 기반 위협 탐지로 소개한다. 기능 활성화만으로 운영이 끝나는 것은 아니며, 모델별 정상 사용량 baseline, Guardrails signal의 triage, multi-account 책임 분리, token/GPU 비용 incident와 security incident의 공동 runbook을 설계해야 함.",
+      "why_it_matters": "AI 서비스의 비정상 호출은 credential abuse, prompt injection, rate-limit 우회, 비용 소모를 같은 CloudTrail event 흐름에서 남길 수 있다. detection finding이 Security Hub에 모여도 resource owner·SOC·FinOps의 확인 기준이 없으면 실제 대응 시간은 줄지 않음.",
+      "sources": [
+        "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-guardduty-ai-protection-aws/",
+        "https://aws.amazon.com/guardduty/"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAJ1TN76Et1GvWFCTaivnNcys4rEEVk1QEd6WIb0wu3cxroYcwng-0a0uM8eyHdrOuiHLU8lFJg5eFzSbZj95aEfXVnletlFE9BKsDJP_0uV4w9-YbHg7p9LuMyRMcj4rJPftYmIYCcD3_VmbgFrGuaJ6yqUuJgIvVtbqlNUPrkJO2FSuFQ6dJ7gzKFV0/s1700-e365/lucide-botnet.jpg",
-      "refreshed_kst": "2026-07-15 00:34"
+      "image_url": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-07-16 01:37",
+      "detailed_content": [
+        {
+          "heading": "한 줄 결론",
+          "body": "AI workload 보안은 model API key를 숨기는 수준에서 끝나지 않음. Bedrock·SageMaker의 management/data event, Guardrails 결과, account ownership, token·GPU 소비량을 같은 incident timeline으로 연결해야 비정상 호출과 비용 소모를 구분·대응할 수 있음.",
+          "items": [
+            "판단: AI security finding은 SOC만의 경보가 아니라 platform owner와 FinOps가 공유할 운영 신호",
+            "팀 액션: 서비스별 정상 invocation·token·GPU usage baseline과 escalation owner를 먼저 지정 필요"
+          ]
+        },
+        {
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "AWS는 2026년 7월 14일 GuardDuty AI Protection을 발표하며 Amazon Bedrock과 Amazon SageMaker를 대상으로 AI 특화 위협 탐지를 확장한다고 밝힘. AWS 설명상 CloudTrail management 및 data event를 분석해 AI workload의 의심 활동을 식별하고, finding은 Security Hub로 전달됨.",
+          "items": [
+            "대상: Amazon Bedrock·Amazon SageMaker AI service의 CloudTrail management/data event 분석",
+            "탐지: unusual invocation pattern, cost harvesting attack, Bedrock Guardrails 연계 prompt injection attempt를 AWS가 열거",
+            "운영: GuardDuty 또는 Security Hub에서 활성화하고 AWS Organizations로 중앙 enable 가능",
+            "상용 조건: GuardDuty 고객 대상 30일 free trial과 지원 리전은 AWS Regional Services List 기준 확인 필요"
+          ]
+        },
+        {
+          "heading": "탐지 신호의 의미와 검증 경계",
+          "body": "AWS 발표는 탐지 범주와 통합 경로를 설명하지만, 조직별 false positive rate, 모델·리전·event volume별 비용, 모든 prompt injection을 차단한다는 보장은 제공하지 않음. finding은 자동 차단 결과가 아니라 triage를 시작하는 evidence로 다뤄야 함.",
+          "items": [
+            "비정상 호출: 계정·principal·모델·시간대·request pattern의 baseline을 벗어난 activity 확인 대상",
+            "비용 수확: token 또는 GPU 시간을 의도적으로 과소비시키는 호출을 security와 FinOps 공동 조사 대상으로 분류",
+            "prompt injection: Guardrails integration signal은 application-level input/output telemetry와 함께 재현·평가 필요",
+            "한계: 서비스별 event logging 설정과 지원 리전·기능 범위는 rollout 전 공식 문서로 재확인 필요"
+          ]
+        },
+        {
+          "heading": "AI/Infra 전문가 해석",
+          "body": "LLM workload는 control plane 변경과 data plane invocation이 모두 사고 단서가 됨. 모델 access 정책 변경, 새 inference profile, IAM role 사용, invocation burst, Guardrails event를 분리하면 공격자의 준비·실행·비용 효과를 한 timeline에서 읽기 어려움.",
+          "items": [
+            "아키텍처: CloudTrail event를 account·workload·model·principal·environment tag로 enrichment 필요",
+            "관측: token/GPU/latency/429·5xx·Guardrails action을 service SLO telemetry와 조합 필요",
+            "대응: GuardDuty finding에서 Security Hub, SIEM, ticket, IAM session revoke·quota 제한까지 자동화 범위를 단계화 필요"
+          ]
+        },
+        {
+          "heading": "비용·보안·거버넌스 관점",
+          "body": "cost harvesting은 사용량 이상 징후이면서 동시에 credential misuse 또는 application abuse의 결과일 수 있음. 비용 경보와 보안 경보의 owner가 분리되면 차단 전 승인·모델 fallback·고객 영향 판단이 늦어질 수 있음.",
+          "items": [
+            "FinOps: 모델별 token/GPU unit cost, budget burn rate, request origin을 동일 dashboard에 노출 필요",
+            "IAM: human·workload identity별 model invocation permission과 cross-account access를 최소 권한으로 분리",
+            "데이터: prompt·response 원문을 과도하게 중앙 수집하지 않고 hash·classification·Guardrails decision으로 privacy boundary 설계",
+            "감사: finding 처리 시간, false-positive disposition, quota rollback, customer impact를 incident postmortem 지표로 유지"
+          ]
+        },
+        {
+          "heading": "도입 로드맵",
+          "body": "기능 enable 전에 어떤 AI resource가 실제로 보호 범위에 들어가는지와 누가 finding을 받을지 확인해야 함. 초기에는 monitor-only로 baseline을 만들고, 검증된 high-confidence pattern부터 rate limit·credential revoke 같은 대응을 연결하는 순서가 안전함.",
+          "items": [
+            "1단계: Bedrock·SageMaker account, model, inference endpoint, owner, data classification inventory 작성",
+            "2단계: CloudTrail data event와 Security Hub aggregation, Organizations delegated admin, SIEM routing 검증",
+            "3단계: 2~4주 baseline으로 정상 invocation·비용·Guardrails event 분포와 allowlist 정의",
+            "4단계: suspicious principal disable, quota/rate limit, key rotation, application rollback runbook을 tabletop으로 시험"
+          ]
+        },
+        {
+          "heading": "개발팀/인프라팀 체크리스트",
+          "body": "AI application owner는 탐지 제품을 켠 뒤 경보를 SOC로 넘기는 방식만으로 충분하지 않음. 정상 사용의 business context와 고객 영향, 모델 fallback 옵션을 security triage에 제공해야 함.",
+          "items": [
+            "Bedrock·SageMaker resource와 CloudTrail management/data event 수집 범위 확인",
+            "model·principal·account·environment별 request·token/GPU·error baseline 보유 여부 확인",
+            "Guardrails action, application audit log, Security Hub finding correlation key 정의",
+            "비정상 호출 시 IAM session/key revoke, quota 제한, endpoint disable의 승인자와 RTO 지정",
+            "multi-account 조직에서 delegated admin, finding aggregation, data residency·log retention 정책 검토"
+          ]
+        },
+        {
+          "heading": "강조 메세지",
+          "body": "AI 호출량은 성능 지표이면서 비용 지표이고 보안 지표임. GuardDuty AI Protection의 가치는 경보 개수보다, 비정상 invocation을 credential·Guardrails·비용 evidence와 묶어 얼마나 빨리 격리·복구하는가에 달려 있음.",
+          "items": [
+            "발표 포인트: **CloudTrail management·data event**를 이용해 AI control plane과 invocation plane을 함께 관찰하는 구조",
+            "팀 액션: 다음 분기에 AI workload별 baseline·owner·incident runbook을 Security Hub finding과 연결"
+          ]
+        }
+      ]
     }
   ],
   "items": [
