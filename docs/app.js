@@ -265,6 +265,8 @@ function renderDeepDives() {
     const title = item.title || "Deep Dive";
     div.className = "deep-dive";
     div.tabIndex = 0;
+    div.setAttribute("role", "button");
+    div.setAttribute("aria-haspopup", "dialog");
     div.setAttribute("aria-label", `${title} 상세 보기`);
     div.setAttribute("aria-roledescription", "상세 보기 카드");
 
@@ -384,6 +386,8 @@ function renderCards() {
     const node = template.content.firstElementChild.cloneNode(true);
     const title = item.title_ko || item.title_original || "뉴스";
     node.dataset.newsId = item.id || "";
+    node.setAttribute("role", "button");
+    node.setAttribute("aria-haspopup", "dialog");
     node.setAttribute("aria-label", `${title} 상세 보기`);
     node.setAttribute("aria-roledescription", "상세 보기 카드");
     if (isRead(item)) {
