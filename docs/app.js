@@ -250,7 +250,9 @@ function renderSummary() {
   list.replaceChildren();
   (state.data.executive_summary || []).forEach((item) => {
     const li = document.createElement("li");
-    li.textContent = item;
+    // Weekly summaries use the same limited **bold** convention as cards and
+    // modal content. Parse it as text nodes, never HTML, to retain safe output.
+    appendRichText(li, item);
     list.appendChild(li);
   });
 }
