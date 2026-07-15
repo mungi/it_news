@@ -77,7 +77,8 @@ function markRead(item) {
   document.querySelectorAll("[data-news-id]").forEach((node) => {
     if (node.dataset.newsId !== item.id) return;
     node.classList.add("is-read");
-    node.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 상세 보기, 읽음`);
+    const detailButton = node.querySelector(".card-detail-button");
+    if (detailButton) detailButton.setAttribute("aria-label", `${item.title_ko || item.title_original || "뉴스"} 상세 보기, 읽음`);
     const stateLabel = node.querySelector(".read-state");
     if (stateLabel) stateLabel.textContent = "읽음";
   });
@@ -383,13 +384,8 @@ function renderCards() {
     const node = template.content.firstElementChild.cloneNode(true);
     const title = item.title_ko || item.title_original || "뉴스";
     node.dataset.newsId = item.id || "";
-    node.setAttribute("role", "button");
-    node.setAttribute("aria-haspopup", "dialog");
-    node.setAttribute("aria-label", `${title} 상세 보기`);
-    node.setAttribute("aria-roledescription", "상세 보기 카드");
     if (isRead(item)) {
       node.classList.add("is-read");
-      node.setAttribute("aria-label", `${title} 상세 보기, 읽음`);
     }
     const img = node.querySelector(".card-image");
     img.alt = `${item.title_ko || item.title_original || "뉴스"} 이미지`;
@@ -419,13 +415,13 @@ function renderCards() {
     sourceLink.addEventListener("click", (event) => event.stopPropagation());
     sourceLink.addEventListener("keydown", (event) => event.stopPropagation());
     node.querySelector(".published").textContent = item.published_kst || "";
-    node.addEventListener("click", () => openModal(item, node));
-    node.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openModal(item, node);
-      }
+    const detailButton = node.querySelector(".card-detail-button");
+    detailButton.setAttribute("aria-label", `${title} 상세 보기`);
+    detailButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openModal(item, detailButton);
     });
+    node.addEventListener("click", () => openModal(item, detailButton));
     grid.appendChild(node);
   });
 }
