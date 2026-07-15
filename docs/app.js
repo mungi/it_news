@@ -413,7 +413,16 @@ function renderCards() {
     sourceLink.setAttribute("aria-label", `${title} 원문 열기: ${item.source_name || "Source"}`);
     sourceLink.addEventListener("click", (event) => event.stopPropagation());
     sourceLink.addEventListener("keydown", (event) => event.stopPropagation());
-    node.querySelector(".published").textContent = item.published_kst || "";
+    const published = node.querySelector(".published");
+    const publishedKst = String(item.published_kst || "");
+    published.textContent = publishedKst;
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(publishedKst)) {
+      published.dateTime = `${publishedKst.replace(" ", "T")}+09:00`;
+      published.setAttribute("aria-label", `발행 시각: ${publishedKst} KST`);
+    } else {
+      published.removeAttribute("datetime");
+      published.removeAttribute("aria-label");
+    }
     const detailButton = node.querySelector(".card-detail-button");
     detailButton.setAttribute("aria-label", `${title} 상세 보기`);
     detailButton.addEventListener("click", (event) => {
