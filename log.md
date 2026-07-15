@@ -599,3 +599,10 @@
 - Reviewed newly published current candidates after the prior 04:55 KST refresh. The Hacker News source page and Microsoft Security Update Guide references were verified for the 05:25 KST report: 622 Microsoft CVEs, actively exploited SharePoint Server and AD FS privilege-escalation flaws, and the RC4 Kerberos change-management risk.
 - Added the Microsoft Patch Tuesday item and removed the oldest capped item, Meta Iris AI chip production plan (2026-07-10 15:55 KST); re-sorted 50 items newest-first and reassigned ranks.
 - Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, source image, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
+
+## [2026-07-15] update | Add Amazon GuardDuty AI Protection for Bedrock·SageMaker workloads
+- Checked current time at 2026-07-15 13:08 KST; no freeze guard was run per current project policy.
+- Rechecked mandatory Korean/community surfaces: `news.hada.io`, GeekNews Plus, AI Times KR, and AI Times all returned HTTP 200. Parsed 213 entries from 6 reachable global XML feeds; Google Cloud feed endpoint returned HTTP 404.
+- Source-page verified AWS's official announcement, published 2026-07-15 04:00 KST from the AWS feed timestamp: GuardDuty AI Protection analyzes Bedrock·SageMaker CloudTrail management/data events for anomalous invocation, cost harvesting, and Guardrails-linked prompt-injection signals, with Security Hub and Organizations integration.
+- Added the GuardDuty AI Protection item and removed the oldest capped item, AWS DMS Schema Conversion MCP Server (2026-07-10 16:00 KST); re-sorted 50 items newest-first and reassigned ranks.
+- Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable AWS source capture, and wiki index; both Deep Dives remain fully refreshed at 2026-07-15 00:34 KST, so no timestamp-only change was made.
