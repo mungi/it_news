@@ -258,7 +258,7 @@ function renderSummary() {
 function renderDeepDives() {
   const container = $("#deepDiveList");
   container.replaceChildren();
-  (state.data.deep_dives || []).slice(0, 2).forEach((item) => {
+  (state.data.deep_dives || []).slice(0, 2).forEach((item, index) => {
     const div = document.createElement("article");
     const title = item.title || "Deep Dive";
     div.className = "deep-dive";
@@ -274,6 +274,9 @@ function renderDeepDives() {
     // their primary imagery eagerly avoids delaying the visual anchor / LCP,
     // while the much longer news list remains lazily loaded.
     img.loading = "eager";
+    // Only the first Deep Dive is the initial viewport's primary visual. Give
+    // it an explicit network priority without competing with the next card.
+    img.fetchPriority = index === 0 ? "high" : "auto";
     img.decoding = "async";
     img.referrerPolicy = "strict-origin-when-cross-origin";
     img.onerror = () => useFallbackImage(img, "AI");
