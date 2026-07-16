@@ -270,7 +270,10 @@ function renderDeepDives() {
     img.alt = `${title} 이미지`;
     img.width = 236;
     img.height = 192;
-    img.loading = "lazy";
+    // Deep Dives are rendered in the briefing's above-the-fold panel. Loading
+    // their primary imagery eagerly avoids delaying the visual anchor / LCP,
+    // while the much longer news list remains lazily loaded.
+    img.loading = "eager";
     img.decoding = "async";
     img.referrerPolicy = "strict-origin-when-cross-origin";
     img.onerror = () => useFallbackImage(img, "AI");
