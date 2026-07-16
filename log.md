@@ -632,3 +632,10 @@
 - Source-page verified CNCF’s July 15 announcement that the TOC accepted HAMi as an incubating project. The project describes memory/core/device-count partitioning, hard runtime isolation, and binpack/spread/topology-aware scheduling for heterogeneous accelerators; stated contributor and deployment figures are retained as CNCF/project claims.
 - Added HAMi at 2026-07-16 01:00 KST and removed the oldest capped item, Cloudflare Smart Tiered Cache region hints (2026-07-10 22:00 KST); re-sorted all 50 items newest-first and reassigned ranks.
 - Deep Dives were already fully refreshed at 2026-07-16 01:37 KST, so no timestamp-only change was made. Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable CNCF source capture, and wiki index.
+
+## [2026-07-16] update | Add IBM Research agent model-routing optimization analysis
+- Checked current time at 2026-07-16 09:49 KST; no freeze guard was run per current project policy.
+- Inspected mandatory Korean/community surfaces: GeekNews RSS, GeekNews Plus, AI Times KR, and AI Times were unavailable to XML parsing in this probe (403/HTML parse errors), while their surfaces were still requested directly. Parsed 1,017 entries from six reachable global feeds (AWS, CNCF, The Hacker News, Cloudflare, GitHub, Hugging Face); four mandatory feed endpoints were unavailable for XML parsing.
+- Source-page verified IBM Research's July 15 Hugging Face Enterprise article. Its feed timestamp maps to 2026-07-16 02:27 KST; it frames agent model routing as cost·quality·latency optimization and reports its AppWorld/CodeAct benchmark conditions, including cache-sensitive cost reversal.
+- Added the model-routing item and removed the oldest capped item, GitHub Copilot code-review workflow redesign (2026-07-11 00:57 KST); re-sorted all 50 items newest-first and reassigned ranks.
+- Deep Dives were already fully refreshed at 2026-07-16 01:37 KST, so no timestamp-only change was made. Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, wiki index, and executive summary.

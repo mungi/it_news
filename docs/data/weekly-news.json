@@ -2,14 +2,14 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-16 05:44",
+  "last_updated_kst": "2026-07-16 09:49",
   "audience": "developers and engineers",
   "executive_summary": [
     "AsyncAPI npm 침해: 정상 GitHub Actions OIDC provenance가 push credential 침해를 막지 못해 dependency·runtime·CI commit 보호를 함께 점검.",
     "Cursor Windows 저장소 open 취약점: repo-root `git.exe` 자동 실행 주장에 따라 untrusted repository를 Sandbox·VM으로 격리하고 workspace 실행 파일 차단.",
     "SonicWall SMA 1000 활성 악용: CVSS 10.0 SSRF와 AMC 관리자 명령 경로를 hotfix·IoC 조사·재이미징 기준으로 함께 처리.",
     "AWS AI inventory: Bedrock·SageMaker·EC2·ECR·외부 모델 API를 Config·SBOM·DNS telemetry로 연결해 AI asset exposure를 추적.",
-    "국산 소버린 AI 실운영 검증: 다음 AI 요약에 NPU·LLM을 연결한 사례가 token/s·p95 latency·비용·전력·GPU fallback 비교를 요구."
+    "에이전트 모델 라우팅: sticker price 대신 cache·queue·품질·지연·data residency를 함께 최적화하고 canary 지표로 route 정책 검증."
   ],
   "deep_dives": [
     {
@@ -195,6 +195,90 @@
   ],
   "items": [
     {
+      "id": "news-170",
+      "title_ko": "IBM Research, 에이전트 모델 라우팅을 가격표 분류가 아닌 비용·품질·지연 최적화 문제로 재정의",
+      "title_original": "Model Routing Is Simple. Until It Isn’t.",
+      "summary": "핵심: IBM Research는 동일 CodeAct agent의 AppWorld 417개 작업에서 Sonnet 비용이 $79, GPT-4.1 비용이 $155였다고 제시. 운영: 모델 가격만으로 route하지 말고 cache hit, endpoint 상태, 품질·지연·compliance 제약을 함께 최적화하고 task별 실제 비용·SLO를 관측 필요.",
+      "detail": "IBM Research의 Hugging Face 기술 글은 에이전트 모델 라우팅을 난이도 분류기가 아닌 다목적 systems optimization으로 다룬다. 같은 CodeAct agent의 AppWorld Test Challenge 417개 작업에서 Claude Sonnet 4.6은 총 $79($0.19/task), GPT-4.1은 $155($0.37/task)였다고 제시했으며, 입력·출력 단가보다 context cache read 비용과 trajectory가 결과를 바꾼 사례다. 제안 router는 AppWorld에서 84% 정확도·$93·83초의 운영점을 제시했으나, 이는 해당 benchmark 구성의 결과이므로 조직별 모델·traffic·governance 조건으로 재검증 필요.",
+      "why_it_matters": "agentic workload의 실제 비용과 latency는 모델 단가나 task 난이도만으로 예측되지 않는다. context 재사용, endpoint 혼잡, hardware, model specialization, data residency와 승인 모델 정책이 route 가능 집합과 user-visible SLO를 함께 결정함.",
+      "engineering_implication": "플랫폼 팀은 모델별 sticker price 대신 task·step·cache hit·input/output token·queue time·tool retry·quality outcome을 trace 단위로 수집 필요. route 변경은 offline replay와 canary에서 task success, p95 latency, effective cost, policy violation을 함께 비교하고 fallback·circuit breaker 기준을 명시 필요.",
+      "korea_implication": "국내 기업의 멀티모델 에이전트도 외부 모델 API·국내 모델·온프레미스 endpoint를 함께 쓸 때 데이터 반출, 리전, 승인 모델 정책을 routing feature가 아니라 hard constraint로 구현할 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "Agent",
+        "Model Routing",
+        "Inference",
+        "FinOps",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-07-16 02:27",
+      "source_name": "IBM Research / Hugging Face",
+      "source_url": "https://huggingface.co/blog/ibm-research/model-routing-is-simple-until-it-isnt",
+      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/642ee6f6ffd6084c6a620985/ibA2XHLJsqDH9VAL-3ou-.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "IBM Research가 Hugging Face Enterprise 글에서 agent용 모델 선택을 단순 난이도 분류가 아닌 비용·품질·지연·정책 제약의 동시 최적화 문제로 정리함. 논거는 동일 agent와 benchmark에서 모델별 실제 비용 순서가 공개 가격표와 달라진 측정 결과임.",
+          "items": [
+            "대상: 동일 `CodeAct` agent로 수행한 AppWorld Test Challenge **417개 작업** 측정",
+            "비용: 원문 기준 Claude Sonnet 4.6 총 $79·작업당 $0.19, GPT-4.1 총 $155·작업당 $0.37 기록",
+            "경계: 수치는 특정 agent·benchmark·pricing·cache 조건의 결과이며 모든 production workload의 일반값은 아님"
+          ]
+        },
+        {
+          "heading": "비용 모델에서 빠지는 변수",
+          "body": "원문은 GPT-4.1의 input/output token 가격이 더 낮아도 Sonnet의 cache-read 비용 구조와 agent context 재사용 때문에 총비용이 역전됐다고 설명함. reasoning step 수와 base token price만 합산하는 estimate는 cache hit와 trajectory 길이를 놓칠 수 있음.",
+          "items": [
+            "cache: agent가 여러 step에서 큰 context 조각을 반복 사용할 때 effective input cost가 달라지는 조건",
+            "측정: 모델·task·step별 input/output/cache-read token과 tool retry를 trace로 연결 필요",
+            "검증: provider price 변경과 prompt·tool schema 변경 뒤 route 정책의 비용 모델 재학습 필요"
+          ]
+        },
+        {
+          "heading": "난이도·지연 판단의 한계",
+          "body": "요청의 표면 난이도는 retrieval, compliance check, tool use, refinement loop가 실제 실행 중에 추가되는 agent workload를 충분히 나타내지 못함. 사용자 체감 지연도 model size만이 아니라 warm cache, endpoint load, hardware, routing granularity에 의해 달라짐.",
+          "items": [
+            "품질: task difficulty score 하나 대신 success·tool error·human escalation·specialty fit을 함께 관측 필요",
+            "지연: task당 한 번 route하는 방식과 step마다 재route하는 방식은 적응성·decision overhead의 trade-off 발생",
+            "제약: data residency·privacy·approved model list는 ranking score가 아니라 후보를 제거하는 hard policy로 처리 필요"
+          ]
+        },
+        {
+          "heading": "제안 결과와 검증 경계",
+          "body": "IBM Research는 다목적 router의 AppWorld 결과로 latency-optimized configuration이 84% accuracy, $93, 83초에 도달했다고 제시함. Opus 단독 실행 대비 비용 21%·latency 9% 감소와 accuracy 4% 감소라는 비교도 제시했으나, 품질 허용선과 workload 분포는 조직별로 달라 별도 replay가 필요.",
+          "items": [
+            "구성: 원문은 cost·quality·latency를 함께 최적화하고 task당 약 6ms·2kB memory의 router overhead를 제시",
+            "비교: difficulty-based router가 유사 accuracy 범위에서 더 높은 비용을 보였다는 benchmark 관찰",
+            "한계: model availability, regional capacity, provider outage, enterprise policy의 실제 분포는 benchmark 외 검증 대상"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "멀티모델 agent의 routing은 비용 절감 toggle이 아니라 serving·observability·governance 설계의 일부임. 어떤 route가 선택됐는지와 선택 당시 cache·queue·policy·tool state를 남기지 않으면 cost anomaly와 SLO regression의 원인을 분리하기 어려움.",
+          "items": [
+            "아키텍처: request identity, model candidate, policy rejection, route decision, cache·queue·tool telemetry를 동일 trace ID로 연결 필요",
+            "운영: endpoint capacity·fallback·rate limit을 router policy와 분리하지 않으면 provider incident가 quality·cost spike로 전파될 리스크",
+            "거버넌스: 데이터 분류와 residency 조건은 prompt 이후 검사보다 route 전 enforcement가 필요한 control"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "routing 정책은 낮은 token price를 고르는 규칙에서 workload별 Pareto operating point를 고르는 정책으로 전환 필요. 먼저 한정된 task set에서 offline replay와 canary를 수행한 뒤, quality loss budget과 p95 latency·effective cost guardrail을 넘을 때의 fallback을 운영 계약으로 고정하는 순서 필요.",
+          "items": [
+            "팀 액션: model·task·cache-hit·token·queue·tool retry·success를 수집하는 routing telemetry schema 정의",
+            "팀 액션: approved model·residency·data classification을 route 후보 생성 단계에서 강제",
+            "팀 액션: canary별 effective cost, task success, p95 latency, policy rejection, fallback rate를 release gate로 비교"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-169",
       "title_ko": "CNCF, HAMi를 incubating project로 승인: Kubernetes 이기종 GPU 분할·스케줄링 운영 단계 진입",
       "title_original": "HAMi becomes a CNCF incubating project",
@@ -277,7 +361,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-167",
@@ -364,7 +448,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-168",
@@ -459,7 +543,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-164",
@@ -528,7 +612,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-165",
@@ -601,11 +685,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-162",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -693,7 +777,7 @@
     },
     {
       "id": "news-163",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -850,7 +934,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-161",
@@ -916,7 +1000,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-159",
@@ -1000,7 +1084,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-160",
@@ -1084,7 +1168,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-158",
@@ -1153,11 +1237,11 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-157",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -1240,7 +1324,7 @@
     },
     {
       "id": "news-156",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -1322,7 +1406,7 @@
     },
     {
       "id": "news-155",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -1394,7 +1478,7 @@
     },
     {
       "id": "news-154",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -1466,7 +1550,7 @@
     },
     {
       "id": "news-151",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -1610,11 +1694,11 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-152",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -1747,7 +1831,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-148",
@@ -1812,7 +1896,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-146",
@@ -1876,7 +1960,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-149",
@@ -1941,11 +2025,11 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-153",
-      "rank": 24,
+      "rank": 25,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -2074,7 +2158,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-143",
@@ -2142,7 +2226,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-144",
@@ -2210,7 +2294,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-141",
@@ -2280,7 +2364,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-139",
@@ -2345,11 +2429,11 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-137",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -2482,11 +2566,11 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-138",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -2619,7 +2703,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-134",
@@ -2688,7 +2772,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-140",
@@ -2753,7 +2837,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-133",
@@ -2818,7 +2902,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-135",
@@ -2883,7 +2967,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-136",
@@ -2953,7 +3037,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-124",
@@ -3024,7 +3108,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-125",
@@ -3096,7 +3180,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-126",
@@ -3158,7 +3242,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-127",
@@ -3225,7 +3309,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-120",
@@ -3296,7 +3380,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-122",
@@ -3358,7 +3442,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-121",
@@ -3420,7 +3504,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-117",
@@ -3483,7 +3567,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-128",
@@ -3549,7 +3633,7 @@
           "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-123",
@@ -3611,7 +3695,7 @@
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhTNxzPo9jxkW3GuuZLBgtPOrG3vZ3va6E710jDJu_JF0jCpyQ1JTpymdVwdSH2VHL6-Ib6YLInvKsuNwgFJxna1nvDhwKMZ_hycTik5OgQniZei2FQ59-F3s80lsnPmhQ1aJsr7qIWWrf63V0AtHQxd_1Nlk6LkVEheoN5lRYH8aTeBoJ-kM1-bOjUgAwa/s1600/npm-malware-2.jpg",
       "local_image": "assets/images/news-123.jpg",
       "related_links": [],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-115",
@@ -3670,69 +3754,6 @@
           "items": [
             "팀 액션: agent eval set에 ambiguity sweep, retrieval evidence, 실패 시 후보 목록, query rewrite trace를 포함 필요",
             "운영 지표: 정답률 하나보다 ambiguity별 recall, dataset discovery 실패율, clarification 요청률, p95 retrieval latency를 함께 관리 필요"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-116",
-      "title_ko": "GitHub, Copilot 코드 리뷰 도구 교체 후 비용 증가·탐지 감소를 workflow 재설계로 반전",
-      "title_original": "Better tools made Copilot code review worse. Here’s how we actually improved it.",
-      "summary": "핵심: GitHub가 Copilot code review를 grep·glob·view 공유 도구로 옮긴 뒤 초기 benchmark에서 비용 증가와 유용 comment 감소를 확인, PR diff 중심 지시 재작성 후 평균 review cost 약 20% 절감",
-      "detail": "핵심: 좋은 도구를 붙여도 agent workflow가 task에 맞지 않으면 성능·비용이 악화\n변화: broad repository exploration 대신 diff에서 시작해 grep/glob로 좁히고 view로 정확한 evidence만 읽는 리뷰 지시로 전환\n영향: agent tool result는 context window에 남는 token 비용이므로 최소 근거 수집 설계가 필요\n시사점: 코드 리뷰 agent는 tool swap보다 trace 기반 prompt·workflow tuning이 먼저 필요",
-      "why_it_matters": "AI 코드 리뷰 품질은 모델·도구 목록보다 agent가 어떤 순서로 context를 열고 증거를 좁히는지에 좌우됨. 불필요한 repository 탐색은 비용과 노이즈를 동시에 키움",
-      "engineering_implication": "DevTools 팀은 agent 도구 도입 시 offline benchmark trace, tool-call count, context size, useful comment rate, review cost를 함께 측정하고 task-specific instruction을 별도 관리 필요",
-      "korea_implication": "",
-      "category": "DevTools",
-      "tags": [
-        "GitHub Copilot",
-        "Code Review",
-        "AI Agent",
-        "Developer Tools",
-        "Prompt Engineering"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-07-11 00:57",
-      "source_name": "GitHub Blog",
-      "source_url": "https://github.blog/ai-and-ml/github-copilot/better-tools-made-copilot-code-review-worse-heres-how-we-actually-improved-it/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-copilot-commit-logo.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: GitHub가 Copilot code review의 자체 code exploration tool을 Copilot CLI 계열 공유 도구 `grep`, `glob`, `view`로 교체 실험",
-            "초기 결과: 더 잘 유지되는 공유 도구로 바꿨지만 offline benchmark에서 평균 비용 증가와 유용 comment 감소 확인",
-            "원인: 도구 자체가 아니라 지시문이 일반 coding assistant식 repository 탐색을 유도한 점으로 분석",
-            "개선: PR diff에서 시작해 필요한 근거만 좁혀 읽는 code review 전용 workflow로 지시 재작성"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "도구 매핑: 기존 `list_dir`, `search_file/search_dir`, `read_code`를 공유 `glob`, `grep`, `view`로 대응",
-            "문제 행동: agent가 repository 전체를 이해하려는 것처럼 넓게 검색하고, 추측 path를 열고, 관련 없는 context를 계속 carry-forward",
-            "비용 구조: tool result는 disposable output이 아니라 context window에 남는 token이므로 불필요한 파일 내용이 후속 reasoning 비용으로 누적",
-            "수정 지침: diff에서 시작, `grep`·`glob`로 후보 축소, `view`로 정확한 evidence 확인, 실패 시 단순 검색어 재시도와 path 추측 금지",
-            "결과: workflow 재설계 후 같은 review quality를 유지하면서 평균 review cost 약 **20%** 절감"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "제품 영향: AI code review는 정확도뿐 아니라 review당 비용, latency, 불필요한 comment 감소가 adoption 조건",
-            "운영 리스크: 범용 agent harness를 task-specific agent에 그대로 붙이면 도구 개선이 오히려 regression으로 나타날 수 있음",
-            "평가 필요: 최종 점수보다 trace에서 tool call sequence, context growth, evidence narrowing 여부를 봐야 원인 분석 가능"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI 리뷰 agent 도입 시 repository browsing agent와 PR reviewer agent의 system prompt·tool instruction을 분리 필요",
-            "측정 항목: useful comment rate, false positive, tool output tokens, review cost, evidence path length를 release gate에 포함 필요"
           ]
         }
       ],
