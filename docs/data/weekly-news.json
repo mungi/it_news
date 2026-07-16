@@ -2,14 +2,14 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-16 09:49",
+  "last_updated_kst": "2026-07-16 13:55",
   "audience": "developers and engineers",
   "executive_summary": [
     "AsyncAPI npm 침해: 정상 GitHub Actions OIDC provenance가 push credential 침해를 막지 못해 dependency·runtime·CI commit 보호를 함께 점검.",
     "Cursor Windows 저장소 open 취약점: repo-root `git.exe` 자동 실행 주장에 따라 untrusted repository를 Sandbox·VM으로 격리하고 workspace 실행 파일 차단.",
     "SonicWall SMA 1000 활성 악용: CVSS 10.0 SSRF와 AMC 관리자 명령 경로를 hotfix·IoC 조사·재이미징 기준으로 함께 처리.",
     "AWS AI inventory: Bedrock·SageMaker·EC2·ECR·외부 모델 API를 Config·SBOM·DNS telemetry로 연결해 AI asset exposure를 추적.",
-    "에이전트 모델 라우팅: sticker price 대신 cache·queue·품질·지연·data residency를 함께 최적화하고 canary 지표로 route 정책 검증."
+    "Thinking Machines Lab Inkling: 975B/활성 41B 오픈 웨이트 MoE의 1M context·멀티모달 운영은 KV cache·GPU capacity·fine-tuning 데이터 거버넌스를 함께 계측."
   ],
   "deep_dives": [
     {
@@ -3698,62 +3698,83 @@
       "rank": 49
     },
     {
-      "id": "news-115",
-      "title_ko": "Google Cloud, Discovery Bench로 AI 에이전트 검색·검색보강 평가 난이도 계량",
-      "title_original": "Frontier and Center: Who evaluates the evaluations?",
-      "summary": "핵심: Google Cloud가 Discovery Bench 접근을 공개, 정보이론의 surprisal로 agent retrieval 평가 문항을 easy/medium/hard 변형해 실패 경계를 측정",
-      "detail": "핵심: 고정 benchmark 점수 대신 질문 모호성 변화에 따른 agent 성공률 곡선을 확인\n변화: KramaBench 사례에서 satellite 48445 질의가 TLE 단어 제거만으로 실패하는 cliff 확인\n영향: RAG·data lake agent는 pass/fail보다 어떤 단서가 빠질 때 dataset discovery가 깨지는지 추적 필요\n시사점: 평가 harness는 정답률, ambiguity level, retrieval evidence, failure trace를 함께 저장 필요",
-      "why_it_matters": "기업 agent는 수천 개 테이블·파일 중 올바른 데이터셋을 찾는 discovery 단계에서 실패할 수 있음. 정적 benchmark는 neutral phrasing만 통과해도 운영 실패 경계를 숨길 수 있음",
-      "engineering_implication": "AI 플랫폼팀은 agent 평가를 단일 점수로 닫지 말고 query ambiguity, retrieval recall, evidence trace, failure cliff를 CI 평가 지표로 추가 필요",
-      "korea_implication": "",
+      "id": "news-171",
+      "title_ko": "Thinking Machines Lab, 첫 오픈 웨이트 멀티모달 MoE 모델 Inkling 공개",
+      "title_original": "Inkling: Our open-weights model",
+      "summary": "핵심: Thinking Machines Lab이 전체 975B·활성 41B 파라미터, 최대 100만 토큰 문맥의 오픈 웨이트 MoE `Inkling`을 공개. 운영: 가중치 공개만으로 배포 적합성이 보장되지는 않으므로, 1M context·멀티모달 입력·fine-tuning workload의 메모리·throughput·데이터 거버넌스를 자체 환경에서 측정 필요.",
+      "detail": "Thinking Machines Lab은 7월 15일 처음부터 학습한 오픈 웨이트 모델 Inkling을 발표했다. 원문은 텍스트·이미지·오디오를 native하게 처리하는 MoE Transformer로 총 975B·활성 41B 파라미터, 최대 1M token context, 45T token 사전학습을 제시한다. Tinker에서 fine-tuning을 제공하고 12B active의 Inkling-Small preview도 함께 공개했지만, benchmark 수치와 비용·지연 우위는 회사 설명이므로 실제 serving capacity, model license, security review는 별도 검증이 필요하다.",
+      "why_it_matters": "대형 오픈 웨이트 기반 모델은 기업이 fine-tuning·호스팅·data residency를 직접 통제할 선택지를 넓히지만, 1M context와 멀티모달 입력은 KV cache, GPU memory, request admission, content filtering의 운영 비용을 함께 키운다. 활성 파라미터만으로 latency·메모리 요구량을 판단하면 MoE routing, context length, batch, tool-use trajectory에 따른 tail risk를 놓칠 수 있음.",
+      "engineering_implication": "플랫폼 팀은 모델 평가를 benchmark 순위로 끝내지 말고, 목표 context 길이·모달리티·batch·quantization별 TTFT, tokens/s, GPU memory, KV cache eviction, 비용, safety filter latency를 canary에서 수집 필요. fine-tuning 전에는 학습 데이터 반입·adapter artifact·model weight 접근·output logging의 권한과 retention을 분리 필요.",
+      "korea_implication": "국내 조직이 자체 모델 또는 외부 API와 함께 오픈 웨이트 모델을 운영할 때에는 데이터 반출·리전·국내 GPU 수급을 route 조건으로 고정하고, 장문 문맥 사용량을 별도 FinOps 예산 단위로 추적할 필요.",
       "category": "AI",
       "tags": [
-        "Google Cloud",
-        "AI Agent",
-        "Evaluation",
-        "RAG",
-        "Discovery Bench"
+        "AI",
+        "Open Source",
+        "Foundation Model",
+        "MoE",
+        "Multimodal",
+        "Fine-tuning"
       ],
       "region": "Global",
       "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-11 01:00",
-      "source_name": "Google Cloud Blog",
-      "source_url": "https://cloud.google.com/blog/products/data-analytics/evaluate-agent-performance/",
-      "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/09_-_Data_Analytics_tFH57V6.max-2600x2600.jpg",
-      "related_links": [],
+      "score": 93,
+      "source_name": "Thinking Machines Lab",
+      "source_url": "https://thinkingmachines.ai/news/introducing-inkling/",
+      "image_url": "https://thinkingmachines.ai/news/introducing-inkling/images/cover-social-inkling-post.png",
+      "related_links": [
+        {
+          "title": "Inkling model card",
+          "url": "https://thinkingmachines.ai/model-card/inkling/"
+        },
+        {
+          "title": "Inkling on Hugging Face",
+          "url": "https://huggingface.co/thinkingmachines/inkling"
+        }
+      ],
       "detailed_content": [
         {
           "heading": "무슨 일이 있었나",
+          "body": "Thinking Machines Lab이 2026년 7월 15일 자체 학습한 첫 오픈 웨이트 모델 `Inkling`을 공개함. 원문은 전체 가중치 공개와 Tinker에서의 fine-tuning 지원을 함께 제시함.",
           "items": [
-            "핵심: Google Cloud가 Frontier and Center 글에서 agent 평가를 pass/fail 점수보다 세밀하게 보는 Discovery Bench 접근 공개",
-            "대상: search와 retrieval 단계, 즉 agent가 모호한 사용자 질문에서 올바른 데이터셋·테이블·파일을 찾는 문제 대상",
-            "방법: 정보이론의 surprisal 개념으로 질의 안의 단어·구절이 정답 데이터셋을 얼마나 좁히는지 계량",
-            "출력: 하나의 평가 문항을 high, medium, low ambiguity 변형으로 만들고 agent 성공 경계를 추적하는 iSQR refinement loop 설명"
+            "구성: Mixture-of-Experts Transformer, 총 **975B**·활성 41B 파라미터 명시",
+            "입력: 텍스트·이미지·오디오를 native하게 다루는 multimodal model로 소개",
+            "문맥: 최대 1M token context window 지원 범위 공개"
           ]
         },
         {
-          "heading": "본문 핵심 포인트",
+          "heading": "학습·제품 구성",
+          "body": "원문은 텍스트·이미지·오디오·비디오를 포함한 45T token으로 사전학습했으며, 큰 모델 외에 활성 12B 파라미터 Inkling-Small preview를 제공한다고 설명함. 모델·데이터의 외부 독립 검증 범위는 원문만으로 확정 불가.",
           "items": [
-            "사례: KramaBench 위성 데이터 질의에서 `TLE` 같은 구분 토큰 제거 시 density table, precise-orbit file, decay log가 함께 후보로 등장",
-            "측정: Gemini 3.1 Pro 기반 F1 agent가 high ambiguity 0.34, neutral 0.76, medium 0.81, low 0.78 흐름을 보인 사례 제시",
-            "발견: 더 구체적인 질의가 항상 더 좋은 결과를 만들지 않고 agent별 최적 steering 수준이 존재한다는 점 확인",
-            "한계 지적: 사람이 모든 평가 케이스를 수작업 난이도 분류하는 방식은 scale과 재현성 측면에서 비현실적이라는 문제 제기"
+            "학습: 45T token 사전학습 수치와 데이터 모달리티를 회사가 제시",
+            "경량형: Inkling-Small은 활성 12B 파라미터 preview로 병행 공개",
+            "도구: Tinker에서 fine-tuning, Inkling Playground에서 대화형 접근 경로 제공"
+          ]
+        },
+        {
+          "heading": "성능 주장과 검증 경계",
+          "body": "TML은 agentic, reasoning, coding, instruction following, factuality, vision, audio 전반을 목표로 학습했다고 설명함. benchmark figure는 회사가 구성·표시한 비교이므로 배포 결정에는 내부 workload replay가 필요.",
+          "items": [
+            "추론: controllable thinking effort를 harness 내부에서 설정할 수 있다는 제품 설명",
+            "에이전트: tool set·schema를 무작위화해 특정 harness 민감도를 낮췄다는 학습 방식 설명",
+            "한계: 실제 품질·안전성·지연·비용은 prompt, tool, context, serving stack별 재현 필요"
           ]
         },
         {
           "heading": "왜 중요한가",
+          "body": "오픈 웨이트와 long-context multimodal model의 조합은 private deployment와 customization 선택지를 확대함. 동시에 weight delivery, GPU capacity, KV cache, prompt·media data governance를 같은 production readiness gate로 묶어야 하는 조건.",
           "items": [
-            "운영 영향: data warehouse·data lake agent는 답변 생성보다 먼저 올바른 source discovery에 실패하면 downstream reasoning 전체가 무효화됨",
-            "평가 리스크: 고정 문항 benchmark는 neutral phrasing 성공만 보고 실제 사용자 질문의 모호성·축약·오타 실패를 놓칠 가능성",
-            "품질 관리: agent 개선 우선순위가 모델 교체가 아니라 질의 정규화, schema metadata, retrieval 후보 생성, clarification flow일 수 있음"
+            "인프라: 1M context 요청은 평균 token 수가 낮아도 peak KV cache와 admission control을 지배할 수 있는 비용 변수",
+            "보안: image·audio input과 fine-tuning corpus의 민감정보 분류·retention·egress 통제 필요",
+            "운영: MoE active parameter 수만으로 node memory, interconnect, p95 latency를 추정하지 않는 검증 필요"
           ]
         },
         {
           "heading": "시사점",
+          "body": "도입 순서는 model card와 license 검토, 고정 context·batch canary, safety·observability 연결, 제한된 fine-tuning 평가의 순서가 적절함. 목표 workload에서 throughput과 품질을 같이 계측하지 않으면 공개 가중치의 선택권이 capacity risk로 전환될 수 있음.",
           "items": [
-            "팀 액션: agent eval set에 ambiguity sweep, retrieval evidence, 실패 시 후보 목록, query rewrite trace를 포함 필요",
-            "운영 지표: 정답률 하나보다 ambiguity별 recall, dataset discovery 실패율, clarification 요청률, p95 retrieval latency를 함께 관리 필요"
+            "팀 액션: 8K·32K·128K 이상 context bucket별 TTFT, tokens/s, GPU memory, cache eviction 측정",
+            "팀 액션: text·image·audio input별 content filter, prompt logging, PII redaction의 지연·오탐 비교",
+            "팀 액션: adapter·weight 접근권한, data lineage, output retention을 release approval evidence로 보존"
           ]
         }
       ],

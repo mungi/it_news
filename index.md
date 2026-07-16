@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-16 | Total pages: 169
+> Last updated: 2026-07-16 | Total pages: 170
 
 ## Entities
 
@@ -26,7 +26,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 156건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 157건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/thinking-machines-inkling-2026-07-15]] — Inkling 오픈 웨이트 MoE, 1M context·멀티모달·fine-tuning 운영 검증 범위.
 - [[raw/articles/ibm-research-model-routing-2026-07-16]] — 에이전트 모델 라우팅의 cache·품질·지연·거버넌스 다목적 최적화.
 - [[raw/articles/cncf-hami-incubating-project-2026-07-16]] — HAMi CNCF incubation, 이기종 accelerator 분할·Kubernetes scheduling·운영 검증 경계.
 - [[raw/articles/thn-grok-build-repository-upload-2026-07-14]] — Grok Build의 Git 저장소·trace 전송 범위와 coding agent egress 통제.

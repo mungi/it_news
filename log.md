@@ -639,3 +639,9 @@
 - Source-page verified IBM Research's July 15 Hugging Face Enterprise article. Its feed timestamp maps to 2026-07-16 02:27 KST; it frames agent model routing as cost·quality·latency optimization and reports its AppWorld/CodeAct benchmark conditions, including cache-sensitive cost reversal.
 - Added the model-routing item and removed the oldest capped item, GitHub Copilot code-review workflow redesign (2026-07-11 00:57 KST); re-sorted all 50 items newest-first and reassigned ranks.
 - Deep Dives were already fully refreshed at 2026-07-16 01:37 KST, so no timestamp-only change was made. Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, wiki index, and executive summary.
+
+## [2026-07-16] update | Add Thinking Machines Lab Inkling open-weights multimodal MoE
+- Checked current time at 2026-07-16 13:55 KST. Directly inspected all four mandatory Korean/community surfaces: GeekNews, GeekNews Plus, AI Times KR, and AI Times; HTML surfaces were inspected directly and no parsed-feed count is claimed.
+- Reviewed the newly surfaced current candidate and source-page verified Thinking Machines Lab's July 15 announcement: Inkling is an open-weights MoE Transformer with 975B total/41B active parameters, up to 1M-token context, multimodal text/image/audio handling, and Tinker fine-tuning. The source displays no exact publication time, so `published_kst` is intentionally omitted.
+- Added Inkling and removed the oldest capped item, Google Cloud, Discovery Bench로 AI 에이전트 검색·검색보강 평가 난이도 계량 (2026-07-11 01:00); the list remains 50 items, keeps all known timestamps newest-first, and assigns the date-only source after timestamped entries.
+- Deep Dives were already fully refreshed at 2026-07-16 01:37 KST, so no timestamp-only churn was made. Updated `docs/data/weekly-news.json`, `weekly/2026-W30.md`, immutable raw capture, wiki index, and executive summary.
