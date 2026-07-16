@@ -2,198 +2,266 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-16 22:07",
+  "last_updated_kst": "2026-07-17 02:17",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Hugging Face dataset processing 침해: remote-code loader·template injection을 untrusted code execution boundary로 다루고 worker→cluster credential·egress를 격리.",
+    "n8n 다중 issuer token exchange: JWT `sub` 단독 계정 매칭 결함으로 federation identity를 `iss`+`sub` tuple과 authorization mapping까지 점검.",
     "AsyncAPI npm 침해: 정상 GitHub Actions OIDC provenance가 push credential 침해를 막지 못해 dependency·runtime·CI commit 보호를 함께 점검.",
     "Cursor Windows 저장소 open 취약점: repo-root `git.exe` 자동 실행 주장에 따라 untrusted repository를 Sandbox·VM으로 격리하고 workspace 실행 파일 차단.",
-    "SonicWall SMA 1000 활성 악용: CVSS 10.0 SSRF와 AMC 관리자 명령 경로를 hotfix·IoC 조사·재이미징 기준으로 함께 처리.",
-    "AWS AI inventory: Bedrock·SageMaker·EC2·ECR·외부 모델 API를 Config·SBOM·DNS telemetry로 연결해 AI asset exposure를 추적.",
-    "에이전트 데이터 주입(ADI): 버튼 ID·author·도구 기록 같은 신뢰 데이터 위조가 웹 클릭·명령·PR 병합 판단을 오염할 수 있어, side effect 전 deterministic 검증과 untrusted-context 격리가 필요."
+    "에이전트 데이터 주입(ADI): 버튼 ID·author·도구 기록 같은 신뢰 데이터 위조가 웹 클릭·명령·PR 병합 판단을 오염할 수 있어 deterministic 검증과 untrusted-context 격리가 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "AsyncAPI npm 침해: trusted publishing 이후에도 commit·runtime·registry 경계를 분리해야 하는 이유",
-      "summary": "AsyncAPI npm 조직의 영향 버전 5개가 다단계 dropper를 포함한 채 배포됐고, OX Security는 주간 200만 다운로드 영향을 제시함. 정상 CI provenance는 artifact 발행 주체만 증명하므로, protected branch·package runtime egress·개발자 토큰 회전을 함께 검증해야 함.",
-      "details": "OX Security와 StepSecurity의 분석은 AsyncAPI 패키지 침해가 install hook 없이 module load에서 시작되고, IPFS·P2P·C2를 포함한 후속 경로로 확장될 수 있음을 설명한다. 대응은 악성 버전 차단만이 아니라 lockfile 영향 조사, developer/CI endpoint hunt, release-commit 보호와 registry 권한 복구를 같은 incident로 운영하는 데 있음.",
-      "why_it_matters": "SLSA/OIDC attestation은 승인 workflow가 artifact를 만들었음을 입증하지만, workflow를 유발한 commit과 maintainer 권한이 안전했음을 보장하지 않는다. import 시 발화하는 loader는 install-script 검사만으로 놓칠 수 있어 package provenance와 runtime telemetry를 결합해야 함.",
+      "title": "Hugging Face dataset processing 침해: AI 플랫폼의 untrusted data를 code execution boundary로 다루는 운영 설계",
+      "summary": "Hugging Face는 remote-code dataset loader와 configuration template injection이 processing worker code execution으로 이어진 production intrusion을 공개함. public model·dataset·Spaces 변조 증거와 package/container supply-chain tampering은 없다고 밝혔지만, worker→node→cluster credential 경로와 self-hosted forensic analysis 준비가 ML platform의 실제 방어 경계로 드러남.",
+      "details": "제한된 internal dataset과 서비스 credential에 대한 unauthorized access가 확인됐고, 영향 평가는 진행 중임. 이 사건은 dataset ingestion을 storage 기능이 아니라 sandbox·identity·network·cluster control plane이 만나는 실행 환경으로 재설계해야 하는 근거임.",
+      "why_it_matters": "dataset worker의 remote execution, credential propagation, cluster egress를 함께 차단·관측하지 않으면 public artifact clean 결과만으로 production exposure를 판정할 수 없음.",
       "sources": [
-        "https://www.ox.security/blog/asyncapi-npm-organization-compromised-2m-weekly-downloads-affected/",
-        "https://www.stepsecurity.io/blog/compromised-next-branch-pushes-malicious-asyncapi-generator-generator-helpers-and-generator-components-to-npm"
+        "https://huggingface.co/blog/security-incident-july-2026",
+        "https://github.com/huggingface/blog/blob/main/security-incident-july-2026.md"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgXEluWW9TuNGlzu9wVHSDBzAeUuoRS9Om8kX9yzH-HwCjggh-N5ycLyuJ82oY3MP4Uvf9yF_PqwKhcZepDBEH_pOb3td4dPRuuGSWi5XndfpeuqiMipzKIq0Vofc-hOBGj4nWxmXbjMS7RvHkZCUSHloOpsS6m7jpwwFX-2KUkYwrQdt-ClrGXpt2C9TxC/s1700-e365/async-npm.jpg",
-      "refreshed_kst": "2026-07-16 01:37",
+      "image_url": "https://huggingface.co/blog/assets/security-incident-july-2026/thumbnail.png",
+      "refreshed_kst": "2026-07-17 02:17",
       "detailed_content": [
         {
-          "heading": "한 줄 결론",
-          "body": "정상 GitHub Actions OIDC trusted publishing은 release workflow의 신원을 증명할 뿐, repository push 권한이 탈취되지 않았거나 commit이 검토됐음을 증명하지 않음. package intake와 runtime 행동, release branch 통제를 하나의 공급망 control로 묶어야 함.",
-          "items": [
-            "판단: provenance 검증을 branch protection·environment approval의 대체 수단으로 취급하지 말 것",
-            "팀 액션: 영향 version 차단과 CI·개발 단말 hunt를 같은 incident ticket으로 개시 필요"
-          ]
-        },
-        {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "OX Security는 2026년 7월 14일 AsyncAPI npm 조직 침해를 공개하고 영향 package와 version을 제시함. StepSecurity 분석은 npm token 대신 repository push access가 정상 release workflow와 OIDC trusted publisher를 통과하게 한 경로를 설명함.",
+          "body": "Hugging Face는 production infrastructure 일부에 대한 intrusion을 감지·대응했고, 제한된 internal dataset 및 서비스용 credential 일부의 unauthorized access를 확인했다고 공개함. partner·customer data 영향은 계속 평가 중이며 영향을 받는 당사자에게 직접 연락하겠다고 밝힘.",
           "items": [
-            "영향: `@asyncapi/generator` 3.3.1, `generator-components` 0.7.1, `generator-helpers` 1.1.1, `specs` 6.11.2·6.11.2-alpha.1 확인",
-            "규모: OX Security가 영향 package의 합산 주간 다운로드를 **200만**으로 제시",
-            "경계: 감염·실행 여부는 조직별 lockfile, build artifact, module import 기록으로 별도 판정 필요"
+            "확인: public user-facing model·dataset·Spaces 변조 증거 없음",
+            "확인: container image와 published package 공급망을 clean으로 검증했다는 회사 설명",
+            "경계: 고객·partner 데이터 영향과 공격자의 전체 접근 범위는 조사 진행 상태"
           ]
         },
         {
-          "heading": "실행 체인과 탐지 경계",
-          "body": "OX 분석은 implant가 `preinstall`·`postinstall` 없이 감염 module을 Node.js가 load할 때 후속 downloader를 시작한다고 설명함. IPFS와 다수 backup channel 사용은 package manager의 설치 단계만 관찰하는 통제에 빈틈을 만듦.",
+          "heading": "침입 경로와 영향 경계",
+          "body": "공개문은 악성 dataset이 remote-code dataset loader와 dataset configuration의 template-injection 두 실행 경로를 악용해 processing worker에서 코드를 실행했다고 설명함. 이후 node-level access, cloud·cluster credential 수집, 여러 internal cluster lateral movement가 이어진 것으로 기술됨.",
           "items": [
-            "발화: install hook 부재로 dependency install 정책만으로 실행 시점 식별이 어려운 조건",
-            "통신: IPFS gateway와 BitTorrent bootstrap/DHT 계열을 backup 통신 경로로 사용한 분석",
-            "행위: crypto·정보 탈취, RAT, registry self-duplication 기능을 OX가 설명한 범위",
-            "한계: campaign attribution과 모든 endpoint의 실제 피해 범위는 1차 분석만으로 확정 불가"
+            "초기 진입: untrusted dataset content가 processing execution plane을 통과한 경로",
+            "확장: worker 권한에서 node·cloud·cluster credential로 이동한 blast radius",
+            "운영: ingestion job, node audit, workload identity, cluster API log를 같은 timeline으로 보존할 대상"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 사건은 build provenance, source provenance, runtime provenance가 서로 다른 증거임을 드러냄. signed artifact라도 악성 commit에서 나온 경우 유효 서명이 될 수 있고, runtime은 package manifest에 없는 network edge를 열 수 있음.",
+          "body": "dataset processing은 artifact scanning만으로 끝나는 storage pipeline이 아니라 potentially executable workload임. loader와 template renderer가 code execution 가능성을 가지면, user dataset의 trust level이 worker runtime·Kubernetes node·cloud control plane으로 전파될 수 있음.",
           "items": [
-            "아키텍처: dependency graph·commit SHA·release workflow run·artifact digest·import process tree를 하나의 evidence chain으로 보존 필요",
-            "보안: CI runner와 개발 단말의 Node child process, DNS, proxy egress를 SBOM 결과와 조인 필요",
-            "운영: registry package unpublish 뒤에도 cache, vendored artifact, 이미 실행된 runner를 별도 조사 대상화 필요"
+            "아키텍처: remote code 기본 거부, per-job ephemeral sandbox, rootless runtime, workload identity 분리 필요",
+            "관측: dataset digest·job ID·container image·egress·service account·node event의 trace 연결 필요",
+            "격리: processing namespace의 cluster API·metadata service·internal network egress 최소화 필요"
           ]
         },
         {
-          "heading": "거버넌스·자격증명 관점",
-          "body": "공개 package maintainer의 push credential과 release permission은 production deploy credential과 같은 수준의 blast radius를 가질 수 있음. 개발자 workstation에서 찾은 npm·PyPI·Cargo token은 개인 비밀이 아니라 registry publishing 권한으로 분류해야 함.",
+          "heading": "보안·거버넌스 관점",
+          "body": "Hugging Face는 affected credential·token을 revoke·rotate했고 broader precautionary secret rotation도 시작했다고 설명함. rotation은 시작점이며, 어떤 dataset job이 어떤 identity로 어느 cluster에 접근했는지를 재구성하지 못하면 잔존 credential과 lateral movement 범위를 판단하기 어려움.",
           "items": [
-            "권한: release branch direct push 금지, required review, CODEOWNERS, environment approval을 함께 적용 필요",
-            "비밀정보: suspected endpoint의 npm·PyPI·Cargo token과 cloud credential revoke·rotate 순서 확정 필요",
-            "감사: publish actor, workflow ref, commit signer, package digest, release approval을 변경 불가능한 로그로 보존 필요"
+            "비밀정보: static secret 대신 short-lived workload credential과 audience·namespace binding 적용",
+            "접근: dataset processor에 production control-plane 관리자 권한과 shared node credential 부여 금지",
+            "감사: token rotation 시각, session invalidation, secret consumer restart, failed auth spike를 evidence로 보존"
+          ]
+        },
+        {
+          "heading": "agentic 공격과 포렌식 관점",
+          "body": "공개문은 공격이 short-lived sandbox swarm과 public service 기반 C2를 사용한 autonomous agent framework로 수행된 것으로 보인다고 설명함. 정확한 모델은 확인되지 않았으며, 대규모 action log 분석에는 hosted model safety guardrail 때문에 self-hosted open-weight model을 사용했다고 밝힘.",
+          "items": [
+            "사실: 17,000개 이상 기록 event의 timeline·IOC·credential touchpoint 분석에 LLM agent 사용",
+            "한계: 공격에 쓰인 모델 또는 framework의 정확한 attribution은 미확정",
+            "준비: forensic payload를 외부 API로 보내지 않는 self-hosted analysis path와 legal approval 사전 검증 필요"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "차단 우선순위는 영향 version의 재사용 방지, 실행 흔적 확인, release control 복구 순서로 잡아야 함. production 배포를 일괄 중단하기보다 정확한 dependency scope와 runtime evidence를 먼저 확보해야 rollback 범위를 줄일 수 있음.",
+          "body": "우선 remote-code dataset loader와 template renderer의 실제 사용 경로를 inventory하고, high-risk input은 sandbox로 옮겨야 함. 다음으로 worker identity와 network path를 축소한 뒤, incident replay로 evidence collection과 rotation runbook을 시험하는 순서가 필요.",
           "items": [
-            "1단계: lockfile·SBOM·artifact proxy에서 영향 package/version 및 transitive inclusion을 검색",
-            "2단계: CI·개발 단말에서 module load, 비정상 child `node`, IPFS·DHT·C2 egress를 hunt",
-            "3단계: package cache purge, clean rebuild, registry·cloud·VCS credential 회전 실행",
-            "4단계: protected branch와 publish environment approval을 canary repository에서 강제·감사"
+            "1단계: dataset source·loader·template·network egress·secret consumer inventory 작성",
+            "2단계: remote code default-deny, allowlist, ephemeral job credential, no-node-access baseline 적용",
+            "3단계: worker compromise tabletop에서 credential rotation·cluster containment·customer notification 경로 검증"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "패키지 의존성의 설치 여부와 실제 실행 여부를 분리해 확인해야 함. 보안팀은 IOC만 전달하지 말고 어떤 runner·developer image·build artifact를 증거 보존할지 함께 지정해야 함.",
+          "body": "platform team은 model·dataset hosting과 processing control plane의 권한을 분리하고, security team은 artifact 검사 결과와 runtime telemetry를 함께 triage해야 함. clean package 결과만으로 worker compromise 가능성을 배제하지 않는 절차가 필요.",
           "items": [
-            "`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, SBOM에서 영향 version 확인",
-            "CI runner와 개발자 endpoint의 import 시각·process tree·outbound DNS/proxy log 보존",
-            "IPFS gateway·BitTorrent bootstrap·새 persistence artifact에 대한 탐지 rule 추가",
-            "release branch direct push, review bypass, workflow permission, OIDC subject condition 재점검",
-            "정상 artifact 재빌드·배포 전 credential rotation과 registry access review 완료 여부 확인"
+            "dataset job별 digest·submitter·loader setting·container image·service account 기록 확인",
+            "processing worker의 metadata service, Kubernetes API, internal DNS·egress 정책 차단 여부 확인",
+            "cluster credential rotation 뒤 stale pod·CI secret·long-lived token 재발급 여부 검토",
+            "forensic LLM 사용 시 data residency·prompt retention·guardrail failure fallback 사전 승인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "“OIDC로 publish됐으니 안전하다”는 판단은 workflow identity만 확인한 것임. 공급망 방어의 통제 단위는 source commit에서 package import와 outbound runtime까지 이어지는 실제 실행 경로임.",
+          "body": "AI platform의 dataset ingestion은 data plane이면서 code execution plane임. public model과 package가 clean이어도 processing worker의 credential·network·node 경계가 느슨하면 내부 cluster로 이어질 수 있음.",
           "items": [
-            "발표 포인트: **200만 주간 다운로드 영향**과 install-hook 부재가 provenance·runtime 분리 문제를 압축",
-            "팀 액션: 다음 release review에 commit protection, dependency diff, runtime egress evidence를 함께 요구"
+            "발표 포인트: **remote-code loader와 template injection**이 dataset processing에서 execution boundary가 되는 사실",
+            "팀 액션: 다음 security review에서 dataset worker의 identity·egress·node privilege와 incident evidence chain을 함께 승인"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Amazon GuardDuty AI Protection: AI 호출 telemetry를 보안·비용·가드레일 대응으로 연결하는 운영 설계",
-      "summary": "AWS는 GuardDuty AI Protection이 Bedrock·SageMaker의 CloudTrail management/data event를 분석해 비정상 invocation, cost harvesting, Guardrails 연계 prompt injection을 탐지한다고 발표함. AI workload 탐지는 model endpoint 단독 경보가 아니라 계정·모델·token/GPU 소비·정책 위반을 Security Hub 대응 흐름에 연결해야 함.",
-      "details": "AWS 공식 발표는 GuardDuty AI Protection을 Bedrock·SageMaker AI workload의 관리·데이터 이벤트 기반 위협 탐지로 소개한다. 기능 활성화만으로 운영이 끝나는 것은 아니며, 모델별 정상 사용량 baseline, Guardrails signal의 triage, multi-account 책임 분리, token/GPU 비용 incident와 security incident의 공동 runbook을 설계해야 함.",
-      "why_it_matters": "AI 서비스의 비정상 호출은 credential abuse, prompt injection, rate-limit 우회, 비용 소모를 같은 CloudTrail event 흐름에서 남길 수 있다. detection finding이 Security Hub에 모여도 resource owner·SOC·FinOps의 확인 기준이 없으면 실제 대응 시간은 줄지 않음.",
+      "title": "n8n token exchange 취약점: JWT 검증 뒤 issuer-aware account binding을 지켜야 하는 이유",
+      "summary": "n8n Enterprise token exchange의 CVE-2026-59208은 다중 issuer 구성에서 `sub` 단독 매칭으로 다른 issuer의 local account에 로그인될 수 있는 identity-binding 결함임. token signature 검증과 local authorization mapping을 분리해 `iss`+`sub` tuple, key lifecycle, workflow credential blast radius를 함께 통제해야 함.",
+      "details": "공식 advisory는 영향 버전과 수정 버전을 공개했고, 보도는 multi-issuer 조건·공개 exploitation evidence 부재를 설명함. 대응은 patch뿐 아니라 federation configuration inventory, identity collision test, authentication-to-workflow evidence chain 복구까지 포함함.",
+      "why_it_matters": "automation platform의 federated login은 connector·workflow 실행 권한으로 이어질 수 있어 issuer namespace를 빠뜨린 account matching을 privileged configuration defect로 다뤄야 함.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-guardduty-ai-protection-aws/",
-        "https://aws.amazon.com/guardduty/"
+        "https://github.com/n8n-io/n8n/security/advisories/GHSA-mq3m-f8x3-579w",
+        "https://thehackernews.com/2026/07/n8n-token-exchange-flaw-could-let.html"
       ],
-      "image_url": "assets/images/fallback-cloud.svg",
-      "refreshed_kst": "2026-07-16 01:37",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1Pvezsft8WXzYy1Lw3zKDZrkf0TNZfj95rzTnuQgzbJuztRDNDFK35ahO9UfhNJOicjjuzyZGFCtC_idBl8vgNdw4kzfeYFo6LwUur66S5qUTO2Bl3WVLwCDWoDTnw4dlZdj_ZQ1T2JcG1dWfJeoO3WDZs94EVm9z0hZ8VPL36KDpaAmw7fH9hSWSSaw/s1600/n8n-main.jpg",
+      "refreshed_kst": "2026-07-17 02:17",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AI workload 보안은 model API key를 숨기는 수준에서 끝나지 않음. Bedrock·SageMaker의 management/data event, Guardrails 결과, account ownership, token·GPU 소비량을 같은 incident timeline으로 연결해야 비정상 호출과 비용 소모를 구분·대응할 수 있음.",
+          "body": "n8n token exchange는 JWT signature를 검증해도 account mapping에서 issuer를 버리면 인증된 partner token이 다른 issuer의 local account로 연결될 수 있음. OAuth·workflow credential 권한이 붙는 automation platform에서는 `iss`와 `sub`를 함께 identity key로 처리하고 configuration·log·patch를 같은 control로 운영해야 함.",
           "items": [
-            "판단: AI security finding은 SOC만의 경보가 아니라 platform owner와 FinOps가 공유할 운영 신호",
-            "팀 액션: 서비스별 정상 invocation·token·GPU usage baseline과 escalation owner를 먼저 지정 필요"
+            "판단: JWT validity와 local account authorization을 별도 control로 검증 필요",
+            "팀 액션: 다중 issuer token exchange를 즉시 inventory하고 patch·disable·log hunt 순서 확정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS는 2026년 7월 14일 GuardDuty AI Protection을 발표하며 Amazon Bedrock과 Amazon SageMaker를 대상으로 AI 특화 위협 탐지를 확장한다고 밝힘. AWS 설명상 CloudTrail management 및 data event를 분석해 AI workload의 의심 활동을 식별하고, finding은 Security Hub로 전달됨.",
+          "body": "n8n 공식 advisory `GHSA-mq3m-f8x3-579w`는 `CVE-2026-59208`이 Enterprise token exchange에서 발생한다고 밝힘. The Hacker News의 7월 16일 분석은 valid token의 `sub`가 다른 issuer 사용자와 충돌하면 password 없이 그 account로 로그인될 수 있는 구조를 설명함.",
           "items": [
-            "대상: Amazon Bedrock·Amazon SageMaker AI service의 CloudTrail management/data event 분석",
-            "탐지: unusual invocation pattern, cost harvesting attack, Bedrock Guardrails 연계 prompt injection attempt를 AWS가 열거",
-            "운영: GuardDuty 또는 Security Hub에서 활성화하고 AWS Organizations로 중앙 enable 가능",
-            "상용 조건: GuardDuty 고객 대상 30일 free trial과 지원 리전은 AWS Regional Services List 기준 확인 필요"
+            "조건: token exchange enabled와 두 개 이상 trusted external issuer 설정",
+            "영향: 2.27.4 미만 및 2.28.0, 수정 버전 2.27.4·2.28.1 표기",
+            "경계: 공개 exploitation evidence·PoC는 확인되지 않아 노출 설정과 침해 사실을 분리 판단"
           ]
         },
         {
-          "heading": "탐지 신호의 의미와 검증 경계",
-          "body": "AWS 발표는 탐지 범주와 통합 경로를 설명하지만, 조직별 false positive rate, 모델·리전·event volume별 비용, 모든 prompt injection을 차단한다는 보장은 제공하지 않음. finding은 자동 차단 결과가 아니라 triage를 시작하는 evidence로 다뤄야 함.",
+          "heading": "identity binding의 기술 해석",
+          "body": "`sub`는 issuer 문맥 안에서 locally unique일 수 있으므로, user lookup key는 `iss`+`sub` 조합이어야 함. key signature, audience, expiry 검증이 정확해도 local identity resolver가 issuer namespace를 제거하면 signature가 보증하지 않는 authorization association이 만들어짐.",
           "items": [
-            "비정상 호출: 계정·principal·모델·시간대·request pattern의 baseline을 벗어난 activity 확인 대상",
-            "비용 수확: token 또는 GPU 시간을 의도적으로 과소비시키는 호출을 security와 FinOps 공동 조사 대상으로 분류",
-            "prompt injection: Guardrails integration signal은 application-level input/output telemetry와 함께 재현·평가 필요",
-            "한계: 서비스별 event logging 설정과 지원 리전·기능 범위는 rollout 전 공식 문서로 재확인 필요"
+            "설계: issuer canonicalization, subject normalization, tenant mapping을 explicit schema로 유지",
+            "검증: issuer A/B에서 같은 subject를 발급하는 collision test를 authentication regression suite에 추가",
+            "피할 것: email·display name·subject 단독으로 cross-IdP account linking하는 convenience mapping"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "LLM workload는 control plane 변경과 data plane invocation이 모두 사고 단서가 됨. 모델 access 정책 변경, 새 inference profile, IAM role 사용, invocation burst, Guardrails event를 분리하면 공격자의 준비·실행·비용 효과를 한 timeline에서 읽기 어려움.",
+          "body": "automation platform은 identity가 실행 권한으로 빠르게 변환되는 환경임. n8n account가 API credential, webhook, SaaS connector, workflow execution 권한을 소유하면 login confusion은 단순 user-profile 오류가 아니라 downstream system access와 business process integrity 문제로 확장될 수 있음.",
           "items": [
-            "아키텍처: CloudTrail event를 account·workload·model·principal·environment tag로 enrichment 필요",
-            "관측: token/GPU/latency/429·5xx·Guardrails action을 service SLO telemetry와 조합 필요",
-            "대응: GuardDuty finding에서 Security Hub, SIEM, ticket, IAM session revoke·quota 제한까지 자동화 범위를 단계화 필요"
+            "아키텍처: authentication event와 workflow run·credential use·webhook delivery를 correlation ID로 연결",
+            "운영: issuer별 key set, token audience, tenant, local account, role mapping의 drift detection 필요",
+            "대응: suspicious account binding 발견 시 session revoke, workflow pause, connector credential review를 단계화"
           ]
         },
         {
-          "heading": "비용·보안·거버넌스 관점",
-          "body": "cost harvesting은 사용량 이상 징후이면서 동시에 credential misuse 또는 application abuse의 결과일 수 있음. 비용 경보와 보안 경보의 owner가 분리되면 차단 전 승인·모델 fallback·고객 영향 판단이 늦어질 수 있음.",
+          "heading": "보안·거버넌스 관점",
+          "body": "token exchange는 OEM이 사용자를 별도 n8n login 없이 들여보내는 federation path임. preview 기능은 product maturity 표시일 뿐 exposure 판단의 면제가 아니며, partner가 늘수록 issuer namespace·key lifecycle·subject provisioning contract가 security boundary가 됨.",
           "items": [
-            "FinOps: 모델별 token/GPU unit cost, budget burn rate, request origin을 동일 dashboard에 노출 필요",
-            "IAM: human·workload identity별 model invocation permission과 cross-account access를 최소 권한으로 분리",
-            "데이터: prompt·response 원문을 과도하게 중앙 수집하지 않고 hash·classification·Guardrails decision으로 privacy boundary 설계",
-            "감사: finding 처리 시간, false-positive disposition, quota rollback, customer impact를 incident postmortem 지표로 유지"
+            "거버넌스: issuer onboarding에 issuer URI, JWKS owner, subject uniqueness, deprovision SLA를 계약화",
+            "권한: federated local account에 default-admin 또는 shared workflow ownership 부여 금지",
+            "감사: token exchange config 변경과 trusted key rotation을 privileged configuration event로 수집"
           ]
         },
         {
-          "heading": "도입 로드맵",
-          "body": "기능 enable 전에 어떤 AI resource가 실제로 보호 범위에 들어가는지와 누가 finding을 받을지 확인해야 함. 초기에는 monitor-only로 baseline을 만들고, 검증된 high-confidence pattern부터 rate limit·credential revoke 같은 대응을 연결하는 순서가 안전함.",
+          "heading": "도입·복구 로드맵",
+          "body": "먼저 token exchange가 켜진 instance와 issuer 수를 확인한 뒤, 영향 버전은 supported stable release로 올려야 함. patch가 지연되면 advisory가 제시한 기능 off 또는 single-issuer 축소를 임시 통제로 적용하고, login history와 credential access를 retrospective로 확인하는 순서가 현실적임.",
           "items": [
-            "1단계: Bedrock·SageMaker account, model, inference endpoint, owner, data classification inventory 작성",
-            "2단계: CloudTrail data event와 Security Hub aggregation, Organizations delegated admin, SIEM routing 검증",
-            "3단계: 2~4주 baseline으로 정상 invocation·비용·Guardrails event 분포와 allowlist 정의",
-            "4단계: suspicious principal disable, quota/rate limit, key rotation, application rollback runbook을 tabletop으로 시험"
+            "1단계: version, preview flag, trusted issuer/key, OEM partner 목록 inventory",
+            "2단계: 2.27.4/2.28.1 이상 또는 최신 stable로 upgrade와 post-upgrade auth test",
+            "3단계: issuer·subject·local user mismatch hunt, session invalidation, high-risk workflow credential review"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "AI application owner는 탐지 제품을 켠 뒤 경보를 SOC로 넘기는 방식만으로 충분하지 않음. 정상 사용의 business context와 고객 영향, 모델 fallback 옵션을 security triage에 제공해야 함.",
+          "body": "patch 성공 여부만이 아니라 identity mapping과 integration runtime이 기대대로 동작하는지 확인해야 함. multi-issuer staging environment에서 same-subject collision과 account deprovision, partner key rotation, workflow authorization을 자동 test로 묶을 필요.",
           "items": [
-            "Bedrock·SageMaker resource와 CloudTrail management/data event 수집 범위 확인",
-            "model·principal·account·environment별 request·token/GPU·error baseline 보유 여부 확인",
-            "Guardrails action, application audit log, Security Hub finding correlation key 정의",
-            "비정상 호출 시 IAM session/key revoke, quota 제한, endpoint disable의 승인자와 RTO 지정",
-            "multi-account 조직에서 delegated admin, finding aggregation, data residency·log retention 정책 검토"
+            "`N8N_TOKEN_EXCHANGE_TRUSTED_KEYS`의 issuer별 key·owner·expiry·rotation evidence 확인",
+            "auth log에 `iss`, `sub`, audience, local user ID, partner ID, result 기록 여부 확인",
+            "cross-issuer subject collision·account takeover regression test 실행",
+            "token exchange 예외 사용 시 single issuer·least privilege·monthly review 만료일 설정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI 호출량은 성능 지표이면서 비용 지표이고 보안 지표임. GuardDuty AI Protection의 가치는 경보 개수보다, 비정상 invocation을 credential·Guardrails·비용 evidence와 묶어 얼마나 빨리 격리·복구하는가에 달려 있음.",
+          "body": "“서명이 유효한 JWT”는 “올바른 n8n 사용자”를 자동으로 뜻하지 않음. federation security의 단위는 cryptographic token만이 아니라 issuer namespace와 local authorization mapping까지 포함한 identity tuple임.",
           "items": [
-            "발표 포인트: **CloudTrail management·data event**를 이용해 AI control plane과 invocation plane을 함께 관찰하는 구조",
-            "팀 액션: 다음 분기에 AI workload별 baseline·owner·incident runbook을 Security Hub finding과 연결"
+            "발표 포인트: **`iss`+`sub` identity binding** 누락이 signature verification 뒤의 authorization gap을 만든 사례",
+            "팀 액션: 이번 주 federated automation integration에서 subject-only mapping과 multi-issuer preview 기능을 우선 점검"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-173",
+      "title_ko": "n8n 토큰 교환 취약점: 다중 issuer에서 `sub` 단독 매칭으로 타 계정 로그인 가능",
+      "title_original": "n8n Token Exchange Flaw Could Let Attackers Log In as Users From Another Issuer",
+      "summary": "핵심: n8n Enterprise token exchange가 다중 외부 issuer 구성에서 JWT의 `iss`를 무시하고 `sub`만으로 로컬 계정을 매칭한 CVE-2026-59208이 공개. 대응: 영향 버전 2.27.4 미만과 2.28.0을 2.27.4/2.28.1 이상으로 올리고, `N8N_TOKEN_EXCHANGE_TRUSTED_KEYS`의 issuer·subject 쌍과 preview 기능 사용 여부를 점검 필요.",
+      "detail": "n8n 공식 advisory와 The Hacker News 보도에 따르면 CVE-2026-59208은 다중 issuer를 신뢰하는 Enterprise token exchange에서 issuer A가 발급한 유효 JWT의 `sub`가 issuer B의 사용자와 같을 때 해당 계정으로 로그인될 수 있는 identity-binding 결함임. token exchange가 비활성화됐거나 하나의 issuer만 신뢰하는 인스턴스는 n8n의 영향 범위 설명에서 제외됨. 공개 자료에는 실제 악용 증거나 공개 PoC가 없으며, 취약한 설정과 patch level을 evidence로 분리해 판단 필요.",
+      "why_it_matters": "OIDC/JWT에서 `sub`는 issuer 문맥 안에서만 고유할 수 있음. OEM·B2B automation 환경에서 issuer 경계를 빼고 계정을 매칭하면 서명 검증을 통과한 토큰도 다른 tenant·partner identity로 잘못 결속될 수 있어, workflow 권한과 연결 credential의 blast radius가 커짐.",
+      "engineering_implication": "플랫폼 팀은 JWT 검증 뒤 identity key를 `iss`+`sub`로 보존하고, trusted key 목록·issuer mapping·user provisioning source를 함께 감사 필요. patch 전에는 token exchange를 끄거나 단일 trusted issuer로 제한하고, authentication log에서 issuer·subject·로컬 user ID의 비정상 조합을 hunt 필요.",
+      "korea_implication": "국내 SaaS·OEM 자동화 배포도 외부 IdP를 여러 곳 연결할 때 email이나 subject 단독 매칭을 금지하고 tenant·issuer namespace를 identity contract에 명시할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "n8n",
+        "JWT",
+        "OIDC",
+        "Identity",
+        "Workflow Automation"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-07-16 22:33",
+      "source_name": "n8n Security Advisory / The Hacker News",
+      "source_url": "https://github.com/n8n-io/n8n/security/advisories/GHSA-mq3m-f8x3-579w",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1Pvezsft8WXzYy1Lw3zKDZrkf0TNZfj95rzTnuQgzbJuztRDNDFK35ahO9UfhNJOicjjuzyZGFCtC_idBl8vgNdw4kzfeYFo6LwUur66S5qUTO2Bl3WVLwCDWoDTnw4dlZdj_ZQ1T2JcG1dWfJeoO3WDZs94EVm9z0hZ8VPL36KDpaAmw7fH9hSWSSaw/s1600/n8n-main.jpg",
+      "related_links": [
+        {
+          "title": "The Hacker News 분석 — n8n cross-issuer token exchange flaw",
+          "url": "https://thehackernews.com/2026/07/n8n-token-exchange-flaw-could-let.html"
+        },
+        {
+          "title": "n8n OEM token exchange 문서",
+          "url": "https://docs.n8n.io/deploy/host-n8n/deploy-as-an-oem-integration"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "n8n GitHub Security Advisory `GHSA-mq3m-f8x3-579w`는 Enterprise token exchange의 identity binding 결함을 `CVE-2026-59208`로 공개함. token exchange는 OEM integration에서 외부 partner가 서명한 short-lived JWT를 n8n 로컬 사용자 로그인으로 교환하는 preview 기능임.",
+          "items": [
+            "영향: `iss` 검증 뒤 local account 매칭에서 `sub`만 사용한 경로",
+            "조건: token exchange 활성화와 두 개 이상 외부 issuer 신뢰 구성이 동시에 필요한 범위",
+            "경계: n8n 설명상 token exchange 비활성 인스턴스는 영향 범위 밖"
+          ]
+        },
+        {
+          "heading": "결함의 기술적 원인",
+          "body": "JWT subject는 issuer가 정한 namespace에서만 고유할 수 있음. 서로 다른 issuer가 같은 `sub` 문자열을 발급할 수 있으므로, 인증된 identity의 안전한 key는 subject 단독이 아니라 issuer와 subject의 조합이어야 함.",
+          "items": [
+            "정상 토큰이라도 issuer A의 `sub`가 issuer B 사용자와 충돌하면 오인증 가능한 구조",
+            "표준: RFC 7519의 subject uniqueness 범위와 deployment identity mapping의 불일치",
+            "위험: password 탈취 없이 valid token과 claim collision만으로 account binding이 바뀌는 조건"
+          ]
+        },
+        {
+          "heading": "영향 버전과 검증 경계",
+          "body": "advisory는 2.27.4 미만 및 2.28.0을 영향 버전으로, 2.27.4와 2.28.1을 수정 버전으로 표시함. The Hacker News는 7월 16일 기준 공개 PoC와 실제 exploitation 증거를 찾지 못했다고 적었으므로, patch urgency와 침해 확정은 분리해야 함.",
+          "items": [
+            "패치: 지원되는 최신 stable release로 upgrade하고 release note·advisory 기준 재대조",
+            "조사: issuer, `sub`, authenticated local user, partner integration ID를 auth log에서 교차 확인",
+            "한계: 공격자가 token을 획득하는 실제 조건은 공개 advisory만으로 완전히 특정 불가"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "workflow automation 계정은 webhook, OAuth credential, business system connector 권한과 결합될 수 있음. identity provider 서명 검증만 통과해도 account-linking 규칙이 약하면 authorization boundary가 무너질 수 있어 issuer-aware mapping과 tenant isolation을 동시에 검증해야 함.",
+          "items": [
+            "팀 액션: `N8N_TOKEN_EXCHANGE_TRUSTED_KEYS`와 issuer별 subject namespace·key rotation owner 점검",
+            "팀 액션: patch 전 token exchange off 또는 단일 issuer 제한과 예외 만료일 기록",
+            "팀 액션: cross-issuer login, local account collision, OAuth credential access를 포함한 regression test 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-172",
       "title_ko": "에이전트 데이터 주입(ADI): 신뢰하는 필드 위조로 웹 클릭·코딩 명령을 바꾸는 공격 실증",
@@ -262,7 +330,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-171",
@@ -342,7 +410,114 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
+    },
+    {
+      "id": "news-174",
+      "title_ko": "Hugging Face, 데이터셋 처리 worker 침해 공개: agentic 공격과 self-hosted 포렌식 준비 과제",
+      "title_original": "Security incident disclosure — July 2026",
+      "summary": "핵심: Hugging Face가 remote-code dataset loader와 dataset configuration template injection을 악용한 production infrastructure 침해를 공개. 대응: dataset processing을 untrusted code execution boundary로 분리하고, worker→node→cluster credential 경로와 secret rotation·audit trail을 점검 필요.",
+      "detail": "Hugging Face는 제한된 internal dataset과 여러 service credential에 대한 unauthorized access를 확인했으며 partner·customer data 영향 평가는 진행 중이라고 밝혔다. 공개 user-facing model·dataset·Space 변조 증거는 없고 container image와 published package 공급망도 clean으로 검증됐다고 설명한다. 침입은 dataset processing worker의 remote-code loader와 template injection 경로에서 시작돼 node access와 internal cluster lateral movement로 이어졌다고 하며, 공격 도구·모델의 정확한 정체와 전체 영향 범위는 확정하지 않았다.",
+      "why_it_matters": "ML platform의 dataset ingestion은 데이터 파싱이 아니라 code·template·network·cloud credential이 만나는 execution plane임. public artifact와 package 공급망이 clean이어도 processing worker가 cluster credential으로 이동할 수 있으면 model/data hosting service의 내부 control plane이 노출될 수 있음.",
+      "engineering_implication": "ML 플랫폼은 remote code 실행을 기본 거부하고 workload identity·egress·namespace·node privilege를 최소화 필요. incident 대응에는 token 회전뿐 아니라 dataset provenance, worker job trace, node audit, cluster API access, secret exposure graph를 연결한 scoping과 self-hosted forensic model의 사전 승인 절차가 필요.",
+      "korea_implication": "국내 AI 플랫폼도 외부 dataset·notebook·template를 받는 processing fleet를 일반 batch job으로 취급하지 말고 별도 tenant·network·credential 경계와 검증된 incident 분석 환경을 운영할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Hugging Face",
+        "MLOps",
+        "Dataset Security",
+        "AI Agent",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-07-16 09:00",
+      "source_name": "Hugging Face",
+      "source_url": "https://huggingface.co/blog/security-incident-july-2026",
+      "image_url": "https://huggingface.co/blog/assets/security-incident-july-2026/thumbnail.png",
+      "related_links": [
+        {
+          "title": "Hugging Face 공개 원문 GitHub",
+          "url": "https://github.com/huggingface/blog/blob/main/security-incident-july-2026.md"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "Hugging Face는 production infrastructure 일부에 대한 intrusion을 감지·대응했고, 제한된 internal dataset 및 서비스용 credential 일부의 unauthorized access를 확인했다고 공개함. partner·customer data 영향은 계속 평가 중이며 영향을 받는 당사자에게 직접 연락하겠다고 밝힘.",
+          "items": [
+            "확인: public user-facing model·dataset·Spaces 변조 증거 없음",
+            "확인: container image와 published package 공급망을 clean으로 검증했다는 회사 설명",
+            "경계: 고객·partner 데이터 영향과 공격자의 전체 접근 범위는 조사 진행 상태"
+          ]
+        },
+        {
+          "heading": "침입 경로와 영향 경계",
+          "body": "공개문은 악성 dataset이 remote-code dataset loader와 dataset configuration의 template-injection 두 실행 경로를 악용해 processing worker에서 코드를 실행했다고 설명함. 이후 node-level access, cloud·cluster credential 수집, 여러 internal cluster lateral movement가 이어진 것으로 기술됨.",
+          "items": [
+            "초기 진입: untrusted dataset content가 processing execution plane을 통과한 경로",
+            "확장: worker 권한에서 node·cloud·cluster credential로 이동한 blast radius",
+            "운영: ingestion job, node audit, workload identity, cluster API log를 같은 timeline으로 보존할 대상"
+          ]
+        },
+        {
+          "heading": "AI/Infra 전문가 해석",
+          "body": "dataset processing은 artifact scanning만으로 끝나는 storage pipeline이 아니라 potentially executable workload임. loader와 template renderer가 code execution 가능성을 가지면, user dataset의 trust level이 worker runtime·Kubernetes node·cloud control plane으로 전파될 수 있음.",
+          "items": [
+            "아키텍처: remote code 기본 거부, per-job ephemeral sandbox, rootless runtime, workload identity 분리 필요",
+            "관측: dataset digest·job ID·container image·egress·service account·node event의 trace 연결 필요",
+            "격리: processing namespace의 cluster API·metadata service·internal network egress 최소화 필요"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 관점",
+          "body": "Hugging Face는 affected credential·token을 revoke·rotate했고 broader precautionary secret rotation도 시작했다고 설명함. rotation은 시작점이며, 어떤 dataset job이 어떤 identity로 어느 cluster에 접근했는지를 재구성하지 못하면 잔존 credential과 lateral movement 범위를 판단하기 어려움.",
+          "items": [
+            "비밀정보: static secret 대신 short-lived workload credential과 audience·namespace binding 적용",
+            "접근: dataset processor에 production control-plane 관리자 권한과 shared node credential 부여 금지",
+            "감사: token rotation 시각, session invalidation, secret consumer restart, failed auth spike를 evidence로 보존"
+          ]
+        },
+        {
+          "heading": "agentic 공격과 포렌식 관점",
+          "body": "공개문은 공격이 short-lived sandbox swarm과 public service 기반 C2를 사용한 autonomous agent framework로 수행된 것으로 보인다고 설명함. 정확한 모델은 확인되지 않았으며, 대규모 action log 분석에는 hosted model safety guardrail 때문에 self-hosted open-weight model을 사용했다고 밝힘.",
+          "items": [
+            "사실: 17,000개 이상 기록 event의 timeline·IOC·credential touchpoint 분석에 LLM agent 사용",
+            "한계: 공격에 쓰인 모델 또는 framework의 정확한 attribution은 미확정",
+            "준비: forensic payload를 외부 API로 보내지 않는 self-hosted analysis path와 legal approval 사전 검증 필요"
+          ]
+        },
+        {
+          "heading": "도입 로드맵",
+          "body": "우선 remote-code dataset loader와 template renderer의 실제 사용 경로를 inventory하고, high-risk input은 sandbox로 옮겨야 함. 다음으로 worker identity와 network path를 축소한 뒤, incident replay로 evidence collection과 rotation runbook을 시험하는 순서가 필요.",
+          "items": [
+            "1단계: dataset source·loader·template·network egress·secret consumer inventory 작성",
+            "2단계: remote code default-deny, allowlist, ephemeral job credential, no-node-access baseline 적용",
+            "3단계: worker compromise tabletop에서 credential rotation·cluster containment·customer notification 경로 검증"
+          ]
+        },
+        {
+          "heading": "개발팀/인프라팀 체크리스트",
+          "body": "platform team은 model·dataset hosting과 processing control plane의 권한을 분리하고, security team은 artifact 검사 결과와 runtime telemetry를 함께 triage해야 함. clean package 결과만으로 worker compromise 가능성을 배제하지 않는 절차가 필요.",
+          "items": [
+            "dataset job별 digest·submitter·loader setting·container image·service account 기록 확인",
+            "processing worker의 metadata service, Kubernetes API, internal DNS·egress 정책 차단 여부 확인",
+            "cluster credential rotation 뒤 stale pod·CI secret·long-lived token 재발급 여부 검토",
+            "forensic LLM 사용 시 data residency·prompt retention·guardrail failure fallback 사전 승인"
+          ]
+        },
+        {
+          "heading": "강조 메세지",
+          "body": "AI platform의 dataset ingestion은 data plane이면서 code execution plane임. public model과 package가 clean이어도 processing worker의 credential·network·node 경계가 느슨하면 내부 cluster로 이어질 수 있음.",
+          "items": [
+            "발표 포인트: **remote-code loader와 template injection**이 dataset processing에서 execution boundary가 되는 사실",
+            "팀 액션: 다음 security review에서 dataset worker의 identity·egress·node privilege와 incident evidence chain을 함께 승인"
+          ]
+        }
+      ],
+      "rank": 4
     },
     {
       "id": "news-170",
@@ -426,7 +601,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-169",
@@ -511,7 +686,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-167",
@@ -598,7 +773,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-168",
@@ -693,7 +868,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-164",
@@ -762,7 +937,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-165",
@@ -835,11 +1010,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-162",
-      "rank": 9,
+      "rank": 11,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -927,7 +1102,7 @@
     },
     {
       "id": "news-163",
-      "rank": 10,
+      "rank": 12,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -1084,7 +1259,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-161",
@@ -1150,7 +1325,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-159",
@@ -1234,7 +1409,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-160",
@@ -1318,7 +1493,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-158",
@@ -1387,11 +1562,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-157",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -1474,7 +1649,7 @@
     },
     {
       "id": "news-156",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -1556,7 +1731,7 @@
     },
     {
       "id": "news-155",
-      "rank": 18,
+      "rank": 20,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -1628,7 +1803,7 @@
     },
     {
       "id": "news-154",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -1700,7 +1875,7 @@
     },
     {
       "id": "news-151",
-      "rank": 20,
+      "rank": 22,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -1844,11 +2019,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-152",
-      "rank": 22,
+      "rank": 24,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -1981,7 +2156,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-148",
@@ -2046,7 +2221,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-146",
@@ -2110,7 +2285,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-149",
@@ -2175,11 +2350,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-153",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -2308,7 +2483,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-143",
@@ -2376,7 +2551,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-144",
@@ -2444,7 +2619,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-141",
@@ -2514,7 +2689,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-139",
@@ -2579,11 +2754,11 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-137",
-      "rank": 33,
+      "rank": 35,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -2716,11 +2891,11 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-138",
-      "rank": 35,
+      "rank": 37,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -2853,7 +3028,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-134",
@@ -2922,7 +3097,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-140",
@@ -2987,7 +3162,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-133",
@@ -3052,7 +3227,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-135",
@@ -3117,7 +3292,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-136",
@@ -3187,7 +3362,7 @@
           "url": "https://arxiv.org/pdf/2607.04371"
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-124",
@@ -3258,7 +3433,7 @@
           "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-125",
@@ -3330,7 +3505,7 @@
           "url": "https://github.com/typedef-ai/fenic"
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-126",
@@ -3392,7 +3567,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-27.jpg",
       "local_image": "assets/images/news-126.jpg",
       "related_links": [],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-127",
@@ -3459,7 +3634,7 @@
           "url": "https://thehackernews.com/2026/07/six-new-u-boot-flaws-could-let.html"
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-120",
@@ -3530,7 +3705,7 @@
           "url": "https://www.macrumors.com/2026/07/06/apple-silicon-exec-explains-mac-mini-ai-demand/"
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-122",
@@ -3592,7 +3767,7 @@
       "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/host-data-workflow.webp",
       "local_image": "assets/images/news-122.webp",
       "related_links": [],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-121",
@@ -3654,135 +3829,6 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 48
-    },
-    {
-      "id": "news-117",
-      "title_ko": "NVIDIA, 하드웨어 친화 LLM 설계 지침 공개…폭·깊이·타일 정렬·NVFP4가 추론 효율 좌우",
-      "title_original": "AI Model Co-Design: Hardware-Friendly LLM Design",
-      "summary": "핵심: NVIDIA가 hardware-aware transformer 설계 지침을 공개, 선형 layer dimension을 GPU tile 크기 배수에 맞추고 width-over-depth 구조·NVFP4·expert parallelism을 추론 효율 변수로 제시",
-      "detail": "핵심: LLM 성능은 accuracy, throughput, interactivity를 함께 최적화해야 하며 모델 shape가 GPU utilization을 결정\n변화: hidden/intermediate dimension을 128·256·512 배수에 맞추고 workload가 attention-bound인지 FFN-bound인지 먼저 구분\n영향: 모델 개발과 serving infra 설계가 분리되면 Blackwell급 GPU에서도 memory-bound·communication 병목 발생\n시사점: 자체 모델·fine-tune 팀은 architecture search에 roofline, tile alignment, quantization, parallelism 실험을 포함 필요",
-      "why_it_matters": "추론 비용은 GPU 구매 후 runtime tuning만으로 해결되지 않음. 모델 폭·깊이·layer shape가 하드웨어 타일, 메모리 대역폭, 병렬화 전략과 맞지 않으면 throughput과 latency가 동시에 손상됨",
-      "engineering_implication": "모델·플랫폼팀은 학습 전 architecture review에서 workload regime, arithmetic intensity, tile alignment, NVFP4 가능성, tensor/expert/pipeline parallel 계획을 함께 검토 필요",
-      "korea_implication": "",
-      "category": "Infra",
-      "tags": [
-        "NVIDIA",
-        "LLM Inference",
-        "Blackwell",
-        "NVFP4",
-        "Model Architecture"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-11 01:36",
-      "source_name": "NVIDIA Technical Blog",
-      "source_url": "https://developer.nvidia.com/blog/ai-model-co-design-hardware-friendly-llm-design/",
-      "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/07/image-3-1.webp",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: NVIDIA가 LLM 추론을 위한 hardware-friendly model design 글 공개",
-            "목표: accuracy, throughput, interactivity를 동시에 보며 throughput-oriented와 latency-oriented serving 사이 Pareto frontier 확장",
-            "대상: transformer의 layer 수, hidden dimension, intermediate projection dimension이 GPU 활용률과 parallelism에 미치는 영향 설명",
-            "전제: 서비스 워크로드가 short/long context와 throughput/latency 목표 중 어디에 속하는지 먼저 분류 필요"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "roofline 관점: arithmetic intensity가 낮으면 memory bandwidth가 병목이고 높으면 peak FLOPS가 병목이라는 기준 제시",
-            "설계 규칙: linear layer dimension은 GPU tile 크기 배수, 특히 128의 배수와 256·512 정렬이 유리하다는 지침 공개",
-            "모델 shape: width-over-depth aspect ratio가 arithmetic intensity와 GPU utilization에 영향을 주는 핵심 변수로 설명",
-            "정밀도: NVFP4 quantization과 TensorRT Model Optimizer·LLM Compressor tooling으로 throughput 향상과 accuracy 손실 최소화 가능성 제시",
-            "확장: Expert Parallelism, pipeline parallelism, TensorRT-LLM Helix Parallelism이 multi-node Blackwell NVLink 시스템에서 MoE 확장 전략으로 제시"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "비용 영향: 하드웨어에 맞지 않는 모델 shape는 같은 GPU에서도 tokens/sec, first-token latency, inter-token latency를 악화시키는 비용 변수",
-            "조직 경계: 모델팀이 accuracy만 보고 architecture를 정하면 serving team이 quantization·parallelism·batching으로 회복하기 어려운 병목이 남음",
-            "구매 판단: Blackwell 같은 최신 GPU 도입 효과는 모델 dimension, precision, communication pattern까지 맞을 때 현실화"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: 자체 LLM·도메인 fine-tune은 학습 전 GPU target, tile alignment, quantization target, serving SLO를 architecture checklist에 포함 필요",
-            "검증 방법: benchmark는 peak throughput뿐 아니라 p95 first-token latency, inter-token latency, memory-bound/compute-bound 구간, parallel efficiency를 함께 측정 필요"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-128",
-      "title_ko": "Progress, ShareFile Storage Zone Controller 고객에 즉시 오프라인 전환 권고",
-      "title_original": "Progress Tells ShareFile Customers to Shut Down Storage Zone Controllers Over Security Threat",
-      "summary": "핵심: Progress가 ShareFile Storage Zone Controller 고객에게 Windows 서버를 오프라인으로 전환하라고 권고, ‘credible external security threat’ 대응 중임을 확인. 영향: 인터넷에 노출된 파일 공유 edge component는 패치 공지 전에도 격리·로그 보존·침해 조사 절차가 필요함.",
-      "detail": "The Hacker News 보도에 따르면 Progress는 영향을 받은 계정 접근을 임시 비활성화했고 Storage Zone Controller 고객 상태를 not operational로 표시함. 표준 cloud-only ShareFile 계정은 영향 대상이 아니며, 회사는 현재 ShareFile 계정이나 데이터의 무단 접근 징후는 없다고 설명했지만 위협의 세부 내용은 공개하지 않음.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Progress Software가 ShareFile Storage Zone Controller를 운영하는 고객에게 해당 Windows server shutdown 권고",
-            "사유: 회사가 ‘credible external security threat’에 대응 중이며 내부·외부 보안 전문가와 조사 진행",
-            "범위: standard cloud-only ShareFile account가 아니라 고객이 직접 운영하는 Storage Zone Controller가 영향 대상"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "운영 상태: Progress status page는 Storage Zone Controller 고객을 not operational로 표시하고 조사 진행 상태 공지",
-            "노출 구조: controller는 고객 파일을 자체 storage에 두면서 ShareFile cloud로 공유·관리하는 edge server이며 일반적으로 internet reachable 구성",
-            "조치 의미: 패치가 아니라 완전 오프라인 전환을 요구한 점은 아직 공개된 수정책이 없거나 패치만으로 해소되지 않는 위협 가능성",
-            "권고 사항: controller를 offline 유지, 버전 5.12.4 이상 또는 6.x 확인, web folder의 낯선 `.aspx` 파일과 의도하지 않은 storage path 점검, 로그 보존 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "파일 전송 리스크: ShareFile류 edge file-sharing component는 MOVEit, Citrix/ShareFile 과거 사례처럼 대량 데이터 탈취 공격의 표적이 될 수 있음",
-            "사고 대응: 공급사가 세부 취약점을 공개하기 전에도 고객은 외부 노출 서버를 침해 가능 자산으로 취급해야 함",
-            "가용성 영향: 오프라인 전환은 파일 공유 업무 중단을 만들지만 데이터 유출 가능성을 낮추는 containment 조치"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: ShareFile Storage Zone Controller 사용 조직은 서버를 오프라인 유지하고 Progress의 재가동 지시 전까지 우회 업무 흐름 준비 필요",
-            "검토 항목: internet exposure, WAF/log retention, web shell 흔적, storage path 변경, service account credential 회전 여부 확인 필요",
-            "운영 과제: managed file transfer·file sharing edge 제품은 patch SLA 외에 emergency isolation runbook과 business continuity plan 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "공급사가 패치 대신 shutdown을 요구하는 상황은 운영팀의 containment 의사결정이 필요한 고위험 신호임. 파일 공유 edge 서버는 데이터 유출과 업무 중단 리스크가 동시에 발생함.",
-      "engineering_implication": "보안팀은 ShareFile Storage Zone Controller를 인터넷 노출 edge asset으로 분류하고 로그 보존, 웹셸 점검, 자격증명 회전, 재가동 승인 절차를 즉시 실행 필요.",
-      "category": "Security",
-      "tags": [
-        "ShareFile",
-        "Progress",
-        "File Transfer",
-        "Incident Response",
-        "Edge Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 87,
-      "published_kst": "2026-07-11 01:30",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/urgent-progress-tells-sharefile.html",
-      "image_url": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "BleepingComputer coverage",
-          "url": "https://www.bleepingcomputer.com/news/security/progress-urges-sharefile-customers-to-shut-down-servers-over-credible-threat/"
-        }
-      ],
       "rank": 50
     }
   ]

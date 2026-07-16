@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-16 | Total pages: 171
+> Last updated: 2026-07-17 | Total pages: 173
 
 ## Entities
 
@@ -26,8 +26,12 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 157건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 159건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/thn-agent-data-injection-2026-07-16]] — ADI의 데이터 경계 위조, agent tool-use 승인 UI와 deterministic control plane 검증.
+- [[raw/articles/huggingface-security-incident-july-2026]] — dataset processing worker 침해, credential rotation, agentic incident analysis의 운영 경계.
+- [[raw/articles/n8n-token-exchange-cve-2026-59208-2026-07-16]] — 다중 issuer JWT token exchange의 `iss`+`sub` identity binding 결함과 patch 범위.
+- [[raw/articles/huggingface-security-incident-july-2026]] — dataset processing worker 침해, credential rotation, agentic incident analysis의 운영 경계.
+- [[raw/articles/n8n-token-exchange-cve-2026-59208-2026-07-16]] — 다중 issuer JWT token exchange의 `iss`+`sub` identity binding 결함과 patch 범위.
 - [[raw/articles/thinking-machines-inkling-2026-07-15]] — Inkling 오픈 웨이트 MoE, 1M context·멀티모달·fine-tuning 운영 검증 범위.
 - [[raw/articles/zoom-zsb-26014-windows-account-takeover-2026-07-16]] — Zoom Windows CVE-2026-53412 계정 탈취 위험과 client·VDI·SDK patch inventory.
 - [[raw/articles/ibm-research-model-routing-2026-07-16]] — 에이전트 모델 라우팅의 cache·품질·지연·거버넌스 다목적 최적화.
