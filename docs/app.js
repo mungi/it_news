@@ -290,6 +290,7 @@ function renderDeepDives() {
     summary.append(summaryLabel, " ");
     appendRichText(summary, item.summary || "");
     const why = document.createElement("p");
+    why.className = "deep-dive-why";
     why.textContent = item.why_it_matters || item.details || "";
     const more = document.createElement("button");
     more.className = "read-more";
