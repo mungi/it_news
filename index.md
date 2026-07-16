@@ -26,7 +26,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 159건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 167건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/aws-control-tower-aft-account-move-2026-07-16]] — OU 이동 뒤 AFT Terraform customization 자동 재적용과 configuration-drift 운영 경계.
 - [[raw/articles/thn-agent-data-injection-2026-07-16]] — ADI의 데이터 경계 위조, agent tool-use 승인 UI와 deterministic control plane 검증.
 - [[raw/articles/huggingface-security-incident-july-2026]] — dataset processing worker 침해, credential rotation, agentic incident analysis의 운영 경계.
 - [[raw/articles/n8n-token-exchange-cve-2026-59208-2026-07-16]] — 다중 issuer JWT token exchange의 `iss`+`sub` identity binding 결함과 patch 범위.
