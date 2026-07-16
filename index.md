@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-16 | Total pages: 170
+> Last updated: 2026-07-16 | Total pages: 171
 
 ## Entities
 
@@ -27,6 +27,7 @@
 
 ## Raw Articles
 - `raw/articles/` — 157건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/thn-agent-data-injection-2026-07-16]] — ADI의 데이터 경계 위조, agent tool-use 승인 UI와 deterministic control plane 검증.
 - [[raw/articles/thinking-machines-inkling-2026-07-15]] — Inkling 오픈 웨이트 MoE, 1M context·멀티모달·fine-tuning 운영 검증 범위.
 - [[raw/articles/zoom-zsb-26014-windows-account-takeover-2026-07-16]] — Zoom Windows CVE-2026-53412 계정 탈취 위험과 client·VDI·SDK patch inventory.
 - [[raw/articles/ibm-research-model-routing-2026-07-16]] — 에이전트 모델 라우팅의 cache·품질·지연·거버넌스 다목적 최적화.
