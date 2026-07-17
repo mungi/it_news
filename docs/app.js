@@ -422,7 +422,12 @@ function renderCards() {
     sourceLink.addEventListener("keydown", (event) => event.stopPropagation());
     const published = node.querySelector(".published");
     const publishedKst = String(item.published_kst || "");
-    published.textContent = publishedKst;
+    // The source data stores KST timestamps without an offset. Keep the visible
+    // card label explicit so a projector audience does not mistake it for local
+    // browser time, while retaining an ISO-8601 machine-readable datetime.
+    published.textContent = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(publishedKst)
+      ? `${publishedKst} KST`
+      : publishedKst;
     if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(publishedKst)) {
       published.dateTime = `${publishedKst.replace(" ", "T")}+09:00`;
       published.setAttribute("aria-label", `발행 시각: ${publishedKst} KST`);
