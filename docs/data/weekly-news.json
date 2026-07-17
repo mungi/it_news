@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-17 22:48",
+  "last_updated_kst": "2026-07-18 02:56",
   "audience": "developers and engineers",
   "executive_summary": [
     "CISA KEV SharePoint RCE: 패치 전 실제 악용 확인, AMSI·침해 hunt·IIS machine key 회전을 한 incident workflow로 운영.",
@@ -14,173 +14,174 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Hugging Face dataset processing 침해: AI 플랫폼의 untrusted data를 code execution boundary로 다루는 운영 설계",
-      "summary": "Hugging Face는 remote-code dataset loader와 configuration template injection이 processing worker code execution으로 이어진 production intrusion을 공개함. public model·dataset·Spaces 변조 증거와 package/container supply-chain tampering은 없다고 밝혔지만, worker→node→cluster credential 경로와 self-hosted forensic analysis 준비가 ML platform의 실제 방어 경계로 드러남.",
-      "details": "제한된 internal dataset과 서비스 credential에 대한 unauthorized access가 확인됐고, 영향 평가는 진행 중임. 이 사건은 dataset ingestion을 storage 기능이 아니라 sandbox·identity·network·cluster control plane이 만나는 실행 환경으로 재설계해야 하는 근거임.",
-      "why_it_matters": "dataset worker의 remote execution, credential propagation, cluster egress를 함께 차단·관측하지 않으면 public artifact clean 결과만으로 production exposure를 판정할 수 없음.",
+      "title": "SharePoint Server KEV RCE: 패치·침해 hunt·IIS machine key 회전을 하나의 복구 변경으로 묶는 방법",
+      "summary": "CISA가 `CVE-2026-58644`를 KEV에 추가했고 Microsoft는 Patch Tuesday 이전 실제 악용을 확인함. 지원 중인 온프레미스 SharePoint farm은 패치만 적용하지 말고 AMSI·web shell·IIS machine key·외부 노출·재인증 영향을 같은 incident workflow로 처리해야 함.",
+      "details": "CISA의 KEV 등록은 실제 악용 근거가 있는 SharePoint Server RCE라는 의미임. 공개 출처가 개별 조직의 침해를 확정하지는 않으므로, 패치 전 노출과 권한·로그·키 산출물을 근거로 hunt 범위와 복구 순서를 정해야 함.",
+      "why_it_matters": "문서·워크플로·인증 경계와 연결된 SharePoint farm에서 RCE 후 persistence 또는 machine key 노출이 남으면, patch 완료만으로 prior compromise를 닫을 수 없음.",
       "sources": [
-        "https://huggingface.co/blog/security-incident-july-2026",
-        "https://github.com/huggingface/blog/blob/main/security-incident-july-2026.md"
+        "https://www.cisa.gov/news-events/alerts/2026/07/16/cisa-adds-three-known-exploited-vulnerabilities-catalog",
+        "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-58644",
+        "https://thehackernews.com/2026/07/cisa-adds-exploited-sharepoint-rce-zero.html"
       ],
-      "image_url": "https://huggingface.co/blog/assets/security-incident-july-2026/thumbnail.png",
-      "refreshed_kst": "2026-07-17 02:17",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgH1X7ZnvKsW37BBvjNfEzT4Imh9ZIRL4_2W1JaNVe_MyO3Q5H1MPsET-SASqznhlfOExRrLj4-6NzhgvGi76w4U5tSmlM-pJLIqO5jF3g9G1DR_FNhuwcatBFb8ARvD4PPMiQvMCFiTlEOlc13nQbQqCn5ZHf1J2ZOqDeG3_pmBiQ92hTfMErJKcjKbNtZ/s1700-e365/sharepoint-cisa.jpg",
+      "refreshed_kst": "2026-07-18 02:56",
       "detailed_content": [
         {
-          "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Hugging Face는 production infrastructure 일부에 대한 intrusion을 감지·대응했고, 제한된 internal dataset 및 서비스용 credential 일부의 unauthorized access를 확인했다고 공개함. partner·customer data 영향은 계속 평가 중이며 영향을 받는 당사자에게 직접 연락하겠다고 밝힘.",
+          "heading": "한 줄 결론",
+          "body": "지원 중인 SharePoint Server의 `CVE-2026-58644`는 KEV 등록과 pre-patch exploitation 확인으로 취약점 관리 티켓이 아닌 incident 대응 대상임. patch·AMSI 검증·침해 산출물 제거·IIS machine key 회전·세션 영향 확인을 하나의 승인된 복구 변경으로 묶어야 함.",
           "items": [
-            "확인: public user-facing model·dataset·Spaces 변조 증거 없음",
-            "확인: container image와 published package 공급망을 clean으로 검증했다는 회사 설명",
-            "경계: 고객·partner 데이터 영향과 공격자의 전체 접근 범위는 조사 진행 상태"
+            "판단: **KEV 등록** 자산은 외부 노출·권한·업무 중요도를 근거로 즉시 우선순위 확정",
+            "팀 액션: patch 전 노출 farm의 hunt 증적과 patch 후 key rotation 증적을 같은 change record에 보존"
           ]
         },
         {
-          "heading": "침입 경로와 영향 경계",
-          "body": "공개문은 악성 dataset이 remote-code dataset loader와 dataset configuration의 template-injection 두 실행 경로를 악용해 processing worker에서 코드를 실행했다고 설명함. 이후 node-level access, cloud·cluster credential 수집, 여러 internal cluster lateral movement가 이어진 것으로 기술됨.",
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "CISA는 2026년 7월 16일 Microsoft SharePoint Server의 `CVE-2026-58644`를 Known Exploited Vulnerabilities Catalog에 추가함. Microsoft Security Update Guide와 관련 보도는 Subscription Edition·2019·Enterprise Server 2016 영향, CVSS 9.8, Patch Tuesday 수정본, 패치 전 악용 확인을 설명함.",
           "items": [
-            "초기 진입: untrusted dataset content가 processing execution plane을 통과한 경로",
-            "확장: worker 권한에서 node·cloud·cluster credential로 이동한 blast radius",
-            "운영: ingestion job, node audit, workload identity, cluster API log를 같은 timeline으로 보존할 대상"
+            "범위: 지원 중인 on-premises SharePoint Server 세 제품군 대상",
+            "공격 조건: Microsoft 설명상 네트워크 도달 가능한 인증 공격자와 최소 Site Owner 권한 조건",
+            "경계: CISA·Microsoft 공개문만으로 개별 farm의 침해 여부·공격자 attribution 확정 불가"
+          ]
+        },
+        {
+          "heading": "시간선과 대응 우선순위",
+          "body": "Microsoft는 7월 14일 Patch Tuesday에서 수정본을 배포했고, 이후 공개문에서 수정 전 실제 악용을 확인함. CISA KEV 등록은 실제 악용 증거와 명확한 완화 지침을 요구하는 분류이므로, 스캐너 결과 close보다 외부 노출과 민감 문서·관리 권한을 기준으로 incident scope를 정해야 함.",
+          "items": [
+            "우선순위: internet-facing web application과 privileged content farm부터 patch·hunt 병행",
+            "증적: build version, patch 적용 시각, external exposure, Site Owner 계정 목록 수집",
+            "기한: CISA BOD 적용 FCEB 기관의 2026년 7월 19일 조치 기한은 민간 조직의 위험 우선순위 참고점"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "dataset processing은 artifact scanning만으로 끝나는 storage pipeline이 아니라 potentially executable workload임. loader와 template renderer가 code execution 가능성을 가지면, user dataset의 trust level이 worker runtime·Kubernetes node·cloud control plane으로 전파될 수 있음.",
+          "body": "SharePoint는 파일 저장소만이 아니라 IIS, ASP.NET machine key, 인증 세션, 검색·워크플로·DB 연결이 교차하는 협업 control plane임. RCE가 발생하면 web shell 같은 process-level artifact뿐 아니라 key material과 세션·서명 경계를 함께 조사해야 복구 범위를 현실적으로 판단할 수 있음.",
           "items": [
-            "아키텍처: remote code 기본 거부, per-job ephemeral sandbox, rootless runtime, workload identity 분리 필요",
-            "관측: dataset digest·job ID·container image·egress·service account·node event의 trace 연결 필요",
-            "격리: processing namespace의 cluster API·metadata service·internal network egress 최소화 필요"
+            "아키텍처: farm·database·Central Administration 통신을 required path로 축소",
+            "관측: IIS·Windows process·AMSI·SharePoint ULS·authentication 로그를 동일 시간선으로 결합",
+            "복구: patch와 containment를 분리하지 않고 evidence 보존 후 key rotation·재인증 영향 검증"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "Hugging Face는 affected credential·token을 revoke·rotate했고 broader precautionary secret rotation도 시작했다고 설명함. rotation은 시작점이며, 어떤 dataset job이 어떤 identity로 어느 cluster에 접근했는지를 재구성하지 못하면 잔존 credential과 lateral movement 범위를 판단하기 어려움.",
+          "body": "CISA는 최신 update, AMSI integration 확인, intrusion artifact 제거, tailored logging, 인터넷 직접 노출 최소화를 권고함. key-harvesting 도구나 web shell을 제거하기 전에 machine key를 바꾸면 조사 증적을 놓치거나 persistence 경로가 남을 수 있어, 탐지·제거·회전·검증의 순서를 명시해야 함.",
           "items": [
-            "비밀정보: static secret 대신 short-lived workload credential과 audience·namespace binding 적용",
-            "접근: dataset processor에 production control-plane 관리자 권한과 shared node credential 부여 금지",
-            "감사: token rotation 시각, session invalidation, secret consumer restart, failed auth spike를 evidence로 보존"
+            "피할 것: patch 성공만으로 pre-patch compromise를 배제하는 판단",
+            "통제: 각 web application의 AMSI 상태와 Central Administration 외부 접근 정책 확인",
+            "감사: hunt scope, artifact hash, key rotation, application-pool restart, session failure를 evidence로 보존"
           ]
         },
         {
-          "heading": "agentic 공격과 포렌식 관점",
-          "body": "공개문은 공격이 short-lived sandbox swarm과 public service 기반 C2를 사용한 autonomous agent framework로 수행된 것으로 보인다고 설명함. 정확한 모델은 확인되지 않았으며, 대규모 action log 분석에는 hosted model safety guardrail 때문에 self-hosted open-weight model을 사용했다고 밝힘.",
+          "heading": "복구 로드맵",
+          "body": "첫 단계는 inventory와 외부 도달성 확인이며, 다음은 patch 전후 artifact hunt와 AMSI 상태 점검임. containment 후 발견된 artifact를 보존·제거하고 machine key를 회전한 뒤, SSO·service account·사용자 세션·workflow를 검증해야 서비스 복구와 침해 대응을 동시에 완료할 수 있음.",
           "items": [
-            "사실: 17,000개 이상 기록 event의 timeline·IOC·credential touchpoint 분석에 LLM agent 사용",
-            "한계: 공격에 쓰인 모델 또는 framework의 정확한 attribution은 미확정",
-            "준비: forensic payload를 외부 API로 보내지 않는 self-hosted analysis path와 legal approval 사전 검증 필요"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "우선 remote-code dataset loader와 template renderer의 실제 사용 경로를 inventory하고, high-risk input은 sandbox로 옮겨야 함. 다음으로 worker identity와 network path를 축소한 뒤, incident replay로 evidence collection과 rotation runbook을 시험하는 순서가 필요.",
-          "items": [
-            "1단계: dataset source·loader·template·network egress·secret consumer inventory 작성",
-            "2단계: remote code default-deny, allowlist, ephemeral job credential, no-node-access baseline 적용",
-            "3단계: worker compromise tabletop에서 credential rotation·cluster containment·customer notification 경로 검증"
+            "1단계: Edition·build·patch·external exposure·관리 계정 inventory 작성",
+            "2단계: web shell·비정상 직렬화·process·machine key harvesting 흔적 hunt",
+            "3단계: artifact 제거 뒤 IIS machine key rotation, 재인증·workflow·monitoring 검증"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "platform team은 model·dataset hosting과 processing control plane의 권한을 분리하고, security team은 artifact 검사 결과와 runtime telemetry를 함께 triage해야 함. clean package 결과만으로 worker compromise 가능성을 배제하지 않는 절차가 필요.",
+          "body": "협업 플랫폼 소유팀은 변경 창을 확보하고, 보안팀은 hunt query와 evidence retention을 고정해야 함. 사용자 영향이 큰 key rotation은 인증 실패율과 서비스 desk 경로까지 포함해 rollback 기준을 사전에 정할 필요.",
           "items": [
-            "dataset job별 digest·submitter·loader setting·container image·service account 기록 확인",
-            "processing worker의 metadata service, Kubernetes API, internal DNS·egress 정책 차단 여부 확인",
-            "cluster credential rotation 뒤 stale pod·CI secret·long-lived token 재발급 여부 검토",
-            "forensic LLM 사용 시 data residency·prompt retention·guardrail failure fallback 사전 승인"
+            "SharePoint Subscription Edition·2019·2016 build와 update 상태 대조",
+            "AMSI integration, IIS log retention, Windows EDR telemetry, ULS log 접근 가능 여부 확인",
+            "IIS machine key rotation 전후의 active session·application pool·service account 영향 시험",
+            "Central Administration·farm/database 포트·외부 allowlist의 예외 만료일 기록"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI platform의 dataset ingestion은 data plane이면서 code execution plane임. public model과 package가 clean이어도 processing worker의 credential·network·node 경계가 느슨하면 내부 cluster로 이어질 수 있음.",
+          "body": "이 사건의 운영 단위는 CVE 하나가 아니라 노출된 SharePoint farm의 containment·forensics·recovery임. 외부 노출과 고권한 콘텐츠를 처리하는 farm부터 patch와 hunt를 동시에 시작하고, key rotation은 artifact 제거·증적 보존 뒤에 실행해야 함.",
           "items": [
-            "발표 포인트: **remote-code loader와 template injection**이 dataset processing에서 execution boundary가 되는 사실",
-            "팀 액션: 다음 security review에서 dataset worker의 identity·egress·node privilege와 incident evidence chain을 함께 승인"
+            "발표 포인트: **패치 전 실제 악용**이 확인된 KEV 대응은 patch-only 종료가 아닌 incident workflow",
+            "팀 액션: 다음 유지보수 창에서 build inventory·AMSI·hunt·machine key rotation·재인증 검증을 하나의 runbook으로 승인"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "n8n token exchange 취약점: JWT 검증 뒤 issuer-aware account binding을 지켜야 하는 이유",
-      "summary": "n8n Enterprise token exchange의 CVE-2026-59208은 다중 issuer 구성에서 `sub` 단독 매칭으로 다른 issuer의 local account에 로그인될 수 있는 identity-binding 결함임. token signature 검증과 local authorization mapping을 분리해 `iss`+`sub` tuple, key lifecycle, workflow credential blast radius를 함께 통제해야 함.",
-      "details": "공식 advisory는 영향 버전과 수정 버전을 공개했고, 보도는 multi-issuer 조건·공개 exploitation evidence 부재를 설명함. 대응은 patch뿐 아니라 federation configuration inventory, identity collision test, authentication-to-workflow evidence chain 복구까지 포함함.",
-      "why_it_matters": "automation platform의 federated login은 connector·workflow 실행 권한으로 이어질 수 있어 issuer namespace를 빠뜨린 account matching을 privileged configuration defect로 다뤄야 함.",
+      "title": "Kubernetes vLLM self-hosting: persistent model cache를 production inference platform으로 승격하는 기준",
+      "summary": "CNCF 블로그의 LINBIT member post는 vLLM·LINSTOR CSI·50Gi PVC·ClusterIP를 조합한 self-hosted LLM reference implementation을 공개함. model cache와 OpenAI-compatible endpoint는 출발점일 뿐이며, production 전환에는 GPU capacity·workload identity·egress·SLO·rollback·managed API fallback을 별도 설계해야 함.",
+      "details": "예시는 Meta Llama-3.2-1B-Instruct와 Hugging Face read token, persistent cache를 사용하고 CPU-only lab의 `--gpu-memory-utilization 0.80` 조건을 제시함. 게시물은 공식 Kubernetes 또는 vLLM release가 아닌 member reference implementation이므로, 성능·비용·HA 보장은 자체 workload로 검증해야 함.",
+      "why_it_matters": "자체 추론은 data residency·지연·비용 예측성을 제공할 수 있지만 cache·credential·storage·GPU scheduling·network egress를 한 deployment로 취급하면 장애와 보안 blast radius가 결합됨.",
       "sources": [
-        "https://github.com/n8n-io/n8n/security/advisories/GHSA-mq3m-f8x3-579w",
-        "https://thehackernews.com/2026/07/n8n-token-exchange-flaw-could-let.html"
+        "https://www.cncf.io/blog/2026/07/16/running-a-self-hosted-llm-in-kubernetes-with-vllm/",
+        "https://docs.vllm.ai/en/latest/deployment/k8s.html",
+        "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1Pvezsft8WXzYy1Lw3zKDZrkf0TNZfj95rzTnuQgzbJuztRDNDFK35ahO9UfhNJOicjjuzyZGFCtC_idBl8vgNdw4kzfeYFo6LwUur66S5qUTO2Bl3WVLwCDWoDTnw4dlZdj_ZQ1T2JcG1dWfJeoO3WDZs94EVm9z0hZ8VPL36KDpaAmw7fH9hSWSSaw/s1600/n8n-main.jpg",
-      "refreshed_kst": "2026-07-17 02:17",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-32.jpg",
+      "refreshed_kst": "2026-07-18 02:56",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "n8n token exchange는 JWT signature를 검증해도 account mapping에서 issuer를 버리면 인증된 partner token이 다른 issuer의 local account로 연결될 수 있음. OAuth·workflow credential 권한이 붙는 automation platform에서는 `iss`와 `sub`를 함께 identity key로 처리하고 configuration·log·patch를 같은 control로 운영해야 함.",
+          "body": "vLLM Deployment와 model-cache PVC는 self-hosted inference의 최소 구성일 뿐임. production 판단은 OpenAI-compatible API 호환성보다 workload별 p95 latency·tokens/s·GPU memory·warm-up·egress·fallback SLO를 검증하고, token·network·rollback을 독립 control로 분리했는지에 달림.",
           "items": [
-            "판단: JWT validity와 local account authorization을 별도 control로 검증 필요",
-            "팀 액션: 다중 issuer token exchange를 즉시 inventory하고 patch·disable·log hunt 순서 확정"
+            "판단: **persistent cache**는 cold-start 완화 수단이며 HA·autoscaling·model governance의 대체물 아님",
+            "팀 액션: lab YAML 배포 전 serving SLO·capacity plan·identity·egress·failure drill을 release gate로 설정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "n8n 공식 advisory `GHSA-mq3m-f8x3-579w`는 `CVE-2026-59208`이 Enterprise token exchange에서 발생한다고 밝힘. The Hacker News의 7월 16일 분석은 valid token의 `sub`가 다른 issuer 사용자와 충돌하면 password 없이 그 account로 로그인될 수 있는 구조를 설명함.",
+          "body": "CNCF 블로그의 7월 16일 LINBIT member post는 Kubernetes에 vLLM inference server와 LINSTOR CSI storage를 배치하는 경로를 공개함. Meta `Llama-3.2-1B-Instruct`, `/root/.cache/huggingface`의 50Gi PVC, ClusterIP service, Hugging Face read token을 예시로 사용함.",
           "items": [
-            "조건: token exchange enabled와 두 개 이상 trusted external issuer 설정",
-            "영향: 2.27.4 미만 및 2.28.0, 수정 버전 2.27.4·2.28.1 표기",
-            "경계: 공개 exploitation evidence·PoC는 확인되지 않아 노출 설정과 침해 사실을 분리 판단"
+            "구성: OpenAI-compatible REST API와 cluster 내부 `ClusterIP` endpoint 제공",
+            "저장: replicated block storage와 model cache로 pod restart 뒤 재다운로드 축소",
+            "경계: CNCF project release가 아닌 member post의 single-node reference implementation"
           ]
         },
         {
-          "heading": "identity binding의 기술 해석",
-          "body": "`sub`는 issuer 문맥 안에서 locally unique일 수 있으므로, user lookup key는 `iss`+`sub` 조합이어야 함. key signature, audience, expiry 검증이 정확해도 local identity resolver가 issuer namespace를 제거하면 signature가 보증하지 않는 authorization association이 만들어짐.",
+          "heading": "실행 경로와 한계",
+          "body": "게시물은 CPU-only lab에서 vLLM 기본 92% memory reservation으로 startup failure를 경험하고 `--gpu-memory-utilization 0.80`을 지정한 사례를 설명함. 이 값은 특정 lab의 startup headroom 관찰이며 GPU 종류·model·batch·context·concurrency가 다른 production sizing 보증이 아님.",
           "items": [
-            "설계: issuer canonicalization, subject normalization, tenant mapping을 explicit schema로 유지",
-            "검증: issuer A/B에서 같은 subject를 발급하는 collision test를 authentication regression suite에 추가",
-            "피할 것: email·display name·subject 단독으로 cross-IdP account linking하는 convenience mapping"
+            "사실: `--gpu-memory-utilization 0.80`은 게시물의 CPU-only lab 조건",
+            "볼 것: startup log, model download time, cache hit/miss, node memory pressure",
+            "피할 것: lab memory flag를 GPU serving cluster의 universal baseline으로 복제"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "automation platform은 identity가 실행 권한으로 빠르게 변환되는 환경임. n8n account가 API credential, webhook, SaaS connector, workflow execution 권한을 소유하면 login confusion은 단순 user-profile 오류가 아니라 downstream system access와 business process integrity 문제로 확장될 수 있음.",
+          "body": "model artifact lifecycle은 image lifecycle과 다르게 수십 GB 이상의 weight, gating credential, cache locality, model version compatibility가 결합됨. CSI volume의 replica durability는 node restart에 유용하지만 multi-replica serving, model shard placement, GPU topology, quota, autoscaling은 별도 scheduler·capacity 설계가 필요.",
           "items": [
-            "아키텍처: authentication event와 workflow run·credential use·webhook delivery를 correlation ID로 연결",
-            "운영: issuer별 key set, token audience, tenant, local account, role mapping의 drift detection 필요",
-            "대응: suspicious account binding 발견 시 session revoke, workflow pause, connector credential review를 단계화"
+            "아키텍처: cache PVC와 serving pod의 locality·failure domain·model version alignment 설계",
+            "운영: model digest, image digest, runtime argument, cache state, accelerator allocation을 release evidence로 기록",
+            "SRE: readiness가 단순 pod running이 아니라 model loaded·warm·endpoint acceptance 상태를 반영하도록 설계"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "token exchange는 OEM이 사용자를 별도 n8n login 없이 들여보내는 federation path임. preview 기능은 product maturity 표시일 뿐 exposure 판단의 면제가 아니며, partner가 늘수록 issuer namespace·key lifecycle·subject provisioning contract가 security boundary가 됨.",
+          "heading": "비용·보안·거버넌스 관점",
+          "body": "self-hosted 비용은 managed API 단가만으로 비교할 수 없음. GPU/CPU reservation, idle capacity, storage replica, cache-miss egress, model download, on-call, observability와 fallback API 비용을 같은 workload 단위로 계산해야 함. `HF_TOKEN`을 Secret으로 주입하는 예시는 token scope·rotation·egress 통제가 필요한 경계임.",
           "items": [
-            "거버넌스: issuer onboarding에 issuer URI, JWKS owner, subject uniqueness, deprovision SLA를 계약화",
-            "권한: federated local account에 default-admin 또는 shared workflow ownership 부여 금지",
-            "감사: token exchange config 변경과 trusted key rotation을 privileged configuration event로 수집"
+            "FinOps: requests당 원가와 idle GPU·warm-up·egress·storage 비용을 분리 측정",
+            "보안: read token 최소 권한, short-lived credential, namespace egress·endpoint authentication 적용",
+            "거버넌스: gated model approval, license, version promotion·rollback owner를 platform policy로 고정"
           ]
         },
         {
-          "heading": "도입·복구 로드맵",
-          "body": "먼저 token exchange가 켜진 instance와 issuer 수를 확인한 뒤, 영향 버전은 supported stable release로 올려야 함. patch가 지연되면 advisory가 제시한 기능 off 또는 single-issuer 축소를 임시 통제로 적용하고, login history와 credential access를 retrospective로 확인하는 순서가 현실적임.",
+          "heading": "도입 로드맵",
+          "body": "우선 representative prompt·context·concurrency로 managed API와 self-hosted endpoint의 품질·지연·비용을 비교해야 함. 이후 single replica에서 model cache와 identity·network baseline을 만들고, multi-replica와 autoscaling은 load test와 disruption test를 통과한 모델만 확대하는 순서가 안전함.",
           "items": [
-            "1단계: version, preview flag, trusted issuer/key, OEM partner 목록 inventory",
-            "2단계: 2.27.4/2.28.1 이상 또는 최신 stable로 upgrade와 post-upgrade auth test",
-            "3단계: issuer·subject·local user mismatch hunt, session invalidation, high-risk workflow credential review"
+            "1단계: workload별 p50/p95, tokens/s, memory, warm-up, output quality, cost baseline 수집",
+            "2단계: model digest pinning, cache PVC, service authentication, egress policy, secret rotation 적용",
+            "3단계: replica rollout·node drain·cache loss·managed API fallback failure drill 실행"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "patch 성공 여부만이 아니라 identity mapping과 integration runtime이 기대대로 동작하는지 확인해야 함. multi-issuer staging environment에서 same-subject collision과 account deprovision, partner key rotation, workflow authorization을 자동 test로 묶을 필요.",
+          "body": "애플리케이션 팀은 endpoint URL만 바꿔도 model behavior·rate limit·error semantics가 달라질 수 있음을 test해야 함. 플랫폼 팀은 accelerator quota와 placement, storage recovery, certificate·token·model access approval을 배포 manifest 바깥의 운영 control로 유지해야 함.",
           "items": [
-            "`N8N_TOKEN_EXCHANGE_TRUSTED_KEYS`의 issuer별 key·owner·expiry·rotation evidence 확인",
-            "auth log에 `iss`, `sub`, audience, local user ID, partner ID, result 기록 여부 확인",
-            "cross-issuer subject collision·account takeover regression test 실행",
-            "token exchange 예외 사용 시 single issuer·least privilege·monthly review 만료일 설정"
+            "OpenAI SDK·LangChain·LlamaIndex client의 timeout·retry·streaming·error handling 호환성 시험",
+            "PVC StorageClass·replica 정책·node failure domain·backup/restore 목표 확인",
+            "GPU/CPU utilisation, queue depth, p95 latency, tokens/s, cache hit ratio, error rate 대시보드 구성",
+            "`HF_TOKEN` consumer, rotation, model license, namespace egress와 API authentication 검토"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "“서명이 유효한 JWT”는 “올바른 n8n 사용자”를 자동으로 뜻하지 않음. federation security의 단위는 cryptographic token만이 아니라 issuer namespace와 local authorization mapping까지 포함한 identity tuple임.",
+          "body": "self-hosted inference의 차별점은 vLLM command가 아니라 data boundary와 serving 운영권임. cache를 붙여 cold start를 줄인 다음에는 GPU capacity·identity·network·model lifecycle·fallback을 측정 가능한 platform contract로 만들어야 함.",
           "items": [
-            "발표 포인트: **`iss`+`sub` identity binding** 누락이 signature verification 뒤의 authorization gap을 만든 사례",
-            "팀 액션: 이번 주 federated automation integration에서 subject-only mapping과 multi-issuer preview 기능을 우선 점검"
+            "발표 포인트: **OpenAI-compatible endpoint**는 client migration surface를 줄이지만 production SLO를 보장하지 않음",
+            "팀 액션: 다음 AI platform review에서 model cache·GPU scheduler·secret/egress·p95/tokens/s·rollback을 하나의 readiness checklist로 승인"
           ]
         }
       ]
