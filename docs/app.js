@@ -816,6 +816,15 @@ function renderFilters() {
   renderFilterButtons($("#regionFilters"), REGION_ORDER, state.region, (value) => { state.region = value; renderFilters(); renderCards(); });
 }
 
+function markDynamicContentReady() {
+  // The briefing is populated after the initial document load. Clear busy only
+  // after every data-driven region has been rendered so assistive technology
+  // does not announce three partially populated sections as complete.
+  ["#summaryList", "#deepDiveList", "#newsGrid"].forEach((selector) => {
+    $(selector)?.setAttribute("aria-busy", "false");
+  });
+}
+
 async function boot() {
   try {
     // Revalidate cached weekly data instead of bypassing the HTTP cache entirely.
@@ -829,6 +838,7 @@ async function boot() {
     renderDeepDives();
     renderFilters();
     renderCards();
+    markDynamicContentReady();
     wireEvents();
     setViewMode("list");
   } catch (error) {
