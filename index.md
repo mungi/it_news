@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-17 | Total pages: 177
+> Last updated: 2026-07-18 | Total pages: 179
 
 ## Entities
 
@@ -53,6 +53,8 @@
 - [[raw/articles/ox-asyncapi-npm-supply-chain-2026-07-15]] — AsyncAPI npm 침해, module-load loader, OIDC provenance와 commit 보호 경계.
 
 - [[raw/articles/cisa-sharepoint-kev-cve-2026-58644-2026-07-17]] — KEV 등록 SharePoint RCE의 패치·AMSI·IIS machine key 침해 대응.
+- [[raw/articles/cloudflare-wordpress-waf-cve-2026-60137-63030-2026-07-18]] — WordPress SQL injection·unauthenticated RCE의 WAF 완화와 패치·origin 통제 경계.
+- [[raw/articles/aws-opensearch-ui-one-click-dashboard-migration-2026-07-18]] — OpenSearch Dashboards tenant·saved object 이전과 workspace 권한·rollback 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

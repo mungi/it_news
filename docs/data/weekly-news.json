@@ -2,14 +2,14 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-18 02:56",
+  "last_updated_kst": "2026-07-18 07:01",
   "audience": "developers and engineers",
   "executive_summary": [
+    "WordPress 6.8+ SQL injection·6.9+ unauthenticated REST RCE: Cloudflare WAF 완화와 별개로 수정 버전·origin 우회·침해 로그를 즉시 점검.",
+    "Amazon OpenSearch UI one-click migration: saved object 이전 전 tenant·workspace 권한과 query·alert·rollback을 canary로 검증.",
     "CISA KEV SharePoint RCE: 패치 전 실제 악용 확인, AMSI·침해 hunt·IIS machine key 회전을 한 incident workflow로 운영.",
     "Hugging Face dataset processing 침해: remote-code loader·template injection을 untrusted code execution boundary로 다루고 worker→cluster credential·egress를 격리.",
-    "n8n 다중 issuer token exchange: JWT `sub` 단독 계정 매칭 결함으로 federation identity를 `iss`+`sub` tuple과 authorization mapping까지 점검.",
-    "CNCF vLLM self-hosting 실습: persistent model cache·OpenAI-compatible endpoint를 출발점으로 GPU capacity·secret·egress·rollback control을 별도 설계.",
-    "AsyncAPI npm 침해: 정상 GitHub Actions OIDC provenance가 push credential 침해를 막지 못해 dependency·runtime·CI commit 보호를 함께 점검."
+    "n8n 다중 issuer token exchange: JWT `sub` 단독 계정 매칭 결함으로 federation identity를 `iss`+`sub` tuple과 authorization mapping까지 점검."
   ],
   "deep_dives": [
     {
@@ -189,6 +189,160 @@
   ],
   "items": [
     {
+      "id": "news-180",
+      "title_ko": "Cloudflare, WordPress 고위험 SQL injection·unauthenticated RCE용 WAF 규칙 배포",
+      "title_original": "Cloudflare WAF protects WordPress applications from two high-severity vulnerabilities",
+      "summary": "핵심: Cloudflare가 WordPress 6.8+ SQL injection `CVE-2026-60137`과 persistent object cache 미사용 6.9+ REST batch endpoint RCE `CVE-2026-63030`용 WAF 규칙을 7월 17일 17:03 UTC에 배포. 대응: 프록시된 Cloudflare 트래픽은 무료·유료 플랜에서 보호 대상이지만, WordPress 6.8.6·6.9.5·7.0.2 또는 7.1 Beta 2 패치 확인을 WAF 완화와 분리해 즉시 수행 필요.",
+      "detail": "Cloudflare는 WordPress 보안팀의 사전 공개에 맞춰 SQL injection `CVE-2026-60137`과 unauthenticated RCE `CVE-2026-63030` 탐지용 WAF 규칙을 배포했다. SQL injection은 WordPress 6.8 이상, RCE는 persistent object cache가 없는 WordPress 6.9 이상 REST API batch endpoint에 영향을 준다. Cloudflare는 규칙이 프록시된 트래픽의 무료·유료 고객에게 적용된다고 설명하지만, WAF는 패치의 대체 수단이 아니다. 공식 수정 버전은 6.8.6, 6.9.5, 7.0.2, 7.1 Beta 2이며 6.8 미만은 영향 범위 밖이다.",
+      "why_it_matters": "인증이나 사용자 상호작용 없이 실행 가능한 REST 경로 RCE는 노출된 WordPress의 코드·데이터·관리 계정 경계로 이어질 수 있음. CDN/WAF 규칙이 있어도 origin 우회, 로그 가시성, 캐시 설정, 패치 버전 확인을 닫지 않으면 완화 범위가 불완전함.",
+      "engineering_implication": "웹 플랫폼팀은 WordPress 버전·persistent object cache·Cloudflare proxy 적용 여부를 자산별로 대조하고, origin 직접 접근을 제한한 뒤 WAF event와 REST batch endpoint 로그를 patch 증적에 연결 필요. staging에서 플러그인·테마 호환성을 검증하되 RCE 영향 자산은 자동 업데이트 상태를 기다리지 말고 수정 버전과 rollback 계획을 확인 필요.",
+      "korea_implication": "국내 브랜드·커머스·콘텐츠 WordPress 운영 조직은 CDN을 거치지 않는 관리·원본 도메인과 해외 SaaS 플러그인 의존성을 함께 inventory로 확인해 패치 누락 경로를 줄일 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "WordPress",
+        "WAF",
+        "Cloudflare",
+        "RCE",
+        "SQL Injection"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-07-18 06:30",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/wordpress-vulnerabilities/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01KXQSKFH096V7DNN9NP8ABG4X.png",
+      "related_links": [
+        {
+          "title": "WordPress 7.0.2 release and security fixes",
+          "url": "https://wordpress.org/news/2026/07/wordpress-7-0-2-release/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 WordPress 보안팀의 사전 공개에 맞춰 두 취약점용 managed WAF rule을 배포함. 규칙은 Cloudflare를 통해 프록시되는 영향 WordPress 트래픽에 적용되는 완화 범위임.",
+          "items": [
+            "배포: Cloudflare 설명상 규칙은 2026년 7월 17일 **17:03 UTC**에 활성화",
+            "대상: Cloudflare WAF로 프록시되는 무료·유료 플랜의 영향 WordPress application",
+            "경계: WAF 규칙은 exploit 노출을 낮추는 control이며 WordPress patch의 대체 수단 아님"
+          ]
+        },
+        {
+          "heading": "영향 버전과 공격 경로",
+          "body": "두 취약점은 서로 다른 request path에 존재함. SQL injection은 WordPress 6.8 이상, unauthenticated RCE는 persistent object cache를 사용하지 않는 6.9 이상 REST API batch endpoint 조건에서 영향 범위로 설명됨.",
+          "items": [
+            "`CVE-2026-60137`: crafted input으로 database query 변경 가능성이 있는 SQL injection",
+            "`CVE-2026-63030`: 로그인·사용자 상호작용 없이 REST API batch endpoint에서 code execution 가능성이 있는 Critical RCE",
+            "제외: WordPress 6.8 미만은 Cloudflare 공개문 기준 영향 버전 밖"
+          ]
+        },
+        {
+          "heading": "수정본과 완화 경계",
+          "body": "WordPress는 7.0.2와 affected earlier branch backport를 공개함. 6.8.6은 SQL injection 수정, 6.9.5·7.0.2·7.1 Beta 2는 두 결함의 수정 범위로 Cloudflare가 설명함.",
+          "items": [
+            "수정: 6.8.6, 6.9.5, 7.0.2, 7.1 Beta 2의 branch별 적용 여부 확인",
+            "자동화: WordPress가 영향 사이트의 automatic update를 강제하더라도 실제 version·update failure 확인 필요",
+            "우회: origin IP·직접 hostname·관리 경로가 Cloudflare WAF를 우회하지 않는지 별도 점검"
+          ]
+        },
+        {
+          "heading": "탐지와 운영 대응",
+          "body": "패치 전후에는 WAF block event와 application·web server·database telemetry를 같은 시간선에서 확인해야 함. REST batch endpoint request 급증이나 비정상 parameter, admin 계정·file 변경은 investigation 입력임.",
+          "items": [
+            "관측: WAF rule ID, URI, source IP, action, origin response를 central log에 보존",
+            "조사: REST API batch 요청·비정상 DB error·새 관리자·plugin/theme file 변경을 patch 전 기간에 hunt",
+            "복구: 침해 의심 시 WordPress secret·관리 credential·database 접근권한 회전과 integrity 확인 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이번 이슈는 WAF가 patch window를 줄이는 보조 control임을 재확인하는 사례임. 인터넷 노출 CMS는 version inventory·origin exposure·WAF telemetry·backup restore를 같은 운영 단위로 유지해야 함.",
+          "items": [
+            "팀 액션: 영향 버전, object cache 조건, proxy coverage, patch 완료 시각을 자산별 change evidence로 기록",
+            "팀 액션: staging compatibility test와 production patch를 분리하되 RCE 대상의 승인 지연 기준 명시",
+            "팀 액션: origin direct access 차단, WAF alert routing, restore drill을 CMS incident runbook에 반영"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-181",
+      "title_ko": "Amazon OpenSearch UI, legacy Dashboards의 tenant·saved object를 one-click migration으로 이전 지원",
+      "title_original": "Amazon OpenSearch UI now supports one-click dashboard migration",
+      "summary": "핵심: Amazon OpenSearch Service가 legacy OpenSearch Dashboards의 tenant와 saved object를 OpenSearch UI workspace로 이전하는 one-click migration을 OpenSearch domain·serverless collection에 추가. 운영: 다중 tenant를 단일 workspace로 합치거나 팀별로 유지할 수 있어 migration 재작성 부담은 줄지만, 권한 모델·object 참조·rollback·관측 대시보드 정확도는 사전 검증 필요.",
+      "detail": "AWS는 Amazon OpenSearch UI가 legacy OpenSearch Dashboards의 tenant와 saved object를 one-click으로 이전할 수 있다고 발표했다. OpenSearch domain과 serverless collection 모두에서 새 또는 기존 OpenSearch UI workspace로 migration할 수 있으며, 여러 tenant를 단일 workspace로 합치거나 팀별로 유지하는 선택지를 제공한다. AWS는 OpenSearch UI를 다수 데이터 소스의 search와 unified observability를 위한 zero-downtime serverless interface로 설명한다. 기능은 OpenSearch UI가 제공되는 모든 AWS Region에서 이용 가능하다는 발표 범위이며, 저장 object의 권한·데이터 소스 연결·visualization·운영 rollback 검증은 고객 환경에서 별도로 수행해야 한다.",
+      "why_it_matters": "observability와 search dashboard migration에서 saved object 재생성은 운영 중단·권한 누락·대시보드 drift를 만들기 쉬움. tenant와 object를 이동하는 자동화가 생겨도 workspace 경계와 팀별 접근 제어가 바뀌면 민감 로그·지표의 visibility가 달라질 수 있음.",
+      "engineering_implication": "OpenSearch 소유팀은 migration 전 tenant별 owner·role·saved search·data source dependency를 export하고, 새 workspace에서 query result·visualization·alert workflow·least privilege를 대조 필요. 신규 UI 전환은 canary workspace와 rollback 기준으로 운영하고, multi-tenant 통합 시 cross-team data exposure와 비용 attribution을 검토 필요.",
+      "korea_implication": "다계정 AWS 관측 환경은 중앙 platform workspace와 서비스별 tenant를 합칠 때 계열사·외주 운영자의 로그 접근 경계를 IAM과 감사 로그로 재검증할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "OpenSearch",
+        "Observability",
+        "Dashboard",
+        "Migration"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 80,
+      "published_kst": "2026-07-18 02:23",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-opensearch-ui-one-click-dashboard-migration",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 legacy OpenSearch Dashboards에서 OpenSearch UI로 tenant와 saved object를 이전하는 one-click migration을 추가함. OpenSearch domain과 serverless collection에서 사용하는 migration 경로임.",
+          "items": [
+            "이전: legacy dashboard의 tenant·saved object를 OpenSearch UI workspace에서 재사용하는 기능",
+            "대상: OpenSearch domain과 serverless collection의 새 또는 기존 workspace 지원",
+            "목적: object 수작업 재작성 없이 interface 전환의 운영 복잡도 축소"
+          ]
+        },
+        {
+          "heading": "workspace 구성 선택지",
+          "body": "여러 legacy tenant가 있는 조직은 tenant를 하나의 workspace로 변환하거나 팀별 workspace를 유지할 수 있음. 이 선택은 단순 UI 정리가 아니라 data source와 role boundary 설계 변경임.",
+          "items": [
+            "통합: 여러 tenant를 single workspace로 합치는 선택지",
+            "분리: 팀별 tenant를 별도 workspace로 유지하는 선택지",
+            "검토: tenant별 owner·role·saved search·visualization dependency inventory 필요"
+          ]
+        },
+        {
+          "heading": "기능 범위와 한계",
+          "body": "AWS는 OpenSearch UI를 여러 data source를 위한 search·unified observability interface로 설명하며, 기존 object를 이동하는 workflow를 제공함. 발표문은 모든 visualization·query·권한 모델의 무변경 호환성 또는 migration rollback을 보장하지 않음.",
+          "items": [
+            "가용성: AWS 발표 기준 OpenSearch UI 제공 모든 Region에서 사용 가능",
+            "검증: query result, visualization rendering, alert workflow, data source connection의 staging 대조 필요",
+            "경계: migration 성공 메시지만으로 least privilege·cross-tenant data exposure를 확정할 수 없음"
+          ]
+        },
+        {
+          "heading": "운영 전환 절차",
+          "body": "production workspace를 즉시 바꾸기보다 representative tenant를 canary로 이전하고 기존 dashboard와 결과를 비교하는 순서가 필요함. 실패 시 기존 interface로 돌아갈 기준과 변경 evidence를 미리 정해야 함.",
+          "items": [
+            "1단계: tenant·object·role·data source export와 owner 확인",
+            "2단계: canary workspace에서 query·visualization·alert·access policy 비교",
+            "3단계: cutover 후 usage·error·access denial·cost attribution 모니터링과 rollback 기준 적용"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "one-click migration은 작업량을 줄이지만 observability access governance를 자동으로 해결하지 않음. dashboard 전환을 application migration처럼 취급해 permission, data quality, audit, rollback을 release gate로 두는 운영 과제임.",
+          "items": [
+            "팀 액션: workspace별 IAM role·data source permission·external user access를 change review에 포함",
+            "팀 액션: saved object import 전후 query 결과와 alert delivery를 representative workload로 검증",
+            "팀 액션: tenant 통합 시 service owner·비용 center·로그 보존 정책의 책임 경계 기록"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-179",
       "title_ko": "CNCF vLLM self-hosting 실습: Kubernetes·CSI persistent cache로 OpenAI-compatible inference endpoint 구성",
       "title_original": "Running a self-hosted LLM in Kubernetes with vLLM",
@@ -270,7 +424,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-178",
@@ -367,7 +521,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-176",
@@ -437,7 +591,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-177",
@@ -503,7 +657,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-173",
@@ -578,7 +732,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-172",
@@ -648,7 +802,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-171",
@@ -728,7 +882,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-175",
@@ -803,7 +957,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-174",
@@ -910,7 +1064,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-170",
@@ -994,7 +1148,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-169",
@@ -1079,7 +1233,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-167",
@@ -1166,7 +1320,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-168",
@@ -1261,7 +1415,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-164",
@@ -1330,7 +1484,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-165",
@@ -1403,11 +1557,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-162",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -1495,7 +1649,7 @@
     },
     {
       "id": "news-163",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -1652,7 +1806,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-161",
@@ -1718,7 +1872,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-159",
@@ -1802,7 +1956,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-160",
@@ -1886,7 +2040,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-158",
@@ -1955,11 +2109,11 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-157",
-      "rank": 23,
+      "rank": 25,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -2042,7 +2196,7 @@
     },
     {
       "id": "news-156",
-      "rank": 24,
+      "rank": 26,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -2124,7 +2278,7 @@
     },
     {
       "id": "news-155",
-      "rank": 25,
+      "rank": 27,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -2196,7 +2350,7 @@
     },
     {
       "id": "news-154",
-      "rank": 26,
+      "rank": 28,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -2268,7 +2422,7 @@
     },
     {
       "id": "news-151",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -2412,11 +2566,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-152",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -2549,7 +2703,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-148",
@@ -2614,7 +2768,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-146",
@@ -2678,7 +2832,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-149",
@@ -2743,11 +2897,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-153",
-      "rank": 34,
+      "rank": 36,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -2876,7 +3030,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-143",
@@ -2944,7 +3098,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-144",
@@ -3012,7 +3166,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-141",
@@ -3082,7 +3236,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-139",
@@ -3147,11 +3301,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-137",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -3284,11 +3438,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-138",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -3421,7 +3575,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-134",
@@ -3490,7 +3644,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-140",
@@ -3555,7 +3709,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-133",
@@ -3620,7 +3774,7 @@
       "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
       "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
       "related_links": [],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-135",
@@ -3685,7 +3839,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202607/212656_215972_346.png",
       "local_image": "assets/images/news-135.png",
       "related_links": [],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-136",
@@ -3753,149 +3907,6 @@
         {
           "title": "arXiv paper",
           "url": "https://arxiv.org/pdf/2607.04371"
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-124",
-      "title_ko": "Apple, OpenAI와 전직 임원 상대로 영업비밀 탈취 소송 제기",
-      "title_original": "Apple sues OpenAI, accuses ex-employees of stealing trade secrets",
-      "summary": "핵심: Apple이 OpenAI, io Products, 전직 Apple 임원·엔지니어를 상대로 하드웨어 개발 관련 영업비밀 부정취득 소송 제기. 영향: AI 하드웨어 경쟁은 모델 성능뿐 아니라 인력 이동, 공급망 정보, 미공개 제품 사양의 데이터 거버넌스 리스크로 확대됨.",
-      "detail": "GeekNews GN+와 9to5Mac 보도에 따르면 Apple은 OpenAI의 하드웨어 진출 과정에서 전직 직원들이 내부 파일과 제품 개발 정보를 부정하게 가져갔다고 주장함. Apple은 금지명령, 자료 반환, 손해배상, 부당이득 반환 등을 요구했으며 피고 측 주장은 아직 법원에서 검증 전임.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: Apple이 OpenAI, Jony Ive의 io Products, 전직 Apple 직원 Chang Liu와 Tang Yew Tan을 상대로 미국 캘리포니아 북부지방법원에 소송 제기",
-            "청구: 영업비밀 부정취득, Intellectual Property Agreement 위반, 자료 반환과 사용 금지, 손해배상 요구",
-            "맥락: OpenAI가 io Products 인수와 Apple 출신 하드웨어 인력 영입을 통해 소비자 AI 하드웨어 시장 진입 추진"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "파일 접근: Apple은 Chang Liu가 퇴사 후 Apple 지급 노트북을 반환하지 않고 네트워크 저장소에 접근해 미공개 제품·엔지니어링 발표·기술 사양 파일을 내려받았다고 주장",
-            "채용 경계: Apple은 Tang Yew Tan이 내부 프로젝트 코드명, 부품 반입 요구, 퇴사 보안 절차 문서를 공유해 채용 과정의 기밀 유출을 유도했다고 주장",
-            "하드웨어 쟁점: OpenAI의 하드웨어 조직이 제품 설계·공급망·제조 정보에 접근했는지가 소송의 중심",
-            "검증 상태: 현재 내용은 Apple의 소장과 9to5Mac 보도에 근거한 주장 단계이며 법원 판단 전임"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "AI 경쟁 변화: frontier model 경쟁이 consumer AI device와 edge hardware 설계 경쟁으로 확장됨",
-            "보안 리스크: 직원 이동, 개인 장비 반납, 저장소 접근권, 퇴사 절차가 AI 하드웨어 IP 보호의 핵심 통제 지점으로 부상",
-            "공급망 영향: 하드웨어 제품은 부품 선정, 제조 파트너, 테스트 절차가 조기에 노출될 경우 경쟁 우위 손실 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: AI 제품 조직은 source code만이 아니라 hardware spec, supplier note, prototype document까지 DLP·access review 범위에 포함 필요",
-            "운영 과제: 퇴사자 계정 회수, managed device 반환, network storage audit, external collaboration log 보존 절차 점검 필요",
-            "검토 항목: 인수·채용 과정의 clean-room rule, confidential interview boundary, document provenance 기록을 법무·보안·엔지니어링이 함께 정의 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI 하드웨어 경쟁에서 인재 확보와 IP 보호가 같은 리스크 표면이 됨. 하드웨어·온디바이스 AI 팀은 퇴사·채용·협업 절차를 보안 통제와 법적 증거 보존 관점에서 재점검해야 함.",
-      "engineering_implication": "AI 제품 조직은 모델·코드 저장소 중심 보안에서 벗어나 하드웨어 사양, 공급망 문서, prototype 파일, 퇴사자 접근 로그까지 통합 감사 필요.",
-      "category": "AI",
-      "tags": [
-        "OpenAI",
-        "Apple",
-        "AI Hardware",
-        "IP",
-        "Governance"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 82,
-      "published_kst": "2026-07-11 09:45",
-      "source_name": "GeekNews GN+",
-      "source_url": "https://news.hada.io/topic?id=31318",
-      "image_url": "https://i0.wp.com/9to5mac.com/wp-content/uploads/sites/6/2026/05/apple-openai.jpg?resize=1200%2C628&quality=82&strip=all&ssl=1",
-      "local_image": "assets/images/news-124.jpg",
-      "related_links": [
-        {
-          "title": "GeekNews Markdown",
-          "url": "https://news.hada.io/topic/31318.md"
-        },
-        {
-          "title": "9to5Mac original",
-          "url": "https://9to5mac.com/2026/07/10/apple-sues-openai-trade-secret-theft/"
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-125",
-      "title_ko": "fenic, 사람과 에이전트를 위한 시맨틱 데이터프레임 공개",
-      "title_original": "fenic: Semantic DataFrames for humans and agents",
-      "summary": "핵심: fenic은 PySpark/SQL식 DataFrame 연산과 LLM 기반 extract·classify·summarize·embed·semantic join을 하나의 쿼리 모델로 묶는 오픈소스 엔진. 영향: 에이전트 컨텍스트 구축을 채팅 기록이 아니라 재실행 가능한 데이터 파이프라인과 MCP 도구로 관리하는 패턴 제시.",
-      "detail": "GeekNews와 GitHub 저장소 설명에 따르면 fenic은 문서, 로그, eval trace, 티켓, API 데이터를 typed row와 Pydantic 스키마로 구조화하고 Polars/DuckDB, Apache Arrow, 캐싱, 비용 지표, lineage를 결합함. 코딩 에이전트용 skill 설치와 정적 검사, 카탈로그 기반 MCP 도구 노출을 제공함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "items": [
-            "핵심: typedef-ai가 사람과 에이전트가 함께 쓰는 Semantic DataFrames 프로젝트 fenic 공개",
-            "범위: `select`, `filter`, `join`, `group_by`, `agg` 같은 DataFrame 연산과 LLM 시맨틱 연산자를 같은 쿼리 모델에 배치",
-            "대상 데이터: 문서, 트랜스크립트, 로그, eval trace, 티켓, 테이블, API 응답을 typed row workflow로 변환"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "items": [
-            "AI 연산자: `extract`, `classify`, `summarize`, `embed`, semantic `join`을 스키마와 타입을 가진 연산자로 제공",
-            "비용 통제: 일반 필터를 시맨틱 필터보다 먼저 실행하고 자동 batching, rate limit, retry, cache로 불필요한 LLM 호출 감소",
-            "검사 가능성: row-level lineage, `explain`, 쿼리별 token/cost metric으로 pipeline 검토 가능",
-            "런타임: Polars/DuckDB를 일반 데이터 연산에 활용하고 Apache Arrow로 교환, Pydantic schema binding과 PDF/Markdown/JSON/HTML logical type 지원",
-            "에이전트 연계: `fenic skill install`, `fenic check`, catalog 등록, MCP 노출로 pipeline을 type-safe tool로 전환"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "items": [
-            "컨텍스트 엔지니어링: RAG·agent 입력 데이터 준비가 ad-hoc script나 chat transcript가 아니라 versionable pipeline으로 이동",
-            "운영성: semantic join과 추출 결과가 반복 실행 가능해야 eval, regression test, 비용 비교가 가능",
-            "거버넌스: 에이전트가 호출하는 데이터 처리 도구에 schema, lineage, cost metric이 붙으면 감사와 권한 분리가 쉬워짐"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "items": [
-            "팀 액션: agent용 데이터 준비 코드를 notebook에서 production pipeline으로 승격할 때 type schema, cache, token budget을 기본 설계에 포함 필요",
-            "검토 항목: semantic operator의 비결정성, prompt/version 변경, PII masking, tool 권한 범위를 CI 검증 대상으로 편입 필요",
-            "운영 과제: MCP tool로 노출되는 데이터 파이프라인은 API와 동일하게 owner, SLA, audit log, rollback 기준 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "에이전트 품질은 모델만이 아니라 컨텍스트를 만드는 데이터 파이프라인의 재현성과 비용 통제에 좌우됨. fenic은 semantic data workflow를 엔지니어링 산출물로 다루는 접근을 보여줌.",
-      "engineering_implication": "에이전트 플랫폼팀은 비정형 데이터 추출·요약·조인을 LLM 호출 묶음이 아니라 typed, cached, explainable pipeline으로 표준화할 필요.",
-      "category": "DevTools",
-      "tags": [
-        "Agent",
-        "DataFrame",
-        "MCP",
-        "LLM Ops",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 81,
-      "published_kst": "2026-07-11 09:31",
-      "source_name": "GeekNews",
-      "source_url": "https://news.hada.io/topic?id=31315",
-      "image_url": "https://opengraph.githubassets.com/d67336d8cfb54d5519da37ec620520058118ef5c42c6c3834ba35754f6dee991/typedef-ai/fenic",
-      "local_image": "assets/images/news-125.png",
-      "related_links": [
-        {
-          "title": "GeekNews Markdown",
-          "url": "https://news.hada.io/topic/31315.md"
-        },
-        {
-          "title": "GitHub repository",
-          "url": "https://github.com/typedef-ai/fenic"
         }
       ],
       "rank": 50
