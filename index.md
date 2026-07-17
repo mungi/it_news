@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-17 | Total pages: 175
+> Last updated: 2026-07-17 | Total pages: 176
 
 ## Entities
 
@@ -26,7 +26,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 169건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 170건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/aws-bcm-cost-efficiency-widget-2026-07-17]] — 비용 효율 점수 추세를 지출·약정·예산과 한 화면에서 검토하는 AWS BCM FinOps 운영 변화.
 - [[raw/articles/nvidia-nemotron-3-embed-2026-07-17]] — Nemotron 3 Embed 8B·1B·NVFP4 공개와 RAG·agent retrieval의 정확도·처리량 검증 경계.
 - [[raw/articles/aws-control-tower-aft-account-move-2026-07-16]] — OU 이동 뒤 AFT Terraform customization 자동 재적용과 configuration-drift 운영 경계.
@@ -51,6 +51,7 @@
 - [[raw/articles/mindgard-cursor-repository-git-exe-2026-07-15]] — Cursor Windows의 repository-root `git.exe` 자동 실행 관찰과 endpoint 완화.
 - [[raw/articles/ox-asyncapi-npm-supply-chain-2026-07-15]] — AsyncAPI npm 침해, module-load loader, OIDC provenance와 commit 보호 경계.
 
+- [[raw/articles/cisa-sharepoint-kev-cve-2026-58644-2026-07-17]] — KEV 등록 SharePoint RCE의 패치·AMSI·IIS machine key 침해 대응.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
