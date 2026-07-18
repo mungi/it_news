@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-18 | Total pages: 182
+> Last updated: 2026-07-19 | Total pages: 183
 
 ## Entities
 
@@ -26,7 +26,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 174건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 175건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/okta-openssl-hollowbyte-dos-2026-07-18]] — OpenSSL TLS length pre-allocation·glibc memory pressure와 package/restart 검증 경계.
 - [[raw/articles/nadmesh-ai-service-mcp-botnet-2026-07-18]] — NadMesh의 노출 AI 서비스·MCP 우선 수집, cloud credential·Kubernetes token 탈취 경계.
 - [[raw/articles/cncf-self-hosted-vllm-kubernetes-2026-07-17]] — vLLM·Kubernetes·CSI persistent cache self-hosting의 model cache·token·capacity 운영 경계.
 - [[raw/articles/aws-bcm-cost-efficiency-widget-2026-07-17]] — 비용 효율 점수 추세를 지출·약정·예산과 한 화면에서 검토하는 AWS BCM FinOps 운영 변화.
