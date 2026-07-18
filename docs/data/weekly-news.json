@@ -2,13 +2,13 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-18 15:10",
+  "last_updated_kst": "2026-07-18 19:15",
   "audience": "developers and engineers",
   "executive_summary": [
     "WordPress 6.8+ SQL injection·6.9+ unauthenticated REST RCE: Cloudflare WAF 완화와 별개로 수정 버전·origin 우회·침해 로그를 즉시 점검.",
+    "NadMesh 봇넷: ComfyUI·Ollama 등 공개 AI endpoint와 MCP를 cloud credential·Kubernetes token 수집 표적으로 취급하고, public exposure·egress·secret rotation을 함께 차단.",
     "Amazon OpenSearch UI one-click migration: saved object 이전 전 tenant·workspace 권한과 query·alert·rollback을 canary로 검증.",
     "CISA KEV SharePoint RCE: 패치 전 실제 악용 확인, AMSI·침해 hunt·IIS machine key 회전을 한 incident workflow로 운영.",
-    "Hugging Face dataset processing 침해: remote-code loader·template injection을 untrusted code execution boundary로 다루고 worker→cluster credential·egress를 격리.",
     "메타·앤트로픽 AI compute 임대 논의 보도: 최대 100억달러·2년 조건은 초기 협상 정보로 분류하고, 계약·용량·리전·SLO 공식 확인 전 capacity forecast 반영 금지."
   ],
   "deep_dives": [
@@ -564,6 +564,86 @@
       "rank": 5
     },
     {
+      "id": "news-184",
+      "title_ko": "NadMesh 봇넷, 노출 AI 서비스·MCP에서 클라우드 자격증명·Kubernetes 토큰 수집 정황",
+      "title_original": "NadMesh Botnet Analysis: A Product-Grade Threat for the AI Service Era",
+      "summary": "핵심: QiAnXin XLab이 7월 초 관측한 Go 기반 NadMesh가 ComfyUI·Ollama 등 노출 AI 서비스를 우선 수집하고 Docker·Redis·MCP·Kubernetes를 포함한 20개 이상 공격 벡터를 운영한다고 분석. 대응: 공개 endpoint·long-lived cloud credential·cluster-admin ServiceAccount·MCP 도구 권한을 같은 침해 경로로 inventory하고, 인터넷 노출·egress·secret rotation을 우선 차단 필요.",
+      "detail": "QiAnXin XLab은 7월 17일 NadMesh를 Go 기반의 자율형 봇넷으로 분석했다. 보고서는 90개 이상 cloud provider 주소 범위의 자동 스캔, 20개 이상 exploit vector, Shodan을 통한 ComfyUI·Ollama 등 AI 서비스 우선 수집, Docker·Redis·MCP·Kubernetes 대상 침해 경로를 설명한다. 분석된 victim profile 예시는 AWS·Bedrock credential, Kubernetes ServiceAccount token, Docker 설정, AI model access와 MCP tool 정보를 수집 대상으로 열거한다. XLab의 악성코드 분석 보고서이므로 실제 노출 조직 전체의 감염 규모나 특정 cloud account 탈취는 확정하지 않는다.",
+      "why_it_matters": "AI 실험·추론 endpoint는 빠른 배포 과정에서 인증·network policy·secret boundary가 뒤늦게 적용되기 쉬움. host 접근과 cloud key·cluster token·MCP tool 권한 수집이 연결되면 단일 서비스 노출이 control plane 권한 확대로 이어질 수 있음.",
+      "engineering_implication": "플랫폼·보안팀은 ComfyUI·Ollama·Gradio·n8n·Open WebUI·MCP endpoint를 외부 attack surface inventory에 포함하고, public exposure와 default/no-auth 설정을 제거 필요. workload identity·short-lived credential·namespace egress·Kubernetes RBAC·Docker socket 접근을 분리하고, AWS key·ServiceAccount token·SSH key·MCP audit log의 rotation과 hunt를 incident runbook으로 연결 필요.",
+      "korea_implication": "국내 AI PoC와 사내 자동화 워크플로는 GPU 서버·SaaS 계정·Kubernetes를 함께 쓰는 경우가 많아, 외부 공개 데모 종료 뒤에도 endpoint·API key·공용 ServiceAccount가 남지 않는지 배포 종료 절차로 검증 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AI Security",
+        "Botnet",
+        "Kubernetes",
+        "MCP",
+        "Cloud Credentials"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-07-17 17:14",
+      "source_name": "QiAnXin XLab",
+      "source_url": "https://blog.xlab.qianxin.com/nadmesh-botnet-analysis-a-product-grade-threat-for-the-ai-service-era-en/",
+      "image_url": "https://blog.xlab.qianxin.com/content/images/size/w1200/2024/08/Xlab----banner-3.jpg",
+      "related_links": [
+        {
+          "title": "The Hacker News: NadMesh targets exposed AI services",
+          "url": "https://thehackernews.com/2026/07/new-nadmesh-botnet-hunts-exposed-ai.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "QiAnXin XLab은 7월 초 인터넷에 대량 배포된 Go 기반 NadMesh sample을 분석하고, 이를 AI infrastructure와 MCP ecosystem을 겨냥한 자율형 봇넷으로 분류함. 원문은 controller source의 `n4d mesh controller` 문자열을 이름의 근거로 제시함.",
+          "items": [
+            "관측: 2026년 7월 초부터 sample 확산과 scanning·exploitation·credential/AI-service intelligence 수집의 결합 확인",
+            "범위: Redis·Docker·MCP·Kubernetes를 포함한 **20개 이상 공격 벡터**와 cloud provider address range 자동 스캔 분석",
+            "경계: XLab의 malware 분석은 공격 도구의 기능·의도를 설명하며 특정 조직의 감염 또는 cloud account 탈취를 확정하지 않음"
+          ]
+        },
+        {
+          "heading": "AI 서비스 우선 수집 경로",
+          "body": "보고서는 `ai_harvest.py`가 Shodan으로 AI 서비스를 수집하고 높은 우선순위의 scan queue에 넣는 흐름을 제시함. ComfyUI, Ollama, Gradio, n8n, Open WebUI, Langflow처럼 빠르게 공개되는 tool endpoint가 대상 surface에 포함됨.",
+          "items": [
+            "우선 대상: ComfyUI 8188, Ollama 11434, Gradio 7860, n8n 5678 포트를 rescan 우선순위로 제시",
+            "위험: endpoint 자체보다 인접 host의 API key·model access·workflow secret·internal network 정보가 후속 수집 대상",
+            "운영 과제: internet-facing AI tool 목록과 ingress·WAF·authentication·owner를 자산 inventory로 연결 필요"
+          ]
+        },
+        {
+          "heading": "침해 후 수집·지속성",
+          "body": "분석된 profile 구조는 AWS credential, Bedrock credential, Kubernetes ServiceAccount token, Docker config, `.env`, SSH session, AI model, MCP service/tool metadata를 수집 후보로 열거함. 피해 host 제거만으로 credential·control plane 권한의 영향을 닫을 수 없는 이유임.",
+          "items": [
+            "자격증명: environment variable·`~/.aws/config`·`.env`·Docker config와 cloud credential 수집 경로 확인",
+            "권한: cluster-admin 권한을 가진 ServiceAccount token과 exploitable MCP SQL·shell tool을 고가치 정보로 분류",
+            "지속성: SSH public-key backdoor·agent process·cron watchdog의 중복 persistence 분석"
+          ]
+        },
+        {
+          "heading": "탐지·차단 우선순위",
+          "body": "보고서는 controller가 80·8443 포트에서 registration·beacon callback·scan task·deployment result를 처리하고, 자동 rescan·honeypot 회피·obfuscation/packing을 사용한다고 설명함. 단일 hash 또는 port block만으로는 탐지 범위가 부족할 수 있음.",
+          "items": [
+            "탐지: AI tool public exposure, 비정상 Shodan-like scan, Docker/Redis/MCP/Kubernetes access, 새 SSH authorized key와 cron 변경을 같은 시간선으로 hunt",
+            "차단: public endpoint를 private ingress·SSO 또는 service authentication 뒤로 이동하고 no-auth·default credential 제거",
+            "격리: workload별 egress allowlist와 Kubernetes NetworkPolicy로 controller callback·lateral movement 경로 축소"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI service security는 모델 endpoint만의 문제가 아니라 secret·container runtime·cluster identity·agent tool authorization이 만나는 control-plane 문제임. 공개 데모와 production endpoint를 같은 trust zone에 두지 않고, 노출 발견부터 credential rotation까지의 책임자를 지정해야 함.",
+          "items": [
+            "팀 액션: ComfyUI·Ollama·Gradio·n8n·Open WebUI·Langflow·MCP endpoint의 public exposure와 authentication 상태 즉시 점검",
+            "팀 액션: AWS key·Bedrock credential·Kubernetes ServiceAccount token·SSH key·MCP access token의 scope·rotation·사용 로그 대조",
+            "팀 액션: Docker socket·privileged workload·cluster-admin binding·MCP tool allowlist를 AI platform release gate에 반영"
+          ]
+        }
+      ],
+      "rank": 6
+    },
+    {
       "id": "news-178",
       "title_ko": "CISA, SharePoint Server RCE CVE-2026-58644를 KEV에 추가: 패치 전 악용 확인과 IIS 키 대응",
       "title_original": "CISA Adds Three Known Exploited Vulnerabilities to Catalog",
@@ -658,7 +738,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-176",
@@ -728,7 +808,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-177",
@@ -794,7 +874,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-173",
@@ -869,7 +949,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-172",
@@ -939,7 +1019,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-171",
@@ -1019,7 +1099,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-175",
@@ -1094,7 +1174,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-174",
@@ -1201,7 +1281,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-170",
@@ -1285,7 +1365,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-169",
@@ -1370,7 +1450,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-167",
@@ -1457,7 +1537,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-168",
@@ -1552,7 +1632,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-164",
@@ -1621,7 +1701,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-165",
@@ -1694,11 +1774,11 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-162",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -1786,7 +1866,7 @@
     },
     {
       "id": "news-163",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -1943,7 +2023,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-161",
@@ -2009,7 +2089,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-159",
@@ -2093,7 +2173,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-160",
@@ -2177,7 +2257,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-158",
@@ -2246,11 +2326,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-157",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -2333,7 +2413,7 @@
     },
     {
       "id": "news-156",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -2415,7 +2495,7 @@
     },
     {
       "id": "news-155",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -2487,7 +2567,7 @@
     },
     {
       "id": "news-154",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -2559,7 +2639,7 @@
     },
     {
       "id": "news-151",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -2703,11 +2783,11 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-152",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -2840,7 +2920,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-148",
@@ -2905,7 +2985,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-146",
@@ -2969,7 +3049,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-149",
@@ -3034,11 +3114,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-153",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -3167,7 +3247,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-143",
@@ -3235,7 +3315,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-144",
@@ -3303,7 +3383,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-141",
@@ -3373,7 +3453,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-139",
@@ -3438,11 +3518,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-137",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -3575,11 +3655,11 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-138",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -3712,7 +3792,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-134",
@@ -3781,7 +3861,7 @@
           "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-140",
@@ -3846,71 +3926,6 @@
           ]
         }
       ],
-      "rank": 49
-    },
-    {
-      "id": "news-133",
-      "title_ko": "Zimbra Classic Web Client 저장 XSS 취약점, crafted email 열람만으로 세션 내 악성 코드 실행 가능",
-      "title_original": "Critical Zimbra Flaw Could Let Crafted Emails Run Malicious Code in User Sessions",
-      "summary": "The Hacker News는 Zimbra가 Classic Web Client의 critical 저장 XSS 취약점을 수정하라고 고객에게 권고했다고 보도했다. 특수 제작 이메일을 열면 사용자 세션에서 악성 스크립트가 실행돼 mailbox 정보, session data, account setting 접근으로 이어질 수 있으며, 보도 시점에는 CVE가 아직 배정되지 않았다.",
-      "detail": "이번 취약점은 메일 본문이 영구 저장되는 저장 XSS 경로를 통해 발생한다. 관리자가 Zimbra Collaboration Suite 10.1.19로 업데이트하지 않으면 사용자가 악성 메일을 여는 것만으로 브라우저 세션 안에서 JavaScript가 실행될 수 있다. 이메일 서버는 인증, 주소록, 파일 첨부, SSO와 연결되는 경우가 많아 메일 클라이언트 취약점이 계정 탈취와 내부 피싱 확산으로 이어질 수 있다.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Zimbra는 Classic Web Client에서 특수 제작 이메일이 열릴 때 악성 코드가 사용자 세션에서 실행될 수 있는 보안 문제를 수정했다. The Hacker News는 해당 문제가 저장 XSS이며 보도 시점에는 CVE가 배정되지 않았다고 설명했다.",
-          "items": [
-            "영향 범위는 Zimbra Collaboration Suite의 Classic Web Client 사용 환경이다.",
-            "공격자는 crafted email을 통해 악성 JavaScript를 사용자 브라우저 세션에서 실행할 수 있다.",
-            "Zimbra는 최적 보호를 위해 10.1.19 업데이트 적용을 권고했다."
-          ]
-        },
-        {
-          "heading": "위험 시나리오",
-          "body": "저장 XSS는 서버에 저장된 콘텐츠가 사용자의 브라우저에서 반복 실행되는 구조라 메일 서비스에서 피해 범위가 커질 수 있다.",
-          "items": [
-            "메일함 정보, session data, account setting 접근 위험이 보도됐다.",
-            "관리자·헬프데스크 계정이 Classic Web Client를 사용하면 계정 장악 후 내부 피싱이나 설정 변경으로 확장될 수 있다.",
-            "메일 보안 장비가 본문 rendering 단계의 JavaScript 위험을 완전히 차단하지 못하면 사용자 열람 행위가 트리거가 된다."
-          ]
-        },
-        {
-          "heading": "운영 영향",
-          "body": "Zimbra를 자체 운영하는 조직은 인터넷 노출 메일 시스템을 우선 패치해야 한다. 웹메일은 외부 메일을 직접 처리하는 경계 서비스라 일반 업무 앱보다 패치 지연 비용이 크다.",
-          "items": [
-            "Zimbra Collaboration Suite 10.1.19 적용 여부를 확인한다.",
-            "Classic Web Client 사용 조직은 패치 전까지 고위험 사용자와 관리자 계정의 웹메일 사용을 제한한다.",
-            "WAF·메일 보안 장비 로그에서 의심 HTML/스크립트 패턴과 비정상 계정 설정 변경을 확인한다."
-          ]
-        },
-        {
-          "heading": "체크리스트",
-          "body": "패치와 함께 세션·계정 변경 로그를 확인해야 한다. 저장 XSS는 메일 열람 후 계정 설정 변경이나 세션 탈취로 이어질 수 있다.",
-          "items": [
-            "패치 버전과 적용 시간을 CMDB·변경 이력에 기록한다.",
-            "패치 전후 관리자 로그인, forwarding rule, app password, recovery setting 변경을 점검한다.",
-            "의심 메일을 격리하고 동일 sender·subject·HTML 구조를 조직 전체에서 검색한다.",
-            "사용자에게 웹메일 재로그인과 세션 무효화를 안내한다."
-          ]
-        }
-      ],
-      "why_it_matters": "Zimbra는 자체 호스팅 메일 환경에서 널리 쓰이며, 웹메일 XSS는 단순 UI 결함이 아니라 세션·메일함·계정 설정 탈취 경로가 될 수 있다.",
-      "engineering_implication": "Zimbra 10.1.19 적용, Classic Web Client 사용 제한, 의심 메일 격리, 세션 무효화, forwarding/app-password 변경 로그 점검을 우선순위로 둬야 한다.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Zimbra",
-        "Email Security",
-        "XSS",
-        "Patch"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-11 15:45",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/critical-zimbra-flaw-could-let-crafted_0483473395.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEirVz95zYTg61VRro9unfJCWWwwUrv3pQdtyNT7rPL8iCg6n0S6bky4dqPiluQHfSvQMIO9cyYgrz-07ZCx8yG_qND_J9XJ_0BoUON9p3zj0etafNvjg45txAeu4uCDEMxGDNv2tIxNuqrC0OsKG_sWZp5QIlEkbqZ_g_EEcAdXUQbuo_EgsXwT3mERTTk/s1600/zimbra-email-hack.jpg",
-      "related_links": [],
       "rank": 50
     }
   ]
