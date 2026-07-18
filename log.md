@@ -711,3 +711,10 @@
 - Reviewed the current source surfaces and source-page verified AI Times coverage updated 2026-07-18 06:47 KST. The article attributes a potential two-year, up-to-$10 billion Meta–Anthropic AI-compute lease to NYT sources; no official contract, capacity, accelerator, region, or SLA confirmation is asserted.
 - Added the report, removed the capped oldest tail item (NVIDIA Nemotron-Labs-3-Puzzle-75B-A9B, 2026-07-11 11:36 KST), re-sorted all 50 items newest-first, and reassigned contiguous ranks.
 - Updated `docs/data/weekly-news.json`, regenerated `weekly/2026-W30.md`, added immutable raw capture, and updated `index.md`; both Deep Dives were refreshed at 2026-07-18 02:56 KST earlier today, so no timestamp-only change was made.
+
+## [2026-07-18] update | Add SageMaker HyperPod Slurm partition topology scheduling
+- Checked current time at 2026-07-18 15:10 KST; no freeze guard was run per current project policy. Directly inspected mandatory Korean/community surfaces: GeekNews, GeekNews Plus, AI Times KR, and AI Times all returned HTTP 200; these HTML surfaces are not counted as parsed feeds.
+- Parsed 2,108 entries from eight successful XML feeds in the current probe: AWS What’s New (100), Cloudflare (20), CNCF (10), GitHub (10), Hugging Face (829), Kubernetes (50), The Hacker News (50), and OpenAI (1,039); arithmetic: 100+20+10+10+829+50+50+1,039 = 2,108.
+- Source-page verified AWS’s July 17 HyperPod announcement; verified AWS RSS `pubDate` of 2026-07-17 15:16 UTC converts to 2026-07-18 00:16 KST. AWS states that Slurm 25.11+ clusters can use tree or block topology per partition; workload throughput and cost outcomes remain customer validation scope.
+- Added the HyperPod item and removed the actual capped sort tail item, `PrismML, 270억 매개변수 모델을 아이폰에서 4GB 미만으로 구동했다고 주장` (2026-07-11 12:28), then re-sorted all 50 items newest-first with contiguous ranks.
+- Both Deep Dives were refreshed at 2026-07-18 02:56 KST earlier today; this later same-day run preserved them without timestamp-only churn. Updated canonical JSON, regenerated `weekly/2026-W30.md`, added immutable raw capture, and updated `index.md`.

@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-18 | Total pages: 180
+> Last updated: 2026-07-18 | Total pages: 181
 
 ## Entities
 
@@ -26,7 +26,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 172건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 173건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/cncf-self-hosted-vllm-kubernetes-2026-07-17]] — vLLM·Kubernetes·CSI persistent cache self-hosting의 model cache·token·capacity 운영 경계.
 - [[raw/articles/aws-bcm-cost-efficiency-widget-2026-07-17]] — 비용 효율 점수 추세를 지출·약정·예산과 한 화면에서 검토하는 AWS BCM FinOps 운영 변화.
 - [[raw/articles/nvidia-nemotron-3-embed-2026-07-17]] — Nemotron 3 Embed 8B·1B·NVFP4 공개와 RAG·agent retrieval의 정확도·처리량 검증 경계.
@@ -56,6 +56,7 @@
 - [[raw/articles/cloudflare-wordpress-waf-cve-2026-60137-63030-2026-07-18]] — WordPress SQL injection·unauthenticated RCE의 WAF 완화와 패치·origin 통제 경계.
 - [[raw/articles/aws-opensearch-ui-one-click-dashboard-migration-2026-07-18]] — OpenSearch Dashboards tenant·saved object 이전과 workspace 권한·rollback 검증 경계.
 - [[raw/articles/aitimes-meta-anthropic-compute-lease-2026-07-18]] — 메타·앤트로픽 AI compute 임대 초기 협상 보도의 계약·capacity·SLO 확인 경계.
+- [[raw/articles/aws-hyperpod-partition-topology-slurm-2026-07-18]] — HyperPod Slurm partition별 tree·block topology와 distributed-training placement 검증.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
