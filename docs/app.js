@@ -258,7 +258,11 @@ function renderSummary() {
 function renderDeepDives() {
   const container = $("#deepDiveList");
   container.replaceChildren();
-  (state.data.deep_dives || []).slice(0, 2).forEach((item, index) => {
+  const deepDives = (state.data.deep_dives || []).slice(0, 2);
+  // Only a supporting second card needs preview clamping. A single primary
+  // Deep Dive should retain its complete briefing context in the page itself.
+  container.classList.toggle("has-secondary-deep-dive", deepDives.length > 1);
+  deepDives.forEach((item, index) => {
     const div = document.createElement("article");
     const title = item.title || "Deep Dive";
     div.className = "deep-dive";
