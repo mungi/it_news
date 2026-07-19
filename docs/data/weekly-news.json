@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-19 23:53",
+  "last_updated_kst": "2026-07-20 03:57",
   "audience": "developers and engineers",
   "executive_summary": [
     "SonicWall SMA 1000: Volexity 조사 기반 UTA0533 root 장악·webshell·LDAP traffic 수집 흔적을 firmware hotfix와 분리해 `/wsproxy`·Unit route·startup persistence·VPN/IAM credential 회전으로 조사.",
@@ -14,172 +14,170 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "NadMesh 봇넷: 공개 AI endpoint·MCP를 cloud control plane 침해 경로로 다루는 운영 기준",
-      "summary": "QiAnXin XLab은 Go 기반 NadMesh가 90개 이상 cloud provider address range와 20개 이상 공격 벡터를 스캔하며 ComfyUI·Ollama·Gradio·n8n·Open WebUI·Langflow 같은 노출 AI 서비스를 우선순위화한다고 분석함. cloud credential·Kubernetes ServiceAccount token·MCP metadata 수집과 SSH key·cron persistence를 하나의 incident 범위로 묶고, public exposure·workload identity·egress·secret rotation을 함께 차단해야 함.",
-      "details": "분석은 특정 조직 감염이나 credential 탈취 규모를 확정하지 않지만, AI inference endpoint·MCP tool·Docker·Kubernetes 경계를 독립 서비스가 아닌 동일한 external attack surface로 inventory해야 하는 근거임. 공개 endpoint를 줄이는 조치만으로 끝내지 말고 token scope·network egress·host persistence·cluster RBAC·forensic evidence를 순서화한 복구 runbook으로 운영해야 함.",
-      "why_it_matters": "AI 서비스는 모델 API만 노출하는 것이 아니라 cloud metadata, container runtime, kubeconfig, MCP tool 권한과 연결될 수 있음. 하나의 internet-facing endpoint의 초기 침해가 control plane credential과 lateral movement로 확대되지 않도록 identity·network·secret control을 분리해야 함.",
+      "title": "SonicWall SMA 1000 제로데이 연쇄: VPN appliance root 장악을 identity incident로 복구하는 기준",
+      "summary": "Volexity는 UTA0533이 SonicWall SMA 1000의 `CVE-2026-15409` SSRF와 `CVE-2026-15410` command injection을 공개 전 연쇄해 root 접근을 얻고, webshell·startup persistence·LDAP traffic capture artifact를 남긴 두 appliance incident를 분석함. hotfix 적용만으로 끝내지 말고 `/wsproxy`·Unit route·process·directory credential·MFA session을 하나의 forensic·recovery 범위로 다뤄야 함.",
+      "details": "분석은 두 조사 appliance의 침해 artifact에 근거하며 모든 SMA 1000 또는 특정 조직의 광범위한 침해를 뜻하지 않음. 그러나 public VPN gateway의 root compromise는 remote-user identity, LDAP credential, internal route를 함께 노출할 수 있으므로 evidence 보존, clean rebuild, credential rotation, failover 검증을 결합한 incident workflow가 필요함.",
+      "why_it_matters": "분석은 두 조사 appliance의 침해 artifact에 근거하며 모든 SMA 1000 또는 특정 조직의 광범위한 침해를 뜻하지 않음. 그러나 public VPN gateway의 root compromise는 remote-user identity, LDAP credential, internal route를 함께 노출할 수 있으므로 evidence 보존, clean rebuild, credential rotation, failover 검증을 결합한 incident workflow가 필요함.",
       "sources": [
-        "https://blog.xlab.qianxin.com/nadmesh-botnet-analysis-a-product-grade-threat-for-the-ai-service-era-en/",
-        "https://thehackernews.com/2026/07/new-nadmesh-botnet-hunts-exposed-ai.html"
+        "https://www.volexity.com/blog/2026/07/17/proxying-to-compromise-sonicwall-secure-mobile-access-0-day-exploitation/",
+        "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014"
       ],
-      "image_url": "https://blog.xlab.qianxin.com/content/images/size/w1200/2024/08/Xlab----banner-3.jpg",
-      "refreshed_kst": "2026-07-19 03:23",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgLomYbwprpYWKVxrxKRh3hFiGRWdVOb7WAVbhJjf_fYQAba4wVZT1PpwWAL-ZDb40MZp9T43-dj8Fru-eOjiKcrAoh5sOdyKGUUAVwK9iifXl70EvgORPztxnvYXc9HA8trGKcRZGob8DYJxUZBg0zlZFUTiRGPXGFheSbKLUoG53kZ9HR6XxyJs9GEtcA/s1600/sma-sonicwall.jpg",
+      "refreshed_kst": "2026-07-20 03:57",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "NadMesh 대응의 운영 단위는 개별 ComfyUI·Ollama instance가 아니라 공개 AI endpoint에서 cloud credential·Kubernetes token·MCP tool privilege까지 이어지는 control plane 경계임. 노출 차단, credential rotation, host·cluster hunt, egress 최소화를 하나의 incident 변경으로 승인해야 함.",
+          "body": "SonicWall SMA 1000 대응의 종료 조건은 firmware hotfix 적용이 아니라 root-level appliance 신뢰성 회복임. 외부 VPN gateway에서 확인된 `/wsproxy` 접근, NGINX Unit route, startup persistence, LDAP traffic capture를 네트워크 변경·IAM 회전·forensic 보존이 결합된 하나의 identity incident로 처리해야 함.",
           "items": [
-            "판단: **AI endpoint exposure**는 inference 서비스 inventory가 아닌 credential-bearing attack surface로 분류",
-            "팀 액션: public ingress·token·Docker socket·ServiceAccount·MCP tool 권한의 owner와 회전 증적을 같은 case에 보존"
+            "판단: **root compromise** 가능성이 있는 VPN appliance는 patch-compliance와 clean-state를 분리해 승인",
+            "팀 액션: failover, 증적 수집, clean reimage, VPN·LDAP·관리 credential·MFA token 회전을 같은 change record로 관리"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "QiAnXin XLab은 7월 초 관측한 Go 기반 NadMesh를 AI infrastructure와 MCP ecosystem을 겨냥한 자율형 봇넷으로 분석함. 원문은 90개 이상 cloud provider address range, Redis·Docker·MCP·Kubernetes를 포함한 20개 이상 exploit vector, Shodan 기반 AI 서비스 우선 탐색을 제시함.",
+          "body": "Volexity는 두 SonicWall SMA appliance incident에서 UTA0533이 공개 전 `CVE-2026-15409` SSRF와 `CVE-2026-15410` command injection을 연쇄해 root 실행으로 이어진 흐름을 분석함. The Hacker News의 7월 19일 보도는 이 incident-response 분석을 현재 경보 맥락으로 전했으며, 분석 결과는 조사된 장비의 artifact이지 모든 SMA 1000 배포 환경의 침해 확정 근거는 아님.",
           "items": [
-            "탐색: ComfyUI·Ollama·Gradio·n8n·Open WebUI·Langflow를 포함한 노출 AI 서비스의 높은 scan priority 분석",
-            "수집: AWS·Bedrock credential, Kubernetes ServiceAccount token, Docker config, `.env`, SSH session, model access, MCP metadata가 profile에 포함",
-            "경계: 악성코드 기능 분석은 특정 조직의 감염·credential 탈취·피해 규모 확정 근거 아님"
+            "초기 접근: `/wsproxy`와 localhost WebSocket tunnel, CouchDB·control-service 경로를 이용한 공격 체인 분석",
+            "범위: `6210`·`7210`·`8200v`를 포함한 조사 대상 appliance 사례이며 광범위한 피해 규모 미확정",
+            "수정: SonicWall hotfix 포함 firmware `12.4.3-03453`·`12.5.0-02835` 적용 여부 대조 필요"
           ]
         },
         {
-          "heading": "공격 표면을 다시 그리는 방법",
-          "body": "공개 inference URL은 request path 하나가 아니라 runtime host, container registry, secret mount, cloud metadata, Kubernetes API, MCP tool 호출로 연결될 수 있음. asset inventory는 DNS와 load balancer만이 아니라 process·port·namespace·service account·egress destination까지 결합해야 함.",
+          "heading": "침해 체인과 evidence 우선순위",
+          "body": "원문은 root command execution을 허용하는 setuid `xzfind`, legitimate process에 주입된 Suo5 HTTP proxy와 ORANGETAIL Java webshell, `/etc/init.d/workplace` startup script 및 `/var/lib/unit/conf.json` route 변경을 설명함. 재부팅·복구 전에 volatile process, configuration diff, access log를 보존하지 않으면 침해 범위와 credential exposure 판단 근거가 사라질 수 있음.",
           "items": [
-            "자산: internet-facing endpoint, admin UI, Docker socket, node port, kubeconfig, metadata endpoint 접근 경로 식별",
-            "권한: ServiceAccount RBAC, cloud workload role, MCP server tool scope, Hugging Face·model registry token의 실제 consumer 대조",
-            "경계: model endpoint authentication 성공 여부만으로 host·cluster privilege 분리를 확정할 수 없음"
+            "Hunt: `extraweb_access.log`의 `/wsproxy`·`bmID=-3389`·101 response와 `access_servers.log` backend connection 확인",
+            "Hunt: `ctrl-service.log`의 `remove_hotfix` workflow, `/tmp` staging file, Unit route·startup script 변경 확인",
+            "경계: hardware identifier 기반 authentication weakness는 물리 appliance 조건이며 해당 incident의 사용 경로로 단정 불가"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "NadMesh의 수집 목록은 AI runtime이 cloud-native control plane과 결합된 현실을 드러냄. long-lived credential 또는 과권한 ServiceAccount 하나가 남으면 endpoint 격리만으로 lateral movement를 막기 어렵고, network policy만으로 secret replay나 SSH persistence를 제거할 수도 없음.",
+          "body": "VPN appliance는 public ingress, remote-user session, directory integration, 내부 service route를 결합한 control point임. root 권한 획득 뒤 LDAP 평문 traffic capture artifact가 관측된 경우 network segmentation만으로 credential replay와 lateral movement를 배제할 수 없음. appliance를 단순 edge device가 아니라 compromised identity boundary로 분류해야 함.",
           "items": [
-            "아키텍처: public ingress와 model-serving namespace를 cluster-admin·node runtime·metadata service에서 분리",
-            "관측: ingress·WAF·container runtime·Kubernetes audit·cloud API·DNS egress 로그를 동일 시간선으로 결합",
-            "복구: artifact 보존 뒤 token·SSH key·cloud credential 회전, RBAC 축소, egress 재검증 순서 적용"
+            "아키텍처: VPN management·directory access·admin SSH·internal route를 최소 privilege와 별도 logging boundary로 분리",
+            "관측: VPN access·WebSocket·LDAP·privileged session·directory authentication 로그를 하나의 시간선으로 결합",
+            "복구: appliance image 교체와 credential invalidation 순서를 failover capacity·remote-user 영향과 함께 계획"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "원문은 SSH public-key backdoor, agent process, cron watchdog을 중복 persistence 경로로 설명함. service restart 또는 exposed port 차단만으로 기존 host compromise를 닫을 수 없으므로, node image 신뢰성·startup persistence·credential use history를 함께 조사해야 함.",
+          "body": "firmware update는 재악용 가능성을 줄이지만, 이미 추가된 webshell·startup persistence·captured password를 제거하거나 session을 무효화하지 않음. incident owner는 asset owner, IAM, network, SOC, service desk의 작업을 분리된 티켓이 아니라 공통 evidence와 종료 기준을 가진 response plan으로 묶어야 함.",
           "items": [
-            "피할 것: endpoint를 private로 전환한 뒤 기존 token·SSH key·cron 상태를 미조사로 종료하는 판단",
-            "통제: short-lived workload identity, namespace별 egress allowlist, secret scope 최소화, MCP tool allowlist 적용",
-            "감사: scan evidence, process·cron·authorized_keys artifact, token last-used, rotation, RBAC diff를 incident evidence로 보존"
+            "피할 것: hotfix version 확인만으로 disk·memory·configuration·credential use 조사를 생략하는 종료 판단",
+            "통제: internet exposure 축소, admin access MFA·jump host 제한, directory traffic encryption 및 privileged account 분리",
+            "감사: firmware, image digest, log hash, rotation 시각, MFA 재등록, failover test 결과를 보존"
           ]
         },
         {
-          "heading": "도입·복구 로드맵",
-          "body": "첫 단계는 외부 도달성과 실제 권한 연결을 inventory하는 것임. 다음은 exposed workload에서 persistence와 credential use를 hunt하고, containment 뒤 rotation·RBAC·network control을 재구성하는 순서임. production AI 서비스의 model availability는 managed API 또는 제한된 internal route로 분리해 복구 중 blast radius를 낮춰야 함.",
+          "heading": "복구 로드맵",
+          "body": "1단계는 외부 노출 모델·firmware·HA topology·directory integration을 inventory로 확정하는 작업임. 2단계는 evidence-preserving hunt와 containment이며, 3단계는 clean reimage 또는 redeploy 뒤 credential 회전·세션 무효화·network policy와 monitoring 검증임. 원격접속 중단 위험은 standby gateway와 phased user cutover로 낮춰야 함.",
           "items": [
-            "1단계: public endpoint·port·DNS·owner·namespace·cloud role·MCP tool mapping 작성",
-            "2단계: container process·cron·SSH authorized_keys·cloud API·Kubernetes audit·egress telemetry hunt",
-            "3단계: credential·token·SSH key 회전, workload identity 재발급, RBAC·NetworkPolicy·ingress 검증, fallback drill 실행"
+            "1단계: exposed SMA 1000, firmware, admin account, LDAP integration, backup image, failover owner 매핑",
+            "2단계: disk·memory·process·route·startup artifact와 VPN·LDAP·internal access telemetry 수집",
+            "3단계: clean image, hotfix, credential/MFA rotation, session invalidation, monitored failover drill 실행"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "애플리케이션 팀은 SDK·agent가 호출하는 endpoint와 MCP tool 목록을 제출하고, 플랫폼 팀은 identity·network·runtime evidence를 검증해야 함. secret rotation은 환경변수 교체만이 아니라 deployment rollout, client retry, cache flush, token rejection telemetry까지 포함해야 함.",
+          "body": "플랫폼 팀은 실제 active·standby firmware와 route configuration을 확인하고, IAM 팀은 VPN·administrator·LDAP service account의 scope와 last-used를 대조해야 함. SOC는 URI·WebSocket·process·directory telemetry 보존 시점과 hunt 기간을 명확히 해야 하며, 업무 시스템 팀은 회전 뒤 authentication failure와 service dependency를 검증해야 함.",
           "items": [
-            "ComfyUI·Ollama·Gradio·n8n·Open WebUI·Langflow 등 공개 service와 admin endpoint inventory 확인",
-            "ServiceAccount 권한, cloud role trust, secret mount, MCP tool input·output 권한과 audit log 확인",
-            "node·container runtime의 process·cron·SSH key·image digest와 Kubernetes audit retention 확인",
-            "egress allowlist, DNS·proxy log, cloud credential last-used, token rotation 뒤 오류율·재시도율 확인"
+            "`/var/lib/unit/conf.json`, `/etc/init.d/workplace`, process list, cron, setuid file 및 file hash 확인",
+            "VPN login, MFA reset, LDAP bind, privileged session, unusual WebSocket traffic의 pre/post-change anomaly 확인",
+            "clean reimage 뒤 remote access success rate, helpdesk volume, HA failover, internal service error rate 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI endpoint의 public exposure는 모델 호출 문제로 끝나지 않음. identity와 runtime, cluster, cloud control plane이 이어지는 경로를 끊고, 이미 노출된 자산은 credential·persistence·egress를 같이 조사해야 복구가 완료됨.",
+          "body": "SonicWall SMA 1000의 root-level incident analysis는 외부 VPN gateway가 firmware patch 대상인 동시에 identity·credential·lateral movement investigation 대상임을 뜻함. 인터넷 노출 edge appliance는 version inventory, forensic evidence, clean rebuild, secret rotation, access recovery를 묶어야 실제 신뢰 상태를 회복할 수 있음.",
           "items": [
-            "발표 포인트: **90개 이상 cloud range**를 스캔하는 봇넷 분석은 AI service inventory의 범위를 control plane까지 확장해야 한다는 근거",
-            "팀 액션: 다음 AI platform security review에서 public exposure·workload identity·token rotation·MCP privilege·egress evidence를 하나의 release gate로 승인"
+            "발표 포인트: **2대 조사 appliance**의 root persistence·LDAP capture evidence는 피해 범위를 과장하지 않되 credential incident 기준을 높이는 근거",
+            "팀 액션: 다음 remote-access emergency runbook에 evidence-before-reboot, clean image, credential rotation, session invalidation, failover metric을 release gate로 추가"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "WordPress SQL injection·REST RCE: WAF 완화와 origin·patch·침해 조사 경계를 분리하는 방법",
-      "summary": "Cloudflare는 WordPress 6.8+ SQL injection `CVE-2026-60137`과 persistent object cache 미사용 6.9+ REST batch endpoint unauthenticated RCE `CVE-2026-63030`용 WAF 규칙을 7월 17일 17:03 UTC에 배포함. 프록시된 Cloudflare 트래픽의 완화와 WordPress 수정 버전 적용, origin 우회 차단, REST·file·DB 로그 hunt는 서로 대체되지 않는 통제임.",
-      "details": "Cloudflare 공식 공개문은 수정 버전과 WAF 적용 범위를 설명하지만, 각 사이트의 origin 직접 접근·plugin 호환성·침해 여부를 확인하지 않음. 인터넷 노출 WordPress는 asset version·object cache 조건·proxy coverage·WAF event·관리자 및 파일 변경·backup restore를 하나의 emergency change와 incident 조사로 처리해야 함.",
-      "why_it_matters": "인증 없이 도달 가능한 REST RCE는 CMS의 코드·데이터·관리 계정으로 이어질 수 있으며 WAF는 proxy되는 request에만 적용됨. origin IP, 별도 hostname, 관리 경로, 패치 실패가 남아 있으면 edge mitigation만으로 공격 경로를 닫을 수 없음.",
+      "title": "OpenSSL HollowByte: TLS termination의 memory-pressure DoS를 package·runtime·telemetry로 닫는 방법",
+      "summary": "Okta Red Team은 OpenSSL TLS handshake의 untrusted length 선언이 payload 검증 전 최대 131KB buffer allocation으로 이어질 수 있는 HollowByte DoS 조건을 분석함. OpenSSL `4.0.1`·`3.6.3`·`3.5.7`·`3.4.6`·`3.0.21` 적용 여부, 실제 TLS process 재시작, connection·RSS·OOM telemetry를 함께 확인해야 함.",
+      "details": "Okta의 16GB 실험에서 memory 25% lockup 관측은 해당 allocator·환경의 조건이며 보편적 capacity 수치나 RCE 근거가 아님. TLS endpoint의 package update만으로 끝내지 말고 loaded library, long-lived worker, rate limit, memory cgroup, canary load를 검증하는 SRE 운영 단위가 필요함.",
+      "why_it_matters": "Okta의 16GB 실험에서 memory 25% lockup 관측은 해당 allocator·환경의 조건이며 보편적 capacity 수치나 RCE 근거가 아님. TLS endpoint의 package update만으로 끝내지 말고 loaded library, long-lived worker, rate limit, memory cgroup, canary load를 검증하는 SRE 운영 단위가 필요함.",
       "sources": [
-        "https://blog.cloudflare.com/wordpress-vulnerabilities/",
-        "https://wordpress.org/news/2026/07/wordpress-7-0-2-release/"
+        "https://sec.okta.com/articles/2026/06/openssl-hollowbtye-a-dos-hiding-in-11-bytes/",
+        "https://github.com/openssl/openssl/releases"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01KXQSKFH096V7DNN9NP8ABG4X.png",
-      "refreshed_kst": "2026-07-19 03:23",
+      "image_url": "https://images.ctfassets.net/kbkgmx9upatd/2mSwf13fQ5aH31DZNddqtd/0855adabe0c07ddc9ceaa460ebd1d935/Okta_Aura_CMYK_Black.jpg?w=1200&h=800&fit=fill&q=80",
+      "refreshed_kst": "2026-07-20 03:57",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "WordPress 취약점 대응은 WAF rule 활성화 확인만으로 종료할 수 없음. 영향 버전·persistent object cache 조건·Cloudflare proxy coverage·origin 우회·patch 증적·pre-patch request와 file 변경 조사를 하나의 emergency workflow로 묶어야 함.",
+          "body": "HollowByte는 TLS request rate만의 문제가 아니라 untrusted handshake length를 바탕으로 한 OpenSSL buffer allocation과 allocator retention이 결합되는 availability risk임. internet-facing TLS termination은 package version, 실제 loaded library, process restart, connection·RSS telemetry를 하나의 DoS control로 운영해야 함.",
           "items": [
-            "판단: **unauthenticated REST RCE** 대상은 staging 호환성 검증과 production patch를 분리하되 승인 지연 기준을 명시",
-            "팀 액션: version·proxy·origin·WAF event·REST log·backup restore 검증을 동일 change record에 보존"
+            "판단: **11바이트 TLS 입력** 분석은 RCE가 아닌 server memory pressure·가용성 저하 조건으로 분류",
+            "팀 액션: update 상태가 아니라 실행 중 TLS process의 linkage·restart evidence와 memory trend로 종료 판단"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 WordPress 보안팀 사전 공개에 맞춰 `CVE-2026-60137` SQL injection과 `CVE-2026-63030` REST API batch endpoint RCE용 managed WAF 규칙을 2026년 7월 17일 17:03 UTC에 배포했다고 밝힘. 규칙은 Cloudflare를 통해 proxy되는 영향 application의 무료·유료 플랜에 적용된다고 설명함.",
+          "body": "Okta Red Team은 TLS handshake header의 3바이트 message length 선언이 payload 검증 전 buffer allocation을 유발하는 HollowByte 조건을 분석함. 최대 131KB allocation 가능성과 glibc의 chunk 반환 특성이 연결 종료 뒤 memory pressure를 남길 수 있다는 설명을 제시함. The Hacker News의 7월 18일 보도 timestamp는 경보 시점 맥락이며 기술 사실은 Okta 원문에 한정함.",
           "items": [
-            "범위: SQL injection은 WordPress 6.8 이상 영향 범위로 설명",
-            "범위: RCE는 persistent object cache를 사용하지 않는 WordPress 6.9 이상 조건의 REST API batch endpoint 영향 범위",
-            "수정: Cloudflare 공개문 기준 6.8.6, 6.9.5, 7.0.2, 7.1 Beta 2 branch별 수정 버전 확인"
+            "입력: `grow_init_buf()`·`OPENSSL_clear_realloc()` 경로에서 최대 **131KB** allocation 가능성 분석",
+            "실험: 16GB 환경에서 connection ceiling 아래 총 memory의 25% lockup 관측, 일반 deployment capacity 수치 아님",
+            "경계: source analysis는 remote code execution 또는 모든 OpenSSL deployment의 동일 영향 주장 아님"
           ]
         },
         {
-          "heading": "완화 경계와 노출 판정",
-          "body": "WAF는 edge를 통과하는 request의 exploit 시도를 낮추는 보조 control임. DNS record, origin IP, load balancer, admin hostname, VPN bypass, IPv6 path가 Cloudflare proxy를 통과하는지 자산별로 확인해야 실제 완화 범위를 판단할 수 있음.",
+          "heading": "영향 조건과 배포 범위",
+          "body": "영향은 OpenSSL을 직접 사용하는 web server만이 아니라 reverse proxy, API gateway, ingress controller, service mesh, load balancer appliance 등 TLS termination path에 분산될 수 있음. OS vendor backport와 static linking, container base image, sidecar lifecycle 때문에 package manager의 version 문자열만으로 patch 적용·loaded process 교체를 단정할 수 없음.",
           "items": [
-            "자산: WordPress core version, active plugin·theme, persistent object cache, proxy mode, origin hostname inventory",
-            "우회: origin direct access, direct IP, alternate DNS, admin path, health-check endpoint의 edge bypass 확인",
-            "경계: WAF block 수가 0이라는 사실만으로 exploit attempt 부재 또는 patch 완료를 확정할 수 없음"
+            "자산: public TLS endpoint별 package, container image, static/dynamic linkage, owner, reload method inventory 필요",
+            "수정: Okta 원문이 제시한 `4.0.1`·`3.6.3`·`3.5.7`·`3.4.6`·`3.0.21` branch 적용 여부 확인",
+            "경계: EOL·extended-support branch는 vendor advisory와 changelog의 backport evidence 별도 확인"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "CMS는 application code뿐 아니라 PHP runtime, database, cache, CDN, file storage, CI deploy, admin identity가 결합된 운영 surface임. RCE 대응에서는 edge block과 core update를 분리된 성공 조건으로 두고, origin telemetry와 integrity evidence를 같은 시간선으로 연결해야 함.",
+          "body": "connection cap은 concurrency를 줄이지만 allocator에 남은 RSS pressure와 process별 memory headroom을 자동으로 회복시키지 않음. autoscaling은 CPU·request latency만 기준으로 하면 memory exhaustion을 늦게 감지할 수 있으므로, connection rate·TLS handshake failure·RSS·OOM·restart를 service SLO와 같은 dashboard에서 봐야 함.",
           "items": [
-            "아키텍처: public origin을 CDN egress IP 또는 private connectivity로 제한하고 admin route를 별도 identity boundary로 분리",
-            "관측: WAF rule event, URI·parameter, origin response, PHP·web server·database error, file integrity, admin audit 로그 결합",
-            "SRE: patch rollout 뒤 cache purge·application health·error budget·rollback criteria를 version 증적과 함께 기록"
+            "아키텍처: edge termination과 upstream workload의 memory limit·pod disruption·retry budget을 독립적으로 검토",
+            "관측: handshake rate, allocated/RSS memory, allocator metric, OOM kill, restart, 5xx를 time-series로 결합",
+            "SRE: load-shedding·connection timeout·WAF/L4 rate limit은 patch 전 exposure 감소 control이지 fix 대체 수단 아님"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "Cloudflare 공개문은 patch의 대체가 아니라는 경계를 명시함. 취약점 공개 전에 노출된 자산은 patch 뒤에도 account creation, plugin/theme file 변경, scheduled task, database 이상, credential use를 조사해야 하며, 의심 artifact는 삭제 전에 보존해야 함.",
+          "heading": "보안·운영 관점",
+          "body": "DoS advisory 대응에서는 취약 library version과 실제 service process를 분리하지 않는 것이 운영 실패 원인이 됨. package update 뒤 graceful reload가 실패하거나 long-lived worker가 이전 library를 유지하면 외부 scanner 결과와 runtime risk가 엇갈릴 수 있음. change window는 TLS client compatibility와 certificate reload 영향도 함께 다뤄야 함.",
           "items": [
-            "피할 것: CDN rule 적용 뒤 origin·admin direct access와 pre-patch telemetry를 미점검으로 종료하는 판단",
-            "조사: REST batch request 급증, 비정상 parameter, PHP process, 새 관리자, file hash·database error를 patch 전 기간에 hunt",
-            "복구: 침해 의심 시 WordPress secret·admin credential·database 접근권한 회전, file integrity와 backup restore 검증"
+            "피할 것: package upgrade 성공만 확인하고 nginx·Envoy·Apache·application runtime restart 증적을 남기지 않는 판단",
+            "통제: public endpoint rate limit, per-process memory cgroup, queue backpressure, connection timeout을 patch 전후에 검증",
+            "감사: package advisory, image digest, process PID/start time, loaded library, rollout·rollback 결과를 change evidence로 보존"
           ]
         },
         {
-          "heading": "복구 로드맵",
-          "body": "먼저 영향 자산과 우회 경로를 확인하고, 다음으로 WAF와 patch를 적용하면서 evidence를 수집함. 이후 application 기능·cache·admin access를 검증하고, 의심 신호가 있으면 credential rotation과 restore decision을 incident owner가 실행하는 순서가 필요함.",
+          "heading": "도입·복구 로드맵",
+          "body": "첫 단계는 edge와 service-mesh를 포함한 TLS endpoint inventory 및 OpenSSL provenance 확인임. 다음은 supported fix 또는 vendor backport를 staging에서 검증하고 phased restart를 수행하는 단계임. 마지막은 synthetic handshake load와 production telemetry로 RSS trend와 error budget을 검증해 mitigation을 제거하는 순서임.",
           "items": [
-            "1단계: core version·cache 조건·Cloudflare proxy·origin exposure·backup freshness inventory 작성",
-            "2단계: WAF coverage 확인, 수정 버전 적용, REST·web·DB·file·admin 로그 evidence 보존",
-            "3단계: functional test·cache purge·restore drill·credential rotation·origin ACL 재검증과 rollback 종료 기준 적용"
+            "1단계: endpoint·proxy·sidecar·base image·OpenSSL package·loaded process·memory limit mapping 작성",
+            "2단계: patch/backport 검증, canary restart, certificate·ALPN·mTLS·health check 및 rollback 조건 확인",
+            "3단계: handshake load, RSS·OOM·restart·TLS error·latency 관측과 rate-limit capacity 재검증"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "웹팀은 plugin·theme·payment·search·cache integration의 호환성을 검증하고, 보안팀은 exploit telemetry·origin exposure·integrity evidence를 확인해야 함. emergency patch는 자동 업데이트 상태가 아니라 실제 build version과 health check 결과로 종료 판단해야 함.",
+          "body": "개발팀은 application image와 TLS SDK dependency를 제출하고, 플랫폼 팀은 ingress·gateway·mesh sidecar 및 node package를 대조해야 함. SRE는 deployment rollout이 새 library를 실제 사용하게 했는지 process start time과 linkage로 확인하고, 보안팀은 external exposure와 DoS telemetry 보존 기간을 명시해야 함.",
           "items": [
-            "WordPress version·persistent object cache·Cloudflare proxy mode·origin ACL을 자산별로 대조",
-            "WAF rule ID·URI·source IP·action·origin response와 REST batch endpoint access log 보존",
-            "admin account·plugin/theme file·cron·database error·PHP process의 pre-patch anomaly hunt",
-            "backup restore·credential rotation·cache purge 뒤 checkout·login·editor·API health와 error rate 확인"
+            "reverse proxy·API gateway·ingress·service mesh·application runtime의 version과 restart owner 확인",
+            "container image digest·SBOM·OS package changelog·vendor backport·`ldd` 또는 runtime linkage evidence 확인",
+            "connection rate·RSS·OOM·TLS handshake error·p95 latency·restart·autoscaling event의 baseline과 alert threshold 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "WAF는 patch window를 줄이지만 origin과 이미 실행된 코드를 복구하지 않음. 인터넷 노출 CMS는 edge mitigation, verified patch, origin isolation, forensic telemetry, restore readiness를 동시에 운영해야 함.",
+          "body": "HollowByte 대응의 실무 단위는 CVE 문자열 하나가 아니라 TLS termination 전체의 runtime memory behavior임. 패치가 가능한 branch를 적용하고 실제 process를 교체한 뒤, load와 telemetry로 memory pressure가 재현되지 않는지 확인해야 가용성 risk를 닫을 수 있음.",
           "items": [
-            "발표 포인트: **proxy coverage**와 수정 버전은 서로 다른 성공 조건이며 한쪽만 확인하면 위험 경로 잔존",
-            "팀 액션: 다음 CMS change review에서 origin bypass·version evidence·WAF telemetry·integrity hunt·restore drill을 필수 gate로 승인"
+            "발표 포인트: **131KB 사전 allocation**과 16GB 실험 수치는 threat-model input이며 production capacity 보장 수치가 아님",
+            "팀 액션: 다음 TLS platform review에서 library provenance, restart evidence, RSS/OOM dashboard, rate-limit·rollback drill을 필수 gate로 승인"
           ]
         }
       ]
