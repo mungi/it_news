@@ -2,14 +2,14 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-19 15:45",
+  "last_updated_kst": "2026-07-19 23:53",
   "audience": "developers and engineers",
   "executive_summary": [
+    "SonicWall SMA 1000: Volexity 조사 기반 UTA0533 root 장악·webshell·LDAP traffic 수집 흔적을 firmware hotfix와 분리해 `/wsproxy`·Unit route·startup persistence·VPN/IAM credential 회전으로 조사.",
     "WordPress wp2shell 공개 PoC 보도: 6.8+ SQL injection·6.9+ REST RCE 연쇄를 WAF 완화와 분리해 수정 버전·origin 우회·침해 로그로 즉시 점검.",
     "NadMesh 봇넷: ComfyUI·Ollama 등 공개 AI endpoint와 MCP를 cloud credential·Kubernetes token 수집 표적으로 취급하고, public exposure·egress·secret rotation을 함께 차단.",
     "Amazon OpenSearch UI one-click migration: saved object 이전 전 tenant·workspace 권한과 query·alert·rollback을 canary로 검증.",
-    "CISA KEV SharePoint RCE: 패치 전 실제 악용 확인, AMSI·침해 hunt·IIS machine key 회전을 한 incident workflow로 운영.",
-    "메타·앤트로픽 AI compute 임대 논의 보도: 최대 100억달러·2년 조건은 초기 협상 정보로 분류하고, 계약·용량·리전·SLO 공식 확인 전 capacity forecast 반영 금지."
+    "CISA KEV SharePoint RCE: 패치 전 실제 악용 확인, AMSI·침해 hunt·IIS machine key 회전을 한 incident workflow로 운영."
   ],
   "deep_dives": [
     {
@@ -187,6 +187,103 @@
   ],
   "items": [
     {
+      "id": "news-164",
+      "title_ko": "SonicWall SMA 1000 제로데이 연쇄: UTA0533의 root 장악·webshell·LDAP 자격증명 수집 분석",
+      "title_original": "SonicWall SMA Zero-Days Exploited Before Disclosure to Gain Root Access",
+      "summary": "핵심: Volexity incident response 분석을 인용한 보도는 UTA0533이 공개 전 SMA 1000의 `CVE-2026-15409` SSRF·`CVE-2026-15410` command injection을 연쇄해 root 권한을 얻고 webshell·persistence를 남겼다고 설명. 대응: hotfix 적용과 함께 `/wsproxy`·101 WebSocket·NGINX Unit route·`ctrl-service`·LDAP traffic 흔적을 hunt하고, 침해 의심 장비는 재배포·자격증명 회전까지 수행 필요.",
+      "detail": "The Hacker News는 Volexity의 incident response 분석을 인용해 UTA0533이 SonicWall SMA 1000의 두 제로데이를 공개 전부터 연쇄 악용했다고 보도했다. Volexity는 조사한 두 appliance에서 root 실행을 허용하는 setuid binary, legitimate process에 주입되는 Java webshell·HTTP proxy, startup script와 NGINX Unit route 변경, LDAP 평문 traffic을 수집하는 `tcpdump` 실행 흔적을 확인했다. 공개된 증거는 해당 조사 대상 장비의 침해 분석이며 모든 SMA 1000 또는 특정 조직의 광범위한 lateral movement를 뜻하지 않는다. 패치 버전 `12.4.3-03453`·`12.5.0-02835` 적용 뒤에도 appliance 신뢰성과 인증정보 노출 여부를 별도 조사해야 한다.",
+      "why_it_matters": "외부 VPN appliance의 root 장악은 원격접속 계정·세션·내부 인증 traffic을 같은 경계에서 노출할 수 있음. patch는 재침투 경로를 닫지만 기존 webshell·startup persistence·captured credential을 제거하지 않으므로, VPN gateway를 단순 네트워크 장비가 아닌 침해된 identity control point로 다뤄야 함.",
+      "engineering_implication": "네트워크·IAM·SOC 팀은 SMA 1000 model·firmware·internet exposure·admin SSH 접근을 우선 inventory로 대조하고, `extraweb_access.log`·`access_servers.log`·`ctrl-service.log`·`/var/lib/unit/conf.json`·`/etc/init.d/workplace`와 process·disk·memory evidence를 보존 필요. 침해 지표가 있으면 clean reimage 또는 redeploy, VPN·LDAP·관리자 credential과 MFA token 회전, internal service 접근 로그 hunt를 하나의 incident 종료 기준으로 관리 필요.",
+      "korea_implication": "국내 원격근무·협력사 접속에 SMA 1000을 사용하는 조직은 유지보수 창에 firmware update만 배정하지 말고 IAM credential·MFA 재등록·LDAP 계정 영향·VPN failover를 함께 검증 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "SonicWall",
+        "VPN",
+        "Zero-Day",
+        "SSRF",
+        "Remote Access"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 98,
+      "published_kst": "2026-07-19 22:18",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/sonicwall-sma-zero-days-exploited.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgLomYbwprpYWKVxrxKRh3hFiGRWdVOb7WAVbhJjf_fYQAba4wVZT1PpwWAL-ZDb40MZp9T43-dj8Fru-eOjiKcrAoh5sOdyKGUUAVwK9iifXl70EvgORPztxnvYXc9HA8trGKcRZGob8DYJxUZBg0zlZFUTiRGPXGFheSbKLUoG53kZ9HR6XxyJs9GEtcA/s1600/sma-sonicwall.jpg",
+      "related_links": [
+        {
+          "title": "Volexity primary incident-response analysis — Proxying to Compromise: SonicWall SMA 0-day Exploitation",
+          "url": "https://www.volexity.com/blog/2026/07/17/proxying-to-compromise-sonicwall-secure-mobile-access-0-day-exploitation/"
+        },
+        {
+          "title": "SonicWall PSIRT advisory — SMA 1000 zero-day vulnerabilities",
+          "url": "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014"
+        },
+        {
+          "title": "Rapid7 technical analysis and PoC reference",
+          "url": "https://www.rapid7.com/blog/post/etr-rapid7-mdr-team-discovers-new-sonicwall-sma1000-zero-days-being-actively-exploited-cve-2026-15409-cve-2026-15410/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Volexity의 incident response 분석을 인용해 UTA0533이 SonicWall SMA 1000 VPN appliance를 공개 전부터 제로데이 연쇄로 침해했다고 보도함. Volexity는 초기 침해 뒤 의심 인증과 내부 이동 시도를 관측해 조사를 시작했으며, earliest observed compromise는 2026년 6월 22일로 제시함.",
+          "items": [
+            "대상: SMA 1000 `6210`, `7210`, `8200v` 모델의 조사 대상 appliance",
+            "결함: `CVE-2026-15409` SSRF와 `CVE-2026-15410` command injection 연쇄를 통한 root 권한 획득 분석",
+            "경계: 확인된 침해·artifact는 Volexity가 조사한 2대 appliance의 사례이며 모든 배포 환경의 침해 확정 근거 아님"
+          ]
+        },
+        {
+          "heading": "침해 체인과 root 권한 경로",
+          "body": "분석은 비인증 `/wsproxy` 요청으로 localhost-only service에 WebSocket tunnel을 만들고, CouchDB·control service 경로를 거쳐 file write와 privilege escalation을 수행하는 흐름을 제시함. 물리 appliance에서 local hardware identifier로 파생되는 control-service password의 별도 약점도 설명되나, 조사된 incident에서 그 우회가 사용됐다고 단정하지 않음.",
+          "items": [
+            "초기 접근: `bmID=-3389` 계열 값·SMA Connect Agent User-Agent·`/wsproxy`와 localhost `1050`·`8188` port 연결 조건",
+            "권한 상승: `remove_hotfix` workflow의 path traversal을 통해 root context command execution으로 이어지는 `CVE-2026-15410` 분석",
+            "경계: hardware identifier 기반 인증 우회는 물리 device에만 해당하며 incident에서 실제 사용된 경로로 확정되지 않음"
+          ]
+        },
+        {
+          "heading": "확인된 persistence와 자격증명 위험",
+          "body": "Volexity는 root command 실행을 허용하는 setuid `xzfind`, legitimate SonicWall process에 주입되는 Suo5 HTTP proxy·ORANGETAIL Java webshell, startup script와 NGINX Unit configuration 변경을 확인함. 다른 appliance에는 LDAP 평문 traffic에서 username·password를 찾기 위한 `tcpdump` 실행 artifact가 남아 있었음.",
+          "items": [
+            "지속성: `/etc/init.d/workplace` startup script 수정과 `/var/lib/unit/conf.json`의 악성 route 추가 흔적",
+            "webshell: `/__api__/login`·`/__api__/logout`는 임의 경로 재작성 사례이며 환경별 URI는 달라질 수 있는 hunting signal",
+            "자격증명: LDAP traffic capture artifact는 조사 대상에서의 행위 증거이며 모든 user credential 탈취 규모를 확정하지 않음"
+          ]
+        },
+        {
+          "heading": "패치와 조사 범위",
+          "body": "Volexity는 SonicWall hotfix가 `12.4.3-03453`와 `12.5.0-02835`에 포함됐다고 설명함. firmware update는 재악용 방어의 시작점이며, 이미 root-level artifact가 남은 appliance는 patch만으로 신뢰 상태를 회복할 수 없음.",
+          "items": [
+            "패치: SMA 1000 firmware·hotfix version과 실제 active/standby appliance 적용 상태 대조",
+            "로그: `extraweb_access.log`의 `/wsproxy`·`bmID=-3389`·101 response와 `access_servers.log`의 WebSocket backend connection 조사",
+            "실행: `ctrl-service.log`의 `remove_hotfix` path traversal, `/tmp` staging file, unit route·startup script 변경을 incident evidence로 보존"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "VPN appliance는 public ingress, remote-user identity, 내부 service connectivity를 한 장비에 결합함. 공격자가 root 권한을 얻으면 network segmentation만으로 session·credential·configuration exposure를 설명할 수 없으므로, gateway 자체를 identity incident의 범위에 포함해야 함.",
+          "items": [
+            "우선순위: internet-facing SMA 1000과 privileged admin·LDAP·directory integration이 있는 asset 우선 조치",
+            "운영 경계: hotfix compliance와 forensic clean state를 분리된 종료 조건으로 관리",
+            "탐지 경계: reboot 뒤 memory-resident artifact가 사라질 수 있어 수집 전 재부팅 금지와 disk·memory 증적 보존 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "SMA 1000 대응은 네트워크팀의 firmware change만으로 끝나지 않음. SOC hunting, IAM credential reset, VPN high-availability failover, internal lateral-movement review를 단일 incident owner와 종료 기준으로 묶어야 함.",
+          "items": [
+            "팀 액션: asset·firmware·internet exposure·administrator·directory integration·backup image를 1차 inventory로 확정",
+            "팀 액션: IoC 또는 의심 log가 있으면 clean reimage/redeploy, VPN·admin·LDAP credential 및 MFA token 회전, session invalidation 실행",
+            "팀 액션: patch 뒤 VPN login failure, WebSocket·LDAP anomaly, privileged session, NGINX Unit config diff와 failover health를 종료 지표로 확인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-182",
       "title_ko": "메타·앤트로픽, 최대 100억달러 AI 컴퓨팅 임대 논의 보도",
       "title_original": "Meta and Anthropic discuss up to $10B AI infrastructure lease, AI Times reports",
@@ -250,7 +347,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-180",
@@ -335,7 +432,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-185",
@@ -410,7 +507,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-186",
@@ -490,7 +587,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-181",
@@ -564,7 +661,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-183",
@@ -635,7 +732,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-179",
@@ -719,7 +816,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-184",
@@ -799,7 +896,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-178",
@@ -896,7 +993,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-176",
@@ -966,7 +1063,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-177",
@@ -1032,7 +1129,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-173",
@@ -1107,7 +1204,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-172",
@@ -1177,7 +1274,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-171",
@@ -1257,7 +1354,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-175",
@@ -1332,7 +1429,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-174",
@@ -1439,7 +1536,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-170",
@@ -1523,7 +1620,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-169",
@@ -1608,7 +1705,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-167",
@@ -1695,7 +1792,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-168",
@@ -1787,75 +1884,6 @@
           "items": [
             "팀 액션: 영향 package/version을 artifact proxy에서 block하고 CI·developer endpoint의 import·IPFS·persistence evidence를 조사",
             "팀 액션: release branch의 direct push 제한, mandatory review, environment approval, provenance verification과 rollback runbook을 함께 시험"
-          ]
-        }
-      ],
-      "rank": 20
-    },
-    {
-      "id": "news-164",
-      "title_ko": "SonicWall SMA 1000 제로데이 2건 활성 악용: SSRF·관리자 명령 실행 경로 긴급 차단",
-      "title_original": "Two SonicWall SMA 1000 Zero-Days Exploited, One Could Enable Admin Commands",
-      "summary": "핵심: SonicWall이 SMA 1000 어플라이언스의 제로데이 2건이 실제 악용 중이라고 경고. 대응: CVSS **10.0 SSRF**와 관리 콘솔의 인증 후 코드 주입 결함을 hotfix 적용, IoC 조사, 재이미징·자격증명 회전까지 하나의 침해 대응으로 처리 필요.",
-      "detail": "SonicWall은 SMA 1000 계열의 CVE-2026-15409와 CVE-2026-15410이 실제 악용된 사례를 조사했다고 공지했다. 원격 비인증 SSRF와 AMC의 인증 후 관리자 명령 실행 경로가 함께 공개됐으며, 패치만 적용하지 말고 로그·설정 파일 IoC를 조사해 감염 징후가 있으면 물리 장비 재이미징 또는 가상 장비 재배포와 비밀번호·TOTP 재설정을 수행해야 한다.",
-      "why_it_matters": "원격 접속 어플라이언스는 외부 인증·관리 경계에 놓여 있어 침해 시 내부 이동과 계정 탈취의 진입점이 될 수 있다. 활발한 악용 경고가 나온 상황에서는 자산 식별과 패치 완료만으로 종료하지 않고 기존 침해 여부를 확인해야 한다.",
-      "engineering_implication": "SMA 1000 자산을 인터넷 노출·관리 콘솔 접근·관리자 계정 기준으로 우선순위화하고, 지정 hotfix 버전 적용 전후에 `extraweb_access.log`, `ctrl-service.log`, `/var/lib/unit/conf.json` IoC를 수집·보존한 뒤 재이미징 조건과 자격증명 회전을 runbook으로 실행 필요.",
-      "korea_implication": "국내 기업·공공기관의 원격근무·협력사 접속에 SMA 1000이 사용되는 경우 네트워크팀과 IAM팀이 유지보수 창과 계정·MFA 재설정을 함께 준비할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "SonicWall",
-        "VPN",
-        "Zero-Day",
-        "SSRF",
-        "Remote Access"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-07-15 14:30",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/two-sonicwall-sma-1000-zero-days.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg0n94FUIdljCnLvlh0SNz5l8xDWbdDqmk7OesE7HAKxrRAMUMIfXpppuMBoI-7F0Q1PB7eXPRjrfg9fgZTTVj3JY5jKsr1Ebheb2mU65p4MUVYbs59lCPPWCBQ4LVYZnoZ0o6nRkoBQitrwwnyLVQc2oYJ41zVjPS6_HchwIR-U8EuWrOdPpl1-Y9Rw1Lm/s1600/sonicwall-patches.jpg",
-      "related_links": [
-        {
-          "title": "SonicWall PSIRT advisory — SMA 1000 zero-day vulnerabilities",
-          "url": "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "SonicWall이 Secure Mobile Access SMA 1000 계열 두 취약점의 실제 악용 사례를 조사했다고 경고함. 한 건은 비인증 원격 SSRF, 다른 한 건은 Appliance Management Console의 인증 후 코드 주입 경로임.",
-          "items": [
-            "대상: `CVE-2026-15409`는 원격 비인증 공격자가 의도하지 않은 위치로 어플라이언스 요청을 유도할 수 있는 SSRF 결함",
-            "대상: `CVE-2026-15410`은 AMC의 인증 후 코드 주입으로 특정 조건에서 관리자 권한 OS 명령 실행 가능",
-            "상태: SonicWall이 두 결함의 활성 악용 사례를 확인했다고 밝힌 조건"
-          ]
-        },
-        {
-          "heading": "패치와 침해 조사 범위",
-          "body": "공급사 권고는 hotfix 적용과 포렌식 조사를 함께 요구함. 취약점 차단 후에도 기존 침해자가 남긴 route·로그·세션 흔적이 있으면 장비 신뢰를 복구해야 함.",
-          "items": [
-            "패치: `12.4.3-03453` 또는 `12.5.0-02835` 이상의 platform-hotfix 제공",
-            "로그: `extraweb_access.log`의 `/__api__/login`, `/__api__/logout` HTTP 200 및 의심스러운 `/wsproxy` host·101 응답 확인",
-            "설정: `ctrl-service.log`의 path traversal 이름 hotfix rollback과 `/var/lib/unit/conf.json`의 비정상 API route 조사"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "원격접속 어플라이언스는 외부 사용자 인증과 내부 관리 경계에 위치함. 비인증 SSRF와 관리자 명령 실행 가능성이 같은 제품군에서 활성 악용되면 단순 CVSS 분류보다 노출 자산과 침해 지속성 확인이 우선임.",
-          "items": [
-            "우선순위: 인터넷 노출 SMA 1000, 관리자 콘솔 접근 허용, 고권한 계정 연동 환경을 긴급 조치 대상으로 분류 필요",
-            "한계: 기사·공급사 경고는 실제 악용을 확인하지만 조직별 침해 범위와 공격자 활동을 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "패치 완료율만으로 종료하지 말고 침해 조사와 신뢰 복구를 같은 변경 기록으로 관리해야 함. IoC가 있으면 장비 상태를 신뢰하지 않고 재배포·비밀정보 교체까지 실행하는 기준 필요.",
-          "items": [
-            "팀 액션: hotfix 적용 전후 로그·설정 파일을 증적 보존하고 SOC 탐지 규칙에 경로·상태코드 IoC 추가",
-            "팀 액션: IoC 발견 시 물리 장비 재이미징 또는 가상 장비 재배포, 사용자·관리자 비밀번호와 TOTP token 재설정 수행 필요"
           ]
         }
       ],

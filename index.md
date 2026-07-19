@@ -51,6 +51,7 @@
 - [[raw/articles/thn-microsoft-july-patch-tuesday-2026-07-15]] — 622개 CVE와 SharePoint·AD FS 활성 악용 결함, Kerberos RC4 변경 운영 점검.
 - [[raw/articles/aws-guardduty-ai-protection-2026-07-15]] — GuardDuty AI Protection의 Bedrock·SageMaker 이상 호출·비용 수확·프롬프트 주입 탐지.
 - [[raw/articles/thn-sonicwall-sma-1000-zero-days-2026-07-15]] — SonicWall SMA 1000의 활성 악용 SSRF·관리자 명령 실행 결함과 침해 복구 절차.
+- [[raw/articles/volexity-sonicwall-sma-zero-day-exploitation-2026-07-17]] — UTA0533의 SMA 1000 제로데이 연쇄·root persistence·LDAP traffic 수집 분석과 hunt 범위.
 - [[raw/articles/aitimeskr-upstage-daum-furiosa-sovereign-ai-2026-07-15]] — 다음 AI 요약의 국산 NPU·LLM 결합과 token·지연·비용 검증 조건.
 - [[raw/articles/aws-security-hub-ai-inventory-2026-07-15]] — AWS Security Hub AI inventory의 Config·SBOM·DNS 기반 AI asset 식별 범위.
 - [[raw/articles/mindgard-cursor-repository-git-exe-2026-07-15]] — Cursor Windows의 repository-root `git.exe` 자동 실행 관찰과 endpoint 완화.
