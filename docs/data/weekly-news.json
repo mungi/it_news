@@ -2,7 +2,7 @@
   "week": "2026-W30",
   "coverage_start_kst": "2026-07-13 17:00",
   "coverage_end_kst": "2026-07-20 13:00",
-  "last_updated_kst": "2026-07-19 07:31",
+  "last_updated_kst": "2026-07-19 11:35",
   "audience": "developers and engineers",
   "executive_summary": [
     "WordPress 6.8+ SQL injection·6.9+ unauthenticated REST RCE: Cloudflare WAF 완화와 별개로 수정 버전·origin 우회·침해 로그를 즉시 점검.",
@@ -408,6 +408,86 @@
       "rank": 3
     },
     {
+      "id": "news-186",
+      "title_ko": "ViteVenom: Vite 생태계를 사칭한 npm 7개 패키지의 블록체인 C2·RAT 공급망 공격",
+      "title_original": "Seven Malicious Vite npm Packages Use Blockchain C2 to Deliver a RAT",
+      "summary": "핵심: Checkmarx 분석을 인용한 The Hacker News는 Vite·`@vitejs/*` namespace를 사칭한 npm 7개 패키지가 Tron·Aptos·BNB Smart Chain을 잇는 C2로 RAT를 내려받는다고 보도. 대응: 설치 단계가 아닌 import 단계 실행 조건을 포함해 lockfile·registry log·developer workstation의 shell profile·credential을 함께 조사하고, 의심 패키지는 제거·회전·재빌드 필요.",
+      "detail": "The Hacker News는 Checkmarx의 ViteVenom 분석을 인용해 Vite frontend tooling 사용자를 겨냥한 npm 7개 패키지와 ChainVeil 계열의 공통 tier-2 infrastructure를 보도했다. 보도된 패키지는 6월 29일~7월 3일 게시됐고 `@vitejs/*`와 비슷한 scoped name을 사용한다. 악성 코드는 install이 아니라 import 시 blockchain transaction에서 다음 단계 payload pointer를 가져와 복호화한 뒤 RAT를 실행하며, Tron retrieval 실패 시 Aptos와 HTTP fallback을 사용한다고 설명한다. 특정 조직의 설치·침해는 확인하지 않으며, Checkmarx 원문은 이번 실행에서 HTTP 403으로 직접 열람되지 않아 THN 보도 범위로 한정한다.",
+      "why_it_matters": "frontend build dependency는 CI·developer workstation·release artifact를 연결함. import-time 실행은 install hook만 감시하는 통제를 우회할 수 있어 lockfile diff, package provenance, runtime egress, workstation persistence를 한 incident 범위로 묶어야 함.",
+      "engineering_implication": "개발 플랫폼·보안 팀은 `@vitejs/*`와 유사한 scope의 신규 dependency를 namespace allowlist·publisher provenance·version pinning으로 검증하고, 설치 이력이 있는 repository는 lockfile·CI cache·shell profile·registry token·cloud credential을 우선 조사 필요. 단순 package 삭제 전에 build artifact와 endpoint telemetry를 보존하고 clean rebuild와 credential rotation을 수행 필요.",
+      "korea_implication": "국내 웹·커머스 조직도 외주·협력사 개발 환경까지 private registry·npm token·CI secret 권한을 분리하고, 소스코드 반출과 package download audit을 계약·보안 점검 항목으로 관리 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "npm",
+        "Vite",
+        "Supply Chain",
+        "RAT",
+        "DevTools"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-07-18 03:54",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/seven-malicious-vite-npm-packages-use.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgA07xA1INXGKM7Z2LQ6zk2IFE_Hb_aDQNHmSfPtJkZY5Gzo2U2_cyflorBsU76hbXK8SwKXR5AmkK5dAAd9uw0wRh6gYaC-5ZPjT6kEdvE7rO-5G0TxXm8a-eytoygZOMuSG-aOnYkC_zTVbnxSq7zxaIFYyLcegbQ59WVztRO-y3MHmce7XuDz2SdVsKA/s1600/vite-npm.jpg",
+      "related_links": [
+        {
+          "title": "Checkmarx: Sequel to ChainVeil — npm malware targets Vite ecosystem",
+          "url": "https://checkmarx.com/zero-post/sequel-to-chainveil-npm-malware-targets-vite-ecosystem/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Checkmarx가 ViteVenom으로 명명한 npm 공급망 공격을 보도함. 보도 대상은 Vite frontend tooling 사용자를 겨냥해 `@vitejs/*` namespace와 유사한 이름을 사용한 7개 패키지이며, 해당 패키지의 설치·감염 조직은 기사에서 확인하지 않음.",
+          "items": [
+            "대상: Vite 개발자를 겨냥한 **7개 npm 패키지**의 악성 dependency campaign 보도",
+            "게시: 패키지는 2026년 6월 29일~7월 3일 npm에 게시된 것으로 기사에 제시",
+            "경계: 보도는 악성 패키지 분석이며 특정 조직의 설치·credential 탈취·피해 규모 확정 근거 아님"
+          ]
+        },
+        {
+          "heading": "사칭 이름과 실행 조건",
+          "body": "보도된 이름은 scope를 사용해 공식 `@vitejs/*` namespace처럼 보이게 만드는 방식임. ChainVeil의 unscoped typosquat와 달리 scoped package가 신뢰 신호처럼 보일 수 있으며, 악성 동작은 install hook이 아니라 import 시점에 시작되는 조건으로 설명됨.",
+          "items": [
+            "식별: `@uw010010/vite-tree`, `@vite-tab/tab`, `@vite-ln/build-ts` 등 7개 이름을 dependency history에서 대조",
+            "실행: install-time이 아닌 import-time loader로 동작해 install hook 중심 탐지의 관측 공백 가능성",
+            "영향: local development·test·CI build에서 실제 import가 일어난 job과 artifact를 별도로 추적 필요"
+          ]
+        },
+        {
+          "heading": "블록체인 C2와 RAT 전달 경로",
+          "body": "THN은 ChainVeil과의 공통 tier-2 infrastructure를 근거로 Tron, Aptos, BNB Smart Chain을 잇는 다단 C2를 설명함. loader는 Tron transaction data에서 BSC transaction hash를 얻고 encrypted payload를 복호화하며, Tron 경로 실패 시 Aptos와 HTTP fallback을 사용한다고 보도됨.",
+          "items": [
+            "C2: Tron·Aptos·BNB Smart Chain transaction data를 payload pointer로 사용하는 구조 보도",
+            "기능: reverse shell, credential harvesting, file exfiltration, persistent backdoor injection 가능 RAT 전달 분석",
+            "제한: public blockchain pointer 사용이 takedown을 어렵게 할 수 있으나 모든 endpoint의 성공 감염을 의미하지 않음"
+          ]
+        },
+        {
+          "heading": "조사와 격리 순서",
+          "body": "의심 패키지 제거만으로 import 이후 실행된 payload와 유출 credential 위험을 닫을 수 없음. dependency lockfile, registry download, CI cache, endpoint process·egress, shell startup file 변경을 같은 시간선으로 보존한 뒤 clean rebuild와 credential 회전을 수행해야 함.",
+          "items": [
+            "1단계: package manifest·lockfile·npm cache·private registry audit에서 7개 package와 유사 scope 설치 이력 검색",
+            "2단계: import 실행 CI·developer endpoint의 process·DNS·HTTP egress와 `.bashrc`·`.zshrc`·`.profile` 변경 조사",
+            "3단계: 악성 package 제거, clean environment rebuild, npm·Git·cloud credential 회전과 release artifact 재서명 수행"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Vite dependency 통제는 install 단계의 malware scan만으로 충분하지 않음. namespace 유사성, publisher provenance, import-time code execution, CI secret reachability를 release gate로 묶고, SBOM이 실제 lockfile·artifact와 일치하는지 검증하는 운영 과제임.",
+          "items": [
+            "팀 액션: official scope allowlist·publisher provenance·exact version pinning을 dependency admission policy로 적용",
+            "팀 액션: CI의 npm token·cloud credential·release signing key를 least privilege와 short-lived credential로 분리",
+            "팀 액션: suspicious dependency incident runbook에 lockfile diff·egress hunt·shell persistence·artifact rebuild·secret rotation 순서 반영"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-181",
       "title_ko": "Amazon OpenSearch UI, legacy Dashboards의 tenant·saved object를 one-click migration으로 이전 지원",
       "title_original": "Amazon OpenSearch UI now supports one-click dashboard migration",
@@ -479,7 +559,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-183",
@@ -550,7 +630,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-179",
@@ -634,7 +714,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-184",
@@ -714,7 +794,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-178",
@@ -811,7 +891,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-176",
@@ -881,7 +961,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-177",
@@ -947,7 +1027,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-173",
@@ -1022,7 +1102,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-172",
@@ -1092,7 +1172,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-171",
@@ -1172,7 +1252,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-175",
@@ -1247,7 +1327,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-174",
@@ -1354,7 +1434,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-170",
@@ -1438,7 +1518,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-169",
@@ -1523,7 +1603,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-167",
@@ -1610,7 +1690,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-168",
@@ -1705,7 +1785,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-164",
@@ -1774,7 +1854,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-165",
@@ -1847,11 +1927,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-162",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -1939,7 +2019,7 @@
     },
     {
       "id": "news-163",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -2096,7 +2176,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-161",
@@ -2162,7 +2242,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-159",
@@ -2246,7 +2326,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-160",
@@ -2330,7 +2410,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-158",
@@ -2399,11 +2479,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-157",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -2486,7 +2566,7 @@
     },
     {
       "id": "news-156",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -2568,7 +2648,7 @@
     },
     {
       "id": "news-155",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
       "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
       "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
@@ -2640,7 +2720,7 @@
     },
     {
       "id": "news-154",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
       "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
       "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
@@ -2712,7 +2792,7 @@
     },
     {
       "id": "news-151",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "RedHook 안드로이드 악성코드, Wireless ADB를 악용해 루팅 없이 shell 권한 확보",
       "title_original": "RedHook Android malware now uses Wireless ADB for shell access",
       "summary": "핵심: RedHook 최신 변종은 Accessibility 권한을 이용해 Developer Options와 Wireless Debugging을 켜고 127.0.0.1 ADB pairing으로 shell UID 2000 권한을 확보함. 영향: 기업 Android 단말은 MDM 정책에서 Accessibility 남용, Developer Options 활성화, 무선 디버깅 상태를 탐지·차단 필요.",
@@ -2856,11 +2936,11 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-152",
-      "rank": 35,
+      "rank": 36,
       "title_ko": "SK하이닉스, 2027년 메모리 공급난 전망…HBM·DRAM capacity가 AI 인프라 병목으로 부상",
       "title_original": "SK hynix CEO warns 2027 could bring the worst memory shortage in industry history",
       "summary": "핵심: SK하이닉스 곽노정 사장은 AI 데이터센터와 생성 AI 확산으로 2027년 메모리 공급이 업계 사상 가장 어려운 구간이 될 수 있다고 밝힘. 영향: GPU 조달만으로 AI capacity를 보장하기 어렵고 HBM·DRAM 장기계약, 전력·용수·웨이퍼 capacity까지 포함한 인프라 계획 필요.",
@@ -2993,7 +3073,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-148",
@@ -3058,7 +3138,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-146",
@@ -3122,7 +3202,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-149",
@@ -3187,11 +3267,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-153",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "NVIDIA RoboLab 공개, 로봇 파운데이션 모델 평가를 성공률 대신 진단 가능한 benchmark로 전환",
       "title_original": "How to Evaluate General-Purpose Robot Policies for Real-World Deployment",
       "summary": "핵심: NVIDIA Research는 로봇 정책 평가의 시각·과제 도메인 중복, benchmark 포화, binary success 한계를 줄이기 위해 RoboLab 시뮬레이션 평가 플랫폼을 소개함. 영향: physical AI 팀은 성공률 하나보다 task generation, partial credit, trajectory quality, failure event log, confidence interval을 배포 readiness 기준으로 삼아야 함.",
@@ -3320,7 +3400,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-143",
@@ -3388,7 +3468,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-144",
@@ -3456,7 +3536,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-141",
@@ -3526,7 +3606,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-139",
@@ -3591,11 +3671,11 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-137",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "NEvo, 뇌 디지털 트윈을 보상 모델로 특정 시각 피질을 최대 활성화하는 AI 영상 생성",
       "title_original": "Evolving AI videos to maximally activate targeted brain areas",
       "summary": "핵심: NEvo는 시각 피질 반응을 예측하는 뇌 디지털 트윈을 보상 모델로 삼아 특정 ROI 활성도를 높이는 2초 영상을 진화적으로 생성함. 영향: 생성형 영상·추천 시스템이 인간 반응 최적화와 결합될 때 개인화 몰입, 실험 윤리, 안전 평가 기준이 제품 설계 변수로 전환됨.",
@@ -3728,11 +3808,11 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-138",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "AI 2040 Plan A, 초지능 경쟁을 늦추기 위한 연구 투명성·컴퓨트 억제 시나리오 제안",
       "title_original": "AI 2040: Plan A",
       "summary": "핵심: AI 2040 Plan A는 AI R&D 완전 투명성, 검증 가능한 안전장치, 컴퓨트 기반 상호 억제를 결합해 초지능 경쟁을 2040년까지 늦추자는 정책 시나리오임. 영향: frontier model 운영자는 모델 성능뿐 아니라 내부 사용 공개, compute budget, 수출통제, 검증 기술을 governance architecture로 다뤄야 함.",
@@ -3865,75 +3945,6 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 49
-    },
-    {
-      "id": "news-134",
-      "title_ko": "AI 스크레이퍼 트래픽, 독립 웹사이트의 개방 운영 비용을 압박",
-      "title_original": "AI 스크레이퍼 공격으로 유지가 어려워지는 개방형 웹",
-      "summary": "핵심: LWN 사례를 정리한 GeekNews GN+는 LLM 학습 데이터 수집형 스크레이퍼가 주거용 프록시와 감염 기기를 이용해 독립 사이트의 차단 정책을 우회한다고 설명. 영향: Anubis 작업증명, CAPTCHA, 로그인·유료 장벽, 데이터 오염 도구가 대응책으로 쓰이지만 검색엔진·Internet Archive·실제 독자 접근성을 함께 해치는 운영 과제.",
-      "detail": "대규모 AI 학습용 스크레이핑은 단순 크롤러가 아니라 수백만 개 주거용 IP와 위장 user-agent를 쓰는 분산 트래픽 문제로 확대됨. 사이트 운영자는 요청 비용, 봇 판별, 독자 접근성, 검색 노출, 보관 접근성 사이에서 방어 수준을 조정해야 하는 상태임.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GeekNews GN+가 LWN의 AI 스크레이퍼 공격 경험을 정리하며 독립 웹사이트의 개방 운영 비용 상승을 설명함.",
-          "items": [
-            "대규모 언어 모델 훈련 데이터 수집 수요가 1년 넘게 증가하며 독립 웹사이트 트래픽 부담이 커진 상황임",
-            "공격자는 수백만 개 일반·모바일 기기로 구성된 주거용 프록시를 사용하고 IP당 요청을 적게 나눠 기존 IP 차단을 무력화함",
-            "user-agent를 위장하고 이미지·CSS 요청을 생략하는 방식으로 사람 접근처럼 보이게 만든 뒤 빠르게 IP를 바꾸는 패턴 확인"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "문제의 본질은 크롤링 허용 여부보다 봇 판별 비용과 정상 사용자 피해를 동시에 관리해야 하는 운영 리스크임.",
-          "items": [
-            "Google의 IPIDEA·NetNut 해체 이후 LWN 스크레이퍼 트래픽이 일시적으로 줄었다가 다시 증가한 사례 제시",
-            "악성코드, 취약한 미디어 스트리밍 기기, 무료 VPN, 앱 SDK가 주거용 프록시망 구성에 쓰이는 경로 확인",
-            "Anubis 작업 증명, CAPTCHA, 로그인·유료 장벽, 데이터 오염 도구가 방어책으로 쓰이지만 검색엔진·Internet Archive·실제 독자 접근성을 저해할 가능성 존재"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AI 데이터 수집 비용이 콘텐츠 제작자와 사이트 운영자에게 전가되면 개방형 웹의 접근 모델이 방어벽 중심으로 이동할 수 있음.",
-          "items": [
-            "작은 기술 매체와 문서 사이트는 CDN·서버 비용, bot mitigation 비용, 운영자 대응 시간을 동시에 부담해야 함",
-            "무차별 방어는 정상 독자, 검색 노출, 장기 보존 접근성을 낮춰 공개 지식 생태계의 품질을 약화할 리스크",
-            "AI 서비스 공급자와 데이터 수집 업체의 책임·허용 범위·robots 정책 집행 문제가 인프라 운영 이슈로 전환됨"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "웹·플랫폼팀은 AI bot 트래픽을 보안 이벤트와 비용 이벤트로 동시에 다루는 정책이 필요함.",
-          "items": [
-            "bot traffic 예산, rate limit, proof-of-work, CDN rule, 로그 샘플링을 사이트별 SLO와 함께 설계 필요",
-            "검색엔진·아카이브·파트너 crawler allowlist와 unknown residential proxy traffic 차단 기준을 분리 필요",
-            "콘텐츠 API·정적 mirror·라이선스 데이터 제공 같은 합법적 수집 경로를 검토하되 무단 scrape 비용은 별도 측정 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "AI 데이터 수집 경쟁이 웹사이트 운영비와 접근성 정책을 바꾸며, 개발자 문서·기술 매체·오픈 지식 사이트의 공개 모델을 압박함.",
-      "engineering_implication": "플랫폼팀은 AI scraper traffic을 bot mitigation, CDN 비용, origin 보호, 검색·아카이브 접근성 사이의 정책 문제로 관리해야 함.",
-      "category": "Infra",
-      "tags": [
-        "AI",
-        "Web",
-        "Infra",
-        "Security",
-        "Open Web"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-07-11 18:02",
-      "source_name": "GeekNews GN+",
-      "source_url": "https://news.hada.io/topic?id=31323",
-      "image_url": "https://social.news.hada.io/topic/31323",
-      "related_links": [
-        {
-          "title": "LWN 원문",
-          "url": "https://lwn.net/SubscriberLink/1080822/990a8a5e2d379085/"
-        }
-      ],
       "rank": 50
     }
   ]
