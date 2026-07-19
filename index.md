@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-19 | Total pages: 184
+> Last updated: 2026-07-19 | Total pages: 185
 
 ## Entities
 
@@ -26,7 +26,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 176건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 177건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/thn-wp2shell-wordpress-core-rce-2026-07-18]] — WordPress `wp2shell` 결함 연쇄·공개 PoC 보도와 patch·origin·침해 조사 경계.
 - [[raw/articles/thn-vitevenom-npm-supply-chain-2026-07-18]] — Vite 사칭 npm package·import-time loader·블록체인 C2의 dependency·CI 대응 경계.
 - [[raw/articles/okta-openssl-hollowbyte-dos-2026-07-18]] — OpenSSL TLS length pre-allocation·glibc memory pressure와 package/restart 검증 경계.
 - [[raw/articles/nadmesh-ai-service-mcp-botnet-2026-07-18]] — NadMesh의 노출 AI 서비스·MCP 우선 수집, cloud credential·Kubernetes token 탈취 경계.
