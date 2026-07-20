@@ -310,6 +310,8 @@ function renderDeepDives() {
     more.className = "read-more";
     more.type = "button";
     more.setAttribute("aria-haspopup", "dialog");
+    more.setAttribute("aria-controls", "modal");
+    more.setAttribute("aria-expanded", "false");
     more.setAttribute("aria-label", `${title} 상세 보기`);
     more.textContent = "상세 설명 보기 →";
     body.append(heading, summary, why, more);
@@ -447,6 +449,8 @@ function renderCards() {
       published.removeAttribute("aria-label");
     }
     const detailButton = node.querySelector(".card-detail-button");
+    detailButton.setAttribute("aria-controls", "modal");
+    detailButton.setAttribute("aria-expanded", "false");
     detailButton.setAttribute("aria-label", `${title} 상세 보기`);
     detailButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -577,6 +581,7 @@ function openDeepDiveModal(item, opener = null) {
 function showModal(modal) {
   modal.classList.remove("hidden");
   modal.setAttribute("aria-hidden", "false");
+  state.modalReturnFocus?.setAttribute("aria-expanded", "true");
   setBackgroundInert(true);
   const modalCard = modal.querySelector(".modal-card");
   if (modalCard) modalCard.scrollTop = 0;
@@ -713,6 +718,7 @@ function closeModal() {
   setBackgroundInert(false);
   document.body.style.overflow = state.bodyOverflowBeforeModal ?? "";
   state.bodyOverflowBeforeModal = null;
+  state.modalReturnFocus?.setAttribute("aria-expanded", "false");
   state.modalReturnFocus?.focus?.();
   state.modalReturnFocus = null;
 }
