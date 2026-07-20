@@ -6,7 +6,7 @@ import json
 import math
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -369,6 +369,26 @@ def main() -> int:
     if timeline.get("coverage_start_kst") and timeline.get("last_updated_kst"):
         if timeline["last_updated_kst"] < timeline["coverage_start_kst"]:
             errors.append("last_updated_kst must not be earlier than coverage_start_kst")
+
+    # A weekly briefing always spans the documented Monday 17:00 KST to the
+    # following Monday 13:00 KST window. Enforce this structural relationship
+    # so an otherwise valid-looking timestamp typo cannot silently shift the
+    # site’s visible coverage range or ISO-week label.
+    coverage_start = data.get("coverage_start_kst")
+    coverage_end = data.get("coverage_end_kst")
+    if is_valid_kst_timestamp(coverage_start) and is_valid_kst_timestamp(coverage_end):
+        start_dt = datetime.strptime(str(coverage_start), "%Y-%m-%d %H:%M")
+        end_dt = datetime.strptime(str(coverage_end), "%Y-%m-%d %H:%M")
+        if start_dt.weekday() != 0 or (start_dt.hour, start_dt.minute) != (17, 0):
+            errors.append("coverage_start_kst must be Monday 17:00 KST")
+        if end_dt.weekday() != 0 or (end_dt.hour, end_dt.minute) != (13, 0):
+            errors.append("coverage_end_kst must be Monday 13:00 KST")
+        if end_dt != start_dt + timedelta(days=6, hours=20):
+            errors.append("coverage_end_kst must be 6 days 20 hours after coverage_start_kst")
+        if isinstance(week, str) and is_valid_week(week):
+            iso_year, iso_week, _ = end_dt.isocalendar()
+            if week != f"{iso_year}-W{iso_week:02d}":
+                errors.append("week must match the ISO week containing coverage_end_kst")
 
     items = data.get("items", [])
     deep_dives = data.get("deep_dives", [])
