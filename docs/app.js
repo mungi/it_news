@@ -50,9 +50,16 @@ function loadReadItems() {
     const validIds = new Set((state.data?.items || [])
       .map((item) => item?.id)
       .filter((id) => typeof id === "string" && id));
-    state.readItems = new Set(Array.isArray(parsed)
+    const validReadItems = Array.isArray(parsed)
       ? parsed.filter((id) => typeof id === "string" && validIds.has(id))
-      : []);
+      : [];
+    state.readItems = new Set(validReadItems);
+    // Also compact the persisted value: intersecting only in memory leaves
+    // stale IDs and duplicates in storage forever when this week's data is
+    // revised or a browser extension writes malformed state.
+    if (!Array.isArray(parsed) || validReadItems.length !== parsed.length || state.readItems.size !== validReadItems.length) {
+      saveReadItems();
+    }
   } catch {
     state.readItems = new Set();
   }
