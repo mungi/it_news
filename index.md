@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-20 | Total pages: 188
+> Last updated: 2026-07-21 | Total pages: 190
 
 ## Entities
 
@@ -21,12 +21,14 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W31]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W30]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W29]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 180건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 181건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/aws-cloudwatch-coding-agent-insights-2026-07-20]] — OpenTelemetry 기반 coding agent 비용·delivery telemetry와 rollout 통제.
 - [[raw/articles/aitimeskr-nvidia-jetson-thor-t3000-t2000-2026-07-20]] — Jetson Thor T3000·T2000의 edge AI 모듈 수치와 fleet 검증 경계.
 - [[raw/articles/aitimeskr-samsung-sds-furiosa-rgnd-npuaas-2026-07-20]] — FuriosaAI RGND 기반 SCP NPUaaS의 구독형 추론·SLO 검증 경계.
 - [[raw/articles/thn-nginx-cve-2026-42533-2026-07-20]] — F5 NGINX `map`·regex heap overflow CVE-2026-42533의 worker DoS·조건부 RCE와 config·runtime 대응 경계.
