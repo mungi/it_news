@@ -246,8 +246,16 @@ function handleSegmentedButtonKeydown(event, container, values, onClick) {
 function updateHeader() {
   const data = state.data;
   const updatedBadge = $("#topUpdatedBadge");
+  const coverageMeta = $("#coverageMeta");
   updatedBadge.textContent = `최종 업데이트: ${data.last_updated_kst || "-"} KST`;
   updatedBadge.classList.add("pill-muted");
+  if (coverageMeta) {
+    const start = data.coverage_start_kst;
+    const end = data.coverage_end_kst;
+    coverageMeta.textContent = data.week && start && end
+      ? `${data.week} · 집계 기간: ${start} – ${end} KST`
+      : "주간 범위 정보 없음";
+  }
 }
 
 function renderSummary() {
