@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-21 | Total pages: 194
+> Last updated: 2026-07-22 | Total pages: 195
 
 ## Entities
 
@@ -73,6 +73,7 @@
 - [[raw/articles/aws-opensearch-ui-one-click-dashboard-migration-2026-07-18]] — OpenSearch Dashboards tenant·saved object 이전과 workspace 권한·rollback 검증 경계.
 - [[raw/articles/aitimes-meta-anthropic-compute-lease-2026-07-18]] — 메타·앤트로픽 AI compute 임대 초기 협상 보도의 계약·capacity·SLO 확인 경계.
 - [[raw/articles/aws-hyperpod-partition-topology-slurm-2026-07-18]] — HyperPod Slurm partition별 tree·block topology와 distributed-training placement 검증.
+- [[raw/articles/aitimes-azure-amd-helios-2026-07-21]] — Azure Helios 도입 계획의 MI455X·EPYC·Pensando·ROCm 통합과 SKU·quota·ROCm 운영 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
