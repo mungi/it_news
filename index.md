@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-21 | Total pages: 193
+> Last updated: 2026-07-21 | Total pages: 194
 
 ## Entities
 
@@ -27,7 +27,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 189건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 190건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.
 - [[raw/articles/nvidia-cosmos-3-edge-2026-07-21]] — Cosmos 3 Edge 4B open world model과 Jetson edge control-loop 검증 경계.
 - [[raw/articles/aws-data-exports-bedrock-product-metadata-2026-07-21]] — Bedrock CUR 2.0 표준 product metadata의 model·token·serving-mode FinOps 귀속 경계.
