@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-22 | Total pages: 200
+> Last updated: 2026-07-23 | Total pages: 202
 
 ## Entities
 
@@ -80,6 +80,8 @@
 - [[raw/articles/manifold-azure-devops-mcp-confused-deputy-2026-07-22]] — Azure DevOps MCP의 숨은 PR 주석·cross-project tool call·least-privilege 통제 경계.
 - [[raw/articles/aitimeskr-qwen-3-8-max-preview-2026-07-21]] — Qwen 3.8 Max Preview의 2.4조 파라미터·open-weight 계획과 공개 정보 검증 경계.
 - [[raw/articles/aitimeskr-weka-wekapod-3-2026-07-22]] — WEKApod 3·NeuralMesh 6의 AI 스토리지 집적도 주장과 model cache·retrieval·복구 검증 경계.
+- [[raw/articles/aws-eks-efa-placement-groups-2026-07-22]] — EKS Auto Mode·Karpenter EFA·placement group node pool의 topology·capacity 검증 경계.
+- [[raw/articles/windmill-cve-2026-29059-active-exploitation-2026-07-22]] — Windmill CVE-2026-29059 file read·superadmin secret·workflow execution incident chain.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

@@ -2,188 +2,320 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-22 21:37",
+  "last_updated_kst": "2026-07-23 01:42",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AWS Kiro 설정 파일 write: 웹 fetch·MCP 설정·host command 실행을 분리하고 최신 build·protected path 적용 확인.",
-    "Google Gemini 3.6 Flash·3.5 Flash-Lite: 모델 단가가 아닌 token·tool call·retry·tail latency로 agent routing 검증.",
-    "NVIDIA Spectrum-6: 102.4Tb/s Ethernet fabric 주장은 collective·tail latency·failure·power 측정으로 검증.",
-    "Microsoft SharePoint·ServiceNow 등 인터넷 노출 control plane은 패치만이 아닌 credential·machine key·로그 조사까지 병행.",
-    "AWS Bedrock CUR 2.0 metadata: model·token·serving mode 비용 귀속은 단순화하되 tenant·workload allocation은 별도 설계."
+    "Windmill CVE-2026-29059: unauthenticated file read는 `SUPERADMIN_SECRET` 설정 시 privileged job preview 실행 경로로 확장 가능하므로 patch·rotation·hunt 병행.",
+    "AWS EKS EFA·placement group: Auto Mode·Karpenter node pool의 network topology 제어는 GPU job capacity·scheduler·collective tail latency와 함께 검증.",
+    "Azure DevOps·Kiro MCP 사례: 비신뢰 협업 콘텐츠와 agent tool 권한·외부 전송을 분리하고 tool-call audit을 유지.",
+    "Google Gemini 모델 routing: token 가격만이 아니라 tool call·retry·tail latency·human review를 포함한 성공 작업당 비용 측정.",
+    "AWS Bedrock CUR 2.0 metadata: model·token·serving mode 비용 귀속은 표준화하되 tenant·workload allocation은 별도 설계."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "AWS Kiro MCP 설정 write 취약점: 웹 컨텍스트·agent 권한·host 실행을 분리하는 coding agent control plane",
-      "summary": "핵심: Intezer·Kodem Security 연구를 인용한 보도에서 AWS Kiro가 웹페이지 요약 중 숨은 지시를 따라 `~/.kiro/settings/mcp.json`을 바꾸고 MCP server 명령을 자동 실행할 수 있었던 경로 확인. 대응: AWS가 protected path 통제로 수정한 `v0.11.130` 이상 여부와 agent의 설정 파일 write·MCP 실행 권한을 즉시 점검 필요.",
-      "details": "핵심: Intezer·Kodem Security 연구를 인용한 보도에서 AWS Kiro가 웹페이지 요약 중 숨은 지시를 따라 `~/.kiro/settings/mcp.json`을 바꾸고 MCP server 명령을 자동 실행할 수 있었던 경로 확인. 대응: AWS가 protected path 통제로 수정한 `v0.11.130` 이상 여부와 agent의 설정 파일 write·MCP 실행 권한을 즉시 점검 필요.",
+      "title": "AWS EKS EFA·placement group: Kubernetes AI workload의 scheduler·network topology·capacity를 함께 운영하는 방법",
+      "summary": "핵심: AWS가 EKS Auto Mode와 Karpenter node pool에서 EFA 및 EC2 placement group 설정을 지원. 검증: EFA enabled 여부가 아닌 instance capacity·subnet IP·placement failure·collective tail latency·productive GPU hour를 같은 workload SLO로 측정 필요.",
+      "details": "AWS의 EKS EFA·placement group 지원은 분산 AI workload의 network interface와 물리 배치를 node pool 정책으로 제어하는 기능이다. 실제 효과는 instance capacity·scheduler·subnet·collective traffic과 결합되므로, topology와 failure recovery를 job-level SLO로 검증해야 한다.",
       "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
       "sources": [
-        "https://thehackernews.com/2026/07/aws-kiro-flaw-let-poisoned-web-page.html"
+        "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-eks-efa-placement-groups/"
       ],
-      "image_url": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-07-22 05:06",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-07-23 01:42",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Kiro 사례의 문제는 숨은 웹 텍스트 자체가 아니라 agent가 자신의 MCP 실행 정책을 정하는 파일을 수정하고 reload할 수 있었던 권한 연결임. 최신 build 적용 뒤에도 fetch·settings write·process spawn을 독립 control로 측정해야 함.",
+          "body": "EKS Auto Mode와 Karpenter에서 EFA와 placement group을 node pool 수준으로 제어할 수 있게 됐지만, 분산 학습·추론 성능은 EFA 설정 자체가 아니라 instance capacity, placement, IP 주소, scheduler와 workload topology의 결합 결과임.",
           "items": [
-            "판단: **설정 파일 write 권한**은 host code execution 권한과 동등하게 취급 필요",
-            "팀 액션: MCP 설정 변경과 subprocess 실행을 하나의 approval·audit chain으로 연결"
+            "판단: **EFA-only interface**는 IP 주소 소비를 줄이지만 모든 pod network·capacity 제약을 제거하는 기능은 아님",
+            "팀 액션: node pool·instance family·placement group·job placement를 하나의 capacity 정책으로 검증"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "The Hacker News는 Intezer·Kodem Security 연구를 인용해 Kiro가 웹페이지 요약 중 숨은 지시를 받아 `~/.kiro/settings/mcp.json`을 바꾸고 공격자 MCP server command를 실행할 수 있었다고 보도함.",
+          "body": "AWS는 7월 22일 EKS Auto Mode와 오픈소스 Karpenter의 node pool에서 Amazon EC2 placement group 및 Elastic Fabric Adapter 구성 지원을 발표함. 대상은 분산 training과 inference처럼 instance 간 통신과 물리적 배치가 성능·가용성에 영향을 주는 workload임.",
           "items": [
-            "입력: 1px 흰색 텍스트가 들어간 API 문서 페이지를 summarize하는 요청",
-            "경로: `fsWrite`가 MCP server 설정을 변경하고 Kiro가 해당 설정을 reload하는 구조",
-            "권한: 실행된 server command는 개발자 계정 권한을 상속하는 조건"
-          ]
-        },
-        {
-          "heading": "재현·수정 범위",
-          "body": "연구진은 macOS Kiro 0.9.2와 Ubuntu 0.10.16에서 chain이 live였다고 설명했고, v0.11.130에서 실패를 확인함. AWS는 protected path를 도입해 Autopilot·Supervised mode 모두에서 explicit approval을 요구하도록 변경했다고 보도됨.",
-          "items": [
-            "수정 대상: `mcp.json`, `.vscode/tasks.json`, `.git` 등 민감 경로 보호",
-            "상태: 보도 시점 CVE와 전체 affected build list는 AWS가 공개하지 않은 범위",
-            "경계: Kiro CLI·Web build까지 동일 영향이라는 증거는 원문에 없음"
+            "구성: EFA-capable instance의 dynamic·static capacity node pool에서 EFA-only 또는 standard ENI 선택 가능",
+            "네트워크: EFA-only interface는 IP 주소를 소비하지 않아 IP utilization을 세밀하게 조정하는 수단으로 제시",
+            "배치: placement group으로 EC2 instance의 AWS infrastructure 내 물리 분산 방식을 조정 가능"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "URL fetch 승인만으로 agent context에 비신뢰 지시가 들어오고, 그 지시가 local configuration write와 daemon-like MCP launch로 이어진다면 human-in-the-loop은 실질적 실행 지점에서 동작하지 않음. 모델의 비결정성은 위험 제거 근거가 아님.",
+          "body": "GPU job의 느린 worker는 모델 코드만이 아니라 node placement, network interface, subnet IP, capacity 확보 실패에서 발생할 수 있음. Auto Mode의 편의성과 Karpenter의 유연성을 사용하더라도 EFA node를 일반 service node와 같은 scheduling·quota 기준으로 운영하면 topology 이점이 사라질 수 있음.",
           "items": [
-            "변환: web content → model instruction → config mutation → host process spawn의 trust boundary 추적",
-            "리스크: credential·source code 접근 권한을 가진 개발자 세션에서 blast radius 확대",
-            "제약: 연구 demo는 localhost callback을 사용했고 실사용 침해 증거는 보고되지 않은 상태"
-          ]
-        },
-        {
-          "heading": "보안·거버넌스 관점",
-          "body": "MCP server는 도구 설명이 아니라 command, package, environment, network destination을 가진 executable dependency임. registry 이름이나 UI 승인 기록만으로는 artifact provenance와 runtime behavior를 보증하지 못함.",
-          "items": [
-            "정책: allowed MCP command·package digest·publisher·egress destination을 inventory화",
-            "권한: agent의 write scope와 MCP process credential을 developer session에서 최소화",
-            "감사: source URL·prompt session·file diff·approval·process tree를 동일 event chain으로 보존"
+            "관측: pod pending reason, EC2 capacity error, EFA attach 상태, NCCL timeout, GPU idle을 job 단위 trace로 연결",
+            "설계: distributed training queue에는 instance family와 placement group affinity·anti-affinity를 명시",
+            "경계: AWS 발표는 특정 모델·GPU 수·collective latency 개선 수치를 제시하지 않은 범위"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "coding agent는 IDE extension이 아니라 browser fetcher, filesystem writer, shell launcher, secret consumer를 결합한 local control plane으로 운영해야 함. 보호 경로는 필요조건이며 sandbox·egress·endpoint detection이 보완되어야 함.",
+          "body": "EFA는 workload data plane의 선택지이며 Kubernetes control plane의 capacity policy를 대신하지 않음. node pool을 EFA 전용·일반 service·batch로 분리하고, job admission에서 필요한 accelerator 수와 placement 가능성을 함께 확인해야 함.",
           "items": [
-            "격리: untrusted URL·repository fetch를 disposable workspace 또는 VM으로 분리",
-            "탐지: `mcp.json` change, new MCP executable, child process, unusual DNS를 correlated alert로 구성",
-            "복구: unauthorized config diff에서 process kill·secret rotation·workspace reimage 순서를 runbook화"
+            "분리: EFA node pool taint·label과 workload toleration·node selector를 명시",
+            "용량: subnet CIDR·ENI/EFA limits·instance quota·placement capacity를 사전 검사",
+            "복구: placement capacity 부족 시 다른 AZ·instance family·queue backoff의 fallback 순서 정의"
+          ]
+        },
+        {
+          "heading": "비용·FinOps 관점",
+          "body": "고성능 network를 붙인 GPU node의 비용은 instance 단가만으로 판단할 수 없음. placement 실패로 기다리는 GPU, 재시도된 distributed job, IP 주소 확보를 위한 network 확장도 successful training step과 inference request 비용에 포함됨.",
+          "items": [
+            "측정: allocated GPU hour, productive GPU hour, queue time, failed placement와 retry를 분리 집계",
+            "비교: EFA pool과 일반 pool의 job completion time·GPU idle·network retry를 동일 dataset에서 비교",
+            "승인: 성능 가정은 vendor feature 발표가 아닌 조직 workload의 p95·p99와 비용 결과로 결정"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 관점",
+          "body": "EFA와 placement group은 IAM, node role, network policy, observability 권한을 대체하지 않음. high-performance pool을 만들면서 broad node role이나 unrestricted egress를 추가하면 data plane 최적화가 새로운 security boundary가 될 수 있음.",
+          "items": [
+            "권한: EFA node role·launch template·Karpenter NodeClass 변경 권한을 platform change로 제한",
+            "감사: node pool spec, instance launch, placement group, EFA attach event를 change record로 보존",
+            "검토: training data egress와 cross-tenant scheduling 경계를 별도 policy로 확인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "사용 중인 Kiro version과 agent mode를 inventory로 확인하고, 외부 문서 요약·MCP installation·workspace open workflow를 각각 test해야 함. vendor patch 적용만으로 기존 설정·extension·MCP asset의 안전성이 자동 검증되지는 않음.",
+          "body": "도입 전 representative collective와 inference fan-out을 사용해 scheduler·network·capacity failure를 함께 시험해야 함. feature enable만 확인하면 실제 placement capacity와 job-level latency 문제를 놓칠 수 있음.",
           "items": [
-            "최신 1.0.x와 protected-path behavior를 representative endpoint에서 확인",
-            "MCP config의 command·working directory·environment·network egress allowlist 대조",
-            "EDR에서 sensitive file write→MCP spawn→external connection sequence 탐지 시험",
-            "source repository·documentation fetch의 sandbox policy와 developer exception 절차 점검"
+            "EFA-capable instance와 region·AZ·quota·subnet CIDR의 가용성 inventory",
+            "EFA-only·standard ENI node pool의 pod density·IP usage·network policy 동작 비교",
+            "all-reduce·checkpoint·inference traffic의 p50·p95·p99와 GPU idle 기준선 수집",
+            "placement failure·node replacement·AZ fallback에서 job retry와 SLO degradation drill"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI coding agent의 안전 경계는 모델이 위험을 알아차리는지에 있지 않음. 비신뢰 입력이 실행 정책 파일을 바꾸지 못하고, 실행 요청이 플랫폼 정책·사용자 의도·endpoint telemetry를 모두 통과해야 함.",
+          "body": "EKS의 EFA·placement group 지원은 AI workload를 Kubernetes에서 더 세밀하게 배치하는 control surface임. 승인 기준은 EFA enabled 여부가 아니라 capacity 확보·collective tail latency·실패 복구·productive GPU hour의 동시 개선임.",
           "items": [
-            "발표 포인트: **MCP 설정은 실행 권한의 control plane**",
-            "결정: web fetch 허용과 local configuration mutation·process launch를 같은 승인으로 취급하지 않기"
+            "발표 포인트: **scheduler와 network topology**를 분리하면 GPU utilization 원인을 놓침",
+            "결정: production 확대 전 placement failure와 network tail latency를 workload SLO로 통과 필요"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "NVIDIA Spectrum-6: 10만 GPU급 AI factory에서 Ethernet fabric을 capacity·failure·energy SLO로 운영하는 방법",
-      "summary": "핵심: NVIDIA가 Vera Rubin 플랫폼용 `Spectrum-6` 102.4Tb/s Ethernet switch를 공개하고 이전 세대 대비 2배 capacity를 제시. 검증: 10만 GPU 초과 배포에서 최대 95% network efficiency·일반 Ethernet 대비 최대 1.6배 성능은 벤더 수치이므로 collective workload·failure·전력 조건으로 자체 검증 필요.",
-      "details": "핵심: NVIDIA가 Vera Rubin 플랫폼용 `Spectrum-6` 102.4Tb/s Ethernet switch를 공개하고 이전 세대 대비 2배 capacity를 제시. 검증: 10만 GPU 초과 배포에서 최대 95% network efficiency·일반 Ethernet 대비 최대 1.6배 성능은 벤더 수치이므로 collective workload·failure·전력 조건으로 자체 검증 필요.",
-      "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
+      "title": "Windmill CVE-2026-29059: file read·environment secret·workflow execution을 한 incident chain으로 다루는 방법",
+      "summary": "핵심: Windmill `get_log_file` endpoint의 unauthenticated path traversal이 active exploitation 대상이라는 보도. 대응: 1.603.3 이상 patch와 public route·proxy path 점검, `SUPERADMIN_SECRET` 존재 시 rotation, traversal·job preview API hunt를 병행 필요.",
+      "details": "Windmill CVE-2026-29059는 unauthenticated arbitrary file read가 환경 변수 secret과 privileged workflow execution으로 이어질 수 있는 조건부 chain이다. patch 여부만이 아니라 exposed endpoint, secret, reverse proxy, audit log를 같은 incident scope로 확인해야 한다.",
+      "why_it_matters": "source-grounded security·platform 운영 판단과 체크리스트",
       "sources": [
-        "https://blogs.nvidia.com/blog/nvidia-spectrum-six-arrives-in-gigascale-ai-factories/"
+        "https://thehackernews.com/2026/07/hackers-exploit-windmill-flaw-to-read.html"
       ],
-      "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/07/ethernet-spectrum-x-corp-blog-1920x1080-5205700.jpg",
-      "refreshed_kst": "2026-07-22 05:06",
+      "image_url": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-07-23 01:42",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Spectrum-6는 AI cluster network의 대역폭 확장 발표이지만, 도입 판단은 switch headline이 아니라 collective tail latency·failure recovery·power·firmware 운영을 workload 단위로 검증하는 일임.",
+          "body": "인터넷에 노출된 Windmill은 CVE-2026-29059 패치 여부뿐 아니라 `SUPERADMIN_SECRET` 존재와 endpoint 접근 로그를 함께 조사해야 함. 취약 endpoint의 arbitrary file read는 환경 변수 노출을 거쳐 superadmin token과 job preview API의 code execution으로 확장될 수 있는 조건임.",
           "items": [
-            "판단: **102.4Tb/s**는 capacity 입력값이며 서비스 SLO 결과가 아님",
-            "팀 액션: GPU utilization·all-reduce 완료 시간·fabric failure recovery를 같은 release gate로 관리"
+            "판단: **Windmill 1.603.3 이상** 확인과 secret rotation은 같은 incident response 흐름 필요",
+            "팀 액션: public endpoint exposure·version·environment secret·proxy path를 동시에 inventory"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "NVIDIA는 Spectrum-6를 Vera Rubin용 Spectrum-X Ethernet 구성으로 발표하고 102.4Tb/s, 이전 세대 대비 2배 capacity를 제시함. CoreWeave·Microsoft·Nebius 등을 초기 배포자로 열거함.",
+          "body": "The Hacker News는 VulnCheck 관측을 인용해 Windmill open-source developer platform의 unauthenticated path traversal CVE-2026-29059가 active exploitation 대상이라고 보도함. 취약 경로는 `get_log_file` endpoint의 filename parameter이며, `../` sequence로 server file read가 가능한 조건임.",
           "items": [
-            "구성: Spectrum-6 switch와 ConnectX-9 SuperNIC의 결합",
-            "통합: Vera CPU·Rubin GPU·NVLink 6·BlueField-4 DPU와 함께 설계했다는 설명",
-            "용도: 대규모 training·inference의 east-west collective traffic 처리"
-          ]
-        },
-        {
-          "heading": "성능 수치와 검증 경계",
-          "body": "NVIDIA는 일반 Ethernet 대비 최대 1.6배 AI networking performance와 10만 GPU 초과 배포에서 최대 95% network efficiency를 제시함. 이는 vendor platform·topology·traffic 조건의 주장으로, 조직 workload의 재현 측정과 분리해야 함.",
-          "items": [
-            "수치: 1.6배 성능·95% efficiency는 동일 조건의 외부 비교값이 아님",
-            "변수: model parallelism, gradient size, checkpoint I/O, queueing, RDMA transport가 결과를 변경",
-            "검증: representative collective와 inference fan-out에서 p50·p95·p99를 별도 기록"
+            "식별: CVE-2026-29059, CVSS **7.5**, `/api/w/{workspace}/jobs_u/get_log_file/{filename}` 경로",
+            "영향: `/proc/1/environ`에서 `SUPERADMIN_SECRET`을 읽을 수 있으면 Bearer token으로 superadmin 인증 가능한 설명",
+            "수정: Windmill 1.603.3이 filename sanitization check를 추가한 release로 보도됨"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "gigascale cluster에서 network는 underutilized GPU를 줄이는 computing multiplier이지만, congestion이나 single-plane failure는 수천 worker job의 straggler로 확대될 수 있음. fabric은 hardware purchase가 아니라 distributed systems failure domain임.",
+          "body": "workflow automation platform은 job log·script·secret·connector를 control plane에 모으므로 unauthenticated file read를 단순 정보 노출로 축소하면 안 됨. 다만 superadmin code execution은 `SUPERADMIN_SECRET`이 설정된 환경이라는 추가 조건에 의존하며 standalone instance의 영향은 arbitrary file read로 제한될 수 있음.",
           "items": [
-            "관측: GPU idle, NCCL timeout, retransmission, ECN/PFC, link flap을 trace로 연결",
-            "설계: rack·pod·plane 경계와 job placement·checkpoint topology를 함께 모델링",
-            "복구: path reroute 뒤 job restart·data consistency·capacity degradation 기준 정의"
+            "조건: `SUPERADMIN_SECRET`은 default 설정이 아니라는 보도 범위",
+            "관측: VulnCheck는 24개국 약 170개 노출 system을 식별했다고 설명",
+            "경계: 공개 보도는 개별 조직의 침해·secret 탈취·code execution 완료를 증명하지 않은 범위"
           ]
         },
         {
-          "heading": "전력·냉각·광학 관점",
-          "body": "Spectrum-6는 liquid cooling과 pluggable·co-packaged optics 지원을 언급함. 고밀도 GPU rack에서는 network power와 cooling path도 accelerator capacity와 같은 시설 제약이므로 switch port 수만으로 deployment readiness를 판단할 수 없음.",
+          "heading": "보안·거버넌스 관점",
+          "body": "Windmill은 developer workflow와 automation credential이 만나는 서비스이므로 reverse proxy 경로까지 asset inventory에 포함해야 함. 보도는 direct Windmill endpoint와 Nextcloud proxy path 양쪽을 겨냥한 exploit 관측을 언급함.",
           "items": [
-            "시설: rack power budget, cooling loop, optics thermal envelope, service access를 capacity plan에 반영",
-            "운영: optic failure·firmware upgrade·cable issue의 mean time to detect·repair 측정",
-            "FinOps: fabric power·cooling·spare·maintenance를 successful token/job 비용에 배부"
+            "자산: internet-facing hostname, reverse proxy route, workspace, version, container image digest를 연결",
+            "비밀: `SUPERADMIN_SECRET`과 workflow credential의 rotation·scope reduction·access audit 수행",
+            "경계: superadmin token을 long-lived environment secret으로 운용하지 않는 정책 검토"
           ]
         },
         {
-          "heading": "개방성·운영 제약",
-          "body": "NVIDIA는 open network OS와 RDMA transport 선택을 지원한다고 설명하지만, 실제 interoperability는 NIC·switch·DPU·driver·collective library의 version matrix와 vendor support boundary로 결정됨.",
+          "heading": "아키텍처·운영 관점",
+          "body": "patch rollout은 container image 교체만으로 끝나지 않음. public ingress 차단 또는 allowlist, proxy rewrite 검증, application restart, version confirmation, post-patch endpoint test가 필요하며, file-read 흔적은 web access log와 container runtime telemetry를 함께 확인해야 함.",
           "items": [
-            "호환: firmware·driver·NCCL/collective backend·OS·DPU policy 조합의 validation 필요",
-            "변경: rolling upgrade 중 mixed fabric의 congestion·telemetry gap·rollback path 확인",
-            "조달: lead time과 spare optics·support escalation·RMA scope를 capacity contract에 포함"
+            "차단: `get_log_file` public 접근을 최소화하고 admin·workspace API를 private network 또는 identity-aware proxy 뒤로 이동",
+            "검증: patched pod의 running version과 image digest, ingress cache·proxy route·rolling restart 상태 확인",
+            "탐지: traversal pattern, `/proc/1/environ`, `/etc/passwd`, unusual job preview API 호출을 hunt query로 추가"
+          ]
+        },
+        {
+          "heading": "비용·가용성 관점",
+          "body": "automation control plane 침해는 workflow 중단, credential rotation, job replay, service restoration 비용으로 이어질 수 있음. emergency patch는 정상 job queue와 connector 재인증에 영향을 줄 수 있어 rollback보다 validated restore path를 우선 준비해야 함.",
+          "items": [
+            "측정: patch 전후 queue depth, failed job, connector auth error, preview API event를 change window에서 비교",
+            "복구: secret rotation 뒤 dependent workflow·CI integration·external connector 재인증 순서 runbook화",
+            "승인: exposure가 확인된 instance는 maintenance backlog가 아닌 security incident priority로 처리"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "새 fabric은 lab benchmark 후 production job mix와 failure injection을 거쳐 확대해야 함. networking, platform, ML, facility team이 다른 dashboard를 보면 bottleneck 위치가 늦게 드러남.",
+          "body": "외부 노출과 version을 먼저 확정하고, vulnerable build가 발견되면 patch·secret rotation·log preservation을 병렬 수행해야 함. 로그 보존 전에 container를 재배포하면 exploitation evidence가 사라질 수 있음.",
           "items": [
-            "all-reduce·all-to-all·checkpoint·inference traffic별 tail latency와 GPU idle 기준선 확보",
-            "link/node/plane failure에서 reroute·job retry·checkpoint restore·SLO degradation drill",
-            "rack power·cooling·optic health·switch telemetry와 model service metrics의 공통 trace ID 설계",
-            "vendor 수치와 자사 utilization·failure·energy 결과를 분리한 procurement review 운영"
+            "Windmill instance·version·public route·Nextcloud proxy path inventory",
+            "1.603.3 이상 patch와 runtime image digest·restart 상태 확인",
+            "`SUPERADMIN_SECRET` 존재 시 즉시 rotation하고 privileged job·API audit review",
+            "web·proxy·application log에서 traversal request와 job preview API invocation hunt",
+            "public access 축소와 workspace·admin API identity policy 재검토"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI factory의 network는 GPU를 연결하는 배선이 아니라 model training·inference의 latency, utilization, reliability, energy를 결정하는 compute plane임. 대역폭 증설은 observability와 failure proof가 있을 때만 유효 capacity가 됨.",
+          "body": "CVE-2026-29059 대응의 판단 단위는 CVSS만이 아니라 workflow control plane의 secret exposure와 execution 권한임. patch 상태와 secret·log·ingress 조사를 분리하면 active exploitation의 실제 blast radius를 판단할 수 없음.",
           "items": [
-            "발표 포인트: **fabric tail latency**가 accelerator utilization과 token economics를 좌우",
-            "결정: Spectrum-6 도입은 port capacity가 아니라 end-to-end collective·recovery SLO로 승인"
+            "발표 포인트: **file read → environment secret → privileged execution**의 조건부 chain",
+            "결정: 노출 instance는 patch 후에도 secret rotation과 compromise hunt 완료 전 정상 판정 금지"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-204",
+      "title_ko": "AWS EKS Auto Mode·Karpenter, EFA와 placement group node pool 지원: 분산 AI workload의 scheduler·network topology 결합",
+      "title_original": "Amazon EKS now supports EFA and placement groups on Amazon EKS Auto Mode and Karpenter",
+      "summary": "핵심: AWS가 EKS Auto Mode와 Karpenter node pool에서 EFA network device와 EC2 placement group 설정을 지원. 운영: EFA-only interface의 IP 주소 절감과 physical placement 제어는 distributed training·inference의 선택지이나, instance capacity·subnet·scheduler·collective tail latency를 같은 workload SLO로 검증 필요.",
+      "detail": "AWS는 EKS Auto Mode와 Karpenter node pool에서 EFA-capable instance의 EFA-only 또는 standard ENI 구성 및 EC2 placement group 제어를 지원한다고 발표했다. EFA-only interface는 IP 주소를 소비하지 않으며 dynamic·static capacity node pool에서 사용할 수 있다. AWS는 분산 training·inference 성능·가용성 최적화 용도를 제시했지만 모델·GPU 수·latency 개선 수치는 발표하지 않았으므로, placement capacity와 job completion·GPU idle·network tail latency를 직접 검증해야 한다.",
+      "why_it_matters": "분산 AI job의 병목은 accelerator 수량뿐 아니라 instance 물리 배치, network interface, subnet IP, scheduler capacity 실패가 함께 결정한다. EFA node pool을 일반 workload와 같은 quota·placement 정책으로 운영하면 high-performance network의 이점이 job-level SLO로 전이되지 않을 수 있다.",
+      "engineering_implication": "플랫폼 팀은 EFA node pool을 일반 service pool과 분리하고, instance quota·subnet CIDR·placement capacity·EFA attach 상태를 admission 검증에 포함 필요. all-reduce·checkpoint·inference traffic의 p95/p99, GPU idle, placement failure, retry를 동일 acceptance test와 cost review에서 측정 필요.",
+      "korea_implication": "국내 AWS AI cluster 운영 조직은 EFA 지원 여부만으로 GPU capacity를 산정하지 말고 리전·AZ별 instance quota, subnet 설계, placement group capacity, managed node policy를 사전 검증 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Cloud",
+        "AWS",
+        "EKS",
+        "Kubernetes",
+        "EFA",
+        "Karpenter",
+        "AI Infrastructure"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-22 23:30",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-eks-efa-placement-groups/",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 EKS Auto Mode와 Karpenter node pool에서 EFA와 EC2 placement group 구성 지원을 발표함.",
+          "items": [
+            "대상: EFA-capable instance를 사용하는 dynamic·static capacity node pool",
+            "발행: AWS RSS `pubDate` 2026-07-22 14:30 UTC를 2026-07-22 23:30 KST로 변환"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "node pool에서 EFA-only 또는 standard ENI를 선택하고 instance의 물리 분산을 placement group으로 조절하는 구조임.",
+          "items": [
+            "네트워크: EFA-only interface는 IP 주소를 소비하지 않는다는 AWS 설명",
+            "용도: distributed training·inference workload의 performance·availability 최적화 대상",
+            "경계: AWS는 특정 model·GPU scale·latency 개선 수치를 제시하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "Kubernetes scheduler와 EC2 capacity·network topology를 분리하면 GPU idle과 job straggler의 원인을 놓칠 수 있음.",
+          "items": [
+            "성능: collective tail latency·NCCL timeout·GPU idle과 placement failure의 상관 분석 필요",
+            "가용성: instance·AZ capacity 부족 시 fallback과 queue backoff가 job SLO를 결정"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "EFA 지원은 deployment checkbox가 아니라 capacity·scheduler·network telemetry를 묶은 workload 운영 변경임.",
+          "items": [
+            "팀 액션: EFA pool label·taint, workload selector, quota, subnet·placement capacity 사전 검증",
+            "팀 액션: all-reduce·checkpoint·inference p95/p99와 productive GPU hour를 동일 release gate로 관리",
+            "팀 액션: placement failure·node replacement·AZ fallback의 retry·recovery drill 수행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-205",
+      "title_ko": "Windmill CVE-2026-29059 활성 악용 보도: unauthenticated file read에서 superadmin secret·job preview 실행으로 이어지는 조건 점검",
+      "title_original": "Hackers Exploit Windmill Flaw to Read Arbitrary Server Files Without Authentication",
+      "summary": "핵심: VulnCheck 관측을 인용한 보도에서 Windmill `get_log_file` endpoint의 unauthenticated path traversal CVE-2026-29059 활성 악용 정황 확인. 대응: 1.603.3 이상 patch, public endpoint·proxy route 점검, `SUPERADMIN_SECRET` 존재 시 rotation과 job preview API·traversal log 조사를 병행 필요.",
+      "detail": "The Hacker News는 VulnCheck를 인용해 Windmill의 unauthenticated path traversal CVE-2026-29059가 active exploitation 대상이라고 보도했다. `get_log_file` endpoint의 filename parameter에 `../`를 넣어 arbitrary file read가 가능하며, `/proc/1/environ`에서 읽힌 `SUPERADMIN_SECRET`은 설정된 경우 Bearer token으로 superadmin 인증과 job preview API 실행에 사용될 수 있다. Windmill 1.603.3이 sanitization check를 추가한 것으로 보도됐고, secret이 없는 standalone instance의 영향은 arbitrary file read로 제한된다는 조건도 함께 제시됐다.",
+      "why_it_matters": "workflow automation platform은 job log·script·connector·secret이 모이는 control plane이다. file read를 단순 정보 노출로 처리하면 environment secret과 privileged execution으로 이어지는 조건부 blast radius, reverse proxy 경로, credential rotation 범위를 놓칠 수 있다.",
+      "engineering_implication": "Windmill 운영 팀은 exposed hostname·Nextcloud proxy path·runtime version·image digest를 inventory로 확정하고, vulnerable instance는 patch와 log preservation·secret rotation을 병렬 실행 필요. traversal request, `/proc/1/environ`, `/etc/passwd`, job preview API 호출을 web·proxy·application log에서 함께 hunt 필요.",
+      "korea_implication": "국내 개발·자동화 플랫폼도 public SaaS가 아닌 self-hosted workflow instance와 reverse proxy route를 별도 자산으로 관리하고, secret rotation이 CI·외부 connector·배치 job에 미치는 영향을 runbook으로 유지 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Windmill",
+        "CVE-2026-29059",
+        "Path Traversal",
+        "Workflow Automation",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-07-22 21:36",
+      "source_name": "The Hacker News / VulnCheck",
+      "source_url": "https://thehackernews.com/2026/07/hackers-exploit-windmill-flaw-to-read.html",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 VulnCheck 관측을 인용해 Windmill의 unauthenticated path traversal CVE-2026-29059 활성 악용 정황을 보도함.",
+          "items": [
+            "경로: `/api/w/{workspace}/jobs_u/get_log_file/{filename}`의 filename parameter",
+            "발행: The Hacker News RSS `pubDate` 2026-07-22 18:06:36 +05:30을 2026-07-22 21:36 KST로 변환",
+            "위험도: 보도 기준 CVSS **7.5**"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "`../` sequence로 server file을 읽을 수 있으며, 환경 변수의 superadmin secret이 노출되는 경우 privileged API 경로로 이어질 수 있는 조건임.",
+          "items": [
+            "민감값: `/proc/1/environ`의 `SUPERADMIN_SECRET`이 primary exposure라는 보도",
+            "확대: secret이 설정된 경우 Bearer token을 통한 superadmin 인증과 job preview API code execution 가능성",
+            "수정: Windmill 1.603.3이 filename sanitization check를 추가한 release로 보도",
+            "경계: `SUPERADMIN_SECRET`이 없는 standalone instance의 영향은 arbitrary file read로 제한된다는 설명"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "workflow platform은 automation credential과 execution endpoint를 함께 보유하므로 file read의 후속 영향이 deployment마다 달라짐.",
+          "items": [
+            "공격 표면: direct endpoint와 Nextcloud proxy path를 겨냥한 exploit 관측 언급",
+            "자산: public route·workspace·container image·environment secret을 하나의 control plane inventory로 관리 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patch 적용 후에도 secret과 access log 조사를 완료해야 실제 compromise 범위를 판단할 수 있음.",
+          "items": [
+            "팀 액션: running version·image digest·restart와 ingress·proxy route의 patch 적용 상태 확인",
+            "팀 액션: `SUPERADMIN_SECRET` 존재 시 즉시 rotation하고 privileged job·API audit review",
+            "팀 액션: traversal request·`/proc/1/environ`·job preview API event를 correlated hunt query로 운영"
+          ]
+        }
+      ],
+      "rank": 2
+    },
     {
       "id": "news-203",
       "title_ko": "WEKA, WEKApod 3 공개: 장기 컨텍스트·RAG용 AI 스토리지의 랙 집적도와 workload 검증 경계",
@@ -247,7 +379,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-202",
@@ -343,7 +475,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-198",
@@ -408,7 +540,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-199",
@@ -472,7 +604,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-200",
@@ -551,7 +683,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-201",
@@ -633,7 +765,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-196",
@@ -718,7 +850,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-197",
@@ -794,7 +926,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-195",
@@ -873,7 +1005,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-193",
@@ -958,7 +1090,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-194",
@@ -1037,7 +1169,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-191",
@@ -1105,7 +1237,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-190",
@@ -1191,7 +1323,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-192",
@@ -1263,7 +1395,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-188",
@@ -1329,7 +1461,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-189",
@@ -1396,11 +1528,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-187",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -1568,7 +1700,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-182",
@@ -1634,7 +1766,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-180",
@@ -1719,7 +1851,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-185",
@@ -1794,7 +1926,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-186",
@@ -1874,7 +2006,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-181",
@@ -1948,7 +2080,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-183",
@@ -2019,7 +2151,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-179",
@@ -2103,7 +2235,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-184",
@@ -2183,7 +2315,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-178",
@@ -2280,7 +2412,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-176",
@@ -2350,7 +2482,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-177",
@@ -2416,7 +2548,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-173",
@@ -2491,7 +2623,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-172",
@@ -2561,7 +2693,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-171",
@@ -2641,7 +2773,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-175",
@@ -2716,7 +2848,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-174",
@@ -2823,7 +2955,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-170",
@@ -2907,7 +3039,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-169",
@@ -2992,7 +3124,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-167",
@@ -3079,7 +3211,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-168",
@@ -3174,7 +3306,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-165",
@@ -3247,11 +3379,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-162",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -3339,7 +3471,7 @@
     },
     {
       "id": "news-163",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -3496,7 +3628,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-161",
@@ -3562,7 +3694,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-159",
@@ -3646,7 +3778,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-160",
@@ -3730,7 +3862,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-158",
@@ -3799,11 +3931,11 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-157",
-      "rank": 47,
+      "rank": 49,
       "title_ko": "Amazon Bedrock에 OpenAI GPT-5.6 Sol·Terra·Luna 정식 출시: Responses API·프롬프트 캐시 제공",
       "title_original": "OpenAI GPT-5.6 Sol, Terra, and Luna now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 OpenAI GPT-5.6 Sol·Terra·Luna를 Amazon Bedrock에서 정식 제공하고 Responses API와 명시적 cache breakpoint를 지원함. 영향: 반복 context를 쓰는 agent 워크로드는 AWS 약정 사용량 안에서 모델 등급·리전·캐시 효율을 함께 비교할 수 있으나, Sol은 미국 동부 2개 리전에만 제공되는 제약 확인 필요.",
@@ -3886,7 +4018,7 @@
     },
     {
       "id": "news-156",
-      "rank": 48,
+      "rank": 50,
       "title_ko": "프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축",
       "title_original": "Migrating a Production AI Agent to GPT-5.6",
       "summary": "핵심: Ploy는 프로덕션 웹 구축 에이전트를 Claude Opus 4.8에서 GPT-5.6 Sol로 전환하며 평균 실행 시간을 **8분→3분 42초**, 완료 빌드 비용을 **$3.06→$2.22**로 낮춤. 변화: 모델 교체만으로 끝나지 않았고, 평가 하네스의 기존 모델 가정·선택 필드 스키마·워크스페이스 캐시 키를 함께 수정한 결과임.",
@@ -3962,150 +4094,6 @@
           "items": [
             "팀 액션: 프로덕션 trace를 익명화해 replay 가능한 모델 교체 평가 세트를 구축하고 release gate에 포함 필요",
             "팀 액션: 도구 스키마의 optional·nullable 처리, cache key 범위, reasoning state 보존 방식을 provider별로 문서화·회귀 테스트 필요"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-155",
-      "rank": 49,
-      "title_ko": "MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격",
-      "title_original": "New MemGhost Attack Plants Persistent False Memories in AI Agents Through One Email",
-      "summary": "핵심: MemGhost는 inbox를 읽는 AI 에이전트가 외부 이메일의 지시를 장기 메모리에 저장하도록 유도해 다음 세션의 답변·행동을 바꾸는 stealth memory injection 연구임. 영향: background agent는 사용자에게 보이지 않는 memory write가 가능하므로 외부 콘텐츠와 trusted memory 사이에 provenance·승인·감사 경계를 둬야 함.",
-      "detail": "The Hacker News가 arXiv 연구를 바탕으로 MemGhost를 소개함. 공격자는 inbox를 읽는 agent에 외부 지시를 섞은 이메일을 보내고, agent의 파일 도구가 AGENTS.md·MEMORY.md 같은 지속 상태에 거짓 정보를 쓰게 유도함. 연구 환경에서 background OpenClaw/GPT-5.4 조합의 전체 공격 성공률은 87.5%, Claude Code SDK/Sonnet 4.6 조합은 71.4%로 제시됨. 이는 실험실 결과이며 실제 스팸 필터 우회나 실사용 공격 성공을 입증한 것은 아님.",
-      "why_it_matters": "RAG·메일·캘린더·파일 도구를 연결한 agent는 비신뢰 입력을 읽는 순간부터 데이터 유출뿐 아니라 장기 정책·사용자 상태 오염 위험을 가짐. 메모리가 다음 세션의 system-like context로 다시 주입되면 단발성 prompt injection보다 탐지·복구 비용이 커짐.",
-      "engineering_implication": "에이전트 플랫폼팀은 외부 콘텐츠가 memory write를 직접 촉발하지 못하게 provenance 태그, write allowlist, 사용자·관리자 승인, append-only audit log, diff 알림, rollback을 분리 구현하고 background job의 tool call을 별도 위험 등급으로 운영 필요.",
-      "korea_implication": "국내 기업의 메일·그룹웨어·고객지원 agent도 업무 inbox와 장기 메모리를 연결할 경우 개인정보·결재·재무 안내가 오염될 수 있어, 외부 발신 메일 기반 memory write를 기본 차단하는 정책 검토 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Agent",
-        "Prompt Injection",
-        "Memory Security",
-        "Email Security",
-        "OpenClaw"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-07-13 22:03",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/new-memghost-attack-plants-persistent.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_pk3JKY3zis-iTRVKpcttwfy-GP-gEzPE_NQQpqDEaMvVs65uqa3v_dG7pD_DmZWLHcwBQzjFtTYqob5wWSgO2F-0-KkwZaahqTUpGP1xbvyifaf2UnMDzI8j9pnP9EWyARmN2SHHl0eBo4UszZx3VZvicjU_MMFOEA8sjcLvzBFzAkNeFg3GIR2yncA/s1700-e365/memghost.jpg",
-      "related_links": [
-        {
-          "title": "When Claws Remember but Do Not Tell — arXiv 연구 원문",
-          "url": "https://arxiv.org/abs/2607.05189v1"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "MemGhost는 AI 에이전트가 inbox를 읽는 과정에서 외부 이메일의 지시를 장기 메모리로 저장하도록 유도하는 stealth memory injection 연구임.",
-          "items": [
-            "공격 입력: 사용자가 읽을 평범한 이메일 본문 안에 agent가 따르도록 설계한 지시를 포함",
-            "지속성: agent가 AGENTS.md·MEMORY.md 같은 다음 세션에도 불리는 파일에 거짓 정보를 기록하는 경로",
-            "은닉성: 사용자에게 보이는 답변에서는 memory write를 언급하지 않아 상태 변경을 발견하기 어려운 조건"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "연구자는 shadow agent에서 성공·은닉을 보상으로 공격 이메일을 학습한 생성기를 사용했고, 단순한 직접 지시보다 높은 성공률을 제시함.",
-          "items": [
-            "대상: OpenClaw의 평문 memory 파일과 Claude Code SDK agent를 포함한 실험 구성",
-            "결과: 56개 신규 test case에서 거짓 메모리 기록·은닉·후속 세션 영향의 전체 체인을 평가",
-            "수치: background OpenClaw와 GPT-5.4 조합에서 87.5%, Claude Code SDK와 Sonnet 4.6 조합에서 71.4% 성공률 제시",
-            "범위: vector memory store를 쓴 구성과 다른 agent framework에서도 background mode 성공률이 80% 이상인 조건 보고"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "메일·캘린더·문서처럼 신뢰하지 않는 입력을 읽는 agent의 memory write는 다음 세션에서 trusted context처럼 재사용될 수 있음.",
-          "items": [
-            "영향 예시: 사용자의 Zelle 일일 송금 한도가 1만 달러로 올랐다는 거짓 정보를 memory에 심는 test case 제시",
-            "확대 조건: background job은 대화 응답이 없거나 짧아 사용자와 운영자가 tool activity를 놓치기 쉬운 구조",
-            "한계: 실험은 가짜 inbox·사용자를 둔 격리 환경이며 스팸 필터·발신자 인증을 통과하는 실제 침해를 검증하지 않은 결과"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "메모리는 편의 기능이 아니라 agent control plane의 일부로 취급하고 외부 입력의 write 권한을 별도로 통제해야 함.",
-          "items": [
-            "팀 액션: 외부 email·web·document 콘텐츠에서 나온 instruction은 memory write 권한을 기본적으로 갖지 않도록 분리",
-            "관측: memory write마다 source provenance, actor, tool call, diff, 승인자, 다음 세션 사용 여부를 audit log에 기록",
-            "복구: 사용자별 memory snapshot, immutable journal, 승인 전 quarantine, 위험 write의 즉시 rollback 경로 준비"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-154",
-      "rank": 50,
-      "title_ko": "Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지",
-      "title_original": "Introducing Precursor: detecting agentic behavior with continuous client-side signals",
-      "summary": "핵심: Cloudflare Precursor는 HTML에 주입한 경량 JavaScript로 pointer·keyboard·focus·visibility 신호를 세션 단위로 수집해 bot score·challenge·security rule에 반영함. 영향: 로그인·가입·결제 밖의 일반 웹 경로에서도 AI 브라우저 자동화 abuse를 탐지하려는 팀은 false positive·CSP·단계적 enforcement를 함께 운영 필요.",
-      "detail": "Cloudflare가 Enterprise Bot Management용 Precursor를 공개함. 개별 CAPTCHA를 통과하는 자동화가 늘어난 환경에서 세션 전체 행동 일관성을 평가하도록 설계됐으며, 동적으로 주입된 경량 bundle이 pointer 이동·keyboard timing·focus·visibility 이벤트를 수집하고 edge evaluator가 교차 검증함. Cloudflare는 키 입력 내용 대신 timing·rhythm을 쓰며 신호를 계정이나 지속 프로필과 연결하지 않는다고 설명함.",
-      "why_it_matters": "AI 에이전트·브라우저 자동화는 JavaScript 실행과 실제 browser 환경으로 단일 checkpoint를 통과할 수 있어, 웹 abuse 방어가 요청 단위에서 세션 행위 단위로 이동함.",
-      "engineering_implication": "WAF·웹 플랫폼팀은 우선 관측 모드에서 endpoint별 bot score, challenge completion, session false positive, conversion, accessibility complaint를 수집하고 HTML 변환·CSP·SPA route와의 호환성을 검증한 뒤 enforcement를 확대 필요.",
-      "korea_implication": "국내 커머스·금융·예약 서비스도 AI 브라우저 에이전트의 가격·재고·계정 흐름 자동화에 대비해 세션 telemetry와 개인정보 처리 경계를 함께 검토 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Bot Management",
-        "AI Agent",
-        "Web Security",
-        "Cloudflare",
-        "Behavioral Detection"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-13 22:00",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/introducing-precursor/",
-      "image_url": "https://cf-assets.www.cloudflare.com/zkvhlag99gkb/4raPYKDa5ifslzx2izHKzA/4935a3d9476c0551f0d8f398663b2b9d/Introducing_Precursor-_detecting_agentic_behavior_with_continuous_client-side_signals-OG.png",
-      "local_image": "assets/images/news-154.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 Enterprise Bot Management용 `Precursor`를 공개하고 세션 전체 행동 신호를 bot 방어에 결합함.",
-          "items": [
-            "구조: HTML 응답 통과 시 동적·난독화된 경량 JavaScript bundle을 주입하고 방문자 상호작용을 연속 수집",
-            "대상: Turnstile을 대체하지 않고 Enterprise Bot Management에서 보완하는 선택 기능으로 제공",
-            "배포: zone별 dashboard에서 background 관측 모드 또는 검증 세션 미존재 시 challenge 강제 모드 선택",
-            "일정: 2026년 하반기 GA 전까지 무료 사용 계획을 안내"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "개별 요청이나 CAPTCHA 한 번이 아니라 시간에 걸친 상호작용의 일관성을 평가함.",
-          "items": [
-            "수집: pointer 이동, keyboard 활동, focus 변경, visibility 이벤트를 compact format으로 serialize하고 메모리에 buffer",
-            "분석: edge evaluator가 pointer 활동과 페이지 visibility, text field focus와 keyboard 이벤트의 교차 조건을 검사",
-            "세션성: refresh나 새 challenge로 행동 서명을 초기화하기 어렵도록 site session 범위에 신호 누적",
-            "연계: 결과를 bot score, challenge 결정, security rule, predicted-versus-actual completion, session delinquency 분석에 반영",
-            "관측: Security Analytics에 요청 단위가 아닌 visitor journey 기준 session view 추가"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "현대 bot은 JavaScript 실행, 실제 browser 환경, 단일 CAPTCHA 통과를 흉내 낼 수 있어 checkpoint 기반 방어의 신호가 줄어듦.",
-          "items": [
-            "위협 변화: agentic browser automation은 짧은 구간에서는 정상 행동처럼 보일 수 있어 전체 세션의 패턴 비교 필요",
-            "탐지 원리: 직선·일정 속도 mouse 이동, 비현실적인 click 정확도, focus 없는 keyboard 이벤트 같은 자동화 흔적 활용",
-            "사용자 영향: 정상 사용자의 과도한 challenge를 줄이면서 자동화 운영 비용과 신뢰성 부담을 높이는 목적",
-            "개인정보 경계: 키 입력 내용 대신 timing·rhythm을 처리하고 계정·로그인 ID·지속 프로필과 연결하지 않는다고 설명"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "세션 기반 bot 방어는 보안 기능 추가가 아니라 웹 telemetry와 사용자 경험을 함께 운영하는 변화임.",
-          "items": [
-            "팀 액션: 로그인·가입·결제뿐 아니라 검색·예약·재고·가격 API 앞단의 endpoint별 automation 지표를 분리 관측 필요",
-            "배포 순서: background 모드에서 bot score 변화, challenge rate, conversion, accessibility complaint를 기준선과 비교한 뒤 enforcement 확대",
-            "플랫폼 검토: HTML 변환, CSP, 서드파티 script 정책, SPA route 전환이 주입 bundle 및 telemetry와 충돌하는지 staging 검증 필요",
-            "운영 지표: session false positive, challenge completion, suspicious-session 재발률, endpoint별 automation 비용을 WAF·SRE 대시보드에 함께 편입 필요"
           ]
         }
       ]
