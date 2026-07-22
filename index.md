@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-22 | Total pages: 199
+> Last updated: 2026-07-22 | Total pages: 200
 
 ## Entities
 
@@ -77,6 +77,7 @@
 - [[raw/articles/aitimes-azure-amd-helios-2026-07-21]] — Azure Helios 도입 계획의 MI455X·EPYC·Pensando·ROCm 통합과 SKU·quota·ROCm 운영 검증 경계.
 - [[raw/articles/thn-aws-kiro-mcp-config-rce-2026-07-22]] — Kiro MCP 설정 write·protected path·host execution 권한 경계.
 - [[raw/articles/nvidia-spectrum-6-ai-factory-2026-07-22]] — Spectrum-6 Ethernet fabric의 vendor performance 주장과 collective·failure·energy 검증 경계.
+- [[raw/articles/manifold-azure-devops-mcp-confused-deputy-2026-07-22]] — Azure DevOps MCP의 숨은 PR 주석·cross-project tool call·least-privilege 통제 경계.
 - [[raw/articles/aitimeskr-qwen-3-8-max-preview-2026-07-21]] — Qwen 3.8 Max Preview의 2.4조 파라미터·open-weight 계획과 공개 정보 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
