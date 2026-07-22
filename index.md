@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-23 | Total pages: 202
+> Last updated: 2026-07-23 | Total pages: 203
 
 ## Entities
 
@@ -27,7 +27,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 192건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
+- `raw/articles/` — 193건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.

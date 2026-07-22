@@ -857,3 +857,10 @@
 - Added both sourced stories, removed actual capped sort tails MemGhost 연구: 이메일 한 통으로 AI 에이전트의 장기 메모리에 거짓 정보를 주입하는 공격 (news-155, 2026-07-13 22:03 KST); Cloudflare Precursor 공개: 세션 전체 행동 신호로 에이전트형 자동화 탐지 (news-154, 2026-07-13 22:00 KST), re-sorted all 50 items newest-first, and reassigned contiguous ranks.
 - First KST daily Deep Dive policy applied to both entries: rebuilt EKS EFA/placement-group and Windmill CVE-2026-29059 briefings with distinct non-overlapping primary sources at 2026-07-23 01:42 KST.
 - Added two immutable raw captures with SHA-256 metadata, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`.
+
+## [2026-07-23] update | Add CNCF Confidential Containers incubation
+- Checked current time at 2026-07-23 05:50 KST. Directly inspected mandatory Korean/community HTML surfaces: GeekNews, GeekNews Plus, 인공지능신문, AI타임스; each returned HTTP 200 and is not counted as a parsed feed.
+- Parsed 1,054 entries from eight successful XML feeds in the current probe: AWS What’s New (100), Cloudflare (20), GitHub (10), The Hacker News (50), BleepingComputer (15), Google Blog (20), Hugging Face (829), CNCF (10); arithmetic: 100+20+10+50+15+20+829+10 = 1,054. Three mandatory Korean/community surfaces were directly inspected as HTML and are not included in this parsed-feed total.
+- Source-page verified CNCF’s Confidential Containers incubating-project announcement and RSS timestamp 2026-07-22 16:00 UTC = 2026-07-23 01:00 KST. The project describes Kata Containers-based TEE integration, Trustee attestation, lifecycle controllers, and Intel TDX/AMD SEV-SNP abstraction; ecosystem activity and roadmap claims are not treated as workload performance guarantees.
+- Added the item at rank 1, removed actual capped sort tail `프로덕션 AI 에이전트의 GPT-5.6 전환: 평가 하네스·도구 스키마·캐시를 함께 바꿔 2.2배 단축` (news-156, 2026-07-14 03:40 KST), re-sorted 50 items newest-first, and reassigned contiguous ranks. Both Deep Dives were fully rebuilt at 2026-07-23 01:42 KST earlier today and were preserved without timestamp-only churn.
+- Added immutable raw capture, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`.
