@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-22 | Total pages: 197
+> Last updated: 2026-07-22 | Total pages: 198
 
 ## Entities
 
@@ -28,6 +28,7 @@
 
 ## Raw Articles
 - `raw/articles/` — 190건의 출처 메타데이터와 한국어 브리핑 요약.
+- [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.
 - [[raw/articles/nvidia-cosmos-3-edge-2026-07-21]] — Cosmos 3 Edge 4B open world model과 Jetson edge control-loop 검증 경계.
