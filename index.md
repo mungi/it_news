@@ -27,7 +27,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
-- `raw/articles/` — 191건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 192건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.
@@ -79,6 +79,7 @@
 - [[raw/articles/nvidia-spectrum-6-ai-factory-2026-07-22]] — Spectrum-6 Ethernet fabric의 vendor performance 주장과 collective·failure·energy 검증 경계.
 - [[raw/articles/manifold-azure-devops-mcp-confused-deputy-2026-07-22]] — Azure DevOps MCP의 숨은 PR 주석·cross-project tool call·least-privilege 통제 경계.
 - [[raw/articles/aitimeskr-qwen-3-8-max-preview-2026-07-21]] — Qwen 3.8 Max Preview의 2.4조 파라미터·open-weight 계획과 공개 정보 검증 경계.
+- [[raw/articles/aitimeskr-weka-wekapod-3-2026-07-22]] — WEKApod 3·NeuralMesh 6의 AI 스토리지 집적도 주장과 model cache·retrieval·복구 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
