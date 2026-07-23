@@ -2,7 +2,7 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-24 02:18",
+  "last_updated_kst": "2026-07-24 06:28",
   "audience": "developers and engineers",
   "executive_summary": [
     "Claude Cowork local VM: guest-root 뒤 host `/` read-write mount가 남으면 SSH key·cloud credential·source file 접근으로 전이 가능하므로 local mode·mount·kernel·daemon 정책을 함께 점검.",
@@ -174,6 +174,159 @@
   ],
   "items": [
     {
+      "id": "news-214",
+      "title_ko": "CISA, 러시아 연계 LAUNDRY BEAR의 Zimbra CVE-2025-66376 악용 경보: 열람만으로 메일·계정 접근정보 탈취",
+      "title_original": "Russian State-Supported Cyber Actors Conduct Phishing Campaign Targeting Users of Zimbra Collaboration Suite",
+      "summary": "핵심: CISA 등 10개 기관이 Zimbra Classic UI의 stored XSS `CVE-2025-66376`을 2025년 7월부터 악용한 러시아 연계 LAUNDRY BEAR 캠페인을 경보. 조건: 취약 버전에서 악성 HTML 메일을 열람하면 최근 90일 메일·GAL·계정 접근정보 탈취와 persistence 시도가 가능한 범위. 대응: ZCS 10.0·10.1 patch 기준 확인과 함께 app-specific password·mail forwarding·DNS egress·관리자 audit을 침해 대응으로 점검 필요.",
+      "detail": "CISA의 AA26-204A는 러시아 연계 LAUNDRY BEAR가 2025년 7월부터 서방 정부·상업 조직의 Zimbra Collaboration Suite를 표적으로 삼았다고 경고한다. `CVE-2025-66376`은 Zimbra Classic UI의 stored XSS이며, 취약한 webmail에서 악성 메일을 보기만 해도 JavaScript가 인증 세션 권한으로 실행되는 view-based exploit으로 설명된다. CISA는 Zimbra 10.0 10.0.18 미만과 10.1 10.1.13 미만을 영향 범위로 제시하며, 패치 뒤에도 이미 탈취된 credential·app-specific password·mailbox rule은 별도 조사 대상으로 남는다.",
+      "why_it_matters": "메일 서버는 identity reset, MFA recovery, cloud console invitation, source-code notification이 집중되는 control point임. CISA는 실제 표적·침해 활동을 경고하지만 모든 Zimbra 조직의 침해를 뜻하지 않으므로, 버전·외부 노출·mailbox artifact·DNS 기록을 증거 기반으로 함께 판단해야 함.",
+      "engineering_implication": "보안·메일 플랫폼 팀은 public-facing ZCS를 즉시 inventory해 10.0은 10.0.18 이상, 10.1은 10.1.13 이상 여부를 확인하고 supported release로 업그레이드 필요. patch만으로 계정 상태가 복구되지 않으므로 app-specific password, mailbox forwarding/filter, delegate, OAuth/session, admin audit, unusual DNS query와 egress proxy 기록을 보존·hunt하고 high-risk 계정 credential rotation을 incident 절차로 수행 필요.",
+      "korea_implication": "국내 공공·금융·제조 조직의 Zimbra 운영 환경도 외부 webmail과 임직원 메일을 같은 asset으로 보지 말고, mail gateway·DNS resolver·identity log를 연결한 대응 runbook과 장기지원 버전 전환 계획을 확인할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Zimbra",
+        "CVE-2025-66376",
+        "CISA",
+        "Email Security",
+        "Threat Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-07-24 03:36",
+      "source_name": "CISA / NSA·FBI 등 공동 권고",
+      "source_url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa26-204a",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News report and RSS timestamp source",
+          "url": "https://thehackernews.com/2026/07/russian-espionage-group-exploited.html"
+        },
+        {
+          "title": "CISA KEV record for CVE-2025-66376",
+          "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-66376"
+        },
+        {
+          "title": "Zimbra 10.1.13 release notes",
+          "url": "https://wiki.zimbra.com/wiki/Zimbra_Releases/10.1.13"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CISA가 NSA·FBI·네덜란드·호주 등과 공동으로 AA26-204A를 발표하고, 러시아 연계 LAUNDRY BEAR가 Zimbra Collaboration Suite를 표적으로 삼은 지속 캠페인을 경고함.",
+          "items": [
+            "발표: CISA advisory **AA26-204A**, 2026-07-23 공개",
+            "범위: 2025년 7월 이후 서방 정부·상업 조직 targeting 및 compromise를 CISA가 명시",
+            "시간: CISA는 날짜만 제공하며, 관련 The Hacker News RSS `pubDate` 2026-07-24 00:06:08 +05:30을 2026-07-24 03:36 KST로 변환"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "`CVE-2025-66376`은 Zimbra Classic UI의 stored XSS임. CISA는 취약 client에서 악성 메일을 보기만 해도 작동하는 view-based exploit으로 설명하며, 이메일 본문 JavaScript가 인증된 mailbox session 권한을 상속하는 경로임.",
+          "items": [
+            "영향: Zimbra 10.0 **10.0.18 미만**, 10.1 **10.1.13 미만** 범위",
+            "수집: 최근 90일 메일·Global Address List·기타 민감정보를 actor-controlled server로 exfiltration 시도",
+            "지속성: app-specific password·mailbox setting 등 계정 접근 유지 수단을 별도 확인할 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "mailbox는 password reset, MFA recovery, cloud invitation과 운영 알림이 모이는 identity-adjacent asset임. 패치가 취약점 경로를 닫아도 이미 생성된 persistence와 탈취 credential은 자동으로 되돌리지 않음.",
+          "items": [
+            "증거 경계: CISA는 지속 악용을 경고하지만 모든 Zimbra deployment의 compromise를 의미하지 않음",
+            "우선순위: internet-facing webmail·privileged mailbox·MFA recovery mailbox를 exposure와 중요도로 분류",
+            "조사: user click·attachment 실행이 없어도 message-render event와 DNS egress를 함께 확인할 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "메일 플랫폼의 emergency patch는 version upgrade만으로 종료할 수 없음. post-compromise artifact와 identity session을 함께 정리해야 하며, long-term support release와 mail telemetry를 change evidence로 남겨야 함.",
+          "items": [
+            "팀 액션: ZCS version·external exposure·Classic UI 사용 여부를 inventory로 대조",
+            "팀 액션: app-specific password·forward/filter·delegate·admin audit·unusual DNS query를 보존·hunt",
+            "팀 액션: 고위험 계정 credential rotation과 session revoke, forwarding rollback을 incident workflow로 실행",
+            "팀 액션: patch 뒤 mail flow·MFA·backup/restore·monitoring alert를 canary 계정으로 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-215",
+      "title_ko": "Amazon Bedrock AgentCore, agent별 단일 CloudWatch log group에 trace·prompt·로그 통합",
+      "title_original": "Amazon Bedrock AgentCore now delivers unified observability with traces and logs in a single log group",
+      "summary": "핵심: AWS가 AgentCore Runtime의 trace span, prompt·input·output event, structured log, stdout를 agent별 단일 CloudWatch log group으로 통합. 변화: 기존 shared `aws/spans`와 resource-specific log group 분산 구조를 제거해 agent 단위 IAM·CMK encryption·subscription과 debugging correlation을 단순화. 운영: 기존 agent는 `UNIFIED_TRACES_DESTINATION_ENABLED=true`와 ADOT 0.17.1 이상 적용 여부를 rollout·retention·sensitive prompt logging 정책과 함께 검증 필요.",
+      "detail": "AWS는 Amazon Bedrock AgentCore가 agent telemetry를 단일 per-agent CloudWatch log group으로 보낸다고 발표했다. 이전에는 trace span이 shared `aws/spans` log group, prompt·input·output event가 resource-specific log group에 분산됐다. 새 경로는 `/aws/bedrock-agentcore/runtimes/<agent_id>-<endpoint_name>`에 trace, prompt, structured log, stdout를 함께 기록하며, 신규 agent는 2026년 7월 20일부터 supported commercial Region에서 기본 적용된다. 기존 agent는 runtime environment variable `UNIFIED_TRACES_DESTINATION_ENABLED=true`와 ADOT 0.17.1 이상이 필요하므로, prompt/PII logging scope, KMS key, IAM reader, retention, subscription destination을 migration change로 검증해야 한다.",
+      "why_it_matters": "agent 실행은 model trace만으로 tool call·runtime error·prompt injection signal·cost attribution을 연결하기 어려움. per-agent log group은 access control과 KMS encryption boundary를 agent별로 나눌 수 있게 하지만, prompt·input·output이 한 위치에 모이므로 data classification·retention·egress 통제가 더 중요해짐.",
+      "engineering_implication": "AWS platform 팀은 AgentCore inventory를 신규·기존 runtime으로 나누고, 기존 runtime의 ADOT version과 environment variable rollout을 canary로 검증 필요. agent ID별 IAM least privilege, CMK key policy, log retention, cross-account subscription, redaction, trace correlation ID를 설계하고, CloudWatch Logs 비용·query·export volume을 success task당 운영비에 포함 필요.",
+      "korea_implication": "국내 금융·공공의 agent PoC는 observability 통합을 감사 증적 개선으로 볼 수 있으나, prompt·input·output의 log residency·PII masking·KMS key ownership·SOC export 경로를 사전 통제 조건으로 명시할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Cloud",
+        "AWS",
+        "Amazon Bedrock",
+        "AgentCore",
+        "Observability",
+        "CloudWatch",
+        "AI Agent"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-07-24 02:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-bedrock-agentcore-unified-observability-single-log-group/",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon Bedrock AgentCore Developer Guide",
+          "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 AgentCore Runtime telemetry를 agent별 단일 CloudWatch log group으로 전달하는 기능을 공개함. AWS What’s New RSS `pubDate` 2026-07-23 17:00 UTC를 2026-07-24 02:00 KST로 변환함.",
+          "items": [
+            "대상: Amazon Bedrock AgentCore Runtime의 agent trace·event·runtime log",
+            "기본 경로: `/aws/bedrock-agentcore/runtimes/<agent_id>-<endpoint_name>`",
+            "신규 agent: supported AWS commercial Region에서 2026-07-20부터 default 적용"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기존 AgentCore는 trace span을 shared `aws/spans`에, prompt·input·output event를 resource-specific log group에 나눠 기록함. 새 구조는 trace, prompt, structured log, stdout를 agent 단위로 모음.",
+          "items": [
+            "운영 변화: 단일 query scope에서 invocation trace와 runtime error correlation 가능",
+            "보안 변화: agent별 IAM policy와 customer-managed key encryption scope 적용 가능",
+            "export 변화: agent별 log group subscription 하나로 downstream telemetry 전달 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "multi-agent debugging에서는 caller·tool·runtime의 telemetry가 여러 destination에 흩어지면 incident timeline 재구성이 느려짐. 단일 log group은 ownership과 query를 단순화하지만 prompt·input·output의 집중 보관으로 민감정보 노출 범위도 명확해짐.",
+          "items": [
+            "경계: AWS 발표는 operational observability 기능이며 prompt redaction·PII classification을 자동 보장하지 않음",
+            "비용: trace·prompt·stdout 통합 보관이 ingestion·retention·query·subscription 비용을 증가시킬 수 있음",
+            "감사: agent별 reader role·KMS key·retention·export destination을 control evidence로 관리할 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "기존 AgentCore runtime은 configuration migration으로 처리해야 함. application code 변경 없이도 telemetry destination과 access boundary가 달라질 수 있으므로 staging canary와 rollback 기준을 먼저 정해야 함.",
+          "items": [
+            "팀 액션: runtime별 ADOT version과 `UNIFIED_TRACES_DESTINATION_ENABLED=true` 적용 상태 inventory",
+            "팀 액션: agent ID별 IAM least privilege·CMK key policy·retention·redaction을 template화",
+            "팀 액션: trace ID로 tool call·error·approval·egress log를 연결하는 runbook 검증",
+            "팀 액션: CloudWatch ingestion·storage·subscription·SIEM export 비용을 agent workload SLO와 함께 측정"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-212",
       "title_ko": "Claude Cowork 로컬 VM 탈출 보고: guest root 획득 뒤 Mac 전체 파일시스템 접근 경로",
       "title_original": "Claude Cowork Flaw Could Let AI Agent Escape Its VM and Access Mac Files",
@@ -266,7 +419,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-209",
@@ -341,7 +494,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-210",
@@ -426,7 +579,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-213",
@@ -508,7 +661,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-208",
@@ -576,11 +729,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-207",
-      "rank": 6,
+      "rank": 8,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -734,7 +887,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-204",
@@ -799,7 +952,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-205",
@@ -865,7 +1018,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-203",
@@ -930,7 +1083,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-202",
@@ -1026,7 +1179,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-198",
@@ -1091,7 +1244,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-199",
@@ -1155,7 +1308,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-200",
@@ -1234,7 +1387,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-201",
@@ -1316,7 +1469,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-196",
@@ -1401,7 +1554,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-197",
@@ -1477,7 +1630,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-195",
@@ -1556,7 +1709,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-193",
@@ -1641,7 +1794,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-194",
@@ -1720,7 +1873,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-191",
@@ -1788,7 +1941,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-190",
@@ -1874,7 +2027,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-192",
@@ -1946,7 +2099,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-188",
@@ -2012,7 +2165,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-189",
@@ -2079,11 +2232,11 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-187",
-      "rank": 26,
+      "rank": 28,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -2251,7 +2404,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-182",
@@ -2317,7 +2470,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-180",
@@ -2402,7 +2555,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-185",
@@ -2477,7 +2630,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-186",
@@ -2557,7 +2710,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-181",
@@ -2631,7 +2784,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-183",
@@ -2702,7 +2855,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-179",
@@ -2786,7 +2939,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-184",
@@ -2866,7 +3019,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-178",
@@ -2963,7 +3116,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-176",
@@ -3033,7 +3186,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-177",
@@ -3099,7 +3252,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-173",
@@ -3174,7 +3327,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-172",
@@ -3244,7 +3397,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-171",
@@ -3324,7 +3477,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-175",
@@ -3399,7 +3552,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-174",
@@ -3506,7 +3659,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-170",
@@ -3590,7 +3743,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-169",
@@ -3675,7 +3828,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-167",
@@ -3762,7 +3915,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-168",
@@ -3857,7 +4010,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-165",
@@ -3930,178 +4083,7 @@
           ]
         }
       ],
-      "rank": 48
-    },
-    {
-      "id": "news-162",
-      "rank": 49,
-      "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
-      "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
-      "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
-      "detail": "Microsoft의 2026년 7월 Patch Tuesday는 622개 CVE를 수정하며, 활성 공격 중인 SharePoint Server CVE-2026-56164와 AD FS CVE-2026-56155를 포함한다. SharePoint 2016·2019는 같은 날 연장 지원 종료에 도달했고, RC4 Kerberos 강화 변경은 패치 전 서비스 계정 감사·AES 키 재생성이 필요한 운영 변경이다.",
-      "why_it_matters": "문서 협업과 연합 인증은 조직 권한 경계의 중심 계층이다. 공개된 CVSS만으로 우선순위를 정하면 이미 악용 중인 SharePoint·AD FS 결함과 인증 호환성 변경을 놓칠 수 있다.",
-      "engineering_implication": "패치 창 전에 인터넷 노출 SharePoint와 AD FS를 자산·권한 기준으로 분리해 우선 배치하고, RC4 audit event로 영향 서비스 계정을 식별한 뒤 비밀번호 회전·AES 키 생성·로그인 회귀 시험을 순서대로 수행 필요.",
-      "korea_implication": "국내 기업의 온프레미스 SharePoint·AD FS와 하이브리드 Microsoft 365 연동 환경은 본사·계열사·외주 계정의 연합 인증 의존성을 함께 점검할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Microsoft",
-        "Patch Tuesday",
-        "SharePoint",
-        "AD FS",
-        "Kerberos"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-15 05:25",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/microsoft-patches-record-622-flaws.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi34s_9ywUXjSc5OtF7-fDiAqSa3H-UHpJfACXyULY5ziUlM67mCJHWee9tluTiGm7ZRhMy36SLal2CUjqwJHZ8vdHuFstRwJhPGLAXe49as-o3nRE-QAyRs2mx3og8eVdWdnzzr9LwGMXckMix80XOQPsWiE30xqqYGG3PNjjpVTCpLsnW77pCk_3MyKQ/s1600/ms=patch.jpg",
-      "local_image": "assets/images/news-162.jpg",
-      "related_links": [
-        {
-          "title": "Microsoft Security Update Guide — July 2026",
-          "url": "https://msrc.microsoft.com/update-guide/releaseNote/2026-Jul"
-        },
-        {
-          "title": "Microsoft CVE-2026-56164 advisory",
-          "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-56164"
-        },
-        {
-          "title": "Microsoft CVE-2026-56155 advisory",
-          "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-56155"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Microsoft의 7월 Patch Tuesday가 Security Update Guide 기준 622개 CVE를 수정함. The Hacker News 보도는 이 중 이미 악용 중이라고 표시된 온프레미스 SharePoint Server와 AD FS 권한 상승 결함을 우선 조치 대상으로 정리함.",
-          "items": [
-            "규모: Microsoft 기준 **622개 CVE** 수정이며 전월 약 200개 수준의 이전 최고치보다 3배 이상 많은 물량",
-            "활성 악용: `CVE-2026-56164`는 온프레미스 SharePoint Server의 네트워크 권한 상승 결함으로 Microsoft가 공격 중 악용을 표시",
-            "활성 악용: `CVE-2026-56155`는 AD FS의 접근 통제 약점을 통한 로컬 권한 상승 결함으로 Microsoft가 공격 중 악용을 표시"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "SharePoint 결함은 인증 없이 원격에서 권한 상승이 가능하다고 보도됐고, AD FS 결함은 이미 인증된 공격자의 권한 상승 경로로 설명됨. 두 시스템은 문서 저장소와 토큰 발급 경계를 맡아 CVSS 숫자보다 자산 노출도와 권한 파급을 먼저 평가해야 함.",
-          "items": [
-            "SharePoint: `CVE-2026-56164`는 자격 증명·사용자 상호작용 없이 네트워크 경로에서 권한 상승 가능한 조건으로 설명",
-            "지원 종료: SharePoint Server 2016·2019가 같은 날 연장 지원 종료에 도달하며 유료 ESU 대안이 없다는 점 확인",
-            "추가 위험: SharePoint JWT 인증 우회 `CVE-2026-55040`은 별도 RCE와 연결 가능한 경로로 언급됐고 RCE 수정은 8월 예정",
-            "Windows 범위: 622개 중 Windows가 416개를 차지하며, VMSwitch RCE `CVE-2026-57092`는 CVSS 9.9로 보도"
-          ]
-        },
-        {
-          "heading": "변경 관리와 인증 영향",
-          "body": "이번 업데이트는 취약점 수정 외에 다년간 진행된 Kerberos RC4 강화의 rollback switch를 제거함. RC4 ticket을 요구하는 legacy service account가 남아 있으면 보안 패치 적용 직후 인증 실패가 발생할 수 있어 변경 창의 관찰 계획이 필요함.",
-          "items": [
-            "변경: `RC4DefaultDisablementPhase` rollback switch 제거로 RC4는 명시 허용 계정에서만 동작하는 조건",
-            "점검 순서: 1월부터 제공된 RC4 audit event로 영향 계정을 찾고, 해당 service account 비밀번호 회전으로 AES 키 생성 후 패치 적용 필요",
-            "한계: 비밀번호 회전은 AES 키가 없는 계정 문제를 해결하는 조치이며 RC4 전용 legacy client는 별도 호환성 대응 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "SharePoint와 AD FS는 파일·협업 데이터 및 조직 간 인증 신뢰를 연결하는 계층임. 인터넷 노출 여부, privileged group 연계, token-signing 의존성을 함께 평가하지 않으면 월간 패치 수량만 처리하고 침해 우선순위를 놓칠 수 있음.",
-          "items": [
-            "우선순위: CISA KEV 등재 여부를 기다리지 말고 Microsoft의 exploited 표시와 인터넷 노출 자산을 기준으로 긴급 패치 대상 분류 필요",
-            "관측: SharePoint 권한 상승, AD FS 관리자 권한·토큰 발급 이상, RC4 Kerberos ticket 요청을 SIEM과 EDR 탐지 항목으로 결합 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "이번 배포는 보안 패치와 인증 호환성 변경이 같은 변경 창에 묶인 사례임. 보안팀·Windows 플랫폼팀·IAM팀이 단일 change record에서 patch compliance, RC4 영향 계정, 로그인 실패율, rollback 조건을 함께 승인해야 함.",
-          "items": [
-            "팀 액션: 외부 노출 SharePoint와 AD FS를 우선 패치하고 AMSI Full Mode·관리자 접근 로그·token-signing 인증서 변경을 확인",
-            "운영 지표: 자산별 패치 완료율, RC4 audit 이벤트 수, 서비스 계정 AES 전환율, 인증 실패율을 변경 창 종료 기준으로 사용 필요"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-163",
-      "rank": 50,
-      "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
-      "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
-      "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
-      "detail": "AWS 공식 발표에 따르면 GuardDuty AI Protection은 Amazon Bedrock과 SageMaker의 CloudTrail 관리·데이터 이벤트를 분석해 비정상 invocation, cost harvesting, Bedrock Guardrails 연계 프롬프트 주입 시도를 탐지한다. 30일 무료 평가가 제공되며 Security Hub와 Organizations 중앙 활성화 경로를 지원한다. 탐지 범위·요금·CloudTrail 데이터 이벤트 수집 비용은 실제 계정·리전·서비스 구성에서 별도 검증이 필요하다.",
-      "why_it_matters": "AI API의 비정상 호출은 데이터 접근과 비용 폭증을 함께 일으킬 수 있지만, 일반 IAM 경보만으로는 모델 invocation 문맥을 분리하기 어렵다. Bedrock·SageMaker 사용 조직은 GuardDuty finding을 model·principal·region·token/GPU 비용 지표와 결합해야 한다.",
-      "engineering_implication": "보안·플랫폼 팀은 GuardDuty AI Protection을 제한된 계정에서 먼저 활성화하고 CloudTrail data event, Bedrock Guardrails, Security Hub routing, 비용 anomaly 대응 runbook을 연결한 뒤 Organizations 정책으로 확대할 필요.",
-      "korea_implication": "국내 AWS 사용 조직은 다계정 AI 실험 환경에서 비용센터·개인정보 처리 경계·국외 리전 사용 여부를 Security Hub finding과 CloudTrail 보존 정책에 함께 매핑할 필요.",
-      "category": "Security",
-      "tags": [
-        "AWS",
-        "GuardDuty",
-        "Bedrock",
-        "SageMaker",
-        "AI Security",
-        "CloudTrail"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-07-15 04:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-guardduty-ai-protection-aws/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Amazon GuardDuty AI Protection 사용자 안내",
-          "url": "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty-ai-protection.html"
-        },
-        {
-          "title": "Amazon GuardDuty 요금",
-          "url": "https://aws.amazon.com/guardduty/pricing/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 GuardDuty AI Protection을 발표해 Bedrock과 SageMaker AI workload의 위협 탐지 범위를 확장함.",
-          "items": [
-            "대상: Amazon Bedrock·Amazon SageMaker의 AI workload를 GuardDuty 탐지 대상으로 추가",
-            "입력: 해당 서비스의 CloudTrail management event와 data event를 분석하는 구조",
-            "배포: GuardDuty 또는 Security Hub console에서 활성화하고 AWS Organizations로 다계정 중앙 적용 가능"
-          ]
-        },
-        {
-          "heading": "탐지 범위와 신호",
-          "body": "AWS 발표는 AI 서비스 특화 위협으로 비정상 모델 invocation, 비용 수확, 프롬프트 주입 시도를 명시함.",
-          "items": [
-            "이상 호출: 평소와 다른 모델 invocation pattern을 finding으로 식별하는 범위",
-            "비용 수확: 공격자가 GPU 시간과 token 소비를 강제하는 cost harvesting을 탐지 대상으로 제시",
-            "프롬프트 주입: Amazon Bedrock Guardrails 연계 신호를 통해 injection attempt를 탐지하는 경로"
-          ]
-        },
-        {
-          "heading": "검증 경계와 운영 조건",
-          "body": "공식 발표는 기능 제공 범위와 통합 경로를 설명하지만 계정별 탐지 품질·요금·리전 가용성은 workload 설정에 따라 달라질 수 있음.",
-          "items": [
-            "평가: GuardDuty 고객에게 30일 무료 평가 제공이라는 발표 조건",
-            "범위: 모든 AI attack을 차단하는 기능이 아니라 CloudTrail·Guardrails 기반 신호를 finding으로 만드는 탐지 계층",
-            "비용: CloudTrail data event 수집량, GuardDuty 요금, Security Hub 처리량을 실제 호출량과 함께 검증 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AI inference workload는 IAM 권한, 모델 호출, token·GPU 비용, prompt 입력이 한 요청 흐름에 묶여 있어 보안과 FinOps를 같은 이벤트 축에서 다뤄야 함.",
-          "items": [
-            "관측: Security Hub로 finding을 모아 model·principal·account·region 단위 triage를 설계할 필요",
-            "대응: token·GPU 비용 급증과 GuardDuty 이상 호출 finding의 시간 상관을 incident runbook에 추가 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "중앙 활성화 전에 탐지 신호가 실제 owner와 대응 절차로 이어지는지 검증해야 함.",
-          "items": [
-            "팀 액션: sandbox 계정에서 AI Protection, CloudTrail data event, Guardrails, Security Hub ticket routing을 함께 시험",
-            "팀 액션: model invocation baseline, 비용 anomaly 임계값, prompt injection finding의 담당자·차단·사후 분석 절차를 문서화"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }

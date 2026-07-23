@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-24 | Total pages: 208
+> Last updated: 2026-07-24 | Total pages: 210
 
 ## Entities
 
@@ -27,6 +27,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cisa-zimbra-laundry-bear-2026-07-24]] — CISA AA26-204A의 LAUNDRY BEAR Zimbra CVE-2025-66376 지속 악용·계정 대응 범위.
+- [[raw/articles/aws-agentcore-unified-observability-2026-07-24]] — AgentCore agent별 trace·prompt·runtime log 단일 CloudWatch log group 전환 조건.
 - [[raw/articles/claude-cowork-sharedroot-2026-07-23]] — Claude Cowork local VM의 SharedRoot guest-root·host mount sandbox escape 경계.
 - [[raw/articles/msit-agentic-ai-initiative-2026-07-23]] — 과기정통부 에이전틱 AI 이니셔티브의 안전·신뢰·실행 기반·도입 정책 범위.
 - [[raw/articles/upstage-solar-open-2-2026-07-23]] — Solar Open 2의 250B-A15B MoE·1M context와 공식 H200 4/8장 배포 baseline·양자화 artifact 경계.
