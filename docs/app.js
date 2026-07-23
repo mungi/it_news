@@ -253,6 +253,14 @@ function updateHeader() {
   const data = state.data;
   const updatedBadge = $("#topUpdatedBadge");
   const coverageMeta = $("#coverageMeta");
+  const headlineItemCount = $("#headlineItemCount");
+  const itemCount = Array.isArray(data.items) ? data.items.length : 0;
+  // The weekly data may legitimately contain fewer than the 40–50 target.
+  // Keep the presentation headline truthful instead of hard-coding "50".
+  if (headlineItemCount) headlineItemCount.textContent = itemCount ? String(itemCount) : "";
+  document.title = itemCount
+    ? `이번 주 AI·Cloud·Infra 핵심 뉴스 ${itemCount}`
+    : "이번 주 AI·Cloud·Infra 핵심 뉴스";
   updatedBadge.textContent = `최종 업데이트: ${data.last_updated_kst || "-"} KST`;
   updatedBadge.classList.add("pill-muted");
   if (coverageMeta) {
