@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-23 | Total pages: 206
+> Last updated: 2026-07-24 | Total pages: 208
 
 ## Entities
 
@@ -27,6 +27,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/claude-cowork-sharedroot-2026-07-23]] — Claude Cowork local VM의 SharedRoot guest-root·host mount sandbox escape 경계.
+- [[raw/articles/msit-agentic-ai-initiative-2026-07-23]] — 과기정통부 에이전틱 AI 이니셔티브의 안전·신뢰·실행 기반·도입 정책 범위.
 - [[raw/articles/upstage-solar-open-2-2026-07-23]] — Solar Open 2의 250B-A15B MoE·1M context와 공식 H200 4/8장 배포 baseline·양자화 artifact 경계.
 - [[raw/articles/aws-nlb-listener-rules-dual-stack-2026-07-23]] — AWS NLB listener rule의 dual-stack IPv4·IPv6 target routing과 원본 client IP 보존 운영 경계.
 - [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
