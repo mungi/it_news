@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-23 | Total pages: 204
+> Last updated: 2026-07-23 | Total pages: 205
 
 ## Entities
 
@@ -85,6 +85,7 @@
 - [[raw/articles/aws-eks-efa-placement-groups-2026-07-22]] — EKS Auto Mode·Karpenter EFA·placement group node pool의 topology·capacity 검증 경계.
 - [[raw/articles/windmill-cve-2026-29059-active-exploitation-2026-07-22]] — Windmill CVE-2026-29059 file read·superadmin secret·workflow execution incident chain.
 - [[raw/articles/aitimes-msit-cybersecurity-foundation-model-2026-07-23]] — 과기정통부 보안 특화 AI 파운데이션 모델 공모의 GPU 지원·중간평가·운영 검증 경계.
+- [[raw/articles/check-point-smartconsole-cve-2026-16232-2026-07-23]] — Check Point SmartConsole 인증 우회 CVE-2026-16232의 노출 조건·hotfix·관리 plane 대응 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

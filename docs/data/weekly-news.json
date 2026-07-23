@@ -2,10 +2,10 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-23 14:00",
+  "last_updated_kst": "2026-07-23 18:06",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Windmill CVE-2026-29059: unauthenticated file read는 `SUPERADMIN_SECRET` 설정 시 privileged job preview 실행 경로로 확장 가능하므로 patch·rotation·hunt 병행.",
+    "Check Point SmartConsole CVE-2026-16232: 인터넷 노출·Trusted Clients 미제한 Management Server는 인증 우회로 policy 변경 가능하므로 hotfix·allowlist·IoC hunt 병행.",
     "AWS EKS EFA·placement group: Auto Mode·Karpenter node pool의 network topology 제어는 GPU job capacity·scheduler·collective tail latency와 함께 검증.",
     "Azure DevOps·Kiro MCP 사례: 비신뢰 협업 콘텐츠와 agent tool 권한·외부 전송을 분리하고 tool-call audit을 유지.",
     "Google Gemini 모델 routing: token 가격만이 아니라 tool call·retry·tail latency·human review를 포함한 성공 작업당 비용 측정.",
@@ -186,6 +186,81 @@
   ],
   "items": [
     {
+      "id": "news-209",
+      "title_ko": "Check Point SmartConsole CVE-2026-16232 활성 악용: 외부 노출 Management Server의 인증 우회·정책 변조 대응",
+      "title_original": "Check Point Patches Exploited SmartConsole Flaw Allowing Full Admin Access",
+      "summary": "핵심: Check Point가 SmartConsole login 인증 우회 `CVE-2026-16232`의 제한적 표적 공격을 확인하고 7월 22일 Jumbo hotfix를 배포. 조건: Management Server가 인터넷에 직접 노출되고 Trusted Clients IP 제한이 없을 때 원격 비인증 공격자가 login token으로 전체 관리자 권한을 얻어 security policy·configuration을 변경 가능한 범위. 대응: 노출 경로 차단·Trusted Clients allowlist·hotfix와 IoC hunt를 하나의 incident change로 수행 필요.",
+      "detail": "Check Point SmartConsole login 인증 우회 CVE-2026-16232는 CVSS 9.3이며, 원격 비인증 공격자가 application login token을 얻어 full administrative privileges로 인증할 수 있는 결함이다. Check Point는 소수 고객을 대상으로 한 표적 공격을 인지해 통지했다고 밝혔지만 공격 방식·발견 시점은 공개하지 않았다. 악용에는 인터넷에서 Management Server IP에 접근 가능하고 Trusted Clients 제한이 없는 특정 구성이 필요하다. 7월 22일 Jumbo hotfix 적용, Management access Firewall 보호, Trusted Clients를 신뢰 IP/subnet으로 제한하고 제시된 IoC를 로그에서 확인해야 한다. 같은 업데이트에는 MDSM 관리 명령 실행으로 이어질 수 있는 CVE-2026-62144와 Gaia Portal의 root 권한 상승 CVE-2026-62145도 포함된다.",
+      "why_it_matters": "Security Management와 MDSM은 gateway policy·configuration을 제어하는 control plane이다. 해당 경로가 인터넷에 노출된 조직은 단순 client vulnerability가 아니라 firewall 정책 변경과 관리 plane 장악 가능성을 incident 우선순위로 다뤄야 한다. 공개 자료는 소수 표적 공격을 말할 뿐 모든 환경의 침해를 증명하지 않으므로, 노출 조건과 로그 증거를 분리해 판단해야 한다.",
+      "engineering_implication": "네트워크·보안 팀은 Management Server public exposure, Trusted Clients 설정, Security Management/MDSM version, hotfix 적용 상태를 즉시 inventory하고 allowlist·Firewall 보호를 먼저 적용 필요. hotfix 전후 login token issuance, SmartConsole authentication, policy install, administrator session, 제시 IoC 접속을 보존·hunt하며, 변경 후 HA·관리 client 연결·policy deployment rollback을 검증 필요.",
+      "korea_implication": "국내 Check Point 관리망 운영 조직은 본사·원격운영·MSSP 경로에서 Management Server가 internet-facing NAT·VPN 우회 경로로 노출되지 않는지 확인하고, GUI client subnet allowlist와 관리 plane 분리 정책을 갱신 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Check Point",
+        "SmartConsole",
+        "CVE-2026-16232",
+        "Authentication Bypass",
+        "Network Security",
+        "KEV"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-07-23 15:34",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/07/check-point-patches-exploited.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiTBN3LZDMeKkPoMsoNtsGp_s0KYwVrmhhKHQsQtqgtAN1WAKeS7L-aN1hiehoBwnPi6f1gziIEecy5GlPdAVlWKPlzVprrqHLTLE3tcMZu4NK8QDoRxxS22HEFxfIpyrXnqr8O9b9akb1VVr9dmmmdwzHmhTFTVX4Cpv6WkFwSpz62tr6XKEDvKp5m0aUu/s1700-e365/checkpoint.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Check Point security advisory: CVE-2026-16232 active exploitation",
+          "url": "https://blog.checkpoint.com/security/security-advisory-action-required-active-exploitation-of-check-point-smartconsole-authentication-bypass-cve-2026-16232/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Check Point가 Security Management와 Multi-Domain Management 제품에 영향을 주는 보안 업데이트를 배포했고, SmartConsole login 인증 우회 `CVE-2026-16232`가 제한된 표적 공격에 사용된 사실을 인지했다고 밝힘. The Hacker News RSS `pubDate` 2026-07-23 12:04:36 +05:30을 2026-07-23 15:34 KST로 변환함.",
+          "items": [
+            "식별: **CVE-2026-16232**, CVSS 9.3의 SmartConsole login authentication bypass",
+            "영향: 비인증 원격 공격자가 application login token을 얻어 full administrative privileges로 인증 가능한 조건",
+            "관측: Check Point가 소수 고객 targeting을 인지·통지했으나 공격 방식과 발견 시점은 비공개 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원격 악용에는 Management Server IP의 인터넷 접근성과 Trusted Clients GUI client 제한 부재라는 특정 configuration이 필요함. 성공 시 security policy와 configuration 변경이 가능한 설명이며, 일반 endpoint가 아닌 관리 control plane의 권한 경계 문제임.",
+          "items": [
+            "조건: Management Server가 인터넷에 직접 노출되고 Trusted Clients IP restriction이 없는 구성",
+            "수정: Check Point가 **7월 22일 Jumbo hotfix** 적용을 권고",
+            "동시 수정: CVE-2026-62144는 특정 노출 조건에서 MDSM administrative command 실행 가능 범위",
+            "동시 수정: CVE-2026-62145는 read-only Gaia Portal 사용자의 root command 실행 가능 범위"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "Security Management와 MDSM은 gateway policy와 security configuration을 관리하는 control plane임. 인증 우회가 실제 노출 configuration과 결합하면 traffic policy·관리 설정의 무단 변경으로 이어질 수 있으므로, patch backlog가 아닌 exposure-driven incident로 처리해야 함.",
+          "items": [
+            "경계: 공개 자료는 소수 고객 targeting을 언급할 뿐 모든 Check Point 환경의 compromise를 증명하지 않은 범위",
+            "위험 판단: version만이 아니라 public NAT·reverse route·Firewall protection·Trusted Clients 설정을 함께 확인",
+            "우선순위: internet-facing Management Server는 일반 remote-management asset과 분리해 emergency change 대상으로 처리"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "hotfix 적용 뒤에도 기존 administrator session, login token issuance, policy install과 network connection evidence를 검토해야 함. 관리 plane 노출을 private network 또는 identity-aware access로 축소하고, trusted subnet allowlist·Firewall·관리 client 경로를 change evidence로 보존해야 함.",
+          "items": [
+            "팀 액션: Security Management/MDSM version·Jumbo hotfix·HA peer·Management Server public exposure inventory",
+            "팀 액션: Trusted Clients를 신뢰 IP/subnet으로 제한하고 Management access Firewall 보호 확인",
+            "팀 액션: vendor 제시 IoC와 SmartConsole authentication·policy install·administrator session을 SIEM에서 hunt",
+            "팀 액션: patch 후 management client 연결·policy deployment·HA failover·rollback 절차 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-208",
       "title_ko": "과기정통부, 보안 특화 AI 파운데이션 모델 공모 착수: B200 256장·중간평가 기반 국내 오픈소스 보안 모델 개발",
       "title_original": "과기부 ‘사이버 보안 특화 AI 파운데이션 모델 개발’ 사업 공모",
@@ -251,11 +326,11 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-207",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -409,7 +484,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-204",
@@ -474,7 +549,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-205",
@@ -540,7 +615,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-203",
@@ -605,7 +680,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-202",
@@ -701,7 +776,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-198",
@@ -766,7 +841,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-199",
@@ -830,7 +905,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-200",
@@ -909,7 +984,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-201",
@@ -991,7 +1066,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-196",
@@ -1076,7 +1151,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-197",
@@ -1152,7 +1227,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-195",
@@ -1231,7 +1306,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-193",
@@ -1316,7 +1391,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-194",
@@ -1395,7 +1470,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-191",
@@ -1463,7 +1538,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-190",
@@ -1549,7 +1624,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-192",
@@ -1621,7 +1696,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-188",
@@ -1687,7 +1762,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-189",
@@ -1754,11 +1829,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-187",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -1926,7 +2001,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-182",
@@ -1992,7 +2067,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-180",
@@ -2077,7 +2152,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-185",
@@ -2152,7 +2227,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-186",
@@ -2232,7 +2307,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-181",
@@ -2306,7 +2381,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-183",
@@ -2377,7 +2452,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-179",
@@ -2461,7 +2536,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-184",
@@ -2541,7 +2616,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-178",
@@ -2638,7 +2713,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-176",
@@ -2708,7 +2783,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-177",
@@ -2774,7 +2849,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-173",
@@ -2849,7 +2924,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-172",
@@ -2919,7 +2994,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-171",
@@ -2999,7 +3074,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-175",
@@ -3074,7 +3149,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-174",
@@ -3181,7 +3256,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-170",
@@ -3265,7 +3340,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-169",
@@ -3350,7 +3425,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-167",
@@ -3437,7 +3512,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-168",
@@ -3532,7 +3607,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-165",
@@ -3605,11 +3680,11 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-162",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -3697,7 +3772,7 @@
     },
     {
       "id": "news-163",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -3854,7 +3929,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-161",
@@ -3920,7 +3995,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-159",
@@ -4001,90 +4076,6 @@
             "팀 액션: agent별 read file 목록, Git metadata·history 포함 여부, storage endpoint, retention·delete API를 egress inventory에 추가",
             "팀 액션: secrets canary가 든 sandbox repository로 network capture·DLP alert·server-side deletion을 사전 검증",
             "팀 액션: production 저장소는 최소 권한 token, pre-commit secret scan, allowlisted workspace, vendor ZDR 증빙을 함께 적용"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-160",
-      "title_ko": "148개 npm 패키지, 학생용 웹 프록시로 위장해 방문자 브라우저를 DDoS 노드로 사용",
-      "title_original": "148 npm Packages Disguised as Student Proxies Turned Browsers Into a DDoS Botnet",
-      "summary": "핵심: JFrog가 `terminal3airport`·`eerikakirk` 계정과 연결된 **148개 npm 패키지**에서 학생용 프록시로 위장한 원격 코드 loader와 Wisp WebSocket traffic generator를 확인. 영향: 설치 단계가 아니라 프록시 사이트를 연 방문자의 브라우저가 HTTP flood·connection churn에 동원되는 registry-abuse 사례.",
-      "detail": "JFrog는 5월 말과 7월 8일 업로드된 패키지군을 분석해, mutable `main` branch에서 script를 불러오고 SRI 없이 동일 origin 권한으로 실행하는 구조를 설명함. 원격 payload·Wayback archive 기반 분석이므로 특정 피해 규모나 현재 모든 package의 활성 상태로 일반화하지 말고, package registry와 사내 artifact proxy의 배포·접속 신호를 함께 조사해야 함.",
-      "why_it_matters": "npm 공급망 위협이 install hook·dependency 탈취만이 아니라 registry를 정적 web hosting/CDN으로 악용해 최종 사용자 브라우저를 공격 자원으로 쓰는 경로까지 확장됨. 개발팀은 패키지 설치 시점 외에도 자사 웹·프록시 서비스가 불러오는 mutable third-party script를 통제해야 함.",
-      "engineering_implication": "플랫폼·보안 팀은 package allowlist와 lifecycle hook 검사에 더해, CDN의 mutable branch 참조·SRI 누락·원격 loader·비정상 WebSocket fan-out을 CI, CSP, egress telemetry에서 탐지하고 artifact proxy의 package removal·block 절차를 준비할 필요.",
-      "korea_implication": "국내 교육·공공망에서 우회 프록시 사용이 발생할 수 있으므로, 학교·기업 보안팀은 registry hosted proxy와 브라우저 단의 대량 WebSocket 연결을 DNS·CASB·secure web gateway 신호로 점검할 필요.",
-      "category": "Security",
-      "tags": [
-        "npm",
-        "Supply Chain",
-        "DDoS",
-        "Browser Security",
-        "WebSocket",
-        "JFrog"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-14 16:08",
-      "source_name": "The Hacker News / JFrog",
-      "source_url": "https://thehackernews.com/2026/07/148-npm-packages-disguised-as-student.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAJ1TN76Et1GvWFCTaivnNcys4rEEVk1QEd6WIb0wu3cxroYcwng-0a0uM8eyHdrOuiHLU8lFJg5eFzSbZj95aEfXVnletlFE9BKsDJP_0uV4w9-YbHg7p9LuMyRMcj4rJPftYmIYCcD3_VmbgFrGuaJ6yqUuJgIvVtbqlNUPrkJO2FSuFQ6dJ7gzKFV0/s1700-e365/lucide-botnet.jpg",
-      "related_links": [
-        {
-          "title": "JFrog Security Research 원문",
-          "url": "https://research.jfrog.com/post/lucide-proxy-npm-malware-campaign/"
-        },
-        {
-          "title": "SafeDep 초기 advisory",
-          "url": "https://safedep.io/malicious-npm-terminal3airport-proxy-adware-spam/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "JFrog가 학생용 웹 프록시처럼 보이는 Lucide proxy 앱을 배포한 npm package campaign을 분석함.",
-          "items": [
-            "규모: `ilovefemboys`, `miguelphonk`, `charlie-kirk` 등을 포함한 148개 package 확인",
-            "시점: 첫 물결은 5월 27일 `terminal3airport`, 후속 물결은 7월 8일 `eerikakirk` 계정에서 업로드된 것으로 JFrog가 설명",
-            "전달 경로: package는 install hook이나 native build script 없이 npm registry를 정적 browser app hosting으로 악용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "사용자가 프록시 페이지를 열면 정상 우회 기능 뒤에서 remote loader와 WebSocket generator가 브라우저 권한으로 동작하는 구조임.",
-          "items": [
-            "loader: GitHub의 mutable `main` branch script를 jsDelivr로 가져오며 pinned commit·Subresource Integrity가 없는 조건",
-            "HTTP flood: archive된 payload는 500ms마다 100만 글자 문자열을 `no-cors` POST로 보내도록 구성된 것으로 분석",
-            "WebSocket: 원격 `websocket.txt`에서 target·socket 수를 받고 Wisp endpoint에 최대 1,024개 연결을 여는 설계"
-          ]
-        },
-        {
-          "heading": "영향 수치와 해석 경계",
-          "body": "JFrog의 수치는 분석된 payload와 active-browser 조건의 성능 추정이며, 전체 캠페인 피해량·현재 활성 package 수를 뜻하지 않음.",
-          "items": [
-            "관찰: 활성 방문자 한 명이 약 2MB/s upload, 프록시 탭 1,000개면 약 2GB/s traffic 가능이라는 JFrog 추정",
-            "연결 churn: 최대 1,024 socket 설정에서는 초당 약 10,240 connection allocate·tear-down과 20,000여 log line이 가능한 조건",
-            "상태: 다수 package가 npm에서 제거됐지만 JFrog가 조사 시점에 일부 version은 남아 있었다는 보고"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "이번 사례는 package consumer가 아니라 browser visitor를 공격 자원으로 쓰며, registry abuse·malvertising·DDoS를 한 경로로 결합함.",
-          "items": [
-            "탐지 사각: install-time malware scan만으로는 정상 정적 앱의 runtime remote loader를 놓칠 수 있는 구조",
-            "공급망 위험: third-party script가 immutable artifact가 아닌 mutable branch를 참조하면 배포 뒤에도 payload 교체 가능",
-            "운영 영향: 대량 browser WebSocket fan-out은 target service의 CPU·file descriptor·log pipeline을 먼저 고갈시킬 수 있는 control-plane 리스크"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "package governance와 web runtime security를 분리하지 말고 remote-code loading 신호를 공통 통제 대상으로 운영해야 함.",
-          "items": [
-            "팀 액션: 사내 registry proxy에서 알려진 package·publisher를 block하고 lockfile·SBOM·artifact retention으로 사용 흔적을 확인",
-            "팀 액션: CSP `script-src`와 SRI로 mutable third-party JavaScript를 줄이고 production script URL의 commit pinning을 검증",
-            "팀 액션: proxy·교육망·SaaS edge에서 새 도메인, 비정상 no-cors POST, WebSocket connection fan-out을 rate limit·WAF·DNS telemetry로 조사"
           ]
         }
       ],
