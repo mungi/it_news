@@ -2,14 +2,14 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-23 18:06",
+  "last_updated_kst": "2026-07-23 22:10",
   "audience": "developers and engineers",
   "executive_summary": [
     "Check Point SmartConsole CVE-2026-16232: 인터넷 노출·Trusted Clients 미제한 Management Server는 인증 우회로 policy 변경 가능하므로 hotfix·allowlist·IoC hunt 병행.",
     "AWS EKS EFA·placement group: Auto Mode·Karpenter node pool의 network topology 제어는 GPU job capacity·scheduler·collective tail latency와 함께 검증.",
     "Azure DevOps·Kiro MCP 사례: 비신뢰 협업 콘텐츠와 agent tool 권한·외부 전송을 분리하고 tool-call audit을 유지.",
     "Google Gemini 모델 routing: token 가격만이 아니라 tool call·retry·tail latency·human review를 포함한 성공 작업당 비용 측정.",
-    "CNCF Confidential Containers incubating: TEE·attestation·secret release를 Pod lifecycle과 함께 검증하는 data-in-use 보안 운영."
+    "업스테이지 Solar Open 2: 250B-A15B MoE·1M context 공개 가중치는 H200 4/8장 공식 baseline과 quantization artifact별 VRAM·품질·tail latency를 분리 검증."
   ],
   "deep_dives": [
     {
@@ -261,6 +261,91 @@
       "rank": 1
     },
     {
+      "id": "news-210",
+      "title_ko": "업스테이지 Solar Open 2 공개: 250B-A15B 하이브리드 MoE·1M context 오픈 웨이트 모델의 실제 배포 용량 점검",
+      "title_original": "Solar Open 2",
+      "summary": "핵심: 업스테이지가 250B 전체·token당 15B 활성 파라미터의 Solar Open 2 오픈 웨이트 모델과 기술 자료를 공개. 구조: Hybrid Attention MoE, 1M context, 한국어·영어·일본어 지원이며 공식 model card는 최소 H200 4장·권장 8장을 명시. 운영: 2-GPU 구동 보도는 양자화 변형의 별도 주장으로, context 길이·concurrency·KV cache·정확도·GPU 메모리를 포함한 실제 serving SLO 검증 필요.",
+      "detail": "업스테이지 Solar Open 2는 250,287,794,944개 전체 파라미터와 token당 15B 활성 파라미터를 가진 Hybrid-Attention MoE 오픈 웨이트 LLM이다. 공식 Hugging Face model card는 48개 layer, 321 experts(320 routed+1 shared), top-8 routed+shared expert 활성화, 1M context와 영어·한국어·일본어를 명시한다. model card의 하드웨어 요구사항은 최소 H200 4장·권장 8장이므로, AI타임스가 인용한 특정 양자화 변형의 H200 2장 구동 주장을 base model의 일반 배포 요구사항으로 확대하면 안 된다. 장문 agent workload는 linear-attention layer가 KV cache를 줄이는 설계와 별개로 request length, concurrency, tool-call retry, reasoning trace, quantization 정확도를 production traffic에서 측정해야 한다.",
+      "why_it_matters": "국내에서 상업적·파생 모델 활용을 허용하는 공개 가중치 모델이 1M context와 agent workflow를 겨냥해 나왔다. 다만 전체 파라미터·활성 파라미터·양자화 artifact·serving engine별 VRAM 요구량은 서로 다른 수치이므로, 비용 비교를 단일 GPU 장수 또는 benchmark 순위로 끝내면 배포 판단을 왜곡할 수 있다.",
+      "engineering_implication": "ML 플랫폼 팀은 base model과 INT4·NVFP4·pruned artifact를 분리 inventory하고, H200 4/8장 공식 요구사항을 capacity baseline으로 삼아야 한다. vLLM·SGLang의 version, max context, request concurrency, KV cache, tensor parallelism, tool-call success, output quality와 GPU memory/OOM·p95 latency를 같은 canary workload에서 측정한 뒤 rollout 필요.",
+      "korea_implication": "국내 공공·금융·법률 조직은 한국어 benchmark와 온프레미스 배포 가능성만으로 도입을 확정하지 말고 Solar License 범위, model artifact provenance, 취약점 patch cadence, 데이터 격리와 감사 로그를 조달·운영 조건으로 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "Open Source",
+        "LLM",
+        "MoE",
+        "Agent",
+        "Inference",
+        "Korea",
+        "Upstage"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-23 14:08",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213090",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/213090_216484_2446.gif",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "Upstage Solar Open 2 model card (official)",
+          "url": "https://huggingface.co/upstage/Solar-Open2-250B"
+        },
+        {
+          "title": "Solar Open 2 Technical Report",
+          "url": "https://huggingface.co/upstage/Solar-Open2-250B/blob/main/Solar_Open_2_Tech_Report.pdf"
+        },
+        {
+          "title": "Upstage Solar Open 2 blog",
+          "url": "https://www.upstage.ai/blog/en/solar-open-2"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "업스테이지가 7월 23일 Solar Open 2의 가중치와 기술 자료를 공개함. AI타임스의 입력 시각은 2026-07-23 14:08 KST이며, 공식 Hugging Face model card에서 `upstage/Solar-Open2-250B` model name과 open-weight 배포를 확인함.",
+          "items": [
+            "식별: **Solar Open 2 (250B-A15B)** 오픈 웨이트 text-generation 모델",
+            "배포: Hugging Face model card·기술 보고서·Upstage blog 연결 확인",
+            "범위: 영어·한국어·일본어 지원과 agentic use case를 명시"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공식 model card는 전체 250,287,794,944개 파라미터, token당 15B 활성 파라미터, 48 layer의 Hybrid-Attention MoE 구조를 제시함. softmax attention과 linear attention을 결합하며, 321개 expert 중 routed top-8과 shared expert가 활성화되는 구성임.",
+          "items": [
+            "구조: **321 experts** 중 320 routed·1 shared, token당 top-8 routed+shared 활성화",
+            "context: 1M token과 NoPE position encoding을 명시",
+            "학습: 약 12T pre-training token, NVIDIA B200 기반 2M GPU hour를 model card에 기재",
+            "artifact: `INT4`, `NVFP4`, `INT4-GlobalPruned` 양자화 변형을 별도 제공"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "전체 파라미터와 활성 파라미터의 차이는 MoE 추론 비용 산정에 필요하지만, GPU 장수와 production capacity를 직접 결정하지 않음. 공식 model card의 hardware requirements는 최소 H200 4장·권장 8장이며, AI타임스가 인용한 H200 2장 주장은 특정 양자화 모델의 배포 조건으로 분리해야 함.",
+          "items": [
+            "용량: 공식 baseline은 **최소 H200 4장·권장 8장**으로 명시",
+            "경계: 2-GPU 수치는 model card의 base-model requirement가 아닌 보도상 양자화 변형 주장",
+            "성능: agent·coding benchmark와 한국어 benchmark 수치는 모델 공급자·보도 매체의 비교 범위로 관리",
+            "운영: 1M context 지원이 모든 request의 1M serving throughput·latency를 보증하지 않는 조건"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "self-hosted agent endpoint는 model weight 다운로드와 server 기동만으로 운영 준비가 끝나지 않음. linear-attention 설계가 KV cache를 줄이는 방향을 제시하지만, 긴 reasoning trace·tool retry·concurrency는 GPU memory, queueing, tail latency와 품질 변수를 함께 만든다는 점을 canary에서 확인해야 함.",
+          "items": [
+            "팀 액션: base·quantized artifact, license, checksum·provenance를 model registry에서 분리 관리",
+            "팀 액션: vLLM·SGLang engine version, tensor parallelism, max context, concurrency별 VRAM·OOM·p95 latency 측정",
+            "팀 액션: Korean tool-call·문서 retrieval·장문 input에서 task success·hallucination·retry 비용을 workload SLO로 비교",
+            "팀 액션: 공개 가중치 도입 전 data egress, prompt log, tool permission, model patch·rollback 절차를 승인 조건으로 명시"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-208",
       "title_ko": "과기정통부, 보안 특화 AI 파운데이션 모델 공모 착수: B200 256장·중간평가 기반 국내 오픈소스 보안 모델 개발",
       "title_original": "과기부 ‘사이버 보안 특화 AI 파운데이션 모델 개발’ 사업 공모",
@@ -326,11 +411,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-207",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -484,7 +569,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-204",
@@ -549,7 +634,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-205",
@@ -615,7 +700,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-203",
@@ -680,7 +765,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-202",
@@ -776,7 +861,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-198",
@@ -841,7 +926,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-199",
@@ -905,7 +990,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-200",
@@ -984,7 +1069,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-201",
@@ -1066,7 +1151,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-196",
@@ -1151,7 +1236,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-197",
@@ -1227,7 +1312,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-195",
@@ -1306,7 +1391,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-193",
@@ -1391,7 +1476,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-194",
@@ -1470,7 +1555,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-191",
@@ -1538,7 +1623,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-190",
@@ -1624,7 +1709,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-192",
@@ -1696,7 +1781,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-188",
@@ -1762,7 +1847,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-189",
@@ -1829,11 +1914,11 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-187",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -2001,7 +2086,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-182",
@@ -2067,7 +2152,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-180",
@@ -2152,7 +2237,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-185",
@@ -2227,7 +2312,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-186",
@@ -2307,7 +2392,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-181",
@@ -2381,7 +2466,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-183",
@@ -2452,7 +2537,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-179",
@@ -2536,7 +2621,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-184",
@@ -2616,7 +2701,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-178",
@@ -2713,7 +2798,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-176",
@@ -2783,7 +2868,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-177",
@@ -2849,7 +2934,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-173",
@@ -2924,7 +3009,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-172",
@@ -2994,7 +3079,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-171",
@@ -3074,7 +3159,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-175",
@@ -3149,7 +3234,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-174",
@@ -3256,7 +3341,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-170",
@@ -3340,7 +3425,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-169",
@@ -3425,7 +3510,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-167",
@@ -3512,7 +3597,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-168",
@@ -3607,7 +3692,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-165",
@@ -3680,11 +3765,11 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-162",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Microsoft 7월 Patch Tuesday, 역대 최대 622개 결함 수정…활성 공격 중인 SharePoint·AD FS 제로데이 우선 패치",
       "title_original": "Microsoft Patches Record 622 Flaws, Including Two Zero-Days Under Active Attack",
       "summary": "핵심: Microsoft 7월 보안 업데이트가 **622개 CVE**를 수정하고, 이미 악용 중인 온프레미스 SharePoint Server와 AD FS 권한 상승 결함 2건을 포함. 운영: Kerberos RC4 롤백 스위치 제거로 legacy service account 인증 장애 가능성이 있어 취약점 우선순위와 변경 영향 점검을 함께 수행 필요.",
@@ -3772,7 +3857,7 @@
     },
     {
       "id": "news-163",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Amazon GuardDuty AI Protection 출시: Bedrock·SageMaker의 이상 호출·비용 수확·프롬프트 주입 탐지",
       "title_original": "Introducing Amazon GuardDuty AI Protection for AWS AI workloads",
       "summary": "핵심: AWS가 GuardDuty AI Protection을 공개해 Amazon Bedrock·SageMaker의 CloudTrail 관리·데이터 이벤트에서 이상 모델 호출, GPU·토큰을 소진시키는 비용 수확, 프롬프트 주입 신호를 탐지. 운영: Security Hub로 finding을 모으고 AWS Organizations에서 중앙 활성화할 수 있어 AI workload의 비용·보안 telemetry를 계정 단위로 분리 점검할 필요.",
@@ -3929,7 +4014,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-161",
@@ -3992,90 +4077,6 @@
             "팀 액션: 사용자·프로젝트별 quota 사용량, latency, retry, fallback 비율을 개발자 플랫폼 대시보드에 추가",
             "팀 액션: provider 사용량 초기화·모델 변경·장애 때 CI와 IDE 작업을 이어갈 대체 모델·수동 경로를 점검",
             "팀 액션: source connector와 tool 권한을 최소화하고 enterprise audit·retention 조건을 계약서와 운영 정책에서 대조"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-159",
-      "title_ko": "Grok Build, 읽지 않은 파일·전체 Git 이력까지 xAI 저장소로 전송한 정황",
-      "title_original": "Grok Build Uploaded Entire Git Repositories to xAI Storage, Not Just Files It Read",
-      "summary": "핵심: 독립 연구자가 Grok Build 0.2.93의 네트워크 전송을 관찰한 결과, 작업에 필요하지 않은 tracked 파일과 **전체 Git 이력**이 xAI 관리 Google Cloud Storage로 전송된 정황 확인. 대응: xAI는 7월 13일 서버 설정으로 codebase upload를 끈 것으로 보이나, 적용 범위·영구성은 공식 보안 공지로 확인되지 않은 상태.",
-      "detail": "검증 범위: The Hacker News가 cereblab의 패킷 캡처·재현을 인용해, 12GB 저장소에서 모델 요청 약 192KB와 별도 storage 채널 5.10GiB 전송을 구분해 보도함. 연구 결과는 전송·수락·저장을 보여주지만 학습이나 직원 열람을 입증하지 않으므로, 개발 조직은 클라우드 coding agent의 코드 반출 경로와 보존 정책을 별도 검증해야 함.",
-      "why_it_matters": "클라우드 coding agent의 모델 호출과 workspace/trace 업로드는 서로 다른 데이터 경계임. Git 이력에는 현재 작업 트리에 없는 내부 URL·고객 데이터·과거 credential이 남을 수 있어, 모델 학습 opt-out만으로 코드 반출 통제가 완료되지 않음.",
-      "engineering_implication": "보안·개발도구 팀은 agent별 파일 선택 규칙, Git history 포함 여부, trace·세션 저장 위치와 보존 기간, ZDR 적용 범위를 inventory화하고, 비밀정보 스캔·egress proxy·sandbox 저장소로 검증 후 허용할 필요.",
-      "korea_implication": "국내 조직도 외부 SaaS coding agent를 소스 저장소에 연결하기 전 개인정보·영업비밀·국외 이전·접근기록 요건과 Git history 반출 범위를 계약·DLP 정책에 함께 반영 필요.",
-      "category": "Security",
-      "tags": [
-        "xAI",
-        "Grok Build",
-        "Coding Agent",
-        "Data Privacy",
-        "Source Code",
-        "Git"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-07-14 18:02",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/grok-build-uploads-entire-git.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiCYpkCY1h-DxV5yfxpkGspVFATaUS27q_vpRgQ2ebzGvc6YgSsYk81jDt3SkJQgxVCL8dWJqzDE3t6iUt4ceeTvA9LG8Z9cA65uBXC05Lkdv1xKLNBMH88dTa_6XCet3a0wf1VwfyxQsx_1AKc3lmHCxqiZHKTfvk9kJqvo0i15biGekBijFPNN16JHBM/s1700-e365/grok.jpg",
-      "related_links": [
-        {
-          "title": "cereblab 재현 기록",
-          "url": "https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547"
-        },
-        {
-          "title": "cereblab 도구 간 전송 비교",
-          "url": "https://github.com/cereblab/grok-build-exfil-repro/blob/main/COMPARISON.md"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Grok Build 0.2.93을 시험한 연구자가 모델 요청과 분리된 storage 채널에서 저장소 bundle 전송을 관찰한 사례임.",
-          "items": [
-            "관찰: 작업에 필요하지 않은 tracked 파일과 full commit history가 xAI 관리 Google Cloud Storage bucket으로 전송된 정황",
-            "재현: 고유 marker를 넣고 agent에게 열지 말라고 한 파일이 캡처한 Git bundle에서 원문 그대로 복원된 조건",
-            "범위: 별도 저장 경로는 model response 요청과 다른 `/v1/storage` 채널로 설명됨"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "패킷 캡처는 모델이 읽은 파일의 전송과 저장소 전체 전송을 분리해 보여준다고 보도됨.",
-          "items": [
-            "수치: 12GB 저장소 시험에서 model-turn traffic 약 192KB, storage 채널 약 **5.10GiB** 전송으로 보고",
-            "전송: 약 75MB 단위 73개 chunk가 HTTP 200을 받은 관찰 기록",
-            "비밀정보: agent가 읽은 tracked `.env`의 canary API key·DB password 값이 redaction 없이 model turn과 session archive로 전송된 조건"
-          ]
-        },
-        {
-          "heading": "검증 경계와 대응 상태",
-          "body": "이 관찰은 데이터 전송·수락·저장 범위를 가리키며, xAI의 학습·사람 열람·gitignored 파일 전송 여부는 입증하지 않음.",
-          "items": [
-            "설정 한계: `Improve the model` 비활성화 상태에서도 `trace_upload_enabled: true`가 반환된 관찰",
-            "변경: 7월 13일 동일 binary에서 `disable_codebase_upload: true`와 trace upload false가 반환되고 6회 재시험에서 storage upload 0건 보고",
-            "불확실성: 서버 측 변경의 전체 계정 적용·영구성은 xAI의 공식 security advisory 또는 changelog로 확인되지 않은 상태"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "cloud coding agent의 모델 품질 설정과 저장소 egress·retention 설정은 별도 control plane으로 다뤄야 함.",
-          "items": [
-            "노출면: Git history에는 현재 트리에서 삭제된 credential, 내부 endpoint, 고객 정보가 남을 수 있는 구조",
-            "비교: 연구자가 인용한 비교에서 Claude Code·Codex는 repository bundle을 보내지 않은 조건이나, 도구별 설정·버전·작업별 재검증 필요",
-            "조달: zero data retention은 enterprise/API 조건일 수 있어 개인·팀 구독 계정의 보존 정책을 별도 확인 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "coding agent 도입 전에는 prompt opt-out이 아니라 source-code egress와 trace retention을 release gate로 점검해야 함.",
-          "items": [
-            "팀 액션: agent별 read file 목록, Git metadata·history 포함 여부, storage endpoint, retention·delete API를 egress inventory에 추가",
-            "팀 액션: secrets canary가 든 sandbox repository로 network capture·DLP alert·server-side deletion을 사전 검증",
-            "팀 액션: production 저장소는 최소 권한 token, pre-commit secret scan, allowlisted workspace, vendor ZDR 증빙을 함께 적용"
           ]
         }
       ],
