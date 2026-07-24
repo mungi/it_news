@@ -91,6 +91,9 @@
 - [[raw/articles/windmill-cve-2026-29059-active-exploitation-2026-07-22]] — Windmill CVE-2026-29059 file read·superadmin secret·workflow execution incident chain.
 - [[raw/articles/aitimes-msit-cybersecurity-foundation-model-2026-07-23]] — 과기정통부 보안 특화 AI 파운데이션 모델 공모의 GPU 지원·중간평가·운영 검증 경계.
 - [[raw/articles/check-point-smartconsole-cve-2026-16232-2026-07-23]] — Check Point SmartConsole 인증 우회 CVE-2026-16232의 노출 조건·hotfix·관리 plane 대응 경계.
+- [[raw/articles/github-dependabot-three-day-cooldown-2026-07-24]] — Dependabot 일반 version update 기본 3일 cooldown과 security-update 예외.
+- [[raw/articles/aitimes-skt-sk-hyper-ai-data-center-2026-07-24]] — SK하이퍼 7,500억원 출자·5GW/15GW AI 데이터센터 계획의 capacity 검증 경계.
+- [[raw/articles/aws-ecs-service-connect-zone-aware-2026-07-24]] — ECS Service Connect AZ 우선 라우팅의 cross-AZ 비용·지연·failover 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

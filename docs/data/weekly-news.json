@@ -2,7 +2,7 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-24 06:28",
+  "last_updated_kst": "2026-07-24 10:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "Claude Cowork local VM: guest-root 뒤 host `/` read-write mount가 남으면 SSH key·cloud credential·source file 접근으로 전이 가능하므로 local mode·mount·kernel·daemon 정책을 함께 점검.",
@@ -174,6 +174,140 @@
   ],
   "items": [
     {
+      "id": "news-216",
+      "title_ko": "Amazon ECS Service Connect, 동일 AZ 우선 라우팅으로 cross-AZ 전송비·지연 축소",
+      "title_original": "Amazon ECS Service Connect now supports Zone-Aware routing",
+      "summary": "핵심: AWS가 ECS Service Connect에 동일 Availability Zone endpoint를 우선 선택하는 zone-aware routing을 기본 적용. 변화: endpoint scale에 맞춰 traffic weight를 조정하고 local endpoint가 비정상·용량 임계치 미만이면 정상 AZ로 자동 재분배. 운영: 기존 service는 1회 redeploy가 필요하며, VPC Flow Logs의 AZ metadata로 cross-AZ 흐름·비용·failover를 검증 필요.",
+      "detail": "AWS는 Amazon ECS Service Connect가 요청 task와 같은 Availability Zone의 endpoint를 우선 선택하는 zone-aware routing을 제공한다고 발표했다. 신규·기존 service 모두 기본 활성화되며 infrastructure 또는 application code 변경은 필요 없지만, 기존 service는 새 routing behavior를 적용하기 위해 1회 redeploy가 필요하다. local endpoint가 unhealthy이거나 capacity threshold 아래로 내려가면 healthy AZ로 traffic을 재분배한다. ECS Service Connect 지원 모든 AWS commercial 및 AWS GovCloud (US) Region에서 추가 비용 없이 제공되며, AWS는 VPC Flow Logs의 AZ metadata로 cross-AZ traffic pattern과 효과를 확인하도록 안내한다.",
+      "why_it_matters": "다중 AZ 배포에서 resilience를 유지하려면 service-to-service 호출의 cross-AZ data transfer와 latency를 감수해야 하는 경우가 있었음. 이 기능은 local endpoint를 우선 사용하지만 AZ isolation 시 정상 endpoint로 넘기는 동작이므로, 비용 절감 수치나 workload latency 개선 폭은 각 서비스의 traffic·capacity·failure 패턴으로 별도 측정 필요.",
+      "engineering_implication": "ECS 플랫폼 팀은 Service Connect service의 redeploy 계획과 AZ별 endpoint capacity·autoscaling·health check를 함께 점검 필요. VPC Flow Logs와 billing data를 AZ 단위로 baseline·변경 후 비교하고, local capacity threshold와 AZ failure에서 cross-zone fallback·p95/p99 latency·error rate가 SLO를 충족하는지 game day로 검증 필요.",
+      "korea_implication": "국내 리전 multi-AZ ECS 서비스도 cross-AZ transfer 비용만을 기준으로 topology를 고정하지 말고 AZ별 capacity와 failover 검증을 동일 change ticket에 기록할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Cloud",
+        "AWS",
+        "Amazon ECS",
+        "Service Connect",
+        "Availability Zone",
+        "Networking",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-07-24 08:46",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/ecs-service-connect-zone-aware/",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 ECS Service Connect의 zone-aware routing을 공개함. AWS What’s New RSS `pubDate` 2026-07-23 23:46 UTC를 2026-07-24 08:46 KST로 변환함.",
+          "items": [
+            "대상: Amazon ECS Service Connect service-to-service traffic",
+            "동작: 요청을 보낸 task와 같은 AZ의 endpoint 우선 선택",
+            "제공: ECS Service Connect 지원 모든 AWS commercial·AWS GovCloud (US) Region, 추가 기능 요금 없음"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "endpoint가 scale하면 Service Connect가 target service 전반의 load balance를 위해 traffic weight를 동적으로 조정함. local endpoint가 unhealthy이거나 capacity threshold 아래로 떨어지면 healthy AZ로 재분배함.",
+          "items": [
+            "변화: resilience를 위한 multi-AZ 배포와 cross-zone traffic 사이의 기존 trade-off 축소",
+            "기본값: 신규·기존 service에 zone-aware routing 기본 활성화",
+            "적용 조건: 기존 service는 새 routing behavior 적용을 위한 1회 redeploy 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "동일 AZ 우선은 데이터 전송비와 network path를 줄일 수 있으나, local capacity·health threshold와 fallback 상태가 실제 latency·availability를 좌우함. AWS는 절감률이나 latency 개선 수치를 발표하지 않음.",
+          "items": [
+            "관측: VPC Flow Logs의 AZ metadata로 cross-AZ flow 변화 확인",
+            "경계: local-first routing이 특정 workload의 SLO 또는 비용 절감을 보장하지 않는 범위",
+            "위험: AZ별 endpoint skew 또는 autoscaling 지연 시 fallback traffic 증가 가능성"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "routing 기본값 변경은 application code 없이도 traffic path를 바꾸므로, service redeploy와 observability baseline을 하나의 rollout으로 관리해야 함.",
+          "items": [
+            "팀 액션: ECS service별 AZ endpoint capacity·health check·autoscaling inventory",
+            "팀 액션: deploy 전후 VPC Flow Logs와 billing data에서 cross-AZ bytes·request·error 비교",
+            "팀 액션: local endpoint capacity 부족·AZ failure game day에서 fallback·p95/p99·error budget 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-217",
+      "title_ko": "SKT, AI 데이터센터 사업개발 자회사 SK하이퍼 설립: 2030년까지 7,500억원 출자·2029년 5GW 목표",
+      "title_original": "SKT establishes SK Hyper, an AI data center business development subsidiary",
+      "summary": "핵심: SK텔레콤이 AI 데이터센터 사업개발 전문 자회사 SK하이퍼를 설립하고 2030년까지 총 7,500억원 출자 계획 공개. 계획: 2029년까지 5GW를 단계적으로 열고, 중장기 15GW 사업개발·울산·충청·서남권 GW급 구축을 제시. 경계: 목표 용량은 계획이며 실제 전력계통·부지·고객 계약·착공·가동 일정은 별도 확인 필요.",
+      "detail": "AI타임스는 SK텔레콤이 7월 23일 이사회 의결을 거쳐 AI 데이터센터 사업개발 전문 법인 SK하이퍼를 설립하고 2030년까지 7,500억원을 필요 시 분할 출자한다고 보도했다. 보도에 따르면 SK하이퍼는 부지 확보, 변전소 구축·운영, 고객 유치와 사업화를 맡으며 2029년 5GW 규모 AI 데이터센터를 단계적으로 여는 것을 1단계 목표로 제시했다. 울산의 GW급 클러스터를 시작으로 충청권·서남권 확장과 중장기 15GW 사업개발 계획도 언급됐지만, 계획의 실제 전력 인입·건설 단계·고객 수요·가동 용량은 기사만으로 확정할 수 없다.",
+      "why_it_matters": "AI 데이터센터는 GPU 조달만으로 완성되지 않으며 전력 인입·변전소·부지·냉각·network·고객 workload 계약이 같은 delivery path에 묶임. 5GW·15GW는 사업개발 목표이므로 usable IT load, PUE, rack density, grid interconnect, SLA는 개별 site의 공개 자료로 구분 확인 필요.",
+      "engineering_implication": "AI 인프라 조달·플랫폼 팀은 공급 발표를 즉시 capacity로 계산하지 말고, region·전력 계약·energization·cooling·network·GPU delivery·tenant commitment를 milestone별로 분해 필요. 장기 workload는 single-site 공급 약속이 아닌 staged capacity, power curtailment, failover, data locality, egress와 observability 조건을 계약·architecture review에 포함 필요.",
+      "korea_implication": "울산·충청·서남권 계획은 국내 AI compute 입지 선택지에 영향을 줄 수 있으나, region별 전력·망·재해복구·규제와 실제 제공 SKU·SLA가 공개되기 전까지는 공급 가능 capacity로 간주하지 않을 필요.",
+      "category": "Korea",
+      "tags": [
+        "Korea",
+        "AI Infrastructure",
+        "Data Center",
+        "SK Telecom",
+        "Power",
+        "FinOps",
+        "Capacity Planning"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-07-24 08:16",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213122",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "SK텔레콤이 AI 데이터센터 사업개발 전문 신설 법인 SK하이퍼를 설립하고 출자·용량 계획을 공개함. AI타임스 기사 입력 시각은 2026-07-24 08:16 KST임.",
+          "items": [
+            "의결: 2026-07-23 SK텔레콤 이사회 의결",
+            "출자: 2030년까지 총 **7,500억원** 한도에서 필요 시 분할 출자",
+            "소유: SK텔레콤 100% 자회사 구조"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "보도는 SK하이퍼의 역할을 AI 데이터센터 부지 확보, 변전소 구축·운영, 고객 유치와 사업화로 설명함.",
+          "items": [
+            "1단계 목표: 2029년까지 5GW 규모 AI 데이터센터 단계적 오픈 계획",
+            "중장기 계획: 15GW AI 데이터센터 구축을 위한 사업개발",
+            "입지 계획: 울산 GW급 클러스터를 시작으로 충청권·서남권 추가 GW급 구축 언급"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI compute delivery에서 전력·변전·부지·냉각·network·고객 계약은 GPU 확보와 별개인 병목임. 기사에 나온 용량은 개발 목표이며 가동 IT load·전력계통 접속·rack density·PUE·SLA가 확정된 capacity를 뜻하지 않음.",
+          "items": [
+            "경계: 실제 착공·energization·tenant 계약·운영 개시 일정은 기사 범위 밖",
+            "검증: site별 utility interconnect·substation·cooling water·fiber path·GPU 공급 일정 분리 확인",
+            "운영: multi-site 계획은 regional fault domain·data locality·DR topology와 함께 평가 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "국내 장기 AI workload의 공급 선택지를 검토할 때 headline capacity가 아니라 단계별 usable capacity와 failure·curtailment 조건을 계약 증적으로 받아야 함.",
+          "items": [
+            "팀 액션: power delivery·IT load·rack density·cooling·network·GPU install milestone를 별도 tracker로 관리",
+            "팀 액션: region별 latency·egress·data residency·DR·interconnect redundancy를 workload requirement와 대조",
+            "팀 액션: staged capacity·delay remedy·power curtailment·SLA·observability 제공 범위를 RFP에 명시"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-214",
       "title_ko": "CISA, 러시아 연계 LAUNDRY BEAR의 Zimbra CVE-2025-66376 악용 경보: 열람만으로 메일·계정 접근정보 탈취",
       "title_original": "Russian State-Supported Cyber Actors Conduct Phishing Campaign Targeting Users of Zimbra Collaboration Suite",
@@ -251,7 +385,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-215",
@@ -324,7 +458,74 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
+    },
+    {
+      "id": "news-218",
+      "title_ko": "GitHub Dependabot, 일반 버전 업데이트 PR에 기본 3일 cooldown 적용",
+      "title_original": "The case for a cooldown: Why Dependabot now waits before issuing version updates",
+      "summary": "핵심: GitHub가 Dependabot의 일반 version update PR에 새 release 뒤 최소 3일을 기다리는 cooldown을 기본 적용. 범위: known vulnerability 대응용 security update는 지연 없이 계속 PR 생성. 근거: GitHub는 2026년 5월까지 1년간 npm malware advisory 6,500건 이상을 공개했으며, 프로젝트별 `dependabot.yml`의 `cooldown`으로 기간 조정 가능.",
+      "detail": "GitHub는 Dependabot가 일반 version update pull request를 만들기 전 새 release 후 최소 3일을 기다리는 cooldown을 기본 적용한다고 발표했다. 이는 새 버전에 악성 코드가 포함됐을 때 maintainers·researchers·automated scanners가 탐지·삭제할 시간을 확보하려는 조치다. 알려진 취약점을 수정하는 security update는 지연 없이 PR을 계속 생성하며, version update에만 적용된다. GitHub는 2026년 5월까지의 1년 동안 GitHub Advisory Database가 npm malware advisory 6,500건 이상을 발행했다고 설명하고, 프로젝트는 `dependabot.yml`의 `cooldown` 설정으로 기간을 조정할 수 있다고 밝혔다.",
+      "why_it_matters": "자동 dependency update는 신규 release를 수분 내 build pipeline으로 끌어올 수 있어 short-lived malicious publish를 흡수할 위험이 있음. 3일은 공급망 검토 창을 늘리지만 emergency compatibility fix·runtime breakage·release freshness 요구와 trade-off가 있으므로 모든 ecosystem·repository에 동일한 기간이 적합하다고 볼 수 없음.",
+      "engineering_implication": "개발 보안 팀은 version update와 security update queue를 분리해 SLA를 정하고, `dependabot.yml` cooldown·allowlist·grouping·CI provenance·artifact scanning을 repository risk tier에 맞춰 검토 필요. cooldown을 늘리거나 줄일 때 package manager, release cadence, CI test duration, production exposure, exception approval과 rollback owner를 함께 문서화 필요.",
+      "korea_implication": "국내 오픈소스 의존도가 높은 서비스도 신규 package 자동 반영 정책을 build speed만으로 평가하지 말고, npm·PyPI·Maven 등 ecosystem별 malicious publish 관측·CI gate·긴급 patch SLA를 함께 설정할 필요.",
+      "category": "DevTools",
+      "tags": [
+        "DevTools",
+        "GitHub",
+        "Dependabot",
+        "Supply Chain Security",
+        "npm",
+        "CI/CD",
+        "Open Source"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-07-24 01:00",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/security/supply-chain-security/the-case-for-a-cooldown-why-dependabot-now-waits-before-issuing-version-updates/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-security-logo-github-blocks.png?fit=1920%2C1080",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub가 Dependabot 일반 version update PR의 기본 cooldown을 새 release 뒤 최소 3일로 변경함. 소스 `article:published_time` 2026-07-23T16:00:00+00:00을 2026-07-24 01:00 KST로 변환함.",
+          "items": [
+            "대상: 알려진 취약점 여부와 무관하게 최신 버전을 따라가는 version update",
+            "기본값: 새 release 후 최소 **3일** 대기 뒤 PR 생성",
+            "제외: known vulnerability 대응 security update는 지연 없이 PR 생성 유지"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "GitHub는 신규 release가 public registry에 올라온 뒤 automated updater가 수분 내 PR을 만들 수 있으며, 악성 publish가 탐지되기 전 pipeline으로 들어갈 수 있다고 설명함.",
+          "items": [
+            "사례: 2025년 npm maintainer credential phishing 뒤 `chalk`·`debug` 등 변조 버전이 약 2시간 공개된 사례",
+            "통계: 2026년 5월까지 1년간 GitHub Advisory Database의 npm malware advisory 6,500건 이상",
+            "설정: repository는 `dependabot.yml`의 `cooldown` parameter로 기간 조정 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "cooldown은 자동 업데이트의 최신성보다 short-lived malicious release를 피할 검토 시간을 우선하는 policy임. GitHub가 제시한 npm advisory 수치와 사건 사례는 해당 source의 집계·사례이며, 특정 repository의 감염 확률 또는 3일의 보장 효과를 뜻하지 않음.",
+          "items": [
+            "구분: version update와 security update를 같은 approval·SLA로 처리하지 않는 필요",
+            "trade-off: compatibility fix·feature freshness와 supply-chain observation window의 상충",
+            "경계: cooldown만으로 compromised maintainer·typosquat·lockfile bypass·CI secret exposure를 제거하지 못하는 범위"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "dependency automation은 PR 생성 시점만 바꾸는 것이 아니라 release policy·CI gate·exception path를 함께 바꾸는 작업임.",
+          "items": [
+            "팀 액션: repository별 version update와 security update queue·owner·SLA 분리",
+            "팀 액션: `dependabot.yml` cooldown·grouping·allowlist를 package risk tier와 release cadence에 맞게 검토",
+            "팀 액션: provenance·SBOM·artifact scan·test gate·emergency override·rollback을 PR workflow에 연결"
+          ]
+        }
+      ],
+      "rank": 5
     },
     {
       "id": "news-212",
@@ -419,7 +620,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-209",
@@ -494,7 +695,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-210",
@@ -579,7 +780,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-213",
@@ -661,7 +862,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-208",
@@ -729,11 +930,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-207",
-      "rank": 8,
+      "rank": 11,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -887,7 +1088,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 12
     },
     {
       "id": "news-204",
@@ -952,7 +1153,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 13
     },
     {
       "id": "news-205",
@@ -1018,7 +1219,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 14
     },
     {
       "id": "news-203",
@@ -1083,7 +1284,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 15
     },
     {
       "id": "news-202",
@@ -1179,7 +1380,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 16
     },
     {
       "id": "news-198",
@@ -1244,7 +1445,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 17
     },
     {
       "id": "news-199",
@@ -1308,7 +1509,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 18
     },
     {
       "id": "news-200",
@@ -1387,7 +1588,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 19
     },
     {
       "id": "news-201",
@@ -1469,7 +1670,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 20
     },
     {
       "id": "news-196",
@@ -1554,7 +1755,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 21
     },
     {
       "id": "news-197",
@@ -1630,7 +1831,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 22
     },
     {
       "id": "news-195",
@@ -1709,7 +1910,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 23
     },
     {
       "id": "news-193",
@@ -1794,7 +1995,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 24
     },
     {
       "id": "news-194",
@@ -1873,7 +2074,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 25
     },
     {
       "id": "news-191",
@@ -1941,7 +2142,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 26
     },
     {
       "id": "news-190",
@@ -2027,7 +2228,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 27
     },
     {
       "id": "news-192",
@@ -2099,7 +2300,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 28
     },
     {
       "id": "news-188",
@@ -2165,7 +2366,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 29
     },
     {
       "id": "news-189",
@@ -2232,11 +2433,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 30
     },
     {
       "id": "news-187",
-      "rank": 28,
+      "rank": 31,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -2404,7 +2605,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 32
     },
     {
       "id": "news-182",
@@ -2470,7 +2671,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 33
     },
     {
       "id": "news-180",
@@ -2555,7 +2756,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 34
     },
     {
       "id": "news-185",
@@ -2630,7 +2831,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 35
     },
     {
       "id": "news-186",
@@ -2710,7 +2911,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 36
     },
     {
       "id": "news-181",
@@ -2784,7 +2985,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 37
     },
     {
       "id": "news-183",
@@ -2855,7 +3056,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 38
     },
     {
       "id": "news-179",
@@ -2939,7 +3140,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 39
     },
     {
       "id": "news-184",
@@ -3019,7 +3220,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 40
     },
     {
       "id": "news-178",
@@ -3116,7 +3317,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 41
     },
     {
       "id": "news-176",
@@ -3186,7 +3387,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 42
     },
     {
       "id": "news-177",
@@ -3252,7 +3453,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 43
     },
     {
       "id": "news-173",
@@ -3327,7 +3528,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 44
     },
     {
       "id": "news-172",
@@ -3397,7 +3598,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 45
     },
     {
       "id": "news-171",
@@ -3477,7 +3678,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 46
     },
     {
       "id": "news-175",
@@ -3552,7 +3753,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 47
     },
     {
       "id": "news-174",
@@ -3659,7 +3860,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 48
     },
     {
       "id": "news-170",
@@ -3743,7 +3944,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 49
     },
     {
       "id": "news-169",
@@ -3825,261 +4026,6 @@
             "팀 액션: MIG·time slicing·HAMi partition별 p95 latency, utilization, memory fragmentation, retry rate 비교",
             "팀 액션: Kueue·Volcano·Koordinator와 queue ownership·preemption·quota 충돌을 tabletop 검증",
             "팀 액션: node 장애·driver upgrade·device health failure 때 slice 복구와 tenant notification runbook 작성"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-167",
-      "title_ko": "Cursor Windows 저장소 열기 취약점 공개: repo-root `git.exe` 자동 실행 경로 미패치 경고",
-      "title_original": "Cursor Flaw Lets Malicious Cloned Repositories Trigger Windows Code Execution",
-      "summary": "핵심: Mindgard는 Windows용 Cursor가 프로젝트 root의 공격자 `git.exe`를 Git 탐색 과정에서 경고 없이 실행한다고 공개. 대응: 신뢰하지 않는 저장소는 VM·Windows Sandbox에서 열고, 관리형 단말은 workspace 경로의 실행 파일을 AppLocker·Windows App Control·EDR로 차단 필요.",
-      "detail": "Mindgard의 공개 기술 문서는 Windows용 Cursor가 workspace 자체를 Git binary 탐색 위치로 포함해 repository root의 `git.exe`를 자동 실행하는 동작을 설명한다. 2026년 4월 30일 Cursor 3.2.16에서 확인된 관찰이며, 7월 15일 기준 Cursor의 수정 릴리스·공식 advisory가 확인되지 않았다는 보도다. 새 버전 전체에 대한 독립 재현과 실제 조직 노출 범위는 별도 검증이 필요하다.",
-      "why_it_matters": "개발자가 외부 저장소를 clone·open하는 일상 작업이 사용자 권한 코드 실행으로 이어질 수 있다. SSH key·cloud token·소스 접근 권한을 가진 개발 단말은 repository provenance와 endpoint execution control을 함께 적용해야 한다.",
-      "engineering_implication": "Windows 개발 단말에서 Cursor workspace root의 `git.exe`·`npx.exe`·`node.exe` 같은 실행 파일을 사전 탐지하고, untrusted repository open은 격리 환경으로 분리 필요. Cursor 버전별 재현 결과와 vendor advisory를 release approval 증적으로 유지 필요.",
-      "korea_implication": "국내 개발 조직도 외부 오픈소스·협력사 저장소를 Windows IDE에서 여는 흐름이 있으면 endpoint 보안 정책과 개발자 온보딩 절차를 함께 점검할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Cursor",
-        "Windows",
-        "Developer Tools",
-        "Supply Chain",
-        "Code Execution"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-07-15 19:55",
-      "source_name": "Mindgard / The Hacker News",
-      "source_url": "https://mindgard.ai/blog/cursor-0day-when-full-disclosure-becomes-the-only-protection-left",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjyFnrtjbcXdDBTEYOhVnUpFO4CSqhCGj5xdvaYlhih4oUCd3phzBQTjjMogZeFDlYqTiO8Xt2jaHevba5peaV76dT417Vq9W-DZFSpu2_cEbAMtGwz-mqKZJcYgAAXmZT_Rnkdc0f3jAW-eANKWd6XZZJvYfYCt6l5Pp-2ZKjlnn4zG7G6gS7ivWruzeU/s1700-e365/git.png",
-      "related_links": [
-        {
-          "title": "The Hacker News 보도 — Cursor cloned repository code execution",
-          "url": "https://thehackernews.com/2026/07/cursor-flaw-lets-malicious-cloned.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Mindgard가 Windows용 Cursor의 repository-root 실행 경로를 공개함. 프로젝트를 열 때 Cursor가 Git binary를 탐색하며 workspace root의 공격자 `git.exe`를 경고·승인 없이 실행할 수 있다는 재현 주장임.",
-          "items": [
-            "조건: 공격자가 제어하는 저장소 root에 `git.exe`를 넣고 Windows에서 Cursor로 해당 프로젝트를 여는 흐름",
-            "동작: Cursor.exe가 `git rev-parse --show-toplevel` 명령으로 repository-root binary를 spawn한 Process Monitor 기록 제시",
-            "권한: 실행 파일은 로그인한 개발자 권한으로 동작해 source·SSH key·cloud token 접근 범위를 상속 가능한 조건"
-          ]
-        },
-        {
-          "heading": "검증 범위와 버전 경계",
-          "body": "Mindgard는 2025년 12월 15일 최초 보고 뒤 2026년 4월 30일 Cursor 3.2.16에서 마지막 날짜가 명시된 재현을 기록함. The Hacker News는 7월 15일 Cursor의 공개 advisory에 해당 이슈가 없다고 보도함.",
-          "items": [
-            "PoC: Windows Calculator를 `git.exe`로 이름 변경해 repository root에 둔 안전한 재현 방식",
-            "한계: 3.11 등 이후 모든 Cursor 버전에서의 독립 재현 여부는 원문 증거만으로 확정 불가",
-            "상태: 수정 릴리스·CVE·공식 Cursor advisory 부재는 보도 시점 기준이며 vendor 공지로 지속 확인 필요"
-          ]
-        },
-        {
-          "heading": "공격 표면과 영향",
-          "body": "이 경로는 prompt injection이나 agent tool 호출이 아니라 IDE의 로컬 Git 탐색 동작을 악용하는 endpoint execution 문제임. clone한 저장소를 열기만 해도 실행될 수 있어 코드 리뷰 전 격리 원칙과 충돌함.",
-          "items": [
-            "초기 접근: 공격자는 공개 repository에 실행 파일을 포함할 수 있으며 별도 endpoint foothold가 필요 없는 조건",
-            "영향: 개발자 세션의 Git credential helper·SSH agent·cloud CLI token·source tree가 후속 탈취 대상 가능성",
-            "지속성: 원문은 프로젝트가 열린 동안 binary가 반복 실행될 수 있는 관찰을 제시"
-          ]
-        },
-        {
-          "heading": "완화 조치",
-          "body": "원문은 패치 전 임시 통제로 workspace 실행 파일 차단과 격리 실행을 권고함. hash 차단은 공격자가 binary를 바꿀 수 있어 경로 기반 deny rule과 parent-aware EDR 관측을 결합하는 방식이 적절함.",
-          "items": [
-            "정책: AppLocker 또는 Windows App Control로 개발 workspace 경로의 지정 실행 파일을 차단하는 path rule 적용",
-            "격리: 신뢰하지 않는 repository·archive는 Windows Sandbox·일회성 VM에서 clone·open 수행",
-            "사전 점검: repository root의 `git.exe`, `npx.exe`, `node.exe`, `where.exe`와 PE file을 open 전 검사"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AI 코딩 IDE의 권한 평가는 모델 prompt와 extension permission만으로 충분하지 않음. IDE가 repository file을 executable discovery path로 취급하면 source provenance와 endpoint application control이 같은 release gate에 포함돼야 함.",
-          "items": [
-            "보안: developer endpoint를 일반 업무 PC보다 높은 credential concentration 자산으로 분류 필요",
-            "운영: IDE update·security advisory·endpoint rule 적용 상태를 장비 inventory에서 함께 추적 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Cursor를 즉시 제거하는 판단보다 조직의 repository intake와 Windows execution policy를 먼저 측정해야 함. vendor 수정 여부가 확인될 때까지는 untrusted project open을 격리하고 alert·deny rule의 오탐을 검증하는 운영 과제임.",
-          "items": [
-            "팀 액션: Cursor 사용 Windows 단말에서 workspace-root executable 탐지와 block rule을 canary 적용",
-            "팀 액션: 외부 저장소 clone→open 흐름을 VM/EDR policy와 연결하고 Cursor 버전별 재현 시험을 변경 승인 조건에 추가"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-168",
-      "title_ko": "AsyncAPI npm 패키지 침해: GitHub Actions OIDC provenance를 통과한 다단계 Miasma loader 유포",
-      "title_original": "Compromised AsyncAPI npm Packages Deliver Multi-Stage Botnet Malware",
-      "summary": "핵심: @asyncapi namespace의 침해된 npm 패키지가 install hook 없이 module load 시 Miasma loader를 실행한 정황 공개. 운영: 정상 GitHub Actions OIDC provenance도 push credential 침해를 막지 못하므로, dependency provenance·runtime egress·CI commit 보호를 함께 검증 필요.",
-      "detail": "OX Security·SafeDep·Socket·StepSecurity 분석을 인용한 보도는 @asyncapi namespace의 네 패키지가 난독화된 loader를 포함했고, Node.js가 감염 module을 load할 때 IPFS의 암호화된 후속 payload를 내려받았다고 설명한다. StepSecurity는 공격자가 npm token이 아니라 repository push 권한을 악용해 정상 GitHub Actions release workflow로 publish했다고 분석했다. 영향 버전·실행 여부는 lockfile과 CI·개발 단말 로그에서 별도 확인해야 한다.",
-      "why_it_matters": "SLSA/OIDC provenance는 승인된 workflow가 artifact를 만들었음을 증명하지만 triggering commit 자체가 정상임을 보장하지 않는다. install script 검사만 수행하는 조직은 normal import 시 발화하는 loader와 IPFS·P2P C2 egress를 놓칠 수 있다.",
-      "engineering_implication": "@asyncapi dependency와 affected version을 SBOM·lockfile·artifact proxy에서 즉시 조사하고, CI runner·개발 단말에서 module load 흔적, IPFS 연결, 비정상 child `node` process를 hunt 필요. protected branch·required review·release workflow 환경 보호를 함께 재검토 필요.",
-      "korea_implication": "국내 SaaS·플랫폼 팀도 GitHub Actions trusted publishing을 사용하는 경우 OIDC attestation을 commit 보호의 대체 수단으로 보지 말고 branch protection·runner credential·publish approval을 분리 점검할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "npm",
-        "AsyncAPI",
-        "GitHub Actions",
-        "OIDC",
-        "Supply Chain"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-15 18:16",
-      "source_name": "OX Security / StepSecurity / The Hacker News",
-      "source_url": "https://www.ox.security/blog/asyncapi-npm-organization-compromised-2m-weekly-downloads-affected/",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgXEluWW9TuNGlzu9wVHSDBzAeUuoRS9Om8kX9yzH-HwCjggh-N5ycLyuJ82oY3MP4Uvf9yF_PqwKhcZepDBEH_pOb3td4dPRuuGSWi5XndfpeuqiMipzKIq0Vofc-hOBGj4nWxmXbjMS7RvHkZCUSHloOpsS6m7jpwwFX-2KUkYwrQdt-ClrGXpt2C9TxC/s1700-e365/async-npm.jpg",
-      "related_links": [
-        {
-          "title": "StepSecurity 분석 — compromised next-branch pushes and trusted publishing",
-          "url": "https://www.stepsecurity.io/blog/compromised-next-branch-pushes-malicious-asyncapi-generator-generator-helpers-and-generator-components-to-npm"
-        },
-        {
-          "title": "Socket 분석 — AsyncAPI supply-chain attack",
-          "url": "https://socket.dev/blog/asyncapi-supply-chain-attack"
-        },
-        {
-          "title": "The Hacker News 보도 — multi-stage botnet malware",
-          "url": "https://thehackernews.com/2026/07/compromised-asyncapi-npm-packages.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "보안 연구사들은 @asyncapi namespace의 침해된 npm 패키지가 multi-stage botnet loader를 유포한 정황을 공개함. 보도는 네 package를 영향 대상으로 열거했고, 모든 악성 version은 이후 npm registry에서 unpublish됐다고 설명함.",
-          "items": [
-            "범위: OX Security·SafeDep·Socket·StepSecurity가 침해된 @asyncapi package 배포를 독립 분석한 조건",
-            "실행: 악성 implant는 `preinstall`·`postinstall` 없이 감염 module이 Node.js에서 load될 때 발화하는 구조",
-            "대응: package unpublish는 새 설치를 줄이지만 이미 build·CI·개발 환경에서 import된 endpoint 조사는 별도 필요"
-          ]
-        },
-        {
-          "heading": "실행 체인",
-          "body": "원문 분석은 injected source가 같은 second-stage downloader로 decode되고, detached background Node process가 IPFS의 암호화된 payload를 받아 실행한다고 설명함. 단순 install-time hook 탐지만으로는 발화 시점을 놓칠 수 있음.",
-          "items": [
-            "1단계: 난독화 JavaScript implant가 module load 이후 downloader를 실행하는 경로",
-            "2단계: OS별 경로에 `sync.js`를 기록하고 encrypted loader를 실행하는 분석",
-            "C2: HTTP·Nostr relay·IPFS·BitTorrent DHT·libp2p GossipSub·Ethereum contract 등 6개 채널 지원이라는 연구 결과"
-          ]
-        },
-        {
-          "heading": "영향과 탐지 신호",
-          "body": "Miasma로 식별된 loader는 credential theft, AI tool poisoning, LAN lateral movement, registry worm-like propagation, OS별 autostart persistence 기능을 포함한다고 보도됨. 명칭·연계 캠페인 attribution은 연구사 사이에서 확정되지 않은 부분이 있어 행위 기반 탐지가 우선임.",
-          "items": [
-            "지속성: systemd·crontab·macOS launchd·Windows Registry autostart key 설정 가능성 보고",
-            "회피: sandbox·virtual environment·일부 보안 도구와 Russian locale을 피하는 조건이 분석에 포함",
-            "Hunt: IPFS gateway·비정상 child `node`·새 autostart artifact·CI runner outbound connection을 결합 조사"
-          ]
-        },
-        {
-          "heading": "OIDC provenance의 검증 경계",
-          "body": "StepSecurity 분석은 공격자가 npm token을 훔치지 않고 repository push access를 얻은 뒤 프로젝트의 정상 GitHub Actions release workflow와 OIDC trusted publisher를 사용했다고 설명함. 유효 provenance는 workflow identity를 증명하지만 malicious commit의 정당성까지 증명하지 않음.",
-          "items": [
-            "경로: placeholder Git identity의 commit과 authorized release workflow publish라는 분석",
-            "한계: SLSA provenance attestation이 있어도 branch protection·review·push credential 침해를 차단하지 못하는 조건",
-            "통제: protected branch, required review, environment approval, publish workflow permission 최소화가 별도 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "software supply chain 통제는 package install 시점에서 끝나지 않음. runtime import와 artifact delivery, CI commit provenance, runner egress를 한 경로로 관찰해야 dependency scanner와 EDR의 공백을 줄일 수 있음.",
-          "items": [
-            "SBOM: direct·transitive @asyncapi version과 build output 포함 여부를 lockfile 기준으로 식별 필요",
-            "관측: package manager audit, Node module load, DNS·proxy egress, runner process tree를 incident timeline으로 결합 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "OIDC trusted publishing을 도입한 팀은 attestation 검증을 유지하되 commit integrity control을 낮춰서는 안 됨. 이 사례는 정상 release pipeline이 침해된 source commit을 신뢰 artifact로 증폭시킬 수 있는 운영 리스크임.",
-          "items": [
-            "팀 액션: 영향 package/version을 artifact proxy에서 block하고 CI·developer endpoint의 import·IPFS·persistence evidence를 조사",
-            "팀 액션: release branch의 direct push 제한, mandatory review, environment approval, provenance verification과 rollback runbook을 함께 시험"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-165",
-      "title_ko": "업스테이지·다음·퓨리오사AI, 국산 NPU·LLM·검색 서비스 결합 소버린 AI 상용화 추진",
-      "title_original": "Upstage, AXZ Daum, and FuriosaAI announce full-stack sovereign AI commercialization",
-      "summary": "핵심: 업스테이지 Solar LLM과 퓨리오사AI RNGD NPU를 다음 AI 요약에 연결하는 국내 풀스택 소버린 AI 사례가 발표됨. 수치: 기업 측은 3개 노드에서 하루 **5억 토큰**, 추론 비용 50% 이상 절감 가능성을 제시했으며 독립 벤치마크·실운영 비용은 별도 검증 대상.",
-      "detail": "AI Times KR 보도에 따르면 업스테이지·AXZ(다음 운영사)·퓨리오사AI가 RNGD NPU, Solar LLM, 다음 AI 요약을 연결하는 상용화 협력을 발표했다. 다음 AI 요약은 전체 질의의 약 20%를 처리하는 베타 단계이며, 3개 노드 일 5억 토큰 처리·H200 대등 성능·50% 이상 비용절감은 참여 기업의 설명이므로 서비스별 workload와 독립 검증으로 분리해 평가해야 한다.",
-      "why_it_matters": "소버린 AI를 모델 국산화만으로 정의하면 서빙 가속기·컴파일러·검색 하네스·운영 관측의 병목을 놓친다. 사용자 트래픽을 가진 검색 서비스에서 국산 NPU와 LLM을 결합하면 성능·단가·공급·장애 대응을 함께 검증할 수 있다.",
-      "engineering_implication": "플랫폼 팀은 모델 품질뿐 아니라 tokenizer·batching·KV cache·retrieval·accelerator compiler·serving engine별 지연시간과 토큰당 비용을 계측하고, GPU 대비 성능·전력·공급 주장에는 재현 가능한 workload·SLO·failover 조건을 요구할 필요.",
-      "korea_implication": "국내 서비스 사업자는 해외 GPU 수급과 모델 API 의존성에 대응해 국산 가속기·모델·검색 스택의 운영 가능성을 검증할 수 있으나, 특정 벤더 성능·비용 주장은 자체 트래픽과 계약 조건으로 재확인 필요.",
-      "category": "AI",
-      "tags": [
-        "Korea",
-        "Sovereign AI",
-        "FuriosaAI",
-        "Upstage",
-        "NPU",
-        "Inference"
-      ],
-      "region": "Korea",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-15 11:49",
-      "source_name": "AI Times KR",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=40992",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/40992_61772_4738_v150.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "업스테이지, AXZ(다음 운영사), 퓨리오사AI가 RNGD NPU·Solar LLM·다음 AI 요약을 결합한 국내 풀스택 소버린 AI 상용화 협력을 발표함. 인프라부터 모델과 사용자 서비스까지 국내 기술로 연결한다는 사업 설명임.",
-          "items": [
-            "구성: 퓨리오사AI `RNGD` NPU에서 업스테이지 `Solar` LLM을 구동하고 다음 AI 요약 서비스에 적용하는 경로",
-            "서비스: 다음 AI 요약은 웹 문서를 분석해 검색 결과의 종합 답변과 근거를 제공하는 기능으로 설명",
-            "검색: 키워드 검색과 vector search를 결합한 hybrid search로 최신 관련 정보를 모델에 전달하는 방식"
-          ]
-        },
-        {
-          "heading": "처리량·성능 주장과 검증 경계",
-          "body": "기사의 처리량·비용 수치는 참여 기업의 설명임. 운영 의사결정에는 request mix, context 길이, batch 정책, retrieval 비율, p95 latency, 전력과 장애 복구 조건을 포함한 독립 측정이 필요함.",
-          "items": [
-            "처리량: 기업 측이 3개 노드에서 하루 **5억 토큰**을 처리한다고 제시",
-            "비용: RNGD 도입 시 추론 비용 50% 이상 절감 가능성을 기업 측이 설명",
-            "한계: H200 대등 성능·전성비·비용 절감은 기사 내 벤더 발언이며 공개 benchmark와 동일 workload 검증은 별도 과제"
-          ]
-        },
-        {
-          "heading": "서비스 확장과 운영 과제",
-          "body": "다음 AI 요약은 기사 기준 전체 질의의 약 20%를 처리하는 베타 서비스이며, 쇼핑·맛집 등 vertical과 이미지 검색 연동 확대 계획이 제시됨. 트래픽 확대는 모델 품질뿐 아니라 retrieval freshness와 capacity·fallback 운영을 요구함.",
-          "items": [
-            "범위: 전체 질의 약 20% 처리라는 운영 현황이 기사에 제시된 조건",
-            "확장: vertical 검색과 1인 1에이전트 방향을 검토 중이라는 참여사 설명",
-            "운영: accelerator 공급, compiler 호환성, serving engine 배포, GPU fallback을 capacity plan에 포함 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "국산 AI 인프라의 실용성은 칩 또는 모델 단일 지표가 아니라 실제 사용자 요청의 정확도·지연·비용·장애 복구로 판단해야 함. 검색 서비스 결합은 이 지표를 관찰할 수 있는 운영 환경을 제공함.",
-          "items": [
-            "아키텍처: model, retrieval, accelerator compiler, serving engine, observability를 하나의 SLO 경로로 계측 필요",
-            "조달: GPU와 NPU를 대체 관계로만 보지 말고 workload 적합성·공급 리드타임·지원 체계·탈출 경로로 평가 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "소버린 AI 도입 검토는 공급망 국산화 주장보다 재현 가능한 workload와 운영 계약을 먼저 확보해야 함. 서비스 rollout은 비교 실험과 rollback을 전제한 단계적 전환이 적절함.",
-          "items": [
-            "팀 액션: 동일 prompt·context·retrieval 조건으로 token/s, p95 latency, 성공률, token당 비용, kWh를 GPU·NPU에 비교",
-            "팀 액션: canary traffic, model·runtime version pinning, GPU fallback, 품질 회귀와 data residency audit를 release gate에 추가 필요"
           ]
         }
       ],
