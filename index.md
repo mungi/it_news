@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-24 | Total pages: 211
+> Last updated: 2026-07-24 | Total pages: 212
 
 ## Entities
 
@@ -27,6 +27,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/zenity-agentforger-chatgpt-workspace-agents-2026-07-24]] — ChatGPT Workspace Agents URL prompt 자동 실행·connector 승인 설정·schedule을 묶은 AgentForger CSRF 연구와 수정 상태.
 - [[raw/articles/aitimes-microsoft-mai-image-voice-2026-07-24]] — MAI-Image-2.5-Pro·MAI-Voice-2-Flash 공개 preview의 비용·성능 주장과 tenant별 검증 경계.
 - [[raw/articles/cisa-zimbra-laundry-bear-2026-07-24]] — CISA AA26-204A의 LAUNDRY BEAR Zimbra CVE-2025-66376 지속 악용·계정 대응 범위.
 - [[raw/articles/aws-agentcore-unified-observability-2026-07-24]] — AgentCore agent별 trace·prompt·runtime log 단일 CloudWatch log group 전환 조건.

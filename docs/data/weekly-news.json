@@ -2,7 +2,7 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-24 18:50",
+  "last_updated_kst": "2026-07-24 22:53",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft MAI 자체 모델 전환 보도: Bing·PowerPoint·OneDrive·Azure 음성 기능의 모델 교체는 GPU 비용뿐 아니라 품질·safety·latency·fallback·data handling을 함께 검증할 production 변경.",
@@ -174,6 +174,90 @@
   ],
   "items": [
     {
+      "id": "news-221",
+      "title_ko": "ChatGPT Workspace Agents AgentForger: 피싱 URL 한 번으로 connector 승인 없는 예약 에이전트 생성 가능했던 CSRF 결함",
+      "title_original": "AgentForger, Part 1: ChatGPT Cross-Site Agent Forgery",
+      "summary": "핵심: Zenity Labs가 ChatGPT Workspace Agents Builder의 URL `initial_assistant_prompt`가 사용자 확인 없이 실행돼, 피싱 링크 한 번으로 기존 connector를 사용하는 agent 생성·승인 해제·예약 실행까지 유도할 수 있었던 CSRF chain 공개. 상태: OpenAI에 2026-06-04 신고 후 6월 8일 수정된 과거 결함이며, 현재 악용 또는 모든 ChatGPT 배포의 영향 근거는 없음. 대응: 조직은 Workspace Agents의 기존 agent·connector·approval·schedule을 audit하고, URL 기반 초기화와 tool 승인 정책을 change-control 대상으로 점검 필요.",
+      "detail": "Zenity Labs는 ChatGPT Workspace Agents Builder가 URL query의 `initial_assistant_prompt`를 단순 입력값이 아니라 페이지 로드 시 자동 제출·실행했다고 설명한다. 공격자는 `template_name`과 prompt를 포함한 피싱 URL로 로그인된 사용자의 authenticated session에서 agent를 만들고, 이미 승인된 Outlook·Gmail·Slack·Google Drive·SharePoint·Teams connector를 붙여 approval을 `Never ask`로 설정하고 schedule·Preview 실행까지 유도할 수 있었다는 연구 결과다. 연구진은 2026년 6월 4일 OpenAI에 신고했고 OpenAI가 6월 8일 수정했다고 명시한다. 따라서 이 카드는 공개 연구와 후속 보도의 시점에 따른 보안 점검 항목이며, 현재 미패치 상태·실제 침해·특정 조직 피해를 뜻하지 않는다.",
+      "why_it_matters": "agent builder는 workflow UI가 아니라 connector 권한·승인 정책·예약 실행을 묶는 control plane임. 한 URL이 authenticated session에서 prompt 실행과 보안 설정 변경을 연쇄시키면, 기존 OAuth consent를 다시 거치지 않고도 사용자 권한을 가진 장기 실행 agent가 생성될 수 있는 구조적 위험 확인.",
+      "engineering_implication": "AI 플랫폼·보안 팀은 Workspace Agents 사용 여부와 별개로 agent inventory, connector scope, `Never ask` 승인 설정, schedule, 최근 생성·수정 기록을 함께 점검 필요. URL parameter가 prompt·template·tool configuration에 영향을 주는 제품은 state-changing action 전 explicit confirmation, server-side CSRF/origin 검증, connector별 least privilege, schedule publish approval, immutable audit log를 검증 항목으로 반영 필요.",
+      "korea_implication": "국내 조직도 SaaS agent pilot에서 SSO·connector 연동만 승인하지 말고 agent 생성 URL, connector 재사용, scheduled task, approval bypass, 감사 로그 보존을 security review와 직원 피싱 대응 범위에 포함할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AI Agent",
+        "ChatGPT",
+        "CSRF",
+        "SaaS Security",
+        "Identity"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 98,
+      "published_kst": "2026-07-24 20:53",
+      "source_name": "Zenity Labs (primary research; The Hacker News news timestamp)",
+      "source_url": "https://labs.zenity.io/p/agentforger-part-1-chatgpt-cross-site-agent-forgery",
+      "image_url": "https://beehiiv-images-production.s3.amazonaws.com/uploads/asset/file/601909ab-c6ce-4e47-9f01-d12c5cf5715d/AgentForger_Part_1_Hero.png?t=1784740910",
+      "related_links": [
+        {
+          "title": "The Hacker News report and RSS timestamp source",
+          "url": "https://thehackernews.com/2026/07/chatgpt-agentforger-flaw-could-deploy.html"
+        },
+        {
+          "title": "Zenity Labs AgentForger Part 2",
+          "url": "https://labs.zenity.io/p/agentforger-part-2-the-autonomous-insider"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Zenity Labs가 ChatGPT Workspace Agents Builder의 URL-driven agent creation chain을 `AgentForger`로 공개함. primary research의 `article:published_time`은 2026-07-23 13:00 UTC이며, 이 뉴스 카드의 2026-07-24 20:53 KST 시각은 후속 The Hacker News RSS `pubDate` 2026-07-24 17:23:55 +05:30 변환값임.",
+          "items": [
+            "발견: Builder URL의 `template_name`과 `initial_assistant_prompt`가 초기 agent state와 실행 prompt에 사용된 경로",
+            "상태: 연구진이 2026-06-04 OpenAI Bugcrowd로 신고하고 **2026-06-08 수정**됐다고 명시",
+            "경계: 공개 연구는 과거 취약 흐름의 재현이며 현재 active exploitation·특정 조직 침해 사실 확인 없음"
+          ]
+        },
+        {
+          "heading": "공격 전제와 실행 흐름",
+          "body": "공격은 로그인된 피해자가 Workspace Agents 접근 권한과 기존 authorized connector를 보유한 상태에서 crafted URL을 클릭하는 조건을 요구함. 새 OAuth consent 화면을 열지 않고 기존 connector authorization을 재사용하는 점이 blast radius를 키우는 조건임.",
+          "items": [
+            "전제: ChatGPT 로그인, Workspace Agents 접근, Outlook·Gmail·Slack·Google Drive·SharePoint·Teams 등 기존 connector 하나 이상 필요",
+            "자동 실행: `initial_assistant_prompt` 값이 prompt box 표시가 아니라 page load 뒤 자동 submit됐다는 연구 결과",
+            "구성 변경: chief-of-staff template 기반 agent 생성, connector 부착, approval을 `Never ask`로 변경 가능 경로"
+          ]
+        },
+        {
+          "heading": "지속성·영향 경계",
+          "body": "연구진은 forged agent가 Preview Mode로 connected account를 즉시 실행하고, publish 뒤 hourly·daily schedule로 반복 실행될 수 있는 chain을 제시함. 이는 제품 기능의 악성 조합을 설명하는 연구이며, 모든 agent 또는 connector가 동일하게 동작한다는 보장은 없음.",
+          "items": [
+            "Preview: visual dry run이 아니라 새 agent의 connected account 실행으로 이어질 수 있었다는 연구 설명",
+            "지속성: scheduled run이 email 기반 task 수신·결과 전송 channel로 악용될 수 있는 조건",
+            "영향 경계: connector scope·사용자 권한·승인 설정·수정 시점에 따라 실제 노출이 달라지는 범위"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "전통 CSRF는 한 요청을 위조하지만, 이 사례는 untrusted URL이 agent 생성·tool authorization·approval policy·schedule을 묶어 autonomous workflow를 만들 수 있었던 설계 경계를 드러냄. 자연어 instruction을 security-sensitive configuration과 같은 execution channel로 처리하면 human approval 기능도 prompt로 변경될 수 있음.",
+          "items": [
+            "control plane: agent definition·connector·approval·schedule을 application setting이 아닌 privileged change로 분류할 필요",
+            "identity: human session, agent identity, tool credential, approver identity를 분리해 trace 가능한 binding 필요",
+            "evidence: agent create·publish·preview·schedule·connector attach·approval change를 하나의 audit timeline으로 보존 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patched disclosure라도 조직의 agent governance 검증 항목을 구체화하는 사례임. 제품의 수정 여부 확인 뒤에도 과거 생성된 agent·connector·schedule과 URL-driven configuration surface를 inventory로 검증해야 함.",
+          "items": [
+            "팀 액션: Workspace Agents의 active agent·owner·connector scope·`Never ask`·schedule·last run을 export해 high-risk 조합 review",
+            "팀 액션: agent 생성·publish·connector attach·approval downgrade에 explicit confirmation과 role separation 적용 여부 확인",
+            "팀 액션: URL parameter·deep link·template import에 server-side CSRF/origin validation과 state-change confirmation regression test 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-220",
       "title_ko": "Microsoft, MAI-Image-2.5-Pro·MAI-Voice-2-Flash 공개: Bing·Office·Azure에서 자체 모델 전환과 비용·지연 검증",
       "title_original": "Microsoft launches MAI-Image-2.5-Pro and MAI-Voice-2-Flash public previews",
@@ -248,7 +332,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-216",
@@ -315,7 +399,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-217",
@@ -382,7 +466,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-214",
@@ -462,7 +546,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-215",
@@ -535,7 +619,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-218",
@@ -602,7 +686,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-212",
@@ -697,7 +781,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-209",
@@ -772,7 +856,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-210",
@@ -857,7 +941,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-219",
@@ -933,7 +1017,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-213",
@@ -1015,7 +1099,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-208",
@@ -1083,11 +1167,11 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-207",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1241,7 +1325,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-204",
@@ -1306,7 +1390,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-205",
@@ -1372,7 +1456,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-203",
@@ -1437,7 +1521,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-202",
@@ -1533,7 +1617,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-198",
@@ -1598,7 +1682,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-199",
@@ -1662,7 +1746,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-200",
@@ -1741,7 +1825,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-201",
@@ -1823,7 +1907,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-196",
@@ -1908,7 +1992,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-197",
@@ -1984,7 +2068,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-195",
@@ -2063,7 +2147,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-193",
@@ -2148,7 +2232,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-194",
@@ -2227,7 +2311,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-191",
@@ -2295,7 +2379,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-190",
@@ -2381,7 +2465,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-192",
@@ -2453,7 +2537,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-188",
@@ -2519,7 +2603,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-189",
@@ -2586,11 +2670,11 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-187",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -2758,7 +2842,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-182",
@@ -2824,7 +2908,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-180",
@@ -2909,7 +2993,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-185",
@@ -2984,7 +3068,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-186",
@@ -3064,7 +3148,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-181",
@@ -3138,7 +3222,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-183",
@@ -3209,7 +3293,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-179",
@@ -3293,7 +3377,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-184",
@@ -3373,7 +3457,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-178",
@@ -3470,7 +3554,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-176",
@@ -3540,7 +3624,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-177",
@@ -3606,7 +3690,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-173",
@@ -3681,7 +3765,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-172",
@@ -3751,7 +3835,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-171",
@@ -3831,7 +3915,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-175",
@@ -3903,113 +3987,6 @@
             "팀 액션: 대표 OU 이동을 staging에서 replay해 plan diff·apply duration·rollback 경로 확인",
             "팀 액션: skip account에 owner·사유·만료일을 부여하고 주기적 revalidation 수행",
             "팀 액션: AFT logging bucket 접근 제어와 execution audit trail을 security baseline에 포함"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-174",
-      "title_ko": "Hugging Face, 데이터셋 처리 worker 침해 공개: agentic 공격과 self-hosted 포렌식 준비 과제",
-      "title_original": "Security incident disclosure — July 2026",
-      "summary": "핵심: Hugging Face가 remote-code dataset loader와 dataset configuration template injection을 악용한 production infrastructure 침해를 공개. 대응: dataset processing을 untrusted code execution boundary로 분리하고, worker→node→cluster credential 경로와 secret rotation·audit trail을 점검 필요.",
-      "detail": "Hugging Face는 제한된 internal dataset과 여러 service credential에 대한 unauthorized access를 확인했으며 partner·customer data 영향 평가는 진행 중이라고 밝혔다. 공개 user-facing model·dataset·Space 변조 증거는 없고 container image와 published package 공급망도 clean으로 검증됐다고 설명한다. 침입은 dataset processing worker의 remote-code loader와 template injection 경로에서 시작돼 node access와 internal cluster lateral movement로 이어졌다고 하며, 공격 도구·모델의 정확한 정체와 전체 영향 범위는 확정하지 않았다.",
-      "why_it_matters": "ML platform의 dataset ingestion은 데이터 파싱이 아니라 code·template·network·cloud credential이 만나는 execution plane임. public artifact와 package 공급망이 clean이어도 processing worker가 cluster credential으로 이동할 수 있으면 model/data hosting service의 내부 control plane이 노출될 수 있음.",
-      "engineering_implication": "ML 플랫폼은 remote code 실행을 기본 거부하고 workload identity·egress·namespace·node privilege를 최소화 필요. incident 대응에는 token 회전뿐 아니라 dataset provenance, worker job trace, node audit, cluster API access, secret exposure graph를 연결한 scoping과 self-hosted forensic model의 사전 승인 절차가 필요.",
-      "korea_implication": "국내 AI 플랫폼도 외부 dataset·notebook·template를 받는 processing fleet를 일반 batch job으로 취급하지 말고 별도 tenant·network·credential 경계와 검증된 incident 분석 환경을 운영할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Hugging Face",
-        "MLOps",
-        "Dataset Security",
-        "AI Agent",
-        "Supply Chain"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-16 09:00",
-      "source_name": "Hugging Face",
-      "source_url": "https://huggingface.co/blog/security-incident-july-2026",
-      "image_url": "https://huggingface.co/blog/assets/security-incident-july-2026/thumbnail.png",
-      "related_links": [
-        {
-          "title": "Hugging Face 공개 원문 GitHub",
-          "url": "https://github.com/huggingface/blog/blob/main/security-incident-july-2026.md"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Hugging Face는 production infrastructure 일부에 대한 intrusion을 감지·대응했고, 제한된 internal dataset 및 서비스용 credential 일부의 unauthorized access를 확인했다고 공개함. partner·customer data 영향은 계속 평가 중이며 영향을 받는 당사자에게 직접 연락하겠다고 밝힘.",
-          "items": [
-            "확인: public user-facing model·dataset·Spaces 변조 증거 없음",
-            "확인: container image와 published package 공급망을 clean으로 검증했다는 회사 설명",
-            "경계: 고객·partner 데이터 영향과 공격자의 전체 접근 범위는 조사 진행 상태"
-          ]
-        },
-        {
-          "heading": "침입 경로와 영향 경계",
-          "body": "공개문은 악성 dataset이 remote-code dataset loader와 dataset configuration의 template-injection 두 실행 경로를 악용해 processing worker에서 코드를 실행했다고 설명함. 이후 node-level access, cloud·cluster credential 수집, 여러 internal cluster lateral movement가 이어진 것으로 기술됨.",
-          "items": [
-            "초기 진입: untrusted dataset content가 processing execution plane을 통과한 경로",
-            "확장: worker 권한에서 node·cloud·cluster credential로 이동한 blast radius",
-            "운영: ingestion job, node audit, workload identity, cluster API log를 같은 timeline으로 보존할 대상"
-          ]
-        },
-        {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "dataset processing은 artifact scanning만으로 끝나는 storage pipeline이 아니라 potentially executable workload임. loader와 template renderer가 code execution 가능성을 가지면, user dataset의 trust level이 worker runtime·Kubernetes node·cloud control plane으로 전파될 수 있음.",
-          "items": [
-            "아키텍처: remote code 기본 거부, per-job ephemeral sandbox, rootless runtime, workload identity 분리 필요",
-            "관측: dataset digest·job ID·container image·egress·service account·node event의 trace 연결 필요",
-            "격리: processing namespace의 cluster API·metadata service·internal network egress 최소화 필요"
-          ]
-        },
-        {
-          "heading": "보안·거버넌스 관점",
-          "body": "Hugging Face는 affected credential·token을 revoke·rotate했고 broader precautionary secret rotation도 시작했다고 설명함. rotation은 시작점이며, 어떤 dataset job이 어떤 identity로 어느 cluster에 접근했는지를 재구성하지 못하면 잔존 credential과 lateral movement 범위를 판단하기 어려움.",
-          "items": [
-            "비밀정보: static secret 대신 short-lived workload credential과 audience·namespace binding 적용",
-            "접근: dataset processor에 production control-plane 관리자 권한과 shared node credential 부여 금지",
-            "감사: token rotation 시각, session invalidation, secret consumer restart, failed auth spike를 evidence로 보존"
-          ]
-        },
-        {
-          "heading": "agentic 공격과 포렌식 관점",
-          "body": "공개문은 공격이 short-lived sandbox swarm과 public service 기반 C2를 사용한 autonomous agent framework로 수행된 것으로 보인다고 설명함. 정확한 모델은 확인되지 않았으며, 대규모 action log 분석에는 hosted model safety guardrail 때문에 self-hosted open-weight model을 사용했다고 밝힘.",
-          "items": [
-            "사실: 17,000개 이상 기록 event의 timeline·IOC·credential touchpoint 분석에 LLM agent 사용",
-            "한계: 공격에 쓰인 모델 또는 framework의 정확한 attribution은 미확정",
-            "준비: forensic payload를 외부 API로 보내지 않는 self-hosted analysis path와 legal approval 사전 검증 필요"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "우선 remote-code dataset loader와 template renderer의 실제 사용 경로를 inventory하고, high-risk input은 sandbox로 옮겨야 함. 다음으로 worker identity와 network path를 축소한 뒤, incident replay로 evidence collection과 rotation runbook을 시험하는 순서가 필요.",
-          "items": [
-            "1단계: dataset source·loader·template·network egress·secret consumer inventory 작성",
-            "2단계: remote code default-deny, allowlist, ephemeral job credential, no-node-access baseline 적용",
-            "3단계: worker compromise tabletop에서 credential rotation·cluster containment·customer notification 경로 검증"
-          ]
-        },
-        {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "platform team은 model·dataset hosting과 processing control plane의 권한을 분리하고, security team은 artifact 검사 결과와 runtime telemetry를 함께 triage해야 함. clean package 결과만으로 worker compromise 가능성을 배제하지 않는 절차가 필요.",
-          "items": [
-            "dataset job별 digest·submitter·loader setting·container image·service account 기록 확인",
-            "processing worker의 metadata service, Kubernetes API, internal DNS·egress 정책 차단 여부 확인",
-            "cluster credential rotation 뒤 stale pod·CI secret·long-lived token 재발급 여부 검토",
-            "forensic LLM 사용 시 data residency·prompt retention·guardrail failure fallback 사전 승인"
-          ]
-        },
-        {
-          "heading": "강조 메세지",
-          "body": "AI platform의 dataset ingestion은 data plane이면서 code execution plane임. public model과 package가 clean이어도 processing worker의 credential·network·node 경계가 느슨하면 내부 cluster로 이어질 수 있음.",
-          "items": [
-            "발표 포인트: **remote-code loader와 template injection**이 dataset processing에서 execution boundary가 되는 사실",
-            "팀 액션: 다음 security review에서 dataset worker의 identity·egress·node privilege와 incident evidence chain을 함께 승인"
           ]
         }
       ],
