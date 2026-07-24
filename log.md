@@ -951,3 +951,7 @@
 - Source-page verified AWS `Claude Opus 5 is now available on AWS`, published 2026-07-24; AWS RSS `pubDate` 2026-07-24 15:00 UTC = 2026-07-25 00:00 KST. AWS states Bedrock has ZDR enabled by default with regional data residency, Guardrails, and Knowledge Bases; Claude Platform on AWS provides Anthropic native platform access with AWS billing/authentication and ZDR on request. Price, all-region availability, quota, SLA, and workload benchmarks are not asserted.
 - Added `news-223` at rank 1, removed actual capped sort tail `Zoom Workplace Windows 계정 탈취 취약점 패치: CVSS 9.8 네트워크 공격 경로 점검` (`news-171`, 2026-07-16 16:22 KST), re-sorted 50 items newest-first, and reassigned contiguous ranks.
 - Added immutable raw capture with verified SHA-256, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`. Both Deep Dives were fully rebuilt at 2026-07-25 02:59 KST earlier today, so they were preserved without timestamp-only churn.
+
+## [2026-07-25] correction | Feed-count ledger for Claude Opus 5 refresh
+- Corrected the prior parsed-feed wording: six XML feeds yielded 196 parsed entries in total — AWS What’s New (100), GitHub Blog (10), CNCF (10), The Hacker News (50), Google Blog (8), NVIDIA (18); arithmetic: 100+10+10+50+8+18 = 196.
+- The earlier `188` figure was the current-candidate subtotal after excluding eight older Google entries, not the parsed-feed total. Cloudflare RSS remained malformed XML and was not counted. No news data, sources, timestamps, ranks, or Deep Dives changed.
