@@ -2,10 +2,10 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-24 14:42",
+  "last_updated_kst": "2026-07-24 18:50",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AMD·앤트로픽 계약 보도: 최대 50억달러 투자와 2027년 상반기부터 최대 2GW AMD AI 인프라 계획은 GPU 단품이 아닌 전력·랙·software·장기 capacity 조달 과제.",
+    "Microsoft MAI 자체 모델 전환 보도: Bing·PowerPoint·OneDrive·Azure 음성 기능의 모델 교체는 GPU 비용뿐 아니라 품질·safety·latency·fallback·data handling을 함께 검증할 production 변경.",
     "과기정통부 에이전틱 AI 이니셔티브: 안전·신뢰, 실행 기반, 수요 도입을 제시; agent identity·tool permission·audit·rollback을 PoC acceptance criteria로 구체화.",
     "Check Point SmartConsole CVE-2026-16232: 인터넷 노출·Trusted Clients 미제한 Management Server는 인증 우회로 policy 변경 가능하므로 hotfix·allowlist·IoC hunt 병행.",
     "AWS EKS EFA·placement group: Auto Mode·Karpenter node pool의 network topology 제어는 GPU job capacity·scheduler·collective tail latency와 함께 검증.",
@@ -174,6 +174,83 @@
   ],
   "items": [
     {
+      "id": "news-220",
+      "title_ko": "Microsoft, MAI-Image-2.5-Pro·MAI-Voice-2-Flash 공개: Bing·Office·Azure에서 자체 모델 전환과 비용·지연 검증",
+      "title_original": "Microsoft launches MAI-Image-2.5-Pro and MAI-Voice-2-Flash public previews",
+      "summary": "핵심: Microsoft가 20B diffusion 이미지 모델 `MAI-Image-2.5-Pro`와 음성 모델 `MAI-Voice-2-Flash` 공개 preview를 발표하고 Bing Image Creator·PowerPoint·OneDrive·Dynamics 365·Azure Voice Live 적용을 공개. 변화: PowerPoint GPU 비용 최대 84% 절감, OneDrive 저장 성공률 26% 증가·지연 약 25% 감소는 Microsoft 운영 수치. 운영: 모델 교체 전 workload별 품질·단가·quota·fallback·data handling을 별도 A/B 검증 필요.",
+      "detail": "Microsoft가 `MAI-Image-2.5-Pro`와 `MAI-Voice-2-Flash`를 공개 preview로 소개하고 자사 서비스의 OpenAI 이미지 모델 일부를 자체 MAI 모델로 전환했다고 보도됨. 이미지 모델의 20B parameter·1MP 출력·가격과 PowerPoint·OneDrive의 비용·성능 수치는 Microsoft가 제시한 운영 결과이며, 외부 workload의 재현성·제한·지역별 제공 범위는 기사만으로 확정할 수 없음.",
+      "why_it_matters": "생성형 이미지·음성 모델의 제공자 전환은 API 품질뿐 아니라 GPU 비용, latency, 안전 필터, 데이터 처리, 장애 fallback, vendor portability를 함께 바꾸는 production 변경임.",
+      "engineering_implication": "이미지·음성 생성 기능을 운영하는 팀은 모델별 request mix·출력 해상도·cache·retry·safety rejection·p95 latency·성공률·GPU/토큰 비용을 baseline으로 수집하고, canary에서 품질 평가와 fallback을 함께 검증 필요.",
+      "korea_implication": "국내 Azure·Microsoft 365 도입 조직은 서비스별 공개 preview·region·계약 SKU·데이터 처리 조건이 실제 tenant에 적용되는지 확인한 뒤 모델 전환을 계획 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "Microsoft",
+        "Azure",
+        "image-generation",
+        "voice-ai",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-07-24 14:14",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213132",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/213132_216542_5026.jpeg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스는 Microsoft가 7월 23일 현지 기준 `MAI-Image-2.5-Pro`와 `MAI-Voice-2-Flash` 공개 preview를 발표했다고 보도함. 기사 `article:published_time`은 2026-07-24 14:14 KST임.",
+          "items": [
+            "대상: Bing Image Creator·PowerPoint·OneDrive의 이미지 생성·편집, Dynamics 365 Contact Center와 Azure Voice Live의 음성 기능",
+            "전환: Bing Image Creator의 생성·편집 전 과정을 `MAI-Image-2.5` 기반으로 운영한다는 Microsoft 설명",
+            "경계: 공개 preview의 tenant·region·quota·SLA·일반 제공 일정은 기사 범위에서 확인 불가"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "`MAI-Image-2.5-Pro`는 20B parameter diffusion 모델로 최대 1MP 이미지, aspect ratio 제어, text-to-image·image-to-image 편집과 visual reasoning을 지원한다고 소개됨.",
+          "items": [
+            "가격: 입력 text 100만 token당 5달러, 입력 image 100만 token당 8달러, 출력 image 100만 token당 106달러로 제시",
+            "음성: `MAI-Voice-2-Flash`는 기존 MAI-Voice-2 대비 처리 속도 2배·비용 32% 감소, 100만 문자당 15달러라는 Microsoft 수치",
+            "제공: Azure AI Foundry 외 OpenRouter·Fireworks·Baseten에도 동시 제공 계획과 외부 개발자 fine-tuning 허용 보도"
+          ]
+        },
+        {
+          "heading": "운영 수치와 증거 경계",
+          "body": "PowerPoint·OneDrive·Dynamics 365 적용 결과의 비용·성능 수치는 Microsoft가 자사 운영 환경에서 제시한 결과임. 모델·prompt·해상도·traffic mix·safety policy가 다른 조직에 그대로 적용되는 보장은 없음.",
+          "items": [
+            "PowerPoint: 이미지 생성·변환에서 GPU 운영 비용 최대 84% 절감이라는 Microsoft 주장",
+            "OneDrive: 저장 성공률 26% 증가·응답 지연 약 25% 감소·중간 부하 처리 효율 2.5배라는 Microsoft 주장",
+            "Dynamics 365: 음성 agent GPU 비용 최대 89% 절감이라는 Microsoft 주장",
+            "미확정: 독립 benchmark, workload 재현 조건, quality metric, rate limit, availability·SLA·data residency 정보"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "대형 SaaS가 특정 기능의 기반 모델을 바꾸면 모델 비용만이 아니라 output 품질, content safety, latency, retry, observability, incident fallback의 운영 계약이 바뀜.",
+          "items": [
+            "비용: image output·voice character·retry·cache hit를 성공 작업당 비용으로 집계할 필요",
+            "품질: brand asset·문서 삽화·voice agent use case별 human preference와 safety rejection을 분리 평가할 필요",
+            "호환성: API schema·prompt template·fine-tuning artifact·moderation policy·fallback model의 regression 범위"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "자체 모델 전환 발표를 범용 비용 절감으로 해석하지 말고 실제 tenant와 workload에서 quality·latency·failure·data boundary를 동시에 검증해야 함.",
+          "items": [
+            "팀 액션: 대표 prompt·image·voice workload로 canary를 구성하고 quality pass rate·p95 latency·rejection·retry·단가 비교",
+            "팀 액션: preview 종료·quota 소진·model regression 시 이전 모델 또는 human handoff로 전환하는 fallback runbook 검증",
+            "팀 액션: Azure·Microsoft 365 tenant별 region·retention·training use·content filter·audit log 조건을 계약·보안 담당과 확인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-216",
       "title_ko": "Amazon ECS Service Connect, 동일 AZ 우선 라우팅으로 cross-AZ 전송비·지연 축소",
       "title_original": "Amazon ECS Service Connect now supports Zone-Aware routing",
@@ -238,7 +315,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-217",
@@ -305,7 +382,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-214",
@@ -385,7 +462,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-215",
@@ -458,7 +535,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-218",
@@ -525,7 +602,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-212",
@@ -620,7 +697,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-209",
@@ -695,7 +772,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-210",
@@ -780,7 +857,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-219",
@@ -856,7 +933,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-213",
@@ -938,7 +1015,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-208",
@@ -1006,11 +1083,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-207",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1164,7 +1241,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-204",
@@ -1229,7 +1306,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-205",
@@ -1295,7 +1372,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-203",
@@ -1360,7 +1437,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-202",
@@ -1456,7 +1533,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-198",
@@ -1521,7 +1598,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-199",
@@ -1585,7 +1662,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-200",
@@ -1664,7 +1741,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-201",
@@ -1746,7 +1823,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-196",
@@ -1831,7 +1908,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-197",
@@ -1907,7 +1984,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-195",
@@ -1986,7 +2063,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-193",
@@ -2071,7 +2148,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-194",
@@ -2150,7 +2227,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-191",
@@ -2218,7 +2295,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-190",
@@ -2304,7 +2381,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-192",
@@ -2376,7 +2453,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-188",
@@ -2442,7 +2519,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-189",
@@ -2509,11 +2586,11 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-187",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -2681,7 +2758,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-182",
@@ -2747,7 +2824,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-180",
@@ -2832,7 +2909,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-185",
@@ -2907,7 +2984,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-186",
@@ -2987,7 +3064,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-181",
@@ -3061,7 +3138,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-183",
@@ -3132,7 +3209,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-179",
@@ -3216,7 +3293,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-184",
@@ -3296,7 +3373,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-178",
@@ -3393,7 +3470,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-176",
@@ -3463,7 +3540,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-177",
@@ -3529,7 +3606,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-173",
@@ -3604,7 +3681,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-172",
@@ -3674,7 +3751,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-171",
@@ -3754,7 +3831,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-175",
@@ -3829,7 +3906,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-174",
@@ -3933,90 +4010,6 @@
           "items": [
             "발표 포인트: **remote-code loader와 template injection**이 dataset processing에서 execution boundary가 되는 사실",
             "팀 액션: 다음 security review에서 dataset worker의 identity·egress·node privilege와 incident evidence chain을 함께 승인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-170",
-      "title_ko": "IBM Research, 에이전트 모델 라우팅을 가격표 분류가 아닌 비용·품질·지연 최적화 문제로 재정의",
-      "title_original": "Model Routing Is Simple. Until It Isn’t.",
-      "summary": "핵심: IBM Research는 동일 CodeAct agent의 AppWorld 417개 작업에서 Sonnet 비용이 $79, GPT-4.1 비용이 $155였다고 제시. 운영: 모델 가격만으로 route하지 말고 cache hit, endpoint 상태, 품질·지연·compliance 제약을 함께 최적화하고 task별 실제 비용·SLO를 관측 필요.",
-      "detail": "IBM Research의 Hugging Face 기술 글은 에이전트 모델 라우팅을 난이도 분류기가 아닌 다목적 systems optimization으로 다룬다. 같은 CodeAct agent의 AppWorld Test Challenge 417개 작업에서 Claude Sonnet 4.6은 총 $79($0.19/task), GPT-4.1은 $155($0.37/task)였다고 제시했으며, 입력·출력 단가보다 context cache read 비용과 trajectory가 결과를 바꾼 사례다. 제안 router는 AppWorld에서 84% 정확도·$93·83초의 운영점을 제시했으나, 이는 해당 benchmark 구성의 결과이므로 조직별 모델·traffic·governance 조건으로 재검증 필요.",
-      "why_it_matters": "agentic workload의 실제 비용과 latency는 모델 단가나 task 난이도만으로 예측되지 않는다. context 재사용, endpoint 혼잡, hardware, model specialization, data residency와 승인 모델 정책이 route 가능 집합과 user-visible SLO를 함께 결정함.",
-      "engineering_implication": "플랫폼 팀은 모델별 sticker price 대신 task·step·cache hit·input/output token·queue time·tool retry·quality outcome을 trace 단위로 수집 필요. route 변경은 offline replay와 canary에서 task success, p95 latency, effective cost, policy violation을 함께 비교하고 fallback·circuit breaker 기준을 명시 필요.",
-      "korea_implication": "국내 기업의 멀티모델 에이전트도 외부 모델 API·국내 모델·온프레미스 endpoint를 함께 쓸 때 데이터 반출, 리전, 승인 모델 정책을 routing feature가 아니라 hard constraint로 구현할 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Agent",
-        "Model Routing",
-        "Inference",
-        "FinOps",
-        "Observability"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-07-16 02:27",
-      "source_name": "IBM Research / Hugging Face",
-      "source_url": "https://huggingface.co/blog/ibm-research/model-routing-is-simple-until-it-isnt",
-      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/642ee6f6ffd6084c6a620985/ibA2XHLJsqDH9VAL-3ou-.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "IBM Research가 Hugging Face Enterprise 글에서 agent용 모델 선택을 단순 난이도 분류가 아닌 비용·품질·지연·정책 제약의 동시 최적화 문제로 정리함. 논거는 동일 agent와 benchmark에서 모델별 실제 비용 순서가 공개 가격표와 달라진 측정 결과임.",
-          "items": [
-            "대상: 동일 `CodeAct` agent로 수행한 AppWorld Test Challenge **417개 작업** 측정",
-            "비용: 원문 기준 Claude Sonnet 4.6 총 $79·작업당 $0.19, GPT-4.1 총 $155·작업당 $0.37 기록",
-            "경계: 수치는 특정 agent·benchmark·pricing·cache 조건의 결과이며 모든 production workload의 일반값은 아님"
-          ]
-        },
-        {
-          "heading": "비용 모델에서 빠지는 변수",
-          "body": "원문은 GPT-4.1의 input/output token 가격이 더 낮아도 Sonnet의 cache-read 비용 구조와 agent context 재사용 때문에 총비용이 역전됐다고 설명함. reasoning step 수와 base token price만 합산하는 estimate는 cache hit와 trajectory 길이를 놓칠 수 있음.",
-          "items": [
-            "cache: agent가 여러 step에서 큰 context 조각을 반복 사용할 때 effective input cost가 달라지는 조건",
-            "측정: 모델·task·step별 input/output/cache-read token과 tool retry를 trace로 연결 필요",
-            "검증: provider price 변경과 prompt·tool schema 변경 뒤 route 정책의 비용 모델 재학습 필요"
-          ]
-        },
-        {
-          "heading": "난이도·지연 판단의 한계",
-          "body": "요청의 표면 난이도는 retrieval, compliance check, tool use, refinement loop가 실제 실행 중에 추가되는 agent workload를 충분히 나타내지 못함. 사용자 체감 지연도 model size만이 아니라 warm cache, endpoint load, hardware, routing granularity에 의해 달라짐.",
-          "items": [
-            "품질: task difficulty score 하나 대신 success·tool error·human escalation·specialty fit을 함께 관측 필요",
-            "지연: task당 한 번 route하는 방식과 step마다 재route하는 방식은 적응성·decision overhead의 trade-off 발생",
-            "제약: data residency·privacy·approved model list는 ranking score가 아니라 후보를 제거하는 hard policy로 처리 필요"
-          ]
-        },
-        {
-          "heading": "제안 결과와 검증 경계",
-          "body": "IBM Research는 다목적 router의 AppWorld 결과로 latency-optimized configuration이 84% accuracy, $93, 83초에 도달했다고 제시함. Opus 단독 실행 대비 비용 21%·latency 9% 감소와 accuracy 4% 감소라는 비교도 제시했으나, 품질 허용선과 workload 분포는 조직별로 달라 별도 replay가 필요.",
-          "items": [
-            "구성: 원문은 cost·quality·latency를 함께 최적화하고 task당 약 6ms·2kB memory의 router overhead를 제시",
-            "비교: difficulty-based router가 유사 accuracy 범위에서 더 높은 비용을 보였다는 benchmark 관찰",
-            "한계: model availability, regional capacity, provider outage, enterprise policy의 실제 분포는 benchmark 외 검증 대상"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "멀티모델 agent의 routing은 비용 절감 toggle이 아니라 serving·observability·governance 설계의 일부임. 어떤 route가 선택됐는지와 선택 당시 cache·queue·policy·tool state를 남기지 않으면 cost anomaly와 SLO regression의 원인을 분리하기 어려움.",
-          "items": [
-            "아키텍처: request identity, model candidate, policy rejection, route decision, cache·queue·tool telemetry를 동일 trace ID로 연결 필요",
-            "운영: endpoint capacity·fallback·rate limit을 router policy와 분리하지 않으면 provider incident가 quality·cost spike로 전파될 리스크",
-            "거버넌스: 데이터 분류와 residency 조건은 prompt 이후 검사보다 route 전 enforcement가 필요한 control"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "routing 정책은 낮은 token price를 고르는 규칙에서 workload별 Pareto operating point를 고르는 정책으로 전환 필요. 먼저 한정된 task set에서 offline replay와 canary를 수행한 뒤, quality loss budget과 p95 latency·effective cost guardrail을 넘을 때의 fallback을 운영 계약으로 고정하는 순서 필요.",
-          "items": [
-            "팀 액션: model·task·cache-hit·token·queue·tool retry·success를 수집하는 routing telemetry schema 정의",
-            "팀 액션: approved model·residency·data classification을 route 후보 생성 단계에서 강제",
-            "팀 액션: canary별 effective cost, task success, p95 latency, policy rejection, fallback rate를 release gate로 비교"
           ]
         }
       ],
