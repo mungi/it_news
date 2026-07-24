@@ -944,3 +944,10 @@
 - First KST daily Deep Dive policy applied to both entries: rebuilt aws-bench and AgentForger briefings with distinct non-overlapping primary sources at 2026-07-25 02:59 KST.
 - Added immutable aws-bench raw capture with SHA-256 metadata, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`.
 - Validation passed: `python3 scripts/validate_weekly_news.py`, `node --check docs/app.js`, and `git diff --check`; local browser smoke test passed with 50 cards, 2 Deep Dives, 2026-07-25 02:59 KST display, and aws-bench modal title/detail assertions.
+
+## [2026-07-25] update | Add AWS Claude Opus 5 availability on Bedrock and Claude Platform on AWS
+- Checked current time at 2026-07-25 07:05 KST. Directly inspected mandatory Korean/community HTML surfaces: GeekNews, GeekNews Plus, 인공지능신문, AI타임스; each returned HTTP 200 and is not counted as a parsed XML feed.
+- Parsed 188 current feed entries from six successful XML feeds: AWS What’s New (100), GitHub Blog (10), CNCF (10), The Hacker News (50), Google Blog (0 relevant current entries), NVIDIA (18); arithmetic: 100+10+10+50+0+18 = 188. Cloudflare RSS returned malformed XML in this probe and is not counted.
+- Source-page verified AWS `Claude Opus 5 is now available on AWS`, published 2026-07-24; AWS RSS `pubDate` 2026-07-24 15:00 UTC = 2026-07-25 00:00 KST. AWS states Bedrock has ZDR enabled by default with regional data residency, Guardrails, and Knowledge Bases; Claude Platform on AWS provides Anthropic native platform access with AWS billing/authentication and ZDR on request. Price, all-region availability, quota, SLA, and workload benchmarks are not asserted.
+- Added `news-223` at rank 1, removed actual capped sort tail `Zoom Workplace Windows 계정 탈취 취약점 패치: CVSS 9.8 네트워크 공격 경로 점검` (`news-171`, 2026-07-16 16:22 KST), re-sorted 50 items newest-first, and reassigned contiguous ranks.
+- Added immutable raw capture with verified SHA-256, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`. Both Deep Dives were fully rebuilt at 2026-07-25 02:59 KST earlier today, so they were preserved without timestamp-only churn.

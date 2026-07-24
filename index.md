@@ -27,6 +27,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-claude-opus-5-bedrock-platform-2026-07-25]] — Claude Opus 5의 Bedrock 기본 ZDR·Claude Platform on AWS 요청형 ZDR과 provider별 운영 경계.
 - [[raw/articles/aws-bench-ai-agent-benchmark-2026-07-24]] — 실제 AWS account·CDK scenario 기반 coding agent benchmark의 권한·비용·cleanup 운영 경계.
 - [[raw/articles/zenity-agentforger-chatgpt-workspace-agents-2026-07-24]] — ChatGPT Workspace Agents URL prompt 자동 실행·connector 승인 설정·schedule을 묶은 AgentForger CSRF 연구와 수정 상태.
 - [[raw/articles/aitimes-microsoft-mai-image-voice-2026-07-24]] — MAI-Image-2.5-Pro·MAI-Voice-2-Flash 공개 preview의 비용·성능 주장과 tenant별 검증 경계.
