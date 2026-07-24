@@ -94,6 +94,7 @@
 - [[raw/articles/github-dependabot-three-day-cooldown-2026-07-24]] — Dependabot 일반 version update 기본 3일 cooldown과 security-update 예외.
 - [[raw/articles/aitimes-skt-sk-hyper-ai-data-center-2026-07-24]] — SK하이퍼 7,500억원 출자·5GW/15GW AI 데이터센터 계획의 capacity 검증 경계.
 - [[raw/articles/aws-ecs-service-connect-zone-aware-2026-07-24]] — ECS Service Connect AZ 우선 라우팅의 cross-AZ 비용·지연·failover 검증 경계.
+- [[raw/articles/aitimes-amd-anthropic-2gw-ai-infrastructure-2026-07-23]] — AMD·앤트로픽 최대 2GW AI 인프라 계획의 capacity·전력·software 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
