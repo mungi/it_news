@@ -2,177 +2,269 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-24 22:53",
+  "last_updated_kst": "2026-07-25 02:59",
   "audience": "developers and engineers",
   "executive_summary": [
+    "AWS aws-bench research preview: 실제 disposable AWS account·CDK scenario에서 coding agent를 평가하므로 benchmark 실행 자체의 Organization 권한·quota·생성 리소스·cleanup을 별도 운영 경계로 관리.",
+    "ChatGPT Workspace Agents AgentForger: URL prompt 자동 실행·기존 connector 재사용·approval/schedule 변경이 결합된 과거 CSRF 결함은 agent definition을 privileged change로 audit할 필요.",
     "Microsoft MAI 자체 모델 전환 보도: Bing·PowerPoint·OneDrive·Azure 음성 기능의 모델 교체는 GPU 비용뿐 아니라 품질·safety·latency·fallback·data handling을 함께 검증할 production 변경.",
-    "과기정통부 에이전틱 AI 이니셔티브: 안전·신뢰, 실행 기반, 수요 도입을 제시; agent identity·tool permission·audit·rollback을 PoC acceptance criteria로 구체화.",
     "Check Point SmartConsole CVE-2026-16232: 인터넷 노출·Trusted Clients 미제한 Management Server는 인증 우회로 policy 변경 가능하므로 hotfix·allowlist·IoC hunt 병행.",
-    "AWS EKS EFA·placement group: Auto Mode·Karpenter node pool의 network topology 제어는 GPU job capacity·scheduler·collective tail latency와 함께 검증.",
-    "업스테이지 Solar Open 2: 250B-A15B MoE·1M context 공개 가중치는 H200 4/8장 공식 baseline과 quantization artifact별 VRAM·품질·tail latency를 분리 검증."
+    "AWS EKS EFA·placement group: Auto Mode·Karpenter node pool의 network topology 제어는 GPU job capacity·scheduler·collective tail latency와 함께 검증."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Claude Cowork SharedRoot: 로컬 AI 에이전트 VM에서 guest-root·host mount를 함께 차단해야 하는 이유",
-      "summary": "핵심: Accomplish AI 연구를 인용한 보도에서 Claude Cowork의 local session이 Linux guest kernel `CVE-2026-46331`을 통해 guest-root를 얻으면 read-write로 mount된 Mac 전체 파일시스템에 도달할 수 있는 경로 공개. 대응: 최신 Cowork의 cloud execution 기본값과 별개로 local execution 사용 조직은 전체 host mount·unprivileged user namespace·module autoload·`coworkd` 권한을 즉시 점검 필요.",
-      "details": "The Hacker News는 Accomplish AI의 SharedRoot 연구를 인용해 Claude Cowork local session의 VM 탈출 경로를 보도했다. 연구의 전제는 guest의 unprivileged user namespace에서 `act_pedit` 경로를 통해 guest-root를 얻는 것과, `coworkd`가 host `/`를 guest root에 read-write로 공유하는 설계다. Anthropic은 보고를 informative로 종료했고 최신 Cowork는 cloud execution을 기본값으로 둔다고 보도됐지만 local execution opt-in 사용자는 해당 설계 경계를 별도 확인해야 한다.",
+      "title": "AWS aws-bench: 실제 AWS 계정에서 coding agent를 평가할 때 benchmark 자체를 control plane으로 운영하는 방법",
+      "summary": "핵심: AWS의 오픈소스 research preview `aws-bench`는 disposable account와 CDK scenario에서 agent가 진단·resource 변경을 수행하게 한 뒤 live state verifier로 채점. 판단: static benchmark 점수와 달리 Organization 권한·scoped credential·quota·resource lifecycle·cleanup이 평가 결과와 운영 위험을 함께 결정하므로, sandbox·budget·SCP·cleanup evidence를 benchmark gate에 포함 필요.",
+      "details": "AWS가 2026년 7월 24일 공개한 `aws-bench`는 실제 AWS environment를 provisioning해 coding agent를 평가하는 research preview다. AWS What’s New와 GitHub README를 직접 확인했다. agent는 scoped credential로 sandboxed container에서 진단 또는 변경 task를 수행하며, 변경형 task는 live AWS state로 판정한다. 이는 evaluation fidelity를 높이지만 benchmark run이 Organization·member account·quota·CDK resource·Bedrock credential을 다루는 control plane이 된다는 뜻이다. production 도입 판단에는 reward뿐 아니라 IAM scope, resource drift, cleanup success, trial 비용, account termination 증적이 필요하다.",
       "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
       "sources": [
-        "https://thehackernews.com/2026/07/claude-cowork-flaw-could-let-ai-agent.html"
+        "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-bench/",
+        "https://github.com/aws-bench/aws-bench"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhj5Vr8pje9uM-Ce6rzE-_hhU3HvR2NkKtYfaSrIXz3m0BbrC1ZNC9p4GW4GRQaAvFKPjE5kopXmdmcKcMb7_1dbOWvMO6_oe87HCj4TUXV1dWK99cz_OBcNHd81Ziat93g4wJcBdc3K1vq0IkwFL9DO9GlSrf_KxGi2hpg7VVsU9iTt7B2XByXL7nil86i/s1600/claude.gif",
-      "refreshed_kst": "2026-07-24 02:18",
+      "local_image": "assets/images/fallback-ai.svg",
+      "refreshed_kst": "2026-07-25 02:59",
       "detailed_content": [
         {
+          "heading": "한 줄 결론",
+          "body": "`aws-bench`는 agent의 AWS 작업을 실제 cloud state에서 평가하지만, 시험 harness가 계정·권한·resource·quota를 생성하므로 benchmark run 자체를 격리된 control plane으로 설계해야 함.",
+          "items": [
+            "결정: reward 점수와 cleanup·권한·비용 evidence를 같은 release gate로 처리",
+            "팀 액션: production account·credential을 평가 환경에 연결하지 않는 원칙"
+          ]
+        },
+        {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Accomplish AI가 Claude Cowork local session의 VM sandbox escape를 SharedRoot로 명명해 공개했고, The Hacker News가 2026년 7월 23일 이를 보도함.",
+          "body": "AWS What’s New는 2026-07-24 `aws-bench` research preview를 공개했고, GitHub README는 실제 AWS 작업을 대상으로 하는 open-source benchmark라고 설명함. RSS timestamp 13:00 UTC는 22:00 KST임.",
           "items": [
-            "발행: The Hacker News RSS `pubDate` 2026-07-23 18:57:59 +05:30을 **2026-07-23 22:27 KST**로 변환",
-            "영향 주장: 연구진은 patch 이전 local Cowork macOS 사용 약 50만 명을 영향 가능 범위로 제시",
-            "경계: 보도·연구는 local session 경로를 다루며 모든 Claude 제품·모든 macOS endpoint의 침해 사실을 뜻하지 않음"
-          ]
-        },
-        {
-          "heading": "공격 체인",
-          "body": "Cowork desktop app은 로그인 사용자 권한으로 동작하고 agent 작업은 Apple Virtualization framework의 Linux VM에서 처리됨. 연결 폴더 공유를 맡는 `coworkd`가 host filesystem을 VM으로 제공하는 구조가 후속 경계가 됨.",
-          "items": [
-            "전제: guest의 unprivileged user namespace에서 `CAP_NET_ADMIN`을 얻는 namespace 구성",
-            "권한 상승: Linux `tc/act_pedit` 경로의 `CVE-2026-46331`을 악용해 guest-root를 얻는 연구 chain",
-            "전이: guest-root가 `/mnt/.virtiofs-root`의 read-write host `/` mount에 도달하는 구조"
-          ]
-        },
-        {
-          "heading": "영향 범위와 증거 경계",
-          "body": "guest-root 이후 host 파일시스템이 read-write로 노출돼 있으면 로그인 사용자 권한으로 접근 가능한 SSH key·cloud credential·소스 파일이 위험 범위에 들어갈 수 있음. 이는 연구가 제시한 조건부 경로이며 조직별 노출은 local mode·kernel·mount 설정으로 확인 필요.",
-          "items": [
-            "포함 가능 자산: user home의 source tree·SSH key·cloud credential·application config",
-            "미확정: 공개 보도만으로 특정 기업의 악용·침해 계정·공격 campaign 확인 불가"
+            "대상: misconfiguration 진단·infrastructure provisioning·live cloud 운영 task",
+            "실행: isolated account에 CDK scenario 배포, scoped credential sandbox에서 agent task 수행",
+            "채점: read-only는 LLM judge, create·modify는 live AWS state programmatic verifier"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 사례의 통제 실패 지점은 VM 내부 non-root user만이 아니라 guest-root 뒤의 host mount와 privileged daemon 경계임. agent sandbox는 kernel patch 주기보다 host resource visibility와 write capability를 먼저 축소해야 함.",
+          "body": "agent evaluation의 측정 대상이 code text나 tool-call 형식에서 infrastructure outcome으로 이동함. 동일 agent도 IAM scope·quota·scenario 초기 상태·retry 정책·verifier 설계에 따라 다른 결과가 나올 수 있음.",
           "items": [
-            "원칙: guest compromise를 가정해도 host `/`가 보이지 않도록 shared path를 최소화",
-            "관측: VM process·mount table·namespace·module load·`coworkd` child process를 endpoint timeline으로 연결"
+            "비교 단위: model 단독이 아닌 model·agent harness·credential policy·scenario·verifier 묶음",
+            "측정 경계: `reward 1.0`은 해당 scenario verifier 통과이며 일반 production correctness 증명은 아님",
+            "재현성: dataset version·scenario commit·agent version·model ID·region·quota 상태 보존 필요"
           ]
         },
         {
-          "heading": "보안·운영 관점",
-          "body": "Anthropic이 최신 Cowork에서 cloud execution을 기본값으로 둔다고 보도됐으나, local execution opt-in의 runtime policy와 endpoint kernel 상태는 별도 자산·변경 관리 대상임.",
+          "heading": "아키텍처·운영 관점",
+          "body": "README는 scenario마다 dedicated AWS account를 사용하고 `env init`, `env setup`, `run`, `env cleanup`, `env terminate` lifecycle을 안내함. 환경 teardown이 실패하면 score와 무관하게 비용·attack surface·drift가 남음.",
           "items": [
-            "정책: local mode 허용 사용자·업무·비밀정보·network egress의 승인 기준 분리",
-            "패치: guest kernel·host app version 확인은 필요하지만 host-wide write mount가 남으면 구조적 위험이 지속되는 조건"
+            "격리: evaluation Organization 또는 sandbox OU, SCP, egress 제한, dedicated billing tag 적용",
+            "관측: CloudTrail·Cost and Usage Report·Config·container log·verifier output을 trial ID로 연결",
+            "복구: cleanup·account close 성공 여부와 잔존 resource 목록을 run 완료 조건으로 설정"
+          ]
+        },
+        {
+          "heading": "보안·FinOps 관점",
+          "body": "AWS account control과 Bedrock token convenience는 agent evaluation의 편의 기능이지만, credential·quota·생성 resource의 blast radius를 넓힐 수 있음. README 요구사항의 Organization/member account 권한은 최소 권한과 분리된 운영 owner를 요구함.",
+          "items": [
+            "권한: 짧은 수명의 scoped credential·permission boundary·human break-glass 분리",
+            "비용: task·trial·agent·scenario별 API·compute·storage·idle duration을 cost allocation tag로 집계",
+            "데이터: scenario에 customer data·production secret·real endpoint를 넣지 않고 synthetic fixture 사용"
+          ]
+        },
+        {
+          "heading": "도입 로드맵",
+          "body": "초기에는 quickstart 같은 작은 dataset으로 installation과 account boundary를 검증하고, 이후 조직의 incident·IaC·runbook에서 anonymized bounded scenario를 추가하는 순서가 적절함.",
+          "items": [
+            "1단계: sandbox OU·budget·SCP·resource tag·cleanup alarm 구성",
+            "2단계: read-only diagnosis scenario에서 score·retry·telemetry·cost baseline 수집",
+            "3단계: rollback 가능한 mutation scenario로 확장하고 approval·drift·cleanup gate 적용"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "local Cowork를 쓰는 Mac은 cloud default 전환 여부와 무관하게 실제 session mode·mount scope·kernel 설정을 확인해야 함.",
+          "body": "실행 전과 후에 환경 lifecycle 증거를 남겨야 benchmark가 반복 가능한 engineering artifact가 됨.",
           "items": [
-            "inventory: Cowork version·local session opt-in·연결 folder·developer credential 보유 endpoint 대조",
-            "hardening: host `/` 대신 연결 folder만 mount하고 read-only 가능성 검토",
-            "hardening: unprivileged user namespace·module autoload·과도한 seccomp allowlist 비활성화 또는 제한",
-            "hardening: `coworkd`의 별도 mount namespace와 `ProtectSystem=strict` 적용 가능성 검토"
+            "inventory: dataset·scenario·agent·model·region·quota·credential scope 기록",
+            "guardrail: max trial·budget·resource TTL·allowed service·egress와 kill switch 설정",
+            "verify: CloudTrail API call·Config diff·verifier output·cleanup·account termination 결과 수집",
+            "report: reward 외 p95 runtime·retry·trial cost·IAM denial·residual resource를 비교"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "VM sandbox는 guest user 격리만으로 평가할 수 없음. guest-root 이후 host filesystem과 daemon을 통해 어디까지 갈 수 있는지가 실제 blast radius를 결정함.",
+          "body": "실제 cloud state benchmark는 agent 품질 평가 도구이면서 account provisioning system임. **cleanup 성공과 최소 권한**이 없는 고득점은 production readiness 근거가 될 수 없음.",
           "items": [
-            "발표 포인트: **host `/` read-write mount**가 kernel privilege escalation을 Mac 사용자 파일 접근으로 전이하는 구조",
-            "팀 액션: local agent 실행은 secret 없는 격리 계정·최소 mount·endpoint telemetry를 갖춘 canary에서만 검증"
+            "발표 포인트: static fixture가 아닌 live AWS state 검증이 fidelity를 높이는 대신 운영 범위를 확대",
+            "팀 액션: 다음 agent evaluation의 exit criteria에 reward·trial 비용·residual resource 0·credential revocation을 함께 포함"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "에이전틱 AI 이니셔티브: 국내 agent 도입에서 권한·신원·감사·실행 비용을 운영 계약으로 만드는 방법",
-      "summary": "핵심: 과기정통부가 에이전틱 AI 안전·신뢰, 개방형 실행 기반, 수요 중심 도입을 3대 추진 전략으로 제시하고 연내 안전·신뢰 가이드라인·에이전트 신원·책임성 검토를 예고. 운영: AI OS·마켓플레이스·멀티에이전트 실행 지원은 실제 서비스 배포 기준이 아니므로 권한·데이터·로그·token 비용·책임 경계를 조달·PoC 조건으로 구체화 필요.",
-      "details": "인공지능신문은 과기정통부가 7월 23일 과학기술관계장관회의에서 에이전틱 AI 이니셔티브를 발표했다고 보도했다. 정책은 안전·신뢰 관리 체계, 국내 환경용 도구·유통·AI OS·token 효율 실행 기술, 공공·산업 실증과 컨설팅을 포함한다. 가이드라인의 구체적 의무·기술 표준·예산·지원 대상·시행 일정은 기사에 확정적으로 제시되지 않았으므로 도입 조직은 발표 방향과 실제 compliance·운영 요구를 분리해야 한다.",
+      "title": "ChatGPT Workspace Agents AgentForger: agent 생성 URL·connector·approval·schedule을 privileged change로 다루는 방법",
+      "summary": "핵심: Zenity Labs의 primary research는 Workspace Agents Builder URL의 `initial_assistant_prompt` 자동 실행이 기존 connector를 쓰는 agent 생성·approval 변경·예약 실행으로 이어질 수 있었던 과거 CSRF chain을 설명. 상태: 2026-06-04 신고 후 6월 8일 수정됐다고 연구진이 명시. 운영: patched disclosure라도 agent definition·connector scope·approval·schedule의 historical audit과 state-changing URL/deep link regression test가 필요.",
+      "details": "Zenity Labs의 2026-07-23 primary research를 직접 확인했다. 연구는 로그인된 Workspace Agents 사용자가 attacker-controlled URL을 열면 `template_name`과 `initial_assistant_prompt`가 builder를 초기화하고 prompt를 자동 실행해 기존 authorized connector를 이용하는 agent 생성 흐름으로 이어질 수 있었다고 설명한다. 연구진은 2026-06-04 OpenAI Bugcrowd에 신고했고 2026-06-08 수정됐다고 적었다. 공개 내용은 과거 취약 흐름의 연구이며 active exploitation·현재 미패치 상태·특정 조직 피해의 증거는 아니다. 다만 agent create·publish·connector attach·approval downgrade·schedule은 모두 privileged change로 audit·confirmation·role separation을 적용해야 한다.",
       "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
       "sources": [
-        "https://www.aitimes.kr/news/articleView.html?idxno=41110"
+        "https://labs.zenity.io/p/agentforger-part-1-chatgpt-cross-site-agent-forgery"
       ],
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/41110_61924_435_v150.jpg",
-      "refreshed_kst": "2026-07-24 02:18",
+      "image_url": "https://beehiiv-images-production.s3.amazonaws.com/uploads/asset/file/601909ab-c6ce-4e47-9f01-d12c5cf5715d/AgentForger_Part_1_Hero.png?t=1784740910",
+      "refreshed_kst": "2026-07-25 02:59",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "국내 에이전틱 AI 정책은 안전·신뢰와 개방형 실행 생태계를 함께 다루기 시작했지만, 서비스 도입의 실제 안전성은 agent identity·tool authorization·data egress·audit·rollback을 실행 가능한 통제로 만드는 데 달려 있음.",
+          "body": "agent builder의 URL·prompt 입력이 connector·approval·schedule 같은 security-sensitive state를 바꿀 수 있으면, agent definition은 편의 UI가 아니라 privileged control plane임.",
           "items": [
-            "결정: 정책 지원·실증 기회와 production control evidence를 같은 기준으로 취급하지 않는 원칙",
-            "팀 액션: PoC 승인 전 side effect·권한·데이터·비용·사고 대응 owner를 명시"
+            "결정: agent create·publish·connector attach·approval downgrade·schedule을 change-control 대상으로 분류",
+            "팀 액션: active agent와 과거 생성 기록을 owner·connector scope·approval·schedule 기준으로 audit"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "과기정통부는 7월 23일 에이전틱 AI 이니셔티브를 발표하고 안전·신뢰, 개방형 실행 기반, 수요 중심 도입을 3대 전략으로 제시함. 인공지능신문 기사 입력 시각은 13:04 KST임.",
+          "body": "Zenity Labs는 2026-07-23 `AgentForger` research에서 Workspace Agents Builder의 URL-driven creation 흐름을 공개함. primary research는 2026-06-04 신고와 **2026-06-08 수정**을 명시함.",
           "items": [
-            "연내 계획: 개인정보·민감 데이터·AI 권한·목표 이탈을 포함한 안전·신뢰 가이드라인 마련",
-            "검토: 에이전틱 AI 얼라이언스에서 agent identity와 행위 책임 소재 검토",
-            "경계: 법적 의무·기술 표준·예산·대상·시행일은 보도 범위를 넘어 확정하지 않음"
+            "경로: `template_name`이 starter template을 선택하고 `initial_assistant_prompt`가 page load 뒤 자동 submit됐다는 연구 결과",
+            "전제: ChatGPT 로그인, Workspace Agents 접근, 기존 authorized connector 하나 이상 보유",
+            "경계: current exploitation·모든 ChatGPT deployment 영향·특정 조직 피해는 공개 research로 확인 불가"
+          ]
+        },
+        {
+          "heading": "공격 체인과 영향 경계",
+          "body": "연구가 설명한 chain은 피싱 URL click 뒤 authenticated session에서 builder 실행, 기존 connector 재사용, approval·Preview·publish·schedule로 이어지는 흐름임. 새 OAuth consent가 없다는 점은 기존 권한의 재사용 위험을 키우는 조건임.",
+          "items": [
+            "connector 예시: Outlook·Gmail·Slack·Google Drive·SharePoint·Teams 등 기존 연결 대상",
+            "지속성: publish 뒤 hourly·daily scheduled run으로 반복 실행 가능한 제품 기능 조합",
+            "범위: 실제 노출은 connector scope·user privilege·approval setting·수정 전후 상태에 따라 달라짐"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agentic AI는 model endpoint가 아니라 model·tool·workflow·identity·audit가 연결된 control plane임. 실행 권한을 가진 agent는 응답 품질보다 side effect의 대상·승인·복구 가능성이 운영 위험을 결정함.",
+          "body": "전통 CSRF가 단일 요청 위조에 초점을 둔다면 이 사례는 natural-language instruction이 tool configuration과 workflow lifecycle을 연쇄 변경할 수 있었던 control-plane 경계임. human session·agent identity·tool credential·approver identity를 분리해야 trace와 revoke가 가능함.",
           "items": [
-            "아키텍처: agent service account와 human identity·tool credential을 분리",
-            "관측: prompt·policy decision·tool call·result·human approval·egress를 하나의 trace ID로 연결",
-            "release: model 변경보다 tool schema·permission·fallback의 regression test가 우선"
+            "identity: agent별 service identity와 human initiator·approver binding 보존",
+            "authorization: read·write·send·purchase·deploy·delete를 connector·tool별 capability로 분해",
+            "observability: create·preview·publish·connector attach·approval change·schedule을 하나의 trace와 audit timeline으로 연결"
           ]
         },
         {
-          "heading": "안전·거버넌스 관점",
-          "body": "정책이 권한 오남용·보안 위협·민감 데이터 유출을 위험 요소로 명시한 만큼, 조직은 abstract safety claim 대신 권한 범위와 책임 소재를 사후 재현 가능한 control로 바꿔야 함.",
+          "heading": "보안·거버넌스 관점",
+          "body": "연구진이 수정 완료를 명시한 과거 disclosure라도 기존 agent configuration과 approval/schedule artifact는 조직의 실제 control 상태를 보여주는 inventory임. URL·template import·deep link가 state를 초기화하는 제품은 server-side origin 검증과 user-visible confirmation이 필요함.",
           "items": [
-            "권한: read·write·purchase·deploy·delete를 별도 capability로 분해하고 고위험 action은 independent confirmation 적용",
-            "책임: agent identity·tool identity·approver·change ticket을 immutable audit trail에 보존",
-            "데이터: source provenance·classification·retention·external API egress를 tool policy 전에 평가"
+            "policy: high-risk connector와 scheduled execution에 role separation·independent confirmation 적용",
+            "audit: agent definition diff·connector scope·approval policy·scheduler owner·last run을 immutable log에 보존",
+            "response: suspicious agent disable·connector revoke·schedule stop·session/credential review 순서의 runbook 준비"
           ]
         },
         {
-          "heading": "비용·운영 관점",
-          "body": "정책이 token 효율 기반 실행 운영 기술을 언급한 것은 multi-agent와 반복 tool use의 운영비가 모델 가격표만으로 설명되지 않는다는 문제와 연결됨.",
+          "heading": "운영·비용 관점",
+          "body": "agent가 email·drive·chat connector를 반복 실행하면 security 영향과 함께 token·API call·retry·human review 비용이 누적됨. approval setting을 단순 UX option으로 보지 않고 action 비용과 risk budget을 바꾸는 runtime policy로 취급해야 함.",
           "items": [
-            "FinOps: token·cache·queue·tool retry·human review·external API cost를 성공 작업당 비용으로 집계",
-            "SRE: task completion·p95 latency·unsafe-action reject·fallback·manual handoff를 같은 SLO로 관리",
-            "용량: GPU 지원 발표와 서비스별 quota·region·SLA·network·observability 요구를 분리 검증"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "실증은 넓은 업무 자동화가 아니라 permission이 좁고 rollback 가능한 workflow부터 시작해야 함. 단계별 evidence가 확보될 때만 agent autonomy와 tool scope를 확장하는 방식이 적절함.",
-          "items": [
-            "1단계: data flow·tool inventory·권한·owner·incident path를 문서화하고 no-op 또는 read-only canary 구성",
-            "2단계: bounded write action에 human approval·policy log·rollback·kill switch 연결",
-            "3단계: representative task에서 품질·비용·SLO·보안 policy violation을 측정한 뒤 업무 범위 확대"
+            "FinOps: agent·connector·schedule별 성공 작업당 token·tool API·retry·human handoff 비용 수집",
+            "SRE: scheduled run success·p95 latency·policy deny·connector error·manual recovery를 같은 SLO로 관리",
+            "release: builder URL·template·prompt import에 state-change regression test와 approval UI test 추가"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "가이드라인과 실증 프로그램이 구체화되기 전에도 조직은 정책 요구를 구현 가능한 operational evidence로 준비할 수 있음.",
+          "body": "patched 여부 확인 뒤에도 운영 중인 agent와 connector의 historical state를 evidence 기반으로 검토해야 함.",
           "items": [
-            "identity: agent·tool·service account·human approver의 identity binding 확인",
-            "authorization: tool별 scope·time limit·rate limit·data boundary·emergency revoke 확인",
-            "audit: raw input·normalized request·policy decision·tool result·egress·approval artifact 보존",
-            "resilience: model outage·tool error·unsafe action·budget breach에서 fallback·kill switch·human handoff 시험"
+            "inventory: agent·owner·template·connector scope·`Never ask`·schedule·last run export",
+            "hardening: create·publish·connector attach·approval downgrade·schedule 변경에 explicit confirmation 확인",
+            "detect: URL/deep link init, config diff, unusual Preview, bulk connector use, off-hours schedule alert",
+            "recover: agent disable·schedule stop·connector revoke·credential/session review·audit preservation 절차 시험"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "에이전틱 AI의 경쟁력은 모델을 업무에 연결했다는 사실이 아니라, 연결된 권한과 데이터를 안전하게 제한·관측·복구할 수 있는 실행 체계에서 나옴.",
+          "body": "**URL 하나가 autonomous workflow를 만들 수 있었던 흐름**은 agent UX와 security control plane이 분리되지 않았을 때의 blast radius를 설명함. 수정 여부 확인만으로 governance 검토를 끝내지 않아야 함.",
           "items": [
-            "발표 포인트: **agent identity와 tool authorization**을 제품 기능이 아닌 control plane으로 설계",
-            "팀 액션: 다음 PoC의 acceptance criteria에 audit completeness·rollback time·unsafe-action reject rate·성공 작업당 비용을 포함"
+            "발표 포인트: 기존 OAuth consent의 재사용은 새 consent 화면 부재와 결합될 때 장기 실행 권한으로 전이 가능",
+            "팀 액션: 다음 SaaS agent review에서 URL initialization·connector reuse·approval·schedule을 필수 test case로 포함"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-222",
+      "title_ko": "AWS, 실제 클라우드 환경에서 AI coding agent를 평가하는 오픈소스 aws-bench 연구 preview 공개",
+      "title_original": "AWS announces aws-bench, an open-source benchmark for AI agents on AWS",
+      "summary": "핵심: AWS가 실제 disposable account·CDK scenario·scoped credential에서 agent의 AWS 작업 수행을 평가하는 오픈소스 `aws-bench` 연구 preview를 공개. 구성: 진단형 task는 LLM judge, resource 생성·수정 task는 live AWS state의 programmatic verifier로 채점하며 quickstart는 9 task·1 scenario 제공. 운영: benchmark 자체가 AWS Organization·member account·quota·Docker·cleanup을 요구하므로 test account 격리·예산·권한·잔존 resource 확인을 evaluation runbook에 포함 필요.",
+      "detail": "AWS는 `aws-bench`를 실제 AWS 작업을 수행하는 AI coding agent 평가용 연구 preview로 공개했다. GitHub README는 isolated AWS account에 CDK stack 기반 scenario를 배포하고 scoped credential이 든 sandboxed container에서 agent를 실행한 뒤, read-only 진단은 LLM judge로, create·modify 작업은 live AWS resource state의 programmatic verifier로 판정하는 구조를 설명한다. `aws-bench-quickstart`는 9 task·1 scenario, basic은 78 task·4 scenario, advanced는 47 task·3 scenario로 안내된다. 실행에는 AWS Organization·member account 생성 권한, quota, Docker Compose v2와 buildx 0.17 이상, Python 3.12 이상, `uv`가 필요하며 cleanup·account termination 전까지 생성 자원의 비용·권한·데이터 경계를 별도로 통제해야 한다.",
+      "why_it_matters": "정적 fixture가 아닌 live cloud state에서 agent를 평가하면 실제 IaC·권한·resource lifecycle 오류를 포착할 수 있으나, benchmark의 성공률은 model 성능만 아니라 scenario·quota·credential scope·verifier·cleanup 품질의 결과임.",
+      "engineering_implication": "플랫폼 팀은 production credential 대신 격리 Organization·명시적 budget·SCP·짧은 credential·resource tag·자동 cleanup을 사용하고, reward 외 IAM denial·예산·resource drift·cleanup success·trial 비용을 함께 수집 필요.",
+      "korea_implication": "국내 AWS 조직도 agent 도입 평가에서 데모 task만 비교하지 말고 계정 분리·비용 한도·data residency·change approval·rollback evidence를 포함한 자체 scenario로 재현성 검증 필요.",
+      "category": "DevTools",
+      "tags": [
+        "DevTools",
+        "AWS",
+        "AI Agent",
+        "Benchmark",
+        "Cloud Security",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-24 22:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-bench/",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "aws-bench GitHub repository and README",
+          "url": "https://github.com/aws-bench/aws-bench"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 실제 AWS task에서 AI coding agent와 model 조합을 평가하는 오픈소스 `aws-bench` 연구 preview를 공개함. AWS What’s New는 날짜만 제공하고, RSS `pubDate` 2026-07-24 13:00 UTC를 **2026-07-24 22:00 KST**로 변환해 카드 시각으로 사용함.",
+          "items": [
+            "목적: misconfiguration 진단·infrastructure provisioning·live cloud 운영 task의 정확도와 효율 평가",
+            "배포: 공개 GitHub repository와 companion `aws-bench-datasets` repository 제공",
+            "경계: research preview이며 production agent의 안전성·비용·권한 적합성을 자동 보증하지 않음"
+          ]
+        },
+        {
+          "heading": "평가 환경과 채점 구조",
+          "body": "각 scenario는 전용 AWS account에 CDK stack과 setup script로 배포되며, agent는 scoped AWS credential을 가진 sandboxed container에서 task를 수행함. static fixture가 아닌 실제 resource state를 평가 대상으로 삼는 구조임.",
+          "items": [
+            "진단형: read-only introspection task의 답변을 reference answer와 LLM judge로 비교",
+            "변경형: create·modify task 뒤 live AWS state를 programmatic verifier로 검사하고 변경 rollback",
+            "결과: trial별 `reward.json`에 pass `1.0`, fail `0.0`을 기록하는 README 설명"
+          ]
+        },
+        {
+          "heading": "dataset·실행 전제",
+          "body": "README 기준 quickstart는 9 task·1 scenario, basic은 78 task·4 scenario, advanced는 47 task·3 scenario로 구성됨. incremental test를 위한 scenario 단위 dataset도 제공됨.",
+          "items": [
+            "환경: macOS 또는 Linux, Python 3.12 이상, `uv`, Docker Compose v2와 buildx 0.17 이상 요구",
+            "AWS 권한: Organization과 disposable member account 생성 권한 및 quota 처리 필요",
+            "수명주기: `env init`·`env setup` 뒤 `run`, 이후 `env cleanup`·`env terminate` 순서의 resource·account 종료 절차"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent benchmark가 real cloud state를 쓰면 tool call 형식이나 code completion을 넘어 policy·resource dependency·검증 가능 outcome을 평가할 수 있음. 반대로 평가 harness가 새 계정·resource·credential을 만들기 때문에 benchmark를 안전한 read-only test로 취급할 수 없음.",
+          "items": [
+            "측정: reward만으로 model 품질을 단정하지 않고 scenario 난이도·retry·quota·verifier false positive를 함께 기록",
+            "보안: agent credential scope와 scenario account를 production control plane에서 격리할 필요",
+            "비용: trial 수·idle resource·failed cleanup·quota request를 evaluation 비용과 운영 리스크로 집계"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agent 평가를 도입하는 팀은 benchmark score와 cloud-control evidence를 같은 release gate로 관리해야 함. score가 높아도 cleanup 실패·권한 과다·resource drift가 있으면 production readiness 근거가 될 수 없음.",
+          "items": [
+            "팀 액션: 전용 Organization 또는 sandbox account·SCP·budget alarm·mandatory tag·time-bound credential을 사전 구성",
+            "팀 액션: task별 IAM denial·API call·resource diff·cost·cleanup·account close 상태를 audit artifact로 저장",
+            "팀 액션: production workflow를 복제한 bounded scenario에서 success rate·p95 runtime·trial 비용·rollback success를 비교"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-221",
       "title_ko": "ChatGPT Workspace Agents AgentForger: 피싱 URL 한 번으로 connector 승인 없는 예약 에이전트 생성 가능했던 CSRF 결함",
@@ -255,7 +347,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-220",
@@ -332,7 +424,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-216",
@@ -399,7 +491,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-217",
@@ -466,7 +558,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-214",
@@ -546,7 +638,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-215",
@@ -619,7 +711,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-218",
@@ -686,7 +778,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-212",
@@ -781,7 +873,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-209",
@@ -856,7 +948,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-210",
@@ -941,7 +1033,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-219",
@@ -1017,7 +1109,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-213",
@@ -1099,7 +1191,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-208",
@@ -1167,11 +1259,11 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-207",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1325,7 +1417,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-204",
@@ -1390,7 +1482,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-205",
@@ -1456,7 +1548,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-203",
@@ -1521,7 +1613,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-202",
@@ -1617,7 +1709,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-198",
@@ -1682,7 +1774,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-199",
@@ -1746,7 +1838,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-200",
@@ -1825,7 +1917,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-201",
@@ -1907,7 +1999,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-196",
@@ -1992,7 +2084,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-197",
@@ -2068,7 +2160,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-195",
@@ -2147,7 +2239,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-193",
@@ -2232,7 +2324,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-194",
@@ -2311,7 +2403,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-191",
@@ -2379,7 +2471,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-190",
@@ -2465,7 +2557,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-192",
@@ -2537,7 +2629,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-188",
@@ -2603,7 +2695,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-189",
@@ -2670,11 +2762,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-187",
-      "rank": 34,
+      "rank": 35,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -2842,7 +2934,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-182",
@@ -2908,7 +3000,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-180",
@@ -2993,7 +3085,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-185",
@@ -3068,7 +3160,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-186",
@@ -3148,7 +3240,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-181",
@@ -3222,7 +3314,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-183",
@@ -3293,7 +3385,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-179",
@@ -3377,7 +3469,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-184",
@@ -3457,7 +3549,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-178",
@@ -3554,7 +3646,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-176",
@@ -3624,7 +3716,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-177",
@@ -3690,7 +3782,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-173",
@@ -3765,7 +3857,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-172",
@@ -3835,7 +3927,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-171",
@@ -3912,81 +4004,6 @@
             "팀 액션: `ZSB-26014`의 fixed version과 managed endpoint·golden image inventory 대조",
             "팀 액션: patch SLA 미준수 장비의 owner·예외 만료일·compensating control 기록",
             "팀 액션: IdP·EDR·proxy에서 비정상 Zoom 인증·session pattern의 triage rule 확인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-175",
-      "title_ko": "AWS Control Tower AFT, OU 이동 시 Terraform 사용자 지정을 자동 재적용",
-      "title_original": "AWS Control Tower Account Factory for Terraform now re-applies customizations when accounts move between OUs",
-      "summary": "핵심: AWS Control Tower Account Factory for Terraform(AFT)이 계정의 Organizational Unit(OU) 이동 뒤 global·account-level customization을 자동 재적용하는 opt-in 기능을 공개. 운영: `aft_customization_triggers = [\"account_move\"]`를 적용하고 예외 계정·실행 기록을 관리해 OU 기반 보안 baseline의 configuration drift를 줄일 수 있음.",
-      "detail": "AWS는 7월 16일 AFT 계정이 OU를 이동할 때 사용자 지정을 자동 재적용하는 기능을 공개했다. 기존에는 enrolled account의 OU 이동 뒤 재적용을 수동으로 시작해야 했고, 이 과정에서 OU별 compliance·security baseline이 늦게 반영될 위험이 있었다. 새 opt-in trigger는 bootstrap·provisioning 단계를 건너뛰고 global·account-level customization만 실행하며, 특정 계정은 `account_skip_customization_triggers = \"true\"`로 제외할 수 있다. AWS는 Terraform Cloud·Enterprise workspace naming 변수, AFT logging bucket 접근 제어, 대규모 Enterprise Support enrollment 확장도 함께 개선했다고 설명했다.",
-      "why_it_matters": "멀티계정 환경에서 OU 이동은 네트워크·logging·IAM·tagging baseline의 적용 범위를 바꾸는 control-plane 이벤트임. 수동 재적용은 변경 누락과 drift를 만들 수 있어, 자동화 여부뿐 아니라 어떤 customization이 어느 계정에서 성공·실패·제외됐는지 증적화하는 운영 경계가 필요.",
-      "engineering_implication": "플랫폼 팀은 AFT trigger를 켜기 전 OU별 Terraform customization의 idempotency, dependency, rollback 경로를 검증하고, `account_move` 실행 결과를 change-management·Security Hub/CloudTrail 관측과 연결 필요. 예외 계정은 skip 사유·owner·만료일을 기록해 영구 drift로 남지 않게 관리 필요.",
-      "korea_implication": "국내 AWS 멀티계정 조직도 조직개편·서비스 이관 때 OU 이동을 보안 baseline 변경으로 취급하고 AFT automation의 승인·검증·예외 관리 절차를 운영할 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Control Tower",
-        "Terraform",
-        "Platform Engineering",
-        "Governance",
-        "Configuration Drift"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-07-16 13:07",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-control-tower-account/",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "AWS Control Tower Account Factory for Terraform 문서",
-          "url": "https://docs.aws.amazon.com/controltower/latest/userguide/aft-overview.html"
-        },
-        {
-          "title": "AWS IA AFT GitHub release notes",
-          "url": "https://github.com/aws-ia/terraform-aws-control_tower_account_factory/releases"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 Account Factory for Terraform(AFT)에서 계정이 다른 Organizational Unit(OU)로 이동할 때 해당 계정의 customization을 자동 재적용하는 opt-in 기능을 공개함. 기존 enrolled account는 OU 이동 뒤 운영자가 재적용을 수동으로 시작해야 했음.",
-          "items": [
-            "변화: OU 이동을 Terraform customization 재평가가 필요한 control-plane event로 처리",
-            "목적: OU별 compliance·security baseline의 적용 지연과 configuration drift 축소",
-            "가용성: AFT 제공 모든 AWS 리전에서 사용 가능하다는 AWS 설명"
-          ]
-        },
-        {
-          "heading": "실행 경로와 설정",
-          "body": "AFT deployment에서 `aft_customization_triggers = [\"account_move\"]`를 설정하면 account move가 trigger로 동작함. 재적용 workflow는 bootstrap·provisioning phase를 건너뛰고 global·account-level customization만 실행하도록 설계됨.",
-          "items": [
-            "설정: `aft_customization_triggers`에 `account_move` 선언 필요",
-            "범위: global 및 account-level customization 실행, bootstrap·provisioning 단계 제외",
-            "예외: `account_skip_customization_triggers = \"true\"`로 개별 계정 제외 가능"
-          ]
-        },
-        {
-          "heading": "운영 영향과 검증 경계",
-          "body": "자동 trigger는 사람이 재적용을 잊는 위험을 줄이지만, 모든 Terraform customization이 OU 전환에 안전한 것은 아님. 신규 OU의 network·IAM·logging dependency와 기존 resource 상태가 충돌할 수 있으므로 idempotency와 failure handling을 사전 검증해야 함.",
-          "items": [
-            "검증: OU별 Terraform variable·provider permission·remote state dependency 사전 대조",
-            "관측: account move, AFT run ID, plan/apply 결과, skipped account를 같은 change record로 연결",
-            "한계: AWS 발표는 계정별 customization 성공률·rollback 동작을 보장하는 자료가 아니므로 staging 검증 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "OU 이동 뒤 baseline을 자동 재적용하려면 automation을 켜는 것보다 policy code의 재실행 안전성과 예외 수명주기 관리가 우선임. 실패한 apply나 영구 skip은 조직 구조 변경 후의 숨은 control gap으로 남을 수 있음.",
-          "items": [
-            "팀 액션: 대표 OU 이동을 staging에서 replay해 plan diff·apply duration·rollback 경로 확인",
-            "팀 액션: skip account에 owner·사유·만료일을 부여하고 주기적 revalidation 수행",
-            "팀 액션: AFT logging bucket 접근 제어와 execution audit trail을 security baseline에 포함"
           ]
         }
       ],
