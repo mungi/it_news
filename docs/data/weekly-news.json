@@ -2,183 +2,186 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-25 23:27",
+  "last_updated_kst": "2026-07-26 03:35",
   "audience": "developers and engineers",
   "executive_summary": [
     "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출을 판단.",
     "Andrew Ng OpenWorker 공개: BYOK·local model을 고를 수 있는 desktop agent는 모델 선택과 별개로 파일·shell·MCP·connector capability, data egress, update provenance를 endpoint control로 검증해야 하는 도입 경계.",
-    "AWS aws-bench research preview: 실제 disposable AWS account·CDK scenario에서 coding agent를 평가하므로 benchmark 실행 자체의 Organization 권한·quota·생성 리소스·cleanup을 별도 운영 경계로 관리.",
+    "Claude Opus 5 rollout: 100만 token context·Effort Ladder·Fast Mode와 Bedrock/native provider 경로는 품질뿐 아니라 token budget·latency·ZDR·IAM·fallback을 workload별로 canary 검증해야 하는 production 변경.",
     "ChatGPT Workspace Agents AgentForger: URL prompt 자동 실행·기존 connector 재사용·approval/schedule 변경이 결합된 과거 CSRF 결함은 agent definition을 privileged change로 audit할 필요.",
     "Microsoft MAI 자체 모델 전환 보도: Bing·PowerPoint·OneDrive·Azure 음성 기능의 모델 교체는 GPU 비용뿐 아니라 품질·safety·latency·fallback·data handling을 함께 검증할 production 변경."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "AWS aws-bench: 실제 AWS 계정에서 coding agent를 평가할 때 benchmark 자체를 control plane으로 운영하는 방법",
-      "summary": "핵심: AWS의 오픈소스 research preview `aws-bench`는 disposable account와 CDK scenario에서 agent가 진단·resource 변경을 수행하게 한 뒤 live state verifier로 채점. 판단: static benchmark 점수와 달리 Organization 권한·scoped credential·quota·resource lifecycle·cleanup이 평가 결과와 운영 위험을 함께 결정하므로, sandbox·budget·SCP·cleanup evidence를 benchmark gate에 포함 필요.",
-      "details": "AWS가 2026년 7월 24일 공개한 `aws-bench`는 실제 AWS environment를 provisioning해 coding agent를 평가하는 research preview다. AWS What’s New와 GitHub README를 직접 확인했다. agent는 scoped credential로 sandboxed container에서 진단 또는 변경 task를 수행하며, 변경형 task는 live AWS state로 판정한다. 이는 evaluation fidelity를 높이지만 benchmark run이 Organization·member account·quota·CDK resource·Bedrock credential을 다루는 control plane이 된다는 뜻이다. production 도입 판단에는 reward뿐 아니라 IAM scope, resource drift, cleanup success, trial 비용, account termination 증적이 필요하다.",
+      "title": "Claude Opus 5: 긴 context·추론 effort·provider control plane을 함께 검증하는 agent rollout",
+      "summary": "핵심: Claude Opus 5의 장문 context·Effort Ladder·Fast Mode와 AWS의 Bedrock/Claude Platform on AWS 제공은 모델 품질뿐 아니라 token budget·latency·ZDR·IAM·fallback을 workload별로 검증해야 하는 운영 변경. 판단: benchmark·가격은 공급자/보도 주장으로 분리하고, 동일 task·provider·effort 조합의 quality·cost·data-boundary evidence를 rollout gate로 관리 필요.",
+      "details": "AI타임스의 2026년 7월 25일 보도와 AWS What’s New 공지를 확인했다. AI타임스는 Claude Opus 5의 100만 token context, 최대 12만8천 output token, 5단계 Effort Ladder, Fast Mode, 보도된 token 가격을 전했다. AWS는 Bedrock의 기본 ZDR·regional data residency·Guardrails와 Claude Platform on AWS의 AWS billing/authentication 및 요청 기반 ZDR을 안내한다. 모델 성능·비용 수치는 공급자 또는 보도에 인용된 주장으로 두고, 조직은 long-running agent의 context, retry, tool failure, data retention, quota, provider outage를 canary evidence로 확인해야 한다.",
       "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-bench/",
-        "https://github.com/aws-bench/aws-bench"
+        "https://aws.amazon.com/about-aws/whats-new/2026/07/claude-opus-5-aws/",
+        "https://www.aitimes.com/news/articleView.html?idxno=213161"
       ],
       "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-07-25 02:59",
+      "refreshed_kst": "2026-07-26 03:35",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "`aws-bench`는 agent의 AWS 작업을 실제 cloud state에서 평가하지만, 시험 harness가 계정·권한·resource·quota를 생성하므로 benchmark run 자체를 격리된 control plane으로 설계해야 함.",
+          "body": "`Claude Opus 5` 도입 판단은 모델 한 개를 바꾸는 일이 아니라, 장문 context·추론 effort·fast mode·provider control plane을 workload와 data boundary에 맞춰 분리 검증하는 작업임.",
           "items": [
-            "결정: reward 점수와 cleanup·권한·비용 evidence를 같은 release gate로 처리",
-            "팀 액션: production account·credential을 평가 환경에 연결하지 않는 원칙"
+            "결정: 품질 pass rate와 token·latency·retention·fallback evidence를 같은 rollout gate로 관리",
+            "팀 액션: Bedrock과 Claude Platform on AWS를 별도 provider surface로 inventory"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS What’s New는 2026-07-24 `aws-bench` research preview를 공개했고, GitHub README는 실제 AWS 작업을 대상으로 하는 open-source benchmark라고 설명함. RSS timestamp 13:00 UTC는 22:00 KST임.",
+          "body": "AI타임스는 Anthropic의 7월 24일 현지 공개와 7월 25일 09:28 KST 업데이트를 보도함. AWS는 같은 모델을 Bedrock 및 Claude Platform on AWS로 제공한다고 밝혔고, AWS RSS 시각은 2026-07-25 00:00 KST임.",
           "items": [
-            "대상: misconfiguration 진단·infrastructure provisioning·live cloud 운영 task",
-            "실행: isolated account에 CDK scenario 배포, scoped credential sandbox에서 agent task 수행",
-            "채점: read-only는 LLM judge, create·modify는 live AWS state programmatic verifier"
+            "제공: Claude Max·Pro, Claude API, Amazon Bedrock, Google Cloud, Microsoft Foundry 경로를 보도에서 열거",
+            "가격: 보도 기준 입력 100만 token당 5달러, 출력 100만 token당 25달러이며 Fable 5의 절반이라는 Anthropic 주장",
+            "범위: 100만 token context, 최대 12만8천 output token, 5단계 Effort Ladder와 Fast Mode를 보도에서 설명"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent evaluation의 측정 대상이 code text나 tool-call 형식에서 infrastructure outcome으로 이동함. 동일 agent도 IAM scope·quota·scenario 초기 상태·retry 정책·verifier 설계에 따라 다른 결과가 나올 수 있음.",
+          "body": "코딩·agent benchmark와 비용 효율 수치는 공급자 또는 보도에 인용된 주장임. 모델 성능은 prompt, tool harness, context packing, retry, cache, region quota와 safety policy에 따라 달라지므로 단일 leaderboard를 production SLA로 전환할 수 없음.",
           "items": [
-            "비교 단위: model 단독이 아닌 model·agent harness·credential policy·scenario·verifier 묶음",
-            "측정 경계: `reward 1.0`은 해당 scenario verifier 통과이며 일반 production correctness 증명은 아님",
-            "재현성: dataset version·scenario commit·agent version·model ID·region·quota 상태 보존 필요"
+            "비교: 같은 task set·prompt version·tool permission·context size·temperature를 고정한 canary 필요",
+            "측정: pass rate 외 p50/p95 latency, output token, retry, tool error, human correction, 성공 작업당 비용 수집",
+            "경계: cyber workload에서 다른 Claude 모델보다 뒤처진다는 보도 설명을 일반 보안 성능 저하로 확대 해석하지 않는 원칙"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "README는 scenario마다 dedicated AWS account를 사용하고 `env init`, `env setup`, `run`, `env cleanup`, `env terminate` lifecycle을 안내함. 환경 teardown이 실패하면 score와 무관하게 비용·attack surface·drift가 남음.",
+          "body": "100만 token context와 최대 output 증가는 retrieval·session state·tool result를 한 요청에 넣을 선택지를 넓히지만, request timeout·memory·token budget·trace payload·failure recovery도 함께 커짐. long-running agent는 context 길이보다 checkpoint와 idempotency 설계가 먼저임.",
           "items": [
-            "격리: evaluation Organization 또는 sandbox OU, SCP, egress 제한, dedicated billing tag 적용",
-            "관측: CloudTrail·Cost and Usage Report·Config·container log·verifier output을 trial ID로 연결",
-            "복구: cleanup·account close 성공 여부와 잔존 resource 목록을 run 완료 조건으로 설정"
+            "context: RAG chunk·tool output·conversation history별 token budget과 truncation policy를 명시",
+            "workflow: agent step마다 checkpoint, retry idempotency key, human handoff 조건을 분리",
+            "observability: model ID·effort level·fast mode·context size·tool call·guardrail result를 trace에 연결"
           ]
         },
         {
-          "heading": "보안·FinOps 관점",
-          "body": "AWS account control과 Bedrock token convenience는 agent evaluation의 편의 기능이지만, credential·quota·생성 resource의 blast radius를 넓힐 수 있음. README 요구사항의 Organization/member account 권한은 최소 권한과 분리된 운영 owner를 요구함.",
+          "heading": "데이터·보안·거버넌스 관점",
+          "body": "AWS 공지에서 Bedrock은 ZDR 기본 활성화와 regional data residency를, Claude Platform on AWS는 요청 기반 ZDR을 설명함. 같은 Claude Opus 5라도 access path별 보존 기본값·IAM·SSO·billing·audit log·guardrail 적용 위치가 달라질 수 있으므로 계약 문구와 tenant 설정 증적을 별도로 확인해야 함.",
           "items": [
-            "권한: 짧은 수명의 scoped credential·permission boundary·human break-glass 분리",
-            "비용: task·trial·agent·scenario별 API·compute·storage·idle duration을 cost allocation tag로 집계",
-            "데이터: scenario에 customer data·production secret·real endpoint를 넣지 않고 synthetic fixture 사용"
+            "data: prompt·tool output·trace·feedback·file attachment의 저장 위치와 retention을 provider별로 확인",
+            "access: model access, IAM role, SSO group, API key rotation, connector scope를 workload owner와 분리",
+            "safety: PII redaction, tool allowlist, approval, policy deny와 escalation 흐름을 canary에서 시험"
+          ]
+        },
+        {
+          "heading": "FinOps·용량 관점",
+          "body": "Effort Ladder와 Fast Mode는 비용·지연을 조절하는 운영 변수임. 높은 reasoning effort나 긴 context가 자동으로 더 좋은 business outcome을 보장하지 않으므로 task class별 quality threshold와 budget ceiling을 함께 설정해야 함.",
+          "items": [
+            "routing: low·medium·high·xhigh·max effort를 task criticality와 review requirement에 매핑",
+            "budget: input·output token, cache hit, retry, tool API, human review를 workflow cost로 집계",
+            "capacity: region quota, concurrency, rate limit, provider degradation 시 lower-cost model 또는 queue fallback 검증"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "초기에는 quickstart 같은 작은 dataset으로 installation과 account boundary를 검증하고, 이후 조직의 incident·IaC·runbook에서 anonymized bounded scenario를 추가하는 순서가 적절함.",
+          "body": "초기에는 read-only analysis 또는 bounded coding task에서 provider·effort·context 조합을 비교하고, 이후 rollback 가능한 tool action으로 확장하는 순서가 안전함. 모든 단계에서 모델 release의 vendor claim과 조직의 재현 가능한 workload metric을 분리 기록해야 함.",
           "items": [
-            "1단계: sandbox OU·budget·SCP·resource tag·cleanup alarm 구성",
-            "2단계: read-only diagnosis scenario에서 score·retry·telemetry·cost baseline 수집",
-            "3단계: rollback 가능한 mutation scenario로 확장하고 approval·drift·cleanup gate 적용"
+            "1단계: 대표 task·golden output·security classification·token budget 정의",
+            "2단계: Bedrock 및 native platform candidate에서 품질·latency·cost·retention evidence 수집",
+            "3단계: approval이 있는 tool action과 fallback·kill switch를 붙인 제한 rollout"
           ]
         },
         {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "실행 전과 후에 환경 lifecycle 증거를 남겨야 benchmark가 반복 가능한 engineering artifact가 됨.",
+          "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
+          "body": "모델 선택만 승인하지 말고 provider path와 runtime policy를 함께 versioned configuration으로 남겨야 rollback과 audit이 가능함.",
           "items": [
-            "inventory: dataset·scenario·agent·model·region·quota·credential scope 기록",
-            "guardrail: max trial·budget·resource TTL·allowed service·egress와 kill switch 설정",
-            "verify: CloudTrail API call·Config diff·verifier output·cleanup·account termination 결과 수집",
-            "report: reward 외 p95 runtime·retry·trial cost·IAM denial·residual resource를 비교"
-          ]
-        },
-        {
-          "heading": "강조 메세지",
-          "body": "실제 cloud state benchmark는 agent 품질 평가 도구이면서 account provisioning system임. **cleanup 성공과 최소 권한**이 없는 고득점은 production readiness 근거가 될 수 없음.",
-          "items": [
-            "발표 포인트: static fixture가 아닌 live AWS state 검증이 fidelity를 높이는 대신 운영 범위를 확대",
-            "팀 액션: 다음 agent evaluation의 exit criteria에 reward·trial 비용·residual resource 0·credential revocation을 함께 포함"
+            "inventory: model version·provider·region·ZDR condition·quota·SDK·prompt·effort level 기록",
+            "validate: long-context overflow·timeout·tool failure·guardrail deny·provider outage test 수행",
+            "report: pass rate·p95·token·성공 작업당 비용·human correction·data retention evidence를 release note에 포함",
+            "강조 메세지: **고성능·저비용 주장**보다 task별 품질·data boundary·fallback 증명이 production 전제"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "ChatGPT Workspace Agents AgentForger: agent 생성 URL·connector·approval·schedule을 privileged change로 다루는 방법",
-      "summary": "핵심: Zenity Labs의 primary research는 Workspace Agents Builder URL의 `initial_assistant_prompt` 자동 실행이 기존 connector를 쓰는 agent 생성·approval 변경·예약 실행으로 이어질 수 있었던 과거 CSRF chain을 설명. 상태: 2026-06-04 신고 후 6월 8일 수정됐다고 연구진이 명시. 운영: patched disclosure라도 agent definition·connector scope·approval·schedule의 historical audit과 state-changing URL/deep link regression test가 필요.",
-      "details": "Zenity Labs의 2026-07-23 primary research를 직접 확인했다. 연구는 로그인된 Workspace Agents 사용자가 attacker-controlled URL을 열면 `template_name`과 `initial_assistant_prompt`가 builder를 초기화하고 prompt를 자동 실행해 기존 authorized connector를 이용하는 agent 생성 흐름으로 이어질 수 있었다고 설명한다. 연구진은 2026-06-04 OpenAI Bugcrowd에 신고했고 2026-06-08 수정됐다고 적었다. 공개 내용은 과거 취약 흐름의 연구이며 active exploitation·현재 미패치 상태·특정 조직 피해의 증거는 아니다. 다만 agent create·publish·connector attach·approval downgrade·schedule은 모두 privileged change로 audit·confirmation·role separation을 적용해야 한다.",
-      "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
+      "title": "Fastjson 1.x RCE: Java JSON parser·fat-JAR·runtime telemetry를 묶어 대응하는 방법",
+      "summary": "핵심: Alibaba 공지는 fastjson 1.x `1.2.68`~`1.2.83`가 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 RCE될 수 있다고 명시. 대응: version 목록만 보지 말고 JSON entry point·artifact packaging·network exposure·service privilege 교집합을 확인하고, SafeMode/`noneautotype` canary·runtime hunt·fastjson2 migration을 분리 운영 필요.",
+      "details": "Alibaba의 2026년 7월 21일 GitHub Wiki advisory와 The Hacker News의 7월 25일 관련 보도를 확인했다. 공식 공지는 fastjson 1.x 1.2.68~1.2.83의 Critical RCE와 Spring Boot executable fat-JAR·SafeMode OFF라는 영향 조건을 열거하며, fastjson2·SafeMode·noneautotype·non-fat-JAR/WAR 등 비영향 범위도 제시한다. 관련 보도의 공격 관측은 대응 우선순위 신호지만 성공 RCE나 특정 피해 조직 증거는 아니다. 운영팀은 artifact inventory, compatibility-tested mitigation, runtime telemetry, migration ownership을 같은 incident track으로 관리해야 한다.",
+      "why_it_matters": "source-grounded Security/Infra 운영 판단과 체크리스트",
       "sources": [
-        "https://labs.zenity.io/p/agentforger-part-1-chatgpt-cross-site-agent-forgery"
+        "https://github.com/alibaba/fastjson2/wiki/Security-Advisory:-Remote-Code-Execution-in-fastjson-1.2.68%E2%80%931.2.83",
+        "https://thehackernews.com/2026/07/fastjson-1x-rce-vulnerability-targeted.html"
       ],
-      "image_url": "https://beehiiv-images-production.s3.amazonaws.com/uploads/asset/file/601909ab-c6ce-4e47-9f01-d12c5cf5715d/AgentForger_Part_1_Hero.png?t=1784740910",
-      "refreshed_kst": "2026-07-25 02:59",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-07-26 03:35",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "agent builder의 URL·prompt 입력이 connector·approval·schedule 같은 security-sensitive state를 바꿀 수 있으면, agent definition은 편의 UI가 아니라 privileged control plane임.",
+          "body": "fastjson 1.x RCE 대응의 출발점은 version 교체가 아니라 인터넷 도달 JSON parser와 Spring Boot executable fat-JAR가 만나는 artifact를 찾는 일임. SafeMode 또는 `noneautotype` 변경은 호환성·rollback·telemetry를 가진 emergency change로 처리해야 함.",
           "items": [
-            "결정: agent create·publish·connector attach·approval downgrade·schedule을 change-control 대상으로 분류",
-            "팀 액션: active agent와 과거 생성 기록을 owner·connector scope·approval·schedule 기준으로 audit"
+            "결정: 영향을 받는 service artifact와 network entry point 교집합을 24시간 내 확정",
+            "팀 액션: mitigation 검증과 fastjson2 migration을 별도 track으로 운영"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Zenity Labs는 2026-07-23 `AgentForger` research에서 Workspace Agents Builder의 URL-driven creation 흐름을 공개함. primary research는 2026-06-04 신고와 **2026-06-08 수정**을 명시함.",
+          "body": "Alibaba fastjson2 GitHub Wiki의 2026-07-21 공지는 fastjson 1.x `1.2.68`~`1.2.83`을 Critical RCE로 분류함. The Hacker News의 7월 25일 보도는 ThreatBook·Imperva의 exploit activity 언급을 전하며, 카드 시각 21:52 KST는 그 RSS 시각임.",
           "items": [
-            "경로: `template_name`이 starter template을 선택하고 `initial_assistant_prompt`가 page load 뒤 자동 submit됐다는 연구 결과",
-            "전제: ChatGPT 로그인, Workspace Agents 접근, 기존 authorized connector 하나 이상 보유",
-            "경계: current exploitation·모든 ChatGPT deployment 영향·특정 조직 피해는 공개 research로 확인 불가"
+            "영향 전제: attacker-controlled JSON, Spring Boot executable fat-JAR, 기본 SafeMode OFF 조합",
+            "공식 범위: AutoType enablement와 classpath gadget이 없어도 영향을 받을 수 있다는 공지 설명",
+            "비영향 열거: fastjson2, SafeMode, `noneautotype`, non-fat-JAR·WAR, fastjson 1.2.60 이하"
           ]
         },
         {
-          "heading": "공격 체인과 영향 경계",
-          "body": "연구가 설명한 chain은 피싱 URL click 뒤 authenticated session에서 builder 실행, 기존 connector 재사용, approval·Preview·publish·schedule로 이어지는 흐름임. 새 OAuth consent가 없다는 점은 기존 권한의 재사용 위험을 키우는 조건임.",
+          "heading": "AI/Infra 전문가 해석: 증거 경계와 우선순위",
+          "body": "공식 공지는 active exploitation·피해 조직·성공 RCE를 직접 확인하지 않음. 관련 보도는 공격 관측을 인용하지만 raw request, victim, execution proof를 공개하지 않았으므로, 이를 전사 침해 확정이나 모든 Java 서비스의 취약성으로 바꾸면 안 됨.",
           "items": [
-            "connector 예시: Outlook·Gmail·Slack·Google Drive·SharePoint·Teams 등 기존 연결 대상",
-            "지속성: publish 뒤 hourly·daily scheduled run으로 반복 실행 가능한 제품 기능 조합",
-            "범위: 실제 노출은 connector scope·user privilege·approval setting·수정 전후 상태에 따라 달라짐"
+            "판단: 공격 관측 보도는 patch window를 줄이는 우선순위 신호로 사용",
+            "제한: observed activity는 특정 서비스의 compromise 또는 successful RCE 증거가 아님",
+            "운영: 인터넷 노출도·fat-JAR 여부·parser entry point·service privilege를 조합해 triage"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "전통 CSRF가 단일 요청 위조에 초점을 둔다면 이 사례는 natural-language instruction이 tool configuration과 workflow lifecycle을 연쇄 변경할 수 있었던 control-plane 경계임. human session·agent identity·tool credential·approver identity를 분리해야 trace와 revoke가 가능함.",
+          "heading": "영향 식별과 SBOM 관점",
+          "body": "dependency graph의 fastjson version만으로 실행 artifact 조건을 알 수 없음. direct·transitive dependency, shaded/nested JAR, `java -jar` 배포, Object·Map typed JSON field, reverse proxy와 실제 ingress를 함께 확인해야 정확한 exposure list가 나옴.",
           "items": [
-            "identity: agent별 service identity와 human initiator·approver binding 보존",
-            "authorization: read·write·send·purchase·deploy·delete를 connector·tool별 capability로 분해",
-            "observability: create·preview·publish·connector attach·approval change·schedule을 하나의 trace와 audit timeline으로 연결"
+            "inventory: SBOM·Maven dependency tree·container image·running process에서 package version 교차 확인",
+            "artifact: executable fat-JAR, WAR, generic uber-JAR, Spring Boot launcher 여부와 deploy command 기록",
+            "entry: `JSON.parse`·`parseObject` 호출, request body·message queue·file import 등 untrusted input 경로 추적"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "연구진이 수정 완료를 명시한 과거 disclosure라도 기존 agent configuration과 approval/schedule artifact는 조직의 실제 control 상태를 보여주는 inventory임. URL·template import·deep link가 state를 초기화하는 제품은 server-side origin 검증과 user-visible confirmation이 필요함.",
+          "heading": "완화 변경의 아키텍처·SRE 관점",
+          "body": "SafeMode 또는 `noneautotype`는 위험을 줄이는 즉시 완화지만 serialization/deserialization compatibility, partner payload, legacy DTO와 충돌할 수 있음. 단순 configuration rollout 대신 contract test·canary·metric·rollback을 묶은 운영 변경이 필요함.",
           "items": [
-            "policy: high-risk connector와 scheduled execution에 role separation·independent confirmation 적용",
-            "audit: agent definition diff·connector scope·approval policy·scheduler owner·last run을 immutable log에 보존",
-            "response: suspicious agent disable·connector revoke·schedule stop·session/credential review 순서의 runbook 준비"
+            "precheck: representative payload와 downstream contract test로 parsing failure baseline 확보",
+            "rollout: canary service부터 error rate·latency·dead letter·business rejection을 비교",
+            "rollback: versioned configuration, owner, expiry, emergency revert 조건과 security exception 기록"
           ]
         },
         {
-          "heading": "운영·비용 관점",
-          "body": "agent가 email·drive·chat connector를 반복 실행하면 security 영향과 함께 token·API call·retry·human review 비용이 누적됨. approval setting을 단순 UX option으로 보지 않고 action 비용과 risk budget을 바꾸는 runtime policy로 취급해야 함.",
+          "heading": "보안 탐지와 사고 대응 관점",
+          "body": "parser 경계의 취약점은 application process 권한으로 이어질 수 있으므로 WAF log만 보지 말고 runtime·network·filesystem telemetry를 묶어야 함. nested JAR URL, unexpected outbound connection, child process, web shell, credential access는 서비스 baseline과 비교해 hunt 대상이 됨.",
           "items": [
-            "FinOps: agent·connector·schedule별 성공 작업당 token·tool API·retry·human handoff 비용 수집",
-            "SRE: scheduled run success·p95 latency·policy deny·connector error·manual recovery를 같은 SLO로 관리",
-            "release: builder URL·template·prompt import에 state-change regression test와 approval UI test 추가"
+            "detect: JSON parse error spike·suspicious type field·outbound DNS/HTTP·new process·writable path change 수집",
+            "contain: public endpoint rate control·egress 제한·service credential rotation·instance isolation 준비",
+            "preserve: request log, JVM log, process tree, container filesystem diff, cloud audit trail을 retention policy 안에서 보존"
           ]
         },
         {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "patched 여부 확인 뒤에도 운영 중인 agent와 connector의 historical state를 evidence 기반으로 검토해야 함.",
+          "heading": "이관·거버넌스 로드맵",
+          "body": "fastjson2 이관은 단기 mitigation과 별개로 parser dependency의 ownership·test evidence·cutover date를 가진 modernization backlog로 관리해야 함. 지원 종료 또는 patch availability가 불명확한 legacy component를 예외 처리만으로 장기 방치하지 않는 구조가 필요함.",
           "items": [
-            "inventory: agent·owner·template·connector scope·`Never ask`·schedule·last run export",
-            "hardening: create·publish·connector attach·approval downgrade·schedule 변경에 explicit confirmation 확인",
-            "detect: URL/deep link init, config diff, unusual Preview, bulk connector use, off-hours schedule alert",
-            "recover: agent disable·schedule stop·connector revoke·credential/session review·audit preservation 절차 시험"
+            "1단계: internet-facing affected artifact와 SafeMode/`noneautotype` emergency control 적용",
+            "2단계: fastjson2 compatibility suite, performance baseline, rollback 가능한 deployment 계획 수립",
+            "3단계: dependency owner·SLO·exception expiry·SBOM policy를 release gate에 반영"
           ]
         },
         {
-          "heading": "강조 메세지",
-          "body": "**URL 하나가 autonomous workflow를 만들 수 있었던 흐름**은 agent UX와 security control plane이 분리되지 않았을 때의 blast radius를 설명함. 수정 여부 확인만으로 governance 검토를 끝내지 않아야 함.",
+          "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
+          "body": "이 사건의 종료 조건은 library version 목록이 아니라, 노출 artifact의 완화 증거와 runtime hunt 결과를 남기는 것임.",
           "items": [
-            "발표 포인트: 기존 OAuth consent의 재사용은 새 consent 화면 부재와 결합될 때 장기 실행 권한으로 전이 가능",
-            "팀 액션: 다음 SaaS agent review에서 URL initialization·connector reuse·approval·schedule을 필수 test case로 포함"
+            "verify: fat-JAR·JSON entry point·SafeMode·network exposure·service account privilege를 service별 확정",
+            "mitigate: SafeMode/`noneautotype` canary, error budget, rollback, change approval을 묶어 수행",
+            "hunt: suspicious parser input·egress·child process·web shell·credential activity를 baseline과 비교",
+            "강조 메세지: **artifact 조건 확인 없이 하는 일괄 패치**는 과잉 대응과 누락을 함께 만들 수 있음"
           ]
         }
       ]
@@ -447,8 +450,8 @@
       "id": "news-223",
       "title_ko": "AWS, Claude Opus 5 제공 시작: Bedrock 기본 ZDR과 Claude Platform on AWS의 데이터·운영 경계 확인",
       "title_original": "Claude Opus 5 is now available on AWS",
-      "summary": "핵심: AWS가 `Claude Opus 5`를 Amazon Bedrock과 Claude Platform on AWS 두 경로로 제공 시작. 구성: Bedrock은 ZDR(Zero Data Retention)을 기본 활성화하고 regional data residency·Guardrails·Knowledge Bases를 제시하며, Claude Platform on AWS는 Anthropic native API·console 경험을 AWS billing·authentication에 통합. 운영: 장시간 agent·코딩 workload 전환 전에는 region availability, ZDR 적용 범위, Guardrails, API/console 차이, 비용·latency·fallback을 tenant별로 검증 필요.",
-      "detail": "AWS가 2026년 7월 24일 `Claude Opus 5`의 AWS 제공을 발표했다. 공식 페이지는 Amazon Bedrock과 Claude Platform on AWS라는 두 접근 경로를 제시한다. Bedrock 경로는 ZDR을 기본 활성화하고 AWS 인프라 내 데이터 처리, regional data residency, Guardrails와 Knowledge Bases 연계를 설명한다. Claude Platform on AWS는 Anthropic의 native API·기능·console 경험을 AWS Console에서 제공하고 AWS billing·authentication에 통합한다고 안내하며 ZDR은 요청 시 지원된다고 명시한다. AWS는 coding·long-running agent·복잡한 전문 업무 성능을 설명하지만, benchmark 수치·가격·모든 리전·tenant별 가용성·SLA·workload 성능은 이 공지에서 확정하지 않는다.",
+      "summary": "핵심: AWS 제공 공지에 이어 AI타임스가 Claude Opus 5의 100만 token context, 최대 12만8천 output token, Effort Ladder, Fast Mode와 보도된 가격을 정리. 운영: Bedrock과 Claude Platform on AWS는 ZDR·인증·청구·guardrail 경로가 다를 수 있으므로, 품질·token·p95·retention·fallback을 provider별 canary로 검증 필요.",
+      "detail": "AWS의 Claude Opus 5 제공 공지와 AI타임스의 2026년 7월 25일 보도를 함께 확인했다. 보도는 100만 token context, 최대 12만8천 output token, 5단계 Effort Ladder, Fast Mode 및 입력 100만 token당 5달러·출력 25달러라는 Anthropic 관련 수치를 전한다. AWS는 Bedrock에서 기본 ZDR·regional data residency·Guardrails를, Claude Platform on AWS에서 AWS billing·authentication과 요청 기반 ZDR을 안내한다. 가격·benchmark·전 리전·tenant별 quota·SLA는 조직 workload에서 별도 검증이 필요하다.",
       "why_it_matters": "같은 모델 이름이라도 Bedrock과 Anthropic native platform의 데이터 보존 기본값, 인증·청구 경로, 안전 기능, 리전 가용성, API·운영 도구가 달라질 수 있음. 장시간 agent를 production에 넣을 때 모델 품질뿐 아니라 데이터 경계와 failure handling을 함께 비교할 필요.",
       "engineering_implication": "플랫폼 팀은 Bedrock과 Claude Platform on AWS를 별도 provider surface로 inventory하고, region·ZDR 조건·Guardrails·IAM/SSO·audit log·quota·가격·p95 latency·fallback을 대표 agent workload에서 canary로 검증 필요.",
       "korea_implication": "국내 AWS 조직은 한국 리전 및 실제 계정의 Claude Opus 5 가용성, cross-region 데이터 경로, ZDR 계약 조건, Guardrails·로그 보존 정책을 security·legal·platform owner와 함께 확인 필요.",
@@ -468,7 +471,12 @@
       "source_name": "AWS What's New",
       "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/claude-opus-5-aws/",
       "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [],
+      "related_links": [
+        {
+          "title": "AI타임스: Claude Opus 5 모델 기능·가격 보도 (2026-07-25 09:28 KST)",
+          "url": "https://www.aitimes.com/news/articleView.html?idxno=213161"
+        }
+      ],
       "detailed_content": [
         {
           "heading": "무슨 일이 있었나",

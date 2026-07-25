@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-25 | Total pages: 216
+> Last updated: 2026-07-26 | Total pages: 217
 
 ## Entities
 
@@ -102,6 +102,8 @@
 - [[raw/articles/aws-ecs-service-connect-zone-aware-2026-07-24]] — ECS Service Connect AZ 우선 라우팅의 cross-AZ 비용·지연·failover 검증 경계.
 - [[raw/articles/aitimes-amd-anthropic-2gw-ai-infrastructure-2026-07-23]] — AMD·앤트로픽 최대 2GW AI 인프라 계획의 capacity·전력·software 검증 경계.
 - [[raw/articles/thn-certighost-adcs-cve-2026-54121-2026-07-25]] — AD CS enrollment chase `CVE-2026-54121` 공개 PoC의 Domain Controller certificate·PKINIT·DCSync 영향과 patch/hunt 경계.
+- [[raw/articles/aitimes-claude-opus-5-model-details-2026-07-25]] — Claude Opus 5의 context·output·effort·Fast Mode·가격 보도와 provider별 운영 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
