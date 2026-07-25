@@ -2,10 +2,10 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-25 15:17",
+  "last_updated_kst": "2026-07-25 23:27",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Certighost 공개 PoC: patch되지 않은 AD CS enrollment chase는 일반 domain account에서 Domain Controller certificate·PKINIT·DCSync까지 이어질 수 있어 CA host patch와 issuance·replication hunt를 우선 실행.",
+    "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출을 판단.",
     "Andrew Ng OpenWorker 공개: BYOK·local model을 고를 수 있는 desktop agent는 모델 선택과 별개로 파일·shell·MCP·connector capability, data egress, update provenance를 endpoint control로 검증해야 하는 도입 경계.",
     "AWS aws-bench research preview: 실제 disposable AWS account·CDK scenario에서 coding agent를 평가하므로 benchmark 실행 자체의 Organization 권한·quota·생성 리소스·cleanup을 별도 운영 경계로 관리.",
     "ChatGPT Workspace Agents AgentForger: URL prompt 자동 실행·기존 connector 재사용·approval/schedule 변경이 결합된 과거 CSRF 결함은 agent definition을 privileged change로 audit할 필요.",
@@ -186,6 +186,97 @@
   ],
   "items": [
     {
+      "id": "news-226",
+      "title_ko": "Fastjson 1.x RCE: 기본 구성 Spring Boot fat-JAR에서 악용 가능, 1.x 패치 부재·공격 관측 보도",
+      "title_original": "Fastjson 1.x RCE Vulnerability Targeted in Attacks With No Patched Available",
+      "summary": "핵심: Alibaba 공지는 fastjson 1.x `1.2.68`~`1.2.83`가 기본 설정의 Spring Boot executable fat-JAR에서 AutoType·classpath gadget 없이 RCE될 수 있다고 확인. 상태: 7월 25일 보도는 ThreatBook·Imperva의 공격 관측과 1.x patch 부재를 전하지만, 피해·성공 실행은 공개 증거로 확정되지 않음. 대응: 직접·전이 dependency와 fat-JAR·JSON entry point·SafeMode를 inventory하고 SafeMode/`noneautotype` 호환성 검증 또는 fastjson2 이관을 우선 처리 필요.",
+      "detail": "Alibaba의 2026년 7월 21일 공식 GitHub Wiki 공지는 fastjson 1.x `1.2.68`~`1.2.83`의 RCE를 Critical로 분류한다. 기본 구성에서 AutoType 활성화나 classpath gadget이 없어도, network-reachable JSON parser를 가진 Spring Boot executable fat-JAR 조건에서 악용 가능하다고 명시한다. Spring Boot 2.x·3.x·4.x와 JDK 8·11·17·21에서 end-to-end 검증됐으며 fastjson2 전체 버전, SafeMode 활성화, `noneautotype` build, non-fat-JAR·WAR 배포는 영향 없음으로 열거한다. The Hacker News의 7월 25일 보도는 ThreatBook·Imperva의 exploit activity 관측과 patched fastjson 1.x artifact 부재를 전하지만, 공격 횟수·피해 조직·RCE 성공·침해 증거는 공개되지 않았다. 운영팀은 영향 전제를 먼저 식별하고 SafeMode/`noneautotype` 전환 호환성 및 fastjson2 이관을 change-control로 처리해야 한다.",
+      "why_it_matters": "Java 서비스의 JSON parser는 외부 입력 경계이며, affected version과 Spring Boot executable fat-JAR·SafeMode 기본값·reachable parser 조합이 맞으면 애플리케이션 프로세스 권한으로 RCE 경로가 열릴 수 있음. 공격 관측 보도는 우선순위를 높이지만 개별 서비스 침해를 뜻하지 않으므로 배포 조건과 telemetry로 판단 필요.",
+      "engineering_implication": "애플리케이션·플랫폼·보안 팀은 SBOM과 Maven dependency graph에서 fastjson 직접·전이 의존성을 찾고, `java -jar` fat-JAR·JSON endpoint·SafeMode·egress를 함께 inventory 필요. 즉시 이관이 어려우면 SafeMode 또는 `noneautotype`를 staging에서 검증하고, unexpected nested JAR URL·outbound connection·child process·web shell을 hunt한 뒤 fastjson2 이관 계획을 owner·기한과 함께 관리 필요.",
+      "korea_implication": "국내 Java·Spring Boot 서비스도 WAS 유형만으로 비영향을 가정하지 말고 실제 packaging과 library graph를 배포 artifact 기준으로 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Java",
+        "Spring Boot",
+        "RCE",
+        "Supply Chain",
+        "Application Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-07-25 21:52",
+      "source_name": "Alibaba fastjson security advisory / The Hacker News",
+      "source_url": "https://github.com/alibaba/fastjson2/wiki/Security-Advisory:-Remote-Code-Execution-in-fastjson-1.2.68%E2%80%931.2.83",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News: Fastjson 1.x RCE attack-observation report (RSS 2026-07-25 18:22:43 +05:30 = 21:52 KST)",
+          "url": "https://thehackernews.com/2026/07/fastjson-1x-rce-vulnerability-targeted.html"
+        },
+        {
+          "title": "ThreatBook: Fastjson 1.2.83 active-exploitation detection report",
+          "url": "https://threatbook.io/blog/fastjson-rce-1.2.83-active-exploitation-detected-detection-mitigation"
+        },
+        {
+          "title": "FearsOff technical analysis",
+          "url": "https://fearsoff.org/research/fastjson-1-2-83-rce"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Alibaba `fastjson2` GitHub Wiki의 2026-07-21 보안 공지는 fastjson 1.x `1.2.68`~`1.2.83`의 RCE를 Critical로 분류함. 카드 시각 **2026-07-25 21:52 KST**는 원 공지의 시각이 아니라 The Hacker News RSS `pubDate` 2026-07-25 18:22:43 +05:30을 변환한 관련 보도 시각임.",
+          "items": [
+            "범위: fastjson 1.x `1.2.68`~`1.2.83`이며 마지막 1.x release인 `1.2.83` 포함",
+            "전제: attacker-controlled JSON이 도달하는 Spring Boot executable fat-JAR와 기본 `SafeMode OFF` 구성",
+            "경계: 원 공지는 2026-07-21 날짜만 제공하며 active exploitation·피해 조직·성공 침해를 직접 주장하지 않음"
+          ]
+        },
+        {
+          "heading": "영향 조건과 비영향 범위",
+          "body": "공식 공지는 AutoType 활성화와 classpath gadget 없이 기본 구성이 영향을 받을 수 있다고 설명함. Spring Boot 2.x·3.x·4.x 및 JDK 8·11·17·21에서 end-to-end 검증을 명시하지만, Java/Spring Boot 전체 배포가 동일하게 취약하다는 뜻은 아님.",
+          "items": [
+            "영향 조건: `java -jar`로 시작하는 Spring Boot executable fat-JAR 배포",
+            "진입점: `JSON.parse`, `JSON.parseObject(String)`, `JSON.parseObject(String, Class)` 도달 가능성",
+            "주의: target DTO class를 고정해도 Object·Map 형식 field에 nested payload가 있으면 완화 불충분",
+            "비영향: all fastjson2, `SafeMode=true`, `noneautotype` build, plain non-fat JAR·generic uber-JAR·Tomcat/Jetty WAR, fastjson 1.2.60 이하"
+          ]
+        },
+        {
+          "heading": "공격 관측 보도의 증거 경계",
+          "body": "The Hacker News는 ThreatBook과 Imperva가 공격 activity를 관측했다고 전함. 이 보도는 대응 우선순위를 높이는 신호지만, 원시 요청·attack count·named victim·실제 RCE execution·breach evidence는 공개되지 않았다고 명시함.",
+          "items": [
+            "관측: ThreatBook이 탐지 지원 뒤 exploitation activity를 포착했다고 보도에서 인용",
+            "관측: Imperva가 여러 산업과 국가를 향한 activity를 보고했다고 보도에서 인용",
+            "불확실성: observed request 또는 exploit activity가 실제 RCE 성공·침해를 자동 증명하지 않는 증거 경계",
+            "상태: 보도는 7월 25일 기준 patched fastjson 1.x artifact를 찾지 못했다고 설명"
+          ]
+        },
+        {
+          "heading": "즉시 완화와 탐지",
+          "body": "공식 공지는 SafeMode 활성화 또는 `noneautotype` build를 즉시 완화로, fastjson2 이관을 장기 조치로 제시함. 변경은 parser 동작 호환성에 영향을 줄 수 있으므로 deployment artifact와 traffic을 기준으로 단계 적용 필요.",
+          "items": [
+            "inventory: SBOM·Maven dependency graph에서 직접·전이 fastjson version과 owning service 식별",
+            "validate: fat-JAR·JSON entry point·`SafeMode`·AutoType 설정·network exposure를 service별 확인",
+            "mitigate: SafeMode 또는 `noneautotype`를 staging·canary에서 contract test와 rollback 조건으로 검증",
+            "detect: suspicious type value·nested JAR URL·unexpected outbound connection·child process·file change·web shell hunt"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이번 항목은 library version만의 문제가 아니라 JSON input boundary와 Java packaging 방식이 결합된 배포 위험임. patch availability와 별개로 실제 artifact 조건을 먼저 식별해야 대응 범위를 줄일 수 있음.",
+          "items": [
+            "팀 액션: 24시간 내 internet-facing Spring Boot fat-JAR와 fastjson `1.2.68`~`1.2.83` 교집합 목록 생성",
+            "팀 액션: SafeMode/`noneautotype` 변경 영향과 emergency rollback을 서비스 owner별로 승인",
+            "팀 액션: fastjson2 migration backlog에 dependency owner·test evidence·cutover date를 기록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-224",
       "title_ko": "앤드류 응 OpenWorker 공개: 로컬 desktop agent의 모델 선택·파일·connector 권한을 분리 검증",
       "title_original": "OpenWorker",
@@ -262,7 +353,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-225",
@@ -350,7 +441,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-223",
@@ -425,7 +516,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-222",
@@ -505,7 +596,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-221",
@@ -589,7 +680,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-220",
@@ -666,7 +757,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-216",
@@ -733,7 +824,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-217",
@@ -800,7 +891,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-214",
@@ -880,7 +971,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-215",
@@ -953,7 +1044,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-218",
@@ -1020,7 +1111,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-212",
@@ -1115,7 +1206,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-209",
@@ -1190,7 +1281,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-210",
@@ -1275,7 +1366,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-219",
@@ -1351,7 +1442,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-213",
@@ -1433,7 +1524,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-208",
@@ -1501,11 +1592,11 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-207",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1659,7 +1750,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-204",
@@ -1724,7 +1815,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-205",
@@ -1790,7 +1881,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-203",
@@ -1855,7 +1946,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-202",
@@ -1951,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-198",
@@ -2016,7 +2107,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-199",
@@ -2080,7 +2171,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-200",
@@ -2159,7 +2250,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-201",
@@ -2241,7 +2332,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-196",
@@ -2326,7 +2417,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-197",
@@ -2402,7 +2493,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-195",
@@ -2481,7 +2572,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-193",
@@ -2566,7 +2657,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-194",
@@ -2645,7 +2736,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-191",
@@ -2713,7 +2804,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-190",
@@ -2799,7 +2890,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-192",
@@ -2871,7 +2962,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-188",
@@ -2937,7 +3028,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-189",
@@ -3004,11 +3095,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-187",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -3176,7 +3267,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-182",
@@ -3242,7 +3333,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-180",
@@ -3327,7 +3418,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-185",
@@ -3402,7 +3493,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-186",
@@ -3482,7 +3573,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-181",
@@ -3556,7 +3647,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-183",
@@ -3627,7 +3718,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-179",
@@ -3711,7 +3802,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-184",
@@ -3791,7 +3882,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-178",
@@ -3888,7 +3979,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-176",
@@ -3955,72 +4046,6 @@
             "팀 액션: 계정·리전별 efficiency trend, Savings Plans·RI 활용률, 예산, 권고 action을 월간 review에 연결",
             "검토 항목: cross-account dashboard 공유의 IAM 권한과 비용 데이터 노출 범위, export 수신자 점검",
             "운영 과제: Cost Optimization Hub 권고의 owner·기한·조치 결과와 효율 점수 변화를 change evidence로 보존"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-177",
-      "title_ko": "NVIDIA Nemotron 3 Embed 공개: 8B·1B 오픈 임베딩 모델과 Blackwell NVFP4 배포 경로",
-      "title_original": "NVIDIA Nemotron 3 Embed Ranks #1 Overall on RTEB, Advancing Agentic Retrieval",
-      "summary": "핵심: NVIDIA가 RAG·agent memory·code retrieval용 Nemotron 3 Embed 8B·1B 모델을 공개하고, 8B의 RTEB 78.5%·1B BF16의 72.4% 결과를 제시. 운영: 1B NVFP4는 Blackwell 대상 고처리량 경로이며, 공개 가중치·32k context·vLLM/NIM 배포 선택지를 제공하므로 자체 코퍼스 기준 recall·지연·비용 검증 필요.",
-      "detail": "NVIDIA는 Hugging Face에서 Nemotron 3 Embed 오픈 임베딩 모델군을 공개했다. 발표에 따르면 8B BF16은 RTEB에서 78.5%, MMTEB Retrieval에서 75.5%를 기록했고, 1B BF16은 RTEB 72.4%로 이전 1B 모델 대비 오류율 27% 감소 결과를 제시했다. 1B NVFP4는 Blackwell에서 BF16 대비 최대 2배 처리량과 99% 이상 BF16 정확도 유지라는 NVIDIA 측정치를 제시한다. 수치는 벤치마크·하드웨어·NVIDIA agent 설정 조건의 결과이므로, 실제 배포 전 한국어·사내 문서·권한 필터를 포함한 독립 평가가 필요하다.",
-      "why_it_matters": "agentic retrieval의 품질은 반복 검색·context 길이·후속 추론 토큰 사용량을 바꿀 수 있음. 모델 크기와 양자화 경로가 함께 공개되면서 retrieval layer도 정확도뿐 아니라 GPU 메모리·처리량·data residency 선택으로 운영 설계 대상이 됨.",
-      "engineering_implication": "RAG·검색 플랫폼 팀은 8B/1B/NVFP4를 동일 corpus와 query set에서 Recall/NDCG, p95 latency, GPU memory, token·rerank 비용으로 비교 필요. OpenAI-compatible generation endpoint와 embedding endpoint의 권한·tenant filtering·index refresh·fallback policy를 분리해 운영 필요.",
-      "korea_implication": "국내 문서·코드 검색은 다국어 지원 주장만으로 품질을 확정하지 말고, 한국어 약어·제품명·권한별 문서 접근을 포함한 evaluation set으로 검증 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Embedding",
-        "RAG",
-        "Agent",
-        "NVIDIA",
-        "Inference"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-07-17 01:01",
-      "source_name": "NVIDIA / Hugging Face",
-      "source_url": "https://huggingface.co/blog/nvidia/nemotron-3-embed-wins-rteb",
-      "image_url": "https://cdn-uploads.huggingface.co/production/uploads/697fa5ae089a7f9330c5078f/I-QbjjUGW9tmE2mcDaW2f.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "NVIDIA가 production-scale RAG, agentic retrieval, code retrieval, agent memory를 대상으로 Nemotron 3 Embed 모델군을 공개함. 공개 가중치와 training recipe를 제공하며 8B BF16, 1B BF16, 1B NVFP4의 세 배포 크기를 제시함.",
-          "items": [
-            "구성: 8B는 quality anchor, 1B BF16은 비용·지연 민감 serving, 1B NVFP4는 Blackwell 고처리량 대상",
-            "호환: Hugging Face 배포와 vLLM·NVIDIA NIM 경로를 함께 제시",
-            "입력 범위: 최대 32k context와 다국어·code retrieval 지원이라는 발표 범위"
-          ]
-        },
-        {
-          "heading": "벤치마크와 주장 범위",
-          "body": "발표는 8B BF16의 RTEB 78.5%와 MMTEB Retrieval 75.5%, 1B BF16의 RTEB 72.4%를 제시함. 이는 NVIDIA가 선택한 RTEB·ViDoRe V3·MMTEB·LongEmbed 및 Nemotron 3 Ultra search-agent 조건의 결과로, 고객 workload의 절대 성능 보장은 아님.",
-          "items": [
-            "8B: RTEB leaderboard 1위와 78.5% 점수라는 NVIDIA 발표",
-            "1B BF16: 이전 1B 모델 대비 RTEB 오류율 27% 감소라는 비교 결과",
-            "한계: corpus, 언어 비중, chunking, reranker, access filter가 다른 production 환경의 재현성은 별도 검증 필요"
-          ]
-        },
-        {
-          "heading": "배포·비용 관점",
-          "body": "1B NVFP4는 Blackwell에서 linear layer의 weight·activation을 NVFP4로 처리하고, quantization-aware distillation으로 장문 입력 정확도 손실을 보완하는 경로임. 최대 2배 처리량과 BF16 정확도 99% 이상 유지는 NVIDIA의 선택한 하드웨어·시험 조건 결과임.",
-          "items": [
-            "용량: 1B NVFP4는 고처리량 retrieval node의 GPU memory·throughput 선택지",
-            "비교: 같은 embedding dimension, batch size, sequence length, index type에서 p95 latency·QPS·recall 측정 필요",
-            "비용: embedding 비용만이 아니라 index rebuild, vector storage, rerank, agent 재검색 토큰을 함께 산정할 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "retrieval 모델 교체는 leaderboard 순위만으로 결정할 작업이 아님. 실제 agent task의 evidence hit rate, citation precision, 권한 필터 누락, fallback 시나리오까지 포함한 release gate가 필요함.",
-          "items": [
-            "팀 액션: 한국어·영문·코드 query와 권한별 문서를 포함한 frozen evaluation set 작성",
-            "팀 액션: 8B·1B·NVFP4와 현행 embedding 모델의 Recall/NDCG, p95, GPU memory, 비용 비교",
-            "운영 과제: embedding version, index build 시각, chunking rule, reranker, agent trace를 query 결과와 연결해 rollback 가능성 확보"
           ]
         }
       ],
