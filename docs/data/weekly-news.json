@@ -2,14 +2,14 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-25 11:10",
+  "last_updated_kst": "2026-07-25 15:17",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Certighost 공개 PoC: patch되지 않은 AD CS enrollment chase는 일반 domain account에서 Domain Controller certificate·PKINIT·DCSync까지 이어질 수 있어 CA host patch와 issuance·replication hunt를 우선 실행.",
     "Andrew Ng OpenWorker 공개: BYOK·local model을 고를 수 있는 desktop agent는 모델 선택과 별개로 파일·shell·MCP·connector capability, data egress, update provenance를 endpoint control로 검증해야 하는 도입 경계.",
     "AWS aws-bench research preview: 실제 disposable AWS account·CDK scenario에서 coding agent를 평가하므로 benchmark 실행 자체의 Organization 권한·quota·생성 리소스·cleanup을 별도 운영 경계로 관리.",
     "ChatGPT Workspace Agents AgentForger: URL prompt 자동 실행·기존 connector 재사용·approval/schedule 변경이 결합된 과거 CSRF 결함은 agent definition을 privileged change로 audit할 필요.",
-    "Microsoft MAI 자체 모델 전환 보도: Bing·PowerPoint·OneDrive·Azure 음성 기능의 모델 교체는 GPU 비용뿐 아니라 품질·safety·latency·fallback·data handling을 함께 검증할 production 변경.",
-    "Check Point SmartConsole CVE-2026-16232: 인터넷 노출·Trusted Clients 미제한 Management Server는 인증 우회로 policy 변경 가능하므로 hotfix·allowlist·IoC hunt 병행."
+    "Microsoft MAI 자체 모델 전환 보도: Bing·PowerPoint·OneDrive·Azure 음성 기능의 모델 교체는 GPU 비용뿐 아니라 품질·safety·latency·fallback·data handling을 함께 검증할 production 변경."
   ],
   "deep_dives": [
     {
@@ -265,6 +265,94 @@
       "rank": 1
     },
     {
+      "id": "news-225",
+      "title_ko": "Certighost 공개 PoC: 일반 AD 계정으로 Domain Controller 인증서를 발급받아 DCSync까지 연결되는 AD CS 결함",
+      "title_original": "Certighost Exploit Lets Low-Privileged Active Directory Users Impersonate a Domain Controller",
+      "summary": "핵심: 공개 PoC `CVE-2026-54121`은 취약한 AD CS enrollment chase 경로에서 일반 domain account가 Domain Controller 명의 인증서를 받아 PKINIT 인증과 DCSync로 `krbtgt` secret 접근에 이를 수 있는 chain. 조건: network access·domain account·Enterprise CA·default Machine template·CA에서 공격자 SMB/LDAP listener 도달성이 필요하며 admin 권한·사용자 상호작용은 불필요. 대응: AD CS host에 Microsoft 7월 14일 업데이트를 우선 적용하고, patch 전에는 CA·template·machine-account·SMB/LDAP reachability를 포함한 노출 점검과 인증서·DCSync hunt 병행 필요.",
+      "detail": "The Hacker News는 2026년 7월 24일 공개된 working exploit을 바탕으로 `Certighost`를 보도했다. Microsoft Security Update Guide는 `CVE-2026-54121`을 AD CS improper authorization 결함으로 분류하며, 보도는 CVSS 8.8과 7월 14일 패치를 인용한다. 연구자가 공개한 체인은 CA가 requester-supplied `cdc` host를 실제 Domain Controller인지 검증하지 않고 SMB·LDAP로 따라가는 enrollment chase를 악용한다. 일반 domain user는 기본 `ms-DS-MachineAccountQuota` 10에서 computer account를 만들거나 제어 중인 account를 재사용하고, rogue listener와 Netlogon relay를 거쳐 DC의 `objectSid`·`dNSHostName`을 CA에 반환한다. 발급된 PFX로 PKINIT authentication을 수행하면 DC credential로 DCSync를 요청할 수 있다. 공개 보도 기준 7월 24일 현재 in-the-wild exploitation 보고는 없지만 full PoC는 공개 상태이며, 실제 취약성은 Enterprise CA 구성·template·patch 상태·네트워크 경로에 좌우된다.",
+      "why_it_matters": "AD CS는 identity control plane이며 Domain Controller 인증서 위조는 단일 endpoint 권한 상승을 넘어 directory replication과 `krbtgt` 보호 경계까지 연결될 수 있음. 공개 PoC 뒤에는 patch 적용 여부뿐 아니라 CA enrollment path와 AD object 변경 기록을 우선 확인 필요.",
+      "engineering_implication": "Windows·AD 운영 팀은 CA와 AD CS host의 7월 14일 업데이트를 inventory로 확인하고, Enterprise CA·Machine template·`ms-DS-MachineAccountQuota`·최근 computer-account 생성·비정상 certificate issuance·PKINIT·DCSync를 묶어 hunt 필요. patch 지연 시 vendor/연구자가 언급한 chase fallback 비활성화는 정상 enrollment 영향을 낼 수 있으므로 change window와 rollback을 포함해 검증 필요.",
+      "korea_implication": "국내 AD 기반 기업도 인증기관 서버를 일반 Windows patch cycle 밖의 PKI 장비로 취급하지 말고, CA host·도메인 컨트롤러·network segmentation·certificate template owner를 같은 incident 범위로 관리 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Active Directory",
+        "AD CS",
+        "PKI",
+        "CVE",
+        "Identity"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-07-25 08:45",
+      "source_name": "The Hacker News / Microsoft Security Update Guide",
+      "source_url": "https://thehackernews.com/2026/07/certighost-exploit-lets-low-privileged.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdJCaF3dwhncVhtS_dn9W8CUCwJSHRmtCVTK5_fXnS6RpDI4GaVTcSVoXvmo_JgxUyd-H5G3yQaRAg3Ahp__DMlq-M5r9ejhJTdk5QlVuv16HVXDWV7e3HJAijAVBRumD3XSyeyQ1O477nfXFfTvCwgFeXlYF8QIdfTN4mlYAu28JGFN7lOWTEoKwlG9g/s1700-e365/certighost.jpg",
+      "related_links": [
+        {
+          "title": "Microsoft Security Update Guide: CVE-2026-54121",
+          "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-54121"
+        },
+        {
+          "title": "Researchers’ public proof-of-concept repository",
+          "url": "https://github.com/aniqfakhrul/CVE-2026-54121"
+        },
+        {
+          "title": "Windows Certificate Enrollment Protocol specification",
+          "url": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/f4eb50d5-62f6-470b-8846-9489af9dea62"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 2026-07-24 공개된 working exploit을 `Certighost`로 보도함. RSS `pubDate` 2026-07-24 19:45:21 +05:30은 **2026-07-25 08:45 KST**이며, Microsoft Security Update Guide의 `CVE-2026-54121` 패치와 연구자 PoC repository를 교차 링크로 확인함.",
+          "items": [
+            "분류: Microsoft가 AD CS improper authorization 결함으로 추적하는 `CVE-2026-54121`, 보도 인용 CVSS **8.8**",
+            "상태: Microsoft 7월 14일 업데이트가 배포됐고, 7월 24일 기준 보도에서 in-the-wild exploitation 보고는 확인 불가",
+            "변화: 공개 PoC가 일반 domain account에서 Domain Controller identity 획득까지의 재현 경로를 자동화"
+          ]
+        },
+        {
+          "heading": "공격 전제와 인증서 발급 경로",
+          "body": "보도된 체인은 CA가 enrollment chase의 requester-supplied `cdc` host를 실제 Domain Controller인지 먼저 검증하지 않은 경로를 악용함. CA가 SMB·LDAP로 attacker-controlled listener에 연결한 뒤 Netlogon relay를 거치게 하는 구성임.",
+          "items": [
+            "전제: network access와 domain account, Enterprise CA, default Machine template, CA에서 공격자 SMB 445·LDAP 389 listener까지의 reachability 필요",
+            "계정: 기본 `ms-DS-MachineAccountQuota` 값 **10**에서 computer account를 생성하거나 기존 제어 account를 재사용 가능한 조건",
+            "속성: 공격자가 DC의 `objectSid`·`dNSHostName`을 반환하고 CA가 target DC identity를 certificate에 서명하는 보도된 chain"
+          ]
+        },
+        {
+          "heading": "영향과 범위",
+          "body": "발급된 PFX를 PKINIT에 사용하면 target Domain Controller로 Kerberos authentication을 수행하고 DCSync를 통해 `krbtgt`를 포함한 account secret 요청으로 이어질 수 있음. 이는 PoC와 보도에 근거한 영향 경로이며 모든 AD 환경의 즉시 침해를 의미하지 않음.",
+          "items": [
+            "영향: Domain Controller account의 directory replication rights가 credential theft blast radius를 확대하는 조건",
+            "범위: Enterprise CA 구성·Machine template enrollment·patch level·SMB/LDAP network path에 따라 실제 노출 차이",
+            "경계: 공개 보도는 active exploitation 또는 특정 조직 침해를 확인하지 않으므로 incident 판단에는 조직 telemetry 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AD CS certificate issuance는 endpoint 기능이 아니라 directory identity control plane임. 공개 PoC 이후 patch compliance만 확인하면 CA template·machine account·certificate issuance·replication activity의 연쇄 evidence를 놓칠 수 있음.",
+          "items": [
+            "패치: CA와 AD CS host의 Microsoft 7월 14일 업데이트 적용·재부팅·version evidence 확인",
+            "헌팅: 새 computer account, Machine template certificate issuance, PKINIT, DCSync와 `krbtgt` access를 시간순 상관 분석",
+            "완화: patch 지연 시 chase fallback 비활성화는 정상 enrollment를 손상할 수 있어 lab 검증·change approval·rollback 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "인증기관과 도메인 컨트롤러를 같은 recovery scope로 운영하고, certificate template와 CA network egress를 identity attack surface로 관리해야 함.",
+          "items": [
+            "팀 액션: Enterprise CA·AD CS host·template owner·CA firewall rule·machine-account quota의 inventory와 owner 확인",
+            "팀 액션: certificate issuance와 AD object change 로그를 SIEM에 연결하고 high-privilege template·DC identity alert 추가",
+            "팀 액션: CA patch 적용 뒤 정상 Machine enrollment와 blocked chase path를 staging에서 재검증"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-223",
       "title_ko": "AWS, Claude Opus 5 제공 시작: Bedrock 기본 ZDR과 Claude Platform on AWS의 데이터·운영 경계 확인",
       "title_original": "Claude Opus 5 is now available on AWS",
@@ -337,7 +425,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-222",
@@ -417,7 +505,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-221",
@@ -501,7 +589,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-220",
@@ -578,7 +666,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-216",
@@ -645,7 +733,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-217",
@@ -712,7 +800,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-214",
@@ -792,7 +880,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-215",
@@ -865,7 +953,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-218",
@@ -932,7 +1020,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-212",
@@ -1027,7 +1115,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-209",
@@ -1102,7 +1190,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-210",
@@ -1187,7 +1275,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-219",
@@ -1263,7 +1351,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-213",
@@ -1345,7 +1433,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-208",
@@ -1413,11 +1501,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-207",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1571,7 +1659,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-204",
@@ -1636,7 +1724,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-205",
@@ -1702,7 +1790,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-203",
@@ -1767,7 +1855,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-202",
@@ -1863,7 +1951,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-198",
@@ -1928,7 +2016,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-199",
@@ -1992,7 +2080,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-200",
@@ -2071,7 +2159,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-201",
@@ -2153,7 +2241,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-196",
@@ -2238,7 +2326,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-197",
@@ -2314,7 +2402,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-195",
@@ -2393,7 +2481,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-193",
@@ -2478,7 +2566,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-194",
@@ -2557,7 +2645,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-191",
@@ -2625,7 +2713,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-190",
@@ -2711,7 +2799,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-192",
@@ -2783,7 +2871,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-188",
@@ -2849,7 +2937,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-189",
@@ -2916,11 +3004,11 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-187",
-      "rank": 37,
+      "rank": 38,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -3088,7 +3176,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-182",
@@ -3154,7 +3242,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-180",
@@ -3239,7 +3327,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-185",
@@ -3314,7 +3402,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-186",
@@ -3394,7 +3482,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-181",
@@ -3468,7 +3556,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-183",
@@ -3539,7 +3627,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-179",
@@ -3623,7 +3711,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-184",
@@ -3703,7 +3791,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-178",
@@ -3800,7 +3888,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-176",
@@ -3870,7 +3958,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-177",
@@ -3933,81 +4021,6 @@
             "팀 액션: 한국어·영문·코드 query와 권한별 문서를 포함한 frozen evaluation set 작성",
             "팀 액션: 8B·1B·NVFP4와 현행 embedding 모델의 Recall/NDCG, p95, GPU memory, 비용 비교",
             "운영 과제: embedding version, index build 시각, chunking rule, reranker, agent trace를 query 결과와 연결해 rollback 가능성 확보"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-173",
-      "title_ko": "n8n 토큰 교환 취약점: 다중 issuer에서 `sub` 단독 매칭으로 타 계정 로그인 가능",
-      "title_original": "n8n Token Exchange Flaw Could Let Attackers Log In as Users From Another Issuer",
-      "summary": "핵심: n8n Enterprise token exchange가 다중 외부 issuer 구성에서 JWT의 `iss`를 무시하고 `sub`만으로 로컬 계정을 매칭한 CVE-2026-59208이 공개. 대응: 영향 버전 2.27.4 미만과 2.28.0을 2.27.4/2.28.1 이상으로 올리고, `N8N_TOKEN_EXCHANGE_TRUSTED_KEYS`의 issuer·subject 쌍과 preview 기능 사용 여부를 점검 필요.",
-      "detail": "n8n 공식 advisory와 The Hacker News 보도에 따르면 CVE-2026-59208은 다중 issuer를 신뢰하는 Enterprise token exchange에서 issuer A가 발급한 유효 JWT의 `sub`가 issuer B의 사용자와 같을 때 해당 계정으로 로그인될 수 있는 identity-binding 결함임. token exchange가 비활성화됐거나 하나의 issuer만 신뢰하는 인스턴스는 n8n의 영향 범위 설명에서 제외됨. 공개 자료에는 실제 악용 증거나 공개 PoC가 없으며, 취약한 설정과 patch level을 evidence로 분리해 판단 필요.",
-      "why_it_matters": "OIDC/JWT에서 `sub`는 issuer 문맥 안에서만 고유할 수 있음. OEM·B2B automation 환경에서 issuer 경계를 빼고 계정을 매칭하면 서명 검증을 통과한 토큰도 다른 tenant·partner identity로 잘못 결속될 수 있어, workflow 권한과 연결 credential의 blast radius가 커짐.",
-      "engineering_implication": "플랫폼 팀은 JWT 검증 뒤 identity key를 `iss`+`sub`로 보존하고, trusted key 목록·issuer mapping·user provisioning source를 함께 감사 필요. patch 전에는 token exchange를 끄거나 단일 trusted issuer로 제한하고, authentication log에서 issuer·subject·로컬 user ID의 비정상 조합을 hunt 필요.",
-      "korea_implication": "국내 SaaS·OEM 자동화 배포도 외부 IdP를 여러 곳 연결할 때 email이나 subject 단독 매칭을 금지하고 tenant·issuer namespace를 identity contract에 명시할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "n8n",
-        "JWT",
-        "OIDC",
-        "Identity",
-        "Workflow Automation"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-07-16 22:33",
-      "source_name": "n8n Security Advisory / The Hacker News",
-      "source_url": "https://github.com/n8n-io/n8n/security/advisories/GHSA-mq3m-f8x3-579w",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1Pvezsft8WXzYy1Lw3zKDZrkf0TNZfj95rzTnuQgzbJuztRDNDFK35ahO9UfhNJOicjjuzyZGFCtC_idBl8vgNdw4kzfeYFo6LwUur66S5qUTO2Bl3WVLwCDWoDTnw4dlZdj_ZQ1T2JcG1dWfJeoO3WDZs94EVm9z0hZ8VPL36KDpaAmw7fH9hSWSSaw/s1600/n8n-main.jpg",
-      "related_links": [
-        {
-          "title": "The Hacker News 분석 — n8n cross-issuer token exchange flaw",
-          "url": "https://thehackernews.com/2026/07/n8n-token-exchange-flaw-could-let.html"
-        },
-        {
-          "title": "n8n OEM token exchange 문서",
-          "url": "https://docs.n8n.io/deploy/host-n8n/deploy-as-an-oem-integration"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "n8n GitHub Security Advisory `GHSA-mq3m-f8x3-579w`는 Enterprise token exchange의 identity binding 결함을 `CVE-2026-59208`로 공개함. token exchange는 OEM integration에서 외부 partner가 서명한 short-lived JWT를 n8n 로컬 사용자 로그인으로 교환하는 preview 기능임.",
-          "items": [
-            "영향: `iss` 검증 뒤 local account 매칭에서 `sub`만 사용한 경로",
-            "조건: token exchange 활성화와 두 개 이상 외부 issuer 신뢰 구성이 동시에 필요한 범위",
-            "경계: n8n 설명상 token exchange 비활성 인스턴스는 영향 범위 밖"
-          ]
-        },
-        {
-          "heading": "결함의 기술적 원인",
-          "body": "JWT subject는 issuer가 정한 namespace에서만 고유할 수 있음. 서로 다른 issuer가 같은 `sub` 문자열을 발급할 수 있으므로, 인증된 identity의 안전한 key는 subject 단독이 아니라 issuer와 subject의 조합이어야 함.",
-          "items": [
-            "정상 토큰이라도 issuer A의 `sub`가 issuer B 사용자와 충돌하면 오인증 가능한 구조",
-            "표준: RFC 7519의 subject uniqueness 범위와 deployment identity mapping의 불일치",
-            "위험: password 탈취 없이 valid token과 claim collision만으로 account binding이 바뀌는 조건"
-          ]
-        },
-        {
-          "heading": "영향 버전과 검증 경계",
-          "body": "advisory는 2.27.4 미만 및 2.28.0을 영향 버전으로, 2.27.4와 2.28.1을 수정 버전으로 표시함. The Hacker News는 7월 16일 기준 공개 PoC와 실제 exploitation 증거를 찾지 못했다고 적었으므로, patch urgency와 침해 확정은 분리해야 함.",
-          "items": [
-            "패치: 지원되는 최신 stable release로 upgrade하고 release note·advisory 기준 재대조",
-            "조사: issuer, `sub`, authenticated local user, partner integration ID를 auth log에서 교차 확인",
-            "한계: 공격자가 token을 획득하는 실제 조건은 공개 advisory만으로 완전히 특정 불가"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "workflow automation 계정은 webhook, OAuth credential, business system connector 권한과 결합될 수 있음. identity provider 서명 검증만 통과해도 account-linking 규칙이 약하면 authorization boundary가 무너질 수 있어 issuer-aware mapping과 tenant isolation을 동시에 검증해야 함.",
-          "items": [
-            "팀 액션: `N8N_TOKEN_EXCHANGE_TRUSTED_KEYS`와 issuer별 subject namespace·key rotation owner 점검",
-            "팀 액션: patch 전 token exchange off 또는 단일 issuer 제한과 예외 만료일 기록",
-            "팀 액션: cross-issuer login, local account collision, OAuth credential access를 포함한 regression test 추가"
           ]
         }
       ],
