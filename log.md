@@ -955,3 +955,10 @@
 ## [2026-07-25] correction | Feed-count ledger for Claude Opus 5 refresh
 - Corrected the prior parsed-feed wording: six XML feeds yielded 196 parsed entries in total — AWS What’s New (100), GitHub Blog (10), CNCF (10), The Hacker News (50), Google Blog (8), NVIDIA (18); arithmetic: 100+10+10+50+8+18 = 196.
 - The earlier `188` figure was the current-candidate subtotal after excluding eight older Google entries, not the parsed-feed total. Cloudflare RSS remained malformed XML and was not counted. No news data, sources, timestamps, ranks, or Deep Dives changed.
+
+## [2026-07-25] update | Add Andrew Ng OpenWorker desktop-agent release
+- Checked current time at 2026-07-25 11:10 KST. Directly inspected mandatory Korean/community HTML surfaces: GeekNews, GeekNews Plus, 인공지능신문, AI타임스; all returned HTTP 200 and are not counted as parsed XML feeds.
+- Parsed 308 entries from eight successful XML feeds: AWS What’s New (100), GitHub Blog (10), CNCF (10), The Hacker News (50), Google Blog (20), NVIDIA (18), 인공지능신문 (50), AI타임스 (50); arithmetic: 100+10+10+50+20+18+50+50 = 308. Cloudflare RSS returned HTTP 403 and GeekNews RSS returned zero entries.
+- Source-page verified AI타임스 article `idxno=213135`, input 2026-07-25 10:33 KST, and the official `andrewyng/openworker` GitHub README. The public MIT repository is marked open beta; it documents desktop execution, provider API key or Ollama selection, signed/notarized macOS build and unsigned Windows build. Enterprise SSO, audit, permission isolation, sandboxing, retention, SLA, and production support are not asserted.
+- Added `news-224` at rank 1, removed the actual capped sort tail `news-172` (에이전트 데이터 주입, 2026-07-16 20:32 KST), re-sorted all 50 items newest-first and reassigned contiguous ranks. Both Deep Dives were fully rebuilt at 2026-07-25 02:59 KST earlier today and were preserved without timestamp-only churn.
+- Added immutable raw capture with SHA-256 `f45379be4a5acb92d39458b5e725d57e3eccc746a8cf5d2d04fd8235be771704`, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`.

@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-25 | Total pages: 213
+> Last updated: 2026-07-25 | Total pages: 214
 
 ## Entities
 
@@ -27,6 +27,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/andrewyng-openworker-local-agent-2026-07-25]] — OpenWorker desktop agent의 모델 독립 실행·파일·connector 권한과 data egress 검증 경계.
 - [[raw/articles/aws-claude-opus-5-bedrock-platform-2026-07-25]] — Claude Opus 5의 Bedrock 기본 ZDR·Claude Platform on AWS 요청형 ZDR과 provider별 운영 경계.
 - [[raw/articles/aws-bench-ai-agent-benchmark-2026-07-24]] — 실제 AWS account·CDK scenario 기반 coding agent benchmark의 권한·비용·cleanup 운영 경계.
 - [[raw/articles/zenity-agentforger-chatgpt-workspace-agents-2026-07-24]] — ChatGPT Workspace Agents URL prompt 자동 실행·connector 승인 설정·schedule을 묶은 AgentForger CSRF 연구와 수정 상태.
