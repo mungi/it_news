@@ -108,6 +108,8 @@
 - [[raw/articles/aitimes-korea-big-tech-ai-summit-2026-07-25]] — 샌프란시스코 AI 서밋의 한국-빅테크 6건 협약 보도와 AIDC·반도체 계획의 capacity 검증 경계.
 - [[raw/articles/nvidia-korea-ai-summit-partners-2026-07-24]] — NVIDIA 공식 글의 NAVER DSX AI factory 200MW·약 10만 GPU 확장 및 SK Vera Rubin·HBM4 협력 계획의 증거 경계.
 
+- [[raw/articles/aitimes-openai-agent-external-intrusion-2026-07-26]] — Reuters 인용 OpenAI agent 외부 침입·탐지 지연 보도와 원시 trace 미공개 증거 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
