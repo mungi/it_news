@@ -2,7 +2,7 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-26 07:42",
+  "last_updated_kst": "2026-07-26 11:49",
   "audience": "developers and engineers",
   "executive_summary": [
     "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출을 판단.",
@@ -280,6 +280,94 @@
       "rank": 1
     },
     {
+      "id": "news-228",
+      "title_ko": "GitLab Oj Spill 공개 PoC: 프로젝트 push 권한 계정의 Jupyter diff RCE, Webservice 이미지 버전 즉시 점검",
+      "title_original": "GitLab Oj Spill",
+      "summary": "핵심: depthfirst 연구와 GitLab 6월 10일 patch release는 self-managed GitLab CE/EE의 `Oj` native C parser 결함 두 개가 crafted `.ipynb` commit diff에서 `git` 사용자 명령 실행으로 연결될 수 있음을 확인. 범위: project에 push 가능한 인증 사용자가 대상이며, GitLab `15.2.0`~`18.10.7`·`18.11.0`~`18.11.4`·`19.0.0`~`19.0.1`과 Oj `3.13.0`~`3.17.1`이 영향 범위로 제시됨. 대응: Webservice image의 실제 GitLab version을 확인해 `18.10.8`·`18.11.5`·`19.0.2` 이상으로 올리고, notebook diff 접근·Puma process·secret 노출 범위를 incident 기준으로 점검 필요.",
+      "detail": "depthfirst의 기술 공개는 Oj native C parser의 out-of-bounds write와 heap-pointer disclosure를 결합해 기본 GitLab 설치에서 원격 코드 실행에 도달하는 경로를 설명한다. 공격자는 push 권한이 있는 인증 계정으로 crafted Jupyter `.ipynb`를 commit하고 해당 commit diff를 열어 GitLab의 `ipynbdiff`가 Puma worker 안에서 attacker-controlled JSON을 `Oj::Parser.usual.parse`로 처리하게 만든다. 공개 자료는 GitLab CE/EE 모든 tier와 Free·Premium·Ultimate를 범위에 포함하며, 영향 버전은 `15.2.0`~`18.10.7`, `18.11.0`~`18.11.4`, `19.0.0`~`19.0.1`로 열거한다. GitLab은 2026년 6월 10일 `18.10.8`, `18.11.5`, `19.0.2` patch release를 배포하고 self-managed 설치의 즉시 업그레이드를 권고했다. GitLab.com은 patched version 실행 상태로 안내된다. Helm·Operator 환경은 chart 또는 operator version이 아니라 Puma를 실행하는 Webservice image의 application version으로 판단해야 한다. 공개 PoC는 대응 긴급도를 높이지만, 현재 특정 조직의 악용이나 침해를 뜻하지 않으므로 실제 노출·로그·secret rotation은 조직 telemetry로 판정해야 한다.",
+      "why_it_matters": "GitLab Webservice는 source code·Rails secret·CI/CD metadata·token-signing material과 내부 서비스 접근 경계를 함께 보유할 수 있음. 일반 project contributor가 도달하는 notebook rendering 경로의 native parser RCE는 CI runner 권한이나 관리자 권한이 없어도 application process 권한으로 확대될 수 있어 patch inventory와 access review를 동시에 요구함.",
+      "engineering_implication": "GitLab 운영·보안 팀은 각 self-managed instance의 Webservice image GitLab/Oj version, notebook diff renderer 노출, authenticated contributor 범위, Puma 실행 권한과 secret mount를 inventory 필요. 지원 종료 branch는 단순 gem override 대신 supported GitLab release로 이관하고, patch 후에는 suspicious `.ipynb` diff·Puma crash·비정상 child process·outbound connection·access token 사용을 보존·hunting 범위에 포함 필요.",
+      "korea_implication": "국내 자체 운영 GitLab과 regulated source repository는 chart version만으로 패치 여부를 판단하지 말고 Webservice image digest·GitLab build·Oj version을 CMDB와 deployment evidence로 교차 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "GitLab",
+        "DevSecOps",
+        "RCE",
+        "Supply Chain",
+        "CI/CD"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-07-25 19:14",
+      "source_name": "depthfirst / GitLab",
+      "source_url": "https://depthfirst.com/gitlab-rce-oj-spill",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgRIN1sheAdScq7AX9pLc07esRzQ18-0vBJ7hz9DlVhggVAImXrhYM_zxN0N6hJ2inDkBCnzRCXHR3Kv3I0QwyiVWkAMu7p949JSjgK611r48deMbrSN8iDD78aJdfxEeO_Jy6JFwOfPL_8M0RKEBl1RFO7ufvop1XG9-tdms7VRyvONXoteuCYp9Rg-FM/s1600/gitlab.gif",
+      "related_links": [
+        {
+          "title": "GitLab Patch Release: 19.0.2, 18.11.5, 18.10.8 (2026-06-10)",
+          "url": "https://docs.gitlab.com/releases/patches/patch-release-gitlab-19-0-2-released/"
+        },
+        {
+          "title": "The Hacker News report (RSS 2026-07-25 15:44:26 +05:30 = 19:14 KST)",
+          "url": "https://thehackernews.com/2026/07/researcher-publishes-gitlab-rce-poc.html"
+        },
+        {
+          "title": "depthfirst technical writeup",
+          "url": "https://depthfirst.com/research/going-depthfirst-achieving-gitlab-rce-via-two-ruby-memory-corruption-vulnerabilities"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "depthfirst는 Oj native C parser의 두 memory-corruption 결함을 연결해 default GitLab installation에서 remote code execution에 도달하는 공개 연구와 PoC를 제시함. 카드 시각 **2026-07-25 19:14 KST**는 The Hacker News RSS `pubDate` 2026-07-25 15:44:26 +05:30 변환값이며, primary research page는 공개 사실·영향 범위를 직접 설명함.",
+          "items": [
+            "경로: crafted Jupyter `.ipynb`를 commit한 뒤 commit diff를 열어 `ipynbdiff` renderer가 attacker-controlled JSON을 처리",
+            "권한: project에 push 가능한 일반 authenticated user가 대상이며 administrator·CI runner·victim interaction은 요구되지 않음",
+            "실행: payload는 GitLab Puma worker 안에서 `git` 사용자 권한 command execution으로 이어지는 연구 결과"
+          ]
+        },
+        {
+          "heading": "영향 범위와 패치 상태",
+          "body": "depthfirst는 GitLab CE/EE의 Free·Premium·Ultimate 전체 tier와 Oj `3.13.0`~`3.17.1`을 영향 범위로 열거함. GitLab은 2026-06-10 patch release에서 `18.10.8`, `18.11.5`, `19.0.2`를 배포하고 self-managed 설치의 빠른 업그레이드를 권고함.",
+          "items": [
+            "영향: GitLab `15.2.0`~`18.10.7`, `18.11.0`~`18.11.4`, `19.0.0`~`19.0.1` 범위",
+            "수정: 해당 patch release는 Oj `3.17.3`을 bundle하는 최초 수정 GitLab release로 연구 페이지에서 설명",
+            "경계: GitLab.com은 patched version 실행 상태이며, 실제 self-managed 노출은 instance version·renderer path·access control에 따라 다름"
+          ]
+        },
+        {
+          "heading": "기술 경로와 증거 경계",
+          "body": "연구는 fixed 1,024-byte nesting stack의 bounds check 부재와 signed 16-bit key-length 처리의 heap pointer disclosure를 설명함. pointer leak으로 ASLR 우회 단서를 얻고 callback을 `system()`으로 전환하는 체인이지만, 공개 자료는 특정 조직 compromise 또는 in-the-wild exploitation을 확인하지 않음.",
+          "items": [
+            "입력: notebook diff의 repository-controlled JSON이 long-lived Puma process 내 Oj C parser로 전달되는 구조",
+            "위험: application process 권한에서 source code·Rails secret·credential·CI/CD data·내부 reachable service 접근으로 blast radius 확대 가능성",
+            "판단: public PoC는 patch 우선순위 신호이며 incident 확정은 `.ipynb` activity와 runtime telemetry로 별도 판정"
+          ]
+        },
+        {
+          "heading": "배포·운영 점검",
+          "body": "Helm과 Operator deployment에서는 chart 또는 operator version만으로 GitLab application patch level을 판단할 수 없음. depthfirst는 Puma를 실행하는 Webservice image 내부 GitLab version을 확인하라고 명시함.",
+          "items": [
+            "inventory: Webservice image digest·GitLab version·Oj version·Puma process와 notebook diff endpoint를 instance별 확인",
+            "patch: supported train의 `18.10.8`·`18.11.5`·`19.0.2` 이상으로 upgrade하고 unsupported line은 supported release 이동 계획 수립",
+            "validate: representative notebook diff·Puma error rate·queue latency·renderer failure·rollback 조건을 canary에서 검증"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patch 완료 조건은 chart update 기록이 아니라 running Webservice image의 version evidence와 exposure hunt 결과를 남기는 일임. parser native code와 repository-controlled renderer가 만나는 경로는 contributor trust boundary로 관리 필요.",
+          "items": [
+            "팀 액션: authenticated contributor·external collaborator·fork/MR policy와 notebook diff visibility를 access review에 포함",
+            "팀 액션: suspicious `.ipynb` commit·diff request·Puma crash·child process·outbound connection·token use를 retention 범위에서 hunt",
+            "팀 액션: Rails secret·runner token·deploy key·service credential의 exposure 판단과 rotation decision을 incident record에 연결"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-227",
       "title_ko": "샌프란시스코 AI 서밋: 한국-빅테크 6건 협약 보도, 반도체 공급·AIDC 계획은 실행 조건 분리 검증",
       "title_original": "Korea and Big Tech sign six agreements at the San Francisco AI Summit",
@@ -352,7 +440,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-224",
@@ -431,7 +519,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-225",
@@ -519,7 +607,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-223",
@@ -599,7 +687,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-222",
@@ -679,7 +767,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-221",
@@ -763,7 +851,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-220",
@@ -840,7 +928,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-216",
@@ -907,7 +995,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-217",
@@ -974,7 +1062,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-214",
@@ -1054,7 +1142,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-215",
@@ -1127,7 +1215,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-218",
@@ -1194,7 +1282,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-212",
@@ -1289,7 +1377,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-209",
@@ -1364,7 +1452,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-210",
@@ -1449,7 +1537,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-219",
@@ -1525,7 +1613,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-213",
@@ -1607,7 +1695,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-208",
@@ -1675,11 +1763,11 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-207",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1833,7 +1921,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-204",
@@ -1898,7 +1986,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-205",
@@ -1964,7 +2052,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-203",
@@ -2029,7 +2117,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-202",
@@ -2125,7 +2213,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-198",
@@ -2190,7 +2278,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-199",
@@ -2254,7 +2342,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-200",
@@ -2333,7 +2421,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-201",
@@ -2415,7 +2503,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-196",
@@ -2500,7 +2588,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-197",
@@ -2576,7 +2664,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-195",
@@ -2655,7 +2743,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-193",
@@ -2740,7 +2828,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-194",
@@ -2819,7 +2907,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-191",
@@ -2887,7 +2975,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-190",
@@ -2973,7 +3061,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-192",
@@ -3045,7 +3133,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-188",
@@ -3111,7 +3199,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-189",
@@ -3178,11 +3266,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-187",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -3350,7 +3438,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-182",
@@ -3416,7 +3504,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-180",
@@ -3501,7 +3589,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-185",
@@ -3576,7 +3664,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-186",
@@ -3656,7 +3744,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-181",
@@ -3730,7 +3818,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-183",
@@ -3801,7 +3889,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-179",
@@ -3885,7 +3973,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-184",
@@ -3962,103 +4050,6 @@
             "팀 액션: ComfyUI·Ollama·Gradio·n8n·Open WebUI·Langflow·MCP endpoint의 public exposure와 authentication 상태 즉시 점검",
             "팀 액션: AWS key·Bedrock credential·Kubernetes ServiceAccount token·SSH key·MCP access token의 scope·rotation·사용 로그 대조",
             "팀 액션: Docker socket·privileged workload·cluster-admin binding·MCP tool allowlist를 AI platform release gate에 반영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-178",
-      "title_ko": "CISA, SharePoint Server RCE CVE-2026-58644를 KEV에 추가: 패치 전 악용 확인과 IIS 키 대응",
-      "title_original": "CISA Adds Three Known Exploited Vulnerabilities to Catalog",
-      "summary": "핵심: CISA가 Microsoft SharePoint Server의 CVSS 9.8 역직렬화 취약점 `CVE-2026-58644`를 실제 악용 근거로 KEV Catalog에 추가. 대응: 지원 중인 on-premises SharePoint를 즉시 패치하고, IIS machine key 탈취 도구·web shell·비정상 직렬화 흔적을 조사한 뒤 키 회전과 AMSI·외부 노출 통제를 수행 필요.",
-      "detail": "CISA는 7월 16일 CVE-2026-58644를 KEV Catalog에 추가했다. Microsoft와 The Hacker News 보도에 따르면 이 결함은 SharePoint Server Subscription Edition, 2019, Enterprise Server 2016에 영향을 주는 CVSS 9.8의 untrusted-data deserialization RCE이며, 최소 Site Owner 권한의 인증 공격자가 네트워크를 통해 임의 코드를 실행할 수 있다. Microsoft는 7월 14일 Patch Tuesday 수정본을 배포했고 패치 이전 실제 악용을 확인했다. CISA는 최신 업데이트 적용·AMSI 점검·침해 산출물 제거 후 IIS machine key 회전·맞춤 로그와 인터넷 노출 최소화를 권고했다.",
-      "why_it_matters": "KEV 등록은 실제 악용 근거가 있는 취약점이라는 CISA의 분류임. SharePoint farm의 IIS machine key 탈취·웹 셸·후속 persistence를 확인하지 않은 채 패치와 key rotation만 하면 기존 침해 흔적 또는 탈취된 키의 영향을 남길 수 있음.",
-      "engineering_implication": "협업 플랫폼·보안팀은 SharePoint Subscription Edition·2019·2016의 build와 patch 상태를 inventory로 대조하고, 인터넷 노출 web application·Central Administration·farm/database 통신을 분리 점검 필요. 패치 전 침해 hunt, AMSI 활성화, malicious artifact 제거, IIS machine key 회전, 재인증 영향 검증을 같은 change record로 운영 필요.",
-      "korea_implication": "국내 온프레미스 SharePoint 운영 조직도 Microsoft 365 전환 여부와 무관하게 legacy farm·VDI 관리망·협력사 연결 구간을 자산 목록에 포함하고, 주말 유지보수 전에 key rotation과 사용자 세션 영향 계획을 확정할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Microsoft",
-        "SharePoint",
-        "CISA KEV",
-        "RCE",
-        "Patch Management"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-07-17 15:42",
-      "source_name": "CISA / Microsoft / The Hacker News",
-      "source_url": "https://www.cisa.gov/news-events/alerts/2026/07/16/cisa-adds-three-known-exploited-vulnerabilities-catalog",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgH1X7ZnvKsW37BBvjNfEzT4Imh9ZIRL4_2W1JaNVe_MyO3Q5H1MPsET-SASqznhlfOExRrLj4-6NzhgvGi76w4U5tSmlM-pJLIqO5jF3g9G1DR_FNhuwcatBFb8ARvD4PPMiQvMCFiTlEOlc13nQbQqCn5ZHf1J2ZOqDeG3_pmBiQ92hTfMErJKcjKbNtZ/s1700-e365/sharepoint-cisa.jpg",
-      "related_links": [
-        {
-          "title": "Microsoft Security Update Guide — CVE-2026-58644",
-          "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-58644"
-        },
-        {
-          "title": "The Hacker News — CISA Adds Exploited SharePoint RCE Zero-Day CVE-2026-58644 to KEV",
-          "url": "https://thehackernews.com/2026/07/cisa-adds-exploited-sharepoint-rce-zero.html"
-        },
-        {
-          "title": "CISA Known Exploited Vulnerabilities Catalog",
-          "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CISA가 2026년 7월 16일 `CVE-2026-58644`를 KEV Catalog에 추가함. CISA는 KEV 추가 기준으로 실제 악용 증거와 명확한 완화 지침을 요구하며, 이 항목은 Microsoft SharePoint Server의 고위험 취약점으로 분류됨.",
-          "items": [
-            "분류: CISA KEV 등록으로 active exploitation evidence가 있는 취약점 범주",
-            "심각도: Microsoft 기준 CVSS **9.8**의 untrusted-data deserialization 결함",
-            "기한: CISA BOD 적용 FCEB 기관에는 2026년 7월 19일까지 수정 요구"
-          ]
-        },
-        {
-          "heading": "영향 제품과 공격 조건",
-          "body": "Microsoft 보도와 보도자료는 SharePoint Server Subscription Edition, SharePoint Server 2019, SharePoint Enterprise Server 2016을 영향 범위로 열거함. 네트워크 기반 공격에서 최소 Site Owner 권한의 인증 사용자가 원격 코드 실행을 유발할 수 있다는 Microsoft 설명 범위임.",
-          "items": [
-            "대상: 지원 중인 on-premises SharePoint Server 세 제품군",
-            "조건: 인터넷을 통한 원격 도달 가능성과 최소 Site Owner 수준 인증이라는 Microsoft 설명",
-            "경계: CISA·Microsoft 공개문만으로 개별 조직의 침해 여부·공격자 identity를 확정할 수 없음"
-          ]
-        },
-        {
-          "heading": "패치와 실제 악용의 시간 경계",
-          "body": "Microsoft는 7월 14일 Patch Tuesday에서 수정본을 배포했고, 이후 bulletin을 갱신해 패치 공개 전에 실제 악용이 있었다고 명시함. 따라서 patch level 확인은 시작점이며, 패치 전 노출 인스턴스는 incident scoping이 필요한 자산임.",
-          "items": [
-            "사실: 수정본은 7월 14일 Patch Tuesday에 포함",
-            "사실: Microsoft가 zero-day 상태의 in-the-wild exploitation을 확인했다고 공개",
-            "우선순위: external-facing 또는 privileged content를 처리하는 farm부터 patch·hunt 순서 확정"
-          ]
-        },
-        {
-          "heading": "침해 조사와 복구 순서",
-          "body": "CISA는 최신 update 적용, AMSI integration 확인, intrusion artifact 제거, tailored logging, 인터넷 직접 노출 최소화를 제시함. 특히 IIS machine key를 회전하기 전에 key-harvesting 도구를 찾아 제거해야 탈취된 키로 인한 후속 위험을 줄일 수 있음.",
-          "items": [
-            "조사: web shell, suspicious process, IIS machine key harvesting artifact, deserialization 흔적과 admin log 확인",
-            "순서: 침해 산출물 탐지·제거 후 IIS machine key 회전과 application pool·세션 영향 검증",
-            "통제: 각 SharePoint web application의 AMSI integration 활성화와 Central Administration 외부 접근 차단 확인"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "SharePoint는 문서·워크플로·인증 경계와 연결되는 협업 플랫폼임. RCE 이후 machine key 탈취와 persistence가 결합하면 패치 후에도 세션·서명 경계에 영향이 남을 수 있어, vulnerability management와 identity incident response를 분리할 수 없음.",
-          "items": [
-            "보안: patch 완료만으로 prior compromise를 배제하지 않는 KEV 대응 필요",
-            "운영: farm·database·Central Administration 통신을 required system으로 제한하는 network segmentation 필요",
-            "증적: build version, patch result, hunt scope, key rotation, AMSI 상태를 동일 change evidence로 보존"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "이번 대응은 단순 CVE 스캔 결과의 close가 아니라 exposed SharePoint farm의 containment·forensics·recovery 작업임. 패치 가능한 서버와 유지보수 지연 서버를 분리하고, 예외는 외부 노출·권한·보상 통제·종료 시각을 명시해야 함.",
-          "items": [
-            "팀 액션: SharePoint Subscription Edition·2019·2016 build와 internet exposure를 당일 inventory로 대조",
-            "팀 액션: patch 전후 hunt·AMSI·IIS machine key rotation·re-authentication 영향을 runbook으로 실행",
-            "팀 액션: Central Administration, farm/database 포트, external access allowlist를 재검토하고 예외 만료일 기록"
           ]
         }
       ],

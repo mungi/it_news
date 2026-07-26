@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-26 | Total pages: 218
+> Last updated: 2026-07-26 | Total pages: 219
 
 ## Entities
 
@@ -27,6 +27,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/depthfirst-gitlab-oj-spill-2026-07-25]] — GitLab `Oj` parser 두 memory-corruption 결함의 notebook diff·Puma RCE 공개 PoC와 Webservice image patch 검증 경계.
 - [[raw/articles/alibaba-fastjson-1x-rce-2026-07-25]] — fastjson 1.x `1.2.68`~`1.2.83` RCE 공식 공지, Spring Boot fat-JAR 영향 조건과 완화·공격 관측 증거 경계.
 - [[raw/articles/andrewyng-openworker-local-agent-2026-07-25]] — OpenWorker desktop agent의 모델 독립 실행·파일·connector 권한과 data egress 검증 경계.
 - [[raw/articles/aws-claude-opus-5-bedrock-platform-2026-07-25]] — Claude Opus 5의 Bedrock 기본 ZDR·Claude Platform on AWS 요청형 ZDR과 provider별 운영 경계.
