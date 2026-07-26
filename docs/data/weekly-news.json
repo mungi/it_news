@@ -2,7 +2,7 @@
   "week": "2026-W31",
   "coverage_start_kst": "2026-07-20 17:00",
   "coverage_end_kst": "2026-07-27 13:00",
-  "last_updated_kst": "2026-07-26 19:59",
+  "last_updated_kst": "2026-07-27 00:05",
   "audience": "developers and engineers",
   "executive_summary": [
     "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출을 판단.",
@@ -14,90 +14,91 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Claude Opus 5: 긴 context·추론 effort·provider control plane을 함께 검증하는 agent rollout",
-      "summary": "핵심: Claude Opus 5의 장문 context·Effort Ladder·Fast Mode와 AWS의 Bedrock/Claude Platform on AWS 제공은 모델 품질뿐 아니라 token budget·latency·ZDR·IAM·fallback을 workload별로 검증해야 하는 운영 변경. 판단: benchmark·가격은 공급자/보도 주장으로 분리하고, 동일 task·provider·effort 조합의 quality·cost·data-boundary evidence를 rollout gate로 관리 필요.",
-      "details": "AI타임스의 2026년 7월 25일 보도와 AWS What’s New 공지를 확인했다. AI타임스는 Claude Opus 5의 100만 token context, 최대 12만8천 output token, 5단계 Effort Ladder, Fast Mode, 보도된 token 가격을 전했다. AWS는 Bedrock의 기본 ZDR·regional data residency·Guardrails와 Claude Platform on AWS의 AWS billing/authentication 및 요청 기반 ZDR을 안내한다. 모델 성능·비용 수치는 공급자 또는 보도에 인용된 주장으로 두고, 조직은 long-running agent의 context, retry, tool failure, data retention, quota, provider outage를 canary evidence로 확인해야 한다.",
+      "title": "Claude 5 컨텍스트 엔지니어링: prompt 축소와 tool·policy control plane을 분리하는 coding agent 운영",
+      "summary": "핵심: Anthropic이 공개했고 AI타임스가 7월 26일 보도한 Claude 5 컨텍스트 엔지니어링 원칙은 시스템 프롬프트·중앙 지침을 줄이고 실제 코드·테스트·작은 지침 파일·지연 로딩을 활용하는 방향. 판단: 약 80% prompt 축소와 성능 무저하는 공급자 실험 결과이므로, 조직은 동일 task·권한·모델 조건에서 quality·cost·security를 재현하고 destructive tool 통제를 prompt 밖 control plane에 유지 필요.",
+      "details": "AI타임스의 2026년 7월 26일 보도와 연결된 Anthropic 원문 URL을 확인했다. 기사는 Anthropic이 Claude 5 계열의 컨텍스트 엔지니어링 원칙을 공개했고 Claude Code 시스템 프롬프트를 약 80% 축소해도 코딩 성능 저하가 없었다고 전한다. 실제 코드·테스트를 컨텍스트로 쓰고, `CLAUDE.md`의 중앙 규칙을 작은 주제별 파일과 Deferred Loading으로 나누며, 검토·검증은 Skills와 ToolSearch로 분리하는 방향이다. Anthropic 원문은 현재 브라우저에서 본문을 추출하지 못해 수치와 세부 권장은 AI타임스가 전한 공급자 발표로 한정한다. 조직은 prompt 최적화의 품질·토큰·지연 효과를 자체 workload에서 검증하고, secret·egress·destructive tool·approval·audit은 모델 지침과 독립된 policy control plane에서 강제해야 한다.",
       "why_it_matters": "source-grounded AI/Infra 운영 판단과 체크리스트",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/07/claude-opus-5-aws/",
-        "https://www.aitimes.com/news/articleView.html?idxno=213161"
+        "https://www.aitimes.com/news/articleView.html?idxno=213178",
+        "https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models"
       ],
       "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-07-26 03:35",
+      "refreshed_kst": "2026-07-27 00:05",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "`Claude Opus 5` 도입 판단은 모델 한 개를 바꾸는 일이 아니라, 장문 context·추론 effort·fast mode·provider control plane을 workload와 data boundary에 맞춰 분리 검증하는 작업임.",
+          "body": "Claude 5 환경의 prompt 축소는 비용 절감 기능이 아니라 context·tool·policy 설계를 다시 나누는 운영 변경임. 규칙을 줄여도 tool 권한과 data boundary를 줄여서는 안 됨.",
           "items": [
-            "결정: 품질 pass rate와 token·latency·retention·fallback evidence를 같은 rollout gate로 관리",
-            "팀 액션: Bedrock과 Claude Platform on AWS를 별도 provider surface로 inventory"
+            "결정: prompt·skill·project instruction 최적화와 privileged action control을 다른 release gate로 관리",
+            "팀 액션: 현재 prompt baseline과 축소안의 quality·token·tool success·security control evidence를 동시 수집"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스는 Anthropic의 7월 24일 현지 공개와 7월 25일 09:28 KST 업데이트를 보도함. AWS는 같은 모델을 Bedrock 및 Claude Platform on AWS로 제공한다고 밝혔고, AWS RSS 시각은 2026-07-25 00:00 KST임.",
+          "body": "AI타임스는 Anthropic이 7월 24일 현지 Claude 5 계열의 컨텍스트 엔지니어링 원칙을 공개했고, Claude Code 시스템 프롬프트를 약 80% 줄여도 코딩 성능 저하가 없었다고 전함.",
           "items": [
-            "제공: Claude Max·Pro, Claude API, Amazon Bedrock, Google Cloud, Microsoft Foundry 경로를 보도에서 열거",
-            "가격: 보도 기준 입력 100만 token당 5달러, 출력 100만 token당 25달러이며 Fable 5의 절반이라는 Anthropic 주장",
-            "범위: 100만 token context, 최대 12만8천 output token, 5단계 Effort Ladder와 Fast Mode를 보도에서 설명"
+            "수치: 약 80% 축소와 성능 저하 없음은 Anthropic 발표·실험 결과",
+            "변화: 세부 규칙 대신 주변 코드 스타일·주석 밀도처럼 간결한 지침을 쓰는 방향",
+            "경계: Anthropic 원문 URL 제목은 확인했지만 현재 브라우저 렌더링에서 본문을 추출하지 못해 상세 수치·방법은 AI타임스 보도 범위"
+          ]
+        },
+        {
+          "heading": "컨텍스트 구조 관점",
+          "body": "중앙 `CLAUDE.md`에 모든 지침을 적는 방식은 context window를 상시 점유하고 상충 규칙을 늘릴 수 있음. 기사에서 전한 방향은 주제별 작은 파일을 필요할 때 불러오는 Deferred Loading임.",
+          "items": [
+            "분리: repository convention, build/test, security review, deployment procedure를 독립 artifact로 구성",
+            "retrieval: task type·directory·tool state별로 필요한 instruction만 선택해 context budget을 관리",
+            "검증: missing instruction·stale rule·retrieval failure를 model output이 아닌 telemetry로 탐지"
+          ]
+        },
+        {
+          "heading": "도구·agent harness 관점",
+          "body": "풍부한 tool example을 prompt에 넣는 대신 tool 목적과 parameter를 직관적으로 만들고 실제 코드·테스트를 참조 자료로 제공한다는 보도 내용은 tool schema 품질을 control surface로 바꿈.",
+          "items": [
+            "schema: action intent·input validation·side effect·idempotency·error semantics를 tool contract에 명시",
+            "context: test·function·API contract를 selected evidence로 제공하고 전체 repository 주입을 피함",
+            "safety: tool description이 있어도 allowlist·scope·rate limit·approval을 model 외부에서 강제"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "코딩·agent benchmark와 비용 효율 수치는 공급자 또는 보도에 인용된 주장임. 모델 성능은 prompt, tool harness, context packing, retry, cache, region quota와 safety policy에 따라 달라지므로 단일 leaderboard를 production SLA로 전환할 수 없음.",
+          "body": "prompt 축소의 성능은 모델 세대, codebase, task mix, retrieval, tool permission, evaluator에 따라 달라짐. 공급자 발표 수치를 비용 절감 약속이나 보안 향상으로 일반화할 수 없음.",
           "items": [
-            "비교: 같은 task set·prompt version·tool permission·context size·temperature를 고정한 canary 필요",
-            "측정: pass rate 외 p50/p95 latency, output token, retry, tool error, human correction, 성공 작업당 비용 수집",
-            "경계: cyber workload에서 다른 Claude 모델보다 뒤처진다는 보도 설명을 일반 보안 성능 저하로 확대 해석하지 않는 원칙"
+            "비교: 동일 golden task·model version·temperature·tool scope·context source를 고정한 A/B canary 필요",
+            "측정: pass rate, compilation/test result, tool success, retry, human correction, p95, token, workflow cost 수집",
+            "경계: prompt를 줄였다는 사실은 guardrail·approval·secret protection을 제거해도 된다는 근거가 아님"
           ]
         },
         {
-          "heading": "아키텍처·운영 관점",
-          "body": "100만 token context와 최대 output 증가는 retrieval·session state·tool result를 한 요청에 넣을 선택지를 넓히지만, request timeout·memory·token budget·trace payload·failure recovery도 함께 커짐. long-running agent는 context 길이보다 checkpoint와 idempotency 설계가 먼저임.",
+          "heading": "보안·거버넌스 관점",
+          "body": "모델 지침은 행동 품질에 영향을 주지만 privilege boundary를 보장하지 않음. destructive command, secret read, network egress, production write는 policy engine과 identity·audit control에서 차단·승인해야 함.",
           "items": [
-            "context: RAG chunk·tool output·conversation history별 token budget과 truncation policy를 명시",
-            "workflow: agent step마다 checkpoint, retry idempotency key, human handoff 조건을 분리",
-            "observability: model ID·effort level·fast mode·context size·tool call·guardrail result를 trace에 연결"
+            "identity: task별 short-lived credential·least privilege·service account 분리",
+            "network: default-deny egress와 connector allowlist, sensitive destination approval 적용",
+            "evidence: prompt·skill·tool schema·policy decision·operator approval을 run ID별 append-only trace로 연결"
           ]
         },
         {
-          "heading": "데이터·보안·거버넌스 관점",
-          "body": "AWS 공지에서 Bedrock은 ZDR 기본 활성화와 regional data residency를, Claude Platform on AWS는 요청 기반 ZDR을 설명함. 같은 Claude Opus 5라도 access path별 보존 기본값·IAM·SSO·billing·audit log·guardrail 적용 위치가 달라질 수 있으므로 계약 문구와 tenant 설정 증적을 별도로 확인해야 함.",
+          "heading": "도입 로드맵과 FinOps",
+          "body": "처음에는 read-only code analysis와 test generation에서 prompt 구조를 비교하고, 품질·비용 evidence가 쌓인 task에만 bounded write action을 붙이는 순서가 안전함.",
           "items": [
-            "data: prompt·tool output·trace·feedback·file attachment의 저장 위치와 retention을 provider별로 확인",
-            "access: model access, IAM role, SSO group, API key rotation, connector scope를 workload owner와 분리",
-            "safety: PII redaction, tool allowlist, approval, policy deny와 escalation 흐름을 canary에서 시험"
-          ]
-        },
-        {
-          "heading": "FinOps·용량 관점",
-          "body": "Effort Ladder와 Fast Mode는 비용·지연을 조절하는 운영 변수임. 높은 reasoning effort나 긴 context가 자동으로 더 좋은 business outcome을 보장하지 않으므로 task class별 quality threshold와 budget ceiling을 함께 설정해야 함.",
-          "items": [
-            "routing: low·medium·high·xhigh·max effort를 task criticality와 review requirement에 매핑",
-            "budget: input·output token, cache hit, retry, tool API, human review를 workflow cost로 집계",
-            "capacity: region quota, concurrency, rate limit, provider degradation 시 lower-cost model 또는 queue fallback 검증"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "초기에는 read-only analysis 또는 bounded coding task에서 provider·effort·context 조합을 비교하고, 이후 rollback 가능한 tool action으로 확장하는 순서가 안전함. 모든 단계에서 모델 release의 vendor claim과 조직의 재현 가능한 workload metric을 분리 기록해야 함.",
-          "items": [
-            "1단계: 대표 task·golden output·security classification·token budget 정의",
-            "2단계: Bedrock 및 native platform candidate에서 품질·latency·cost·retention evidence 수집",
-            "3단계: approval이 있는 tool action과 fallback·kill switch를 붙인 제한 rollout"
+            "1단계: 현재 instruction inventory, context token baseline, golden task·failure taxonomy 정의",
+            "2단계: small-file·Deferred Loading 후보의 A/B canary와 token·latency·tool metrics 비교",
+            "3단계: approval·rollback·kill switch가 있는 limited write action rollout과 monthly stale-rule review"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "모델 선택만 승인하지 말고 provider path와 runtime policy를 함께 versioned configuration으로 남겨야 rollback과 audit이 가능함.",
+          "body": "`/doctor` 같은 자동 최적화는 configuration change임. 변경 전후 prompt와 skill diff, tool permission, test result, data access를 release evidence로 남겨야 함.",
           "items": [
-            "inventory: model version·provider·region·ZDR condition·quota·SDK·prompt·effort level 기록",
-            "validate: long-context overflow·timeout·tool failure·guardrail deny·provider outage test 수행",
-            "report: pass rate·p95·token·성공 작업당 비용·human correction·data retention evidence를 release note에 포함",
-            "강조 메세지: **고성능·저비용 주장**보다 task별 품질·data boundary·fallback 증명이 production 전제"
+            "inventory: system prompt·CLAUDE.md·project instruction·skill·tool schema·policy version 기록",
+            "validate: representative task, permission deny, secret access, egress, timeout, rollback case를 canary에서 시험",
+            "report: quality·p95·token·성공 작업당 비용·tool error·human correction을 동일 dashboard에서 비교",
+            "강조 메세지: **간결한 prompt**는 권한을 대체하지 않으며, agent 안전은 policy·identity·audit의 외부 control plane에서 보장 필요"
           ]
         }
-      ]
+      ],
+      "refresh_note": "2026-07-26 16:32 KST AI타임스가 보도한 Anthropic Claude 5 컨텍스트 엔지니어링 원칙으로 전면 교체. primary URL 제목은 직접 확인했으며, 본문 미추출 상태를 명시하고 공급자 실험 수치의 증거 경계를 유지."
     },
     {
       "id": "deep-dive-002",
@@ -110,7 +111,7 @@
         "https://thehackernews.com/2026/07/fastjson-1x-rce-vulnerability-targeted.html"
       ],
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-07-26 03:35",
+      "refreshed_kst": "2026-07-27 00:05",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
@@ -184,10 +185,83 @@
             "강조 메세지: **artifact 조건 확인 없이 하는 일괄 패치**는 과잉 대응과 누락을 함께 만들 수 있음"
           ]
         }
-      ]
+      ],
+      "refresh_note": "2026-07-27 KST 첫 연구에서 GeekNews·GN+·인공지능신문·AI타임스와 현행 보안 소스를 재점검했으나, fastjson 1.x RCE의 영향 조건·완화·runtime 대응을 대체할 새 primary technical update는 확인하지 못함. 2026-07-21 Alibaba advisory와 2026-07-25 관련 보도의 증거 경계를 유지하며, 새 원시 exploit·patch·vendor update 전에는 주장 범위를 넓히지 않음."
     }
   ],
   "items": [
+    {
+      "id": "news-230",
+      "title_ko": "Claude 5 컨텍스트 엔지니어링: 시스템 프롬프트 80% 축소 주장은 tool·policy 경계와 분리 검증",
+      "title_original": "The new rules of context engineering for Claude 5 generation models",
+      "summary": "핵심: AI타임스가 인용한 Anthropic 원칙은 Claude Code 시스템 프롬프트를 약 80% 줄여도 코딩 성능 저하가 없었다고 설명하고, 실제 코드·테스트, 작은 지침 파일, 지연 로딩을 권장. 경계: 수치와 성능 평가는 공급자 실험 결과이며 codebase·권한·모델·측정 기준이 다른 조직에 그대로 일반화할 수 없음. 대응: prompt 축소 실험과 별개로 destructive tool·secret·egress 통제는 policy·permission·approval·audit trace로 유지 필요.",
+      "detail": "AI타임스의 2026년 7월 26일 16:32 KST 보도는 Anthropic이 Claude 5 계열용 컨텍스트 엔지니어링 원칙을 공개했다고 전한다. 기사에서 Anthropic은 Claude Code의 시스템 프롬프트를 약 80% 축소해도 코딩 성능 저하가 없었다고 설명하며, 세부 규칙을 많이 적기보다 도구 목적과 파라미터를 명확히 하고 코드·테스트를 참조 자료로 제공하는 방식을 제시했다. `CLAUDE.md` 중심 지침은 주제별 작은 파일을 필요할 때 불러오는 Deferred Loading으로 나누고, 검토·검증은 Skills와 ToolSearch로 분리하는 방향도 언급한다. Anthropic 원문의 제목·URL은 확인했지만 현재 브라우저 렌더링에서 본문을 추출하지 못했으므로, 수치와 권장 사항은 AI타임스가 전한 공급자 발표 범위로 유지한다. 조직은 prompt 길이만 줄이지 말고 tool permission, secret access, network egress, approval, audit trace를 prompt 밖의 강제 통제로 확인해야 한다.",
+      "why_it_matters": "agent coding 환경은 시스템 프롬프트·프로젝트 지침·skill·tool schema가 함께 context window와 행동 경로를 결정함. 규칙 축소가 유효하더라도 권한 제한까지 축소하면 destructive action·데이터 유출·감사 공백 위험이 커질 수 있음.",
+      "engineering_implication": "플랫폼 팀은 대표 task별 prompt token·retrieval·tool success·retry·pass rate·p95·성공 작업당 비용을 baseline과 비교하고, tool allowlist·approval·secret scope·egress deny·immutable trace는 별도 policy layer에서 canary 검증 필요.",
+      "korea_implication": "국내 조직의 Claude Code·agent 도입도 한국어 코드 주석·사내 API·규제 데이터·망 분리 조건을 포함한 자체 task set에서 재현해야 하며, 해외 공급자 실험 수치를 내부 생산성 KPI로 바로 전환하지 않는 관리 필요.",
+      "category": "DevTools",
+      "tags": [
+        "AI",
+        "Claude",
+        "Agent",
+        "Context Engineering",
+        "Claude Code",
+        "DevTools"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-07-26 16:32",
+      "source_name": "AI타임스 / Anthropic",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213178",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/213178_216594_4811.jpg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "Anthropic: The new rules of context engineering for Claude 5 generation models (primary URL; title verified, body not extracted in current browser session)",
+          "url": "https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스의 **2026-07-26 16:32 KST** 보도는 Anthropic이 7월 24일 현지시간 Claude 5 계열용 컨텍스트 엔지니어링 원칙을 공개했다고 전함.",
+          "items": [
+            "실험: Claude Code 시스템 프롬프트를 약 80% 축소해도 코딩 성능 저하가 없었다는 Anthropic 발표",
+            "방향: 세부 규칙 나열보다 모델 판단을 위한 간결한 지침과 실제 코드·테스트 참조를 권장",
+            "경계: 원 Anthropic URL의 제목은 확인했지만 현재 브라우저에서 본문 추출이 되지 않아 구체 수치는 AI타임스 보도·공급자 발표 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사는 과도한 시스템 프롬프트·`CLAUDE.md`·skill 파일의 중첩 규칙이 상충 추론과 작업 비효율을 만들 수 있다고 전함.",
+          "items": [
+            "도구: 예제를 많이 넣기보다 tool 목적과 parameter를 명확하게 설계하는 방식",
+            "context: 마크다운 규칙만 전달하는 대신 테스트 코드·유사 구현·함수를 참고 자료로 제공하는 방식",
+            "구조: 중앙 `CLAUDE.md`를 주제별 소형 파일과 Deferred Loading으로 나누고 검토 절차는 Skills·ToolSearch로 분리"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "prompt 압축은 context 비용과 탐색 부담을 낮출 수 있지만, agent 안전 통제를 줄이는 작업과 동일하지 않음.",
+          "items": [
+            "분리: 코드 스타일·작업 순서 지침과 destructive tool·secret·network 권한을 별도 control plane으로 관리",
+            "측정: prompt token만이 아니라 tool success·retry·human correction·p95·성공 작업당 비용을 함께 비교",
+            "한계: 공급자 실험의 성능 결과는 조직의 codebase·model version·tool permission·평가 harness에서 재현 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "지침 축소는 baseline과 rollback을 둔 실험으로 진행하고, 권한 경계는 policy·approval·audit으로 강제해야 함.",
+          "items": [
+            "팀 액션: prompt·project instruction·skill·tool schema를 각각 versioned artifact로 inventory",
+            "팀 액션: representative task에서 현재 지침과 축소 지침을 동일 tool permission·데이터 조건으로 canary 비교",
+            "팀 액션: `claude doctor` 또는 `/doctor` 자동 변경 전 diff review·secret scan·approval policy·rollback 조건 확인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-229",
       "title_ko": "OpenAI agent 외부 침입 보도: sandbox 탈출·탐지 공백 주장은 독립 검증 전 incident evidence로 분리",
@@ -258,7 +332,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-226",
@@ -349,7 +423,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-228",
@@ -437,7 +511,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-227",
@@ -518,7 +592,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-224",
@@ -597,7 +671,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-225",
@@ -685,7 +759,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-223",
@@ -765,7 +839,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-222",
@@ -845,7 +919,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-221",
@@ -929,7 +1003,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-220",
@@ -1006,7 +1080,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-216",
@@ -1073,7 +1147,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-217",
@@ -1140,7 +1214,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-214",
@@ -1220,7 +1294,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-215",
@@ -1293,7 +1367,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-218",
@@ -1360,7 +1434,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-212",
@@ -1455,7 +1529,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-209",
@@ -1530,7 +1604,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-210",
@@ -1615,7 +1689,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-219",
@@ -1691,7 +1765,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-213",
@@ -1773,7 +1847,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-208",
@@ -1841,11 +1915,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-207",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -1999,7 +2073,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-204",
@@ -2064,7 +2138,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-205",
@@ -2130,7 +2204,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-203",
@@ -2195,7 +2269,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-202",
@@ -2291,7 +2365,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-198",
@@ -2356,7 +2430,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-199",
@@ -2420,7 +2494,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-200",
@@ -2499,7 +2573,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-201",
@@ -2581,7 +2655,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-196",
@@ -2666,7 +2740,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-197",
@@ -2742,7 +2816,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-195",
@@ -2821,7 +2895,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-193",
@@ -2906,7 +2980,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-194",
@@ -2985,7 +3059,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-191",
@@ -3053,7 +3127,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-190",
@@ -3139,7 +3213,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-192",
@@ -3211,7 +3285,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-188",
@@ -3277,7 +3351,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-189",
@@ -3344,11 +3418,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-187",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -3516,7 +3590,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-182",
@@ -3582,7 +3656,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-180",
@@ -3667,7 +3741,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-185",
@@ -3742,7 +3816,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-186",
@@ -3822,7 +3896,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-181",
@@ -3896,7 +3970,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-183",
@@ -3964,90 +4038,6 @@
             "팀 액션: compute instance group·partition·queue·reservation mapping을 cluster inventory에 기록",
             "팀 액션: 모델별 communication/computation ratio와 p50/p95 step time·tokens/s·GPU idle을 baseline으로 확보",
             "팀 액션: Slurm upgrade, topology update, node replacement의 rollback·drain 절차를 training runbook에 반영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-179",
-      "title_ko": "CNCF vLLM self-hosting 실습: Kubernetes·CSI persistent cache로 OpenAI-compatible inference endpoint 구성",
-      "title_original": "Running a self-hosted LLM in Kubernetes with vLLM",
-      "summary": "핵심: CNCF member post가 vLLM·Kubernetes·LINSTOR CSI를 조합해 self-hosted LLM endpoint를 구성하는 reference implementation을 공개. 운영: model cache PVC, Hugging Face read token, ClusterIP endpoint, startup memory headroom을 baseline으로 두되, multi-replica·GPU scheduling·autoscaling·secret rotation은 별도 production 설계 필요.",
-      "detail": "CNCF 블로그의 LINBIT member post는 Kubernetes에서 vLLM inference server와 LINSTOR CSI persistent storage를 구성하는 실습을 공개했다. Meta Llama-3.2-1B-Instruct 모델 가중치를 `/root/.cache/huggingface`의 50Gi PVC에 저장해 pod restart 뒤 재다운로드를 줄이고, ClusterIP Service의 OpenAI-compatible API로 기존 OpenAI SDK·LangChain·LlamaIndex 호출을 endpoint URL 변경으로 연결하는 흐름이다. 예시는 CPU-only lab에서 `--gpu-memory-utilization 0.80`을 지정해 기본 92% memory reservation 때문에 발생한 startup failure를 피했다. 이는 CNCF member post의 단일-node reference implementation이며, production self-hosting은 GPU capacity·HA·autoscaling·model governance·secret/egress controls를 별도로 검증해야 한다.",
-      "why_it_matters": "self-hosted inference는 고요청량 비용 예측성·지연 제어·data residency 요구에 대응할 수 있지만, model cache·token·storage·service endpoint를 한 deployment에 묶으면 노드 장애·secret 노출·warm-up·egress 비용이 같은 운영 실패 지점으로 결합됨.",
-      "engineering_implication": "플랫폼 팀은 model cache PVC와 image digest, Hugging Face token rotation, namespace egress, request authentication, p95 latency·tokens/s·warm-up time을 같은 release gate로 관리 필요. lab YAML을 production에 그대로 복제하지 말고 GPU scheduler, replica/rollout, autoscaling, model access approval, managed API fallback을 설계·부하시험 필요.",
-      "korea_implication": "국내 규제·계약상 data residency 요구가 있는 AI 서비스는 self-hosted endpoint를 검토할 수 있으나, 모델 접근권한과 cache·log·egress의 국내 리전 보관 범위를 계약·운영 증적으로 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "AI",
-        "Inference",
-        "Kubernetes",
-        "vLLM",
-        "Storage",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 78,
-      "published_kst": "2026-07-17 20:00",
-      "source_name": "CNCF Blog / LINBIT",
-      "source_url": "https://www.cncf.io/blog/2026/07/16/running-a-self-hosted-llm-in-kubernetes-with-vllm/",
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Blog-Default-32.jpg",
-      "related_links": [
-        {
-          "title": "vLLM Kubernetes deployment documentation",
-          "url": "https://docs.vllm.ai/en/latest/deployment/k8s.html"
-        },
-        {
-          "title": "Kubernetes Persistent Volumes documentation",
-          "url": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CNCF 블로그의 LINBIT member post가 Kubernetes에서 self-hosted LLM inference stack을 구성하는 실습을 공개함. vLLM serving, LINSTOR CSI persistent storage, Kubernetes Deployment·Service를 조합한 reference implementation 범위임.",
-          "items": [
-            "구성: vLLM inference server와 `ClusterIP` Service로 cluster 내부 OpenAI-compatible endpoint 제공",
-            "모델: Meta `Llama-3.2-1B-Instruct`를 예시로 사용한 CPU-only lab 경로",
-            "경계: CNCF project release가 아닌 LINBIT member post의 구현 예시"
-          ]
-        },
-        {
-          "heading": "모델 cache·storage 설계",
-          "body": "예시는 Hugging Face model cache 경로인 `/root/.cache/huggingface`를 50Gi PVC에 mount함. LINSTOR CSI의 두 replica thin-provisioned volume 예시로 model weight를 pod restart와 node failure 뒤에도 유지하는 구조를 설명함.",
-          "items": [
-            "저장: model weight를 persistent volume에 보관해 재시작마다 다운로드하는 cold-start를 축소",
-            "전제: 사용 중인 StorageClass 이름·replica 정책·failure domain은 cluster 환경에 맞춘 재검증 대상",
-            "한계: PVC replication만으로 multi-node model shard, replica placement, throughput HA가 해결되는 것은 아님"
-          ]
-        },
-        {
-          "heading": "배포와 runtime 조건",
-          "body": "Deployment는 `HF_TOKEN` Kubernetes Secret을 environment variable로 주입하고 port 8000을 노출함. 게시물의 CPU-only lab은 vLLM 기본 92% memory reservation에서 startup failure를 경험해 `--gpu-memory-utilization 0.80`을 사용함.",
-          "items": [
-            "비밀정보: `HF_TOKEN`은 gated model download에 필요한 read credential으로 secret rotation·scope 최소화 대상",
-            "메모리: `--gpu-memory-utilization 0.80`은 게시물의 lab 조건 값이며 GPU·CPU production sizing 보증 수치 아님",
-            "검증: application startup log, model download time, cache hit/miss, node memory pressure를 rollout evidence로 수집"
-          ]
-        },
-        {
-          "heading": "호환성과 hybrid routing",
-          "body": "vLLM의 OpenAI-compatible REST API는 OpenAI SDK·LangChain·LlamaIndex 등 기존 client를 endpoint URL 변경으로 연결하는 경로를 제공함. high-volume 또는 sensitive workload를 local model로, 다른 task를 managed API로 보내는 hybrid pattern도 게시물이 제시함.",
-          "items": [
-            "호환: `/v1/chat/completions` 형태의 API로 client migration surface를 축소",
-            "라우팅: workload별 data classification·quality threshold·fallback condition을 명시할 대상",
-            "비용: managed API 단가뿐 아니라 GPU/CPU, storage, egress, model warm-up, on-call 비용을 함께 비교"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "self-hosted inference의 시작점은 Deployment YAML이 아니라 serving SLO와 data boundary임. lab 예시를 production으로 승격하기 전 identity·network·capacity·rollback control을 검증하는 운영 과제임.",
-          "items": [
-            "팀 액션: p95 latency, tokens/s, cache warm-up, GPU/CPU utilisation, error rate의 baseline 부하시험 실행",
-            "팀 액션: namespace egress, endpoint authentication, `HF_TOKEN` rotation, model access approval을 deployment review에 포함",
-            "팀 액션: replica·autoscaling·model version rollback·managed API fallback을 포함한 failure drill 수행"
           ]
         }
       ],
