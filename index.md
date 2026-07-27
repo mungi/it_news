@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-26 | Total pages: 219
+> Last updated: 2026-07-28 | Total pages: 220
 
 ## Entities
 
@@ -21,6 +21,7 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W32]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W31]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W30]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W29]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.

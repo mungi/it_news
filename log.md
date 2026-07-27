@@ -1015,3 +1015,10 @@
 - Added `news-230` at rank 1 and removed actual capped sort tail `news-179` (CNCF vLLM self-hosting tutorial, 2026-07-17 20:00 KST); re-sorted all 50 items newest-first and reassigned contiguous ranks.
 - First KST daily Deep Dive policy applied: rebuilt the Claude briefing around the new context-engineering source at 2026-07-27 00:05 KST. No credible new primary technical replacement for Fastjson was found in this mandatory-source pass; retained its source-grounded advisory briefing with an explicit refresh note rather than expanding its claims.
 - Added immutable raw capture with verified SHA-256 `e317dde6e7e45bbdb0a9b0be3e4ee79d3224e5fb63c4cca43acf544f1537421a`, regenerated `weekly/2026-W31.md` from canonical JSON, and updated `index.md`.
+
+## [2026-07-28] update | Roll over to 2026-W32 and complete first-KST daily Deep Dive review
+- Checked current time at 2026-07-28 00:23 KST. Directly inspected mandatory Korean/community HTML surfaces: GeekNews, GeekNews Plus, 인공지능신문, AI타임스; HTML surfaces are not counted as parsed XML feeds.
+- Parsed 170 entries from four successful XML feeds in this probe: AWS What’s New (100), GitHub Blog (10), The Hacker News (50), CNCF (10); arithmetic: 100+10+50+10 = 170. Cloudflare and OpenAI feeds returned HTTP 403 and are not counted.
+- Reviewed current-window source leads including AI타임스 Solar Open 2 trend coverage (2026-07-27 16:51 KST, before the 17:00 KST window) and CXMT market coverage (18:05 KST); neither met the high-signal developer/AI-infrastructure selection threshold. No verified regular-news candidate was added, removed, or re-ranked; the canonical list remains 50 items.
+- Rolled canonical metadata to 2026-W32 (2026-07-27 17:00 KST ~ 2026-08-03 13:00 KST) and regenerated `weekly/2026-W32.md` from canonical JSON. Preserved `weekly/2026-W31.md` as the completed prior-week archive and updated `index.md`.
+- First KST daily Deep Dive review completed for both entries at 2026-07-28 00:23 KST. No credible new-window replacement with a distinct current primary/credible source was found; each retained briefing records its evidence-backed no-replacement reason and does not expand prior claims.
