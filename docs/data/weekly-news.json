@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-29 00:54",
+  "last_updated_kst": "2026-07-29 05:05",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft `MAI-Cyber-1-Flash`·`MDASH`: Microsoft는 CyberGym 95.95%와 기존 MDASH 최적 조합 대비 50% 비용 절감을 발표. 점수는 GPT-5.4 결합 system의 known-vulnerability 재현 결과이므로, 도입은 isolated runner·patch approval·rollback·route별 비용 evidence를 기준으로 결정.",
     "카카오 `kanana-2` SLM 4종 공개: Hugging Face의 1.3B·3B base/instruct와 Kanana license를 확인. 32K context·한국어 tokenizer·memory 절감 수치는 target device·quantization·context 조건에서 재현하고, local data path·cloud fallback·update provenance를 함께 점검.",
     "Moonshot Kimi K3 가중치·인프라 3종 공개: Hugging Face 모델 카드는 2.8T total·104B active MoE, 1M context와 Kimi K3 License를 명시. MoonEP·FlashKDA·AgentENV의 성능·isolation은 target GPU·license·sandbox·cost 조건에서 별도 재현.",
-    "오픈 시큐어 AI 얼라이언스: NVIDIA 공식 글과 AI타임스 보도는 37~40여 파트너의 AI safety·security 연합 및 agent testing·tracing·audit용 `NOOA` 공개를 제시. repository·license·제품 통합 범위는 후속 artifact로 확인.",
-    "n8n expression sandbox escape: GitHub advisory는 workflow 편집 권한 계정의 host command execution 가능성과 `2.31.5`·`2.32.1` 패치를 확인. self-hosted 환경은 package version, workflow revision, n8n process 권한·credential·egress를 함께 triage."
+    "Amazon EKS Provisioned Control Plane HPA 처리량 상향: AWS는 HPA sync concurrency를 기본 Kubernetes 값의 최대 40배로 높여 많은 HPA object의 동시 평가를 확대. 실제 scale-out SLO는 metric freshness·node capacity·image pull·readiness까지 포함한 p95 burst test로 재측정.",
+    "GitHub npm·Actions 공급망 방어 변경: high-impact npm 계정 72시간 read-only, fork untrusted-code checkout 기본 차단, cache write·workflow trigger 정책을 적용. Actions network firewall은 outbound logging technical preview이므로 self-hosted runner·egress block은 별도 통제로 검증."
   ],
   "deep_dives": [
     {
@@ -190,6 +190,154 @@
   ],
   "items": [
     {
+      "id": "news-237",
+      "title_ko": "Amazon EKS Provisioned Control Plane: HPA 동시 평가를 기본값의 최대 40배로 상향",
+      "title_original": "Amazon EKS Provisioned Control Plane now delivers faster pod autoscaling",
+      "summary": "핵심: AWS는 모든 EKS Provisioned Control Plane cluster에서 Horizontal Pod Autoscaler(HPA) sync concurrency를 기본 Kubernetes 값의 **최대 40배**로 높여, 많은 HPA object를 병렬 평가하는 control plane 처리량을 늘렸다고 발표. 범위: 수백~수천 HPA object가 있는 cluster의 load 감지부터 scale-out까지의 대기 시간을 줄이는 변경이며 별도 configuration은 필요 없음. 대응: 플랫폼 팀은 숫자를 workload latency 개선률로 해석하지 말고, HPA sync·metrics pipeline·node capacity·image pull·PDB까지 포함한 end-to-end scale-out p95를 cluster별로 재측정 필요.",
+      "detail": "AWS는 2026년 7월 28일 EKS Provisioned Control Plane의 HPA sync concurrency를 기본 Kubernetes 값의 최대 40배로 상향했다고 발표했다. HPA는 workload metric을 관찰해 pod 수를 조정하며, 수백~수천 HPA object가 있는 cluster에서는 control plane이 object를 병렬 평가하는 속도가 scale-out 반응 시간에 영향을 준다. 이번 변경은 모든 Provisioned Control Plane 고객에게 적용되고 별도 configuration 변경이 필요 없다고 AWS는 설명한다. 다만 원문은 기존 대비 end-to-end scale-out latency, cluster size별 처리율, metrics-server·custom metric 지연, node provisioning·image pull·readiness·PDB에 걸리는 시간을 공개하지 않는다. 40배는 HPA sync concurrency 설정의 기본값 대비 상한이므로, application SLO나 traffic spike 대응 시간이 같은 비율로 개선된다는 보장은 아니다. AWS 원문은 날짜만 표시하므로 카드의 2026-07-29 02:18 KST는 AWS What’s New RSS 시각을 변환한 값이다.",
+      "why_it_matters": "HPA object가 많은 EKS cluster에서는 control plane의 reconcile 처리량이 autoscaling loop의 한 병목이 될 수 있음. 그러나 실제 서비스의 capacity 회복은 metric freshness, scheduler·node autoscaler, image cache, readiness, downstream dependency와 함께 결정되므로 control-plane 설정 변경만으로 SLO 충족을 판단할 수 없음.",
+      "engineering_implication": "EKS 운영 팀은 HPA object 수·sync 지연·desired/current replica lag·metrics freshness·pending pod·node provision·image pull·ready time을 같은 trace로 수집하고, burst test에서 p50/p95 scale-out과 throttling·quota·PDB 영향을 baseline과 비교 필요. Provisioned Control Plane 적용 여부와 cluster version·region 조건도 change record에 남기고, application별 min replica·stabilization window·resource request를 함께 검토 필요.",
+      "korea_implication": "국내 트래픽 피크·이벤트성 서비스 운영 조직은 regional node capacity와 이미지 registry 경로, pod startup latency가 HPA control-plane 처리량보다 큰 병목인지 실제 burst test로 분리 확인 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "EKS",
+        "Kubernetes",
+        "HPA",
+        "Autoscaling",
+        "Control Plane"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-07-29 02:18",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-eks-provisioned-control/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon EKS Provisioned Control Plane User Guide",
+          "url": "https://docs.aws.amazon.com/eks/latest/userguide/provisioned-control-plane.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS는 **EKS Provisioned Control Plane**의 Horizontal Pod Autoscaler(HPA) sync concurrency를 기본 Kubernetes 값의 최대 40배로 상향했다고 발표함. 많은 HPA object를 동시에 평가해 load 감지와 scale-out 사이의 control-plane 대기 시간을 줄이는 변경임.",
+          "items": [
+            "대상: 모든 EKS Provisioned Control Plane cluster",
+            "적용: 고객 측 별도 configuration 변경 없이 제공된다는 AWS 설명",
+            "기능: HPA가 workload metric을 관찰하고 pod replica 수를 demand에 맞춰 조정하는 기존 control loop"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "수백~수천 HPA object가 있는 cluster에서는 control plane이 각 object를 평가하는 병렬 처리량이 autoscaling 반응 경로의 한 요소임. sync concurrency를 높이면 같은 구간에서 더 많은 HPA object를 동시에 처리할 수 있음.",
+          "items": [
+            "변화: HPA object 평가 병렬성을 높여 control-plane reconcile 대기 축소",
+            "경계: 최대 40배는 기본 Kubernetes 설정값 대비 HPA sync concurrency 상한",
+            "경계: application의 end-to-end scale-out latency가 40배 개선된다는 의미는 아님"
+          ]
+        },
+        {
+          "heading": "운영상 확인할 경계",
+          "body": "서비스가 실제 capacity를 확보하는 시간은 HPA 평가 뒤에도 metric freshness, scheduler, node capacity, image pull, init container, readiness probe, PodDisruptionBudget 같은 단계에 좌우됨. AWS 원문은 이 단계별 latency와 cluster-size별 수치를 제공하지 않음.",
+          "items": [
+            "관측: HPA sync·desired/current replica lag·pending pod·node provision·image pull·ready time을 동일 trace로 연결",
+            "검증: CPU·custom metric·queue depth별 burst workload에서 p50/p95 scale-out을 기존 baseline과 비교",
+            "제약: regional instance capacity·quota·CNI IP·registry throughput·downstream saturation을 별도 병목으로 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Provisioned Control Plane의 변경은 HPA가 많은 cluster에서 scaling loop의 control-plane 병목을 낮출 수 있는 운영 변화임. production 적용 판단은 headline 배수보다 실제 workload SLO와 node-level capacity recovery 증거로 결정 필요.",
+          "items": [
+            "팀 액션: Provisioned Control Plane 사용 여부·cluster version·region·HPA object 수를 inventory",
+            "팀 액션: min replica·resource request·stabilization window·PDB와 node autoscaling policy를 burst test에 포함",
+            "팀 액션: scale-out failure·throttling·quota event와 SLO breach를 deployment change record로 보존"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-238",
+      "title_ko": "GitHub npm·Actions 공급망 방어: 72시간 계정 보호, fork checkout·cache·egress 통제 확장",
+      "title_original": "Disrupting supply chain attacks on npm and GitHub Actions",
+      "summary": "핵심: GitHub는 npm과 GitHub Actions에서 공급망 공격의 초기 침투·credential 유출·전파를 끊기 위한 변경을 정리. high-impact npm account의 email/2FA recovery 뒤 **72시간 read-only**, 위험 trigger의 fork untrusted-code checkout 기본 차단, untrusted trigger의 Actions cache write 제한, workflow trigger policy를 포함. 경계: Actions network firewall은 outbound traffic logging 단계의 technical preview이며 egress block policy는 후속 계획. 대응: 조직은 새 기본값과 opt-out, self-hosted runner, publish credential, cache scope, workflow trigger policy를 inventory해 attack-chain별 control gap을 재점검 필요.",
+      "detail": "GitHub는 2026년 7월 28일 npm과 GitHub Actions를 표적으로 한 공급망 공격이 maintainer account·workflow compromise로 시작해 credential을 유출하고 package·release workflow로 전파되는 경로를 설명하며 최근 변경을 정리했다. high-impact npm account는 email 변경 또는 2FA recovery code 사용 뒤 72시간 read-only mode가 된다. `actions/checkout`은 흔히 악용되는 trigger에서 fork의 untrusted code checkout을 기본 차단하며, 조직은 enterprise·organization·repository 수준에서 workflow trigger와 실행 주체를 제한할 수 있다. untrusted trigger는 shared Actions cache write가 제한된다. GitHub는 Actions network firewall technical preview가 outbound traffic을 기록한다고 설명하지만 egress restriction·policy는 future work로 구분한다. npm staged publishing은 CI/CD credential과 publish 권한을 분리해 추가 approval·2FA를 요구하고, npm v12은 install script·git/remote URL dependency를 기본 차단하는 변경을 rollout 중이다. 각 control은 attack-chain의 일부 link를 줄이는 것이며 self-hosted runner, third-party action, maintainer compromise, 조직 policy misconfiguration을 단독으로 제거하지 않는다. 카드 시각은 GitHub Blog RSS를 KST로 변환한 값이다.",
+      "why_it_matters": "npm package와 GitHub Actions workflow는 source·build·publish·release credential이 만나는 공급망 control point임. 기본값·cache·trigger·publish approval·credential revocation을 분리해도 policy opt-out과 self-hosted runner 경계가 남으므로, 단일 feature enablement가 아니라 attack-chain 단위의 운영 검증이 필요.",
+      "engineering_implication": "플랫폼·보안 팀은 `pull_request_target`과 fork checkout, reusable workflow·cache permission, Actions token·OIDC·publish credential, network egress, self-hosted runner를 inventory하고 조직 policy의 effective configuration을 테스트 필요. npm staged publishing·trusted publishing·2FA·credential revocation runbook을 release path와 incident drill에 연결하고, firewall preview log는 outbound domain baseline과 secret exfiltration detection 용도로 평가 필요.",
+      "korea_implication": "국내 오픈소스·SaaS 조직은 외부 기여 PR과 공용 runner, 사내 npm proxy·release registry, 협력사 automation이 연결된 repository부터 fork trigger·cache·token scope·egress를 분리 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "npm",
+        "GitHub Actions",
+        "Supply Chain",
+        "CI/CD",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-07-29 01:00",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/security/supply-chain-security/disrupting-supply-chain-attacks-on-npm-and-github-actions/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/github-generic-security-blocks-logo.png?fit=1920%2C1080",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "GitHub Blog: npm adds preventive account protection for high-impact accounts",
+          "url": "https://github.blog/security/supply-chain-security/npm-adds-preventive-account-protection-for-high-impact-accounts/"
+        },
+        {
+          "title": "GitHub Blog: What’s coming to our GitHub Actions 2026 security roadmap",
+          "url": "https://github.blog/security/security-strategy/whats-coming-to-our-github-actions-2026-security-roadmap/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub는 npm registry와 GitHub Actions를 겨냥하는 공급망 공격의 초기 침투·credential 유출·전파·대응 단계에 적용한 변경을 정리함. 목적은 단일 보안 기능이 아닌 attack chain의 영향 큰 link를 끊는 방어 조합임.",
+          "items": [
+            "계정 보호: high-impact npm account는 email 변경 또는 2FA recovery 뒤 72시간 read-only mode 전환",
+            "workflow: `actions/checkout`이 흔히 악용되는 trigger에서 fork의 untrusted code checkout을 기본 차단",
+            "정책: enterprise·organization·repository 수준에서 workflow trigger와 실행 주체를 제한 가능"
+          ]
+        },
+        {
+          "heading": "권한 상승·credential 유출 통제",
+          "body": "낮은 신뢰 workflow의 cache write를 제한해 cache poisoning이 privileged release workflow credential 탈취로 이어지는 경로를 줄임. long-lived publish credential을 제거하는 trusted publishing과 staged publishing도 같은 attack-chain 경계를 겨냥함.",
+          "items": [
+            "cache: untrusted trigger가 다른 workflow와 공유하는 Actions cache를 수정하는 권한 제한",
+            "publish: npm staged publishing은 publish 전에 추가 approval과 2FA를 요구하는 opt-in control",
+            "identity: CircleCI까지 확장된 npm trusted publishing으로 CI/CD의 long-lived credential 제거 지원"
+          ]
+        },
+        {
+          "heading": "전파·탐지·대응 범위",
+          "body": "npm v12은 install script를 기본 비활성화하고 승인한 script만 다시 허용하는 breaking change를 rollout 중이며 git·remote URL dependency도 기본 차단함. Dependabot version update의 기본 3일 cooldown은 악성 release의 초기 확산 시간을 줄이는 장치임.",
+          "items": [
+            "경계: Dependabot security update는 cooldown 없이 즉시 열려 patch 지연을 피함",
+            "관측: Actions network firewall technical preview는 workflow outbound traffic logging을 제공",
+            "경계: egress restriction·policy는 GitHub가 future work로 설명한 계획이며 current preview capability와 구분"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "새 기본값은 조직의 workflow·runner·token·cache·publish topology에서 실제 적용되는지 확인해야 효력이 생김. self-hosted runner, third-party action, opt-out, privilege 과다 policy는 별도 attack surface로 남음.",
+          "items": [
+            "팀 액션: `pull_request_target`·fork checkout·reusable workflow·cache permission·Actions token/OIDC scope inventory",
+            "팀 액션: npm publish credential·staged publishing·2FA·credential revoke runbook을 release drill에 연결",
+            "팀 액션: firewall preview log로 outbound domain baseline·secret exfiltration signal·self-hosted runner egress를 평가"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-235",
       "title_ko": "JetBrains TeamCity CVE-2026-63077: 모든 On-Premises 버전의 비인증 RCE, CI/CD server 즉시 패치",
       "title_original": "Critical Security Issue Affecting TeamCity On-Premises (CVE-2026-63077)",
@@ -267,7 +415,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-236",
@@ -343,7 +491,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-234",
@@ -429,7 +577,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-231",
@@ -496,7 +644,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-232",
@@ -568,7 +716,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-233",
@@ -648,7 +796,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-230",
@@ -720,7 +868,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-229",
@@ -792,7 +940,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-226",
@@ -883,7 +1031,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-228",
@@ -971,7 +1119,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-227",
@@ -1052,7 +1200,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-224",
@@ -1131,7 +1279,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-225",
@@ -1219,7 +1367,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-223",
@@ -1299,7 +1447,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-222",
@@ -1379,7 +1527,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-221",
@@ -1463,7 +1611,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-220",
@@ -1540,7 +1688,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-216",
@@ -1607,7 +1755,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-217",
@@ -1674,7 +1822,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-214",
@@ -1754,7 +1902,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-215",
@@ -1827,7 +1975,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-218",
@@ -1894,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-212",
@@ -1989,7 +2137,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-209",
@@ -2064,7 +2212,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-210",
@@ -2149,7 +2297,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-219",
@@ -2225,7 +2373,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-213",
@@ -2307,7 +2455,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-208",
@@ -2375,11 +2523,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-207",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -2533,7 +2681,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-204",
@@ -2598,7 +2746,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-205",
@@ -2664,7 +2812,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-203",
@@ -2729,7 +2877,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-202",
@@ -2825,7 +2973,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-198",
@@ -2890,7 +3038,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-199",
@@ -2954,7 +3102,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-200",
@@ -3033,7 +3181,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-201",
@@ -3115,7 +3263,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-196",
@@ -3200,7 +3348,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-197",
@@ -3276,7 +3424,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-195",
@@ -3355,7 +3503,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-193",
@@ -3440,7 +3588,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-194",
@@ -3519,7 +3667,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-191",
@@ -3587,7 +3735,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-190",
@@ -3673,7 +3821,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-192",
@@ -3745,7 +3893,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-188",
@@ -3811,7 +3959,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-189",
@@ -3875,178 +4023,6 @@
             "팀 액션: tokens/s·p95/p99 latency·queue time·error rate·cost/request·power telemetry를 GPU baseline과 비교",
             "팀 액션: quota·reservation·autoscaling·model update·rollback·capacity shortfall의 operational runbook 검증",
             "팀 액션: regulated data의 region·access log·key ownership·support escalation·audit evidence를 계약 전 확인"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-187",
-      "rank": 49,
-      "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
-      "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
-      "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
-      "detail": "F5 advisory는 regex `map`의 capture variable을 map output보다 먼저 string expression에서 참조하는 구성에서 heap overflow가 발생할 수 있다고 설명함. 인터넷 노출 NGINX, Ingress Controller, Gateway Fabric, App Protect WAF, Instance Manager는 product별 fixed build와 실제 config·runtime version을 함께 확인하고, named capture 완화는 patch 전 임시 control로만 취급 필요.",
-      "why_it_matters": "이 결함은 모든 NGINX 설치의 동일한 원격 실행을 뜻하지 않지만, public HTTP data plane의 worker restart와 특정 ASLR 조건의 code execution 가능성을 함께 다룸. 버전 inventory만으로 노출 여부를 판단하지 말고 regex `map`·capture 순서와 product별 advisory table을 대조해야 함.",
-      "engineering_implication": "플랫폼 팀은 NGINX OSS·Plus·Ingress Controller·Gateway Fabric·App Protect WAF·Instance Manager의 version과 configuration을 owner별로 inventory화하고, regex `map` output/capture 참조 순서를 static scan한 뒤 canary reload·5xx·worker restart·request error telemetry로 patch를 검증 필요.",
-      "korea_implication": "국내 서비스의 Kubernetes ingress와 reverse proxy 운영팀도 base image package, Helm chart controller version, externally managed WAF 경로를 분리해 F5 수정본·vendor backport·실제 rollout 완료 시각을 change evidence로 남길 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "NGINX",
-        "CVE",
-        "Web",
-        "Kubernetes"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-07-20 05:42",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/critical-nginx-vulnerability-can-crash.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiVv10OUCjBseEZieeN1rxtwm17pPCAoe6OC1jvCTXCumjIImhz5Y08lYWBpSIGBSkDJN-wBcGmUTmPEp8U74bgd2Cv3rwmSmtUDlmOYR7f-0Xs3xL_xkjpkNm8W8vzNvFNfmTNiqs9TNcNmT1bo8xWb9XGzPnuaByxKSl9_eOqg3yDbtAtYh0epFo-4Wg/s1700-e365/nginx-rce-flaw.jpg",
-      "local_image": "assets/images/news-187.jpg",
-      "related_links": [
-        {
-          "title": "F5 security advisory K000162097 — CVE-2026-42533",
-          "url": "https://my.f5.com/manage/s/article/K000162097"
-        },
-        {
-          "title": "NGINX security advisory CVE-2026-42533",
-          "url": "https://nginx.org/en/security_advisories.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "F5는 NGINX Open Source와 NGINX Plus의 `map` directive·regex matching 조합에서 heap-based buffer overflow가 발생할 수 있는 `CVE-2026-42533`을 7월 15일 advisory로 공개하고 7월 17일 갱신함. The Hacker News RSS의 timezone-aware publication timestamp를 2026-07-20 05:42 KST로 변환해 뉴스 공개 시각으로 사용함.",
-          "items": [
-            "대상: crafted HTTP request를 보내는 unauthenticated attacker의 data-plane attack 조건",
-            "영향: NGINX worker restart에 따른 DoS와 ASLR 비활성 또는 bypass 조건의 code execution 가능성",
-            "경계: F5는 control-plane exposure가 아닌 data-plane issue로 분류하며 모든 configuration의 동일한 exploitability를 주장하지 않음"
-          ]
-        },
-        {
-          "heading": "발생 조건과 영향 범위",
-          "body": "F5 advisory는 regex `map` directive의 capture variable을 map output variable보다 먼저 string expression에서 참조할 때 취약 조건이 생긴다고 설명함. 대안 경로로 특정 조건의 non-cacheable variable도 같은 결과를 만들 수 있음.",
-          "items": [
-            "구성: location regex 등의 numbered capture와 regex `map` output을 함께 쓰는 expression의 참조 순서 점검",
-            "제품: core NGINX·NGINX Plus 외 Ingress Controller·Gateway Fabric·App Protect WAF·Instance Manager의 advisory table 대조",
-            "경계: 제품별 영향·수정 build는 F5 evaluated-products table과 vendor release note로 확인 필요"
-          ]
-        },
-        {
-          "heading": "수정과 임시 완화",
-          "body": "The Hacker News와 F5 advisory는 NGINX 1.30.4 stable, 1.31.3 mainline, NGINX Plus 37.0.3.1을 수정 경로로 제시함. patch가 지연되는 경우 affected regex map을 named capture로 전환하는 방법은 exposure를 줄이는 임시 control이며 product별 지원 여부와 config regression을 검증해야 함.",
-          "items": [
-            "수정: NGINX OSS 1.30.4·1.31.3과 NGINX Plus 37.0.3.1 적용 여부 확인",
-            "완화: named capture 전환은 patch 대체 수단이 아니며 custom rewrite·map rule의 request regression test 필요",
-            "배포: package update 뒤 controller·proxy worker의 실제 reload 또는 restart와 loaded binary version 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "NGINX는 edge proxy·Kubernetes ingress·API gateway·WAF에 넓게 포함되므로 package inventory만으로 risk를 닫을 수 없음. public endpoint와 regex configuration을 함께 추적하고 canary rollout에서 worker restart·5xx·latency·WAF false positive를 관측해야 함.",
-          "items": [
-            "팀 액션: public NGINX asset, product edition, version, owner, regex `map` usage를 one-day inventory로 확정",
-            "팀 액션: configuration scan 결과와 fixed build·vendor backport·process restart timestamp를 change evidence로 보존",
-            "팀 액션: patch 전후 worker restart, 499/502/504, request rate, ingress error, WAF event를 dashboard에서 비교"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-164",
-      "title_ko": "SonicWall SMA 1000 제로데이 연쇄: UTA0533의 root 장악·webshell·LDAP 자격증명 수집 분석",
-      "title_original": "SonicWall SMA Zero-Days Exploited Before Disclosure to Gain Root Access",
-      "summary": "핵심: Volexity incident response 분석을 인용한 보도는 UTA0533이 공개 전 SMA 1000의 `CVE-2026-15409` SSRF·`CVE-2026-15410` command injection을 연쇄해 root 권한을 얻고 webshell·persistence를 남겼다고 설명. 대응: hotfix 적용과 함께 `/wsproxy`·101 WebSocket·NGINX Unit route·`ctrl-service`·LDAP traffic 흔적을 hunt하고, 침해 의심 장비는 재배포·자격증명 회전까지 수행 필요.",
-      "detail": "The Hacker News는 Volexity의 incident response 분석을 인용해 UTA0533이 SonicWall SMA 1000의 두 제로데이를 공개 전부터 연쇄 악용했다고 보도했다. Volexity는 조사한 두 appliance에서 root 실행을 허용하는 setuid binary, legitimate process에 주입되는 Java webshell·HTTP proxy, startup script와 NGINX Unit route 변경, LDAP 평문 traffic을 수집하는 `tcpdump` 실행 흔적을 확인했다. 공개된 증거는 해당 조사 대상 장비의 침해 분석이며 모든 SMA 1000 또는 특정 조직의 광범위한 lateral movement를 뜻하지 않는다. 패치 버전 `12.4.3-03453`·`12.5.0-02835` 적용 뒤에도 appliance 신뢰성과 인증정보 노출 여부를 별도 조사해야 한다.",
-      "why_it_matters": "외부 VPN appliance의 root 장악은 원격접속 계정·세션·내부 인증 traffic을 같은 경계에서 노출할 수 있음. patch는 재침투 경로를 닫지만 기존 webshell·startup persistence·captured credential을 제거하지 않으므로, VPN gateway를 단순 네트워크 장비가 아닌 침해된 identity control point로 다뤄야 함.",
-      "engineering_implication": "네트워크·IAM·SOC 팀은 SMA 1000 model·firmware·internet exposure·admin SSH 접근을 우선 inventory로 대조하고, `extraweb_access.log`·`access_servers.log`·`ctrl-service.log`·`/var/lib/unit/conf.json`·`/etc/init.d/workplace`와 process·disk·memory evidence를 보존 필요. 침해 지표가 있으면 clean reimage 또는 redeploy, VPN·LDAP·관리자 credential과 MFA token 회전, internal service 접근 로그 hunt를 하나의 incident 종료 기준으로 관리 필요.",
-      "korea_implication": "국내 원격근무·협력사 접속에 SMA 1000을 사용하는 조직은 유지보수 창에 firmware update만 배정하지 말고 IAM credential·MFA 재등록·LDAP 계정 영향·VPN failover를 함께 검증 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "SonicWall",
-        "VPN",
-        "Zero-Day",
-        "SSRF",
-        "Remote Access"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 98,
-      "published_kst": "2026-07-19 22:18",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/sonicwall-sma-zero-days-exploited.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgLomYbwprpYWKVxrxKRh3hFiGRWdVOb7WAVbhJjf_fYQAba4wVZT1PpwWAL-ZDb40MZp9T43-dj8Fru-eOjiKcrAoh5sOdyKGUUAVwK9iifXl70EvgORPztxnvYXc9HA8trGKcRZGob8DYJxUZBg0zlZFUTiRGPXGFheSbKLUoG53kZ9HR6XxyJs9GEtcA/s1600/sma-sonicwall.jpg",
-      "related_links": [
-        {
-          "title": "Volexity primary incident-response analysis — Proxying to Compromise: SonicWall SMA 0-day Exploitation",
-          "url": "https://www.volexity.com/blog/2026/07/17/proxying-to-compromise-sonicwall-secure-mobile-access-0-day-exploitation/"
-        },
-        {
-          "title": "SonicWall PSIRT advisory — SMA 1000 zero-day vulnerabilities",
-          "url": "https://psirt.global.sonicwall.com/vuln-detail/SNWLID-2026-0014"
-        },
-        {
-          "title": "Rapid7 technical analysis and PoC reference",
-          "url": "https://www.rapid7.com/blog/post/etr-rapid7-mdr-team-discovers-new-sonicwall-sma1000-zero-days-being-actively-exploited-cve-2026-15409-cve-2026-15410/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 Volexity의 incident response 분석을 인용해 UTA0533이 SonicWall SMA 1000 VPN appliance를 공개 전부터 제로데이 연쇄로 침해했다고 보도함. Volexity는 초기 침해 뒤 의심 인증과 내부 이동 시도를 관측해 조사를 시작했으며, earliest observed compromise는 2026년 6월 22일로 제시함.",
-          "items": [
-            "대상: SMA 1000 `6210`, `7210`, `8200v` 모델의 조사 대상 appliance",
-            "결함: `CVE-2026-15409` SSRF와 `CVE-2026-15410` command injection 연쇄를 통한 root 권한 획득 분석",
-            "경계: 확인된 침해·artifact는 Volexity가 조사한 2대 appliance의 사례이며 모든 배포 환경의 침해 확정 근거 아님"
-          ]
-        },
-        {
-          "heading": "침해 체인과 root 권한 경로",
-          "body": "분석은 비인증 `/wsproxy` 요청으로 localhost-only service에 WebSocket tunnel을 만들고, CouchDB·control service 경로를 거쳐 file write와 privilege escalation을 수행하는 흐름을 제시함. 물리 appliance에서 local hardware identifier로 파생되는 control-service password의 별도 약점도 설명되나, 조사된 incident에서 그 우회가 사용됐다고 단정하지 않음.",
-          "items": [
-            "초기 접근: `bmID=-3389` 계열 값·SMA Connect Agent User-Agent·`/wsproxy`와 localhost `1050`·`8188` port 연결 조건",
-            "권한 상승: `remove_hotfix` workflow의 path traversal을 통해 root context command execution으로 이어지는 `CVE-2026-15410` 분석",
-            "경계: hardware identifier 기반 인증 우회는 물리 device에만 해당하며 incident에서 실제 사용된 경로로 확정되지 않음"
-          ]
-        },
-        {
-          "heading": "확인된 persistence와 자격증명 위험",
-          "body": "Volexity는 root command 실행을 허용하는 setuid `xzfind`, legitimate SonicWall process에 주입되는 Suo5 HTTP proxy·ORANGETAIL Java webshell, startup script와 NGINX Unit configuration 변경을 확인함. 다른 appliance에는 LDAP 평문 traffic에서 username·password를 찾기 위한 `tcpdump` 실행 artifact가 남아 있었음.",
-          "items": [
-            "지속성: `/etc/init.d/workplace` startup script 수정과 `/var/lib/unit/conf.json`의 악성 route 추가 흔적",
-            "webshell: `/__api__/login`·`/__api__/logout`는 임의 경로 재작성 사례이며 환경별 URI는 달라질 수 있는 hunting signal",
-            "자격증명: LDAP traffic capture artifact는 조사 대상에서의 행위 증거이며 모든 user credential 탈취 규모를 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "패치와 조사 범위",
-          "body": "Volexity는 SonicWall hotfix가 `12.4.3-03453`와 `12.5.0-02835`에 포함됐다고 설명함. firmware update는 재악용 방어의 시작점이며, 이미 root-level artifact가 남은 appliance는 patch만으로 신뢰 상태를 회복할 수 없음.",
-          "items": [
-            "패치: SMA 1000 firmware·hotfix version과 실제 active/standby appliance 적용 상태 대조",
-            "로그: `extraweb_access.log`의 `/wsproxy`·`bmID=-3389`·101 response와 `access_servers.log`의 WebSocket backend connection 조사",
-            "실행: `ctrl-service.log`의 `remove_hotfix` path traversal, `/tmp` staging file, unit route·startup script 변경을 incident evidence로 보존"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "VPN appliance는 public ingress, remote-user identity, 내부 service connectivity를 한 장비에 결합함. 공격자가 root 권한을 얻으면 network segmentation만으로 session·credential·configuration exposure를 설명할 수 없으므로, gateway 자체를 identity incident의 범위에 포함해야 함.",
-          "items": [
-            "우선순위: internet-facing SMA 1000과 privileged admin·LDAP·directory integration이 있는 asset 우선 조치",
-            "운영 경계: hotfix compliance와 forensic clean state를 분리된 종료 조건으로 관리",
-            "탐지 경계: reboot 뒤 memory-resident artifact가 사라질 수 있어 수집 전 재부팅 금지와 disk·memory 증적 보존 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "SMA 1000 대응은 네트워크팀의 firmware change만으로 끝나지 않음. SOC hunting, IAM credential reset, VPN high-availability failover, internal lateral-movement review를 단일 incident owner와 종료 기준으로 묶어야 함.",
-          "items": [
-            "팀 액션: asset·firmware·internet exposure·administrator·directory integration·backup image를 1차 inventory로 확정",
-            "팀 액션: IoC 또는 의심 log가 있으면 clean reimage/redeploy, VPN·admin·LDAP credential 및 MFA token 회전, session invalidation 실행",
-            "팀 액션: patch 뒤 VPN login failure, WebSocket·LDAP anomaly, privileged session, NGINX Unit config diff와 failover health를 종료 지표로 확인"
           ]
         }
       ],

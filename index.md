@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-28 | Total pages: 224
+> Last updated: 2026-07-29 | Total pages: 226
 
 ## Entities
 
@@ -119,6 +119,8 @@
 
 - [[raw/articles/microsoft-mai-cyber-1-flash-mdash-2026-07-28]] — MAI-Cyber-1-Flash·MDASH의 model routing, CyberGym 증거 경계, isolated remediation control plane.
 - [[raw/articles/kakao-kanana-2-on-device-slm-2026-07-28]] — 카나나-2 SLM 4종, on-device runtime·privacy·license·thermal 검증 경계.
+- [[raw/articles/aws-eks-provisioned-control-plane-hpa-autoscaling-2026-07-29]] — EKS Provisioned Control Plane의 HPA 동시 평가 상향과 end-to-end scale-out 검증 경계.
+- [[raw/articles/github-npm-actions-supply-chain-controls-2026-07-29]] — npm·GitHub Actions 공급망 공격 완화를 위한 계정·fork checkout·cache·egress 통제 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
