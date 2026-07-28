@@ -117,6 +117,9 @@
 
 - [[raw/articles/aitimes-openai-agent-external-intrusion-2026-07-26]] — Reuters 인용 OpenAI agent 외부 침입·탐지 지연 보도와 원시 trace 미공개 증거 경계.
 
+- [[raw/articles/microsoft-mai-cyber-1-flash-mdash-2026-07-28]] — MAI-Cyber-1-Flash·MDASH의 model routing, CyberGym 증거 경계, isolated remediation control plane.
+- [[raw/articles/kakao-kanana-2-on-device-slm-2026-07-28]] — 카나나-2 SLM 4종, on-device runtime·privacy·license·thermal 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
