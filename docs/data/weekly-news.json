@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-28 12:36",
+  "last_updated_kst": "2026-07-28 16:45",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Moonshot Kimi K3 가중치·인프라 3종 공개: Hugging Face 모델 카드는 2.8T total·104B active MoE, 1M context와 Kimi K3 License를 명시. MoonEP·FlashKDA·AgentENV의 성능·isolation은 target GPU·license·sandbox·cost 조건에서 별도 재현.",
     "오픈 시큐어 AI 얼라이언스: NVIDIA 공식 글과 AI타임스 보도는 37~40여 파트너의 AI safety·security 연합 및 agent testing·tracing·audit용 `NOOA` 공개를 제시. repository·license·제품 통합 범위는 후속 artifact로 확인.",
     "n8n expression sandbox escape: GitHub advisory는 workflow 편집 권한 계정의 host command execution 가능성과 `2.31.5`·`2.32.1` 패치를 확인. self-hosted 환경은 package version, workflow revision, n8n process 권한·credential·egress를 함께 triage.",
     "AWS Security Hub MCP App preview: exposure finding·attack path·상관 finding을 자연어 tool로 조회하고 text summary·interactive visualization을 반환. local existing credential·read-only tool 경계를 IAM role·MCP client·audit telemetry로 별도 검증.",
-    "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출 판단.",
-    "Claude 5 context engineering: Claude Code 시스템 prompt 약 80% 축소 주장은 공급자 실험 결과. prompt 최적화와 destructive tool·secret·egress 통제는 policy·permission·approval·audit trace로 분리 운영."
+    "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출 판단."
   ],
   "deep_dives": [
     {
@@ -191,6 +191,92 @@
   ],
   "items": [
     {
+      "id": "news-234",
+      "title_ko": "Moonshot Kimi K3 가중치·MoE 학습·prefill·agent 환경 공개: 2.8T 모델의 self-hosting 조건 분리 검증",
+      "title_original": "Kimi K3 model weights and three infrastructure projects released",
+      "summary": "핵심: Moonshot AI가 Hugging Face에서 **Kimi K3 전체 가중치**를 Kimi K3 License로 공개하고, 2.8T 총 파라미터·104B 활성 MoE·100만 토큰 context를 명시. 동시 공개: MoonEP, FlashKDA, AgentENV는 분산 MoE 통신·H20 prefill kernel·Firecracker microVM 기반 agent RL 환경을 각각 겨냥. 대응: 모델 가중치 공개는 즉시 production self-hosting 근거가 아니므로 license·GPU/메모리·kernel 재현성·sandbox·E2B compatibility·운영 비용을 workload별로 검증 필요.",
+      "detail": "AI타임스의 2026년 7월 28일 13:04 KST 보도와 Moonshot AI의 Hugging Face 모델 카드를 확인했다. Moonshot은 Kimi K3 가중치를 Kimi K3 License로 공개했고, 모델 카드는 2.8T 총 파라미터, 104B 활성 파라미터, 896개 expert 중 토큰당 16개 선택, 100만 토큰 context를 명시한다. 보도는 MoonEP의 MoE expert 통신 최적화, H20에서 prefill 속도 1.72~2.22배라는 FlashKDA 공급자 주장, Firecracker microVM·snapshot·resume·fork로 agent RL 환경을 제공하는 AgentENV를 소개한다. AgentENV의 50ms 실행·복구, 100ms snapshot 저장, 최대 16개 fork와 E2B 호환성은 보도·프로젝트 설명 범위이며 독립 벤치마크나 production isolation 보증은 아니다. 도입 조직은 license와 weight format, target GPU·driver·CUDA kernel, context KV-cache·network·storage 비용, sandbox escape·egress·credential 경계를 함께 검증해야 한다.",
+      "why_it_matters": "오픈 가중치와 학습·추론·agent runtime 구성요소가 함께 공개되면 self-hosted AI stack의 선택지가 넓어지지만, 모델 성능 수치와 안전한 운영 조건은 별도 문제임. 특히 2.8T MoE 모델의 memory·interconnect·prefill 비용과 agent microVM의 tenant isolation·image provenance를 한 deployment review에서 다뤄야 함.",
+      "engineering_implication": "AI platform 팀은 먼저 Kimi K3 License와 weights·tokenizer·serving framework 지원을 검토하고, target GPU에서 memory footprint·prefill/decode latency·KV-cache·egress·성공 요청당 비용을 측정 필요. AgentENV는 privileged host·secret mount·network policy와 snapshot lifecycle을 sandbox canary로 검증하고, MoonEP·FlashKDA 성능 수치는 동일 hardware·batch·sequence length·precision 조건에서 재현 필요.",
+      "korea_implication": "국내 AI 인프라 조직은 GPU 조달·전력·망 분리 조건뿐 아니라 Kimi K3 License의 배포·상용 이용 범위, 모델·agent run의 데이터 국외 전송과 로그 보존 정책을 법무·보안 검토에 함께 반영 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "Open Weight",
+        "MoE",
+        "Inference",
+        "Agent Runtime",
+        "Moonshot AI"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-07-28 13:04",
+      "source_name": "Moonshot AI / Hugging Face",
+      "source_url": "https://huggingface.co/moonshotai/Kimi-K3",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/213242_216669_5955.jpg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "AI타임스: 문샷, Kimi K3 모델 가중치 공개...인프라 3종도 오픈소스로 (2026-07-28 13:04 KST)",
+          "url": "https://www.aitimes.com/news/articleView.html?idxno=213242"
+        },
+        {
+          "title": "MoonEP GitHub repository",
+          "url": "https://github.com/MoonshotAI/MoonEP"
+        },
+        {
+          "title": "FlashKDA GitHub repository",
+          "url": "https://github.com/MoonshotAI/FlashKDA"
+        },
+        {
+          "title": "AgentENV GitHub repository",
+          "url": "https://github.com/kvcache-ai/AgentEnv"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Moonshot AI는 Hugging Face에서 **Kimi K3 전체 가중치**를 Kimi K3 License로 공개함. AI타임스가 확인한 보도 시각은 2026-07-28 13:04 KST임.",
+          "items": [
+            "모델 카드: native multimodal agentic model, Kimi Delta Attention·Attention Residuals 기반 구조 명시",
+            "규모: 총 2.8T parameter, 활성 104B parameter, 100만 token context 지원",
+            "배포: research·deployment·further innovation을 위한 full weights 공개라는 모델 카드 범위"
+          ]
+        },
+        {
+          "heading": "모델·서빙 조건",
+          "body": "Kimi K3는 MoE 모델이며 896개 expert 가운데 token당 16개 expert를 선택한다고 모델 카드가 명시함. 총 parameter만으로 GPU memory·interconnect·serving cost를 추정하면 안 됨.",
+          "items": [
+            "architecture: 93 layer, 69 KDA와 24 Gated MLA attention-layer 구성이라는 모델 카드 명세",
+            "capacity: weight format·quantization·tensor parallelism·KV-cache·context length가 실제 cluster footprint를 결정",
+            "license: Kimi K3 License의 상용 배포·재배포·사용 제한은 도입 전 원문 검토 대상"
+          ]
+        },
+        {
+          "heading": "동시 공개 인프라 3종",
+          "body": "AI타임스 보도는 MoonEP·FlashKDA·AgentENV를 학습 통신, prefill kernel, agent 강화학습 실행 환경으로 구분해 소개함.",
+          "items": [
+            "MoonEP: 대규모 MoE 분산 학습에서 expert 간 통신 병목을 줄이기 위한 library라는 보도",
+            "FlashKDA: CUTLASS 기반 H20 prefill kernel과 기존 대비 1.72~2.22배 속도 주장은 공급자 설명 범위",
+            "AgentENV: Firecracker microVM·snapshot·resume·fork 기반 분산 가상화 환경, MIT license 공개라는 보도",
+            "AgentENV: 50ms 이내 실행·복구, 100ms snapshot 저장, 최대 16개 fork·E2B compatibility는 독립 재현 전 공급자·보도 수치"
+          ]
+        },
+        {
+          "heading": "운영·보안 검증",
+          "body": "agent 환경의 빠른 fork·snapshot은 RL throughput을 높일 수 있지만 image provenance·secret residue·network isolation·snapshot retention을 자동 해결하지 않음.",
+          "items": [
+            "benchmark: target GPU·driver·CUDA·batch·sequence length·precision을 고정해 prefill/decode·memory·p95·비용을 재현",
+            "security: microVM image hash·host mount·ephemeral credential·default-deny egress·tool allowlist를 canary에서 검증",
+            "operations: snapshot·fork lifecycle, orphan cleanup, storage quota, audit trace와 rollback owner를 release gate에 기록",
+            "팀 액션: 작은 read-only task에서 serving·agent sandbox를 분리 시험한 뒤 bounded write workload로 확대"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-231",
       "title_ko": "NVIDIA 오픈 시큐어 AI 얼라이언스: 40여 파트너·NOOA 연구 공개, 구현·운영 범위는 별도 검증",
       "title_original": "NVIDIA launches Open Secure AI Alliance",
@@ -255,7 +341,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-232",
@@ -327,7 +413,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-233",
@@ -407,7 +493,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-230",
@@ -479,7 +565,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-229",
@@ -551,7 +637,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-226",
@@ -642,7 +728,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-228",
@@ -730,7 +816,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-227",
@@ -811,7 +897,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-224",
@@ -890,7 +976,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-225",
@@ -978,7 +1064,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-223",
@@ -1058,7 +1144,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-222",
@@ -1138,7 +1224,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-221",
@@ -1222,7 +1308,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-220",
@@ -1299,7 +1385,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-216",
@@ -1366,7 +1452,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-217",
@@ -1433,7 +1519,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-214",
@@ -1513,7 +1599,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-215",
@@ -1586,7 +1672,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-218",
@@ -1653,7 +1739,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-212",
@@ -1748,7 +1834,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-209",
@@ -1823,7 +1909,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-210",
@@ -1908,7 +1994,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-219",
@@ -1984,7 +2070,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-213",
@@ -2066,7 +2152,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-208",
@@ -2134,11 +2220,11 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-207",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -2292,7 +2378,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-204",
@@ -2357,7 +2443,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-205",
@@ -2423,7 +2509,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-203",
@@ -2488,7 +2574,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-202",
@@ -2584,7 +2670,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-198",
@@ -2649,7 +2735,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-199",
@@ -2713,7 +2799,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-200",
@@ -2792,7 +2878,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-201",
@@ -2874,7 +2960,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-196",
@@ -2959,7 +3045,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-197",
@@ -3035,7 +3121,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-195",
@@ -3114,7 +3200,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-193",
@@ -3199,7 +3285,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-194",
@@ -3278,7 +3364,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-191",
@@ -3346,7 +3432,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-190",
@@ -3432,7 +3518,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-192",
@@ -3504,7 +3590,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-188",
@@ -3570,7 +3656,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-189",
@@ -3637,11 +3723,11 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-187",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -3809,7 +3895,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-182",
@@ -3875,7 +3961,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-180",
@@ -3957,81 +4043,6 @@
             "팀 액션: 영향 버전, object cache 조건, proxy coverage, patch 완료 시각을 자산별 change evidence로 기록",
             "팀 액션: staging compatibility test와 production patch를 분리하되 RCE 대상의 승인 지연 기준 명시",
             "팀 액션: origin direct access 차단, WAF alert routing, restore drill을 CMS incident runbook에 반영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-185",
-      "title_ko": "OpenSSL HollowByte: 11바이트 TLS 입력의 메모리 고갈 DoS 분석과 패치·재시작 점검",
-      "title_original": "OpenSSL HollowByte: A DoS Hiding in 11 Bytes",
-      "summary": "핵심: Okta Red Team이 TLS handshake의 untrusted length 기반 사전 allocation으로 최대 131KB buffer가 잡힐 수 있는 OpenSSL DoS 조건을 분석. 대응: OpenSSL 4.0.1·3.6.3·3.5.7·3.4.6·3.0.21 적용 여부와 실제 TLS process 재시작, connection·RSS memory telemetry를 함께 확인 필요.",
-      "detail": "Okta Red Team은 HollowByte를 TLS handshake header의 3바이트 length 선언을 신뢰해 buffer를 사전 할당하는 OpenSSL 메모리 압박 조건으로 설명했다. 악성 11바이트 입력에서 최대 131KB allocation이 발생할 수 있으며, glibc가 작은·중간 chunk를 즉시 kernel에 반환하지 않는 특성이 connection별 누적을 키우는 조건으로 제시됐다. Okta의 16GB 실험에서는 connection ceiling 아래에서 총 메모리의 25%가 잠겼다고 보고됐지만, 이는 해당 실험 환경의 관측이며 모든 deployment의 동일한 영향이나 원격 코드 실행을 의미하지 않는다. Okta는 6월 9일 release의 4.0.1·3.6.3·3.5.7·3.4.6·3.0.21에 fix가 포함됐다고 설명한다. The Hacker News의 7월 18일 보도 timestamp는 공개 시점에만 사용하며, 기술 사실은 Okta 원문을 기준으로 분리했다.",
-      "why_it_matters": "TLS termination, reverse proxy, API gateway, service mesh는 인터넷 연결 수가 많은 경로에서 OpenSSL을 직접 또는 간접 사용함. connection cap만으로 allocator에 남는 memory pressure를 완전히 막지 못할 수 있어 library version, loaded process, memory telemetry를 같은 DoS 대응 단위로 관리해야 함.",
-      "engineering_implication": "플랫폼·SRE 팀은 internet-facing TLS endpoint별 OpenSSL linkage·loaded version·package backport·process restart 증적을 inventory로 대조 필요. 패치 뒤에는 connection rate·RSS memory·OOM·restart·TLS handshake error를 부하 조건별로 관측하고, EOL branch는 공급자 advisory의 backport 여부를 별도 확인 필요.",
-      "korea_implication": "국내 금융·커머스·공공 서비스의 TLS termination 계층은 OS 배포판 backport와 vendor support contract에 따라 upstream 버전 문자열이 다를 수 있으므로, package changelog·공급자 advisory·실행 중 library를 함께 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "OpenSSL",
-        "TLS",
-        "DoS",
-        "SRE",
-        "Infrastructure"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-07-18 05:20",
-      "source_name": "Okta Security",
-      "source_url": "https://sec.okta.com/articles/2026/06/openssl-hollowbtye-a-dos-hiding-in-11-bytes/",
-      "image_url": "https://images.ctfassets.net/kbkgmx9upatd/2mSwf13fQ5aH31DZNddqtd/0855adabe0c07ddc9ceaa460ebd1d935/Okta_Aura_CMYK_Black.jpg?w=1200&h=800&fit=fill&q=80",
-      "related_links": [
-        {
-          "title": "The Hacker News: OpenSSL HollowByte Flaw Could Freeze Server Memory with 11-Byte TLS Requests — publication timestamp context",
-          "url": "https://thehackernews.com/2026/07/openssl-hollowbyte-flaw-could-freeze.html"
-        },
-        {
-          "title": "OpenSSL release tags",
-          "url": "https://github.com/openssl/openssl/releases"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Okta Red Team은 OpenSSL TLS handshake 처리에서 peer가 선언한 message length를 바탕으로 payload 검증 전 buffer를 키우는 경로를 HollowByte DoS로 분석함. 공개 시점은 The Hacker News의 timezone-aware 보도 timestamp를 사용했으며, 기술 조건은 Okta 원문을 기준으로 확인함.",
-          "items": [
-            "입력: 11바이트 TLS 입력의 3바이트 length 선언이 사전 allocation 경로를 유발하는 조건",
-            "할당: 원문은 `grow_init_buf()`·`OPENSSL_clear_realloc()`을 거쳐 최대 **131KB** allocation이 가능하다고 설명",
-            "범위: 원격 코드 실행이 아닌 server memory pressure·가용성 저하 분석"
-          ]
-        },
-        {
-          "heading": "영향 조건과 수치의 경계",
-          "body": "Okta는 glibc가 작은·중간 memory chunk를 즉시 kernel에 반환하지 않는 allocator 동작 때문에 연결을 끊은 뒤에도 누적 압박이 남을 수 있다고 설명함. 실험 수치는 환경 의존적이며 일반화된 capacity 수치로 사용하면 안 됨.",
-          "items": [
-            "실험: 16GB 시스템에서 connection ceiling 아래 상태로 총 메모리의 25% lockup 관측",
-            "경계: allocator, OS, TLS deployment, connection pattern에 따라 RSS·OOM 영향은 달라지는 조건",
-            "방어: standard connection limit만으로 모든 memory pressure를 차단한다고 단정 불가"
-          ]
-        },
-        {
-          "heading": "수정 범위와 배포 확인",
-          "body": "Okta 원문은 6월 9일 release에 fix가 포함됐다고 설명하며, CVE·공식 security advisory·명시적 changelog 항목이 없었다는 분석을 제시함. package update만으로 loaded TLS process가 새 library를 사용한다고 볼 수 없음.",
-          "items": [
-            "수정: OpenSSL `4.0.1`, `3.6.3`, `3.5.7`, `3.4.6`, `3.0.21` 적용 대상",
-            "검증: reverse proxy·API gateway·web server·service mesh의 실행 중 linkage와 restart evidence 대조",
-            "경계: extended-support·OS vendor backport branch는 upstream version 문자열만으로 적용 여부 판정 불가"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "인터넷 노출 TLS 계층의 DoS 대응은 handshake connection count만이 아니라 library lifecycle과 process memory 관측을 묶어야 함. patch rollout은 버전 확인, restart, canary 부하, memory regression 기준까지 포함하는 운영 변경임.",
-          "items": [
-            "팀 액션: TLS endpoint별 OpenSSL package·loaded version·owner·restart window inventory 작성",
-            "팀 액션: patch 뒤 handshake rate, RSS, OOM, restart, TLS error를 baseline과 비교",
-            "팀 액션: EOL·vendor package는 advisory·changelog·support case로 backport 상태 확인"
           ]
         }
       ],
