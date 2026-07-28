@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-28 | Total pages: 221
+> Last updated: 2026-07-28 | Total pages: 223
 
 ## Entities
 
@@ -28,6 +28,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-security-hub-mcp-app-2026-07-28]] — Security Hub MCP App preview의 exposure finding·attack path 조회, local credential·read-only tool 운영 경계.
+- [[raw/articles/n8n-expression-sandbox-escape-2026-07-27]] — n8n expression sandbox arrow-function escape의 영향 버전·patch·workflow/host incident 대응 경계.
 - [[raw/articles/aitimes-nvidia-open-secure-ai-alliance-2026-07-28]] — NVIDIA 오픈 시큐어 AI 얼라이언스·NOOA 연구 공개 보도와 artifact·운영 범위 증거 경계.
 - [[raw/articles/aitimes-claude-5-context-engineering-2026-07-26]] — Claude 5 컨텍스트 엔지니어링의 prompt 축소·지연 로딩·tool/policy 경계.
 - [[raw/articles/depthfirst-gitlab-oj-spill-2026-07-25]] — GitLab `Oj` parser 두 memory-corruption 결함의 notebook diff·Puma RCE 공개 PoC와 Webservice image patch 검증 경계.
@@ -44,7 +46,7 @@
 - [[raw/articles/upstage-solar-open-2-2026-07-23]] — Solar Open 2의 250B-A15B MoE·1M context와 공식 H200 4/8장 배포 baseline·양자화 artifact 경계.
 - [[raw/articles/aws-nlb-listener-rules-dual-stack-2026-07-23]] — AWS NLB listener rule의 dual-stack IPv4·IPv6 target routing과 원본 client IP 보존 운영 경계.
 - [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
-- `raw/articles/` — 193건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 195건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.

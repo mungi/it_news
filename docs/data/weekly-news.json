@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-28 08:30",
+  "last_updated_kst": "2026-07-28 12:36",
   "audience": "developers and engineers",
   "executive_summary": [
-    "오픈 시큐어 AI 얼라이언스: NVIDIA 발표을 전한 AI타임스는 40여 파트너와 NAVER·SK텔레콤 참여, agent 테스트·추적·감사용 `NOOA` 연구 공개를 보도. 공식 원문·저장소·license·통합 범위는 직접 확인되지 않아 artifact·provenance·telemetry를 별도 검증.",
-    "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출을 판단.",
-    "샌프란시스코 AI 서밋: NVIDIA 공식 글은 NAVER GAK 세종 DSX AI factory의 200MW·약 10만 GPU 확장과 SK Vera Rubin·HBM4 계획을 제시. 모두 계획 또는 공급자 발표이므로 전력·냉각·부지·delivery·SLA를 usable capacity와 분리 검증.",
-    "Andrew Ng OpenWorker 공개: BYOK·local model을 고를 수 있는 desktop agent는 모델 선택과 별개로 파일·shell·MCP·connector capability, data egress, update provenance를 endpoint control로 검증해야 하는 도입 경계.",
-    "Claude Opus 5 rollout: 100만 token context·Effort Ladder·Fast Mode와 Bedrock/native provider 경로는 품질뿐 아니라 token budget·latency·ZDR·IAM·fallback을 workload별로 canary 검증해야 하는 production 변경."
+    "오픈 시큐어 AI 얼라이언스: NVIDIA 공식 글과 AI타임스 보도는 37~40여 파트너의 AI safety·security 연합 및 agent testing·tracing·audit용 `NOOA` 공개를 제시. repository·license·제품 통합 범위는 후속 artifact로 확인.",
+    "n8n expression sandbox escape: GitHub advisory는 workflow 편집 권한 계정의 host command execution 가능성과 `2.31.5`·`2.32.1` 패치를 확인. self-hosted 환경은 package version, workflow revision, n8n process 권한·credential·egress를 함께 triage.",
+    "AWS Security Hub MCP App preview: exposure finding·attack path·상관 finding을 자연어 tool로 조회하고 text summary·interactive visualization을 반환. local existing credential·read-only tool 경계를 IAM role·MCP client·audit telemetry로 별도 검증.",
+    "Fastjson 1.x RCE: 기본 SafeMode OFF의 Spring Boot executable fat-JAR에서 `1.2.68`~`1.2.83` 영향 조건을 공식 공지가 확인. 1.x patch 부재·공격 관측 보도는 대응 신호이나, 서비스별 packaging·JSON entry point·telemetry로 실제 노출 판단.",
+    "Claude 5 context engineering: Claude Code 시스템 prompt 약 80% 축소 주장은 공급자 실험 결과. prompt 최적화와 destructive tool·secret·egress 통제는 policy·permission·approval·audit trace로 분리 운영."
   ],
   "deep_dives": [
     {
@@ -258,6 +258,158 @@
       "rank": 1
     },
     {
+      "id": "news-232",
+      "title_ko": "AWS Security Hub MCP App preview: 노출 경로 조회를 AI agent 대화로 연결, 로컬 credential 경계 확인",
+      "title_original": "AWS Security Hub MCP App brings exposure findings into your AI-assisted workflow (Preview)",
+      "summary": "핵심: AWS가 Security Hub MCP App preview를 공개해 자연어로 top exposure finding, attack path·expanded network path, 상관 finding, 영향 resource configuration, remediation recommendation을 조회하도록 지원. 범위: tool call은 agent용 text summary와 운영자 검증용 interactive visualization을 함께 반환하며, MCP server는 기존 AWS credential로 로컬 실행·read-only라고 AWS가 명시. 대응: read-only 선언과 별개로 MCP client·credential source·role scope·local log·다른 MCP server capability를 분리 검증 필요.",
+      "detail": "AWS What’s New는 2026년 7월 27일 UTC에 Security Hub MCP App preview를 공개했다. Security Hub exposure finding을 자연어로 조사하고, finding의 attack path와 expanded network path, correlated finding, 영향 resource configuration, remediation recommendation까지 조회할 수 있다. 각 tool call은 AI agent가 해석할 text summary와 사용자가 같은 conversation에서 확인할 interactive visualization을 반환한다. AWS는 MCP server가 기존 AWS credential을 사용해 로컬 머신에서 실행되며 모든 tool이 read-only라 AWS environment를 변경하지 않는다고 설명한다. 다만 원문에는 지원 MCP client·리전·IAM 최소 권한·CloudTrail/CloudWatch audit 범위·rate limit·비용이 구체적으로 제시되지 않았다. 플랫폼·보안 팀은 preview를 production write automation이 아닌 read-only investigation surface로 한정하고, role scope·credential source·agent egress·audit evidence를 sandbox에서 확인해야 한다.",
+      "why_it_matters": "Security finding 조회를 MCP tool로 연결하면 analyst 탐색 속도는 높일 수 있으나, agent 대화 UX가 IAM 권한·credential lifecycle·audit completeness를 대체하지 않음. finding 요약과 visualization이 같은 대화에 있어도 remediation 실행 권한은 별도 workflow와 approval에 유지 필요.",
+      "engineering_implication": "Security·platform 팀은 전용 read-only IAM role과 short-lived credential을 사용하고, approved MCP client·endpoint·local log retention·tool-call trace를 inventory 필요. attack-path 결과의 resource ID·account·region을 원 Security Hub console/API와 표본 대조하고, remediation은 ticket·change approval·least-privilege automation으로 분리 필요.",
+      "korea_implication": "국내 AWS 조직은 계정 분리·보안관제·감사 로그 보존 기준에 맞춰 로컬 MCP server가 읽는 credential profile과 tool-call logging 경로를 먼저 검토 필요.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "Security Hub",
+        "MCP",
+        "Cloud Security",
+        "AI Agent",
+        "Exposure Management"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-07-28 02:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-security-hub-mcp-app/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "AWS Security Hub User Guide",
+          "url": "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS는 **Security Hub MCP App preview**를 공개해 Security Hub exposure finding을 AI-assisted workflow에서 자연어로 조사하는 경로를 제시함.",
+          "items": [
+            "조회: top exposure finding과 finding별 attack path·expanded network path 확인",
+            "상관: correlated finding과 영향 resource configuration을 대화 흐름에서 조회",
+            "권고: remediation recommendation을 tool response로 제공"
+          ]
+        },
+        {
+          "heading": "tool response와 실행 경계",
+          "body": "AWS 원문은 각 tool call이 agent용 text summary와 운영자 검증용 interactive visualization을 함께 반환한다고 설명함. 이 기능은 finding 탐색·검증용이며 remediation action 실행 기능으로 소개되지 않음.",
+          "items": [
+            "형식: 모델 추론용 text와 사람 검증용 visualization의 병행 반환",
+            "실행: 모든 MCP tool은 read-only이고 AWS environment 변경 없음이라는 원문 선언",
+            "경계: read-only tool이 다른 MCP server·client plugin·operator workflow의 write capability까지 제한한다는 근거 없음"
+          ]
+        },
+        {
+          "heading": "credential·client 운영 관점",
+          "body": "MCP server는 기존 AWS credential을 사용해 로컬 머신에서 실행됨. 따라서 실제 읽기 범위와 trace는 Security Hub 기능 자체뿐 아니라 local credential chain·assume-role policy·MCP client 설정에 좌우됨.",
+          "items": [
+            "identity: 전용 read-only role·short-lived session·account/region scope로 credential blast radius 제한",
+            "client: 승인한 MCP client·server binary·endpoint만 allowlist하고 version·hash 기록",
+            "audit: tool-call input·resource ID·role session·operator identity를 CloudTrail 및 local telemetry와 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "preview 도입 전 finding 결과가 원 Security Hub console 또는 API 결과와 일치하는지 표본 검증하고, remediation은 change-control 경로에 남겨야 함.",
+          "items": [
+            "팀 액션: attack-path 결과의 account·region·resource ID·timestamp를 원 API와 대조",
+            "팀 액션: local log retention·secret redaction·egress policy·MCP server update provenance 확인",
+            "팀 액션: remediation 제안은 ticket·approval·least-privilege automation으로 분리"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-233",
+      "title_ko": "n8n expression sandbox escape: workflow 편집 권한 계정이 host command를 실행할 수 있는 High 결함 패치",
+      "title_original": "n8n: Expression sandbox escape via arrow-function bodies enabling command execution",
+      "summary": "핵심: GitHub Reviewed advisory는 workflow 생성·수정 권한을 가진 인증 사용자가 crafted arrow-function expression으로 n8n expression sandbox를 우회해 host의 system command를 실행할 수 있다고 설명. 범위: `<2.31.5`, `>=2.32.0,<2.32.1`이 영향이며 `2.31.5`, `2.32.1`에서 패치, CVSS v4 8.7 High·CVE 미할당 상태. 대응: workflow editor 신뢰 제한은 임시 완화일 뿐이므로 patch, workflow revision hunt, n8n process credential·network scope 점검을 같은 incident track으로 처리 필요.",
+      "detail": "GitHub Reviewed advisory `GHSA-gv7g-jm28-cr3m`는 n8n workflow를 생성·수정할 수 있는 인증 사용자가 crafted arrow-function expression으로 expression sandbox를 우회해 n8n host에서 의도하지 않은 system command를 실행할 수 있다고 설명한다. 영향 package range는 `<2.31.5`와 `>=2.32.0,<2.32.1`이며, patched release는 `2.31.5`와 `2.32.1`이다. advisory는 CVSS v4 8.7 High, network attack vector, low privileges, user interaction 없음, CVE 미할당 상태를 공개한다. The Hacker News는 Security Joes가 arrow-function body 처리 공백과 property check 우회 조합을 연구했고 2.30.4에서 PoC를 시험했다고 보도했으며, 보고 준비 시점 active exploitation은 관측하지 못했다고 전한다. 이 기술 exploit chain과 exploitation status는 THN 보도 범위로 제한한다. n8n Cloud 영향, 1.x 상태, 실제 credential·data access는 공개 자료만으로 확정하지 않는다. 운영팀은 upgrade를 우선하고 최근 workflow 수정·process child·egress·credential 사용을 함께 hunt해야 한다.",
+      "why_it_matters": "n8n은 SaaS·database·cloud connector credential과 내부 network에 닿는 automation runtime이 될 수 있음. low-privilege workflow editor의 command execution은 workflow RBAC만의 문제가 아니라 host process privilege·secret storage·egress boundary를 함께 검토해야 하는 incident 조건임.",
+      "engineering_implication": "Self-hosted n8n은 실제 container/image package version을 확인해 `2.31.5` 또는 `2.32.1` 이상으로 업데이트하고, 최근 workflow revision·arrow function·obfuscated JavaScript·n8n/Node child process·outbound request를 hunt 필요. 의심 activity가 있으면 `N8N_ENCRYPTION_KEY`와 연결 credential rotation 범위를 incident evidence에 따라 결정 필요.",
+      "korea_implication": "국내 n8n 기반 사내 자동화는 shared service account·망 연계·개인정보 connector가 있는 deployment부터 editor 권한과 host credential scope를 분리 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "n8n",
+        "Security",
+        "Workflow Automation",
+        "Node.js",
+        "Sandbox Escape",
+        "RCE"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-07-27 22:05",
+      "source_name": "GitHub Advisory Database / n8n",
+      "source_url": "https://github.com/advisories/GHSA-gv7g-jm28-cr3m",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News: n8n Sandbox Escape Lets Workflow Editors Run OS Commands as the n8n Process (RSS 2026-07-27 18:35:15 +05:30 = 2026-07-27 22:05 KST)",
+          "url": "https://thehackernews.com/2026/07/n8n-sandbox-escape-lets-workflow.html"
+        },
+        {
+          "title": "n8n fixed release 2.31.5",
+          "url": "https://github.com/n8n-io/n8n/releases/tag/n8n@2.31.5"
+        },
+        {
+          "title": "n8n fixed release 2.32.1",
+          "url": "https://github.com/n8n-io/n8n/releases/tag/n8n@2.32.1"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub Reviewed advisory `GHSA-gv7g-jm28-cr3m`는 workflow 생성·수정 권한을 가진 인증 사용자가 crafted arrow-function expression으로 n8n expression sandbox를 우회할 수 있다고 설명함.",
+          "items": [
+            "영향: n8n host에서 의도하지 않은 system command execution 가능성",
+            "권한: valid account와 workflow create/modify permission 필요, 다른 사용자 interaction 불필요",
+            "등급: CVSS v4 **8.7 High**, CVE 미할당 상태"
+          ]
+        },
+        {
+          "heading": "영향 버전과 패치",
+          "body": "GitHub advisory의 package range는 `<2.31.5` 및 `>=2.32.0,<2.32.1`임. n8n은 `2.31.5`와 `2.32.1`에서 수정했고 advisory는 upgrade를 권고함.",
+          "items": [
+            "패치: `2.31.5` 또는 `2.32.1` 이상으로 upgrade 필요",
+            "임시 완화: instance access와 workflow editor를 trusted user로 제한하는 조치는 완전한 remediation이 아님",
+            "확인: Helm chart·container tag가 아니라 running n8n package version과 image digest 기준 inventory"
+          ]
+        },
+        {
+          "heading": "기술 주장과 증거 경계",
+          "body": "The Hacker News는 Security Joes가 arrow-function body 처리 공백과 property check 우회 조합을 보고했다고 전함. 해당 exploit-chain 세부와 active-exploitation 관측 부재는 THN 보도 범위임.",
+          "items": [
+            "연구: `ArrowFunctionExpression` 처리 공백과 `Reflect.get()` 기반 property 접근 우회 보도",
+            "PoC: `process.getBuiltinModule`·`child_process` 접근과 2.30.4 시험은 THN 인용 범위",
+            "미확인: n8n Cloud 영향, 모든 1.x deployment 상태, 실제 피해 조직·credential/data access 증거"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "workflow editor 권한 제한만으로 incident surface가 닫히지 않음. patch와 함께 host process privilege·connector credential·network egress·workflow revision telemetry를 같은 대응 track에서 확인해야 함.",
+          "items": [
+            "팀 액션: 최근 workflow revision, unexpected arrow function·obfuscated JavaScript, n8n/Node child process hunt",
+            "팀 액션: service account·filesystem mount·outbound allowlist·connector credential scope 점검",
+            "팀 액션: 의심 execution evidence가 있으면 `N8N_ENCRYPTION_KEY` 및 연계 credential rotation 범위 결정"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-230",
       "title_ko": "Claude 5 컨텍스트 엔지니어링: 시스템 프롬프트 80% 축소 주장은 tool·policy 경계와 분리 검증",
       "title_original": "The new rules of context engineering for Claude 5 generation models",
@@ -327,7 +479,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-229",
@@ -399,7 +551,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-226",
@@ -490,7 +642,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-228",
@@ -578,7 +730,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-227",
@@ -659,7 +811,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-224",
@@ -738,7 +890,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-225",
@@ -826,7 +978,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-223",
@@ -906,7 +1058,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-222",
@@ -986,7 +1138,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-221",
@@ -1070,7 +1222,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-220",
@@ -1147,7 +1299,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-216",
@@ -1214,7 +1366,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-217",
@@ -1281,7 +1433,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-214",
@@ -1361,7 +1513,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-215",
@@ -1434,7 +1586,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-218",
@@ -1501,7 +1653,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-212",
@@ -1596,7 +1748,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-209",
@@ -1671,7 +1823,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-210",
@@ -1756,7 +1908,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-219",
@@ -1832,7 +1984,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-213",
@@ -1914,7 +2066,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-208",
@@ -1982,11 +2134,11 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-207",
-      "rank": 24,
+      "rank": 26,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -2140,7 +2292,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-204",
@@ -2205,7 +2357,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-205",
@@ -2271,7 +2423,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-203",
@@ -2336,7 +2488,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-202",
@@ -2432,7 +2584,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-198",
@@ -2497,7 +2649,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-199",
@@ -2561,7 +2713,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-200",
@@ -2640,7 +2792,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-201",
@@ -2722,7 +2874,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-196",
@@ -2807,7 +2959,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-197",
@@ -2883,7 +3035,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-195",
@@ -2962,7 +3114,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-193",
@@ -3047,7 +3199,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-194",
@@ -3126,7 +3278,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-191",
@@ -3194,7 +3346,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-190",
@@ -3280,7 +3432,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-192",
@@ -3352,7 +3504,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-188",
@@ -3418,7 +3570,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-189",
@@ -3485,11 +3637,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-187",
-      "rank": 44,
+      "rank": 46,
       "title_ko": "F5, NGINX `map`·regex heap overflow CVE-2026-42533 수정: worker DoS와 조건부 RCE 경로 점검",
       "title_original": "Critical NGINX Vulnerability Can Crash Workers and May Allow Remote Code Execution",
       "summary": "핵심: F5가 regex 기반 `map`과 string expression 조합에서 NGINX worker heap buffer overflow를 일으킬 수 있는 `CVE-2026-42533`을 공개하고 1.30.4·1.31.3·NGINX Plus 37.0.3.1 수정본을 제시. 영향: 구성 조건이 맞으면 unauthenticated request로 worker restart DoS가 가능하며, ASLR 비활성 또는 우회 조건의 code execution 가능성은 F5 advisory 범위로 분리해 patch와 config hunt를 병행 필요.",
@@ -3657,7 +3809,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-182",
@@ -3723,7 +3875,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-180",
@@ -3808,7 +3960,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-185",
@@ -3880,160 +4032,6 @@
             "팀 액션: TLS endpoint별 OpenSSL package·loaded version·owner·restart window inventory 작성",
             "팀 액션: patch 뒤 handshake rate, RSS, OOM, restart, TLS error를 baseline과 비교",
             "팀 액션: EOL·vendor package는 advisory·changelog·support case로 backport 상태 확인"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-186",
-      "title_ko": "ViteVenom: Vite 생태계를 사칭한 npm 7개 패키지의 블록체인 C2·RAT 공급망 공격",
-      "title_original": "Seven Malicious Vite npm Packages Use Blockchain C2 to Deliver a RAT",
-      "summary": "핵심: Checkmarx 분석을 인용한 The Hacker News는 Vite·`@vitejs/*` namespace를 사칭한 npm 7개 패키지가 Tron·Aptos·BNB Smart Chain을 잇는 C2로 RAT를 내려받는다고 보도. 대응: 설치 단계가 아닌 import 단계 실행 조건을 포함해 lockfile·registry log·developer workstation의 shell profile·credential을 함께 조사하고, 의심 패키지는 제거·회전·재빌드 필요.",
-      "detail": "The Hacker News는 Checkmarx의 ViteVenom 분석을 인용해 Vite frontend tooling 사용자를 겨냥한 npm 7개 패키지와 ChainVeil 계열의 공통 tier-2 infrastructure를 보도했다. 보도된 패키지는 6월 29일~7월 3일 게시됐고 `@vitejs/*`와 비슷한 scoped name을 사용한다. 악성 코드는 install이 아니라 import 시 blockchain transaction에서 다음 단계 payload pointer를 가져와 복호화한 뒤 RAT를 실행하며, Tron retrieval 실패 시 Aptos와 HTTP fallback을 사용한다고 설명한다. 특정 조직의 설치·침해는 확인하지 않으며, Checkmarx 원문은 이번 실행에서 HTTP 403으로 직접 열람되지 않아 THN 보도 범위로 한정한다.",
-      "why_it_matters": "frontend build dependency는 CI·developer workstation·release artifact를 연결함. import-time 실행은 install hook만 감시하는 통제를 우회할 수 있어 lockfile diff, package provenance, runtime egress, workstation persistence를 한 incident 범위로 묶어야 함.",
-      "engineering_implication": "개발 플랫폼·보안 팀은 `@vitejs/*`와 유사한 scope의 신규 dependency를 namespace allowlist·publisher provenance·version pinning으로 검증하고, 설치 이력이 있는 repository는 lockfile·CI cache·shell profile·registry token·cloud credential을 우선 조사 필요. 단순 package 삭제 전에 build artifact와 endpoint telemetry를 보존하고 clean rebuild와 credential rotation을 수행 필요.",
-      "korea_implication": "국내 웹·커머스 조직도 외주·협력사 개발 환경까지 private registry·npm token·CI secret 권한을 분리하고, 소스코드 반출과 package download audit을 계약·보안 점검 항목으로 관리 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "npm",
-        "Vite",
-        "Supply Chain",
-        "RAT",
-        "DevTools"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-07-18 03:54",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/seven-malicious-vite-npm-packages-use.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgA07xA1INXGKM7Z2LQ6zk2IFE_Hb_aDQNHmSfPtJkZY5Gzo2U2_cyflorBsU76hbXK8SwKXR5AmkK5dAAd9uw0wRh6gYaC-5ZPjT6kEdvE7rO-5G0TxXm8a-eytoygZOMuSG-aOnYkC_zTVbnxSq7zxaIFYyLcegbQ59WVztRO-y3MHmce7XuDz2SdVsKA/s1600/vite-npm.jpg",
-      "related_links": [
-        {
-          "title": "Checkmarx: Sequel to ChainVeil — npm malware targets Vite ecosystem",
-          "url": "https://checkmarx.com/zero-post/sequel-to-chainveil-npm-malware-targets-vite-ecosystem/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 Checkmarx가 ViteVenom으로 명명한 npm 공급망 공격을 보도함. 보도 대상은 Vite frontend tooling 사용자를 겨냥해 `@vitejs/*` namespace와 유사한 이름을 사용한 7개 패키지이며, 해당 패키지의 설치·감염 조직은 기사에서 확인하지 않음.",
-          "items": [
-            "대상: Vite 개발자를 겨냥한 **7개 npm 패키지**의 악성 dependency campaign 보도",
-            "게시: 패키지는 2026년 6월 29일~7월 3일 npm에 게시된 것으로 기사에 제시",
-            "경계: 보도는 악성 패키지 분석이며 특정 조직의 설치·credential 탈취·피해 규모 확정 근거 아님"
-          ]
-        },
-        {
-          "heading": "사칭 이름과 실행 조건",
-          "body": "보도된 이름은 scope를 사용해 공식 `@vitejs/*` namespace처럼 보이게 만드는 방식임. ChainVeil의 unscoped typosquat와 달리 scoped package가 신뢰 신호처럼 보일 수 있으며, 악성 동작은 install hook이 아니라 import 시점에 시작되는 조건으로 설명됨.",
-          "items": [
-            "식별: `@uw010010/vite-tree`, `@vite-tab/tab`, `@vite-ln/build-ts` 등 7개 이름을 dependency history에서 대조",
-            "실행: install-time이 아닌 import-time loader로 동작해 install hook 중심 탐지의 관측 공백 가능성",
-            "영향: local development·test·CI build에서 실제 import가 일어난 job과 artifact를 별도로 추적 필요"
-          ]
-        },
-        {
-          "heading": "블록체인 C2와 RAT 전달 경로",
-          "body": "THN은 ChainVeil과의 공통 tier-2 infrastructure를 근거로 Tron, Aptos, BNB Smart Chain을 잇는 다단 C2를 설명함. loader는 Tron transaction data에서 BSC transaction hash를 얻고 encrypted payload를 복호화하며, Tron 경로 실패 시 Aptos와 HTTP fallback을 사용한다고 보도됨.",
-          "items": [
-            "C2: Tron·Aptos·BNB Smart Chain transaction data를 payload pointer로 사용하는 구조 보도",
-            "기능: reverse shell, credential harvesting, file exfiltration, persistent backdoor injection 가능 RAT 전달 분석",
-            "제한: public blockchain pointer 사용이 takedown을 어렵게 할 수 있으나 모든 endpoint의 성공 감염을 의미하지 않음"
-          ]
-        },
-        {
-          "heading": "조사와 격리 순서",
-          "body": "의심 패키지 제거만으로 import 이후 실행된 payload와 유출 credential 위험을 닫을 수 없음. dependency lockfile, registry download, CI cache, endpoint process·egress, shell startup file 변경을 같은 시간선으로 보존한 뒤 clean rebuild와 credential 회전을 수행해야 함.",
-          "items": [
-            "1단계: package manifest·lockfile·npm cache·private registry audit에서 7개 package와 유사 scope 설치 이력 검색",
-            "2단계: import 실행 CI·developer endpoint의 process·DNS·HTTP egress와 `.bashrc`·`.zshrc`·`.profile` 변경 조사",
-            "3단계: 악성 package 제거, clean environment rebuild, npm·Git·cloud credential 회전과 release artifact 재서명 수행"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Vite dependency 통제는 install 단계의 malware scan만으로 충분하지 않음. namespace 유사성, publisher provenance, import-time code execution, CI secret reachability를 release gate로 묶고, SBOM이 실제 lockfile·artifact와 일치하는지 검증하는 운영 과제임.",
-          "items": [
-            "팀 액션: official scope allowlist·publisher provenance·exact version pinning을 dependency admission policy로 적용",
-            "팀 액션: CI의 npm token·cloud credential·release signing key를 least privilege와 short-lived credential로 분리",
-            "팀 액션: suspicious dependency incident runbook에 lockfile diff·egress hunt·shell persistence·artifact rebuild·secret rotation 순서 반영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-181",
-      "title_ko": "Amazon OpenSearch UI, legacy Dashboards의 tenant·saved object를 one-click migration으로 이전 지원",
-      "title_original": "Amazon OpenSearch UI now supports one-click dashboard migration",
-      "summary": "핵심: Amazon OpenSearch Service가 legacy OpenSearch Dashboards의 tenant와 saved object를 OpenSearch UI workspace로 이전하는 one-click migration을 OpenSearch domain·serverless collection에 추가. 운영: 다중 tenant를 단일 workspace로 합치거나 팀별로 유지할 수 있어 migration 재작성 부담은 줄지만, 권한 모델·object 참조·rollback·관측 대시보드 정확도는 사전 검증 필요.",
-      "detail": "AWS는 Amazon OpenSearch UI가 legacy OpenSearch Dashboards의 tenant와 saved object를 one-click으로 이전할 수 있다고 발표했다. OpenSearch domain과 serverless collection 모두에서 새 또는 기존 OpenSearch UI workspace로 migration할 수 있으며, 여러 tenant를 단일 workspace로 합치거나 팀별로 유지하는 선택지를 제공한다. AWS는 OpenSearch UI를 다수 데이터 소스의 search와 unified observability를 위한 zero-downtime serverless interface로 설명한다. 기능은 OpenSearch UI가 제공되는 모든 AWS Region에서 이용 가능하다는 발표 범위이며, 저장 object의 권한·데이터 소스 연결·visualization·운영 rollback 검증은 고객 환경에서 별도로 수행해야 한다.",
-      "why_it_matters": "observability와 search dashboard migration에서 saved object 재생성은 운영 중단·권한 누락·대시보드 drift를 만들기 쉬움. tenant와 object를 이동하는 자동화가 생겨도 workspace 경계와 팀별 접근 제어가 바뀌면 민감 로그·지표의 visibility가 달라질 수 있음.",
-      "engineering_implication": "OpenSearch 소유팀은 migration 전 tenant별 owner·role·saved search·data source dependency를 export하고, 새 workspace에서 query result·visualization·alert workflow·least privilege를 대조 필요. 신규 UI 전환은 canary workspace와 rollback 기준으로 운영하고, multi-tenant 통합 시 cross-team data exposure와 비용 attribution을 검토 필요.",
-      "korea_implication": "다계정 AWS 관측 환경은 중앙 platform workspace와 서비스별 tenant를 합칠 때 계열사·외주 운영자의 로그 접근 경계를 IAM과 감사 로그로 재검증할 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "OpenSearch",
-        "Observability",
-        "Dashboard",
-        "Migration"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 80,
-      "published_kst": "2026-07-18 02:23",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-opensearch-ui-one-click-dashboard-migration",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 legacy OpenSearch Dashboards에서 OpenSearch UI로 tenant와 saved object를 이전하는 one-click migration을 추가함. OpenSearch domain과 serverless collection에서 사용하는 migration 경로임.",
-          "items": [
-            "이전: legacy dashboard의 tenant·saved object를 OpenSearch UI workspace에서 재사용하는 기능",
-            "대상: OpenSearch domain과 serverless collection의 새 또는 기존 workspace 지원",
-            "목적: object 수작업 재작성 없이 interface 전환의 운영 복잡도 축소"
-          ]
-        },
-        {
-          "heading": "workspace 구성 선택지",
-          "body": "여러 legacy tenant가 있는 조직은 tenant를 하나의 workspace로 변환하거나 팀별 workspace를 유지할 수 있음. 이 선택은 단순 UI 정리가 아니라 data source와 role boundary 설계 변경임.",
-          "items": [
-            "통합: 여러 tenant를 single workspace로 합치는 선택지",
-            "분리: 팀별 tenant를 별도 workspace로 유지하는 선택지",
-            "검토: tenant별 owner·role·saved search·visualization dependency inventory 필요"
-          ]
-        },
-        {
-          "heading": "기능 범위와 한계",
-          "body": "AWS는 OpenSearch UI를 여러 data source를 위한 search·unified observability interface로 설명하며, 기존 object를 이동하는 workflow를 제공함. 발표문은 모든 visualization·query·권한 모델의 무변경 호환성 또는 migration rollback을 보장하지 않음.",
-          "items": [
-            "가용성: AWS 발표 기준 OpenSearch UI 제공 모든 Region에서 사용 가능",
-            "검증: query result, visualization rendering, alert workflow, data source connection의 staging 대조 필요",
-            "경계: migration 성공 메시지만으로 least privilege·cross-tenant data exposure를 확정할 수 없음"
-          ]
-        },
-        {
-          "heading": "운영 전환 절차",
-          "body": "production workspace를 즉시 바꾸기보다 representative tenant를 canary로 이전하고 기존 dashboard와 결과를 비교하는 순서가 필요함. 실패 시 기존 interface로 돌아갈 기준과 변경 evidence를 미리 정해야 함.",
-          "items": [
-            "1단계: tenant·object·role·data source export와 owner 확인",
-            "2단계: canary workspace에서 query·visualization·alert·access policy 비교",
-            "3단계: cutover 후 usage·error·access denial·cost attribution 모니터링과 rollback 기준 적용"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "one-click migration은 작업량을 줄이지만 observability access governance를 자동으로 해결하지 않음. dashboard 전환을 application migration처럼 취급해 permission, data quality, audit, rollback을 release gate로 두는 운영 과제임.",
-          "items": [
-            "팀 액션: workspace별 IAM role·data source permission·external user access를 change review에 포함",
-            "팀 액션: saved object import 전후 query 결과와 alert delivery를 representative workload로 검증",
-            "팀 액션: tenant 통합 시 service owner·비용 center·로그 보존 정책의 책임 경계 기록"
           ]
         }
       ],
