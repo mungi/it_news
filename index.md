@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/jetbrains-teamcity-cve-2026-63077-2026-07-28]] — TeamCity On-Premises `CVE-2026-63077` 비인증 RCE의 수정 버전·patch plugin·CI/CD credential 대응 경계.
 - [[raw/articles/moonshot-kimi-k3-weights-infra-2026-07-28]] — Kimi K3 공개 가중치·2.8T/104B MoE·1M context와 MoonEP·FlashKDA·AgentENV의 self-hosting 검증 경계.
 - [[raw/articles/aws-security-hub-mcp-app-2026-07-28]] — Security Hub MCP App preview의 exposure finding·attack path 조회, local credential·read-only tool 운영 경계.
 - [[raw/articles/n8n-expression-sandbox-escape-2026-07-27]] — n8n expression sandbox arrow-function escape의 영향 버전·patch·workflow/host incident 대응 경계.
