@@ -2,12 +2,12 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-29 13:19",
+  "last_updated_kst": "2026-07-29 17:25",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft `MAI-Cyber-1-Flash`·`MDASH`: Microsoft는 CyberGym 95.95%와 기존 MDASH 최적 조합 대비 50% 비용 절감을 발표. 점수는 GPT-5.4 결합 system의 known-vulnerability 재현 결과이므로, 도입은 isolated runner·patch approval·rollback·route별 비용 evidence를 기준으로 결정.",
     "NOAA 차세대 `WCOSS` cloud HPC 전환 보도: Google Cloud `H4D`·AMD 5세대 EPYC 기반 공공 클라우드 NWP 운영 계획이 제시됨. 실제 node·network·storage·SLO·정확도·비용은 공개되지 않아 forecast deadline·재현성·failover 기준의 PoC로 검증 필요.",
-    "Moonshot Kimi K3 가중치·인프라 3종 공개: Hugging Face 모델 카드는 2.8T total·104B active MoE, 1M context와 Kimi K3 License를 명시. MoonEP·FlashKDA·AgentENV의 성능·isolation은 target GPU·license·sandbox·cost 조건에서 별도 재현.",
+    "SKT `A.X K2` 공개 가중치: Apache-2.0 모델 카드는 688B total·33B active MoE, native FP8 checkpoint, 256K context를 명시. 256K는 128K native training 뒤 YaRN scaling 구성이라, GPU·runtime·KV cache·concurrency별 TTFT/TPOT·OOM·quality를 독립 측정.",
     "Amazon EKS Provisioned Control Plane HPA 처리량 상향: AWS는 HPA sync concurrency를 기본 Kubernetes 값의 최대 40배로 높여 많은 HPA object의 동시 평가를 확대. 실제 scale-out SLO는 metric freshness·node capacity·image pull·readiness까지 포함한 p95 burst test로 재측정.",
     "GitHub npm·Actions 공급망 방어 변경: high-impact npm 계정 72시간 read-only, fork untrusted-code checkout 기본 차단, cache write·workflow trigger 정책을 적용. Actions network firewall은 outbound logging technical preview이므로 self-hosted runner·egress block은 별도 통제로 검증."
   ],
@@ -190,6 +190,87 @@
   ],
   "items": [
     {
+      "id": "news-241",
+      "title_ko": "SKT A.X K2 공개 가중치: 688B/33B active MoE·native FP8 checkpoint와 256K context",
+      "title_original": "SKT, 'A.X K2' 오픈 공개...국내 최대 '6880억 매개변수'",
+      "summary": "핵심: SK텔레콤은 Hugging Face에 Apache-2.0 `A.X K2` 가중치를 공개. 공식 모델 카드는 **688B total·33B active** MoE, 256 routed expert 중 token당 8개 활성화, native FP8 학습·block-scaled FP8 checkpoint, 256K context를 명시. 경계: 256K는 128K native training 뒤 YaRN scaling으로 확장한 값이며, 성능·memory 이점은 target runtime·precision·concurrency·KV cache 조건에서 별도 재현 필요.",
+      "detail": "SK텔레콤은 2026년 7월 29일 `skt/A.X-K2`를 Hugging Face에 공개했다. 모델 카드 frontmatter는 Apache-2.0 license와 Transformers text-generation을 명시하며, 본체는 688B total parameter·33B active parameter의 decoder-only MoE다. 256 routed expert와 1 shared expert 중 routed expert 8개가 token마다 활성화된다. 모델 카드는 native FP8(MXFP8/E4M3) forward·backward 학습과 block-scaled FP8(E4M3) checkpoint 배포, 256K context를 명시한다. context는 128K native training을 YaRN scaling으로 확장한 구성이다. `Sparse Gated Attention`은 top-k selection과 MLA 위 gated attention으로 long-context attention 계산을 줄이는 구조이며, `Gated Norm`은 activation outlier를 억제해 FP8/NVFP4 serving에 유리하다는 공급자 설명이다. AI타임스가 보도한 K1 대비 14개 benchmark 평균 32.2%p 향상은 test·prompt·hardware·serving 조건이 동일하지 않은 비교이므로 independent capacity 또는 quality 보장으로 사용하면 안 된다. 배포 계획은 weight precision만이 아니라 346 shard artifact, model revision, tokenizer, runtime, KV cache, GPU memory, interconnect, batch/concurrency, tool/data-policy를 함께 검증해야 한다.",
+      "why_it_matters": "한국어·code를 포함한 대형 공개 MoE의 FP8 checkpoint가 공개돼 self-hosting과 sovereign AI 평가의 선택지가 늘어남. 다만 active parameter가 작아도 long-context KV cache·runtime workspace·network·availability reserve가 cluster 비용과 SLO를 결정하므로 parameter headline만으로 serving capacity를 산정할 수 없음.",
+      "engineering_implication": "플랫폼 팀은 model revision·346 shard artifact hash·Apache-2.0 범위·tokenizer·chat template·FP8 runtime을 release manifest에 고정하고, 1K/32K/128K/256K context별 TTFT·TPOT·p95·KV cache·OOM·quality를 같은 prompt set에서 측정 필요. Think/non-think route, tool permission, prompt/output retention, fallback·rollback, GPU/node failure recovery를 production admission gate로 분리 필요.",
+      "korea_implication": "국내 독파모·공공·제조 AI 조직은 공개 가중치 사용 가능 여부와 별개로 data residency, proprietary corpus provenance, third-party redistribution, managed service·fine-tune 조건, 한국어 domain evaluation을 계약·보안 검토와 PoC acceptance criteria에 반영 필요.",
+      "category": "AI",
+      "tags": [
+        "SKT",
+        "A.X K2",
+        "MoE",
+        "FP8",
+        "Long Context",
+        "Open Weights",
+        "Korea AI"
+      ],
+      "region": "Korea",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-07-29 12:34",
+      "source_name": "AI타임스 / SKT Hugging Face 모델 카드",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213289",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/213289_216719_3557.png",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "SKT A.X K2 모델 카드",
+          "url": "https://huggingface.co/skt/A.X-K2"
+        },
+        {
+          "title": "SKT A.X K2 GitHub",
+          "url": "https://github.com/SKT-AI/A.X-K2"
+        },
+        {
+          "title": "A.X K2 Technical Report",
+          "url": "https://github.com/SKT-AI/A.X-K2/blob/main/A_X_K2_Tech_Report.pdf"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "SK텔레콤은 Hugging Face에 **A.X K2** 가중치를 공개함. 모델 card frontmatter는 Apache-2.0, Transformers text-generation, 영어·한국어·중국어·일본어·스페인어 지원 범위를 명시함.",
+          "items": [
+            "`skt/A.X-K2`: 688B total parameter·33B active parameter의 decoder-only MoE 공개",
+            "expert 구성: 256 routed expert와 1 shared expert 중 token당 routed expert 8개 활성화",
+            "artifact: Hugging Face API에서 2026-07-28T23:40:17Z 수정 시각과 346개 safetensors shard 확인"
+          ]
+        },
+        {
+          "heading": "모델 카드의 아키텍처·정밀도 범위",
+          "body": "공식 모델 카드는 native FP8(MXFP8/E4M3) forward·backward 학습과 block-scaled FP8(E4M3) checkpoint를 명시함. 256K context는 128K native training 뒤 YaRN scaling으로 확장한 구성임.",
+          "items": [
+            "`Sparse Gated Attention`: top-k token selector와 MLA 위 head-specific gate를 결합한 long-context attention 구조",
+            "`Gated Norm`: RMSNorm 뒤 input-dependent gate로 activation outlier를 억제한다는 공급자 설명",
+            "`Think-Fusion`: single model에서 thinking/non-thinking response mode를 control token으로 선택하는 training recipe"
+          ]
+        },
+        {
+          "heading": "성능 주장과 capacity 산정 경계",
+          "body": "AI타임스는 K1 대비 14개 benchmark 평균 32.2%p 향상과 개별 benchmark 결과를 보도함. benchmark prompt·version·hardware·serving policy가 동일하지 않으므로 cross-vendor capacity 또는 quality 보장으로 확대하면 안 됨.",
+          "items": [
+            "context 검증: 1K·32K·128K·256K별 TTFT·TPOT·throughput·p95와 quality regression 측정 필요",
+            "memory 검증: weight 외 KV cache·runtime workspace·NCCL buffer·host staging·failure reserve를 peak 기준으로 합산",
+            "cost 검증: active parameter 수만으로 GPU count·batch/concurrency·interconnect·cold start 비용을 추정하지 않는 운영 과제"
+          ]
+        },
+        {
+          "heading": "배포·보안 시사점",
+          "body": "공개 weight는 model artifact·runtime·tokenizer·chat template·tool policy가 함께 바뀌는 공급망 변경임. FP8 checkpoint 사용 가능 여부도 target GPU, driver, kernel, serving engine, quantization path에 따라 달라짐.",
+          "items": [
+            "팀 액션: model revision·346 shard hash·license·tokenizer·chat template·runtime image를 release manifest로 고정",
+            "팀 액션: Think/non-think route·tool permission·prompt/output retention·PII redaction·fallback payload를 data-flow test로 검증",
+            "팀 액션: OOM·thermal/power limit·node failure·rollback·model-card update를 포함한 staged canary와 incident runbook 구성"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-240",
       "title_ko": "CNCF CoHDI Sandbox: Kubernetes DRA로 PCIe 자원을 node 간 동적 분리·결합하는 인프라 프로젝트",
       "title_original": "Welcome CoHDI to the CNCF: Evolving Kubernetes into composable disaggregated infrastructures",
@@ -259,7 +340,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-237",
@@ -331,7 +412,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-238",
@@ -407,7 +488,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-239",
@@ -474,7 +555,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-235",
@@ -554,7 +635,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-236",
@@ -630,7 +711,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-234",
@@ -716,7 +797,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-231",
@@ -783,7 +864,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-232",
@@ -855,7 +936,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-233",
@@ -935,7 +1016,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-230",
@@ -1007,7 +1088,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-229",
@@ -1079,7 +1160,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-226",
@@ -1170,7 +1251,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-228",
@@ -1258,7 +1339,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-227",
@@ -1339,7 +1420,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-224",
@@ -1418,7 +1499,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-225",
@@ -1506,7 +1587,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-223",
@@ -1586,7 +1667,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-222",
@@ -1666,7 +1747,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-221",
@@ -1750,7 +1831,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-220",
@@ -1827,7 +1908,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-216",
@@ -1894,7 +1975,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-217",
@@ -1961,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-214",
@@ -2041,7 +2122,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-215",
@@ -2114,7 +2195,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-218",
@@ -2181,7 +2262,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-212",
@@ -2276,7 +2357,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-209",
@@ -2351,7 +2432,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-210",
@@ -2436,7 +2517,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-219",
@@ -2512,7 +2593,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-213",
@@ -2594,7 +2675,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-208",
@@ -2662,11 +2743,11 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-207",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -2820,7 +2901,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-204",
@@ -2885,7 +2966,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-205",
@@ -2951,7 +3032,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-203",
@@ -3016,7 +3097,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-202",
@@ -3112,7 +3193,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-198",
@@ -3177,7 +3258,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-199",
@@ -3241,7 +3322,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-200",
@@ -3320,7 +3401,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-201",
@@ -3402,7 +3483,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-196",
@@ -3487,7 +3568,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-197",
@@ -3563,7 +3644,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-195",
@@ -3642,7 +3723,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-193",
@@ -3727,7 +3808,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-194",
@@ -3806,7 +3887,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-191",
@@ -3874,7 +3955,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-190",
@@ -3957,78 +4038,6 @@
             "팀 액션: metric name·attribute cardinality·sampling·retention과 예상 ingestion cost를 사전 산정",
             "팀 액션: token cost·PR cycle time·deployment frequency·change failure rate·review rework를 동일 cohort에서 비교",
             "팀 액션: source code·prompt·developer identifier가 telemetry에 포함되는지 확인하고 IAM·retention·export policy를 승인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-192",
-      "title_ko": "문샷 AI, Kimi K3 수요로 48시간 내 컴퓨팅 한계 근접: 신규 구독 일시 중단과 용량 계획 경계",
-      "title_original": "Moonshot plans Hong Kong IPO; Kimi K3 demand nears compute capacity in 48 hours",
-      "summary": "핵심: AI타임스가 인용한 문샷 AI X 공지에서 Kimi K3 수요가 48시간 동안 현재 컴퓨팅 용량 한계에 근접해 신규 구독 접수를 일시 중단했다고 확인. 영향: 모델 성능·IPO 보도와 별개로, 공개 서비스의 admission control·quota·capacity forecasting·SLO를 수요 급증 시나리오로 검증할 운영 과제.",
-      "detail": "AI타임스는 2026년 7월 20일 문샷 AI의 홍콩 IPO 추진 보도와 Kimi K3 수요 급증을 함께 전함. 기사에 인용된 문샷 AI X 공지는 48시간 수요가 현재 용량 한계에 근접해 신규 구독을 일시 중단했다고 밝힘. IPO 일정·기업가치·벤치마크 순위는 보도 또는 회사·외부 평가 맥락이며, 확보된 컴퓨팅 용량·GPU 수·SLA·재개 일정은 확인되지 않음.",
-      "why_it_matters": "AI 서비스의 모델 출시 직후 수요 급증은 추론 capacity 부족을 구독·API admission control 문제로 즉시 전환함. 용량 포화는 성능 등급과 별개로 queueing, latency, 오류율, 기존 고객 보호 정책을 동시에 검증해야 하는 SRE·FinOps 사건임.",
-      "engineering_implication": "AI 플랫폼 팀은 신규 사용자 차단을 최후 수단으로 두고, tenant별 quota·concurrency·queue·rate limit·degradation tier·capacity alert를 사전에 정해야 함. 고객별 usage burst, GPU utilization, queue wait, p95/p99 latency, rejection rate와 증설 lead time을 같은 forecast에서 관리 필요.",
-      "korea_implication": "국내 AI 서비스·NPUaaS 사업자는 모델 출시·프로모션 때 수요가 특정 region과 tenant에 집중될 수 있으므로, 한국 리전 quota·계약 SLA·대기열 안내·증설 리드타임을 사전 공지와 운영 지표로 분리할 필요.",
-      "category": "Infra",
-      "tags": [
-        "AI",
-        "Inference",
-        "Capacity Planning",
-        "SRE",
-        "FinOps",
-        "Kimi K3",
-        "Moonshot AI"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-07-20 13:53",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=212936",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/212936_216301_4526.jpg",
-      "related_links": [
-        {
-          "title": "Kimi official X account cited in the report",
-          "url": "https://x.com/Kimi_Moonshot"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스는 문샷 AI가 Kimi K3 출시 뒤 홍콩 IPO 추진을 검토한다는 블룸버그 보도와 서비스 수요 상황을 함께 전함. 기사에 삽입된 문샷 AI X 공지는 최근 48시간 수요가 현재 컴퓨팅 용량 한계에 거의 도달해 신규 구독을 일시 중단했다고 밝힘.",
-          "items": [
-            "발행: `article:published_time` 2026-07-20T13:53:21+09:00를 **2026-07-20 13:53 KST**로 확인",
-            "운영 변화: 기존 구독자 경험 보호를 이유로 신규 구독 접수를 일시 중단한 상태 확인",
-            "범위: 공개 기사에는 확보 GPU 수·리전·queue 길이·재개 시각·SLA 수치 미공개"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에는 IPO 승인 절차, 지배구조 정리, 투자 라운드와 기업가치 목표가 블룸버그 보도 및 관계자 정보로 제시됨. Kimi K3의 benchmark 순위와 ARR 수치는 기사 서술이지만, 수요 급증으로 인한 실제 service-control 사실은 회사 X 공지 인용 범위로 분리해야 함.",
-          "items": [
-            "보도: 홍콩 IPO는 이르면 6개월 내 추진 가능성으로 보도됐으며 확정 상장 일정·조건은 미확인",
-            "시장 지표: 기사상 기업가치·ARR·benchmark 비교는 capacity 계약·가용 GPU·서비스 안정성 보장 수치 아님",
-            "경계: 수요가 용량 한계에 근접했다는 표현은 포화 위험 신호이며 특정 hardware failure 또는 영구 capacity 부족 확정 근거 아님"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "모델 출시 직후의 수요 급증은 GPU utilization 하나만의 문제가 아님. 신규 가입, interactive inference, batch workload, 기존 유료 사용자 요청이 같은 pool을 공유하면 queue wait·tail latency·error rate와 support load가 함께 커질 수 있음.",
-          "items": [
-            "SRE: `p95/p99 latency`, queue wait, rejection rate, timeout, retry amplification을 admission-control 지표로 결합 필요",
-            "용량: concurrency limit·token budget·model routing·priority queue가 없으면 신규 수요가 기존 tenant SLO를 침식할 가능성",
-            "제품: 신규 가입 중단은 capacity 보호 장치이나 waitlist·quota·서비스 범위 공지가 없으면 고객 기대치와 실제 제공량의 차이 확대"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI inference 서비스는 출시 전 benchmark보다 peak-demand runbook을 먼저 검증해야 함. capacity forecast에는 모델별 token mix, context length, cache hit, batch/interactive 분리, 증설 lead time을 넣고, 포화 시 어떤 tenant·기능을 제한할지 공개된 policy로 운영해야 함.",
-          "items": [
-            "팀 액션: tenant tier별 concurrency·daily token·queue priority·degraded model fallback과 communication owner 정의",
-            "검증: load test에서 signup burst·long context·retry storm을 재현하고 utilization·queue·tail latency·error budget threshold 승인",
-            "FinOps: reserved/on-demand capacity, cache 효율, routing 비용, 증설 lead time을 월별 forecast와 incident review에 연결"
           ]
         }
       ],
