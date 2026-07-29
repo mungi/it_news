@@ -2,11 +2,11 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-29 17:25",
+  "last_updated_kst": "2026-07-29 21:33",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft `MAI-Cyber-1-Flash`·`MDASH`: Microsoft는 CyberGym 95.95%와 기존 MDASH 최적 조합 대비 50% 비용 절감을 발표. 점수는 GPT-5.4 결합 system의 known-vulnerability 재현 결과이므로, 도입은 isolated runner·patch approval·rollback·route별 비용 evidence를 기준으로 결정.",
-    "NOAA 차세대 `WCOSS` cloud HPC 전환 보도: Google Cloud `H4D`·AMD 5세대 EPYC 기반 공공 클라우드 NWP 운영 계획이 제시됨. 실제 node·network·storage·SLO·정확도·비용은 공개되지 않아 forecast deadline·재현성·failover 기준의 PoC로 검증 필요.",
+    "Firefox `CVE-2026-10702` 공개 exploit 보도: Mozilla은 Firefox 151.0.3에서 High JIT miscompilation을 수정. Tor Browser 영향 정확 version과 실제 악용은 미확정이며, browser update·Android kernel GhostLock patch·admin browsing 분리를 별도 control로 확인.",
     "SKT `A.X K2` 공개 가중치: Apache-2.0 모델 카드는 688B total·33B active MoE, native FP8 checkpoint, 256K context를 명시. 256K는 128K native training 뒤 YaRN scaling 구성이라, GPU·runtime·KV cache·concurrency별 TTFT/TPOT·OOM·quality를 독립 측정.",
     "Amazon EKS Provisioned Control Plane HPA 처리량 상향: AWS는 HPA sync concurrency를 기본 Kubernetes 값의 최대 40배로 높여 많은 HPA object의 동시 평가를 확대. 실제 scale-out SLO는 metric freshness·node capacity·image pull·readiness까지 포함한 p95 burst test로 재측정.",
     "GitHub npm·Actions 공급망 방어 변경: high-impact npm 계정 72시간 read-only, fork untrusted-code checkout 기본 차단, cache write·workflow trigger 정책을 적용. Actions network firewall은 outbound logging technical preview이므로 self-hosted runner·egress block은 별도 통제로 검증."
@@ -190,6 +190,87 @@
   ],
   "items": [
     {
+      "id": "news-242",
+      "title_ko": "Firefox CVE-2026-10702 공개 exploit 보도: Tor Browser 영향 가능성·Android GhostLock 연쇄를 분리 대응",
+      "title_original": "Researchers Show a Single Malicious Webpage Visit Can Compromise Tor Browser",
+      "summary": "핵심: Mozilla은 Firefox `151.0.3`에서 High 등급 JavaScript JIT miscompilation `CVE-2026-10702`을 수정. 7월 29일 관련 보도는 공개 exploit material과 취약 Firefox 기반 Tor Browser 영향 가능성, Android 17 ARM64의 별도 `GhostLock` kernel 단계 결합을 다룸. 경계: 정확한 취약 Tor Browser release·실제 사용자 대상 악용은 확인되지 않았으므로 Firefox/Tor Browser update와 Android kernel patch 상태를 별도 inventory로 관리 필요.",
+      "detail": "Mozilla의 `MFSA 2026-54`는 Firefox `151.0.3`에서 JavaScript Engine JIT miscompilation `CVE-2026-10702`을 수정하고 영향도를 High로 분류한다. The Hacker News는 2026년 7월 29일 Nebula Security의 공개 exploit material을 근거로 악성 webpage 방문만으로 Firefox renderer content process에서 code execution이 가능한 취약점이라고 보도했다. 보도는 취약 Firefox 기반 Tor Browser release도 영향을 받을 수 있다고 설명하지만, 연구자는 정확한 Tor Browser version을 식별하지 못했다. Firefox stable `147`~`151.0.2` 영향 범위와 Firefox ESR `140.12`에 문제 alias가 없다는 추적은 관련 보도 범위이며, Mozilla advisory에는 Firefox ESR 목록과 실제 악용 여부가 없다. 공개된 end-to-end IonStack chain은 지원되는 하나의 Android 17 ARM64 Google build를 대상으로 하며, browser entry point `CVE-2026-10702`과 Linux kernel futex flaw `CVE-2026-43499` GhostLock은 별도 patch·asset inventory로 다뤄야 한다.",
+      "why_it_matters": "브라우저는 개발자·관리자·CI 운영자의 SSO, cloud console, source repository와 만나는 고권한 client임. renderer-level RCE와 별도 kernel 취약점의 결합 가능성을 하나의 CVE 범위나 모든 Tor/Android 배포 영향으로 일반화하지 않고, browser·OS patch와 device build를 교차 관리해야 함.",
+      "engineering_implication": "Endpoint·IT 보안 팀은 Firefox stable `151.0.3+`, 조직이 허용한 Tor Browser 최신 release, Android kernel/vendor bulletin 상태를 asset·device build별로 inventory 필요. 공개 exploit 보도에 따라 browser telemetry·download isolation·admin browsing separation을 점검하되, Tor Browser 정확한 영향 version과 in-the-wild exploitation은 vendor confirmation 전 미확정으로 기록 필요.",
+      "korea_implication": "국내 개발·보안 조직은 망분리 예외 단말, privileged admin workstation, BYOD Android, anonymity/browser 연구 환경을 patch SLA와 EDR 관찰 범위에 포함하고, Tor Browser 사용 정책은 최신 vendor release 확인 뒤 갱신 필요.",
+      "category": "Security",
+      "tags": [
+        "Mozilla",
+        "Firefox",
+        "Tor Browser",
+        "CVE-2026-10702",
+        "Browser Security",
+        "Android",
+        "GhostLock"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-07-29 20:57",
+      "source_name": "Mozilla Security Advisory / The Hacker News",
+      "source_url": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-54/",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOwFIxqT8kRBNj9LdZBZhO1g2RPJwUttxQosrS_mPoNXkIR-JB-yM87HPzuPZ1tazourGhRg9Sco6YQEGZkC77DSqXBYjp0DkNDAUHOaAOnIisRYNPAQfNWwqnmoILXOgR0wwyGVNlU3kSVRU6TcfyAx5ztaAWZfbKnCDJYgUeIVsM7n7O2zq7fGc-xnI/s1700-e365/tor-exploit.gif",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News: public exploit 및 Tor Browser 영향 보도 (2026-07-29 20:57 KST RSS)",
+          "url": "https://thehackernews.com/2026/07/researchers-show-single-malicious.html"
+        },
+        {
+          "title": "Mozilla Firefox 151.0.3 source-level fix",
+          "url": "https://raw.githubusercontent.com/mozilla-firefox/firefox/FIREFOX_151_0_3_RELEASE/js/src/jit/MIR.h"
+        },
+        {
+          "title": "Nebula Security IonStack technical analysis",
+          "url": "https://www.nebulasec.ai/blog/ionstack"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Mozilla `MFSA 2026-54`는 Firefox `151.0.3`에서 **CVE-2026-10702** JavaScript Engine JIT miscompilation을 수정하고 High 영향도로 분류함. 7월 29일 관련 보도는 Nebula Security의 공개 exploit material과 Tor Browser 영향 가능성을 다룸.",
+          "items": [
+            "수정: Mozilla advisory의 대상 제품은 Firefox이며 fixed release는 `151.0.3`",
+            "보도 시각: The Hacker News RSS `2026-07-29 17:27:00 +05:30`을 `20:57 KST`로 변환",
+            "범위: 보도는 악성 webpage 방문이 renderer content process code execution으로 이어질 수 있다고 설명"
+          ]
+        },
+        {
+          "heading": "영향 범위와 증거 경계",
+          "body": "관련 보도는 취약 Firefox version을 포함한 Tor Browser release가 영향을 받을 수 있다고 전하지만, 연구자는 정확한 Tor Browser release를 식별하지 못했다고 명시함. Mozilla advisory는 Firefox ESR 목록이나 실제 사용자 대상 악용 상태를 제공하지 않음.",
+          "items": [
+            "stable 범위: 보도의 source-history 추적은 Firefox `147`부터 `151.0.2`까지를 영향 범위로 제시",
+            "ESR 경계: 보도는 Firefox ESR `140.12`에 faulty alias가 없다고 설명하나 Mozilla advisory의 ESR 영향 확정 목록은 부재",
+            "악용 경계: public exploit material은 존재하나 in-the-wild exploitation 확인으로 확대하지 않는 기록 필요"
+          ]
+        },
+        {
+          "heading": "browser와 kernel 단계를 분리하는 운영",
+          "body": "보도된 IonStack end-to-end chain은 browser entry point와 Linux kernel `CVE-2026-43499` GhostLock을 결합함. 공개 코드는 지원되는 하나의 Android 17 ARM64 Google build를 대상으로 하며 모든 Android·desktop 환경의 재현성을 뜻하지 않음.",
+          "items": [
+            "browser: `CVE-2026-10702`은 Firefox renderer sandbox content process 안의 code execution 범위",
+            "kernel: GhostLock `CVE-2026-43499`은 별도 Linux kernel futex flaw이며 Firefox update만으로 수정되지 않음",
+            "device: Android vendor build·kernel version·security bulletin·boot image를 browser version과 별도 asset field로 관리"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "브라우저 patch 상태만으로 privileged endpoint의 exposure를 판단하면 안 됨. admin browsing, download·attachment handling, browser telemetry, Android OS patch와 recovery path를 함께 확인해야 함.",
+          "items": [
+            "팀 액션: Firefox stable·Tor Browser·Android device build·kernel patch·managed/unmanaged 상태를 inventory",
+            "팀 액션: privileged admin session과 일반 web browsing을 profile·device·network policy로 분리",
+            "팀 액션: browser crash·JIT anomaly·download·process spawn·EDR alert를 incident triage evidence로 보존"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-241",
       "title_ko": "SKT A.X K2 공개 가중치: 688B/33B active MoE·native FP8 checkpoint와 256K context",
       "title_original": "SKT, 'A.X K2' 오픈 공개...국내 최대 '6880억 매개변수'",
@@ -268,7 +349,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-240",
@@ -340,7 +421,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-237",
@@ -412,7 +493,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-238",
@@ -488,7 +569,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-239",
@@ -555,7 +636,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-235",
@@ -635,7 +716,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-236",
@@ -711,7 +792,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-234",
@@ -797,7 +878,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-231",
@@ -864,7 +945,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-232",
@@ -936,7 +1017,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-233",
@@ -1016,7 +1097,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-230",
@@ -1088,7 +1169,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-229",
@@ -1160,7 +1241,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-226",
@@ -1251,7 +1332,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-228",
@@ -1339,7 +1420,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-227",
@@ -1420,7 +1501,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-224",
@@ -1499,7 +1580,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-225",
@@ -1587,7 +1668,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-223",
@@ -1667,7 +1748,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-222",
@@ -1747,7 +1828,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-221",
@@ -1831,7 +1912,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-220",
@@ -1908,7 +1989,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-216",
@@ -1975,7 +2056,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-217",
@@ -2042,7 +2123,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-214",
@@ -2122,7 +2203,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-215",
@@ -2195,7 +2276,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-218",
@@ -2262,7 +2343,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-212",
@@ -2357,7 +2438,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-209",
@@ -2432,7 +2513,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-210",
@@ -2517,7 +2598,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-219",
@@ -2593,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-213",
@@ -2675,7 +2756,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-208",
@@ -2743,11 +2824,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-207",
-      "rank": 34,
+      "rank": 35,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -2901,7 +2982,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-204",
@@ -2966,7 +3047,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-205",
@@ -3032,7 +3113,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-203",
@@ -3097,7 +3178,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-202",
@@ -3193,7 +3274,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-198",
@@ -3258,7 +3339,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-199",
@@ -3322,7 +3403,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-200",
@@ -3401,7 +3482,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-201",
@@ -3483,7 +3564,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-196",
@@ -3568,7 +3649,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-197",
@@ -3644,7 +3725,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-195",
@@ -3723,7 +3804,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-193",
@@ -3808,7 +3889,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-194",
@@ -3887,7 +3968,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-191",
@@ -3952,92 +4033,6 @@
           "items": [
             "팀 액션: tool permission·token/시간 budget·kill switch·human escalation·audit event의 owner와 SLO 정의",
             "팀 액션: production incident·near miss·unsafe action을 versioned evaluation set과 rollback gate에 반영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-190",
-      "title_ko": "AWS CloudWatch, coding agent insights 공개: OpenTelemetry 기반 코드 에이전트 비용·처리량 상관 분석",
-      "title_original": "Amazon CloudWatch announces coding agent insights",
-      "summary": "핵심: AWS가 Claude apps gateway for AWS와 연동해 Claude Code telemetry를 추가 계측 없이 수집하고, Codex·GitHub Copilot도 지원하는 CloudWatch Coding Agent Insights를 공개. 변화: token 지출·청구 경보·commit throughput·PR velocity·model별 cost-to-output을 기존 운영 지표와 함께 보게 하지만, 생산성 인과관계·ROI는 팀별 baseline과 실험 설계로 별도 검증 필요.",
-      "detail": "AWS는 CloudWatch Coding Agent Insights가 coding agent의 OpenTelemetry metrics를 CloudWatch 운영 데이터와 함께 보여 준다고 설명함. Claude Code는 Claude apps gateway for AWS를 통해 별도 instrumentation 없이 연결하며 Codex·GitHub Copilot도 지원 대상으로 제시됨. 상용 리전 대부분에서 제공되지만 UAE·Bahrain·Tel Aviv는 제외되고, 표준 CloudWatch OpenTelemetry metric ingestion 요금이 적용됨.",
-      "why_it_matters": "AI coding agent의 token 비용과 사용량만 보면 실제 delivery 효과를 판단하기 어려움. 비용·commit·PR·운영 지표를 같은 시간축에 두면 rollout, budget, model routing의 가설을 검증할 수 있으나 코드 품질·보안·review workload까지 자동으로 측정한다는 뜻은 아님.",
-      "engineering_implication": "플랫폼·개발생산성 팀은 agent telemetry의 schema·tenant 경계·PII/코드 메타데이터 범위와 metric ingestion 비용을 먼저 확인하고, 팀별 baseline·controlled rollout·DORA/quality/security guardrail을 결합한 dashboard와 token budget alert를 운영 필요.",
-      "korea_implication": "국내 조직은 개발자 activity telemetry를 수집할 때 사내 보안정책·개인정보 처리·노사/인사 목적 외 사용 제한과 AWS 리전·비용 조건을 함께 확인하고, 생산성 평가는 배포 실패율·review 재작업 같은 품질 지표와 분리해 관리 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "CloudWatch",
-        "OpenTelemetry",
-        "Coding Agent",
-        "Claude Code",
-        "Codex",
-        "GitHub Copilot",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-20 18:51",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/cloudwatch-coding-agent-insights/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "AWS documentation — Coding agent insights",
-          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/coding-agents-insights.html"
-        },
-        {
-          "title": "AWS setup guide — Claude Code gateway telemetry",
-          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/coding-agents-claude-code-gateway.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS는 CloudWatch에 Coding Agent Insights를 추가했다고 발표함. Claude apps gateway for AWS와 연결하면 Claude Code telemetry를 추가 instrumentation 없이 수집하며, Codex와 GitHub Copilot도 지원 coding agent로 열거함.",
-          "items": [
-            "대상: Claude Code·Codex·GitHub Copilot의 coding agent telemetry를 CloudWatch 운영 데이터와 결합",
-            "연결: Claude Code는 `Claude apps gateway for AWS`를 통해 metric export 경로를 구성"
-          ]
-        },
-        {
-          "heading": "수집·표시 범위",
-          "body": "AWS 설명의 기준 데이터는 coding agent가 내보내는 OpenTelemetry metrics임. dashboard는 agent adoption, spend trend, token billing alert, commit throughput, pull request velocity, model별 cost-to-output 비교를 지원 대상으로 제시함.",
-          "items": [
-            "비용: token spending trend와 proactive billing alert를 예산 통제 신호로 사용",
-            "전달: commit throughput·PR velocity는 adoption 전후의 관측 지표이며 단독 생산성 증명 수단 아님",
-            "비교: model별 cost-to-output은 동일 task mix·권한·review 기준이 맞을 때만 routing 판단 근거"
-          ]
-        },
-        {
-          "heading": "제공 조건과 비용",
-          "body": "서비스는 UAE·Bahrain·Tel Aviv를 제외한 AWS commercial regions에서 제공된다고 발표됨. metric 수집에는 표준 CloudWatch OpenTelemetry metric ingestion pricing이 적용되므로 agent 수·cardinality·retention에 따른 비용 설계가 필요함.",
-          "items": [
-            "리전: Middle East (UAE)·Middle East (Bahrain)·Israel (Tel Aviv)는 발표된 제공 범위에서 제외",
-            "비용: CloudWatch OpenTelemetry metric ingestion 요금이 별도 비용 변수",
-            "경계: AWS 발표는 metric schema의 전체 field 목록이나 조직별 총비용·ROI 보장을 제시하지 않음"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AI coding agent rollout은 seat 수·token 수만으로 business value를 설명하기 어려움. 비용과 delivery telemetry를 같은 dashboard에 놓으면 budget, access expansion, model choice의 가설을 검증할 수 있으나, 변화의 원인이 agent인지 release process·인력·프로젝트 난이도인지는 별도 실험이 필요함.",
-          "items": [
-            "운영: 팀·repository·service별 baseline 없이 전사 평균만 비교하면 task complexity 편향 발생",
-            "품질: merge 속도 상승은 review defect·rollback·security finding과 함께 해석 필요",
-            "거버넌스: telemetry retention·access control·purpose limitation을 개발자 감시 수단과 분리"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "CloudWatch Coding Agent Insights는 agent observability의 시작점이며 production approval의 종료 조건은 아님. telemetry contract, spend cap, quality/security guardrail, rollout experiment를 하나의 developer-platform change로 설계해야 함.",
-          "items": [
-            "팀 액션: metric name·attribute cardinality·sampling·retention과 예상 ingestion cost를 사전 산정",
-            "팀 액션: token cost·PR cycle time·deployment frequency·change failure rate·review rework를 동일 cohort에서 비교",
-            "팀 액션: source code·prompt·developer identifier가 telemetry에 포함되는지 확인하고 IAM·retention·export policy를 승인"
           ]
         }
       ],

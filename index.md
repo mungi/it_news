@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-29 | Total pages: 228
+> Last updated: 2026-07-29 | Total pages: 229
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/mozilla-firefox-cve-2026-10702-tor-browser-2026-07-29]] — Firefox `CVE-2026-10702` JIT 수정, Tor Browser 영향 보도, Android GhostLock 단계의 patch·asset-inventory 경계.
 - [[raw/articles/skt-ax-k2-open-weights-2026-07-29]] — SKT A.X K2 공개 가중치의 688B/33B active MoE·native FP8 checkpoint·256K context와 self-hosting 검증 경계.
 - [[raw/articles/aitimeskr-google-noaa-wcoss-hpc-2026-07-28]] — NOAA 차세대 WCOSS의 Google Cloud H4D·AMD EPYC 기반 공공 클라우드 NWP 전환 보도와 성능·SLO 검증 경계.
 - [[raw/articles/jetbrains-teamcity-cve-2026-63077-2026-07-28]] — TeamCity On-Premises `CVE-2026-63077` 비인증 RCE의 수정 버전·patch plugin·CI/CD credential 대응 경계.
