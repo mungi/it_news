@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-29 | Total pages: 229
+> Last updated: 2026-07-30 | Total pages: 231
 
 ## Entities
 
@@ -28,6 +28,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/ruflo-cve-2026-59726-mcp-rce-memory-poisoning-2026-07-30]] — Ruflo 기본 MCP bridge의 무인증 RCE·provider key·AgentDB memory integrity incident 대응 경계.
+- [[raw/articles/broadcom-vmsa-2026-0006-vcenter-esx-2026-07-30]] — Broadcom VMSA-2026-0006의 vCenter 인증 우회·RCE와 VMXNET3 ESX host code execution patch matrix.
 - [[raw/articles/mozilla-firefox-cve-2026-10702-tor-browser-2026-07-29]] — Firefox `CVE-2026-10702` JIT 수정, Tor Browser 영향 보도, Android GhostLock 단계의 patch·asset-inventory 경계.
 - [[raw/articles/skt-ax-k2-open-weights-2026-07-29]] — SKT A.X K2 공개 가중치의 688B/33B active MoE·native FP8 checkpoint·256K context와 self-hosting 검증 경계.
 - [[raw/articles/aitimeskr-google-noaa-wcoss-hpc-2026-07-28]] — NOAA 차세대 WCOSS의 Google Cloud H4D·AMD EPYC 기반 공공 클라우드 NWP 전환 보도와 성능·SLO 검증 경계.
