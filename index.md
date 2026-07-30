@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-30 | Total pages: 236
+> Last updated: 2026-07-30 | Total pages: 237
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-msit-active-agentic-ai-180bn-2026-07-30]] — 실세계 행동형 에이전틱 AI R&D 착수의 180억원·인간 개입·TRL·MCP 운영 증거 경계.
 - [[raw/articles/cisco-fmc-cve-2026-20316-static-credential-kev-2026-07-30]] — Cisco Secure FMC static credential, KEV 등록, hotfix·IoC·management-plane incident 대응 경계.
 - [[raw/articles/cloudflare-post-quantum-origin-authentication-2026-07-30]] — Cloudflare origin TLS의 ML-DSA post-quantum 인증 지원과 rollout·handshake 검증 경계.
 - [[raw/articles/mcp-2026-07-28-stateless-protocol-2026-07-30]] — MCP `2026-07-28` stateless core·MRTR·header routing·OAuth authorization migration 경계.

@@ -1147,3 +1147,10 @@
 - Added `news-249` at rank 1 and removed actual capped sort tail `news-201` (Qwen 3.8 Max Preview report, 2026-07-21 18:13 KST); re-sorted 50 canonical items newest-first and reassigned ranks 1–50. Both Deep Dives were fully rebuilt at 2026-07-30 01:38 KST earlier today, so no timestamp-only Deep Dive update was made.
 - Added immutable raw capture with verified SHA-256 `a39ddb7b1edc8544111bf5a0ca92a60e51c948c161bf536457cf3d8e703c52b6`, regenerated `weekly/2026-W32.md`, and updated `index.md`.
 - Validation passed: `python3 scripts/validate_weekly_news.py` (50 items, 2 Deep Dives), `node --check docs/app.js`, `git diff --check`, persisted raw SHA-256/rank/head-tail assertions, and local static-site smoke test (50 cards; Cisco modal title and 6 rich sections rendered).
+
+## [2026-07-30] update | Enrich MSIT agentic-AI initiative with active-R&D launch evidence
+- Checked current time at 2026-07-30 22:11 KST. Directly inspected mandatory Korean/community HTML surfaces: GeekNews, GeekNews Plus, 인공지능신문, AI타임스; HTML inspections are not counted as parsed XML feeds.
+- Current candidate source-page verified AI타임스 `idxno=213357`: `article:published_time` `2026-07-30T16:17:42+09:00`, `og:image`, 180억원/1년 6개월, 26개 산학연 참여, 사람 개입 10% 이하 목표, 2027년 말 단계평가·1개 과제 추가 지원, TRL 7 시제품, 의료·업무·컴패니언·MCP 물리해석 과제 범위를 직접 확인. 모델·데이터·MCP 권한·안전성 benchmark·개인정보·SLA·상용 배포 일정은 확인하지 못해 주장하지 않음.
+- 기존 `news-213`(2026-07-23 정책 이니셔티브)을 동일 정책 축의 material source enrichment로 갱신: AI타임스 신규 보도를 primary card source로 승격하고 기존 인공지능신문 정책 기사를 관련 링크로 유지. 중복 카드 추가·50개 cap 변동 없음; 새 검증 시각으로 재정렬해 `news-213`이 rank 1, tail은 `news-200`(2026-07-22 00:00 KST) 유지.
+- 새 immutable raw capture SHA-256: `3d2b133aee7c7383afe11fa800a306ffd294de4f47642b9667e329c63d013850`; `weekly/2026-W32.md`, `index.md` 동기화. 두 Deep Dive는 2026-07-30 01:38 KST에 이미 완전 재구축되어 timestamp-only 변경을 하지 않음.
+- 검증 완료: `python3 scripts/validate_weekly_news.py`(50 items, 2 Deep Dives), `node --check docs/app.js`, `git diff --check`, raw SHA-256·rank/head/tail assertion 통과. 로컬 정적 사이트에서 50개 카드·2개 Deep Dive와 갱신 카드 모달 제목·5개 rich section 렌더링 확인.
