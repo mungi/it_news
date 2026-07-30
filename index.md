@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-30 | Total pages: 233
+> Last updated: 2026-07-30 | Total pages: 234
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/mcp-2026-07-28-stateless-protocol-2026-07-30]] — MCP `2026-07-28` stateless core·MRTR·header routing·OAuth authorization migration 경계.
 - [[raw/articles/aws-interconnect-oci-ga-2026-07-30]] — AWS Interconnect–OCI GA의 `us-east-1` 제공 범위와 multicloud network 설계 검증 경계.
 - [[raw/articles/aitimes-kr-aidc-alliance-2026-07-29]] — AIDC 얼라이언스 출범 보도의 `18.4GW` 목표, 분과·일정과 capacity 증거 경계.
 - [[raw/articles/ruflo-cve-2026-59726-mcp-rce-memory-poisoning-2026-07-30]] — Ruflo 기본 MCP bridge의 무인증 RCE·provider key·AgentDB memory integrity incident 대응 경계.
