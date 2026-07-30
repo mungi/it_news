@@ -2,7 +2,7 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-30 14:01",
+  "last_updated_kst": "2026-07-30 18:06",
   "audience": "developers and engineers",
   "executive_summary": [
     "Ruflo `CVE-2026-59726`: `3.16.3` 이전 기본 MCP bridge가 `0.0.0.0:3001`에 인증 없이 노출될 수 있어 shell execution·provider key·AgentDB memory integrity가 같은 incident 범위가 됨. patch와 함께 listener 차단·key rotation·memory audit·clean rebuild 필요.",
@@ -191,6 +191,105 @@
   ],
   "items": [
     {
+      "id": "news-249",
+      "title_ko": "Cisco Secure FMC CVE-2026-20316: static credential 기반 무인증 로그인과 KEV 등록을 management-plane incident로 대응",
+      "title_original": "Cisco Secure Firewall Management Center Software Static Credential Vulnerability",
+      "summary": "핵심: Cisco Secure FMC `CVE-2026-20316`은 low-privileged static credential로 unauthenticated remote login과 sensitive-data access가 가능한 결함이며, CISA KEV에 등록됨. 대응: public management interface 차단·fixed release/hotfix matrix 적용·`/var/tmp/license.tmp` IoC 확인을 같은 incident 흐름으로 운영 필요.",
+      "detail": "Cisco는 2026년 7월 29일 16:00 GMT에 FMC web interface static credential 결함을 공개했다. CVSS 5.3이지만 다른 FMC 결함과 privilege elevation으로 이어질 수 있어 SIR High를 부여했으며 workaround는 없다. Cisco 공식 advisory는 공격 표적·시작 시각·exploit chain을 공개하지 않았고, THN 보도의 active-exploitation 설명은 해당 보도 범위로 한정한다.",
+      "why_it_matters": "FMC는 firewall policy·network security telemetry·management-plane access가 모이는 control surface다. low-privileged login이라도 public exposure와 다른 결함, admin workflow가 결합되면 configuration·sensitive-data·privilege 경계가 함께 흔들릴 수 있음.",
+      "engineering_implication": "네트워크·보안팀은 FMC build와 hotfix matrix, public management ingress, privileged account/session, backup·restore evidence를 묶어 inventory하고, `/var/tmp/license.tmp` log signal 발견 시 forensic preservation·vendor escalation·credential/configuration review를 incident gate로 운영 필요.",
+      "korea_implication": "국내 조직은 본사·지사·MSSP를 포함한 FMC 관리 경로에서 internet exposure와 remote-admin jump path를 별도 확인하고, 변경 승인 전 HA·policy rollback·maintenance window를 검증 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Cisco",
+        "FMC",
+        "KEV",
+        "Network Security",
+        "Vulnerability Management"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-07-30 01:00",
+      "source_name": "Cisco Security Advisory",
+      "source_url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-fmc-static-cred-BET3Cjh",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "CISA KEV catalog addition — 2026-07-29",
+          "url": "https://www.cisa.gov/news-events/alerts/2026/07/29/cisa-adds-one-known-exploited-vulnerability-catalog"
+        },
+        {
+          "title": "The Hacker News — active-exploitation report and RSS timestamp",
+          "url": "https://thehackernews.com/2026/07/cisco-fmc-zero-day-actively-exploited.html"
+        },
+        {
+          "title": "Cisco CVE-2026-20079 authentication-bypass advisory",
+          "url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-onprem-fmc-authbypass-5JPp45V2"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cisco가 Secure FMC Software web interface의 **CVE-2026-20316** static credential 결함을 공개함. unauthenticated remote actor가 low-privileged account로 affected FMC에 로그인해 sensitive data에 접근할 수 있는 조건임.",
+          "items": [
+            "발행: Cisco advisory `2026-07-29 16:00 GMT`를 **2026-07-30 01:00 KST**로 변환",
+            "식별자: `CVE-2026-20316`, Cisco bug ID `CSCwt95997`, CWE-259 확인",
+            "심각도: CVSS 3.1 base **5.3**, Cisco Security Impact Rating은 High"
+          ]
+        },
+        {
+          "heading": "공식 advisory의 영향·수정 범위",
+          "body": "원인은 low-privileged account의 static user credential 존재임. Cisco는 affected FMC management interface가 public internet에 노출되지 않으면 attack surface가 줄어든다고 설명하며, workaround는 없고 fixed/hotfix release matrix를 제공함.",
+          "items": [
+            "접근: network-reachable FMC web interface에서 unauthenticated login이 가능한 조건",
+            "완화: management interface public exposure 제거는 attack surface reduction이며 patch 대체 수단이 아님",
+            "수정: product·release별 hotfix/fixed version을 Cisco matrix와 installed build로 대조 필요"
+          ]
+        },
+        {
+          "heading": "악용 상태와 증거 경계",
+          "body": "CISA는 이 결함을 KEV catalog에 추가했음. THN은 Cisco가 이달 초 active exploitation을 인지했다고 보도했으나, Cisco advisory는 attacker, victim, exploit mechanism, campaign chronology를 공개하지 않음.",
+          "items": [
+            "확정: Cisco official static-credential condition·no-workaround·management exposure 축소 설명",
+            "확정: CISA KEV 등록 사실",
+            "미확정: 공격 주체·침해 규모·최초 악용 시각·구체 exploit chain",
+            "시간: THN RSS `2026-07-30 10:38:39 +05:30`은 **2026-07-30 14:08 KST**, 보도 시각으로만 사용"
+          ]
+        },
+        {
+          "heading": "연쇄 위험과 관측",
+          "body": "Cisco는 다른 Secure FMC vulnerability와 결합한 privilege elevation 가능성을 들어 SIR High를 부여함. 별도 `CVE-2026-20079` advisory와 `/var/tmp/license.tmp` IoC·hotfix가 교차하지만, Cisco가 그 CVE의 malicious exploitation을 인지하지 못했다고 밝힌 사실을 분리 필요.",
+          "items": [
+            "IoC: expert mode에서 `cat /var/log/messages | grep license` 실행 후 `/var/tmp/license.tmp` 확인",
+            "경계: 같은 IoC는 investigation lead이며 두 CVE의 universal chain 또는 root compromise 증거가 아님",
+            "보존: relevant log, FMC configuration snapshot, admin-session·remote-access event를 덮어쓰기 전 확보 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "FMC는 security policy와 management-plane 접근이 만나는 control surface임. CVSS 숫자만으로 우선순위를 낮추면 external management exposure, low-privilege foothold, adjacent vulnerability, administrator workflow가 결합하는 risk를 놓칠 수 있음.",
+          "items": [
+            "자산: internet-facing FMC, remote-admin path, HA peer, managed firewall domain을 같은 exposure map에 연결",
+            "운영: maintenance window와 policy rollback, configuration backup restore를 patch evidence에 포함",
+            "보안: low-privilege account라도 data access·lateral privilege path·operator response delay를 incident scope에 반영"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "FMC 운영팀은 fixed release/hotfix 적용과 management-plane isolation을 병렬로 수행하고, IoC hit은 endpoint 단독 alert가 아니라 configuration·credential·session review를 포함한 triage로 승격 필요.",
+          "items": [
+            "팀 액션: FMC version/build·public ingress·admin jump host·MFA·HA/rollback 상태를 24시간 내 inventory",
+            "팀 액션: Cisco hotfix matrix 적용 뒤 login path·policy deployment·HA failover·restore를 검증",
+            "팀 액션: `/var/tmp/license.tmp` 발견 시 evidence preservation·vendor escalation·credential/configuration review·network hunt 수행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-243",
       "title_ko": "Ruflo CVE-2026-59726: 기본 공개 MCP bridge의 무인증 RCE·AgentDB memory poisoning 패치",
       "title_original": "Ruflo MCP Flaw Lets Unauthenticated Attackers Run Commands and Poison AI Memory",
@@ -278,7 +377,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-244",
@@ -372,7 +471,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-245",
@@ -443,7 +542,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-248",
@@ -514,7 +613,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-242",
@@ -595,7 +694,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-246",
@@ -662,7 +761,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-241",
@@ -743,7 +842,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-240",
@@ -815,7 +914,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-237",
@@ -887,7 +986,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-238",
@@ -963,7 +1062,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-239",
@@ -1030,7 +1129,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-247",
@@ -1105,7 +1204,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-235",
@@ -1185,7 +1284,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-236",
@@ -1261,7 +1360,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-234",
@@ -1347,7 +1446,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-231",
@@ -1414,7 +1513,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-232",
@@ -1486,7 +1585,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-233",
@@ -1566,7 +1665,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-230",
@@ -1638,7 +1737,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-229",
@@ -1710,7 +1809,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-226",
@@ -1801,7 +1900,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-228",
@@ -1889,7 +1988,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-227",
@@ -1970,7 +2069,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-224",
@@ -2049,7 +2148,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-225",
@@ -2137,7 +2236,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-223",
@@ -2217,7 +2316,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-222",
@@ -2297,7 +2396,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-221",
@@ -2381,7 +2480,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-220",
@@ -2458,7 +2557,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-216",
@@ -2525,7 +2624,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-217",
@@ -2592,7 +2691,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-214",
@@ -2672,7 +2771,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-215",
@@ -2745,7 +2844,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-218",
@@ -2812,7 +2911,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-212",
@@ -2907,7 +3006,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-209",
@@ -2982,7 +3081,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-210",
@@ -3067,7 +3166,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-219",
@@ -3143,7 +3242,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-213",
@@ -3225,7 +3324,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-208",
@@ -3293,11 +3392,11 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-207",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -3451,7 +3550,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-204",
@@ -3516,7 +3615,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-205",
@@ -3582,7 +3681,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-203",
@@ -3647,7 +3746,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-202",
@@ -3743,7 +3842,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-198",
@@ -3808,7 +3907,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-199",
@@ -3872,7 +3971,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-200",
@@ -3948,88 +4047,6 @@
             "팀 액션: 대표 agent task별 success rate·p95 latency·output token·tool call·재시도·성공 작업당 비용 baseline 확보",
             "팀 액션: model routing policy에 data classification·tool permission·fallback·budget ceiling을 함께 기록",
             "팀 액션: security code agent는 isolated environment·test evidence·reviewer 승인·rollback을 release gate로 적용"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-201",
-      "title_ko": "알리바바 Qwen 3.8 Max Preview 보도: 2.4조 파라미터 멀티모달 모델과 오픈 웨이트 계획의 검증 경계",
-      "title_original": "Alibaba unveils Qwen 3.8 Max Preview",
-      "summary": "핵심: 인공지능신문은 알리바바가 `Qwen 3.8 Max Preview`를 2.4조 파라미터 멀티모달 모델로 공개하고 Token Plan·Qoder·QoderWork에서 preview를 제공한다고 보도함. 경계: active parameter·MoE 구조·독립 benchmark·model card·가중치 공개 일정·라이선스는 공개되지 않아, 자체 성능 평가는 production 도입 근거로 사용 불가.",
-      "detail": "인공지능신문은 알리바바가 Qwen 3.8 Max Preview를 2.4조 파라미터 텍스트·이미지·영상·문서 멀티모달 모델로 공개했고 Token Plan, Qoder, QoderWork에서 preview를 제공한다고 보도했다. 향후 open-weight 배포 계획은 언급됐지만 일정과 라이선스는 발표되지 않았으며, active parameter와 MoE 구조·model card·독립 benchmark도 공개 범위 밖이다. 매체가 인용한 알리바바의 Claude Fable 5 다음 수준 성능 평가는 자체 비교로 한정된다.",
-      "why_it_matters": "대형 open-weight 후보는 API 비용·데이터 경계·미세조정 선택지를 바꾸지만, 총 파라미터만으로 serving memory·throughput·GPU 구성·품질·라이선스 의무를 판단할 수 없음. preview 접근과 향후 가중치 공개 계획도 실제 배포 가능한 artifact와 동일하지 않음.",
-      "engineering_implication": "플랫폼 팀은 실제 모델 artifact와 model card가 공개된 뒤 active parameter·context·multimodal I/O·precision·GPU memory·batch별 tokens/s·license·보안 업데이트 경로를 검증 필요. preview API 평가는 data classification·egress·rate limit·fallback을 포함한 canary로 한정하고, 자체 평가 수치를 procurement 또는 production SLO로 전환하지 않을 필요.",
-      "korea_implication": "국내 조직은 중국계 모델 도입 판단에서 한국어 업무 품질뿐 아니라 데이터 이전·접근 국가·지원 채널·가중치 라이선스·온프레미스 운영 책임을 계약과 보안 검토에 함께 포함 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Alibaba",
-        "Qwen",
-        "Open Weight",
-        "Multimodal",
-        "Model Serving",
-        "Governance"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-21 18:13",
-      "source_name": "인공지능신문",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41069",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202607/41069_61871_1135_v150.jpg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "Qwen Token Plan — source-linked preview access surface",
-          "url": "https://www.qwencloud.com/pricing/token-plan"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "인공지능신문은 알리바바가 `Qwen 3.8 Max Preview`를 공개했다고 보도함. 기사에서 이 모델은 Qwen 계열 최대 규모의 약 2.4조 파라미터 모델이며 텍스트·이미지·영상·문서를 처리하는 멀티모달 모델로 설명됨.",
-          "items": [
-            "발행: 인공지능신문 기사 입력 시각 **2026-07-21 18:13 KST** 확인",
-            "모델: `Qwen 3.8 Max Preview`라는 preview 명칭과 약 2.4조 파라미터라는 매체 보도",
-            "입출력: 텍스트·이미지·영상·문서 처리를 지원한다는 기사 서술"
-          ]
-        },
-        {
-          "heading": "공개·접근 범위",
-          "body": "기사 기준 preview는 알리바바의 Token Plan, Qoder, QoderWork를 통해 제공됨. 알리바바는 이후 model weight를 open-weight 방식으로 순차 배포할 계획을 언급했으나, 공개 시점과 라이선스 조건은 발표되지 않은 상태임.",
-          "items": [
-            "현재 범위: preview access와 향후 weight 배포 계획을 구분 필요",
-            "미공개: weight release date·license·배포 artifact·지원 lifecycle 확인 불가",
-            "운영 경계: API preview 접근은 self-hosting 또는 fine-tuning 가능 상태를 의미하지 않음"
-          ]
-        },
-        {
-          "heading": "성능 주장과 기술 정보의 경계",
-          "body": "알리바바가 Claude Fable 5 다음 수준이라고 자체 평가했다는 내용은 기사에 있으나 독립 benchmark는 공개되지 않았다고 명시됨. 활성 파라미터 수, MoE 구조, model card, 공식 benchmark도 기사에서 미공개로 정리됨.",
-          "items": [
-            "성능: vendor 자체 비교는 재현 가능한 외부 benchmark 결과가 아닌 조건",
-            "구조: total parameter와 active parameter를 동일한 serving capacity 지표로 해석 불가",
-            "검증: context length·precision·tool use·multimodal latency·safety policy는 별도 확인 대상"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "open-weight 배포가 실제화되면 기업은 API 호출 외에 자체 환경 실행과 미세조정을 선택할 수 있음. 다만 큰 총 파라미터 수는 GPU memory, interconnect, quantization, batch 전략, checkpoint·artifact 보관 비용을 동반하므로 공개 계획만으로 운영 가능성을 판단할 수 없음.",
-          "items": [
-            "아키텍처: artifact 크기·active parameter·KV cache·multimodal encoder를 serving topology에 반영 필요",
-            "거버넌스: weight license·재배포 의무·security update·provenance는 API 약관과 다른 검토 항목",
-            "비용: model download·storage·GPU reservation·평가·patch 운영을 token 단가와 분리해 산정 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "도입 평가는 발표된 파라미터 수나 자체 순위가 아니라 공개 artifact와 model card를 확보한 뒤 representative workload에서 수행해야 함. preview 평가는 데이터 반출과 tool permission을 제한한 canary로 운영하고, benchmark·license·update path가 확인되기 전에는 production routing 후보로 승격하지 않는 편이 안전함.",
-          "items": [
-            "팀 액션: 한국어·코드·문서·이미지 task별 quality·p95 latency·tokens/s·GPU memory·성공 작업당 비용 baseline 확보",
-            "팀 액션: active parameter·MoE routing·context·quantization·license·model card 공개 여부를 release gate로 관리",
-            "팀 액션: preview API는 data classification·egress log·rate limit·fallback·vendor outage 대응을 포함해 canary 운영"
           ]
         }
       ],
