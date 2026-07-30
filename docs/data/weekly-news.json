@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-31 02:16",
+  "last_updated_kst": "2026-07-31 06:25",
   "audience": "developers and engineers",
   "executive_summary": [
     "Wiz `CosmosEscape`: Gremlin sandbox escape가 DB Gateway code execution·platform-wide key·regional account directory 접근으로 이어질 수 있었던 연구 공개. Microsoft는 2025년 11월 entry point 차단, 2026년 7월 all-region long-term fix·key 제거 완료와 research 외 unauthorized activity 증거 없음·customer action 불필요를 밝힘.",
     "AWS Transit Gateway PBR GA: source/destination IP·port·protocol 기준 attachment traffic steering을 first-match-wins policy table로 제공. inspection·Direct Connect/VPN·prod/dev isolation rule은 asymmetric return·stateful appliance·shadowing·rollback test와 함께 release.",
     "Ruflo `CVE-2026-59726`: `3.16.3` 이전 기본 MCP bridge가 `0.0.0.0:3001`에 인증 없이 노출될 수 있어 shell execution·provider key·AgentDB memory integrity가 같은 incident 범위가 됨. patch와 함께 listener 차단·key rotation·memory audit·clean rebuild 필요.",
     "Broadcom `VMSA-2026-0006`: vCenter `CVE-2026-59309` 인증 우회·`CVE-2026-59310` RCE는 CVSS 9.8, VMXNET3 조건 ESX host code execution `CVE-2026-47876`은 9.3. vCenter ingress와 guest admin privilege·release matrix를 분리 inventory.",
-    "AWS Interconnect–OCI GA: `us-east-1`에서 Console·CLI·API로 private multicloud connection provisioning 제공. route·DNS·identity·egress·failure domain·pricing·SLA는 organization별 PoC/contract gate로 확인."
+    "Amazon Bedrock GPT-5.6 가격 인하: Luna on-demand inference 80%, Terra 20% 인하가 7월 30일부터 자동 적용. 대상은 US East 2개·US West (Oregon)의 `bedrock-mantle` OpenAI Responses API이며, token 단가가 아니라 completion·retry·tool call·quota·observability를 포함한 workload별 비용으로 routing과 budget 재산정."
   ],
   "deep_dives": [
     {
@@ -189,6 +189,92 @@
   ],
   "items": [
     {
+      "id": "news-252",
+      "title_ko": "Amazon Bedrock, OpenAI GPT-5.6 Luna 80%·Terra 20% on-demand inference 가격 인하: 모델 단가가 아니라 task unit economics 재산정",
+      "title_original": "Amazon Bedrock announces up to 80% lower prices for OpenAI GPT-5.6 models",
+      "summary": "핵심: Amazon Bedrock의 GPT-5.6 Luna on-demand inference 가격이 80%, Terra가 20% 인하됐으며 7월 30일부터 자동 적용. Luna·Terra는 US East 2개 리전과 US West (Oregon)의 `bedrock-mantle` OpenAI Responses API endpoint에서 제공. 운영: token 단가 감소를 task completion·retry·tool call·quota·observability까지 포함한 workload별 비용 기준으로 재산정 필요.",
+      "detail": "AWS는 OpenAI의 first-party 가격 변경에 맞춰 Amazon Bedrock의 GPT-5.6 Luna와 Terra on-demand inference 가격을 2026년 7월 30일부터 각각 80%, 20% 인하한다고 발표했다. Luna는 high-volume 및 multi-step tool-use workload, Terra는 일상 production reasoning workload 대상으로 설명됐다. Sol 가격은 변동이 없고 새 가격은 고객 변경 없이 적용된다. 제공 리전은 US East (N. Virginia), US East (Ohio), US West (Oregon)이며 `bedrock-mantle` endpoint의 OpenAI Responses API가 대상이다. 한국 리전 제공, quota·throughput·latency, provisioned capacity, batch/cached-token 가격, tool execution 비용은 원문에서 확인되지 않아 workload별 확인 필요.",
+      "why_it_matters": "agent·content processing·classification처럼 대량 호출이 있는 팀은 model list price 변화가 FinOps budget과 routing policy에 직접 반영됨. 하지만 80% token-price reduction은 completion quality, retry, tool I/O, concurrency limit, cache hit, telemetry 비용을 포함한 end-to-end savings를 보장하지 않음.",
+      "engineering_implication": "Bedrock model routing·budget guardrail·chargeback 기준을 Luna/Terra/Sol별로 다시 계산하고, representative trace에서 input/output token·completion rate·retry·tool-call·latency·throttling을 함께 비교 필요. 대상 endpoint와 리전이 제한돼 있으므로 regional data boundary, quota, failover 및 provisioned-capacity 조건을 production cutover 전에 확인해야 함.",
+      "korea_implication": "한국 리전 제공 여부는 AWS 발표에 포함되지 않음. 국내 데이터 경계·지연 요구가 있는 조직은 cross-region 호출 가능성, 데이터 처리 정책, egress, quota와 장애 시 fallback 모델을 별도 검증 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "OpenAI",
+        "GPT-5.6",
+        "Inference",
+        "FinOps",
+        "Model Routing"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-31 01:18",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/openai-gpt-terra-luna-pricing-bedrock/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "AWS What’s New RSS publication evidence",
+          "url": "https://aws.amazon.com/about-aws/whats-new/recent/feed/"
+        },
+        {
+          "title": "Amazon Bedrock pricing page",
+          "url": "https://aws.amazon.com/bedrock/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Bedrock의 **GPT-5.6 Luna**와 Terra on-demand inference 가격 인하를 발표함. 적용일은 2026년 7월 30일이며 고객 configuration 변경 없이 자동 반영되는 조건.",
+          "items": [
+            "발행: AWS RSS `Thu, 30 Jul 2026 16:18:00 GMT`를 **2026-07-31 01:18 KST**로 변환",
+            "인하: Luna 80%, Terra 20% on-demand inference 가격 인하",
+            "유지: GPT-5.6 Sol 가격은 변경 없음"
+          ]
+        },
+        {
+          "heading": "모델별 workload positioning",
+          "body": "AWS는 Luna를 high-volume 처리와 tool을 쓰는 multi-step workflow, Terra를 더 높은 reasoning이 필요한 일상 production workload 대상으로 설명함. 성능·benchmark·context·rate limit 수치는 원문에 없음.",
+          "items": [
+            "Luna: content processing·classification·customer-service automation·routine implementation task 예시",
+            "Terra: intelligence·speed·cost 균형이 필요한 production reasoning workload 대상",
+            "경계: quality, latency, tool success rate와 benchmark 재현성은 별도 검증 항목"
+          ]
+        },
+        {
+          "heading": "제공 경로와 범위",
+          "body": "원문은 Luna·Terra가 OpenAI Responses API의 `bedrock-mantle` endpoint로 제공된다고 명시함. availability는 세 미국 리전에 한정해 표기됨.",
+          "items": [
+            "리전: US East (N. Virginia), US East (Ohio), US West (Oregon) 명시",
+            "경로: Amazon Bedrock의 OpenAI Responses API 및 `bedrock-mantle` endpoint",
+            "미확정: 한국 리전, regional quota, throughput, latency, provisioned capacity와 failover behavior"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "모델 단가 변경은 batch job·agent workflow·interactive API의 budget 및 routing threshold를 바꿀 수 있음. 그러나 completed task 비용은 token price 하나가 아니라 품질과 execution path의 결합 결과.",
+          "items": [
+            "비용: input/output token, retry, context length, cache, tool call과 observability를 함께 산정 필요",
+            "품질: 낮은 model cost가 escalation·human review·failed tool execution 비용을 자동 상쇄하지 않음",
+            "운영: model choice와 region/endpoint availability가 data boundary·quota·SLO에 연결됨"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "가격표 변경은 즉시 전체 traffic을 옮길 이유가 아니라 representative workload의 unit-economics 실험을 시작할 signal. approve 조건은 할인율이 아니라 quality·latency·cost·failure evidence 확보.",
+          "items": [
+            "팀 액션: Luna·Terra·Sol별 representative trace와 baseline completed-task cost 산출",
+            "팀 액션: token·retry·tool invocation·throttling·p95 latency를 같은 dashboard에서 비교",
+            "팀 액션: target region·data handling·quota·fallback model·rollback policy를 routing release에 기록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-250",
       "title_ko": "AWS Transit Gateway Policy-Based Routing GA: source·destination·port·protocol 기반 traffic steering을 native route policy로 적용",
       "title_original": "AWS announces general availability of Policy-Based Routing on AWS Transit Gateway",
@@ -280,7 +366,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-251",
@@ -382,7 +468,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-213",
@@ -462,7 +548,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-249",
@@ -561,7 +647,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-243",
@@ -651,7 +737,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-244",
@@ -745,7 +831,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-245",
@@ -816,7 +902,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-248",
@@ -887,7 +973,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-242",
@@ -968,7 +1054,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-246",
@@ -1035,7 +1121,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-241",
@@ -1116,7 +1202,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-240",
@@ -1188,7 +1274,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-237",
@@ -1260,7 +1346,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-238",
@@ -1336,7 +1422,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-239",
@@ -1403,7 +1489,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-247",
@@ -1478,7 +1564,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-235",
@@ -1558,7 +1644,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-236",
@@ -1634,7 +1720,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-234",
@@ -1720,7 +1806,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-231",
@@ -1787,7 +1873,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-232",
@@ -1859,7 +1945,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-233",
@@ -1939,7 +2025,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-230",
@@ -2011,7 +2097,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-229",
@@ -2083,7 +2169,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-226",
@@ -2174,7 +2260,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-228",
@@ -2262,7 +2348,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-227",
@@ -2343,7 +2429,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-224",
@@ -2422,7 +2508,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-225",
@@ -2510,7 +2596,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-223",
@@ -2590,7 +2676,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-222",
@@ -2670,7 +2756,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-221",
@@ -2754,7 +2840,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-220",
@@ -2831,7 +2917,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-216",
@@ -2898,7 +2984,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-217",
@@ -2965,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-214",
@@ -3045,7 +3131,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-215",
@@ -3118,7 +3204,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-218",
@@ -3185,7 +3271,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-212",
@@ -3280,7 +3366,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-209",
@@ -3355,7 +3441,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-210",
@@ -3440,7 +3526,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-219",
@@ -3516,7 +3602,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-208",
@@ -3584,11 +3670,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-207",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -3742,7 +3828,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-204",
@@ -3807,7 +3893,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-205",
@@ -3873,7 +3959,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-203",
@@ -3938,7 +4024,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-202",
@@ -4031,71 +4117,6 @@
             "팀 액션: review agent에 project-scoped read token, pipeline trigger deny-by-default, cross-project wiki read 제한 적용",
             "팀 액션: PR comment·issue update·webhook·external API를 data egress tool로 분류하고 sensitive content에는 explicit confirmation 적용",
             "팀 액션: automatic review workflow는 human developer token 대신 least-privilege service identity와 immutable tool-call audit log 사용"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-198",
-      "title_ko": "AWS Kiro, 악성 웹페이지의 숨은 지시로 MCP 설정을 바꿔 코드 실행 가능했던 경로 패치",
-      "title_original": "AWS Kiro Flaw Let a Poisoned Web Page Rewrite Its Config and Run Code",
-      "summary": "핵심: Intezer·Kodem Security 연구를 인용한 보도에서 AWS Kiro가 웹페이지 요약 중 숨은 지시를 따라 `~/.kiro/settings/mcp.json`을 바꾸고 MCP server 명령을 자동 실행할 수 있었던 경로 확인. 대응: AWS가 protected path 통제로 수정한 `v0.11.130` 이상 여부와 agent의 설정 파일 write·MCP 실행 권한을 즉시 점검 필요.",
-      "detail": "The Hacker News는 웹페이지의 숨은 텍스트가 Kiro의 `fsWrite`를 통해 MCP 설정을 바꾸고 개발자 권한으로 명령을 실행할 수 있었다고 보도했다. Intezer는 macOS 0.9.2·Ubuntu 0.10.16에서 재현했고 v0.11.130에서 실패를 확인했다. AWS는 민감 경로의 명시적 승인을 요구하도록 수정했으며, 보도 시점 CVE와 전체 영향 버전 목록은 공개되지 않았다.",
-      "why_it_matters": "웹 콘텐츠를 읽는 coding agent가 실행 권한을 정하는 설정 파일까지 쓰면, URL fetch 승인과 host code execution 승인이 분리되지 않는다. MCP registry·설정·shell 권한은 모두 공급망과 endpoint control plane으로 취급할 필요.",
-      "engineering_implication": "Kiro 사용 조직은 1.0.x 최신 버전 여부를 inventory로 확인하고, `mcp.json`·`.vscode/tasks.json`·`.git` write 이벤트와 MCP subprocess를 EDR에 연결 필요. agent 설정은 사용자 workspace 밖의 보호 경로·정책 관리와 allowlisted command·network egress로 분리 필요.",
-      "korea_implication": "국내 개발 조직도 외부 문서·Git 저장소를 읽는 agent에 MCP를 연결할 때 SaaS 도구 승인 화면만으로 통제하지 말고 endpoint file-write·process 실행·소스 반출 정책을 함께 운영 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AWS Kiro",
-        "MCP",
-        "Prompt Injection",
-        "Coding Agent",
-        "Endpoint Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-07-22 01:06",
-      "source_name": "The Hacker News / Intezer / Kodem Security",
-      "source_url": "https://thehackernews.com/2026/07/aws-kiro-flaw-let-poisoned-web-page.html",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Intezer와 Kodem Security 연구를 인용한 보도는 AWS Kiro가 외부 웹페이지 요약 과정의 숨은 지시를 따라 MCP 설정 파일을 바꾸고 공격자 명령을 실행할 수 있었던 경로를 설명함.",
-          "items": [
-            "입력: API 문서 페이지의 1px 흰색 숨은 텍스트가 Kiro context에 들어가는 조건",
-            "대상 파일: `~/.kiro/settings/mcp.json`의 MCP server command와 실행 설정",
-            "실행: Kiro가 설정 변경 뒤 해당 server를 개발자 권한으로 reload·launch하는 구조"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "취약 경계: 당시 `fsWrite`가 `mcp.json` 변경에 별도 승인을 요구하지 않은 보도",
-          "items": [
-            "재현 버전: Intezer가 macOS `0.9.2`, Ubuntu `0.10.16`에서 live 상태를 확인한 조건",
-            "수정: 연구진이 `v0.11.130`에서 공격 chain 실패를 확인한 결과",
-            "상태: AWS는 CVE와 전체 영향 version list를 공개하지 않았고 in-the-wild exploitation도 보고되지 않은 범위"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "이 문제는 prompt injection 자체보다 agent가 platform security boundary를 바꿀 수 있었던 권한 설계 문제임. fetch 승인·file write·MCP process launch가 한 번의 사용자 의도 검증으로 묶이지 않으면 외부 콘텐츠가 host execution으로 전이될 수 있음.",
-          "items": [
-            "이 문제는 prompt injection 자체보다 agent가 platform security boundary를 바꿀 수 있었던 권한 설계 문제임. fetch 승인·file write·MCP process launch가 한 번의 사용자 의도 검증으로 묶이지 않으면 외부 콘텐츠가 host execution으로 전이될 수 있음.",
-            "운영 경계: 발표·보도 사실과 조직별 실제 노출·영향은 자산·로그·버전 정보로 별도 확인 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "우선 조치: Kiro version과 `mcp.json` write history, MCP child process, 외부 URL fetch를 같은 endpoint timeline에서 조사 필요",
-          "items": [
-            "팀 액션: Kiro를 최신 1.0.x로 올리고 managed endpoint에서 민감 설정 파일 변경·새 MCP command를 alert 대상으로 등록",
-            "팀 액션: MCP server command·package provenance·network destination을 allowlist와 sandbox 실행 정책으로 분리",
-            "팀 액션: untrusted web/document fetch agent에는 source provenance와 write approval을 별도 control로 적용"
           ]
         }
       ],
