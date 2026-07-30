@@ -2,7 +2,7 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-30 09:53",
+  "last_updated_kst": "2026-07-30 14:01",
   "audience": "developers and engineers",
   "executive_summary": [
     "Ruflo `CVE-2026-59726`: `3.16.3` 이전 기본 MCP bridge가 `0.0.0.0:3001`에 인증 없이 노출될 수 있어 shell execution·provider key·AgentDB memory integrity가 같은 incident 범위가 됨. patch와 함께 listener 차단·key rotation·memory audit·clean rebuild 필요.",
@@ -446,6 +446,77 @@
       "rank": 3
     },
     {
+      "id": "news-248",
+      "title_ko": "Cloudflare, Authenticated Origin Pulls·Custom Origin Trust Store에 ML-DSA post-quantum 인증 지원",
+      "title_original": "Post-quantum authentication to origins is now supported",
+      "summary": "핵심: Cloudflare는 `Authenticated Origin Pulls`와 `Custom Origin Trust Store`가 **ML-DSA** 기반 post-quantum 인증을 지원한다고 공개. 범위: Cloudflare–origin TLS 구간이며 visitor–edge 구간과 별도 연결. 대응: origin TLS library·certificate/key 형식·custom trust 설정·handshake failure·rollback을 환경별로 검증하고, 2029 목표나 Tunnel의 향후 인증 계획을 현재 자동 보호로 해석하지 않음.",
+      "detail": "Cloudflare는 2026년 7월 29일 Authenticated Origin Pulls와 Custom Origin Trust Store에서 ML-DSA 서명을 사용한 post-quantum 인증을 지원한다고 발표했다. 원문과 RSS의 timezone-aware 시각 `2026-07-29 13:00 UTC`를 KST로 변환한 `22:00`을 정렬에 사용한다. 원문은 브라우저–Cloudflare와 Cloudflare–origin이 보통 별도 TLS 연결이며 cache 또는 policy가 origin fetch를 수행하지 않는 경우 후자가 사용된다고 설명한다. Cloudflare는 양 구간의 post-quantum encryption 지원 시점과 origin connection pooling·custom PKI 설계 이유를 제시하지만, 모든 origin의 자동 적용, handshake 성능, certificate compatibility, SLA·가격은 보장하지 않는다. Cloudflare Tunnel의 post-quantum authentication은 아직 작업 중이라는 원문 경계도 유지한다.",
+      "why_it_matters": "edge–origin 인증은 CDN 뒤 origin impersonation·credential 수명·TLS migration의 통제 지점임. encryption 전환만으로 인증 알고리즘과 trust store·origin endpoint 운영이 자동 전환되지는 않음.",
+      "engineering_implication": "보안·플랫폼 팀은 origin별 TLS stack, certificate/key lifecycle, Authenticated Origin Pulls 또는 Custom Origin Trust Store 사용 여부, ML-DSA compatibility, connection pooling 영향, handshake error·fallback telemetry를 inventory 필요. canary에서 legacy client/origin과 rollback을 시험한 뒤 certificate rotation·incident runbook을 갱신 필요.",
+      "korea_implication": "국내 origin과 global Cloudflare edge를 함께 쓰는 조직은 한국 리전 여부보다 실제 origin path·managed TLS library·certificate HSM/KMS·운영 지원 범위를 계약과 staging handshake로 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "TLS",
+        "Post-Quantum",
+        "ML-DSA",
+        "Origin Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-07-29 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/post-quantum-authentication-to-origins/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01KYN5V56B8HHHZ71NTH17JJVV.png",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Cloudflare RSS publication timestamp (2026-07-29 13:00 UTC)",
+          "url": "https://blog.cloudflare.com/rss/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare는 **Authenticated Origin Pulls**와 **Custom Origin Trust Store**에서 ML-DSA 서명을 통한 post-quantum 인증을 지원한다고 공개함. 원문 `article:published_time`과 RSS `2026-07-29 13:00 UTC`는 `2026-07-29 22:00 KST`에 해당함.",
+          "items": [
+            "적용 구간: Cloudflare edge가 customer origin에 연결하는 TLS authentication 경로",
+            "알고리즘: Module-Lattice-Based Digital Signature Algorithm `ML-DSA` 사용 범위",
+            "시간 경계: 화면 calendar date가 아닌 source timezone-aware timestamp로 최신순 정렬"
+          ]
+        },
+        {
+          "heading": "TLS 연결 범위와 설계 배경",
+          "body": "원문은 visitor–Cloudflare와 Cloudflare–origin을 보통 별도 연결로 구분함. edge cache나 blocking rule이 응답하지 않는 요청은 origin fetch를 위한 두 번째 연결을 사용하므로, visitor-facing TLS 변경만으로 origin trust 경계가 바뀌지 않음.",
+          "items": [
+            "기존 범위: visitor–edge post-quantum encryption은 2022년, edge–origin encryption은 2023년 지원이라는 원문 설명",
+            "운영 특성: Cloudflare가 origin 연결의 client이며 connection pooling으로 connection setup 비용을 여러 요청에 분산",
+            "trust 모델: customer account의 기존 trust relationship을 사용해 public WebPKI와 다른 custom PKI 설계 가능"
+          ]
+        },
+        {
+          "heading": "지원 범위와 미확인 항목",
+          "body": "원문은 제품 지원과 기술적 근거를 설명하지만 모든 origin의 자동 적용, certificate chain·TLS library 호환, latency, handshake CPU, region coverage, SLA·가격을 확정하지 않음. 2029 full post-quantum security 목표와 2027 visitor-facing MTC initial deployment target은 roadmap으로 분리 필요.",
+          "items": [
+            "미확인: origin별 ML-DSA certificate/key format과 server TLS stack compatibility",
+            "미확인: mixed classical/PQ rollout의 fallback behavior·handshake failure·connection reuse 영향",
+            "경계: Cloudflare Tunnel의 post-quantum authentication은 원문에서 work in progress로 표기"
+          ]
+        },
+        {
+          "heading": "rollout·시사점",
+          "body": "PQC authentication rollout은 one-click crypto toggle이 아니라 edge policy, origin software, key custody, trust store, observability를 함께 바꾸는 change임. canary와 rollback 없이 certificate rotation을 확대하면 origin reachability incident로 전환될 수 있음.",
+          "items": [
+            "팀 액션: origin별 Authenticated Origin Pulls·Custom Origin Trust Store·TLS library·certificate owner inventory",
+            "팀 액션: staging에서 ML-DSA handshake, legacy compatibility, origin failover, connection pooling, error telemetry 검증",
+            "팀 액션: certificate rotation·secret/HSM/KMS access·rollback owner·handshake alert threshold를 runbook에 연결"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-242",
       "title_ko": "Firefox CVE-2026-10702 공개 exploit 보도: Tor Browser 영향 가능성·Android GhostLock 연쇄를 분리 대응",
       "title_original": "Researchers Show a Single Malicious Webpage Visit Can Compromise Tor Browser",
@@ -524,7 +595,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-246",
@@ -591,7 +662,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-241",
@@ -672,7 +743,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-240",
@@ -744,7 +815,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-237",
@@ -816,7 +887,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-238",
@@ -892,7 +963,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-239",
@@ -959,7 +1030,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-247",
@@ -1034,7 +1105,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-235",
@@ -1114,7 +1185,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-236",
@@ -1190,7 +1261,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-234",
@@ -1276,7 +1347,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-231",
@@ -1343,7 +1414,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-232",
@@ -1415,7 +1486,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-233",
@@ -1495,7 +1566,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-230",
@@ -1567,7 +1638,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-229",
@@ -1639,7 +1710,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-226",
@@ -1730,7 +1801,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-228",
@@ -1818,7 +1889,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-227",
@@ -1899,7 +1970,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-224",
@@ -1978,7 +2049,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-225",
@@ -2066,7 +2137,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-223",
@@ -2146,7 +2217,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-222",
@@ -2226,7 +2297,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-221",
@@ -2310,7 +2381,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-220",
@@ -2387,7 +2458,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-216",
@@ -2454,7 +2525,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-217",
@@ -2521,7 +2592,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-214",
@@ -2601,7 +2672,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-215",
@@ -2674,7 +2745,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-218",
@@ -2741,7 +2812,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-212",
@@ -2836,7 +2907,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-209",
@@ -2911,7 +2982,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-210",
@@ -2996,7 +3067,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-219",
@@ -3072,7 +3143,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-213",
@@ -3154,7 +3225,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-208",
@@ -3222,11 +3293,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-207",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -3380,7 +3451,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-204",
@@ -3445,7 +3516,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-205",
@@ -3511,7 +3582,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-203",
@@ -3576,7 +3647,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-202",
@@ -3672,7 +3743,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-198",
@@ -3737,7 +3808,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-199",
@@ -3801,7 +3872,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-200",
@@ -3880,7 +3951,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-201",
@@ -3959,91 +4030,6 @@
             "팀 액션: 한국어·코드·문서·이미지 task별 quality·p95 latency·tokens/s·GPU memory·성공 작업당 비용 baseline 확보",
             "팀 액션: active parameter·MoE routing·context·quantization·license·model card 공개 여부를 release gate로 관리",
             "팀 액션: preview API는 data classification·egress log·rate limit·fallback·vendor outage 대응을 포함해 canary 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-196",
-      "title_ko": "ServiceNow AI Platform `CVE-2026-6875`: pre-auth sandbox escape 보고와 공식 exploitation 부인 간 불일치 점검",
-      "title_original": "Critical ServiceNow AI Platform Flaw Exploited for Unauthenticated Code Execution",
-      "summary": "핵심: The Hacker News는 Defused Cyber 관측을 인용해 ServiceNow AI Platform `CVE-2026-6875`의 in-the-wild exploitation을 보도했지만, ServiceNow 공식 KB는 현재 인스턴스 대상 exploitation을 인지하지 못했다고 명시. 변화: self-hosted ServiceNow는 상충하는 신호를 단일 사실로 합치지 말고 fixed release 적용·Guarded Script 호환성·`/assessment_thanks.do` 접근 로그·incident triage를 병행 필요.",
-      "detail": "ServiceNow는 `CVE-2026-6875`가 특정 조건에서 unauthenticated code execution을 허용할 수 있는 AI Platform sandbox escape라고 설명하고 hosted·self-hosted용 보안 업데이트와 fixed releases를 제공함. The Hacker News는 Defused Cyber의 관측을 인용해 active exploitation을 보도했으나, 7월 14일 갱신된 ServiceNow 공식 KB는 현재 exploitation을 인지하지 못한다고 밝힘. active exploitation 여부는 상충하는 공개 주장으로 유지하고, 패치·로그 보존·IOC 검토를 병행해야 함.",
-      "why_it_matters": "AI Platform의 pre-auth code-execution 경로는 instance와 연결 proxy server의 신뢰 경계를 넓힐 수 있음. 공식 advisory와 threat-intelligence 보도의 exploitation 상태가 엇갈리므로, 단일 scanner·보도만으로 종료하지 않고 asset version·runtime control·evidence collection을 분리한 대응 필요.",
-      "engineering_implication": "ServiceNow 운영·보안 팀은 Brazil/Australia/Zurich/Yokohama fixed release 적용 여부, hosted/self-hosted rollout 상태, Guarded Script의 authenticated enforcement 단계, `/assessment_thanks.do` POST 접근·error 로그, instance·proxy credential rotation 및 incident escalation 기준을 점검할 필요.",
-      "korea_implication": "국내 ServiceNow self-hosted·partner 운영 조직은 글로벌 instance patch schedule과 별개로 한국 운영 창의 upgrade·script compatibility·로그 보존·외주 운영 책임자를 change ticket에 연결할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "ServiceNow",
-        "AI Platform",
-        "CVE-2026-6875",
-        "RCE",
-        "Vulnerability Management",
-        "SaaS"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-07-21 15:29",
-      "source_name": "ServiceNow Security",
-      "source_url": "https://support.servicenow.com/kb?id=kb_article_view&sysparm_article=KB3137947",
-      "image_url": "",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News — Defused Cyber attribution and report timestamp",
-          "url": "https://thehackernews.com/2026/07/critical-servicenow-ai-platform-flaw.html"
-        },
-        {
-          "title": "CVE Record — CVE-2026-6875",
-          "url": "https://www.cve.org/CVERecord?id=CVE-2026-6875"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "ServiceNow는 `CVE-2026-6875`를 AI Platform의 critical sandbox escape로 설명하며, 특정 조건에서 unauthenticated user가 플랫폼 안에서 code를 실행할 수 있는 경로를 다룸. The Hacker News는 2026년 7월 21일 Defused Cyber 관측을 인용해 in-the-wild exploitation을 보도함.",
-          "items": [
-            "발행: The Hacker News RSS `pubDate` 2026-07-21 06:29:05 +05:30을 **2026-07-21 15:29 KST**로 변환",
-            "범위: hosted instance 보안 업데이트와 self-hosted customer·partner용 relevant update를 ServiceNow 공식 KB에서 제공"
-          ]
-        },
-        {
-          "heading": "공식 KB와 보고의 증거 경계",
-          "body": "ServiceNow 공식 KB는 7월 14일 기준 현재 ServiceNow instance 대상 exploitation을 인지하지 못한다고 명시함. 반면 THN은 Defused Cyber의 X 게시물을 인용해 exploitation 관측을 보도함. 두 공개 신호는 같은 사실로 병합할 수 없으므로, active exploitation은 확인 중인 외부 보고로 표시하고 ServiceNow의 공식 상태와 분리해야 함.",
-          "items": [
-            "공식 상태: ServiceNow KB의 **exploitation을 인지하지 못함** 문구 확인",
-            "외부 보고: Defused Cyber attribution은 THN 보도 범위이며 ServiceNow의 exploitation 확인으로 전환 불가",
-            "대응: exposed endpoint·HTTP POST·instance audit·proxy log를 보존하고 vendor support와 incident process로 추가 확인"
-          ]
-        },
-        {
-          "heading": "수정 릴리스와 Guarded Script 변화",
-          "body": "공식 KB는 Brazil EA·GA, Australia Patch 2, Zurich Patch 7b·9, Yokohama Patch 12 Hot Fix 1b·13을 fixed release로 열거함. 이 패치는 Guarded Script도 포함하며, complex server-side script는 Script Include로 이동이 필요할 수 있음. guest traffic은 upgraded instance에서 즉시 enforcement되고 authenticated traffic은 cloud에서 약 4주에 걸쳐 단계 적용됨.",
-          "items": [
-            "inventory: instance family·patch level·hosting model·upgrade owner·maintenance window 확인",
-            "호환성: variable·if/else·loop·multiple statement를 쓰는 complex script의 Guarded Script 영향 사전 테스트",
-            "경계: client-side JavaScript와 Script Include 내부 code는 공식 KB가 영향 제외로 명시"
-          ]
-        },
-        {
-          "heading": "영향 범위와 운영 확인",
-          "body": "THN은 Searchlight Cyber의 기술 세부를 인용해 instance 및 연결 proxy server compromise 가능성을 언급함. 이는 해당 연구의 기술 주장 범위이며 모든 ServiceNow deployment의 침해 사실은 아님. self-hosted 운영은 patch 설치 여부만 보지 말고 실제 instance version, proxy exposure, guest endpoint access와 enforcement phase를 함께 확인해야 함.",
-          "items": [
-            "점검: `/assessment_thanks.do`에 대한 비정상 POST·5xx·sandbox error·authenticated/guest pattern을 time window로 검색",
-            "통제: internet exposure·reverse proxy routing·WAF·rate limit은 patch 전 blast-radius 감소 수단이며 fix 대체 수단 아님",
-            "증적: patch level·upgrade timestamp·script scan 결과·log retention·support case·rollback plan을 change record에 보존"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "이 사건의 즉시 과제는 exploitation 보도의 진위를 기다리는 것이 아니라 공식 fixed release와 runtime exposure를 동시에 검증하는 작업임. Guarded Script rollout은 보안 control인 동시에 application compatibility change이므로 security·platform·process owner가 같은 canary와 rollback 기준을 공유해야 함.",
-          "items": [
-            "팀 액션: affected family와 self-hosted instance를 우선순위화하고 fixed release·Guarded Script compatibility canary 실행",
-            "팀 액션: guest endpoint access·instance/proxy audit log·credential·integration token을 incident triage checklist에 추가",
-            "팀 액션: ServiceNow official advisory와 threat-intel report의 exploitation status를 별도 field로 추적하고 vendor update 시 재평가"
           ]
         }
       ],
