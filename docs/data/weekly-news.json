@@ -2,194 +2,388 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-30 22:14",
+  "last_updated_kst": "2026-07-31 02:16",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Wiz `CosmosEscape`: Gremlin sandbox escape가 DB Gateway code execution·platform-wide key·regional account directory 접근으로 이어질 수 있었던 연구 공개. Microsoft는 2025년 11월 entry point 차단, 2026년 7월 all-region long-term fix·key 제거 완료와 research 외 unauthorized activity 증거 없음·customer action 불필요를 밝힘.",
+    "AWS Transit Gateway PBR GA: source/destination IP·port·protocol 기준 attachment traffic steering을 first-match-wins policy table로 제공. inspection·Direct Connect/VPN·prod/dev isolation rule은 asymmetric return·stateful appliance·shadowing·rollback test와 함께 release.",
     "Ruflo `CVE-2026-59726`: `3.16.3` 이전 기본 MCP bridge가 `0.0.0.0:3001`에 인증 없이 노출될 수 있어 shell execution·provider key·AgentDB memory integrity가 같은 incident 범위가 됨. patch와 함께 listener 차단·key rotation·memory audit·clean rebuild 필요.",
     "Broadcom `VMSA-2026-0006`: vCenter `CVE-2026-59309` 인증 우회·`CVE-2026-59310` RCE는 CVSS 9.8, VMXNET3 조건 ESX host code execution `CVE-2026-47876`은 9.3. vCenter ingress와 guest admin privilege·release matrix를 분리 inventory.",
-    "AWS Interconnect–OCI GA: `us-east-1`에서 Console·CLI·API로 private multicloud connection provisioning 제공. route·DNS·identity·egress·failure domain·pricing·SLA는 organization별 PoC/contract gate로 확인.",
-    "MCP `2026-07-28`: stateless request/response core, `Mcp-Method`·`Mcp-Name` header routing, MRTR, RFC 9207 issuer validation, CIMD 전환을 공개. session/SSE/DCR 의존 server·client·gateway를 canary와 rollback 조건으로 migration.",
-    "SKT `A.X K2`: Apache-2.0 공개 가중치와 688B/33B active MoE·FP8 checkpoint·256K context는 self-hosting 입력값. runtime·KV cache·interconnect·concurrency별 TTFT/TPOT·OOM·quality evidence가 production gate."
+    "AWS Interconnect–OCI GA: `us-east-1`에서 Console·CLI·API로 private multicloud connection provisioning 제공. route·DNS·identity·egress·failure domain·pricing·SLA는 organization별 PoC/contract gate로 확인."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Firefox CVE-2026-10702: 브라우저 RCE 보도와 OS kernel 단계의 patch·admin-session 경계를 분리하는 운영",
-      "summary": "핵심: Mozilla은 Firefox `151.0.3`에서 High JIT miscompilation `CVE-2026-10702`을 수정. 관련 공개 exploit 보도는 Tor Browser 영향 가능성과 Android 17 ARM64에서 별도 GhostLock kernel 단계 결합을 다룸. 판단: browser update를 endpoint privilege·OS patch·admin browsing·telemetry와 분리하지 않으면 exploit-chain 보도에 과잉 또는 과소 대응할 위험.",
-      "details": "Mozilla advisory와 관련 기술 보도는 browser renderer 단계와 Android kernel 단계, Tor Browser 영향 가능성의 증거 수준이 다르다. 이 Deep Dive는 Firefox patch를 우선 적용하되, exact Tor Browser release와 real-world exploitation은 미확정으로 남기고 endpoint inventory와 privileged workflow를 재정렬하는 방법을 다룬다.",
-      "why_it_matters": "브라우저·endpoint patch와 administrator session isolation을 위한 source-grounded briefing",
+      "title": "AWS Transit Gateway PBR GA: network policy를 ordered packet-classification release로 운영하는 방법",
+      "summary": "핵심: AWS Transit Gateway PBR은 source/destination IP·port·protocol에 따라 attachment traffic을 route table로 steering하는 native control plane. 단순 route-prefix 변경보다 policy order·return path·stateful inspection·rollback이 함께 바뀌므로 network feature가 아니라 change-management surface로 운영 필요.",
+      "details": "AWS의 PBR GA 발표를 바탕으로 security inspection, hybrid routing, environment isolation의 구조적 이점과 ordered-rule failure mode를 분리해 정리.",
+      "why_it_matters": "current source-grounded AI/Infra briefing",
       "sources": [
-        "https://www.mozilla.org/en-US/security/advisories/mfsa2026-54/",
-        "https://thehackernews.com/2026/07/researchers-show-single-malicious.html",
-        "https://www.nebulasec.ai/blog/ionstack"
+        "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-transit-gateway-policy-based-routing/",
+        "https://aws.amazon.com/transit-gateway/"
       ],
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-07-30 01:38",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-07-31 02:16",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Firefox `151.0.3` 배포은 즉시 우선순위이나, **CVE-2026-10702** 하나로 Tor Browser·모든 Android·actual exploitation을 확정하면 안 됨. browser RCE, kernel privilege escalation, admin-session exposure를 다른 evidence와 owner로 운영 필요.",
+          "body": "Transit Gateway PBR은 **packet-aware traffic steering**을 native routing에 넣지만, first-match rule 하나가 inspection path와 return path를 동시에 바꿀 수 있음. topology 단순화와 policy risk를 같은 release gate에서 다룰 필요.",
           "items": [
-            "결정: Firefox update와 Android kernel/vendor bulletin patch를 별도 compliance field로 관리",
-            "팀 액션: privileged browser session을 일반 web browsing과 device·profile·network 수준에서 분리"
+            "결정: PBR을 route-table convenience가 아닌 security/network policy deployment로 분류",
+            "팀 액션: rule intent·target table·stateful return path·rollback evidence를 한 change set에 고정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Mozilla `MFSA 2026-54`는 Firefox `151.0.3`에서 JavaScript Engine JIT miscompilation을 수정하고 High 영향도로 분류함. THN은 7월 29일 공개 exploit material과 Tor Browser 영향 가능성을 보도했으며 RSS 시각은 `20:57 KST`임.",
+          "body": "AWS는 PBR이 source/destination IP, port, protocol 조합으로 forwarding 결정을 내리며 policy table을 Transit Gateway attachment에 연결한다고 발표함. ordered rule은 first-match-wins로 matching packet을 지정 route table로 보냄.",
           "items": [
-            "공식 확인: Firefox fixed release·CVE identifier·JIT component·High rating",
-            "보도 범위: malicious webpage가 renderer content process code execution으로 이어질 수 있다는 분석",
-            "시간 경계: Mozilla advisory의 calendar date와 THN report timestamp를 동일 근거로 섞지 않는 기록"
+            "발행: AWS RSS `2026-07-30 15:39 UTC` = **2026-07-31 00:39 KST**",
+            "제공: Transit Gateway가 있는 모든 commercial AWS Region, Console·CLI·SDK",
+            "요금: PBR 자체 별도 추가 요금 없음이라는 AWS 발표"
           ]
         },
         {
-          "heading": "증거 경계와 영향 범위",
-          "body": "관련 분석은 Firefox stable `147`부터 `151.0.2` 및 Firefox 기반 Tor Browser 영향 가능성을 다루지만, exact affected Tor Browser release는 식별하지 못했다고 명시함. Mozilla advisory는 ESR matrix나 in-the-wild exploitation을 제공하지 않음.",
+          "heading": "기존 topology와 달라지는 점",
+          "body": "AWS는 traffic steering·workload isolation을 위해 multi-VPC와 additional routing hop을 만들던 복잡도를 줄이는 목적을 제시함. traffic class를 attachment ingress에서 route table로 나누면 inspection·hybrid path·environment domain을 native TGW control plane에서 표현 가능.",
           "items": [
-            "확정: Firefox `151.0.3` 수정 사실",
-            "미확정: vulnerable Tor Browser version·실제 사용자 대상 악용·모든 Android build 영향",
-            "운영: vendor release notes와 managed endpoint telemetry가 추가될 때까지 exception register에 보존"
+            "이전: destination-prefix route만으로 L4/service class intent를 표현하기 어려운 구조",
+            "변화: source·port·protocol에 따라 동일 destination traffic도 다른 route table로 steering 가능",
+            "한계: topology hop 감소가 appliance capacity·packet symmetry·operations ownership 해결을 보장하지 않음"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: exploit chain을 분리하는 아키텍처 관점",
-          "body": "IonStack 보도의 end-to-end chain은 browser entry point와 Linux kernel futex flaw `CVE-2026-43499` GhostLock을 결합함. 공개 코드의 Android 조건은 one supported Android 17 ARM64 Google build이며 Firefox update만으로 kernel stage를 수정하지 않음.",
+          "heading": "AI/Infra 전문가 해석: traffic classification",
+          "body": "PBR rule은 classification과 forwarding target을 결합함. design document에는 source attachment, address/port/protocol condition, target route table, downstream firewall/NVA, expected egress와 return route를 함께 적어야 함.",
           "items": [
-            "browser: renderer content-process RCE 단계로 patch·sandbox telemetry 대상",
-            "kernel: vendor build·kernel version·security bulletin·boot image로 별도 inventory 대상",
-            "경계: one-build demonstration을 desktop·all Android exploitation guarantee로 확장하지 않는 대응"
+            "inspection: sensitive workload를 AWS Network Firewall 또는 third-party appliance path로 보내는 source example",
+            "hybrid: source·L4 condition에 따른 Direct Connect 또는 VPN path 선택 예시",
+            "segmentation: prod/dev를 다른 routing domain으로 보내 lateral movement scope를 줄이는 example"
           ]
         },
         {
-          "heading": "endpoint·SRE 관점",
-          "body": "브라우저는 SSO, cloud console, source repository, CI/CD admin surface를 여는 high-value client임. patch compliance만 수집하면 process spawn·download·crash·JIT anomaly와 admin activity correlation을 놓칠 수 있음.",
+          "heading": "SRE·network operations 관점",
+          "body": "ordered first-match semantics는 late specific rule을 earlier broad rule이 가리는 shadowing risk를 만듦. stateful firewall·NAT·proxy는 forward path만 맞고 response가 다른 path로 가면 session failure 또는 bypass가 될 수 있음.",
           "items": [
-            "관측: browser version·profile·extension·download·child process·EDR event를 endpoint ID로 연결",
-            "격리: admin console은 hardened workstation·separate profile·restricted egress·MFA step-up 적용",
-            "복구: browser reset·credential/session revocation·forensic preservation을 incident playbook에 포함"
+            "measure: rule hit, Transit Gateway Flow Logs, firewall session create/drop, latency, packet loss를 flow key로 연결",
+            "test: TCP/UDP·IPv4/IPv6·allowed/denied port·cross-VPC·on-premises return flow matrix",
+            "recover: prior policy table association·rule version·IaC state·emergency detach procedure 보존"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "공개 exploit의 존재는 patch urgency를 높이지만, exploitation status를 확정하지 않는 source boundary가 필요함. Tor privacy workflow, research device, BYOD Android와 standard corporate browser는 asset criticality와 remediation option이 다름.",
+          "body": "PBR은 least-path와 segmentation을 강화할 수 있지만, policy author가 L3 route와 L4 service intent를 함께 바꾸게 함. network security exception은 temporary rule expiry·business owner·inspection evidence 없이 남기면 permanent bypass가 될 수 있음.",
           "items": [
-            "분류: privileged admin, developer workstation, shared kiosk, unmanaged BYOD, anonymity research device 구분",
-            "정책: unsupported browser·delayed vendor patch·kernel update 불가 device의 temporary compensating control 정의",
-            "증거: exception expiry·device owner·network restriction·session scope를 audit record로 보존"
+            "control: policy table write 권한과 route table write 권한을 privileged change workflow에 묶기",
+            "review: each rule의 service purpose·data classification·inspection owner·expiry를 record",
+            "audit: first-match result와 actual egress path를 deployment 후 independent telemetry로 비교"
           ]
         },
         {
-          "heading": "도입·대응 로드맵",
-          "body": "첫 24시간에는 exposure reduction과 version inventory, 다음 단계에는 kernel/device verification과 admin browsing segmentation을 수행하는 순서가 적합함. 분석 결과가 늘어도 unverified Tor/Android claims는 distribution decision의 단독 근거가 아님.",
+          "heading": "도입 로드맵",
+          "body": "처음부터 global routing을 바꾸기보다 visibility가 충분한 low-risk attachment에서 canary로 시작하고, stateful appliance와 hybrid failover를 통과한 traffic class만 확대하는 순서가 적합.",
           "items": [
-            "1단계: Firefox `151.0.3+` rollout, update failure·legacy exception 수집",
-            "2단계: Android build·kernel bulletin·Tor Browser vendor release를 cross-check",
-            "3단계: browser telemetry hunt·admin session separation test·incident tabletop 수행"
+            "1단계: current flow map·route table·inspection dependency·rollback owner baseline",
+            "2단계: non-production attachment에서 one narrow rule과 synthetic flow test",
+            "3단계: prod canary, DX/VPN loss·NVA failover game day 뒤 staged rollout"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "종료 조건은 browser version 하나가 아니라 browser·OS·device build·privileged session·observability가 연결된 상태임.",
+          "body": "종료 조건은 PBR rule이 apply됐다는 API success가 아니라 intended flow가 intended control을 거쳐 response까지 돌아온 evidence 확보.",
           "items": [
-            "verify: Firefox/Tor Browser version·Android build·kernel patch·EDR coverage·admin session inventory",
-            "test: malicious-page simulation, download isolation, browser crash, session revocation, rollback case",
-            "operate: patch lag·high-risk asset·browser anomaly·exception expiry dashboard 운영",
-            "강조 메세지: **브라우저 patch는 exploit-chain 대응의 시작이며, OS·identity·admin-session control을 대체하지 않음**"
+            "verify: attachment association·ordered rule·target route table·NVA health·return route·Region availability",
+            "test: rule shadowing·asymmetric return·firewall state reset·DX/VPN failover·rollback",
+            "operate: route policy diff·rule hit·drop rate·exception expiry·change owner dashboard",
+            "강조 메세지: **PBR은 route 기능이 아니라 packet policy release이며, order와 return path가 security outcome을 결정**"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "SKT A.X K2 공개 가중치: 688B/33B active MoE·FP8 checkpoint를 self-hosting acceptance test로 바꾸는 방법",
-      "summary": "핵심: SKT `A.X K2` 모델 카드는 Apache-2.0, 688B total·33B active MoE, native FP8 checkpoint, 256K context를 명시. 판단: active parameter와 FP8만으로 GPU 수·throughput·비용·256K quality를 산정할 수 없으므로, artifact provenance·runtime·KV cache·interconnect·route·data policy를 하나의 admission gate로 검증 필요.",
-      "details": "A.X K2 공개 가중치는 국내 self-hosting과 sovereign AI 평가의 입력이지만, model card의 구조·precision·context 정보와 production SLO는 다르다. 이 Deep Dive는 model artifact, serving runtime, capacity/FinOps, data and tool policy를 같은 acceptance test로 묶는 방법을 다룬다.",
-      "why_it_matters": "Korean open-weight MoE self-hosting과 production admission을 위한 source-grounded briefing",
+      "title": "CosmosEscape: managed database의 tenant query·gateway identity·platform key를 분리하는 cloud isolation 운영",
+      "summary": "핵심: Wiz는 Cosmos DB Gremlin sandbox escape가 DB Gateway code execution과 platform-wide key·regional account directory 접근으로 이어질 수 있었다고 공개. Microsoft는 all-region fix와 key 제거, research 외 unauthorized activity 증거 없음, customer action 불필요를 발표. 고객은 긴급 patch보다 managed-service identity boundary와 own credential/audit posture를 재검토할 사안.",
+      "details": "Wiz research와 Microsoft vendor statement가 공개한 CosmosEscape chain을 바탕으로 multi-tenant managed service의 execution boundary, privileged service identity, incident assurance를 분석.",
+      "why_it_matters": "current source-grounded AI/Infra briefing",
       "sources": [
-        "https://huggingface.co/skt/A.X-K2",
-        "https://github.com/SKT-AI/A.X-K2",
-        "https://www.aitimes.com/news/articleView.html?idxno=213289"
+        "https://www.wiz.io/blog/cosmosescape-taking-over-every-database-in-azure-cosmos-db",
+        "https://thehackernews.com/2026/07/azure-cosmos-db-flaw-exposed-platform.html"
       ],
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-07-30 01:38",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-07-31 02:16",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "`A.X K2`의 **688B total·33B active** MoE와 native FP8 artifact는 deployment option을 넓히지만 capacity guarantee가 아님. production admission은 model revision·runtime·context·KV cache·network·tool/data policy를 같은 workload에서 검증한 evidence로 결정 필요.",
+          "body": "CosmosEscape는 customer database query sandbox의 실패가 **platform-wide credential scope**와 연결될 때 cross-tenant blast radius가 어떻게 커지는지 드러낸 사례. Microsoft가 remediation을 완료했다고 밝혔지만, managed-service assurance와 tenant credential hygiene는 별도 운영 항목.",
           "items": [
-            "결정: parameter headline과 model card benchmark를 serving quota·SLO의 직접 근거로 사용하지 않음",
-            "팀 액션: artifact hash부터 end-user p95까지 연결한 acceptance matrix 운영"
+            "결정: client patch ticket보다 provider-side isolation incident와 assurance evidence로 분류",
+            "팀 액션: primary key use·Entra ID/RBAC·audit retention·provider incident evidence를 같은 review로 연결"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Hugging Face model card는 Apache-2.0, decoder-only MoE, 688B total·33B active parameters, 256 routed expert와 one shared expert, token당 eight routed expert activation을 명시함. AI타임스는 7월 29일 공개와 benchmark·efficiency 설명을 보도함.",
+          "body": "Wiz는 Azure Cosmos DB Gremlin API에서 own database query로 .NET reflection restriction을 우회해 DB Gateway code execution을 얻는 chain을 공개함. THN은 Wiz와 Microsoft statement를 인용해 2026-07-30 보도를 게시.",
           "items": [
-            "official: native FP8 MXFP8/E4M3 training과 block-scaled FP8 E4M3 checkpoint 표기",
-            "artifact: repository API에서 346 safetensors shard와 revision timestamp 확인",
-            "보도 경계: K1 대비 benchmark·efficiency 주장은 supplier/reporter scope로 보존"
+            "원문 날짜: Wiz `July 30, 2026`, precise clock 미표기",
+            "정렬 시각: THN RSS `2026-07-30 19:04:09 +05:30` = **22:34 KST**",
+            "식별: public research에는 CVE ID·CVSS score가 없음"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: 모델·context 아키텍처",
-          "body": "256K context는 128K native training 뒤 YaRN scaling을 사용한 model-card 구성임. Sparse Gated Attention과 Gated Norm 설명은 attention compute·activation outlier를 다루지만, actual long-context quality·memory·latency는 runtime과 request mix에 따라 달라짐.",
+          "heading": "exploit chain의 기술 구조",
+          "body": "Wiz 설명에서 Cosmos DB custom Gremlin engine은 query를 .NET code로 변환해 제한 환경에서 실행. .NET reflection handling gap으로 file read/write primitive를 만든 뒤 arbitrary code execution에 도달했다고 설명.",
           "items": [
-            "context: 1K·32K·128K·256K workload를 retrieval·chat·code task별로 분리",
-            "memory: weights 외 KV cache·runtime workspace·NCCL buffer·host staging·failure reserve 합산",
-            "quality: long-context recall·instruction fidelity·tool-call·safety refusal regression 측정"
+            "entry: attacker-controlled Gremlin account와 credential로 시작하는 published prerequisite",
+            "execution: multi-tenant Service Fabric에서 customer query를 대행하는 DB Gateway",
+            "boundary: full query는 공개되지 않았고 planned Black Hat presentation에 남아 있음"
           ]
         },
         {
-          "heading": "serving·SRE 관점",
-          "body": "MoE active parameter가 작아도 688B artifact distribution, expert routing, KV cache, tensor/expert parallelism, interconnect, batch/concurrency가 TTFT·TPOT·availability를 결정함. FP8 compatibility는 GPU·driver·kernel·serving engine·quantization route가 맞아야 함.",
+          "heading": "Cosmos Master Key와 Config Store",
+          "body": "Wiz는 gateway cluster credential이 target account primary key를 가져올 signing key와 regional account directory를 열 수 있었다고 설명하며 이를 Cosmos Master Key라고 명명. target identification과 key retrieval이 결합될 때 platform-scale precision targeting이 가능했다는 연구 주장.",
           "items": [
-            "measure: request class별 TTFT·TPOT·throughput·p95/p99·OOM·retry·queue time",
-            "resilience: node loss·expert imbalance·network degradation·model cache eviction·rollback drill",
-            "observe: model revision·router behavior·context bin·GPU memory·power·cost를 trace ID로 연결"
+            "takeover: requested account primary key를 통한 full read/write capability라는 source claim",
+            "enumeration: Config Store의 account name·tenant/subscription ID·network settings·tags 조회 가능성이라는 source claim",
+            "scope: tenant·region·SQL/MongoDB/Cassandra/Gremlin API를 가로질렀다는 Wiz research scope"
           ]
         },
         {
-          "heading": "FinOps와 capacity 경계",
-          "body": "AI타임스의 efficiency/benchmark 설명과 model-card architecture는 cost per successful task를 직접 제공하지 않음. GPU reservation·interconnect·storage egress·idle capacity·human review·fallback traffic을 포함해야 비교가 가능함.",
+          "heading": "AI/Infra 전문가 해석: cloud architecture·isolation",
+          "body": "customer DB 자체가 gateway cluster에 저장되지 않아도 gateway가 primary key retrieval·network policy enforcement 경로를 갖는다면 privileged service identity가 critical boundary가 됨. private endpoint는 perimeter control이지만 compromised provider execution path와 독립된 완전 보증이 아님.",
           "items": [
-            "baseline: same prompt set·context bin·quality gate에서 managed API와 self-hosting 비교",
-            "unit cost: successful response·tool task·1K output token·long-context retrieval별 분리",
-            "guardrail: low confidence·tool-enabled·large context request의 fallback cost와 quota 정책 설정"
+            "principle: tenant-controlled execution 가까이 privileged credential·internal API·directory access를 두지 않는 boundary design",
+            "identity: service-to-service token을 account·region·operation별로 scope하고 short-lived validation 적용",
+            "segmentation: query runtime·key retrieval·account directory·network policy write path를 separate trust zone으로 분리"
           ]
         },
         {
-          "heading": "security·governance 관점",
-          "body": "open weights는 checkpoint만의 문제가 아니라 tokenizer, chat template, runtime image, quantized derivative, prompt/output retention, connector/tool permission을 포함한 supply-chain change임. Apache-2.0 표기도 deployment data governance를 대체하지 않음.",
+          "heading": "Microsoft remediation과 증거 경계",
+          "body": "Microsoft statement는 2025-11 disclosure 뒤 48시간 내 Gremlin entry point mitigation, July 2026 all-region long-term rollout, Cosmos Master Key elimination과 additional guardrail을 설명함. research 외 unauthorized activity·customer data access 증거가 없고 customer action 불필요라는 statement도 함께 공개.",
           "items": [
-            "provenance: 346 shard hash·model revision·tokenizer·runtime image·SBOM·license record",
-            "data: prompt/output·RAG corpus·tool payload·telemetry·fallback request retention/egress policy",
-            "safety: Think/non-think route·tool allowlist·PII redaction·human approval을 separate policy layer로 적용"
+            "확정: public vendor statement의 remediation and investigation result",
+            "미확정: vulnerable architecture 최초 deployment·total exposure duration·reviewed log coverage",
+            "분리: potentially accessible architecture claim을 actual victim data access claim으로 확장하지 않기"
           ]
         },
         {
-          "heading": "도입 로드맵",
-          "body": "초기 rollout은 closed corpus의 read-only summarization 또는 retrieval 평가로 시작하고, write action·external tool·sensitive data를 후속 gate로 분리하는 순서가 적합함.",
+          "heading": "FinOps·governance·incident 관점",
+          "body": "managed service는 control plane fix를 customer가 직접 deploy하지 못하므로 provider notification, support evidence, contract/SLA, tenant telemetry가 incident closure evidence가 됨. application-side primary-key 과다 사용은 independent credential risk로 남음.",
           "items": [
-            "1단계: hardware/runtime candidate·data classification·success metric·rollback owner 정의",
-            "2단계: 1K~256K soak test와 quality/cost/SLO baseline 수집",
-            "3단계: limited tenant canary, quota·fallback·audit·incident runbook을 갖춘 staged rollout"
+            "govern: provider incident의 regional scope·completion time·tenant impact assertion·evidence retention 요청",
+            "reduce: primary-key static secret 대신 Entra ID/RBAC data-plane authorization과 least-privilege workload identity 우선",
+            "observe: data-plane operation·key access·network change·break-glass access의 log retention and anomaly review"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "출시 조건은 model이 boot되는 상태가 아니라, artifact provenance·capacity·quality·data path·rollback을 운영자가 설명할 수 있는 상태임.",
+          "body": "완료 조건은 vendor blog를 읽은 상태가 아니라 tenant asset·credential·network·audit evidence가 current assurance model과 연결된 상태.",
           "items": [
-            "verify: revision·shard hash·license·tokenizer·GPU/driver/runtime·context/concurrency matrix",
-            "test: OOM·expert imbalance·network loss·long-context quality·prompt injection·fallback/rollback case",
-            "operate: p95·GPU memory·cost·quality regression·tool exception·data egress dashboard",
-            "강조 메세지: **FP8·active parameter는 capacity 입력값이며, production SLO는 workload evidence에서만 확정 가능**"
+            "verify: Cosmos DB accounts·Gremlin API use·primary key consumers·private endpoint·diagnostic settings·region inventory",
+            "test: Entra ID/RBAC migration path·key rotation·break-glass recovery·data-plane audit query·provider support escalation",
+            "operate: high-privilege key count·rotation age·cross-account data access anomaly·incident evidence expiry dashboard",
+            "강조 메세지: **managed-service isolation은 고객 ACL 하나가 아니라 provider execution boundary·credential scope·audit evidence의 합으로 검증**"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-250",
+      "title_ko": "AWS Transit Gateway Policy-Based Routing GA: source·destination·port·protocol 기반 traffic steering을 native route policy로 적용",
+      "title_original": "AWS announces general availability of Policy-Based Routing on AWS Transit Gateway",
+      "summary": "핵심: AWS Transit Gateway가 source/destination IP·port·protocol 조합으로 forwarding을 고르는 Policy-Based Routing(PBR)을 GA로 제공. 기존 multi-VPC hop 없이 attachment별 policy table과 first-match-wins rule로 inspection·Direct Connect/VPN·prod/dev isolation을 설계 가능. 운영: ordered rule shadowing·asymmetric path·appliance state·failover를 route table 변경과 같은 release gate로 검증 필요.",
+      "detail": "AWS는 Transit Gateway PBR이 destination prefix만 보던 기존 forwarding과 달리 packet attribute 조합으로 다음 route table을 선택한다고 밝혔다. attachment에 policy table을 연결하고 ordered rule의 first-match-wins 결과로 traffic을 steering한다. AWS는 Network Firewall·third-party inspection appliance, Direct Connect/VPN path, prod/dev routing domain을 예시로 들었다. 모든 commercial Transit Gateway Region에서 Console·CLI·SDK로 구성 가능하며 PBR 자체의 별도 요금은 없다고 밝혔다. appliance HA, stateful flow symmetry, rule conflict, cross-region·on-premises design, Transit Gateway 기본 사용료는 workload별 검증 대상임.",
+      "why_it_matters": "Transit Gateway가 packet-aware steering을 native control plane에 넣으면서 network segmentation·inspection path 설계에서 extra VPC와 route hop을 줄일 선택지가 생김. 다만 policy ordering 오류는 intended inspection bypass 또는 return-path asymmetry로 바로 이어질 수 있음.",
+      "engineering_implication": "네트워크 팀은 PBR rule을 IaC code review 대상으로 취급하고 source/destination·L4 protocol·attachment·target route table·expected return path·owner를 한 change record에 고정 필요. canary flow, firewall state, VPN/DX failover, flow log, rollback route table을 함께 test해야 함.",
+      "korea_implication": "국내 리전·온프레미스 연결은 AWS가 발표한 commercial-Region availability만으로 구성 가능성을 확정할 수 없음. 사용 중인 Region, Direct Connect/VPN path, managed inspection appliance와 enterprise routing policy를 사전 PoC로 대조 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Transit Gateway",
+        "Networking",
+        "Policy-Based Routing",
+        "Cloud Security",
+        "IaC"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 92,
+      "published_kst": "2026-07-31 00:39",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-transit-gateway-policy-based-routing/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "AWS Transit Gateway product page",
+          "url": "https://aws.amazon.com/transit-gateway/"
+        },
+        {
+          "title": "AWS What’s New RSS publication evidence",
+          "url": "https://aws.amazon.com/about-aws/whats-new/recent/feed/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Transit Gateway의 **Policy-Based Routing(PBR)** 정식 제공을 발표함. forwarding 결정에 destination IP 외 packet attribute 조합을 사용할 수 있는 기능.",
+          "items": [
+            "발행: AWS RSS `Thu, 30 Jul 2026 15:39:00 GMT`를 **2026-07-31 00:39 KST**로 변환",
+            "조건: source/destination IP·port·protocol 조합으로 traffic classification 가능",
+            "범위: Transit Gateway attachment에 policy table을 연결하는 native routing control plane"
+          ]
+        },
+        {
+          "heading": "정책 평가와 forwarding 방식",
+          "body": "PBR rule은 ordered set이며 first-match-wins로 matching packet을 지정 route table로 보냄. destination-prefix 기반 route lookup을 대체하기보다 attachment ingress 뒤 steering 결정을 추가하는 구조.",
+          "items": [
+            "구성: attachment별 policy table association과 ordered rule 정의",
+            "결과: rule이 일치하면 지정 route table로 forwarding decision 연결",
+            "리스크: broad rule이 later specific rule을 shadow하면 inspection·segmentation intent가 무력화될 수 있음"
+          ]
+        },
+        {
+          "heading": "AWS가 제시한 사용 경로",
+          "body": "AWS는 sensitive workload를 AWS Network Firewall 또는 third-party inspection appliance로 보내는 경우, source/port/protocol에 따른 Direct Connect·VPN 경로 선택, prod/dev routing domain 분리를 예시로 제시함.",
+          "items": [
+            "보안: sensitive flow만 inspection attachment로 steering하는 정책 구성 가능",
+            "연결: application traffic을 L4 condition에 따라 Direct Connect 또는 VPN path로 선택 가능",
+            "격리: production·development를 서로 다른 routing domain으로 분리하는 설계 가능"
+          ]
+        },
+        {
+          "heading": "제공 범위와 증거 경계",
+          "body": "AWS는 Transit Gateway 제공 commercial Region 전체, Console·CLI·SDK configuration, PBR 자체 별도 추가 요금 없음만 발표함. throughput, appliance compatibility, failover behavior와 full Transit Gateway cost는 source가 보장하지 않음.",
+          "items": [
+            "확정: commercial AWS Region의 Transit Gateway availability 범위",
+            "미확정: inspection appliance별 session persistence·capacity·HA behavior",
+            "미확정: cross-region·on-premises topology, DX/VPN cost, migration downtime"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "기존 traffic steering은 multi-VPC 또는 additional routing hop을 만들기 쉬워 route ownership·observability·cost가 분산됐음. native PBR은 topology를 줄일 수 있지만 ordered policy가 새로운 high-impact failure surface가 됨.",
+          "items": [
+            "설계: route table 수·transit hop·manual exception 감소 가능성",
+            "보안: firewall bypass와 lateral movement control을 L3 prefix만으로 다루지 않는 선택지",
+            "운영: route update가 network policy release와 같은 blast radius를 가짐"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "PBR 도입은 rule count가 아니라 intended flow를 재현하는 acceptance test가 완료됐을 때 승인할 과제.",
+          "items": [
+            "팀 액션: rule별 source/destination·L4 condition·target table·return path·owner를 IaC review에 기록",
+            "팀 액션: canary packet capture·VPC/Transit Gateway Flow Logs·firewall session telemetry로 first-match 결과 검증",
+            "팀 액션: VPN/DX loss·inspection appliance failover·rule rollback을 change window test에 포함"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-251",
+      "title_ko": "Wiz CosmosEscape: Azure Cosmos DB Gremlin sandbox escape가 platform-wide key·cross-tenant database 접근으로 이어질 수 있었던 구조 공개",
+      "title_original": "CosmosEscape: Taking Over Every Database in Azure Cosmos DB",
+      "summary": "핵심: Wiz는 Cosmos DB Gremlin API의 .NET reflection 기반 sandbox escape가 multi-tenant DB Gateway code execution과 platform-wide signing key 접근으로 이어질 수 있었다고 공개. Microsoft는 2025년 11월 entry point를 48시간 안에 차단하고 2026년 7월 all-region long-term fix·key 제거를 완료했으며 customer action 불필요·research 외 unauthorized activity 증거 없음이라고 밝힘. 운영: 고객 patch보다 managed-service trust boundary·key scope·tenant-controlled execution isolation audit 항목으로 다룰 사건.",
+      "detail": "Wiz가 공개한 CosmosEscape 연구는 공격자가 자신이 제어하는 Gremlin database와 credential에서 crafted query를 보내 .NET reflection 제약을 우회하고 DB Gateway에서 code execution을 얻는 체인을 설명한다. gateway credentials가 account primary key를 가져오는 platform-wide signing key와 regional Config Store에 닿을 수 있었다는 연구 주장에 따르면 tenant·region·SQL/MongoDB/Cassandra/Gremlin API를 가로지르는 cross-tenant access 가능성이 있었다. Microsoft는 coordinated disclosure 뒤 Gremlin entry point hot fix를 48시간 내 배포하고 2026년 7월 모든 region의 long-term architecture fix와 key 제거를 완료했다고 밝혔다. Microsoft 조사에서는 연구 외 unauthorized activity와 customer data access 증거가 없고 고객 조치도 필요 없다는 vendor statement를 유지해야 함.",
+      "why_it_matters": "관리형 database에서는 tenant code/query execution, internal gateway identity, account-key retrieval, network isolation enforcement가 같은 service boundary 안에 존재할 수 있음. 한 sandbox escape가 customer configuration 밖의 control-plane credential과 연결되면 individual account ACL만으로 blast radius를 설명할 수 없음.",
+      "engineering_implication": "Cosmos DB 고객은 긴급 client patch보다 service-side remediation 상태를 Microsoft support/channel로 확인하고, primary key 의존 workload의 Entra ID/RBAC 전환·key rotation cadence·private endpoint·diagnostic log retention·break-glass access inventory를 재검토 필요. provider-side incident가 customer action 불필요라고 해도 application secret scope와 data access telemetry 검토는 별도 수행 필요.",
+      "korea_implication": "국내 regulated workload는 Azure managed-service incident를 vendor 공지 종료만으로 닫지 말고 tenant별 Cosmos DB account·primary-key 사용·private endpoint·Entra authentication·audit log retention을 evidence로 보존 필요.",
+      "category": "Security",
+      "tags": [
+        "Azure",
+        "Cosmos DB",
+        "Cloud Security",
+        "Multi-tenancy",
+        "Gremlin",
+        "Identity"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-07-30 22:34",
+      "source_name": "Wiz Research",
+      "source_url": "https://www.wiz.io/blog/cosmosescape-taking-over-every-database-in-azure-cosmos-db",
+      "image_url": "https://www.datocms-assets.com/75231/1785342613-cosmos-2x-1.png?fm=webp",
+      "related_links": [
+        {
+          "title": "The Hacker News — publication timestamp and Microsoft response coverage",
+          "url": "https://thehackernews.com/2026/07/azure-cosmos-db-flaw-exposed-platform.html"
+        },
+        {
+          "title": "Microsoft Cosmos DB Gremlin connection guide",
+          "url": "https://learn.microsoft.com/en-us/azure/cosmos-db/gremlin/connect-using-gremlin"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Wiz가 **CosmosEscape**를 Azure Cosmos DB Gremlin API의 critical vulnerability chain으로 공개함. 연구는 자체 제어 Gremlin database에서 시작한 query가 service-side DB Gateway code execution까지 이어질 수 있었다고 설명.",
+          "items": [
+            "발행: Wiz 원문은 `July 30, 2026` 날짜만 표시하며, THN RSS `Thu, 30 Jul 2026 19:04:09 +05:30`을 **2026-07-30 22:34 KST** 정렬 근거로 사용",
+            "시작 조건: attacker-controlled Gremlin database와 해당 account credential이라는 공개 연구 범위",
+            "식별자: 공개 자료에는 CVE와 CVSS score가 부여되지 않음"
+          ]
+        },
+        {
+          "heading": "sandbox escape와 DB Gateway 단계",
+          "body": "Wiz는 Cosmos DB custom Gremlin engine이 query를 .NET code로 변환해 restricted environment에서 실행하며 .NET reflection 제약이 불충분했다고 설명함. file read/write primitive 뒤 arbitrary code execution을 얻었다는 연구 결과.",
+          "items": [
+            "기술: crafted Gremlin query가 backend `hostname` command를 실행한 output을 연구가 제시",
+            "경계: 공개 원문은 full exploit query를 아직 공개하지 않고 Black Hat USA 발표를 예고",
+            "실행 위치: customer query를 대행하는 multi-tenant Service Fabric DB Gateway라는 Wiz 설명"
+          ]
+        },
+        {
+          "heading": "platform-wide key와 account directory",
+          "body": "DB Gateway credential이 requested account primary key를 얻는 signing key에 접근하며, Wiz는 이를 Cosmos Master Key로 명명함. 같은 key가 regional Config Store access와 account enumeration을 가능하게 했다는 연구 주장.",
+          "items": [
+            "takeover: target Cosmos DB account primary key를 얻어 account database read/write 가능하다는 연구 설명",
+            "enumeration: tenant·subscription identifier로 account를 찾고 regional account 목록을 query할 수 있다는 연구 설명",
+            "범위 주장: SQL·MongoDB·Cassandra·Gremlin API, tenant·region을 가로질렀다는 Wiz 연구 범위"
+          ]
+        },
+        {
+          "heading": "network isolation과 상위 서비스 영향",
+          "body": "Wiz는 DB Gateway가 network isolation enforcement 안쪽에 있어 private·network-isolated account도 path에 포함될 수 있었다고 설명함. Entra ID·Teams·Copilot data store의 잠재 영향은 architecture-level exposure claim이며 실제 data access 증거와 분리 필요.",
+          "items": [
+            "경계: Wiz는 Microsoft internal databases도 potentially accessible했다고 설명",
+            "미확정: 특정 customer·Microsoft service data에 실제 접근했다는 공개 증거",
+            "운영: private endpoint와 service-side identity boundary를 동일 보호 계층으로 가정하지 않는 설계 필요"
+          ]
+        },
+        {
+          "heading": "Microsoft remediation과 고객 조치",
+          "body": "Microsoft vendor statement는 2025-11-20 disclosure 뒤 Gremlin entry point를 48시간 내 막고 July 2026 all-region long-term fix와 Cosmos Master Key 제거를 완료했다고 밝힘. investigation에서 research 외 unauthorized activity와 customer-data access 증거가 없으며 customer action도 필요 없다고 설명.",
+          "items": [
+            "확정 범위: source에 실린 Microsoft remediation·investigation statement",
+            "주의: service-side fix 완료는 각 tenant application의 primary-key overuse·logging gap을 자동 해소하지 않음",
+            "증거: public timeline은 vulnerable architecture의 production 시작 시각과 log review 전체 기간을 명시하지 않음"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "tenant-controlled query execution 가까이에 privileged credential·internal directory·cross-tenant service API가 있으면 sandbox 하나의 실패가 provider control plane exposure로 확대될 수 있음.",
+          "items": [
+            "아키텍처: tenant execution boundary 밖에 scoped identity·least-privilege service token·segmented admin API 배치 필요",
+            "탐지: unusual primary-key retrieval·cross-account query·gateway identity use를 provider telemetry로 correlation할 필요",
+            "거버넌스: managed service shared-responsibility review에 provider key scope·incident evidence·architecture migration 확인 항목 추가"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이번 사건은 고객이 즉시 patch할 client defect보다 cloud provider의 multi-tenant isolation assurance와 application credential hygiene를 함께 검토할 trigger.",
+          "items": [
+            "팀 액션: Cosmos DB account별 primary key use·Entra ID/RBAC adoption·key rotation·break-glass owner inventory",
+            "팀 액션: private endpoint·firewall rule·diagnostic log·data-plane audit retention을 incident evidence와 연결",
+            "팀 액션: provider support에 remediation scope·regional completion·tenant-specific abnormal-access evidence·post-incident assurance 확인"
+          ]
+        }
+      ],
+      "rank": 2
+    },
     {
       "id": "news-213",
       "title_ko": "과기정통부, 실세계 행동형 에이전틱 AI에 180억원 착수: 사람 개입 10% 이하·TRL 7 시제품 목표",
@@ -268,7 +462,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-249",
@@ -367,7 +561,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-243",
@@ -457,7 +651,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-244",
@@ -551,7 +745,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-245",
@@ -622,7 +816,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-248",
@@ -693,7 +887,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-242",
@@ -774,7 +968,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-246",
@@ -841,7 +1035,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-241",
@@ -922,7 +1116,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-240",
@@ -994,7 +1188,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-237",
@@ -1066,7 +1260,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-238",
@@ -1142,7 +1336,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-239",
@@ -1209,7 +1403,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-247",
@@ -1284,7 +1478,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-235",
@@ -1364,7 +1558,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-236",
@@ -1440,7 +1634,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-234",
@@ -1526,7 +1720,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-231",
@@ -1593,7 +1787,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-232",
@@ -1665,7 +1859,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-233",
@@ -1745,7 +1939,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-230",
@@ -1817,7 +2011,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-229",
@@ -1889,7 +2083,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-226",
@@ -1980,7 +2174,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-228",
@@ -2068,7 +2262,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-227",
@@ -2149,7 +2343,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-224",
@@ -2228,7 +2422,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-225",
@@ -2316,7 +2510,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-223",
@@ -2396,7 +2590,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-222",
@@ -2476,7 +2670,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-221",
@@ -2560,7 +2754,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-220",
@@ -2637,7 +2831,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-216",
@@ -2704,7 +2898,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-217",
@@ -2771,7 +2965,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-214",
@@ -2851,7 +3045,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-215",
@@ -2924,7 +3118,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-218",
@@ -2991,7 +3185,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-212",
@@ -3086,7 +3280,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-209",
@@ -3161,7 +3355,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-210",
@@ -3246,7 +3440,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-219",
@@ -3322,7 +3516,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-208",
@@ -3390,11 +3584,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-207",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -3548,7 +3742,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-204",
@@ -3613,7 +3807,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-205",
@@ -3679,7 +3873,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-203",
@@ -3744,7 +3938,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-202",
@@ -3840,7 +4034,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-198",
@@ -3902,149 +4096,6 @@
             "팀 액션: Kiro를 최신 1.0.x로 올리고 managed endpoint에서 민감 설정 파일 변경·새 MCP command를 alert 대상으로 등록",
             "팀 액션: MCP server command·package provenance·network destination을 allowlist와 sandbox 실행 정책으로 분리",
             "팀 액션: untrusted web/document fetch agent에는 source provenance와 write approval을 별도 control로 적용"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-199",
-      "title_ko": "NVIDIA Spectrum-6 공개: Vera Rubin AI factory용 102.4Tb/s Ethernet fabric과 10만 GPU급 운영 주장",
-      "title_original": "Built for Vera Rubin, NVIDIA Spectrum-6 Arrives in Gigascale AI Factories",
-      "summary": "핵심: NVIDIA가 Vera Rubin 플랫폼용 `Spectrum-6` 102.4Tb/s Ethernet switch를 공개하고 이전 세대 대비 2배 capacity를 제시. 검증: 10만 GPU 초과 배포에서 최대 95% network efficiency·일반 Ethernet 대비 최대 1.6배 성능은 벤더 수치이므로 collective workload·failure·전력 조건으로 자체 검증 필요.",
-      "detail": "NVIDIA는 Spectrum-6가 ConnectX-9 SuperNIC, Vera CPU, Rubin GPU, BlueField-4 DPU와 결합한 Spectrum-X fabric의 일부라고 설명했다. CoreWeave·Microsoft·Nebius 등이 초기 도입자로 언급됐으며, liquid cooling·pluggable/co-packaged optics 지원도 제시됐다. 성능과 효율 수치는 NVIDIA 발표 기준으로 실제 topology·job mix·RDMA transport에서 확인이 필요하다.",
-      "why_it_matters": "대규모 AI training·inference는 GPU 수량뿐 아니라 collective 통신의 congestion·tail latency·failure recovery가 token throughput과 비용을 좌우한다. network fabric은 accelerator와 분리된 조달 항목이 아니라 rack·power·cooling·observability와 결합된 capacity 단위임.",
-      "engineering_implication": "AI 인프라팀은 switch capacity보다 all-reduce·checkpoint·east-west traffic의 p95/p99 latency, retransmission, congestion, GPU idle time, fabric power와 장애 우회 시간을 같은 SLO로 측정 필요. vendor 수치는 representative workload와 multi-plane failure drill로 재현 필요.",
-      "korea_implication": "국내 AI 데이터센터도 고밀도 GPU cluster 증설 때 NIC·switch·optics·cooling·전력·RDMA 운영 인력의 납기와 장애 대응을 GPU procurement와 분리하지 않을 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "NVIDIA",
-        "Spectrum-X",
-        "Ethernet",
-        "AI Factory",
-        "Networking"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 94,
-      "published_kst": "2026-07-22 00:00",
-      "source_name": "NVIDIA Blog",
-      "source_url": "https://blogs.nvidia.com/blog/nvidia-spectrum-six-arrives-in-gigascale-ai-factories/",
-      "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/07/ethernet-spectrum-x-corp-blog-1920x1080-5205700.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "NVIDIA가 Vera Rubin 플랫폼용 `Spectrum-6` Ethernet switch system을 공개하고 Spectrum-X AI factory fabric의 차세대 구성으로 설명함.",
-          "items": [
-            "대역폭: switch system 기준 **102.4Tb/s**, 이전 세대 대비 2배 capacity라는 NVIDIA 수치",
-            "구성: Spectrum-6 switch와 `ConnectX-9` SuperNIC을 Spectrum-X fabric의 핵심 조합으로 제시",
-            "통합: Vera CPU·Rubin GPU·NVLink 6 Switch·BlueField-4 DPU와 함께 설계했다는 발표"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "워크로드: 수천~수십만 accelerator collective 통신의 east-west traffic을 주요 대상으로 설정",
-          "items": [
-            "가용성: pluggable·co-packaged optics와 liquid cooling 지원을 발표에 포함",
-            "초기 도입: CoreWeave·Microsoft·Nebius 등을 early deployer로 NVIDIA가 열거",
-            "수치 경계: 최대 1.6배 AI networking 성능·10만 GPU 초과 95% efficiency는 NVIDIA 측 측정·주장"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AI factory에서 network는 GPU를 연결하는 부품이 아니라 collective synchronization의 tail latency와 utilization을 좌우하는 service plane임. fabric failure·congestion·optics·cooling 문제는 모델 실행의 retry와 idle accelerator 비용으로 직접 전이될 수 있음.",
-          "items": [
-            "AI factory에서 network는 GPU를 연결하는 부품이 아니라 collective synchronization의 tail latency와 utilization을 좌우하는 service plane임. fabric failure·congestion·optics·cooling 문제는 모델 실행의 retry와 idle accelerator 비용으로 직접 전이될 수 있음.",
-            "운영 경계: 발표·보도 사실과 조직별 실제 노출·영향은 자산·로그·버전 정보로 별도 확인 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "팀 액션: all-reduce·checkpoint·inference fan-out별 p95/p99 latency, retransmission, GPU idle time, congestion signal을 capacity SLO로 정의",
-          "items": [
-            "팀 액션: NIC·switch·optic·DPU firmware와 RDMA transport version matrix를 change evidence로 관리",
-            "팀 액션: link/node/plane failure injection에서 traffic reroute·job recovery·power headroom을 검증한 뒤 rack 단위 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-200",
-      "title_ko": "Google, Gemini 3.6 Flash·3.5 Flash-Lite·3.5 Flash Cyber 공개: agent 비용·처리량·제한 접근 보안 모델 분리",
-      "title_original": "Introducing Gemini 3.6 Flash, 3.5 Flash-Lite, and 3.5 Flash Cyber",
-      "summary": "핵심: Google이 Gemini 3.6 Flash·3.5 Flash-Lite와 CodeMender용 3.5 Flash Cyber를 공개. 운영: 3.6 Flash의 17% output-token 절감·$1.50/$7.50 per 1M token, Flash-Lite의 350 output tokens/s·$0.30/$2.50 가격은 발표·참조 benchmark 조건이므로 task 성공률·tool call·retry·tail latency를 포함한 자체 routing 검증 필요.",
-      "detail": "Google은 3.6 Flash와 3.5 Flash-Lite를 Gemini API, AI Studio, Android Studio, Gemini Enterprise Agent Platform과 Gemini 앱에 제공한다고 발표했다. 3.6 Flash의 token 효율·benchmark와 Flash-Lite의 처리량·가격은 발표 기준이며, 실제 agent 비용은 tool call·retry·외부 API 지연에 따라 달라진다. 취약점 탐지·수정용 3.5 Flash Cyber는 dual-use 위험을 이유로 CodeMender를 통한 정부·신뢰 파트너 제한 pilot으로만 제공 예정이다.",
-      "why_it_matters": "agent 플랫폼의 모델 선택은 단가 비교가 아니라 output token·tool call·computer-use 실행·retry·품질 검토를 합친 성공 작업당 비용 문제임. 범용 Flash와 고처리량 Flash-Lite를 분리하면 workload routing 선택지는 늘지만, benchmark 수치를 production SLA로 해석하면 비용과 품질 오판 위험.",
-      "engineering_implication": "플랫폼 팀은 동일 task cohort에서 model별 task completion·p95 latency·input/output token·tool call·retry·human review 재작업을 측정하고, data classification·tool permission·fallback·budget ceiling을 routing policy에 결합 필요. Flash Cyber 같은 보안 code agent는 isolated repo·sandbox·test evidence·human patch approval을 release gate로 유지 필요.",
-      "korea_implication": "국내 기업은 Gemini API·Enterprise 도입 시 한국어 업무 task와 데이터 경계, 모델별 token 비용, 외부 도구 호출·로그 보존, 제한 pilot의 계약·접근 조건을 별도 검증 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Google",
-        "Gemini",
-        "Agent",
-        "Model Routing",
-        "FinOps",
-        "Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-07-22 00:00",
-      "source_name": "Google Blog",
-      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
-      "image_url": "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/gemini-3-5_3-6_3-5-Cyber__key-art__statement_.width-1300.jpg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Google이 Gemini 3.6 Flash, Gemini 3.5 Flash-Lite, Gemini 3.5 Flash Cyber를 공개함. 3.6 Flash와 3.5 Flash-Lite는 Gemini API·AI Studio·Android Studio, Gemini Enterprise Agent Platform과 Gemini 앱의 제공 범위에 포함되며, Cyber 모델은 CodeMender 기반 제한 접근 pilot으로 구분됨.",
-          "items": [
-            "발행: Google Blog RSS `pubDate` 2026-07-21 15:00 UTC를 **2026-07-22 00:00 KST**로 변환",
-            "3.6 Flash: coding·knowledge work·multimodal agent workload용 Flash 계열 모델 공개",
-            "3.5 Flash-Lite: 고처리량 agentic search·document processing용 저지연 모델 공개",
-            "3.5 Flash Cyber: CodeMender와 결합한 취약점 탐지·수정용 제한 접근 모델 공개"
-          ]
-        },
-        {
-          "heading": "3.6 Flash의 비용·품질 주장",
-          "body": "Google은 Artificial Analysis Index 기준 3.6 Flash가 3.5 Flash 대비 output token 사용량을 17% 줄였다고 제시함. 가격은 입력 100만 token당 $1.50, 출력 100만 token당 $7.50이며, DeepSWE·MLE Bench·OSWorld-Verified 수치는 Google이 제시한 benchmark 결과이므로 조직 workload의 비용·성능 보장으로 일반화할 수 없음.",
-          "items": [
-            "비용: 입력 **$1.50/1M token**, 출력 **$7.50/1M token**이라는 발표 가격",
-            "효율: multi-step workflow에서 reasoning step·tool call 감소를 Google이 주장",
-            "품질: DeepSWE 49% 대 37%, MLE Bench 63.9% 대 49.7%는 source benchmark 비교값",
-            "경계: prompt 길이·tool latency·retry·cache hit·모델 routing에 따른 실제 task cost는 별도 측정 필요"
-          ]
-        },
-        {
-          "heading": "Flash-Lite와 Cyber의 운영 경계",
-          "body": "3.5 Flash-Lite는 Artificial Analysis 기준 초당 350 output token, 입력 100만 token당 $0.30·출력 100만 token당 $2.50으로 제시됨. Flash Cyber는 3.5 Flash를 기반으로 cyber vulnerability finding·fixing에 맞춰 fine-tuning됐으나, dual-use 위험 때문에 정부·신뢰 파트너 대상 CodeMender 제한 pilot으로만 제공 예정임.",
-          "items": [
-            "처리량: **350 output tokens/s**는 Artificial Analysis 조건의 vendor-referenced 측정값",
-            "라우팅: low/minimal thinking과 higher thinking 설정에 따라 latency·quality·비용 profile이 달라지는 구조",
-            "접근: Flash Cyber는 일반 API 공개가 아닌 CodeMender의 limited-access pilot 범위",
-            "보안: Cyber 모델의 취약점 탐지·수정 결과는 code review·test·change approval을 대체하지 않는 운영 과제"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "agent workload에서는 모델 단가보다 output token, tool-call 수, computer-use 실행 시간, 실패 후 retry가 합쳐져 성공 작업당 비용을 만듦. 저가·고처리량 subagent와 고품질 coordinator를 분리할 선택지가 늘었지만, benchmark 점수만으로 production routing을 정하면 보안·품질·tail latency 비용이 누락될 수 있음.",
-          "items": [
-            "FinOps: model별 input/output token·tool call·retry·task completion을 같은 trace에서 집계 필요",
-            "SRE: computer-use와 multi-agent workflow는 external API latency·browser failure·queueing을 별도 SLO로 관리 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "플랫폼 팀은 3.6 Flash와 3.5 Flash-Lite를 동일 업무군에서 canary로 비교하고, quality gate를 통과한 경우에만 cost-oriented routing을 확대해야 함. Flash Cyber pilot은 권한 분리된 repository·sandbox·human patch approval·감사 로그를 전제로 검토할 필요.",
-          "items": [
-            "팀 액션: 대표 agent task별 success rate·p95 latency·output token·tool call·재시도·성공 작업당 비용 baseline 확보",
-            "팀 액션: model routing policy에 data classification·tool permission·fallback·budget ceiling을 함께 기록",
-            "팀 액션: security code agent는 isolated environment·test evidence·reviewer 승인·rollback을 release gate로 적용"
           ]
         }
       ],

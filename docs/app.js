@@ -880,6 +880,19 @@ function markDynamicContentReady() {
   });
 }
 
+function showLoadError() {
+  // Keep the static page shell, skip link, and landmark structure available
+  // when the data request fails. Replacing document.body would strand keyboard
+  // users in an unstructured error document and leave loading regions busy.
+  markDynamicContentReady();
+  $("#topUpdatedBadge").textContent = "업데이트 정보를 불러오지 못함";
+  $("#coverageMeta").textContent = "주간 범위 정보를 불러오지 못함";
+  const errorPanel = $("#loadError");
+  if (!errorPanel) return;
+  errorPanel.hidden = false;
+  errorPanel.focus();
+}
+
 async function boot() {
   try {
     // Revalidate cached weekly data instead of bypassing the HTTP cache entirely.
@@ -898,14 +911,7 @@ async function boot() {
     setViewMode("list");
   } catch (error) {
     console.error(error);
-    const main = document.createElement("main");
-    main.className = "panel";
-    const heading = document.createElement("h1");
-    heading.textContent = "데이터를 불러오지 못했습니다";
-    const message = document.createElement("p");
-    message.textContent = error.message;
-    main.append(heading, message);
-    document.body.replaceChildren(main);
+    showLoadError();
   }
 }
 
