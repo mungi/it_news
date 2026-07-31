@@ -2,7 +2,7 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-31 14:33",
+  "last_updated_kst": "2026-07-31 18:38",
   "audience": "developers and engineers",
   "executive_summary": [
     "Wiz `CosmosEscape`: Gremlin sandbox escape가 DB Gateway code execution·platform-wide key·regional account directory 접근으로 이어질 수 있었던 연구 공개. Microsoft는 2025년 11월 entry point 차단, 2026년 7월 all-region long-term fix·key 제거 완료와 research 외 unauthorized activity 증거 없음·customer action 불필요를 밝힘.",
@@ -973,6 +973,94 @@
       "rank": 9
     },
     {
+      "id": "news-254",
+      "title_ko": "GitHub Stacked Pull Requests 공개 미리보기: 큰 변경을 계층형 PR로 나누고 기존 보호 규칙 아래 병합하는 개발 흐름",
+      "title_original": "Stacked pull requests are now in public preview",
+      "summary": "핵심: GitHub가 큰 변경을 의존 순서가 있는 작은 PR 계층으로 나누는 Stacked pull requests를 모든 저장소에 공개 미리보기로 순차 제공. 각 계층은 독립 검토·check를 거치고, 준비된 상위 PR 병합 시 그 아래 미병합 계층을 한 번에 병합 가능. 운영: 기존 branch protection·required check가 유지되므로 stack 구조와 merge queue·rebase 정책을 release workflow에 명시 필요.",
+      "detail": "GitHub는 Stacked pull requests 공개 미리보기를 발표했다. stack은 큰 변경을 focused layer로 나눈 순서형 PR 묶음이며, 각 PR은 바로 아래 계층을 대상으로 한다. GitHub.com·GitHub CLI·모바일 앱·GitHub Copilot의 `gh-stack` skill에서 다룰 수 있고, CLI extension은 `gh extension install github/gh-stack`로 설치한다. 각 계층의 diff를 독립 검토하고 stack map으로 전체 변경 내 위치를 확인할 수 있다. 준비된 상위 PR을 병합하면 그 아래의 미병합 계층도 한 작업으로 병합되며, 일부 하위 계층만 병합하면 상위 PR은 열려 있는 채 자동 rebase·retarget된다. 기존 branch protection과 required check는 `main`으로 들어가는 변경에 계속 적용된다. 공개 미리보기는 모든 저장소에 며칠에 걸쳐, merge queue 지원은 향후 몇 주에 걸쳐 순차 제공된다고 안내됐다.",
+      "why_it_matters": "AI coding assistant로 PR 규모와 생성 속도가 커진 팀은 review 병목과 change blast radius를 함께 줄여야 함. stack은 feature를 더 자주 통합할 수 있게 하지만, 계층 간 의존성과 CI 비용, merge order, rollback 범위를 명시하지 않으면 review 단위만 잘게 쪼개고 release risk는 남길 수 있음.",
+      "engineering_implication": "대형 변경은 stack의 base·layer owner·required check·merge queue 진입 조건·자동 rebase 충돌 처리·rollback 단위를 release template에 기록 필요. preview rollout 여부와 merge queue 지원 시점은 저장소별 실제 UI·CLI 동작으로 확인하고, stack별 CI 중복 실행 시간·queue 대기·review lead time을 기존 단일 PR baseline과 비교 필요.",
+      "korea_implication": "국내 개발 조직도 대규모 monorepo·규제 변경·AI-assisted 코드 생성에서 review 병목을 줄이는 도구로 평가 가능. 다만 한국어 코드리뷰·승인 체계, 내부 CI runner 용량, change-management 규정에 맞춘 branch protection과 감사 로그 검증이 선행 조건.",
+      "category": "DevTools",
+      "tags": [
+        "GitHub",
+        "Pull Request",
+        "Code Review",
+        "CI/CD",
+        "Developer Workflow",
+        "GitHub CLI"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-07-30 00:00",
+      "source_name": "GitHub Changelog",
+      "source_url": "https://github.blog/changelog/2026-07-30-stacked-pull-requests-are-now-in-public-preview/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/07/Changelog-Stacks-NewRelease-Unfurl.png",
+      "related_links": [
+        {
+          "title": "GitHub Stacked pull requests documentation",
+          "url": "https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-stacked-pull-requests"
+        },
+        {
+          "title": "GitHub Stacked pull requests CLI extension",
+          "url": "https://github.com/github/gh-stack"
+        },
+        {
+          "title": "GeekNews Korean coverage",
+          "url": "https://news.hada.io/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub가 **Stacked pull requests**를 모든 저장소 대상으로 순차 rollout하는 public preview로 공개함. 큰 변경을 focused layer의 순서형 PR로 나누고 각 계층을 독립 review·check하는 흐름.",
+          "items": [
+            "발행: GitHub Changelog 원문에 `JULY 30, 2026` 날짜만 표기되어 정렬 시각은 **2026-07-30 00:00 KST**로 기록",
+            "구조: 각 PR은 바로 아래 layer를 target으로 하는 ordered series 구성",
+            "목적: 하나의 대형 PR 또는 수동 rebase가 필요한 여러 branch 대신 작은 review 단위 제공"
+          ]
+        },
+        {
+          "heading": "검토와 병합 동작",
+          "body": "각 layer는 해당 PR의 diff만 독립 검토하고, PR 상단 stack map으로 전체 변경 안에서의 위치를 확인하는 방식. 동료가 서로 다른 layer를 병렬 review 가능.",
+          "items": [
+            "병합: 준비된 가장 위 PR을 merge하면 그 아래의 미병합 layer를 한 작업으로 landing 가능",
+            "부분 병합: lower layer 하나 이상만 merge하면 위 PR은 열린 상태로 유지되고 자동 rebase·retarget 수행",
+            "보호: 기존 branch protection과 required check가 `main`으로 들어가는 변경에 그대로 적용"
+          ]
+        },
+        {
+          "heading": "사용 경로와 rollout 범위",
+          "body": "GitHub는 github.com, GitHub CLI, 모바일 앱, GitHub Copilot의 `gh-stack` skill을 사용 경로로 제시함. CLI extension 설치 명령과 public preview·merge queue rollout 범위를 구분해 안내.",
+          "items": [
+            "CLI: `gh extension install github/gh-stack`로 extension 설치 가능",
+            "preview: 모든 저장소에 향후 며칠간 순차 rollout이라는 GitHub 안내",
+            "경계: stacked PR의 merge queue 지원은 향후 몇 주에 걸친 별도 progressive rollout이며 즉시 전 저장소 제공으로 단정 불가"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI-assisted 개발로 change volume이 커지면 review는 품질 gate이자 delivery bottleneck이 됨. stack은 change surface를 작은 순서 단위로 만들지만 dependency와 CI 실행 비용을 자동 해결하지 않음.",
+          "items": [
+            "품질: 작은 diff review와 기존 required check를 결합해 layer별 승인 evidence 보존 가능",
+            "속도: 독립 layer의 병렬 review로 대형 feature의 feedback loop 단축 가능",
+            "리스크: base layer 지연·rebase conflict·중복 CI·merge queue 대기가 상위 layer 전체의 delivery lead time으로 전이 가능"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 PR UI 편의가 아니라 변경 통제와 release metric의 문제. stack 정책을 branch protection, merge queue, ownership, rollback과 같은 control plane에 연결 필요.",
+          "items": [
+            "팀 액션: stack base·layer dependency·owner·required check·merge order를 PR template에 기록",
+            "팀 액션: preview access와 merge queue support를 대상 repository에서 직접 확인하고 fallback workflow 유지",
+            "팀 액션: stack별 CI duration·queue wait·rebase conflict·review lead time·rollback scope를 단일 PR baseline과 비교"
+          ]
+        }
+      ],
+      "rank": 10
+    },
+    {
       "id": "news-248",
       "title_ko": "Cloudflare, Authenticated Origin Pulls·Custom Origin Trust Store에 ML-DSA post-quantum 인증 지원",
       "title_original": "Post-quantum authentication to origins is now supported",
@@ -1041,7 +1129,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-242",
@@ -1122,7 +1210,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-246",
@@ -1189,7 +1277,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-241",
@@ -1270,7 +1358,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-240",
@@ -1342,7 +1430,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-237",
@@ -1414,7 +1502,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-238",
@@ -1490,7 +1578,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-239",
@@ -1557,7 +1645,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-247",
@@ -1632,7 +1720,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-235",
@@ -1712,7 +1800,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-236",
@@ -1788,7 +1876,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-234",
@@ -1874,7 +1962,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-231",
@@ -1941,7 +2029,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-232",
@@ -2013,7 +2101,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-233",
@@ -2093,7 +2181,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-230",
@@ -2165,7 +2253,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-229",
@@ -2237,7 +2325,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-226",
@@ -2328,7 +2416,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-228",
@@ -2416,7 +2504,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-227",
@@ -2497,7 +2585,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-224",
@@ -2576,7 +2664,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-225",
@@ -2664,7 +2752,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-223",
@@ -2744,7 +2832,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-222",
@@ -2824,7 +2912,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-221",
@@ -2908,7 +2996,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-220",
@@ -2985,7 +3073,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-216",
@@ -3052,7 +3140,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-217",
@@ -3119,7 +3207,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-214",
@@ -3199,7 +3287,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-215",
@@ -3272,7 +3360,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-218",
@@ -3339,7 +3427,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-212",
@@ -3434,7 +3522,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-209",
@@ -3509,7 +3597,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-210",
@@ -3594,7 +3682,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-219",
@@ -3670,7 +3758,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-208",
@@ -3738,11 +3826,11 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-207",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -3896,7 +3984,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-204",
@@ -3961,7 +4049,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-205",
@@ -4024,71 +4112,6 @@
             "팀 액션: running version·image digest·restart와 ingress·proxy route의 patch 적용 상태 확인",
             "팀 액션: `SUPERADMIN_SECRET` 존재 시 즉시 rotation하고 privileged job·API audit review",
             "팀 액션: traversal request·`/proc/1/environ`·job preview API event를 correlated hunt query로 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-203",
-      "title_ko": "WEKA, WEKApod 3 공개: 장기 컨텍스트·RAG용 AI 스토리지의 랙 집적도와 workload 검증 경계",
-      "title_original": "WEKA Unveils WEKApod 3",
-      "summary": "핵심: WEKA가 AI 추론·RAG·장기 컨텍스트 workload용 `WEKApod 3`와 `NeuralMesh 6`를 공개하고 Nitro·Prime·Prime Max 세 구성을 제시. 경계: 단일 랙 1.1엑사바이트와 GPU 활용률·token throughput 개선은 공급사 설명이므로 model cache·retrieval·checkpoint I/O·장애 복구 조건으로 자체 검증 필요.",
-      "detail": "인공지능신문은 WEKA가 에이전틱 AI·초대규모 추론용 WEKApod 3를 공개하고 WEKApod Nitro·Prime·Prime Max 및 NeuralMesh 6를 함께 제시했다고 보도했다. 보도는 단일 랙 1.1엑사바이트 집적도와 AI 데이터센터·AI 클라우드 대상 positioning을 전하지만, 실제 latency·throughput·전력·가용성 수치는 고객 workload와 구성에 따라 별도 검증이 필요하다.",
-      "why_it_matters": "장기 컨텍스트와 RAG는 GPU만이 아니라 embedding·vector retrieval·model cache·checkpoint와 데이터 계층의 tail latency에 영향을 받음. 스토리지 집적도 발표를 production capacity로 해석하려면 tenant isolation, failure domain, cache warm-up, egress와 운영 복구까지 함께 측정해야 함.",
-      "engineering_implication": "AI 플랫폼 팀은 WEKApod 3 같은 storage appliance 평가에서 rack capacity 대신 model cache hit, retrieval p95/p99, checkpoint restore, GPU idle, power·cooling, node·rack 장애 복구를 동일 acceptance test로 구성 필요. 공급사 집적도·효율 수치는 hardware SKU, media type, compression, workload, resilience 설정을 명시한 비교표로 분리 필요.",
-      "korea_implication": "국내 AI 데이터센터와 클라우드 사업자는 장기 컨텍스트·RAG 서비스 증설 시 GPU 조달과 분리하지 말고 저장장치 납기, 데이터 보존·반출, 장애 대응, 전력·냉각, 고객별 논리적 격리를 함께 용량 계약과 SLO에 반영 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "AI Storage",
-        "RAG",
-        "Long Context",
-        "Inference",
-        "Data Center"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-07-22 21:30",
-      "source_name": "인공지능신문",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41094",
-      "image_url": "https://cdn.aitimes.kr/news/photo/202607/41094_61899_2822.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "인공지능신문은 WEKA가 2026년 7월 22일 장기 컨텍스트·에이전틱 AI·RAG·대규모 추론을 겨냥한 `WEKApod 3` 플랫폼을 공개했다고 보도함.",
-          "items": [
-            "구성: `WEKApod Nitro`, `WEKApod Prime`, `WEKApod Prime Max` 세 제품군과 `NeuralMesh 6` 소프트웨어 동시 제시",
-            "대상: AI 데이터센터와 AI 클라우드 사업자의 초고밀도 저장·메모리 인프라 workload",
-            "발행: 인공지능신문 기사 입력 시각 **2026-07-22 21:30 KST** 확인"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "보도는 WEKA가 단일 랙에서 최대 1.1엑사바이트 수준의 저장·메모리 집적도를 제시하고, NeuralMesh 6와 결합한 AI 추론 인프라 운영을 목표로 설명한 내용을 전함.",
-          "items": [
-            "공급사 주장: 단일 랙 **1.1엑사바이트** 집적도와 AI storage·memory density 개선 수치",
-            "workload: 생성형 AI뿐 아니라 multi-step retrieval과 memory access가 반복되는 agentic AI·RAG·long-context 경로",
-            "경계: media 구성, compression, erasure coding, replica, network topology, 실제 모델·데이터셋 조건은 보도에 구체적으로 제시되지 않은 범위"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "추론 서비스의 병목은 GPU 연산만으로 결정되지 않음. model weight·KV/cache·retrieval corpus·checkpoint가 데이터 계층을 공유하면 storage tail latency와 failure recovery가 GPU idle, retry, token당 비용으로 전이될 수 있음.",
-          "items": [
-            "성능: capacity headline 대신 retrieval·cache miss·checkpoint restore의 p95/p99와 GPU utilization 동시 측정 필요",
-            "가용성: rack·node·media failure가 model serving과 index rebuild에 미치는 recovery time과 data durability 확인 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "WEKApod 3 도입 검토는 vendor 집적도 수치가 아니라 대상 workload의 data path와 운영 SLO를 입증하는 과정으로 설계 필요.",
-          "items": [
-            "팀 액션: model cache·vector index·checkpoint·training data를 분리한 I/O profile과 tenant별 egress·retention 기준 수집",
-            "팀 액션: rack capacity, power·cooling, network, fault domain, spare media, firmware rollback을 같은 capacity review에 포함",
-            "팀 액션: 공급사 수치와 자사 workload의 latency·throughput·recovery·successful-token 비용을 구분한 acceptance test 운영"
           ]
         }
       ],
