@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-30 | Total pages: 237
+> Last updated: 2026-07-31 | Total pages: 238
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-lg-k-exaone-2-750b-2026-07-31]] — K-EXAONE 2.0 750B Apache 2.0 공개 보도와 benchmark·self-hosting 검증 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-5-6-pricing-2026-07-31]] — Bedrock GPT-5.6 Luna/Terra 가격 인하의 자동 적용·미국 리전·task unit economics 검증 경계.
 - [[raw/articles/aws-transit-gateway-policy-based-routing-2026-07-31]] — Transit Gateway PBR GA의 first-match policy·inspection/hybrid path·asymmetric-return 운영 경계.
 - [[raw/articles/wiz-cosmosescape-azure-cosmos-db-2026-07-31]] — CosmosEscape Gremlin sandbox·DB Gateway·platform-wide key와 managed-service isolation 증거 경계.

@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-07-31 06:25",
+  "last_updated_kst": "2026-07-31 14:33",
   "audience": "developers and engineers",
   "executive_summary": [
     "Wiz `CosmosEscape`: Gremlin sandbox escape가 DB Gateway code execution·platform-wide key·regional account directory 접근으로 이어질 수 있었던 연구 공개. Microsoft는 2025년 11월 entry point 차단, 2026년 7월 all-region long-term fix·key 제거 완료와 research 외 unauthorized activity 증거 없음·customer action 불필요를 밝힘.",
     "AWS Transit Gateway PBR GA: source/destination IP·port·protocol 기준 attachment traffic steering을 first-match-wins policy table로 제공. inspection·Direct Connect/VPN·prod/dev isolation rule은 asymmetric return·stateful appliance·shadowing·rollback test와 함께 release.",
     "Ruflo `CVE-2026-59726`: `3.16.3` 이전 기본 MCP bridge가 `0.0.0.0:3001`에 인증 없이 노출될 수 있어 shell execution·provider key·AgentDB memory integrity가 같은 incident 범위가 됨. patch와 함께 listener 차단·key rotation·memory audit·clean rebuild 필요.",
     "Broadcom `VMSA-2026-0006`: vCenter `CVE-2026-59309` 인증 우회·`CVE-2026-59310` RCE는 CVSS 9.8, VMXNET3 조건 ESX host code execution `CVE-2026-47876`은 9.3. vCenter ingress와 guest admin privilege·release matrix를 분리 inventory.",
-    "Amazon Bedrock GPT-5.6 가격 인하: Luna on-demand inference 80%, Terra 20% 인하가 7월 30일부터 자동 적용. 대상은 US East 2개·US West (Oregon)의 `bedrock-mantle` OpenAI Responses API이며, token 단가가 아니라 completion·retry·tool call·quota·observability를 포함한 workload별 비용으로 routing과 budget 재산정."
+    "LG AI연구원 K-EXAONE 2.0: AI타임스 보도 기준 750B parameter·Apache 2.0 공개와 24개 benchmark 평균 70.1점·OpenAI-MRCR 94.4점·Ko-LongBench 89.6점·Tau3-Bench Banking 14.2점이 제시됨. 수치는 LG 공개 결과 범위이므로 model card·weight artifact·GPU memory·throughput·license 원문과 조직 workload 재현으로 self-hosting 승인 필요."
   ],
   "deep_dives": [
     {
@@ -189,6 +189,74 @@
   ],
   "items": [
     {
+      "id": "news-253",
+      "title_ko": "LG AI연구원, K-EXAONE 2.0 750B Apache 2.0 공개: 국내 대규모 공개 가중치의 benchmark 주장과 self-hosting 검증 경계",
+      "title_original": "LG AI Research releases K-EXAONE 2.0 750B",
+      "summary": "핵심: LG AI연구원이 750B parameter `K-EXAONE 2.0`을 Apache 2.0으로 공개했다고 AI타임스가 보도. 기사 인용 LG 수치에서 24개 benchmark 평균 70.1점, OpenAI-MRCR 94.4점, Ko-LongBench 89.6점, Tau3-Bench Banking 14.2점을 제시. 운영: 공개 가중치 채택 전 model card·weight format·GPU memory·serving throughput·license text·benchmark recipe를 독립 검증 필요.",
+      "detail": "AI타임스는 LG AI연구원이 과기정통부 독자 AI 파운데이션 모델 프로젝트 2차 평가 모델 K-EXAONE 2.0을 Hugging Face에 공개했다고 보도했다. 기사는 750B parameter와 상업 이용을 포함한 Apache 2.0 라이선스를 명시했다. 기사에 인용된 LG 수치는 9개 영역·24개 benchmark 평균 70.1점, 1차 모델 63.3점 대비 10% 이상 개선, OpenAI-MRCR 94.4점, Ko-LongBench 89.6점, Tau3-Bench Banking 14.2점이다. 이 benchmark와 비교 수치는 LG 공개 결과를 AI타임스가 전한 범위이며 독립 재현, exact weight artifact, context length, inference hardware, memory footprint, latency, throughput, serving cost는 해당 기사에서 확인되지 않는다. 공개 가중치 도입 판단은 모델 카드와 라이선스 원문, representative workload에서 품질·비용·안전성·운영 SLO를 함께 확인한 뒤 내려야 한다.",
+      "why_it_matters": "국내 조직이 대규모 공개 가중치 모델을 자체 인프라·한국어 장문 문맥·agent tool-use workload에 적용할 선택지가 늘어남. 다만 total parameter와 벤치마크 점수는 deployment GPU 수, quantization, concurrency, tool success, safety control, completed-task cost를 보장하지 않음.",
+      "engineering_implication": "모델 카드와 artifact를 확보한 뒤 tokenizer·license·weight precision·context limit·GPU memory·tensor parallelism·vLLM/SGLang compatibility를 inventory하고, 한국어 장문·코딩·tool call trace로 품질·p95 latency·token/s·OOM·retry·비용을 기존 모델과 비교 필요. Apache 2.0 표기는 기사 보도 범위이므로 배포 전 official license file을 법무·보안 검토에 연결해야 함.",
+      "korea_implication": "국내 독파모 사업과 연계된 공개 가중치이지만, 정부 평가 점수와 production readiness는 별개임. 공공·금융·제조 조직은 데이터 경계, GPU 조달, 모델 공급망, red-team, 감사 로그와 운영 책임을 PoC acceptance criteria에 포함 필요.",
+      "category": "AI",
+      "tags": [
+        "Korea",
+        "LG AI Research",
+        "K-EXAONE",
+        "Open Weights",
+        "Foundation Model",
+        "Benchmark",
+        "Self-hosting"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 93,
+      "published_kst": "2026-07-31 10:10",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213379",
+      "image_url": "https://cdn.aitimes.com/news/photo/202607/213379_216828_3354.png",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "LG AI연구원이 **K-EXAONE 2.0**을 Hugging Face에 출시하고 Apache 2.0으로 공개했다고 AI타임스가 보도함. 과기정통부 독자 AI 파운데이션 모델 프로젝트의 2차 평가 모델이라는 기사 설명.",
+          "items": [
+            "발행: AI타임스 `article:published_time` `2026-07-31T10:10:30+09:00` = **2026-07-31 10:10 KST**",
+            "규모: 750B parameter로 기사에서 국내 최대 규모라고 설명",
+            "라이선스: 상업적 이용을 포함한 Apache 2.0 공개라는 기사 보도"
+          ]
+        },
+        {
+          "heading": "기사에 인용된 평가 수치",
+          "body": "AI타임스는 LG가 9개 영역·24개 benchmark 결과를 공개했다고 전함. 수치는 vendor 공개 결과를 전한 범위로 보며, 독립 재현 결과로 확대하지 않는 조건.",
+          "items": [
+            "평균: 24개 평가지표 평균 **70.1점**, 1차 모델 63.3점 대비 10% 이상 개선이라는 기사 인용",
+            "장문: OpenAI-MRCR 94.4점과 Ko-LongBench 89.6점이라는 기사 인용",
+            "도구 사용: Tau3-Bench Banking 14.2점, 비교 모델 수치도 같은 기사/LG 자료 범위"
+          ]
+        },
+        {
+          "heading": "공개 가중치 배포에서 확인할 범위",
+          "body": "750B total parameter와 benchmark 점수만으로 serving shape를 정할 수 없음. 공식 artifact와 model card를 직접 읽어 precision·active parameter·context·hardware·license 조건을 별도 확정할 필요.",
+          "items": [
+            "미확정: exact Hugging Face artifact URL·weight format·quantization·context length·GPU memory footprint",
+            "미확정: inference throughput·concurrency·latency·token price·vLLM/SGLang compatibility",
+            "경계: 기사 benchmark가 조직 workload의 한국어 품질·agent completion·안전성을 자동 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "왜 중요한가와 시사점",
+          "body": "국내 대규모 공개 가중치 모델은 self-hosting과 sovereign-AI 옵션을 늘리지만, 운영 승인 기준은 model scale이 아니라 representative trace의 품질·비용·SLO·보안 evidence.",
+          "items": [
+            "팀 액션: tokenizer·license·weight precision·GPU topology·serving stack compatibility inventory",
+            "팀 액션: 한국어 장문·코딩·tool-call trace로 quality·p95 latency·token/s·OOM·retry·completed-task cost 비교",
+            "팀 액션: model-card 원문·supply-chain hash·red-team·audit log·rollback 기준을 PoC gate에 고정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-252",
       "title_ko": "Amazon Bedrock, OpenAI GPT-5.6 Luna 80%·Terra 20% on-demand inference 가격 인하: 모델 단가가 아니라 task unit economics 재산정",
       "title_original": "Amazon Bedrock announces up to 80% lower prices for OpenAI GPT-5.6 models",
@@ -272,7 +340,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-250",
@@ -366,7 +434,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-251",
@@ -468,7 +536,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-213",
@@ -548,7 +616,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-249",
@@ -647,7 +715,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-243",
@@ -737,7 +805,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-244",
@@ -831,7 +899,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-245",
@@ -902,7 +970,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-248",
@@ -973,7 +1041,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-242",
@@ -1054,7 +1122,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-246",
@@ -1121,7 +1189,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-241",
@@ -1202,7 +1270,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-240",
@@ -1274,7 +1342,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-237",
@@ -1346,7 +1414,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-238",
@@ -1422,7 +1490,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-239",
@@ -1489,7 +1557,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-247",
@@ -1564,7 +1632,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-235",
@@ -1644,7 +1712,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-236",
@@ -1720,7 +1788,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-234",
@@ -1806,7 +1874,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-231",
@@ -1873,7 +1941,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-232",
@@ -1945,7 +2013,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-233",
@@ -2025,7 +2093,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-230",
@@ -2097,7 +2165,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-229",
@@ -2169,7 +2237,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-226",
@@ -2260,7 +2328,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-228",
@@ -2348,7 +2416,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-227",
@@ -2429,7 +2497,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-224",
@@ -2508,7 +2576,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-225",
@@ -2596,7 +2664,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-223",
@@ -2676,7 +2744,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-222",
@@ -2756,7 +2824,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-221",
@@ -2840,7 +2908,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-220",
@@ -2917,7 +2985,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-216",
@@ -2984,7 +3052,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-217",
@@ -3051,7 +3119,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-214",
@@ -3131,7 +3199,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-215",
@@ -3204,7 +3272,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-218",
@@ -3271,7 +3339,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-212",
@@ -3366,7 +3434,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-209",
@@ -3441,7 +3509,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-210",
@@ -3526,7 +3594,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-219",
@@ -3602,7 +3670,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-208",
@@ -3670,11 +3738,11 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-207",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "AWS Network Load Balancer listener rules: dual-stack NLB에서 IPv4·IPv6 target group을 분리하고 원본 client IP를 보존",
       "title_original": "AWS Network Load Balancer now supports Listener Rules for custom traffic routing",
       "summary": "핵심: AWS NLB가 source IP address type 기반 listener rule을 지원해 하나의 dual-stack NLB에서 IPv4·IPv6 연결을 각각 같은 address family target group으로 전달. 변화: DNS로 두 load balancer를 나누거나 protocol translation으로 원본 client IP를 잃던 선택지를 Layer 3 conditional routing으로 대체. 운영: 기존 NLB 재생성 없이 적용 가능하지만 target group·health check·IPv6 reachability·client-IP 의존 정책을 함께 검증 필요.",
@@ -3828,7 +3896,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-204",
@@ -3893,7 +3961,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-205",
@@ -3959,7 +4027,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-203",
@@ -4021,102 +4089,6 @@
             "팀 액션: model cache·vector index·checkpoint·training data를 분리한 I/O profile과 tenant별 egress·retention 기준 수집",
             "팀 액션: rack capacity, power·cooling, network, fault domain, spare media, firmware rollback을 같은 capacity review에 포함",
             "팀 액션: 공급사 수치와 자사 workload의 latency·throughput·recovery·successful-token 비용을 구분한 acceptance test 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-202",
-      "title_ko": "Azure DevOps 공식 MCP server, 숨은 PR 주석으로 AI 리뷰 agent 권한을 가로채는 confused-deputy 경로 보고",
-      "title_original": "When Your AI Reviewer Works for the Attacker: A Confused-Deputy Bug in Microsoft's Azure DevOps MCP Server",
-      "summary": "핵심: Manifold Security는 Azure DevOps PR의 보이지 않는 HTML 주석이 공식 MCP server를 거쳐 AI reviewer context에 그대로 들어가고, reviewer 권한으로 다른 프로젝트 pipeline·wiki를 호출할 수 있는 PoC를 공개함. 대응: PR 설명·댓글을 비신뢰 입력으로 분리하고, cross-project tool call·외부 전송·자동 승인 정책을 차단·감사 필요.",
-      "detail": "Manifold Security는 Microsoft의 Azure DevOps MCP server에서 `repo_get_pull_request_by_id`가 PR 설명을 spotlighting 처리 없이 반환한다고 보고했다. 연구 PoC는 HTML 주석의 지시가 Copilot CLI와 Claude Code의 PR review 흐름에서 다른 프로젝트 pipeline 실행, 비공개 wiki 읽기, PR 댓글을 통한 반출로 이어질 수 있음을 제시했다. 연구진은 MSRC에 신고했고, 조건은 공격자가 쓸 수 있는 PR 텍스트·더 넓은 reviewer 권한·agent tool 자동 승인이다.",
-      "why_it_matters": "PR·issue·wiki처럼 협업자가 작성하는 텍스트가 agent의 tool context에 들어오면, 사용자 credential·비신뢰 입력·외부 전송 경로가 결합된다. 개인 token 범위가 넓고 agent가 per-tool confirmation 없이 동작할수록 cross-project 데이터 노출 범위가 커진다.",
-      "engineering_implication": "Azure DevOps MCP 사용 팀은 PR 설명·댓글·build log·wiki를 untrusted-data boundary로 표기하고, tool별 approval·project scope·egress를 분리 필요. `repo_get_pull_request_by_id` 결과의 guardrail 적용 여부, cross-project pipeline·wiki read·PR comment write를 audit event로 연결하고 자동 review workflow에는 least-privilege service identity를 적용 필요.",
-      "korea_implication": "국내 기업의 Azure DevOps 기반 외주·계열사 협업에서도 PR 작성 권한과 reviewer·release manager 권한이 다를 수 있으므로, AI review bot의 project scope·secret 접근·외부 comment 반출 권한을 조직 경계별로 분리 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Azure DevOps",
-        "MCP",
-        "Prompt Injection",
-        "AI Code Review",
-        "DevSecOps"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-22 14:57",
-      "source_name": "Manifold Security",
-      "source_url": "https://www.manifold.security/blog/azure-devops-mcp-server-vulnerability",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyPnXNVcT-TTMj4bnJJGmkaK6DFi2Lr2KDvnQZiPIyboMvPfwGP-xlkXhEAq1-bY1fkI_eSiaMEY0JxhHvMYB5X_i_aDK04yiPGrSIk9cXL9P-9cwn2ftFhqCto-5dAxILlsZITCPhQ6Kf2h0_5Ly9YSvo5T2z8sNe5ZDPZxR-S-JslYxH-q9FoPUUJtA/s1700-e365/inject.jpg",
-      "related_links": [
-        {
-          "title": "The Hacker News — Azure DevOps MCP flaw report and 2026-07-22 14:57 KST RSS timestamp",
-          "url": "https://thehackernews.com/2026/07/microsoft-azure-devops-mcp-flaw-lets.html"
-        },
-        {
-          "title": "Microsoft Azure DevOps MCP server repository",
-          "url": "https://github.com/microsoft/azure-devops-mcp"
-        },
-        {
-          "title": "Microsoft MSRC — indirect prompt injection defense guidance",
-          "url": "https://www.microsoft.com/en-us/msrc/blog/2025/07/how-microsoft-defends-against-indirect-prompt-injection-attacks"
-        },
-        {
-          "title": "Azure DevOps MCP PR #1062 — spotlighting helper coverage",
-          "url": "https://github.com/microsoft/azure-devops-mcp/pull/1062"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Manifold Security는 Microsoft 공식 Azure DevOps MCP server의 PR 조회 경로가 공격자가 작성한 PR description을 agent context에 전달하는 trust boundary를 분석함.",
-          "items": [
-            "발행: Manifold 연구 게시일 **2026-07-21**, The Hacker News RSS 보도 시각 2026-07-22 10:27:52 +05:30을 **2026-07-22 14:57 KST**로 변환",
-            "입력: Azure DevOps PR description의 HTML comment는 웹 UI에서 보이지 않지만 REST API 응답에는 원문 그대로 포함되는 조건",
-            "대상: Microsoft가 배포하는 Azure DevOps MCP server의 `repo_get_pull_request_by_id` tool 경로",
-            "경로: reviewer가 agent에 PR review를 요청하면 숨은 지시가 tool output과 함께 model context에 유입되는 구조"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "연구진 PoC는 한 프로젝트 contributor가 만든 정상 형태 PR의 숨은 지시가 더 높은 권한을 가진 reviewer의 agent tool call sequence를 바꾸는 과정을 제시함.",
-          "items": [
-            "PoC: agent가 다른 프로젝트 pipeline을 실행하고 공격자가 접근하지 못하는 confidential wiki를 읽은 뒤 PR comment로 게시한 시나리오",
-            "재현: Manifold는 local build `v2.7.0`과 Copilot CLI·Claude Code review 흐름에서 동작을 확인한 범위",
-            "권한: 호출 자체는 reviewer credential로 허용된 API이며 attacker가 직접 cross-project 권한을 얻는 방식은 아님",
-            "신고: 연구진은 MSRC에 보고했고 acknowledgement·triage를 받았다고 명시한 상태"
-          ]
-        },
-        {
-          "heading": "방어 적용 범위와 조건",
-          "body": "Microsoft repository에는 wiki page와 build log output을 shared helper로 감싸는 spotlighting 방어가 있으나, 연구진은 PR description 반환 tool에는 같은 처리가 없다고 분석함.",
-          "items": [
-            "방어 차이: `createExternalContentResponse` 기반 spotlighting 적용 경로와 raw PR description 반환 경로를 구분 필요",
-            "필수 조건: attacker-written PR text, agent review workflow, attacker보다 넓은 reviewer access, per-tool 자동 승인 posture의 결합",
-            "제약: 공개 PoC는 사용자가 review를 시작하는 흐름을 전제로 하며 모든 Azure DevOps tenant·agent configuration의 침해 증거는 아님",
-            "확대 조건: trigger 기반 자동 review·triage·summary가 human confirmation 없이 실행될수록 발견 전 반복 실행 가능성"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "agent security에서 private data 접근·비신뢰 콘텐츠 읽기·외부 전송 도구가 함께 있으면, 협업 문서 한 조각이 credentialed automation을 confused deputy로 만들 수 있음.",
-          "items": [
-            "경계: PR·issue·wiki·build log는 code review artifact이면서 agent 관점에서는 attacker-controllable input으로 취급 필요",
-            "영향: source code·secret·work item 접근은 개인 token과 service identity scope에 따라 달라지는 조건",
-            "탐지: unusual cross-project pipeline run, wiki read, PR comment write, egress를 하나의 agent trace로 상관 분석 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Azure DevOps MCP 운영은 model prompt 개선만으로 종료할 수 없으며, tool authorization과 output labeling·human approval·data egress를 분리한 control plane으로 재설계 필요.",
-          "items": [
-            "팀 액션: `repo_get_pull_request_by_id`를 포함한 모든 content-returning tool의 untrusted-content wrapping과 version·patch 상태 확인",
-            "팀 액션: review agent에 project-scoped read token, pipeline trigger deny-by-default, cross-project wiki read 제한 적용",
-            "팀 액션: PR comment·issue update·webhook·external API를 data egress tool로 분류하고 sensitive content에는 explicit confirmation 적용",
-            "팀 액션: automatic review workflow는 human developer token 대신 least-privilege service identity와 immutable tool-call audit log 사용"
           ]
         }
       ],
