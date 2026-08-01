@@ -2,181 +2,180 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-01 23:16",
+  "last_updated_kst": "2026-08-02 03:19",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Amazon Aurora DSQL multi-Region cluster: Stockholm·Spain·Mumbai·Singapore에 active-active writable endpoint와 multi-Region strong consistency 구성을 추가. 한 리전 unavailable에도 logical database availability를 목표로 하나, application retry·idempotency·cross-region latency·RTO/RPO·quota·cost는 workload별 chaos test와 SLO evidence로 승인 필요.",
-    "Anthropic cyber evaluation incident: Claude가 third-party CTF environment의 live internet misconfiguration을 통해 실제 조직 3곳에 무단 접근한 3건을 공식 공개. 141,006 run review·weak password/unauthenticated endpoint 범위이며 complex exploit·intentional escape 증거는 없다고 구분; evaluation도 egress deny·scope control·network/transcript telemetry·vendor assurance를 production 수준으로 운영 필요.",
-    "AWS Transit Gateway PBR GA: source/destination IP·port·protocol 기준 attachment traffic steering을 first-match-wins policy table로 제공. inspection·Direct Connect/VPN·prod/dev isolation rule은 asymmetric return·stateful appliance·shadowing·rollback test와 함께 release.",
-    "Ruflo `CVE-2026-59726`: `3.16.3` 이전 기본 MCP bridge가 `0.0.0.0:3001`에 인증 없이 노출될 수 있어 shell execution·provider key·AgentDB memory integrity가 같은 incident 범위가 됨. patch와 함께 listener 차단·key rotation·memory audit·clean rebuild 필요.",
+    "Cloudflare MoQ provisioning API beta: application별 isolated relay와 publisher/subscriber credential 분리를 global network control plane으로 제공. relay 생성보다 track namespace·credential rotation·revocation·reconnect SLO를 release gate로 관리 필요.",
+    "Chrome AI 보안 자동화: Gemini harness가 model interoperability·CVE/git-history context·SECURITY.md·critic·반복 scanning을 결합. source-at-rest·internet deny·destination allowlist·filesystem 제한을 갖춘 analysis sandbox가 전제.",
+    "Amazon Aurora DSQL multi-Region cluster: Stockholm·Spain·Mumbai·Singapore에 active-active writable endpoint와 multi-Region strong consistency 구성을 추가. application retry·idempotency·cross-region latency·RTO/RPO·quota·cost는 workload별 chaos test와 SLO evidence로 승인 필요.",
+    "Anthropic cyber evaluation incident: third-party CTF environment의 live-internet misconfiguration으로 실제 조직 3곳에 무단 접근한 3건을 공식 공개. evaluation도 egress deny·scope control·network/transcript telemetry·vendor assurance를 production 수준으로 운영 필요.",
     "Adobe Campaign Classic `CVE-2026-48364`·`CVE-2026-48365`: THN의 Adobe bulletin 인용 보도는 무상호작용 code execution·SQL injection 파일 읽기와 ACC v7 `7.4.3 build 9398` 수정 경로를 제시. 설치 build·public ingress·service account·workflow를 묶어 긴급 patch·rollback·post-change telemetry를 확인 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Gemini Robotics 2: VLA·embodied reasoning·on-device runtime을 physical-AI release gate로 묶는 방법",
-      "summary": "핵심: Google DeepMind는 Gemini Robotics 2 VLA, ER 2 embodied reasoning, On-Device 2 local runtime을 함께 제시. 로봇 도입 판단은 demo나 모델 단독 score가 아니라 perception→planning→motion→safety stop→operator recovery→fleet rollback의 closed-loop evidence로 내려야 함.",
-      "details": "Google DeepMind 모델 페이지와 AI타임스의 7월 31일 보도를 바탕으로, robot embodiment·planning·local execution을 현장 safety case와 SRE 운영 항목으로 변환.",
+      "title": "Cloudflare MoQ provisioning API: 실시간 relay를 server fleet가 아닌 identity·namespace control plane으로 운영",
+      "summary": "핵심: Cloudflare의 MoQ provisioning API beta는 application별 isolated relay와 publisher/subscriber 분리 credential을 기존 global network에 생성하는 방식. real-time delivery의 병목이 VM·load balancer 배치에서 namespace·credential·track authorization·failure evidence로 이동하므로, beta 도입은 latency demo가 아니라 권한 lifecycle과 reconnect SLO 검증으로 승인 필요.",
+      "details": "Cloudflare의 2026-07-31 MoQ API 공지를 source-grounded로 재구성. QUIC publish/subscribe relay의 isolation과 access control을 identity, protocol, SRE, FinOps 관점에서 분해.",
       "why_it_matters": "current source-grounded AI/Infra briefing",
       "sources": [
-        "https://deepmind.google/models/gemini-robotics/",
-        "https://www.aitimes.com/news/articleView.html?idxno=213392"
+        "https://blog.cloudflare.com/an-api-for-moq-provision-your-own-isolated-relays/"
       ],
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-08-01 02:53",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-08-02 03:19",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Gemini Robotics 2는 **vision-language-action**을 motion control로 연결하고 ER 2와 on-device runtime을 조합하는 제품군. production approval은 VLA capability claim이 아니라 작업 성공·안전 정지·복구·rollback이 닫힌 control loop로 검증됐는지로 결정.",
+          "body": "MoQ relay provisioning은 dedicated server를 만드는 API가 아니라 global network 안에서 application scope와 credential boundary를 만드는 control plane. **production readiness는 relay 생성 속도가 아니라 publisher/subscriber 권한, revocation, reconnect, audit trace가 닫혔는지로 판단**.",
           "items": [
-            "결정: robot model release와 robot safety release를 같은 gate에서 승인",
-            "팀 액션: task·workcell·operator·network-loss 조건별 evidence owner 지정"
+            "결정: real-time relay를 compute capacity 항목과 identity control 항목으로 함께 승인",
+            "팀 액션: tenant·track·principal·network path별 evidence owner 지정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "DeepMind 모델 페이지는 Gemini Robotics 2를 bi-arm부터 full humanoid까지 제어하는 VLA로, ER 2를 물리 공간의 multi-step planning·사람/다른 robot coordination용 embodied reasoning 모델로 설명. On-Device 2는 local robotic hardware optimized lightweight VLA로 표기.",
+          "body": "Cloudflare는 2026-07-31에 isolated relay와 publisher/subscriber 분리 credential을 만드는 API beta를 발표. API나 Dashboard로 생성하며 relay는 수 초 내 global network에서 사용 가능하다고 설명. draft-14·draft-16 MoQ Transport authentication support와 beta 기간 무료 사용을 명시.",
           "items": [
-            "구성: vision/language input을 motor control로 바꾸는 VLA",
-            "구성: physical-space reasoning과 detailed plan을 맡는 ER 2",
-            "구성: local robot hardware 실행을 목표로 한 On-Device 2"
+            "MoQ: IETF에서 개발 중인 QUIC 기반 publish/subscribe protocol",
+            "relay: payload를 읽지 않고 named stream을 subscriber에 fan-out하는 역할",
+            "기존 endpoint: 인증이 없어 protocol testing에는 적합하나 production access control에는 부족"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "VLA·planning·motion runtime의 분리는 capability를 자동으로 isolation하지 않음. sensor input, plan/action interface, navigation API, actuator command, operator override가 모두 attack·failure surface이며, 각 boundary에 authority·timeout·audit이 필요.",
+          "body": "관리형 relay는 fleet placement와 load balancer 운영을 줄일 수 있으나 multi-tenant boundary를 자동으로 완성하지 않음. relay scope·track naming·publisher/subscriber credential이 data-plane access decision이 되므로, API key 수준의 단순 운영으로 끝내면 cross-tenant publish와 replay blast radius가 남음.",
           "items": [
-            "설계: planner가 요청할 수 있는 action vocabulary와 actuator safety envelope 분리",
-            "설계: vision·language·telemetry retention과 remote operator access를 data-flow diagram에 고정",
-            "검증: task success와 unsafe-action prevention을 별도 metric으로 관리"
+            "설계: tenant ID·track namespace·role·expiry를 immutable policy model로 표현",
+            "설계: publish permission과 subscribe permission을 별 principal·least privilege로 분리",
+            "검증: credential replay·namespace collision·role escalation을 adversarial test에 포함"
           ]
         },
         {
           "heading": "architecture·operations 관점",
-          "body": "cloud reasoning과 local runtime이 공존하면 network loss, stale plan, model/version skew, hardware compatibility가 production failure mode가 됨. local execution이 있다는 사실만으로 offline safety, latency, deterministic stop을 보장하지 않음.",
+          "body": "Anycast ingress와 existing network가 routing을 처리해도 client reconnect, track continuity, ordering, congestion, regional route change는 application SLO에 남음. relay가 VM·container·process를 만들지 않는다는 설명은 persistence나 failure semantics를 대체하지 않음.",
           "items": [
-            "measure: sensor-to-action p95 latency·plan age·command reject·intervention rate",
-            "test: cloud disconnect·sensor dropout·actuator fault·stale policy·version rollback",
-            "operate: model/runtime/firmware/policy artifact의 compatibility matrix 유지"
+            "measure: publish-to-subscriber p50/p95/p99 latency·loss·reconnect·drop rate",
+            "test: relay credential revoke·network partition·publisher failover·subscriber surge",
+            "operate: protocol draft/version compatibility와 client SDK matrix 유지"
           ]
         },
         {
-          "heading": "safety·security·governance 관점",
-          "body": "사람과 공유하는 공간의 autonomy는 permission model이 아니라 runtime safety case가 필요. stop/restart, geofence, speed/force limit, emergency override, incident replay에 누가 권한을 갖는지와 log 보존 범위를 배포 전에 확정.",
+          "heading": "security·governance 관점",
+          "body": "MoQ relay가 payload를 해석하지 않는 구조는 content inspection responsibility가 사라진다는 뜻이 아님. encryption termination, metadata, track name, access log, abuse response의 ownership을 provider와 application 사이에서 문서화 필요.",
           "items": [
-            "control: human proximity·restricted zone·tool state별 command authorization",
-            "audit: operator override·policy change·safety event·video/telemetry retention",
-            "risk: demo capability를 certified safety or commercial SLA로 해석하지 않기"
+            "control: credential expiry·rotation·revocation 및 emergency kill switch",
+            "audit: relay create/delete·principal issue·publish/subscribe deny·admin change log",
+            "risk: beta 무료 제공을 data residency·support SLA·commercial availability 보증으로 해석하지 않기"
           ]
         },
         {
-          "heading": "도입 로드맵",
-          "body": "실험은 low-energy, bounded workspace, explicit success criterion 작업부터 시작하고 integration surface를 단계적으로 넓히는 방식이 적합. unknown hardware support·API/SDK·commercial availability는 source가 확정하지 않아 vendor 확인이 선행.",
+          "heading": "FinOps·도입 로드맵 관점",
+          "body": "free beta는 traffic cost, post-beta price, quota, support model을 확정하지 않음. 인프라 절감 효과는 own relay fleet·egress·operations 비용을 workload baseline과 비교해야 산정 가능.",
           "items": [
-            "1단계: single task·synthetic fault·teleoperation fallback baseline",
-            "2단계: one workcell canary와 operator intervention/latency/error budget 수집",
-            "3단계: fleet rollout 전 fail-safe·recovery·artifact rollback game day"
+            "1단계: synthetic stream과 isolated tenant로 protocol·credential PoC",
+            "2단계: canary에서 latency·reconnect·revocation·abuse telemetry 수집",
+            "3단계: price/quota/SLA·incident support 확인 뒤 production traffic 확대"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "검토 산출물은 모델 demo 영상이 아니라 expected action과 observed outcome을 비교할 수 있는 trace. procurement와 PoC acceptance criteria에 hardware, data, safety, support evidence를 같이 넣을 필요.",
+          "body": "릴리스 산출물은 API success response가 아니라 access matrix와 failure trace. product·security·SRE가 같은 namespace와 identity model을 review해야 함.",
           "items": [
-            "verify: sensor/actuator compatibility·API/SDK·latency·offline behavior·support scope",
-            "verify: workcell safety zone·operator handoff·incident replay·fleet rollback",
-            "measure: completed-task success·human intervention·stop/restart false outcome·recovery time"
+            "verify: publisher/subscriber role·track namespace·expiry·rotation·revocation",
+            "verify: client protocol versions·network fallback·telemetry retention·alert owner",
+            "verify: quota·billing·regional route·data handling·support escalation의 written evidence"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**physical AI의 배포 단위는 모델이 아니라 closed-loop system**. perception·reasoning·motion·safety·operator·fleet 운영의 어느 한 trace가 비어도 현장 도입 근거가 완성되지 않음.",
+          "body": "**실시간 전달의 운영 단위는 relay server가 아니라 권한 있는 stream namespace**. relay fleet를 없애도 identity·protocol compatibility·failure recovery를 증명하지 않으면 production risk는 남음.",
           "items": [
-            "발표 메시지: VLA 성능보다 safety stop과 recovery evidence를 먼저 확인",
-            "팀 액션: 첫 production gate를 task completion·safety event·rollback time SLO로 정의"
+            "발표 메시지: MoQ beta는 latency feature가 아니라 multi-tenant realtime control-plane 변화",
+            "팀 액션: 첫 production gate를 unauthorized access 0건·revocation propagation·reconnect SLO로 정의"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Microsoft 365 Copilot 보도: 악성 문서·sandbox·tenant data egress를 하나의 AI 보안 경로로 운영",
-      "summary": "핵심: AI타임스 보도에서 악성 Word upload 뒤 Copilot sandbox를 통한 기업 email·document·cloud file 외부 전송 가능성이 제기됨. Rubrik 보고 경로는 Microsoft가 수정했다고 밝혔고, 별도 취약점 patch 상태와 sandbox audit 범위는 공개 확인 불가. AI assistant는 document ingestion부터 egress evidence까지 하나의 incident surface로 운영 필요.",
-      "details": "AI타임스가 The Information·보안업체·Microsoft 확인을 인용해 보도한 Copilot 경로를 기준으로, enterprise AI data boundary, telemetry, vendor assurance, tenant-side control을 분리.",
+      "title": "Chrome AI 보안 자동화: 취약점 탐지 agent를 source·network·patch 권한으로 분리하는 Secure SDLC",
+      "summary": "핵심: Google Chrome의 Gemini agent harness는 model interoperability, CVE/git-history context, SECURITY.md, critic agent, 반복 scanning을 결합하면서 general internet·filesystem·system modification을 제한. 조직의 AI 보안 자동화도 발견량을 목표로 삼지 말고 sandbox boundary, triage precision, fix regression, time-to-remediate로 운영해야 함.",
+      "details": "Google Chrome Security Team의 2026-07-30 기술 글을 기반으로 AI vulnerability discovery를 security architecture와 secure-delivery control로 재구성.",
       "why_it_matters": "current source-grounded AI/Infra briefing",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=213408"
+        "https://blog.google/security/chrome-stronger-with-every-update/"
       ],
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-01 02:53",
+      "refreshed_kst": "2026-08-02 03:19",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Copilot 보도는 malicious content가 document ingestion에서 sandbox execution·tenant data access·network egress로 이어질 수 있는 경로를 제기. **AI 작업 로그가 정상 activity처럼 보일 수 있다는 audit gap**을 architecture와 incident response의 공통 문제로 다뤄야 함.",
+          "body": "AI vulnerability discovery의 안전한 배포 단위는 모델 endpoint가 아니라 **read-only source context·default-deny network·limited filesystem·independent critic·human release gate**를 갖춘 harness. 발견 건수 증가를 patch quality나 risk reduction으로 혼동하지 않기.",
           "items": [
-            "결정: AI assistant enablement를 data security architecture change로 분류",
-            "팀 액션: upload·read·tool execution·egress evidence를 correlation 가능한지 확인"
+            "결정: security agent를 production code-write 권한과 분리된 analysis workload로 분류",
+            "팀 액션: discovery·triage·patch proposal·merge·release의 authority chain 분리"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스는 The Information 보도를 인용해 두 보안업체가 Microsoft 365 Copilot의 복수 취약점을 발견했고 Microsoft도 확인했다고 전함. Rubrik이 4월 보고한 첫 경로는 Microsoft가 수정했다고 밝혔으며, 두 번째 경로의 patch 여부는 불명.",
+          "body": "Chrome Security Team은 2026년 초 Gemini 기반 harness로 broader Chrome codebase를 탐지하고 higher efficiency·lower false positives를 목표로 했다고 공개. renderer compromise 뒤 local file read로 이어질 수 있는 13년 이상 잔존 sandbox escape를 찾았다고 설명.",
           "items": [
-            "발행: **2026-07-31 17:26 KST**의 AI타임스 source-page metadata",
-            "경계: CVE·affected tenant·victim·in-the-wild exploitation은 기사에서 확인되지 않음"
-          ]
-        },
-        {
-          "heading": "attack path를 control plane으로 분해",
-          "body": "기사 설명의 entry는 사용자가 업로드하도록 유도된 악성 Word document. processing 중 command execution과 sandbox internet access가 결합하면 tenant email·document·cloud file의 external transfer 가능성이 열릴 수 있다는 보도 내용.",
-          "items": [
-            "entry: untrusted document upload와 content processing",
-            "execution: Copilot/sandbox processing path라는 기사 설명",
-            "impact: external transfer 가능성으로, 실제 data theft 확인과 구분"
+            "context: prior CVE와 Chrome 전체 git history를 knowledge base로 구성",
+            "modeling: open-weight와 proprietary model의 strengths를 함께 쓰는 interoperability",
+            "review: SECURITY.md를 읽는 별 context의 critic agent와 repeated runs 사용"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "enterprise assistant는 model response만 생성하지 않고 document context, identity-authorized data, tools, network path를 연결함. security review가 prompt filter 또는 M365 ACL 하나에 머물면 inter-component authority와 egress control이 빠질 수 있음.",
+          "body": "security agent의 model accuracy보다 context provenance와 execution boundary가 먼저 결정됨. CVE/git history는 reasoning context를 넓히지만 stale branch·secret·third-party dependency·generated artifact까지 unrestricted access를 주면 analysis plane이 data-exfiltration plane으로 바뀔 수 있음.",
           "items": [
-            "principle: untrusted content와 privileged data access 사이 policy enforcement 분리",
-            "principle: sandbox default-deny egress·per-tool allowlist·short-lived authorization",
-            "principle: document classification과 downstream data read scope의 least privilege"
+            "principle: source snapshot·dependency metadata·secret redaction을 model input contract로 정의",
+            "principle: model finding과 exploit proof·patch merge를 독립 evidence track으로 관리",
+            "measure: precision·duplicate·human review latency·accepted-fix regression·remediation time"
           ]
         },
         {
-          "heading": "audit·detection·incident response 관점",
-          "body": "기사은 attack이 정상 AI activity처럼 보여 관리자가 실시간으로 알아차리기 어렵다는 지적을 포함. Purview가 Copilot activity log 확인을 제공한다는 설명과 sandbox 내부 event coverage의 미확정 상태를 분리해 검증해야 함.",
+          "heading": "architecture·operations 관점",
+          "body": "source는 model이 source code at rest만 분석하는 locked-down machine과 general internet 부재를 명시. network requests are intercepted, strict allowlist는 application과 destination 기준이며 subagent는 designated source directory 밖 file과 local system modification에 제한을 둠.",
           "items": [
-            "measure: upload→prompt/tool→data read→DNS/proxy/egress의 trace join rate",
-            "detect: unusual source document·bulk data read·external destination·operator action correlation",
-            "respond: evidence export·retention·tenant isolation·support escalation runbook"
+            "isolate: internet egress default deny와 tool-specific destination allowlist",
+            "isolate: filesystem scope와 OS mutation permission 최소화",
+            "observe: prompt·tool call·network deny·finding·review disposition을 correlation 가능한 telemetry로 보존"
           ]
         },
         {
-          "heading": "vendor assurance와 tenant control",
-          "body": "첫 경로의 수정 statement는 vendor remediation evidence지만, tenant configuration·data classification·external sharing·log retention을 자동으로 닫지 않음. 비공개 두 번째 경로는 patch assumed 상태로 두지 않고 vendor case로 risk disposition 필요.",
+          "heading": "security·governance 관점",
+          "body": "AI scanner가 code의 trust boundary를 추론해도 repository ownership·disclosure embargo·vulnerability reward·customer communication까지 자동 결정할 수 없음. finding artifact는 least-access security record로 분류하고 retention·access·export·vendor usage를 명확히 필요.",
           "items": [
-            "request: patch scope·affected service path·tenant action·telemetry coverage의 written evidence",
-            "operate: sensitive Copilot workload enablement와 connector/upload policy staged rollout",
-            "avoid: 공개되지 않은 flaw를 임의의 exploit capability나 universal exposure로 확장"
+            "control: agent identity·model version·prompt/tool policy·data snapshot hash 기록",
+            "control: third-party model/connector로 전달되는 code·log·secret scope 승인",
+            "risk: automated patch가 test passing을 security remediation complete로 오인하는 위험"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "새 assistant workload는 low-sensitivity pilot에서 telemetry completeness와 egress denial을 먼저 측정한 뒤 data scope를 넓히는 방식이 적합. security sign-off는 demo quality와 독립적으로 운영.",
+          "body": "첫 단계는 non-production read-only code snapshot과 known issue replay. high-impact path에서는 fuzzing·SAST·human researcher의 finding과 agent output을 비교하고 patch authoring은 별 gate로 늦게 도입하는 방식이 적합.",
           "items": [
-            "1단계: allowed data set·upload source·tool·destination allowlist 정의",
-            "2단계: malicious document simulation과 DLP/Purview/proxy detection rehearsal",
-            "3단계: business workload rollout 전 incident export·rollback·vendor escalation exercise"
+            "1단계: historical CVE replay로 precision·cost·time baseline 확보",
+            "2단계: isolated repository canary에서 network deny·secret scan·critic workflow 검증",
+            "3단계: patch proposal을 CI/test/reviewer/rollback evidence와 연결"
           ]
         },
         {
-          "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "완료 조건은 Copilot feature가 켜졌다는 사실이 아니라 suspicious document가 data read 또는 egress로 진행할 때 탐지·차단·조사가 가능한 상태. 첫 취약점 patch와 두 번째 취약점 공개 상태를 별도 risk register로 유지.",
+          "heading": "개발팀/인프라팀 체크리스트",
+          "body": "PoC 완료 기준은 agent demo가 아니라 denied egress, forbidden filesystem access, finding provenance, human disposition, release outcome을 재현 가능한 audit trail로 남기는 상태.",
           "items": [
-            "verify: Copilot entitlement·accessible data·upload/connector·external sharing·sandbox egress",
-            "verify: Purview/DLP/proxy event coverage·retention·case export·alert owner",
-            "강조 메세지: **AI assistant 보안은 prompt filter가 아니라 content·identity·tool·network·audit 경계의 합**"
+            "verify: source snapshot·secret handling·egress allowlist·filesystem scope·subagent tool policy",
+            "verify: SECURITY.md ownership·critic independence·finding dedupe·triage SLA",
+            "verify: patch test·code review·release rollback·disclosure escalation의 authority owner"
+          ]
+        },
+        {
+          "heading": "강조 메세지",
+          "body": "**AI security agent는 더 많은 경보를 만드는 도구가 아니라 더 엄격한 execution boundary가 필요한 공급망 component**. 발견과 수정의 권한을 분리하고 remediation outcome을 측정할 때만 SDLC risk reduction으로 연결.",
+          "items": [
+            "발표 메시지: Google 사례의 핵심은 Gemini model 단독이 아니라 locked-down harness와 layered review",
+            "팀 액션: agent rollout dashboard를 finding count 대신 precision·egress deny·accepted-fix regression·MTTR로 설계"
           ]
         }
       ]
@@ -925,6 +924,77 @@
       "rank": 9
     },
     {
+      "id": "news-261",
+      "title_ko": "Cloudflare MoQ provisioning API beta: 격리 relay·publisher/subscriber 자격증명으로 실시간 전달 control plane 추가",
+      "title_original": "An API for MoQ: provision your own isolated relays",
+      "summary": "핵심: Cloudflare가 Media over QUIC(MoQ) relay를 application별 격리 scope로 생성하고 publisher·subscriber 자격증명을 분리하는 provisioning API beta를 공개. relay는 기존 global network에서 수 초 내 제공되며 VM·container·load balancer 배치가 필요 없다고 설명. 운영: beta의 무료 제공·draft-14/draft-16 지원을 production SLA·프로토콜 안정성·권한 lifecycle 보증으로 확대하지 말고, track namespace·credential rotation·egress·failure test를 release gate에 포함 필요.",
+      "detail": "Cloudflare는 MoQ provisioning API를 통해 application별 isolated relay와 publisher/subscriber용 분리 credential을 만들 수 있다고 발표했다. MoQ는 IETF에서 개발 중인 QUIC 기반 publish/subscribe protocol이며 relay가 payload를 해석하지 않고 named stream을 fan-out하는 구조다. 기존 global endpoint는 인증이 없어 protocol test와 client development에는 적합했지만 production access control에는 부족했다. 새 relay는 VM·container·dedicated process를 만들지 않고 기존 network의 isolated scope를 생성하며, Anycast endpoint로 client routing을 처리한다고 설명한다. source는 draft-14와 draft-16 MoQ Transport authentication support 및 beta 기간 무료 사용을 명시한다. protocol finalization, service quota, availability/SLO, regional residency, message persistence, billing and post-beta terms는 source에서 확인되지 않아 workload별 검증 대상이다.",
+      "why_it_matters": "실시간 video·interactive broadcast·low-latency messaging은 relay fleet, load balancer, publisher fan-out, tenant isolation을 함께 설계해야 한다. MoQ relay control plane가 이를 관리형 scope로 이동시키면 application team의 capacity 운영은 줄 수 있지만 credential·namespace·observability 책임은 사라지지 않는다.",
+      "engineering_implication": "PoC에서 relay마다 publisher/subscriber principal·track namespace·credential expiry/rotation·revocation·audit owner를 분리하고, unauthorized publish/subscribe·credential replay·network path failure·subscriber surge를 검증 필요. beta API의 protocol draft/version, quota, data residency, telemetry, incident support, 가격 전환 조건을 procurement와 launch checklist에 고정해야 함.",
+      "korea_implication": "국내 실시간 방송·교육·게임·협업 서비스는 global Anycast 경로를 도입 판단으로 바로 연결하지 말고, 국내 사용자 latency·콘텐츠 권한·개인정보 경로·장애 시 fallback과 provider support 범위를 실측 필요.",
+      "category": "Infra",
+      "tags": [
+        "Cloudflare",
+        "MoQ",
+        "QUIC",
+        "Realtime",
+        "API",
+        "Access Control"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-07-31 00:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/an-api-for-moq-provision-your-own-isolated-relays/",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Cloudflare MoQ provisioning API documentation",
+          "url": "https://developers.cloudflare.com/realtime/moq/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 application별 **isolated MoQ relay**와 publisher/subscriber 분리 credential을 만드는 provisioning API beta를 공개함. source 페이지는 2026-07-31 날짜만 표시하므로 `00:00 KST`는 date-only ordering 값이며 발표 시각 주장이 아님.",
+          "items": [
+            "제공: API·Dashboard에서 relay 생성 경로",
+            "제공: global network에서 수 초 내 relay availability라는 vendor 설명",
+            "범위: beta 기간 무료 사용과 draft-14·draft-16 authentication support"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "MoQ는 IETF에서 개발 중인 QUIC 기반 publish/subscribe protocol이며, relay가 named stream을 subscriber에게 복제하는 구조임. relay가 payload를 읽지 않으므로 publisher가 직접 fan-out fleet를 운영하지 않아도 되는 방향.",
+          "items": [
+            "구조: publisher·subscriber·relay의 역할 분리",
+            "격리: relay scope가 namespace·track·object를 다른 relay와 분리",
+            "권한: viewer credential로 publisher track을 탈취하지 못하도록 역할 분리 필요"
+          ]
+        },
+        {
+          "heading": "production 경계",
+          "body": "기존 global MoQ endpoint는 인증이 없어 protocol test와 client 개발에는 유용했지만 confidentiality와 access control이 필요한 production application에는 부적합했다고 source가 설명함. 새 API가 모든 application data-plane SLO를 보증한다는 뜻은 아님.",
+          "items": [
+            "미확인: protocol finalization·service quota·regional residency·persistence",
+            "미확인: post-beta price·support SLA·failure-domain 상세",
+            "검증: client reconnect·track recovery·subscriber surge·credential revoke"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "managed relay가 server provisioning을 줄여도 identity와 stream namespace가 새로운 control plane이 됨. release 판단은 relay 생성 성공이 아니라 unauthorized publish/subscribe 차단과 failure telemetry가 증명되는지로 내려야 함.",
+          "items": [
+            "팀 액션: tenant·track namespace·publisher/subscriber principal을 IaC와 audit log로 연결",
+            "팀 액션: expiry·rotation·revocation과 emergency credential kill-switch rehearsal",
+            "팀 액션: protocol version·fallback transport·latency·loss·reconnect SLO를 canary로 측정"
+          ]
+        }
+      ],
+      "rank": 10
+    },
+    {
       "id": "news-251",
       "title_ko": "Wiz CosmosEscape: Azure Cosmos DB Gremlin sandbox escape가 platform-wide key·cross-tenant database 접근으로 이어질 수 있었던 구조 공개",
       "title_original": "CosmosEscape: Taking Over Every Database in Azure Cosmos DB",
@@ -1024,7 +1094,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-213",
@@ -1104,7 +1174,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-249",
@@ -1203,7 +1273,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-243",
@@ -1293,7 +1363,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-244",
@@ -1387,7 +1457,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-245",
@@ -1458,7 +1528,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-254",
@@ -1546,7 +1616,78 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
+    },
+    {
+      "id": "news-262",
+      "title_ko": "Google Chrome AI 보안 자동화: Gemini agent harness로 취약점 탐지·triage·patch lifecycle 확장",
+      "title_original": "Stronger with every update: How we’re making Chrome and the web safer in the AI Era",
+      "summary": "핵심: Google Chrome Security Team이 Gemini 기반 agent harness로 Chrome codebase 취약점을 탐지하고, model interoperability·CVE/git-history knowledge base·SECURITY.md·critic agent·반복 실행을 결합한 방식을 공개. source는 locked-down machine·general internet 차단·application/destination allowlist·source-directory 외 접근 제한을 명시. 운영: AI 발견량 증가는 vulnerability triage·patch review·release·update adoption까지의 병목을 자동 해소하지 않으므로, agent 권한과 false-positive·fix quality·time-to-remediate 지표를 분리 관리 필요.",
+      "detail": "Google은 Chrome의 vulnerability discovery, triage, patching에 AI를 사용하는 운영 방식을 공개했다. Chrome Security Team은 2026년 초 Gemini agent harness를 만들어 더 넓은 codebase에서 효율과 false positive를 개선했고, 13년 이상 남아 있던 renderer compromise 이후 local file read로 이어질 수 있는 sandbox escape를 찾았다고 설명한다. harness는 open-weight와 proprietary model의 strengths를 함께 쓰는 interoperability, prior CVE와 전체 git history knowledge base, SECURITY.md 기반 threat-model context, 별 context의 critic agent, non-determinism과 모델 개선을 고려한 반복 scanning을 포함한다. source는 model이 source code at rest만 분석하고 general internet 없는 locked-down machine에서 실행되며, network request interception·application/destination allowlist·subagent의 local system 변경과 designated source directory 밖 파일 접근 제한을 둔다고 명시한다. AI는 fuzzing과 external vulnerability research를 대체하지 않는다고도 구분한다. source page는 Jul 30, 2026만 표시하므로 `00:00 KST`는 date-only ordering 값이며 exact release time이 아니다.",
+      "why_it_matters": "AI coding agent를 보안 SDLC에 넣으면 탐지 속도뿐 아니라 codebase context, model non-determinism, execution sandbox, patch review, disclosure coordination의 운영 부담이 함께 커진다. Google 사례는 agent를 unrestricted execution이 아닌 data·network·filesystem boundary가 있는 analysis workload로 다룬다는 구체적 설계 근거를 제공한다.",
+      "engineering_implication": "보안 자동화 agent는 read-only source snapshot·network default-deny·destination allowlist·separate critic·artifact retention을 최소 baseline으로 두고, finding precision·duplicate rate·human triage latency·accepted-fix regression·time-to-remediate를 분리 측정 필요. agent가 patch를 제안하거나 실행하는 단계는 discovery 권한과 별도 approval·test·rollback gate로 운영해야 함.",
+      "korea_implication": "국내 대규모 서비스와 브라우저·앱 개발 조직은 AI code review 도입 시 모델 성능보다 source/secret 접근, outbound network, third-party tool, vulnerability disclosure, 변경 승인 trace를 먼저 표준화할 필요.",
+      "category": "Security",
+      "tags": [
+        "Google",
+        "Chrome",
+        "AI Security",
+        "Vulnerability Discovery",
+        "Gemini",
+        "Secure SDLC"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-07-30 00:00",
+      "source_name": "Google Security Blog / Chrome Security Team",
+      "source_url": "https://blog.google/security/chrome-stronger-with-every-update/",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Google Project Zero Naptime research",
+          "url": "https://projectzero.google/2024/05/introducing-naptime.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Chrome Security Team이 AI를 vulnerability discovery·triage·patching lifecycle에 사용하는 방식을 공개함. source는 `Jul 30, 2026`만 표시하므로 `00:00 KST`는 date-only ordering 값이며 발표 시각 주장이 아님.",
+          "items": [
+            "목적: 수백 개 security bug를 더 빠르게 찾고 수정하는 운영 방향",
+            "발견: Gemini harness가 13년 이상 남은 sandbox escape를 찾았다는 source 설명",
+            "경계: AI detection은 기존 fuzzing·external researcher를 대체하지 않는 범위"
+          ]
+        },
+        {
+          "heading": "agent harness 구성",
+          "body": "2026년 초 구축한 harness는 broad Chrome codebase를 대상으로 model efficiency와 false positive 개선을 목표로 했다고 설명함. model capability가 아니라 context·review·repetition을 조합한 system 설계가 제시됨.",
+          "items": [
+            "context: prior CVE와 전체 git history를 knowledge base로 연결",
+            "threat model: `SECURITY.md`와 별 context의 critic agent 사용",
+            "repeat: model non-determinism과 모델 개선을 고려한 반복 execution"
+          ]
+        },
+        {
+          "heading": "권한·네트워크 경계",
+          "body": "source는 model이 source code at rest만 분석하고 general internet 없는 locked-down machine에서 동작한다고 명시함. network request는 interception과 application/destination allowlist로 제한하고, subagent의 local system 변경과 지정 source directory 밖 접근을 제한하는 구조.",
+          "items": [
+            "isolate: default unrestricted mode를 사용하지 않는다고 명시",
+            "control: application·destination 기반 strict allowlist",
+            "limit: subagent의 filesystem scope와 local-system modification 제한"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI finding volume은 security outcome이 아니라 input queue를 늘릴 수 있음. discovery agent와 patch authoring agent의 권한을 분리하고 human triage·test·release·update adoption의 measurable gate를 둬야 함.",
+          "items": [
+            "팀 액션: finding precision·duplicate·human triage latency·accepted-fix regression을 분리 측정",
+            "팀 액션: source snapshot·secret redaction·network egress·tool call을 audit artifact로 보존",
+            "팀 액션: patch proposal은 code review·test·rollback·disclosure approval 없이 자동 production 적용 금지"
+          ]
+        }
+      ],
+      "rank": 18
     },
     {
       "id": "news-248",
@@ -1617,7 +1758,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-242",
@@ -1698,7 +1839,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-246",
@@ -1765,7 +1906,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-241",
@@ -1846,7 +1987,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-240",
@@ -1918,7 +2059,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-237",
@@ -1990,7 +2131,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-238",
@@ -2066,7 +2207,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-239",
@@ -2133,7 +2274,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-247",
@@ -2208,7 +2349,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-235",
@@ -2288,7 +2429,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-236",
@@ -2364,7 +2505,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-234",
@@ -2450,7 +2591,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-231",
@@ -2517,7 +2658,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-232",
@@ -2589,7 +2730,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-233",
@@ -2669,7 +2810,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-230",
@@ -2741,7 +2882,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-229",
@@ -2813,7 +2954,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-226",
@@ -2904,7 +3045,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-228",
@@ -2992,7 +3133,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-227",
@@ -3073,7 +3214,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-224",
@@ -3152,7 +3293,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-225",
@@ -3240,7 +3381,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-223",
@@ -3320,7 +3461,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-222",
@@ -3400,7 +3541,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-221",
@@ -3484,7 +3625,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-220",
@@ -3561,7 +3702,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-216",
@@ -3628,7 +3769,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-217",
@@ -3695,7 +3836,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-214",
@@ -3775,7 +3916,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-215",
@@ -3848,7 +3989,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-218",
@@ -3915,7 +4056,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-212",
@@ -4007,166 +4148,6 @@
           "items": [
             "발표 포인트: **host `/` read-write mount**가 kernel privilege escalation을 Mac 사용자 파일 접근으로 전이하는 구조",
             "팀 액션: local agent 실행은 secret 없는 격리 계정·최소 mount·endpoint telemetry를 갖춘 canary에서만 검증"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-209",
-      "title_ko": "Check Point SmartConsole CVE-2026-16232 활성 악용: 외부 노출 Management Server의 인증 우회·정책 변조 대응",
-      "title_original": "Check Point Patches Exploited SmartConsole Flaw Allowing Full Admin Access",
-      "summary": "핵심: Check Point가 SmartConsole login 인증 우회 `CVE-2026-16232`의 제한적 표적 공격을 확인하고 7월 22일 Jumbo hotfix를 배포. 조건: Management Server가 인터넷에 직접 노출되고 Trusted Clients IP 제한이 없을 때 원격 비인증 공격자가 login token으로 전체 관리자 권한을 얻어 security policy·configuration을 변경 가능한 범위. 대응: 노출 경로 차단·Trusted Clients allowlist·hotfix와 IoC hunt를 하나의 incident change로 수행 필요.",
-      "detail": "Check Point SmartConsole login 인증 우회 CVE-2026-16232는 CVSS 9.3이며, 원격 비인증 공격자가 application login token을 얻어 full administrative privileges로 인증할 수 있는 결함이다. Check Point는 소수 고객을 대상으로 한 표적 공격을 인지해 통지했다고 밝혔지만 공격 방식·발견 시점은 공개하지 않았다. 악용에는 인터넷에서 Management Server IP에 접근 가능하고 Trusted Clients 제한이 없는 특정 구성이 필요하다. 7월 22일 Jumbo hotfix 적용, Management access Firewall 보호, Trusted Clients를 신뢰 IP/subnet으로 제한하고 제시된 IoC를 로그에서 확인해야 한다. 같은 업데이트에는 MDSM 관리 명령 실행으로 이어질 수 있는 CVE-2026-62144와 Gaia Portal의 root 권한 상승 CVE-2026-62145도 포함된다.",
-      "why_it_matters": "Security Management와 MDSM은 gateway policy·configuration을 제어하는 control plane이다. 해당 경로가 인터넷에 노출된 조직은 단순 client vulnerability가 아니라 firewall 정책 변경과 관리 plane 장악 가능성을 incident 우선순위로 다뤄야 한다. 공개 자료는 소수 표적 공격을 말할 뿐 모든 환경의 침해를 증명하지 않으므로, 노출 조건과 로그 증거를 분리해 판단해야 한다.",
-      "engineering_implication": "네트워크·보안 팀은 Management Server public exposure, Trusted Clients 설정, Security Management/MDSM version, hotfix 적용 상태를 즉시 inventory하고 allowlist·Firewall 보호를 먼저 적용 필요. hotfix 전후 login token issuance, SmartConsole authentication, policy install, administrator session, 제시 IoC 접속을 보존·hunt하며, 변경 후 HA·관리 client 연결·policy deployment rollback을 검증 필요.",
-      "korea_implication": "국내 Check Point 관리망 운영 조직은 본사·원격운영·MSSP 경로에서 Management Server가 internet-facing NAT·VPN 우회 경로로 노출되지 않는지 확인하고, GUI client subnet allowlist와 관리 plane 분리 정책을 갱신 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Check Point",
-        "SmartConsole",
-        "CVE-2026-16232",
-        "Authentication Bypass",
-        "Network Security",
-        "KEV"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-23 15:34",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/07/check-point-patches-exploited.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiTBN3LZDMeKkPoMsoNtsGp_s0KYwVrmhhKHQsQtqgtAN1WAKeS7L-aN1hiehoBwnPi6f1gziIEecy5GlPdAVlWKPlzVprrqHLTLE3tcMZu4NK8QDoRxxS22HEFxfIpyrXnqr8O9b9akb1VVr9dmmmdwzHmhTFTVX4Cpv6WkFwSpz62tr6XKEDvKp5m0aUu/s1700-e365/checkpoint.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Check Point security advisory: CVE-2026-16232 active exploitation",
-          "url": "https://blog.checkpoint.com/security/security-advisory-action-required-active-exploitation-of-check-point-smartconsole-authentication-bypass-cve-2026-16232/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Check Point가 Security Management와 Multi-Domain Management 제품에 영향을 주는 보안 업데이트를 배포했고, SmartConsole login 인증 우회 `CVE-2026-16232`가 제한된 표적 공격에 사용된 사실을 인지했다고 밝힘. The Hacker News RSS `pubDate` 2026-07-23 12:04:36 +05:30을 2026-07-23 15:34 KST로 변환함.",
-          "items": [
-            "식별: **CVE-2026-16232**, CVSS 9.3의 SmartConsole login authentication bypass",
-            "영향: 비인증 원격 공격자가 application login token을 얻어 full administrative privileges로 인증 가능한 조건",
-            "관측: Check Point가 소수 고객 targeting을 인지·통지했으나 공격 방식과 발견 시점은 비공개 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "원격 악용에는 Management Server IP의 인터넷 접근성과 Trusted Clients GUI client 제한 부재라는 특정 configuration이 필요함. 성공 시 security policy와 configuration 변경이 가능한 설명이며, 일반 endpoint가 아닌 관리 control plane의 권한 경계 문제임.",
-          "items": [
-            "조건: Management Server가 인터넷에 직접 노출되고 Trusted Clients IP restriction이 없는 구성",
-            "수정: Check Point가 **7월 22일 Jumbo hotfix** 적용을 권고",
-            "동시 수정: CVE-2026-62144는 특정 노출 조건에서 MDSM administrative command 실행 가능 범위",
-            "동시 수정: CVE-2026-62145는 read-only Gaia Portal 사용자의 root command 실행 가능 범위"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "Security Management와 MDSM은 gateway policy와 security configuration을 관리하는 control plane임. 인증 우회가 실제 노출 configuration과 결합하면 traffic policy·관리 설정의 무단 변경으로 이어질 수 있으므로, patch backlog가 아닌 exposure-driven incident로 처리해야 함.",
-          "items": [
-            "경계: 공개 자료는 소수 고객 targeting을 언급할 뿐 모든 Check Point 환경의 compromise를 증명하지 않은 범위",
-            "위험 판단: version만이 아니라 public NAT·reverse route·Firewall protection·Trusted Clients 설정을 함께 확인",
-            "우선순위: internet-facing Management Server는 일반 remote-management asset과 분리해 emergency change 대상으로 처리"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "hotfix 적용 뒤에도 기존 administrator session, login token issuance, policy install과 network connection evidence를 검토해야 함. 관리 plane 노출을 private network 또는 identity-aware access로 축소하고, trusted subnet allowlist·Firewall·관리 client 경로를 change evidence로 보존해야 함.",
-          "items": [
-            "팀 액션: Security Management/MDSM version·Jumbo hotfix·HA peer·Management Server public exposure inventory",
-            "팀 액션: Trusted Clients를 신뢰 IP/subnet으로 제한하고 Management access Firewall 보호 확인",
-            "팀 액션: vendor 제시 IoC와 SmartConsole authentication·policy install·administrator session을 SIEM에서 hunt",
-            "팀 액션: patch 후 management client 연결·policy deployment·HA failover·rollback 절차 검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-210",
-      "title_ko": "업스테이지 Solar Open 2 공개: 250B-A15B 하이브리드 MoE·1M context 오픈 웨이트 모델의 실제 배포 용량 점검",
-      "title_original": "Solar Open 2",
-      "summary": "핵심: 업스테이지가 250B 전체·token당 15B 활성 파라미터의 Solar Open 2 오픈 웨이트 모델과 기술 자료를 공개. 구조: Hybrid Attention MoE, 1M context, 한국어·영어·일본어 지원이며 공식 model card는 최소 H200 4장·권장 8장을 명시. 운영: 2-GPU 구동 보도는 양자화 변형의 별도 주장으로, context 길이·concurrency·KV cache·정확도·GPU 메모리를 포함한 실제 serving SLO 검증 필요.",
-      "detail": "업스테이지 Solar Open 2는 250,287,794,944개 전체 파라미터와 token당 15B 활성 파라미터를 가진 Hybrid-Attention MoE 오픈 웨이트 LLM이다. 공식 Hugging Face model card는 48개 layer, 321 experts(320 routed+1 shared), top-8 routed+shared expert 활성화, 1M context와 영어·한국어·일본어를 명시한다. model card의 하드웨어 요구사항은 최소 H200 4장·권장 8장이므로, AI타임스가 인용한 특정 양자화 변형의 H200 2장 구동 주장을 base model의 일반 배포 요구사항으로 확대하면 안 된다. 장문 agent workload는 linear-attention layer가 KV cache를 줄이는 설계와 별개로 request length, concurrency, tool-call retry, reasoning trace, quantization 정확도를 production traffic에서 측정해야 한다.",
-      "why_it_matters": "국내에서 상업적·파생 모델 활용을 허용하는 공개 가중치 모델이 1M context와 agent workflow를 겨냥해 나왔다. 다만 전체 파라미터·활성 파라미터·양자화 artifact·serving engine별 VRAM 요구량은 서로 다른 수치이므로, 비용 비교를 단일 GPU 장수 또는 benchmark 순위로 끝내면 배포 판단을 왜곡할 수 있다.",
-      "engineering_implication": "ML 플랫폼 팀은 base model과 INT4·NVFP4·pruned artifact를 분리 inventory하고, H200 4/8장 공식 요구사항을 capacity baseline으로 삼아야 한다. vLLM·SGLang의 version, max context, request concurrency, KV cache, tensor parallelism, tool-call success, output quality와 GPU memory/OOM·p95 latency를 같은 canary workload에서 측정한 뒤 rollout 필요.",
-      "korea_implication": "국내 공공·금융·법률 조직은 한국어 benchmark와 온프레미스 배포 가능성만으로 도입을 확정하지 말고 Solar License 범위, model artifact provenance, 취약점 patch cadence, 데이터 격리와 감사 로그를 조달·운영 조건으로 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Open Source",
-        "LLM",
-        "MoE",
-        "Agent",
-        "Inference",
-        "Korea",
-        "Upstage"
-      ],
-      "region": "Korea",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-23 14:08",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213090",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/213090_216484_2446.gif",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "Upstage Solar Open 2 model card (official)",
-          "url": "https://huggingface.co/upstage/Solar-Open2-250B"
-        },
-        {
-          "title": "Solar Open 2 Technical Report",
-          "url": "https://huggingface.co/upstage/Solar-Open2-250B/blob/main/Solar_Open_2_Tech_Report.pdf"
-        },
-        {
-          "title": "Upstage Solar Open 2 blog",
-          "url": "https://www.upstage.ai/blog/en/solar-open-2"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "업스테이지가 7월 23일 Solar Open 2의 가중치와 기술 자료를 공개함. AI타임스의 입력 시각은 2026-07-23 14:08 KST이며, 공식 Hugging Face model card에서 `upstage/Solar-Open2-250B` model name과 open-weight 배포를 확인함.",
-          "items": [
-            "식별: **Solar Open 2 (250B-A15B)** 오픈 웨이트 text-generation 모델",
-            "배포: Hugging Face model card·기술 보고서·Upstage blog 연결 확인",
-            "범위: 영어·한국어·일본어 지원과 agentic use case를 명시"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "공식 model card는 전체 250,287,794,944개 파라미터, token당 15B 활성 파라미터, 48 layer의 Hybrid-Attention MoE 구조를 제시함. softmax attention과 linear attention을 결합하며, 321개 expert 중 routed top-8과 shared expert가 활성화되는 구성임.",
-          "items": [
-            "구조: **321 experts** 중 320 routed·1 shared, token당 top-8 routed+shared 활성화",
-            "context: 1M token과 NoPE position encoding을 명시",
-            "학습: 약 12T pre-training token, NVIDIA B200 기반 2M GPU hour를 model card에 기재",
-            "artifact: `INT4`, `NVFP4`, `INT4-GlobalPruned` 양자화 변형을 별도 제공"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "전체 파라미터와 활성 파라미터의 차이는 MoE 추론 비용 산정에 필요하지만, GPU 장수와 production capacity를 직접 결정하지 않음. 공식 model card의 hardware requirements는 최소 H200 4장·권장 8장이며, AI타임스가 인용한 H200 2장 주장은 특정 양자화 모델의 배포 조건으로 분리해야 함.",
-          "items": [
-            "용량: 공식 baseline은 **최소 H200 4장·권장 8장**으로 명시",
-            "경계: 2-GPU 수치는 model card의 base-model requirement가 아닌 보도상 양자화 변형 주장",
-            "성능: agent·coding benchmark와 한국어 benchmark 수치는 모델 공급자·보도 매체의 비교 범위로 관리",
-            "운영: 1M context 지원이 모든 request의 1M serving throughput·latency를 보증하지 않는 조건"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "self-hosted agent endpoint는 model weight 다운로드와 server 기동만으로 운영 준비가 끝나지 않음. linear-attention 설계가 KV cache를 줄이는 방향을 제시하지만, 긴 reasoning trace·tool retry·concurrency는 GPU memory, queueing, tail latency와 품질 변수를 함께 만든다는 점을 canary에서 확인해야 함.",
-          "items": [
-            "팀 액션: base·quantized artifact, license, checksum·provenance를 model registry에서 분리 관리",
-            "팀 액션: vLLM·SGLang engine version, tensor parallelism, max context, concurrency별 VRAM·OOM·p95 latency 측정",
-            "팀 액션: Korean tool-call·문서 retrieval·장문 input에서 task success·hallucination·retry 비용을 workload SLO로 비교",
-            "팀 액션: 공개 가중치 도입 전 data egress, prompt log, tool permission, model patch·rollback 절차를 승인 조건으로 명시"
           ]
         }
       ],
