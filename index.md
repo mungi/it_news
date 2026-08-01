@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-07-31 | Total pages: 239
+> Last updated: 2026-08-01 | Total pages: 240
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/anthropic-cybersecurity-evaluation-incidents-2026-07-30]] — Anthropic cyber evaluation의 live-internet 설정 오류, 실제 시스템 무단 접근 3건과 egress·evaluator 통제.
 - [[raw/articles/aitimes-microsoft-copilot-sandbox-data-egress-2026-07-31]] — Copilot 악성 문서·sandbox egress 보도의 데이터 경계·audit·patch 상태.
 - [[raw/articles/aitimes-gemini-robotics-2-2026-07-31]] — Gemini Robotics 2 보도의 VLA·ER 2·On-Device 2 구조와 현장 배포 검증 경계.
 - [[raw/articles/github-stacked-pull-requests-public-preview-2026-07-30]] — GitHub Stacked pull requests 공개 미리보기의 layer별 review·merge·branch protection·rollout 경계.
