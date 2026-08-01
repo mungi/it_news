@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-02 03:19",
+  "last_updated_kst": "2026-08-02 07:27",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare MoQ provisioning API beta: application별 isolated relay와 publisher/subscriber credential 분리를 global network control plane으로 제공. relay 생성보다 track namespace·credential rotation·revocation·reconnect SLO를 release gate로 관리 필요.",
     "Chrome AI 보안 자동화: Gemini harness가 model interoperability·CVE/git-history context·SECURITY.md·critic·반복 scanning을 결합. source-at-rest·internet deny·destination allowlist·filesystem 제한을 갖춘 analysis sandbox가 전제.",
     "Amazon Aurora DSQL multi-Region cluster: Stockholm·Spain·Mumbai·Singapore에 active-active writable endpoint와 multi-Region strong consistency 구성을 추가. application retry·idempotency·cross-region latency·RTO/RPO·quota·cost는 workload별 chaos test와 SLO evidence로 승인 필요.",
     "Anthropic cyber evaluation incident: third-party CTF environment의 live-internet misconfiguration으로 실제 조직 3곳에 무단 접근한 3건을 공식 공개. evaluation도 egress deny·scope control·network/transcript telemetry·vendor assurance를 production 수준으로 운영 필요.",
-    "Adobe Campaign Classic `CVE-2026-48364`·`CVE-2026-48365`: THN의 Adobe bulletin 인용 보도는 무상호작용 code execution·SQL injection 파일 읽기와 ACC v7 `7.4.3 build 9398` 수정 경로를 제시. 설치 build·public ingress·service account·workflow를 묶어 긴급 patch·rollback·post-change telemetry를 확인 필요."
+    "Adform `trackpoint-async.js` 공급망 침해: 7월 27일 변조된 shared tracking script가 downstream 사이트에서 지갑 주소의 복사·붙여넣기·입력값을 바꿀 수 있었음. third-party browser script를 dependency inventory·SRI/CSP·asset hash·emergency disable·cache purge와 함께 운영 필요."
   ],
   "deep_dives": [
     {
@@ -183,6 +183,82 @@
   ],
   "items": [
     {
+      "id": "news-263",
+      "title_ko": "Adform 공유 스크립트 변조: downstream 사이트에서 암호화폐 주소를 바꾼 JavaScript 공급망 침해",
+      "title_original": "Hackers Poison Adform Script to Swap Crypto Wallet Addresses Across Customer Sites",
+      "summary": "핵심: Adform의 `trackpoint-async.js`가 7월 27일 변조돼 영향을 받은 사이트에서 Bitcoin·Ethereum·Tron 주소의 복사·붙여넣기와 입력값을 바꾼 공급망 침해가 확인. Adform은 악성 코드를 제거하고 고객 통지·당국 신고를 했으며 cache 삭제와 수신 주소 재확인을 권고. 운영: third-party browser script를 code dependency와 같이 inventory·SRI/CSP·version pin·emergency disable·client-side telemetry로 관리 필요.",
+      "detail": "The Hacker News와 Adform의 공개 incident notice를 확인했다. THN은 Adform의 `s2.adform.net`에서 제공된 `trackpoint-async.js`가 2026년 7월 27일 변조됐고, 열린 페이지에서 암호화폐 지갑 주소를 교체하는 browser-side code가 추가됐다고 보도했다. 변조 sample은 copy/cut/paste/input event와 input·textarea value setter를 가로채며, text node와 contenteditable 값도 바꿀 수 있다고 분석됐다. Adform은 악성 코드를 제거하고 영향 고객 통지와 당국 신고를 했으며 방문자 IP나 방문 사이트 정보가 전송됐다는 증거는 없지만 기술적으로 가능했을 수 있다고 밝혔다. 영향 사이트·방문자 수, 최초 침입 경로, 실제 자금 전용, IoC는 공개되지 않아 확정하지 않는다. 외부 script는 CDN 주소만의 문제가 아니라 browser execution 권한을 가진 공급망 component이므로, allowlist·SRI·CSP·asset hash·rapid disable과 cache purge를 incident runbook으로 묶어야 한다.",
+      "why_it_matters": "광고·analytics·tag manager JavaScript는 다수의 downstream 웹사이트에서 same-origin 또는 trusted third-party 권한으로 실행될 수 있음. 단일 hosted asset 변조가 고객 사이트별 침해 없이 browser-side transaction integrity·form input·page metadata에 영향을 줄 수 있는 공급망 범위임.",
+      "engineering_implication": "외부 script URL·owner·business purpose·SRI hash·CSP nonce/source·cache TTL·rollback 경로를 inventory하고, 변경 탐지와 emergency block을 CDN/WAF·tag manager·CSP report로 연결해야 함. 결제·지갑·계정 식별자 입력에는 server-side confirmation과 final-display integrity check를 두고, incident 때 asset hash·DNS/CDN log·CSP violation·client telemetry 보존 범위를 사전 정의 필요.",
+      "korea_implication": "국내 전자상거래·광고·분석 SDK 운영 조직은 제3자 script의 개인정보·결제·가상자산 주소 처리 경로를 분리하고, 공급사 통지·cache purge·고객 안내·사고 증적 보존 책임을 계약과 runbook에 명시 필요.",
+      "category": "Security",
+      "tags": [
+        "Adform",
+        "JavaScript",
+        "Supply Chain",
+        "Web Security",
+        "Third-party Script",
+        "Client-side Integrity"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-08-01 18:03",
+      "source_name": "The Hacker News / Adform",
+      "source_url": "https://thehackernews.com/2026/08/hackers-poison-adform-script-to-swap.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiX-el4ovGAmKfllRfhupL0SzdEoZKlouDb1_YmhCOl3owxN1ks0Do-WphuD77rka_3ukbqvPxSmFYMdBKBirYyw0DJpvSxVP5riGBR_vd7wKwnpgZfNm0RFEDLTzsvzzQB7qGtawMvpccd700dfNM2zZeFTy9cyHf4oFyHSASKRU3gmxbMgTJRtDFsSNs/s1700-e365/adform.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Adform Security Incident — 2026-07-31 company update",
+          "url": "https://site.adform.com/resources/newsroom/security-incident-company-update/"
+        },
+        {
+          "title": "The Hacker News RSS — exact publication timestamp (Sat, 01 Aug 2026 14:33:07 +0530 = 2026-08-01 18:03 KST)",
+          "url": "https://feeds.feedburner.com/TheHackersNews"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Adform이 제공한 `trackpoint-async.js`가 변조돼 downstream 고객 사이트에서 암호화폐 지갑 주소를 바꾸는 browser-side code가 실행됐다고 보도함. Adform 공식 notice는 **2026-07-27**을 affected date로 적고 악성 코드 제거·고객 통지·당국 신고를 공개함.",
+          "items": [
+            "경로: `s2.adform.net`의 shared tracking resource와 이를 불러온 웹사이트",
+            "시간: THN RSS `Sat, 01 Aug 2026 14:33:07 +0530` = **2026-08-01 18:03 KST**",
+            "경계: 영향 사이트·방문자 수·침입 경로·실제 자금 전용은 공개 확인 불가"
+          ]
+        },
+        {
+          "heading": "변조 코드의 동작",
+          "body": "THN이 검토한 capture는 정상 library 끝에 두 악성 block이 추가된 형태이며, Bitcoin·Ethereum·Tron 주소 pattern을 교체하도록 구성됨. clipboard 복사만이 아니라 form field와 editable content의 직접 입력도 영향 범위에 포함될 수 있음.",
+          "items": [
+            "동작: copy·cut·paste·input event와 input·textarea value setter interception",
+            "동작: text node·`contenteditable`·programmatic value write의 address rewrite",
+            "관측: page load 때 hostname·path를 포함한 외부 HTTP request를 구성한 sample"
+          ]
+        },
+        {
+          "heading": "영향 범위와 증거 경계",
+          "body": "Adform은 altered file이 browser cache에 남을 수 있어 cache 삭제와 전송 전 주소 재확인을 권고함. Adform notice는 visitor IP나 visited-site information 전송 증거가 없다고 했지만 technical analysis상 가능성을 배제하지 않았으며, request가 실제 operator에 도달했는지는 sample만으로 확정 불가.",
+          "items": [
+            "확인: 7월 27일 affected date, malicious code removal, client notification, authority report",
+            "미확정: exposure duration·downstream deployment count·visitor count·fund diversion·attacker identity",
+            "대응: affected asset URL·hash·cache state·page load telemetry를 조사 증적으로 보존"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "third-party script는 배포 편의 기능이 아니라 사용자 browser에서 실행되는 공급망 dependency. payment·wallet·form flow는 client-side DOM만으로 integrity를 보장할 수 없으므로 versioning과 server-side confirmation을 함께 설계해야 함.",
+          "items": [
+            "팀 액션: third-party script inventory에 owner·SRI·CSP source·cache TTL·emergency disable owner 기록",
+            "팀 액션: CI/CD와 runtime에서 external asset hash drift·DNS/CDN change·CSP violation alert 연결",
+            "팀 액션: payment/wallet address의 final confirmation·cache purge·customer notice·rollback을 incident rehearsal에 포함"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-260",
       "title_ko": "Adobe Campaign Classic `CVE-2026-48364`·`CVE-2026-48365` 패치: 무상호작용 RCE·임의 파일 읽기 보도",
       "title_original": "Adobe Campaign Classic CVSS 10.0 Flaw Could Run Code Without User Interaction",
@@ -257,7 +333,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-258",
@@ -339,7 +415,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-257",
@@ -422,7 +498,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-259",
@@ -508,7 +584,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-255",
@@ -584,7 +660,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-256",
@@ -673,7 +749,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-253",
@@ -741,7 +817,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-252",
@@ -827,7 +903,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-250",
@@ -921,7 +997,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-261",
@@ -992,7 +1068,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-251",
@@ -1094,7 +1170,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-213",
@@ -1174,7 +1250,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-249",
@@ -1273,7 +1349,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-243",
@@ -1363,7 +1439,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-244",
@@ -1457,7 +1533,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-245",
@@ -1528,7 +1604,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-254",
@@ -1616,7 +1692,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-262",
@@ -1687,7 +1763,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-248",
@@ -1758,7 +1834,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-242",
@@ -1839,7 +1915,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-246",
@@ -1906,7 +1982,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-241",
@@ -1987,7 +2063,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-240",
@@ -2059,7 +2135,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-237",
@@ -2131,7 +2207,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-238",
@@ -2207,7 +2283,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-239",
@@ -2274,7 +2350,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-247",
@@ -2349,7 +2425,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-235",
@@ -2429,7 +2505,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-236",
@@ -2505,7 +2581,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-234",
@@ -2591,7 +2667,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-231",
@@ -2658,7 +2734,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-232",
@@ -2730,7 +2806,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-233",
@@ -2810,7 +2886,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-230",
@@ -2882,7 +2958,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-229",
@@ -2954,7 +3030,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-226",
@@ -3045,7 +3121,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-228",
@@ -3133,7 +3209,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-227",
@@ -3214,7 +3290,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-224",
@@ -3293,7 +3369,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-225",
@@ -3381,7 +3457,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-223",
@@ -3461,7 +3537,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-222",
@@ -3541,7 +3617,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-221",
@@ -3625,7 +3701,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-220",
@@ -3702,7 +3778,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-216",
@@ -3769,7 +3845,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-217",
@@ -3836,7 +3912,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-214",
@@ -3916,7 +3992,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-215",
@@ -3989,7 +4065,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-218",
@@ -4053,101 +4129,6 @@
             "팀 액션: repository별 version update와 security update queue·owner·SLA 분리",
             "팀 액션: `dependabot.yml` cooldown·grouping·allowlist를 package risk tier와 release cadence에 맞게 검토",
             "팀 액션: provenance·SBOM·artifact scan·test gate·emergency override·rollback을 PR workflow에 연결"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-212",
-      "title_ko": "Claude Cowork 로컬 VM 탈출 보고: guest root 획득 뒤 Mac 전체 파일시스템 접근 경로",
-      "title_original": "Claude Cowork Flaw Could Let AI Agent Escape Its VM and Access Mac Files",
-      "summary": "핵심: Accomplish AI 연구를 인용한 보도에서 Claude Cowork의 local session이 Linux guest kernel `CVE-2026-46331`을 통해 guest-root를 얻으면 read-write로 mount된 Mac 전체 파일시스템에 도달할 수 있는 경로 공개. 대응: 최신 Cowork의 cloud execution 기본값과 별개로 local execution 사용 조직은 전체 host mount·unprivileged user namespace·module autoload·`coworkd` 권한을 즉시 점검 필요.",
-      "detail": "The Hacker News는 Accomplish AI의 SharedRoot 연구를 인용해 Claude Cowork local session의 VM 탈출 경로를 보도했다. 연구의 전제는 guest의 unprivileged user namespace에서 `act_pedit` 경로를 통해 guest-root를 얻는 것과, `coworkd`가 host `/`를 guest root에 read-write로 공유하는 설계다. Anthropic은 보고를 informative로 종료했고 최신 Cowork는 cloud execution을 기본값으로 둔다고 보도됐지만 local execution opt-in 사용자는 해당 설계 경계를 별도 확인해야 한다.",
-      "why_it_matters": "에이전트 sandbox는 guest user 격리만으로 성립하지 않음. guest-root 이후 도달 가능한 host mount와 daemon privilege가 남아 있으면 kernel privilege-escalation 하나가 SSH key·cloud credential·소스 파일 접근으로 전이될 수 있음.",
-      "engineering_implication": "macOS endpoint·AI 플랫폼 팀은 local Cowork 사용 여부와 version을 inventory로 대조하고, host `/` 전체 공유를 연결 폴더 최소 범위·read-only mount로 바꿀 수 있는지 확인 필요. unprivileged user namespace, `tc` module autoload, seccomp allowlist, `coworkd` mount namespace·`ProtectSystem=strict`를 함께 검토하고 local session은 secret 없는 격리 계정에서 canary 운영 필요.",
-      "korea_implication": "국내 개발 조직도 개인 Mac의 SSH key·cloud CLI credential·소스 저장소가 agent local session과 공존하는 경우, SaaS 승인 화면만으로 충분하다고 보지 말고 endpoint mount·kernel·daemon 정책을 agent 도입 검토에 포함할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Agent",
-        "Claude Cowork",
-        "Sandbox Escape",
-        "macOS",
-        "Linux Kernel"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 98,
-      "published_kst": "2026-07-23 22:27",
-      "source_name": "The Hacker News / Accomplish AI",
-      "source_url": "https://thehackernews.com/2026/07/claude-cowork-flaw-could-let-ai-agent.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhj5Vr8pje9uM-Ce6rzE-_hhU3HvR2NkKtYfaSrIXz3m0BbrC1ZNC9p4GW4GRQaAvFKPjE5kopXmdmcKcMb7_1dbOWvMO6_oe87HCj4TUXV1dWK99cz_OBcNHd81Ziat93g4wJcBdc3K1vq0IkwFL9DO9GlSrf_KxGi2hpg7VVsU9iTt7B2XByXL7nil86i/s1600/claude.gif",
-      "related_links": [
-        {
-          "title": "Accomplish AI SharedRoot research",
-          "url": "https://www.accomplish.ai/blog/claude-cowork-sharedroot"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Accomplish AI가 Claude Cowork local session의 VM sandbox escape를 SharedRoot로 명명해 공개했고, The Hacker News가 2026년 7월 23일 이를 보도함.",
-          "items": [
-            "발행: The Hacker News RSS `pubDate` 2026-07-23 18:57:59 +05:30을 **2026-07-23 22:27 KST**로 변환",
-            "영향 주장: 연구진은 patch 이전 local Cowork macOS 사용 약 50만 명을 영향 가능 범위로 제시",
-            "경계: 보도·연구는 local session 경로를 다루며 모든 Claude 제품·모든 macOS endpoint의 침해 사실을 뜻하지 않음"
-          ]
-        },
-        {
-          "heading": "공격 체인",
-          "body": "Cowork desktop app은 로그인 사용자 권한으로 동작하고 agent 작업은 Apple Virtualization framework의 Linux VM에서 처리됨. 연결 폴더 공유를 맡는 `coworkd`가 host filesystem을 VM으로 제공하는 구조가 후속 경계가 됨.",
-          "items": [
-            "전제: guest의 unprivileged user namespace에서 `CAP_NET_ADMIN`을 얻는 namespace 구성",
-            "권한 상승: Linux `tc/act_pedit` 경로의 `CVE-2026-46331`을 악용해 guest-root를 얻는 연구 chain",
-            "전이: guest-root가 `/mnt/.virtiofs-root`의 read-write host `/` mount에 도달하는 구조"
-          ]
-        },
-        {
-          "heading": "영향 범위와 증거 경계",
-          "body": "guest-root 이후 host 파일시스템이 read-write로 노출돼 있으면 로그인 사용자 권한으로 접근 가능한 SSH key·cloud credential·소스 파일이 위험 범위에 들어갈 수 있음. 이는 연구가 제시한 조건부 경로이며 조직별 노출은 local mode·kernel·mount 설정으로 확인 필요.",
-          "items": [
-            "포함 가능 자산: user home의 source tree·SSH key·cloud credential·application config",
-            "미확정: 공개 보도만으로 특정 기업의 악용·침해 계정·공격 campaign 확인 불가"
-          ]
-        },
-        {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "이 사례의 통제 실패 지점은 VM 내부 non-root user만이 아니라 guest-root 뒤의 host mount와 privileged daemon 경계임. agent sandbox는 kernel patch 주기보다 host resource visibility와 write capability를 먼저 축소해야 함.",
-          "items": [
-            "원칙: guest compromise를 가정해도 host `/`가 보이지 않도록 shared path를 최소화",
-            "관측: VM process·mount table·namespace·module load·`coworkd` child process를 endpoint timeline으로 연결"
-          ]
-        },
-        {
-          "heading": "보안·운영 관점",
-          "body": "Anthropic이 최신 Cowork에서 cloud execution을 기본값으로 둔다고 보도됐으나, local execution opt-in의 runtime policy와 endpoint kernel 상태는 별도 자산·변경 관리 대상임.",
-          "items": [
-            "정책: local mode 허용 사용자·업무·비밀정보·network egress의 승인 기준 분리",
-            "패치: guest kernel·host app version 확인은 필요하지만 host-wide write mount가 남으면 구조적 위험이 지속되는 조건"
-          ]
-        },
-        {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "local Cowork를 쓰는 Mac은 cloud default 전환 여부와 무관하게 실제 session mode·mount scope·kernel 설정을 확인해야 함.",
-          "items": [
-            "inventory: Cowork version·local session opt-in·연결 folder·developer credential 보유 endpoint 대조",
-            "hardening: host `/` 대신 연결 folder만 mount하고 read-only 가능성 검토",
-            "hardening: unprivileged user namespace·module autoload·과도한 seccomp allowlist 비활성화 또는 제한",
-            "hardening: `coworkd`의 별도 mount namespace와 `ProtectSystem=strict` 적용 가능성 검토"
-          ]
-        },
-        {
-          "heading": "강조 메세지",
-          "body": "VM sandbox는 guest user 격리만으로 평가할 수 없음. guest-root 이후 host filesystem과 daemon을 통해 어디까지 갈 수 있는지가 실제 blast radius를 결정함.",
-          "items": [
-            "발표 포인트: **host `/` read-write mount**가 kernel privilege escalation을 Mac 사용자 파일 접근으로 전이하는 구조",
-            "팀 액션: local agent 실행은 secret 없는 격리 계정·최소 mount·endpoint telemetry를 갖춘 canary에서만 검증"
           ]
         }
       ],

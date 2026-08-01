@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/adform-trackpoint-async-script-supply-chain-2026-08-01]] — Adform 공유 JavaScript 변조의 지갑 주소 rewrite·cache·SRI/CSP·third-party script 공급망 대응 경계.
 - [[raw/articles/cloudflare-moq-provisioning-api-2026-07-31]] — Cloudflare MoQ provisioning API beta의 격리 relay·publisher/subscriber credential·protocol/운영 검증 경계.
 - [[raw/articles/google-chrome-ai-security-automation-2026-07-30]] — Chrome Gemini agent harness의 source·network·filesystem 경계와 AI 보안 SDLC control.
 - [[raw/articles/anthropic-cybersecurity-evaluation-incidents-2026-07-30]] — Anthropic cyber evaluation의 live-internet 설정 오류, 실제 시스템 무단 접근 3건과 egress·evaluator 통제.
