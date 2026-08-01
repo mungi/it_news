@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-01 | Total pages: 240
+> Last updated: 2026-08-01 | Total pages: 241
 
 ## Entities
 
@@ -141,6 +141,8 @@
 - [[raw/articles/aws-eks-provisioned-control-plane-hpa-autoscaling-2026-07-29]] — EKS Provisioned Control Plane의 HPA 동시 평가 상향과 end-to-end scale-out 검증 경계.
 - [[raw/articles/cncf-cohdi-sandbox-kubernetes-dra-2026-07-29]] — CoHDI CNCF Sandbox 편입과 Kubernetes DRA·PCIe composable resource lifecycle 검증 경계.
 - [[raw/articles/github-npm-actions-supply-chain-controls-2026-07-29]] — npm·GitHub Actions 공급망 공격 완화를 위한 계정·fork checkout·cache·egress 통제 경계.
+
+- [[raw/articles/thinking-machines-inkling-small-open-weights-2026-08-01]] — Inkling-Small 276B/12B active MoE 공개 가중치·멀티모달·self-hosting 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
