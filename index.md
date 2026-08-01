@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-01 | Total pages: 241
+> Last updated: 2026-08-01 | Total pages: 242
 
 ## Entities
 
@@ -143,6 +143,7 @@
 - [[raw/articles/github-npm-actions-supply-chain-controls-2026-07-29]] — npm·GitHub Actions 공급망 공격 완화를 위한 계정·fork checkout·cache·egress 통제 경계.
 
 - [[raw/articles/thinking-machines-inkling-small-open-weights-2026-08-01]] — Inkling-Small 276B/12B active MoE 공개 가중치·멀티모달·self-hosting 검증 경계.
+- [[raw/articles/aws-aurora-dsql-multi-region-clusters-2026-07-31]] — Aurora DSQL multi-Region cluster 4개 리전 확대와 active-active·strong-consistency·DR 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
