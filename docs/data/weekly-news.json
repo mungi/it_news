@@ -2,14 +2,14 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-02 07:27",
+  "last_updated_kst": "2026-08-02 11:32",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare MoQ provisioning API beta: application별 isolated relay와 publisher/subscriber credential 분리를 global network control plane으로 제공. relay 생성보다 track namespace·credential rotation·revocation·reconnect SLO를 release gate로 관리 필요.",
     "Chrome AI 보안 자동화: Gemini harness가 model interoperability·CVE/git-history context·SECURITY.md·critic·반복 scanning을 결합. source-at-rest·internet deny·destination allowlist·filesystem 제한을 갖춘 analysis sandbox가 전제.",
     "Amazon Aurora DSQL multi-Region cluster: Stockholm·Spain·Mumbai·Singapore에 active-active writable endpoint와 multi-Region strong consistency 구성을 추가. application retry·idempotency·cross-region latency·RTO/RPO·quota·cost는 workload별 chaos test와 SLO evidence로 승인 필요.",
     "Anthropic cyber evaluation incident: third-party CTF environment의 live-internet misconfiguration으로 실제 조직 3곳에 무단 접근한 3건을 공식 공개. evaluation도 egress deny·scope control·network/transcript telemetry·vendor assurance를 production 수준으로 운영 필요.",
-    "Adform `trackpoint-async.js` 공급망 침해: 7월 27일 변조된 shared tracking script가 downstream 사이트에서 지갑 주소의 복사·붙여넣기·입력값을 바꿀 수 있었음. third-party browser script를 dependency inventory·SRI/CSP·asset hash·emergency disable·cache purge와 함께 운영 필요."
+    "GitHub Blackbird `casefold`: 1억8천만 repository·480TB code-search scale에서 ASCII case folding hot loop의 early exit를 없애 Apple M4 측정 **45 GiB/s 초과**를 제시. simple/full/Turkic fold contract·mixed Unicode·SIMD·allocation·p95/p99를 own corpus에서 비교한 뒤 search fast path 채택 필요."
   ],
   "deep_dives": [
     {
@@ -587,6 +587,93 @@
       "rank": 5
     },
     {
+      "id": "news-264",
+      "title_ko": "GitHub Blackbird code search의 `casefold` 공개: early-exit 제거로 ASCII case folding을 memory bandwidth까지 끌어올린 Rust 구현",
+      "title_original": "Don’t stop early: Case-folding source code at memory speed",
+      "summary": "핵심: GitHub가 Blackbird code search용 Rust `casefold` 구현을 공개. Apple M4·5.7KB ASCII buffer에서 non-ASCII byte를 만날 때 `break`하지 않고 branchless in-place fold와 high-bit accumulator를 결합해 **45 GiB/s 초과**를 제시. 적용: locale semantics·full fold 필요성·Unicode 비율·SIMD codegen·allocation·p95/p99를 own corpus에서 비교한 뒤 search/regex fast path에 반영 필요.",
+      "detail": "GitHub Engineering은 Blackbird가 1억8천만 개 이상 repository와 480TB 이상 source code를 index하며 n-gram 추출과 match 위치 확인에 case folding을 쓴다고 공개했다. 새 Rust `casefold` crate는 display용 lowercasing과 달리 locale-independent·context-free comparison용 simple Unicode fold를 구현한다. ASCII fast path는 `break` 없이 모든 byte를 sweep하면서 high bit를 누적하고 `A..=Z` 범위 판정과 bit-5 write를 branch 없이 수행한다. GitHub의 Apple M4 5.7KB pure-ASCII microbenchmark에서 naive loop 3.1 GiB/s 대비 45 GiB/s 초과를 제시했지만, 이 결과는 x86 server·mixed Unicode·end-to-end code-search latency를 보장하지 않는다. `ß → ss` 같은 full fold와 Turkic fold는 구현 범위 밖이므로 product의 equality semantics를 먼저 고정하고 workload benchmark로 채택 여부를 결정해야 한다.",
+      "why_it_matters": "code search·regex·identifier lookup·case-insensitive account/hostname 비교는 display lowercasing과 다른 Unicode equivalence contract를 필요로 함. hot loop의 branch와 early exit가 compiler vectorization·memory traffic·tail latency를 좌우할 수 있어, text normalization은 API correctness와 runtime performance를 함께 검증할 영역임.",
+      "engineering_implication": "`casefold` 또는 유사 fast path 도입 전 simple/full/Turkic fold 요구, locale·identifier policy, malformed UTF-8 처리, input ownership·allocation, compiler target과 SIMD assembly를 확정해야 함. ASCII/Unicode mix·buffer size·concurrency별 throughput, allocation, CPU, p95/p99, result-equivalence regression을 standard library·ripgrep-compatible behavior와 나란히 측정하고 artifact version·benchmark harness를 release evidence로 보존 필요.",
+      "korea_implication": "한국어 source code와 UI는 Hangul·ASCII·영문 identifier가 혼재하므로 ASCII microbenchmark만으로 검색 체감 성능을 결정할 수 없음. 국내 서비스의 계정명·도메인·검색 정규화는 Unicode equality policy와 개인정보·spoofing 검토를 먼저 승인하고, Korean corpus 포함 regression suite를 운영 필요.",
+      "category": "DevTools",
+      "tags": [
+        "GitHub",
+        "Blackbird",
+        "Code Search",
+        "Rust",
+        "Unicode",
+        "Case Folding",
+        "Performance",
+        "SIMD"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-08-01 01:00",
+      "source_name": "GitHub Engineering",
+      "source_url": "https://github.blog/engineering/architecture-optimization/dont-stop-early-case-folding-source-code-at-memory-speed/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-invertocat-logo.png?fit=1920%2C1080",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "GitHub casefold Rust crate repository",
+          "url": "https://github.com/github/casefold"
+        },
+        {
+          "title": "GitHub Blog RSS — publication timestamp (Fri, 31 Jul 2026 16:00:00 +0000 = 2026-08-01 01:00 KST)",
+          "url": "https://github.blog/feed/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub Engineering이 Blackbird code search의 case folding hot path를 설명하며 Rust `casefold` crate를 공개함. 원문 metadata `2026-07-31T16:00:00+00:00`은 **2026-08-01 01:00 KST**이며, Blackbird는 1억8천만 개 이상 repository·480TB 이상 source code 규모를 원문에서 제시함.",
+          "items": [
+            "대상: index n-gram 추출 전 byte 처리와 potential query result의 match 위치 확인",
+            "공개: comparison용 simple Unicode case folding을 구현한 Rust crate",
+            "경계: code-search service 전체의 latency·capacity·crate production API 안정성은 원문에서 미확인"
+          ]
+        },
+        {
+          "heading": "lowercasing과 case folding의 계약",
+          "body": "display용 lowercasing은 locale·문맥에 따라 달라질 수 있지만 case folding은 비교를 위한 locale-independent·context-free 관계임. 이 차이를 무시하면 `ß`, dotted `İ`, Greek final sigma 등에서 equality 결과가 의도와 달라질 수 있음.",
+          "items": [
+            "범위: Unicode `CaseFolding.txt`의 simple 1:1 C/S mapping 사용",
+            "제외: full fold `ß → ss`와 Turkic locale fold는 구현 범위 밖",
+            "검증: 검색·regex·identifier·account/hostname마다 필요한 equivalence semantics를 별도 정의"
+          ]
+        },
+        {
+          "heading": "ASCII fast path와 측정",
+          "body": "source code의 대부분이 ASCII라는 전제에서 non-ASCII를 만나 즉시 멈추는 `break`를 없애고, high-bit accumulator로 존재 여부만 기록하면서 branchless range test·write를 수행함. 원문은 Apple M4·5.7KB pure-ASCII buffer 조건의 microbenchmark를 제시함.",
+          "items": [
+            "naive break+branch loop: **3.1 GiB/s**, vector instruction 없음이라는 원문 측정",
+            "early exit 제거와 branchless test/write loop: **45 GiB/s 초과**, 16-byte NEON vectorization이라는 원문 측정",
+            "주의: branchless write는 scalar code에서 extra store 때문에 naive loop보다 느릴 수 있다는 원문 설명"
+          ]
+        },
+        {
+          "heading": "Unicode·메모리 처리 범위",
+          "body": "ASCII pass 뒤에는 `memchr`로 first non-ASCII byte를 찾아 tail을 처리하고, 변경이 없는 multibyte text는 기존 allocation을 유지하는 방식을 설명함. output growth 가능성이 있는 두 mapping 때문에 worst-case 1.5x buffer reservation을 사용함.",
+          "items": [
+            "table: Unicode 16.0 simple-fold mapping 1,484개를 1,776-byte table로 축소했다는 구현 설명",
+            "allocation: changed fold가 발생할 때까지 extra output buffer allocation을 지연하는 경로",
+            "검증: malformed input·mixed Unicode·growth mapping·allocation rate·memory pressure를 own corpus에서 회귀 테스트"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "fast text normalization은 compiler가 vectorize할 수 있는 loop shape와 equality semantics를 동시에 고정해야 함. GitHub의 수치는 설계 힌트이며, x86 server·Korean/mixed Unicode·실제 query distribution에서 같은 결과를 전제할 수 없음.",
+          "items": [
+            "팀 액션: simple/full/Turkic fold 요구와 security-spoofing policy를 API contract로 문서화",
+            "팀 액션: standard library·ripgrep-compatible baseline과 throughput·CPU·allocation·p95/p99·result equivalence 비교",
+            "팀 액션: compiler target·SIMD assembly·crate revision·benchmark harness·rollback 기준을 release evidence로 고정"
+          ]
+        }
+      ],
+      "rank": 6
+    },
+    {
       "id": "news-255",
       "title_ko": "Google Gemini Robotics 2 공개 보도: VLA 전신 제어·ER 2 planning·On-Device 2를 현장 safety case로 검증",
       "title_original": "Google unveils Gemini Robotics 2",
@@ -660,7 +747,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-256",
@@ -749,7 +836,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-253",
@@ -817,7 +904,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-252",
@@ -903,7 +990,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-250",
@@ -997,7 +1084,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-261",
@@ -1068,7 +1155,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-251",
@@ -1170,7 +1257,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-213",
@@ -1250,7 +1337,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-249",
@@ -1349,7 +1436,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-243",
@@ -1439,7 +1526,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-244",
@@ -1533,7 +1620,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-245",
@@ -1604,7 +1691,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-254",
@@ -1692,7 +1779,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-262",
@@ -1763,7 +1850,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-248",
@@ -1834,7 +1921,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-242",
@@ -1915,7 +2002,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-246",
@@ -1982,7 +2069,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-241",
@@ -2063,7 +2150,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-240",
@@ -2135,7 +2222,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-237",
@@ -2207,7 +2294,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-238",
@@ -2283,7 +2370,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-239",
@@ -2350,7 +2437,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-247",
@@ -2425,7 +2512,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-235",
@@ -2505,7 +2592,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-236",
@@ -2581,7 +2668,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-234",
@@ -2667,7 +2754,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-231",
@@ -2734,7 +2821,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-232",
@@ -2806,7 +2893,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-233",
@@ -2886,7 +2973,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-230",
@@ -2958,7 +3045,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-229",
@@ -3030,7 +3117,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-226",
@@ -3121,7 +3208,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-228",
@@ -3209,7 +3296,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-227",
@@ -3290,7 +3377,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-224",
@@ -3369,7 +3456,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-225",
@@ -3457,7 +3544,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-223",
@@ -3537,7 +3624,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-222",
@@ -3617,7 +3704,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-221",
@@ -3701,7 +3788,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-220",
@@ -3778,7 +3865,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-216",
@@ -3845,7 +3932,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-217",
@@ -3912,7 +3999,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-214",
@@ -3992,7 +4079,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-215",
@@ -4062,73 +4149,6 @@
             "팀 액션: agent ID별 IAM least privilege·CMK key policy·retention·redaction을 template화",
             "팀 액션: trace ID로 tool call·error·approval·egress log를 연결하는 runbook 검증",
             "팀 액션: CloudWatch ingestion·storage·subscription·SIEM export 비용을 agent workload SLO와 함께 측정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-218",
-      "title_ko": "GitHub Dependabot, 일반 버전 업데이트 PR에 기본 3일 cooldown 적용",
-      "title_original": "The case for a cooldown: Why Dependabot now waits before issuing version updates",
-      "summary": "핵심: GitHub가 Dependabot의 일반 version update PR에 새 release 뒤 최소 3일을 기다리는 cooldown을 기본 적용. 범위: known vulnerability 대응용 security update는 지연 없이 계속 PR 생성. 근거: GitHub는 2026년 5월까지 1년간 npm malware advisory 6,500건 이상을 공개했으며, 프로젝트별 `dependabot.yml`의 `cooldown`으로 기간 조정 가능.",
-      "detail": "GitHub는 Dependabot가 일반 version update pull request를 만들기 전 새 release 후 최소 3일을 기다리는 cooldown을 기본 적용한다고 발표했다. 이는 새 버전에 악성 코드가 포함됐을 때 maintainers·researchers·automated scanners가 탐지·삭제할 시간을 확보하려는 조치다. 알려진 취약점을 수정하는 security update는 지연 없이 PR을 계속 생성하며, version update에만 적용된다. GitHub는 2026년 5월까지의 1년 동안 GitHub Advisory Database가 npm malware advisory 6,500건 이상을 발행했다고 설명하고, 프로젝트는 `dependabot.yml`의 `cooldown` 설정으로 기간을 조정할 수 있다고 밝혔다.",
-      "why_it_matters": "자동 dependency update는 신규 release를 수분 내 build pipeline으로 끌어올 수 있어 short-lived malicious publish를 흡수할 위험이 있음. 3일은 공급망 검토 창을 늘리지만 emergency compatibility fix·runtime breakage·release freshness 요구와 trade-off가 있으므로 모든 ecosystem·repository에 동일한 기간이 적합하다고 볼 수 없음.",
-      "engineering_implication": "개발 보안 팀은 version update와 security update queue를 분리해 SLA를 정하고, `dependabot.yml` cooldown·allowlist·grouping·CI provenance·artifact scanning을 repository risk tier에 맞춰 검토 필요. cooldown을 늘리거나 줄일 때 package manager, release cadence, CI test duration, production exposure, exception approval과 rollback owner를 함께 문서화 필요.",
-      "korea_implication": "국내 오픈소스 의존도가 높은 서비스도 신규 package 자동 반영 정책을 build speed만으로 평가하지 말고, npm·PyPI·Maven 등 ecosystem별 malicious publish 관측·CI gate·긴급 patch SLA를 함께 설정할 필요.",
-      "category": "DevTools",
-      "tags": [
-        "DevTools",
-        "GitHub",
-        "Dependabot",
-        "Supply Chain Security",
-        "npm",
-        "CI/CD",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-07-24 01:00",
-      "source_name": "GitHub Blog",
-      "source_url": "https://github.blog/security/supply-chain-security/the-case-for-a-cooldown-why-dependabot-now-waits-before-issuing-version-updates/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-security-logo-github-blocks.png?fit=1920%2C1080",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitHub가 Dependabot 일반 version update PR의 기본 cooldown을 새 release 뒤 최소 3일로 변경함. 소스 `article:published_time` 2026-07-23T16:00:00+00:00을 2026-07-24 01:00 KST로 변환함.",
-          "items": [
-            "대상: 알려진 취약점 여부와 무관하게 최신 버전을 따라가는 version update",
-            "기본값: 새 release 후 최소 **3일** 대기 뒤 PR 생성",
-            "제외: known vulnerability 대응 security update는 지연 없이 PR 생성 유지"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "GitHub는 신규 release가 public registry에 올라온 뒤 automated updater가 수분 내 PR을 만들 수 있으며, 악성 publish가 탐지되기 전 pipeline으로 들어갈 수 있다고 설명함.",
-          "items": [
-            "사례: 2025년 npm maintainer credential phishing 뒤 `chalk`·`debug` 등 변조 버전이 약 2시간 공개된 사례",
-            "통계: 2026년 5월까지 1년간 GitHub Advisory Database의 npm malware advisory 6,500건 이상",
-            "설정: repository는 `dependabot.yml`의 `cooldown` parameter로 기간 조정 가능"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "cooldown은 자동 업데이트의 최신성보다 short-lived malicious release를 피할 검토 시간을 우선하는 policy임. GitHub가 제시한 npm advisory 수치와 사건 사례는 해당 source의 집계·사례이며, 특정 repository의 감염 확률 또는 3일의 보장 효과를 뜻하지 않음.",
-          "items": [
-            "구분: version update와 security update를 같은 approval·SLA로 처리하지 않는 필요",
-            "trade-off: compatibility fix·feature freshness와 supply-chain observation window의 상충",
-            "경계: cooldown만으로 compromised maintainer·typosquat·lockfile bypass·CI secret exposure를 제거하지 못하는 범위"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "dependency automation은 PR 생성 시점만 바꾸는 것이 아니라 release policy·CI gate·exception path를 함께 바꾸는 작업임.",
-          "items": [
-            "팀 액션: repository별 version update와 security update queue·owner·SLA 분리",
-            "팀 액션: `dependabot.yml` cooldown·grouping·allowlist를 package risk tier와 release cadence에 맞게 검토",
-            "팀 액션: provenance·SBOM·artifact scan·test gate·emergency override·rollback을 PR workflow에 연결"
           ]
         }
       ],
