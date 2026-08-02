@@ -2,11 +2,11 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-02 23:48",
+  "last_updated_kst": "2026-08-03 03:54",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Cloudflare MoQ provisioning API beta: application별 isolated relay와 publisher/subscriber credential 분리를 global network control plane으로 제공. relay 생성보다 track namespace·credential rotation·revocation·reconnect SLO를 release gate로 관리 필요.",
-    "Chrome AI 보안 자동화: Gemini harness가 model interoperability·CVE/git-history context·SECURITY.md·critic·반복 scanning을 결합. source-at-rest·internet deny·destination allowlist·filesystem 제한을 갖춘 analysis sandbox가 전제.",
+    "OpenAI Astra 수학 결과 보도: AI타임스는 장기 난제 10개 결과와 Lean 기반 기계 검증 가능한 증명서를 전함. OpenAI 원문 본문은 현재 Cloudflare challenge로 직접 재검증하지 못했으므로 문제 해결·약 2,000달러 token 비용은 기사 인용 범위로 관리하고, proof artifact·checker replay·human review·재실행 비용을 분리한 research-agent control이 필요.",
+    "Coldcard seed-generation 결함: 2021년 firmware integration error가 hardware RNG 대신 deterministic PRNG를 연결했을 수 있다는 보도와 emergency firmware 배포 확인. 기존 seed는 patch로 entropy가 복구되지 않으므로 영향 firmware에서 생성한 key는 새 seed 생성·자산 이전·multisig signer 다양성·on-chain reconciliation을 포함한 key rotation incident로 대응 필요.",
     "Amazon Aurora DSQL multi-Region cluster: Stockholm·Spain·Mumbai·Singapore에 active-active writable endpoint와 multi-Region strong consistency 구성을 추가. application retry·idempotency·cross-region latency·RTO/RPO·quota·cost는 workload별 chaos test와 SLO evidence로 승인 필요.",
     "Coldcard seed-generation 결함: 2021년 firmware integration error가 hardware RNG 대신 deterministic PRNG를 연결했고, 1,196개 주소·1,082.65 BTC 이동 분석과 연관 보도. emergency firmware는 기존 seed를 복구하지 않으므로 영향 firmware에서 생성한 key는 새 seed 생성·자산 이전·multisig signer 다양성 검증이 필요.",
     "EU AI Act 투명성 규정: 8월 2일부터 EU 내 AI 상호작용 고지와 AI 생성 이미지·오디오·비디오·마케팅 자료 라벨링이 적용됐다는 AI타임스 보도. 최대 global annual turnover 3% 또는 1,500만 유로 벌금 보도 범위에서 chatbot·content pipeline의 provenance·label UI·예외 처리·감사 증적을 release control로 관리 필요."
@@ -14,168 +14,197 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare MoQ provisioning API: 실시간 relay를 server fleet가 아닌 identity·namespace control plane으로 운영",
-      "summary": "핵심: Cloudflare의 MoQ provisioning API beta는 application별 isolated relay와 publisher/subscriber 분리 credential을 기존 global network에 생성하는 방식. real-time delivery의 병목이 VM·load balancer 배치에서 namespace·credential·track authorization·failure evidence로 이동하므로, beta 도입은 latency demo가 아니라 권한 lifecycle과 reconnect SLO 검증으로 승인 필요.",
-      "details": "Cloudflare의 2026-07-31 MoQ API 공지를 source-grounded로 재구성. QUIC publish/subscribe relay의 isolation과 access control을 identity, protocol, SRE, FinOps 관점에서 분해.",
+      "title": "OpenAI Astra 수학 결과 보도: 연구 agent를 proof artifact·formal checker·human review로 닫는 방법",
+      "summary": "핵심: AI타임스는 OpenAI가 차세대 주요 모델 제품군의 내부 버전 Astra로 수학·이론 컴퓨터 과학 장기 난제 10개에서 결과를 냈고 Lean 기반 기계 검증 가능한 증명서를 만들었다고 보도. OpenAI 원문은 현재 Cloudflare challenge로 본문 재검증하지 못했으므로 결과·비용은 기사 인용 범위로 유지. 연구 agent 도입은 answer demo가 아니라 formalization, checker replay, provenance, human review를 묶은 proof supply chain으로 승인 필요.",
+      "details": "AI타임스의 2026-08-02 보도와 기사에서 연결된 OpenAI 원문 URL을 기반으로, 수학 연구 agent의 검증·운영·비용·거버넌스 통제를 재구성.",
       "why_it_matters": "current source-grounded AI/Infra briefing",
       "sources": [
-        "https://blog.cloudflare.com/an-api-for-moq-provision-your-own-isolated-relays/"
+        "https://www.aitimes.com/news/articleView.html?idxno=213443",
+        "https://openai.com/index/ten-advances-in-mathematics/"
       ],
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-08-02 03:19",
+      "local_image": "assets/images/fallback-ai.svg",
+      "refreshed_kst": "2026-08-03 03:54",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "MoQ relay provisioning은 dedicated server를 만드는 API가 아니라 global network 안에서 application scope와 credential boundary를 만드는 control plane. **production readiness는 relay 생성 속도가 아니라 publisher/subscriber 권한, revocation, reconnect, audit trace가 닫혔는지로 판단**.",
+          "body": "AI타임스가 링크한 OpenAI 연구 결과는 모델의 수학 output을 논문·Lean artifact로 닫는 연구 workflow를 제시한 보도. **문제 10개 해결**과 약 2,000달러 token 비용은 재현된 제품 성능이나 독립 검증 완료가 아니라 기사 인용 범위로 관리 필요.",
           "items": [
-            "결정: real-time relay를 compute capacity 항목과 identity control 항목으로 함께 승인",
-            "팀 액션: tenant·track·principal·network path별 evidence owner 지정"
+            "결정: 연구 agent 평가는 answer 품질과 formal verification 통과를 별 지표로 승인",
+            "팀 액션: 모델 output·proof artifact·toolchain·human review를 하나의 provenance chain으로 보존"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 2026-07-31에 isolated relay와 publisher/subscriber 분리 credential을 만드는 API beta를 발표. API나 Dashboard로 생성하며 relay는 수 초 내 global network에서 사용 가능하다고 설명. draft-14·draft-16 MoQ Transport authentication support와 beta 기간 무료 사용을 명시.",
+          "body": "AI타임스는 2026-08-02 OpenAI가 8월 1일 공개한 수학·이론 컴퓨터 과학 10대 발전 자료를 인용해 차세대 주요 모델 제품군의 내부 버전 Astra를 처음 소개했다고 보도. 원문 URL은 직접 확인했지만 현재 Cloudflare challenge로 원문 본문을 재검증하지 못함.",
           "items": [
-            "MoQ: IETF에서 개발 중인 QUIC 기반 publish/subscribe protocol",
-            "relay: payload를 읽지 않고 named stream을 subscriber에 fan-out하는 역할",
-            "기존 endpoint: 인증이 없어 protocol testing에는 적합하나 production access control에는 부족"
+            "보도 범위: 고차원 sphere packing·code bound·non-sofic group·Connes rigidity·arithmetic circuit complexity 관련 결과",
+            "보도 범위: quantum parallel repetition·CVP·Ehrhart volume·Ramsey number·extremal graph theory 관련 결과",
+            "발행 근거: AI타임스 `article:published_time` 2026-08-02T09:07:45+09:00"
+          ]
+        },
+        {
+          "heading": "증명과 검증의 경계",
+          "body": "기사는 Astra가 논증을 생성하고 연구진이 논문으로 정리한 뒤 Lean으로 다시 작성해 기계 검증 가능한 증명서를 만들었다고 전함. Lean compile은 formalized statement·axiom·library version 안에서의 검증이며, 문제 정의·formalization fidelity·새 주장·학술 수용을 자동으로 보증하지 않음.",
+          "items": [
+            "구분: natural-language conjecture, formal statement, proof script, checker result, reviewer conclusion의 책임 분리",
+            "검증: proof assistant version·dependency lockfile·build log·artifact hash·reproduction command 보존",
+            "리스크: formalization omission 또는 unstated axiom이 있으면 checker pass만으로 원래 주장 성립을 확정할 수 없음"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "관리형 relay는 fleet placement와 load balancer 운영을 줄일 수 있으나 multi-tenant boundary를 자동으로 완성하지 않음. relay scope·track naming·publisher/subscriber credential이 data-plane access decision이 되므로, API key 수준의 단순 운영으로 끝내면 cross-tenant publish와 replay blast radius가 남음.",
+          "body": "연구 agent의 가치 단위는 긴 답변이 아니라 conjecture generation, counterexample search, proof repair, formalization, human review가 연결된 closed loop. context window와 token price가 내려가도 unsound intermediate result와 hidden tool state가 남으면 과학적 재현성은 낮아짐.",
           "items": [
-            "설계: tenant ID·track namespace·role·expiry를 immutable policy model로 표현",
-            "설계: publish permission과 subscribe permission을 별 principal·least privilege로 분리",
-            "검증: credential replay·namespace collision·role escalation을 adversarial test에 포함"
+            "설계: hypothesis·tool call·retrieval snapshot·intermediate proof·critic disposition을 graph 형태로 추적",
+            "측정: theorem당 verifier pass rate·human correction rate·counterexample yield·failed-run cost·time-to-reproduce",
+            "분리: model benchmark와 end-to-end research workflow outcome을 동일 점수로 합산하지 않기"
           ]
         },
         {
           "heading": "architecture·operations 관점",
-          "body": "Anycast ingress와 existing network가 routing을 처리해도 client reconnect, track continuity, ordering, congestion, regional route change는 application SLO에 남음. relay가 VM·container·process를 만들지 않는다는 설명은 persistence나 failure semantics를 대체하지 않음.",
+          "body": "formal tool을 쓰는 research agent는 code execution workload로 운영해야 함. proof checker와 symbolic solver는 version-sensitive dependency를 가지며, public theorem database·package registry·external compute가 결과 provenance와 supply-chain attack surface를 동시에 바꿈.",
           "items": [
-            "measure: publish-to-subscriber p50/p95/p99 latency·loss·reconnect·drop rate",
-            "test: relay credential revoke·network partition·publisher failover·subscriber surge",
-            "operate: protocol draft/version compatibility와 client SDK matrix 유지"
+            "isolate: read-only source snapshot·pinned package mirror·egress allowlist·ephemeral runner 적용",
+            "observe: prompt·retrieval corpus version·solver/checker exit code·resource usage·artifact digest 기록",
+            "recover: checker upgrade·library change·model version 교체 때 prior result 재검증 queue 운영"
           ]
         },
         {
-          "heading": "security·governance 관점",
-          "body": "MoQ relay가 payload를 해석하지 않는 구조는 content inspection responsibility가 사라진다는 뜻이 아님. encryption termination, metadata, track name, access log, abuse response의 ownership을 provider와 application 사이에서 문서화 필요.",
+          "heading": "비용·거버넌스 관점",
+          "body": "기사의 약 2,000달러 token 비용은 특정 API 기준의 model usage 수치일 뿐 researcher salary, verification compute, failed exploration, storage, peer review를 포함한 연구비가 아님. 비용 보고서는 모델 호출과 독립 검증 비용을 분리해야 FinOps 비교가 가능.",
           "items": [
-            "control: credential expiry·rotation·revocation 및 emergency kill switch",
-            "audit: relay create/delete·principal issue·publish/subscribe deny·admin change log",
-            "risk: beta 무료 제공을 data residency·support SLA·commercial availability 보증으로 해석하지 않기"
+            "cost: token·tool compute·GPU/CPU·queue·storage·human review를 workload tag로 분리",
+            "govern: unpublished result·research direction·proof draft의 access·export·retention policy 정의",
+            "risk: 저비용 claim을 domain-wide scientific discovery SLA 또는 production correctness 보증으로 전환하지 않기"
           ]
         },
         {
-          "heading": "FinOps·도입 로드맵 관점",
-          "body": "free beta는 traffic cost, post-beta price, quota, support model을 확정하지 않음. 인프라 절감 효과는 own relay fleet·egress·operations 비용을 workload baseline과 비교해야 산정 가능.",
+          "heading": "도입 로드맵",
+          "body": "조직 도입은 공개된 작은 theorem corpus에서 verifier replay부터 시작하는 방식이 적합. 고위험 설계·암호·금융 모델에는 answer 생성보다 counterexample·constraint violation 탐지와 independent reviewer gate를 먼저 적용 필요.",
           "items": [
-            "1단계: synthetic stream과 isolated tenant로 protocol·credential PoC",
-            "2단계: canary에서 latency·reconnect·revocation·abuse telemetry 수집",
-            "3단계: price/quota/SLA·incident support 확인 뒤 production traffic 확대"
+            "1단계: known proof corpus에서 clean-room replay와 artifact completeness baseline 확보",
+            "2단계: isolated canary에서 model·solver·Lean version change의 reproducibility regression 측정",
+            "3단계: human sign-off·independent checker·rollback 가능한 knowledge publication pipeline 연결"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "릴리스 산출물은 API success response가 아니라 access matrix와 failure trace. product·security·SRE가 같은 namespace와 identity model을 review해야 함.",
+          "body": "PoC 완료 기준은 수학 답변 demo가 아니라 동일 input과 pinned dependency에서 artifact를 재생성하고 reviewer가 provenance를 따라갈 수 있는 상태. model prompt와 proof file을 별도 관리하면 결과 해석이 끊김.",
           "items": [
-            "verify: publisher/subscriber role·track namespace·expiry·rotation·revocation",
-            "verify: client protocol versions·network fallback·telemetry retention·alert owner",
-            "verify: quota·billing·regional route·data handling·support escalation의 written evidence"
+            "verify: problem statement·formal spec·axiom set·proof script·checker output·review owner 연결",
+            "verify: egress·package provenance·secret isolation·artifact retention·re-run budget 설정",
+            "verify: benchmark score·formal pass·peer review·external reproduction의 label을 결과 화면에서 분리"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**실시간 전달의 운영 단위는 relay server가 아니라 권한 있는 stream namespace**. relay fleet를 없애도 identity·protocol compatibility·failure recovery를 증명하지 않으면 production risk는 남음.",
+          "body": "**AI 연구 agent의 신뢰 단위는 토큰 비용이 아니라 재현 가능한 proof supply chain**. 형식 검증 결과와 사람이 확인한 원래 주장 사이의 경계를 기록할 때만 연구 자동화가 engineering evidence로 사용 가능.",
           "items": [
-            "발표 메시지: MoQ beta는 latency feature가 아니라 multi-tenant realtime control-plane 변화",
-            "팀 액션: 첫 production gate를 unauthorized access 0건·revocation propagation·reconnect SLO로 정의"
+            "발표 메시지: Astra 보도는 model headline보다 proof 생성·formal checking·human review chain을 봐야 하는 사례",
+            "팀 액션: 연구 agent release gate를 verifier replay·artifact hash·independent review·cost breakdown으로 정의"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Chrome AI 보안 자동화: 취약점 탐지 agent를 source·network·patch 권한으로 분리하는 Secure SDLC",
-      "summary": "핵심: Google Chrome의 Gemini agent harness는 model interoperability, CVE/git-history context, SECURITY.md, critic agent, 반복 scanning을 결합하면서 general internet·filesystem·system modification을 제한. 조직의 AI 보안 자동화도 발견량을 목표로 삼지 말고 sandbox boundary, triage precision, fix regression, time-to-remediate로 운영해야 함.",
-      "details": "Google Chrome Security Team의 2026-07-30 기술 글을 기반으로 AI vulnerability discovery를 security architecture와 secure-delivery control로 재구성.",
+      "title": "Coldcard seed-generation 결함: hardware wallet patch가 아닌 key rotation incident로 대응",
+      "summary": "핵심: Coldcard의 2021년 firmware integration error가 deterministic PRNG를 seed generation에 연결했을 수 있다는 보도와 emergency firmware 배포는 이미 생성한 seed의 entropy를 복구하지 않음. 영향 가능 key는 firmware patch만으로 종료하지 말고 new seed, asset migration, multisig independence, on-chain reconciliation을 하나의 custody remediation으로 운영 필요.",
+      "details": "The Hacker News의 2026-08-02 보도와 Coinkite 공식 security-advisory 링크를 기반으로 seed provenance, custody migration, incident response, FinOps 실행 항목을 재구성.",
       "why_it_matters": "current source-grounded AI/Infra briefing",
       "sources": [
-        "https://blog.google/security/chrome-stronger-with-every-update/"
+        "https://thehackernews.com/2026/08/coldcard-hardware-wallet-flaw-linked-to.html",
+        "https://coldcard.com/"
       ],
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-02 03:19",
+      "refreshed_kst": "2026-08-03 03:54",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AI vulnerability discovery의 안전한 배포 단위는 모델 endpoint가 아니라 **read-only source context·default-deny network·limited filesystem·independent critic·human release gate**를 갖춘 harness. 발견 건수 증가를 patch quality나 risk reduction으로 혼동하지 않기.",
+          "body": "Coldcard seed-generation 결함 대응의 단위는 firmware patch가 아니라 **노출 가능 seed의 폐기·새 entropy 생성·자산 이전 증적**. 이미 생성된 secret은 업데이트로 entropy가 복구되지 않으므로 key lifecycle incident로 운영 필요.",
           "items": [
-            "결정: security agent를 production code-write 권한과 분리된 analysis workload로 분류",
-            "팀 액션: discovery·triage·patch proposal·merge·release의 authority chain 분리"
+            "결정: seed 생성 당시 firmware와 entropy ceremony를 exposure 판정의 기준으로 사용",
+            "팀 액션: custody migration을 key rotation·address ownership·transfer confirmation이 포함된 change record로 승인"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Chrome Security Team은 2026년 초 Gemini 기반 harness로 broader Chrome codebase를 탐지하고 higher efficiency·lower false positives를 목표로 했다고 공개. renderer compromise 뒤 local file read로 이어질 수 있는 13년 이상 잔존 sandbox escape를 찾았다고 설명.",
+          "body": "The Hacker News는 2026-08-02 Coldcard의 2021년 firmware integration error가 STM32 hardware RNG 대신 deterministic software PRNG를 seed generation에 연결했을 수 있다고 보도. Galaxy Research의 1,196개 주소·1,082.65 BTC·41분 sweep 분석과 Coinkite emergency firmware 배포도 함께 전함.",
           "items": [
-            "context: prior CVE와 Chrome 전체 git history를 knowledge base로 구성",
-            "modeling: open-weight와 proprietary model의 strengths를 함께 쓰는 interoperability",
-            "review: SECURITY.md를 읽는 별 context의 critic agent와 repeated runs 사용"
+            "기술 조건: device UID·timer state·prior RNG-call history를 알거나 제약할 때 offline candidate stream 재현 가능성이라는 보도",
+            "대응 범위: Coinkite가 영향 model·release track용 emergency firmware를 배포했다는 보도",
+            "증거 경계: address sweep이 결함으로 인한 theft, 피해 seed 일치, 공격자 신원을 독립 증명하지 않음"
+          ]
+        },
+        {
+          "heading": "취약성 메커니즘과 증거 경계",
+          "body": "기존 raw capture는 `MICROPY_HW_ENABLE_RNG` macro 존재만 확인한 조건 때문에 disabled configuration에서도 Yasmarang fallback이 binding된 것으로 Block 분석을 인용. fallback이 chip UID와 timer register로 초기화되고 fresh entropy를 수집하지 않았다는 설명 역시 해당 분석 범위임.",
+          "items": [
+            "조건: firmware branch·device model·UID exposure·boot timing·prior RNG call이 attack cost를 바꾸는 변수",
+            "금지: 하나의 reported failure를 모든 Coldcard·hardware wallet·BIP-39 seed의 동일 위험으로 일반화하지 않기",
+            "확인: seed 생성 시점의 firmware window가 현재 installed version보다 우선하는 inventory key"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "security agent의 model accuracy보다 context provenance와 execution boundary가 먼저 결정됨. CVE/git history는 reasoning context를 넓히지만 stale branch·secret·third-party dependency·generated artifact까지 unrestricted access를 주면 analysis plane이 data-exfiltration plane으로 바뀔 수 있음.",
+          "body": "entropy defect는 signing workload의 availability 문제가 아니라 trust anchor의 unpredictability를 훼손하는 failure. secure element·air gap·PIN·multisig는 서로 다른 control이지만, seed generation provenance가 약하면 downstream signing policy만으로 root secret의 searchability를 상쇄하지 못함.",
           "items": [
-            "principle: source snapshot·dependency metadata·secret redaction을 model input contract로 정의",
-            "principle: model finding과 exploit proof·patch merge를 독립 evidence track으로 관리",
-            "measure: precision·duplicate·human review latency·accepted-fix regression·remediation time"
+            "해석: device firmware와 build configuration은 cryptographic key ceremony의 일부로 취급",
+            "해석: key material exposure는 CVE patch KPI가 아니라 rotated balance·retired address·recovery evidence로 측정",
+            "운영 과제: hardware wallet, HSM, KMS의 entropy source·firmware provenance·key-created-at inventory 연결"
           ]
         },
         {
-          "heading": "architecture·operations 관점",
-          "body": "source는 model이 source code at rest만 분석하는 locked-down machine과 general internet 부재를 명시. network requests are intercepted, strict allowlist는 application과 destination 기준이며 subagent는 designated source directory 밖 file과 local system modification에 제한을 둠.",
+          "heading": "custody architecture 관점",
+          "body": "seed는 device asset이 아니라 root-of-trust material. firmware defect는 signing policy와 별개로 key generation provenance를 훼손하며, multisig도 quorum signer가 같은 codebase·entropy defect에 집중되면 독립 control이 되지 않음.",
           "items": [
-            "isolate: internet egress default deny와 tool-specific destination allowlist",
-            "isolate: filesystem scope와 OS mutation permission 최소화",
-            "observe: prompt·tool call·network deny·finding·review disposition을 correlation 가능한 telemetry로 보존"
+            "설계: signer별 vendor·firmware·entropy source·seed ceremony·backup location을 quorum inventory로 관리",
+            "설계: new seed generation과 old address decommission을 separate approval·dual control·timed transfer로 분리",
+            "검증: derivation path·passphrase dependency·watch-only address·recovery procedure를 migration 전에 재현"
           ]
         },
         {
-          "heading": "security·governance 관점",
-          "body": "AI scanner가 code의 trust boundary를 추론해도 repository ownership·disclosure embargo·vulnerability reward·customer communication까지 자동 결정할 수 없음. finding artifact는 least-access security record로 분류하고 retention·access·export·vendor usage를 명확히 필요.",
+          "heading": "security·incident response 관점",
+          "body": "영향 가능 seed의 공개/비공개 노출 여부와 무관하게 대응은 predictable secret hypothesis로 시작해야 함. firmware patch만 적용하고 old seed를 restore하면 vulnerable secret을 계속 쓰는 경로가 될 수 있으므로 remediation completion 기준을 asset migration으로 정의 필요.",
           "items": [
-            "control: agent identity·model version·prompt/tool policy·data snapshot hash 기록",
-            "control: third-party model/connector로 전달되는 code·log·secret scope 승인",
-            "risk: automated patch가 test passing을 security remediation complete로 오인하는 위험"
+            "contain: affected firmware/model/user cohort·balance·address activity를 제한된 incident record로 inventory",
+            "eradicate: patched firmware에서 new seed를 만들고 old funds와 receiving address를 단계적으로 이동",
+            "preserve: firmware version·device serial/UID handling policy·transaction ID·approval·customer notice를 감사 증적으로 보존"
           ]
         },
         {
-          "heading": "도입 로드맵",
-          "body": "첫 단계는 non-production read-only code snapshot과 known issue replay. high-impact path에서는 fuzzing·SAST·human researcher의 finding과 agent output을 비교하고 patch authoring은 별 gate로 늦게 도입하는 방식이 적합.",
+          "heading": "operations·FinOps 관점",
+          "body": "custody migration은 on-chain fee·confirmation delay·market exposure·customer support·withdrawal limit을 함께 가진 change. 낮은 fee만 최적화하면 queue가 길어지고, 일괄 전송만 최적화하면 blast radius가 커질 수 있어 tranche와 reconciliation SLO가 필요.",
           "items": [
-            "1단계: historical CVE replay로 precision·cost·time baseline 확보",
-            "2단계: isolated repository canary에서 network deny·secret scan·critic workflow 검증",
-            "3단계: patch proposal을 CI/test/reviewer/rollback evidence와 연결"
+            "measure: migrated balance ratio·unmigrated high-risk balance·confirmation latency·failed transfer·support backlog",
+            "plan: fee budget·daily transfer limit·multisig quorum availability·rollback 불가 transaction의 escalation owner 지정",
+            "reconcile: source address·destination address·expected amount·fee·confirmation·ledger posting을 independent checker로 대조"
+          ]
+        },
+        {
+          "heading": "도입·복구 로드맵",
+          "body": "1차 대응은 affected window 식별과 transfer freeze policy 수립. 이어 소액 canary로 new key generation·backup restore·signing·broadcast·reconciliation을 검증한 뒤 cohort별 migration을 실행하는 방식이 안전.",
+          "items": [
+            "1단계: firmware/model/seed-created-at/entropy method/signing topology inventory",
+            "2단계: new seed·backup recovery·watch-only monitoring·small transfer canary 수행",
+            "3단계: tranche migration·on-chain confirmation·customer communication·old key retirement closure"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "PoC 완료 기준은 agent demo가 아니라 denied egress, forbidden filesystem access, finding provenance, human disposition, release outcome을 재현 가능한 audit trail로 남기는 상태.",
+          "body": "security team, treasury/custody, SRE, compliance가 같은 migration ledger를 보지 않으면 patch state와 asset state가 어긋남. evidence가 없는 firmware update 완료 보고는 secret remediation 완료가 아님.",
           "items": [
-            "verify: source snapshot·secret handling·egress allowlist·filesystem scope·subagent tool policy",
-            "verify: SECURITY.md ownership·critic independence·finding dedupe·triage SLA",
-            "verify: patch test·code review·release rollback·disclosure escalation의 authority owner"
+            "verify: affected firmware window·seed generation method·dice entropy 여부·passphrase·multisig signer diversity",
+            "verify: emergency firmware authenticity·new seed ceremony·backup/restore·address ownership·transaction reconciliation",
+            "verify: alerting·customer notice·withdrawal control·incident retention·post-migration old address monitoring"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**AI security agent는 더 많은 경보를 만드는 도구가 아니라 더 엄격한 execution boundary가 필요한 공급망 component**. 발견과 수정의 권한을 분리하고 remediation outcome을 측정할 때만 SDLC risk reduction으로 연결.",
+          "body": "**암호 키의 취약점은 patch management가 아니라 key rotation incident**. 새 firmware를 설치하는 날이 아니라 취약 가능 seed의 잔고가 새 provenance로 옮겨진 날을 remediation 완료로 기록해야 함.",
           "items": [
-            "발표 메시지: Google 사례의 핵심은 Gemini model 단독이 아니라 locked-down harness와 layered review",
-            "팀 액션: agent rollout dashboard를 finding count 대신 precision·egress deny·accepted-fix regression·MTTR로 설계"
+            "발표 메시지: Coldcard 사례는 entropy source와 build configuration이 custody control plane임을 보여주는 사건",
+            "팀 액션: hardware-rooted key의 firmware·entropy·ceremony·quorum inventory를 분기별 복구 drill에 포함"
           ]
         }
       ]
@@ -318,6 +347,76 @@
       "rank": 2
     },
     {
+      "id": "news-268",
+      "title_ko": "OpenAI Astra 수학 결과 보도: 연구 agent의 성과를 Lean artifact·재현성·human review로 분리 검증",
+      "title_original": "OpenAI's next-generation model 'Astra' solves 10 major problems in mathematics and computer science",
+      "summary": "핵심: AI타임스는 OpenAI가 차세대 주요 모델 제품군의 내부 버전 Astra로 수학·이론 컴퓨터 과학 장기 난제 10개에서 결과를 냈고 Lean 기반 기계 검증 가능한 증명서를 만들었다고 보도. 원문 URL은 기사에서 확인했지만 현재 Cloudflare challenge로 본문을 직접 검증하지 못했으므로 문제 해결·약 2,000달러 token 비용은 기사 인용 범위임. 운영: research agent는 answer 품질과 formal checker pass, artifact provenance, human review, 재실행 비용을 분리해 승인 필요.",
+      "detail": "AI타임스는 OpenAI가 8월 1일 공개한 수학·이론 컴퓨터 과학 10대 발전 자료를 인용해 Astra가 고차원 기하학·양자 복잡도·격자 문제 등을 포함한 장기 난제 10개에서 결과를 냈다고 보도했다. 기사는 모델이 논증을 생성하고 연구진이 논문으로 정리한 뒤 Lean으로 다시 작성해 기계 검증 가능한 증명서를 생성했다고 전한다. 단, OpenAI 원문은 현재 Cloudflare challenge로 직접 본문 검증하지 못했으며, 개별 정리의 독립 동료검토·proof artifact 공개 범위·model version·비용 산식·재현성은 기사만으로 확정하지 않는다.",
+      "why_it_matters": "과학·암호·최적화 연구에 쓰는 agent는 긴 답변 생성보다 formalization과 checker replay로 결과를 재현할 수 있는지가 신뢰 경계임. 모델 결과와 formal proof, reviewer conclusion을 한 숫자로 합치면 research quality와 operational risk를 판단할 수 없음.",
+      "engineering_implication": "문제 정의·formal spec·axiom set·proof script·checker version·dependency lockfile·build log·reviewer sign-off를 같은 provenance chain으로 저장 필요. isolated runner에서 package mirror·egress allowlist·artifact hash를 관리하고, model 또는 Lean/library 변경 때 prior result 재검증 queue와 token/tool/human-review 비용 분리를 운영해야 함.",
+      "korea_implication": "국내 대학·연구소·기업 연구조직도 agent가 생성한 수학·보안·알고리즘 결과를 외부 발표 또는 제품 설계 근거로 사용할 때 formal checker 결과와 원래 주장 검토, artifact 재현, 연구 데이터·미공개 초안 접근권한을 별도 승인 필요.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "Astra",
+        "Mathematics",
+        "Formal Verification",
+        "Lean",
+        "Research Agent",
+        "Provenance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 92,
+      "published_kst": "2026-08-02 09:07",
+      "source_name": "AI타임스 / OpenAI 링크",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213443",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/213443_216915_1020.png",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "OpenAI — Ten advances in mathematics and theoretical computer science (linked by source; direct body blocked by Cloudflare challenge in this run)",
+          "url": "https://openai.com/index/ten-advances-in-mathematics/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스는 OpenAI가 **Astra**라는 차세대 주요 모델 제품군의 내부 버전으로 수학·이론 컴퓨터 과학 장기 난제 10개에서 결과를 냈다고 보도함. 페이지 `article:published_time` `2026-08-02T09:07:45+09:00`을 `2026-08-02 09:07 KST`로 사용함.",
+          "items": [
+            "보도: OpenAI가 8월 1일 수학·이론 컴퓨터 과학 10대 발전 자료를 공개했다는 기사 범위",
+            "보도: 모델 논증 뒤 연구진이 논문 형태로 정리하고 Lean 기반 기계 검증 가능한 증명서를 만들었다는 기사 범위"
+          ]
+        },
+        {
+          "heading": "기사에서 열거한 연구 범위",
+          "body": "기사는 고차원 sphere packing, binary·spherical code, non-sofic group, Connes rigidity, arithmetic circuit complexity와 양자·격자·조합론 결과를 열거함. 개별 문제의 원문 논문·정식 statement·proof artifact와 독립 검증은 현재 직접 확인하지 못함.",
+          "items": [
+            "범위: quantum parallel repetition·CVP·Ehrhart volume·Ramsey number·extremal graph theory 관련 결과라는 기사 설명",
+            "경계: 문제 해결의 독립 peer review, formal proof 공개 범위, model version·training·inference 조건은 기사만으로 확정 불가"
+          ]
+        },
+        {
+          "heading": "형식 검증의 해석",
+          "body": "Lean checker 통과는 formalized statement와 선택된 axiom·library·tool version 안에서의 proof verification을 뜻함. natural-language problem의 formalization fidelity와 scientific novelty는 별도 human·domain review 대상.",
+          "items": [
+            "분리: original conjecture·formal spec·proof script·checker result·reviewer conclusion의 provenance 필요",
+            "검증: dependency lockfile·checker version·build log·artifact hash·reproduction command 보존"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "research agent는 answer generation 기능이 아니라 proof artifact를 생산하는 code-execution workload로 운영할 항목. token 비용만으로 research economics를 판단하면 verification compute·failed run·human review가 빠짐.",
+          "items": [
+            "팀 액션: theorem당 verifier pass·human correction·counterexample yield·time-to-reproduce·end-to-end cost를 분리 측정",
+            "팀 액션: read-only corpus·pinned package mirror·egress allowlist·ephemeral runner와 결과 artifact retention 적용",
+            "팀 액션: model·Lean·library 변경 때 prior result replay와 reviewer re-approval을 release gate로 설정"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-265",
       "title_ko": "Coldcard 하드웨어 지갑 seed 생성 결함: 1,196개 Bitcoin 주소에서 41분간 1,082.65 BTC 이동과 연결된 약한 PRNG",
       "title_original": "Coldcard Hardware Wallet Flaw Linked to $70 Million Bitcoin Theft in 41 Minutes",
@@ -388,7 +487,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-263",
@@ -464,7 +563,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-260",
@@ -541,7 +640,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-258",
@@ -623,7 +722,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-257",
@@ -706,7 +805,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-259",
@@ -792,7 +891,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-264",
@@ -879,7 +978,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-255",
@@ -955,7 +1054,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-256",
@@ -1044,7 +1143,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-253",
@@ -1112,7 +1211,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-252",
@@ -1198,7 +1297,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-250",
@@ -1292,7 +1391,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-261",
@@ -1363,7 +1462,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-251",
@@ -1465,7 +1564,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-213",
@@ -1545,7 +1644,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-249",
@@ -1644,7 +1743,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-243",
@@ -1734,7 +1833,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-244",
@@ -1828,7 +1927,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-245",
@@ -1899,7 +1998,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-254",
@@ -1987,7 +2086,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-262",
@@ -2058,7 +2157,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-248",
@@ -2129,7 +2228,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-242",
@@ -2210,7 +2309,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-246",
@@ -2277,7 +2376,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-241",
@@ -2358,7 +2457,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-240",
@@ -2430,7 +2529,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-237",
@@ -2502,7 +2601,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-238",
@@ -2578,7 +2677,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-239",
@@ -2645,7 +2744,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-247",
@@ -2720,7 +2819,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-235",
@@ -2800,7 +2899,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-236",
@@ -2876,7 +2975,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-234",
@@ -2962,7 +3061,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-231",
@@ -3029,7 +3128,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-232",
@@ -3101,7 +3200,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-233",
@@ -3181,7 +3280,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-230",
@@ -3253,7 +3352,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-229",
@@ -3325,7 +3424,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-226",
@@ -3416,7 +3515,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-228",
@@ -3504,7 +3603,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-227",
@@ -3585,7 +3684,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-224",
@@ -3664,7 +3763,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-225",
@@ -3752,7 +3851,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-223",
@@ -3832,7 +3931,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-222",
@@ -3912,7 +4011,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-221",
@@ -3996,7 +4095,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-220",
@@ -4070,73 +4169,6 @@
             "팀 액션: 대표 prompt·image·voice workload로 canary를 구성하고 quality pass rate·p95 latency·rejection·retry·단가 비교",
             "팀 액션: preview 종료·quota 소진·model regression 시 이전 모델 또는 human handoff로 전환하는 fallback runbook 검증",
             "팀 액션: Azure·Microsoft 365 tenant별 region·retention·training use·content filter·audit log 조건을 계약·보안 담당과 확인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-216",
-      "title_ko": "Amazon ECS Service Connect, 동일 AZ 우선 라우팅으로 cross-AZ 전송비·지연 축소",
-      "title_original": "Amazon ECS Service Connect now supports Zone-Aware routing",
-      "summary": "핵심: AWS가 ECS Service Connect에 동일 Availability Zone endpoint를 우선 선택하는 zone-aware routing을 기본 적용. 변화: endpoint scale에 맞춰 traffic weight를 조정하고 local endpoint가 비정상·용량 임계치 미만이면 정상 AZ로 자동 재분배. 운영: 기존 service는 1회 redeploy가 필요하며, VPC Flow Logs의 AZ metadata로 cross-AZ 흐름·비용·failover를 검증 필요.",
-      "detail": "AWS는 Amazon ECS Service Connect가 요청 task와 같은 Availability Zone의 endpoint를 우선 선택하는 zone-aware routing을 제공한다고 발표했다. 신규·기존 service 모두 기본 활성화되며 infrastructure 또는 application code 변경은 필요 없지만, 기존 service는 새 routing behavior를 적용하기 위해 1회 redeploy가 필요하다. local endpoint가 unhealthy이거나 capacity threshold 아래로 내려가면 healthy AZ로 traffic을 재분배한다. ECS Service Connect 지원 모든 AWS commercial 및 AWS GovCloud (US) Region에서 추가 비용 없이 제공되며, AWS는 VPC Flow Logs의 AZ metadata로 cross-AZ traffic pattern과 효과를 확인하도록 안내한다.",
-      "why_it_matters": "다중 AZ 배포에서 resilience를 유지하려면 service-to-service 호출의 cross-AZ data transfer와 latency를 감수해야 하는 경우가 있었음. 이 기능은 local endpoint를 우선 사용하지만 AZ isolation 시 정상 endpoint로 넘기는 동작이므로, 비용 절감 수치나 workload latency 개선 폭은 각 서비스의 traffic·capacity·failure 패턴으로 별도 측정 필요.",
-      "engineering_implication": "ECS 플랫폼 팀은 Service Connect service의 redeploy 계획과 AZ별 endpoint capacity·autoscaling·health check를 함께 점검 필요. VPC Flow Logs와 billing data를 AZ 단위로 baseline·변경 후 비교하고, local capacity threshold와 AZ failure에서 cross-zone fallback·p95/p99 latency·error rate가 SLO를 충족하는지 game day로 검증 필요.",
-      "korea_implication": "국내 리전 multi-AZ ECS 서비스도 cross-AZ transfer 비용만을 기준으로 topology를 고정하지 말고 AZ별 capacity와 failover 검증을 동일 change ticket에 기록할 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloud",
-        "AWS",
-        "Amazon ECS",
-        "Service Connect",
-        "Availability Zone",
-        "Networking",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-07-24 08:46",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/ecs-service-connect-zone-aware/",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 ECS Service Connect의 zone-aware routing을 공개함. AWS What’s New RSS `pubDate` 2026-07-23 23:46 UTC를 2026-07-24 08:46 KST로 변환함.",
-          "items": [
-            "대상: Amazon ECS Service Connect service-to-service traffic",
-            "동작: 요청을 보낸 task와 같은 AZ의 endpoint 우선 선택",
-            "제공: ECS Service Connect 지원 모든 AWS commercial·AWS GovCloud (US) Region, 추가 기능 요금 없음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "endpoint가 scale하면 Service Connect가 target service 전반의 load balance를 위해 traffic weight를 동적으로 조정함. local endpoint가 unhealthy이거나 capacity threshold 아래로 떨어지면 healthy AZ로 재분배함.",
-          "items": [
-            "변화: resilience를 위한 multi-AZ 배포와 cross-zone traffic 사이의 기존 trade-off 축소",
-            "기본값: 신규·기존 service에 zone-aware routing 기본 활성화",
-            "적용 조건: 기존 service는 새 routing behavior 적용을 위한 1회 redeploy 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "동일 AZ 우선은 데이터 전송비와 network path를 줄일 수 있으나, local capacity·health threshold와 fallback 상태가 실제 latency·availability를 좌우함. AWS는 절감률이나 latency 개선 수치를 발표하지 않음.",
-          "items": [
-            "관측: VPC Flow Logs의 AZ metadata로 cross-AZ flow 변화 확인",
-            "경계: local-first routing이 특정 workload의 SLO 또는 비용 절감을 보장하지 않는 범위",
-            "위험: AZ별 endpoint skew 또는 autoscaling 지연 시 fallback traffic 증가 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "routing 기본값 변경은 application code 없이도 traffic path를 바꾸므로, service redeploy와 observability baseline을 하나의 rollout으로 관리해야 함.",
-          "items": [
-            "팀 액션: ECS service별 AZ endpoint capacity·health check·autoscaling inventory",
-            "팀 액션: deploy 전후 VPC Flow Logs와 billing data에서 cross-AZ bytes·request·error 비교",
-            "팀 액션: local endpoint capacity 부족·AZ failure game day에서 fallback·p95/p99·error budget 검증"
           ]
         }
       ],

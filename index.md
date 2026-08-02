@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-02 | Total pages: 246
+> Last updated: 2026-08-03 | Total pages: 247
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-astra-mathematics-2026-08-02]] — OpenAI Astra 수학 결과 보도와 Lean artifact·재현성·human review 증거 경계.
 - [[raw/articles/aitimes-eu-ai-act-transparency-labeling-2026-08-02]] — EU AI Act 소비자 투명성 규정 적용 보도와 chatbot·생성 콘텐츠 라벨·provenance release control 경계.
 - [[raw/articles/aitimes-gemini-spark-chrome-web-automation-2026-08-02]] — Gemini Spark Chrome 통합 보도와 browser agent의 session·approval·prompt-injection 운영 경계.
 - [[raw/articles/coldcard-hardware-wallet-prng-seed-generation-2026-08-02]] — Coldcard seed 생성의 deterministic PRNG 결함 보도와 firmware·key migration·multisig entropy 대응 경계.
