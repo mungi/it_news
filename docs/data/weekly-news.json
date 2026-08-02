@@ -2,7 +2,7 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-03 03:54",
+  "last_updated_kst": "2026-08-03 08:00",
   "audience": "developers and engineers",
   "executive_summary": [
     "OpenAI Astra 수학 결과 보도: AI타임스는 장기 난제 10개 결과와 Lean 기반 기계 검증 가능한 증명서를 전함. OpenAI 원문 본문은 현재 Cloudflare challenge로 직접 재검증하지 못했으므로 문제 해결·약 2,000달러 token 비용은 기사 인용 범위로 관리하고, proof artifact·checker replay·human review·재실행 비용을 분리한 research-agent control이 필요.",
@@ -981,6 +981,84 @@
       "rank": 10
     },
     {
+      "id": "news-269",
+      "title_ko": "Kubernetes v1.37 사전 안내: ipvs·cgroup v1·Static Pod API 참조를 upgrade gate로 점검",
+      "title_original": "Kubernetes v1.37 Sneak Peek",
+      "summary": "핵심: Kubernetes 프로젝트는 v1.37에서 Static Pod의 Secret·ConfigMap API 참조를 금지하고, `kube-proxy` ipvs mode에 deprecation warning을 예고함. cgroup v1 지원 제거 경로와 SELinuxMount GA·default enable 예상도 함께 안내됨. 운영: 8월 26일 정식 release 전 ipvs·cgroup·Static Pod·CSI SELinux topology를 inventory하고 staging upgrade에서 workload start·network·storage regression을 검증 필요.",
+      "detail": "Kubernetes 프로젝트는 2026년 7월 31일 v1.37 사전 안내를 통해 `kubectl run --filename/-f` deprecation, Static Pod의 ConfigMap·Secret 참조 금지, kube-proxy ipvs mode deprecation 계획을 공개했다. ipvs mode는 v1.40에서 기본 비활성화, v1.43에서 제거 예정이라는 계획이며, Static Pod API 참조를 허용하던 `PreventStaticPodAPIReferences` feature gate도 제거된다. cgroup v1은 이미 kubelet의 `failCgroupV1: true` 기본값으로 차단 경로에 있으며, SELinuxMount GA와 CSI volume health reporting도 포함된다. 이 글은 정식 릴리스 전 sneak peek이므로 final release note, provider compatibility, 실제 upgrade 결과를 확정하지 않는다.",
+      "why_it_matters": "Kubernetes minor upgrade의 위험은 새 기능보다 deprecated node·network·storage configuration이 production에서 조용히 누적된 상태에 있음. Static Pod bootstrap, ipvs service path, cgroup hierarchy, CSI SELinux label sharing은 cluster-wide rollout 뒤 일부 node 또는 workload에서만 드러날 수 있는 조건임.",
+      "engineering_implication": "upgrade gate에 `mode: ipvs`, node cgroup version, Static Pod의 `secretRef`·`configMapRef`, CSI `seLinuxMount`, shared-volume SELinux label, metrics client API version을 포함 필요. staging에서 node reboot, control-plane recovery, HPA/`kubectl top`, pod restart, shared PVC mount, rollback를 같은 evidence set으로 검증하고 v1.37 final CHANGELOG와 provider support matrix를 release 직전 재확인해야 함.",
+      "korea_implication": "국내 managed Kubernetes와 on-prem cluster 모두 CNI·CSI·OS image·security baseline의 조합이 달라 upstream 사전 공지만으로 upgrade 안전성을 확정할 수 없음. 운영 대행·플랫폼 팀은 cluster별 inventory와 provider ticket/SLA를 변경 승인 기록에 연결할 필요.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "v1.37",
+        "kube-proxy",
+        "ipvs",
+        "cgroup v1",
+        "Static Pod",
+        "CSI",
+        "SELinux"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-08-01 01:00",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/07/31/kubernetes-v1-37-sneak-peek/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Kubernetes KEP-5495 — Deprecate kube-proxy ipvs mode",
+          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-network/5495-deprecate-kube-proxy-ipvs"
+        },
+        {
+          "title": "Kubernetes KEP-5573 — Remove cgroup v1 support",
+          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/5573-remove-cgroup-v1"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes 프로젝트는 **v1.37** 사전 안내에서 2026-08-26 정식 release 계획과 함께 deprecation·removal·expected GA/Beta 항목을 공개함. source metadata `2026-07-31T08:00:00-08:00`을 `2026-08-01 01:00 KST`로 변환함.",
+          "items": [
+            "범위: 정식 release 전 sneak peek이며 final feature state는 CHANGELOG·release notes 기준",
+            "deprecation: `kubectl run --filename/-f`와 kube-proxy `ipvs` mode의 migration 안내",
+            "breaking change: Static Pod의 Secret·ConfigMap API reference 금지와 opt-out gate 제거"
+          ]
+        },
+        {
+          "heading": "network·node runtime 변경",
+          "body": "ipvs mode는 Kubernetes Service를 kernel ipvs API만으로 완전 구현하지 못해 iptables를 함께 쓰는 구조라는 KEP 설명과 함께 deprecation 경로에 들어감. cgroup v1도 long-term support 대상에서 벗어나며 modern resource-management 기능은 cgroup v2 의존 범위임.",
+          "items": [
+            "일정: v1.37 warning, 계획상 v1.40 default disable, v1.43 ipvs support removal",
+            "점검: `kube-proxy` ConfigMap의 `mode: ipvs`, custom manifest, node pool별 rollout topology inventory",
+            "점검: cgroup v1 node는 `failCgroupV1: false` temporary override가 아닌 OS·runtime migration plan으로 관리"
+          ]
+        },
+        {
+          "heading": "storage·security·observability 변경",
+          "body": "SELinuxMount가 GA·default enable 예상인 CSI opt-in driver에서는 한 mount에 하나의 SELinux context만 둘 수 있음. Volume Health Monitor는 Alpha reset 뒤 controller·node 각각에서 machine-readable storage health를 노출하는 설계임.",
+          "items": [
+            "리스크: 같은 node의 shared volume을 서로 다른 SELinux label Pod가 쓰면 mount context 제약으로 Pod start 실패 가능성",
+            "관측: `PersistentVolumeClaim.status.healthStatus`, `Pod.status.volumeHealth`, `CSINode.status.storageHealth`의 report path 예정",
+            "호환성: CSI driver opt-in·SELinux enabled node·application label topology·monitoring parser를 staging에서 동시 검증"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "v1.37 upgrade는 API client version만 맞추는 작업이 아님. Static Pod bootstrap, kube-proxy data path, node cgroup, CSI mount context, HPA metrics consumer를 environment-specific evidence로 닫아야 하는 운영 과제.",
+          "items": [
+            "팀 액션: preflight에 ipvs·cgroup·Static Pod reference·CSI/SELinux·metrics API inventory 추가",
+            "팀 액션: staging에서 reboot·node replacement·HPA·shared PVC·security label·rollback scenario 재현",
+            "팀 액션: final release artifact와 managed-service support matrix 확인 뒤 production wave·abort condition·owner 승인"
+          ]
+        }
+      ],
+      "rank": 11
+    },
+    {
       "id": "news-255",
       "title_ko": "Google Gemini Robotics 2 공개 보도: VLA 전신 제어·ER 2 planning·On-Device 2를 현장 safety case로 검증",
       "title_original": "Google unveils Gemini Robotics 2",
@@ -1054,7 +1132,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-256",
@@ -1143,7 +1221,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-253",
@@ -1211,7 +1289,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-252",
@@ -1297,7 +1375,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-250",
@@ -1391,7 +1469,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-261",
@@ -1462,7 +1540,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-251",
@@ -1564,7 +1642,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-213",
@@ -1644,7 +1722,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-249",
@@ -1743,7 +1821,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-243",
@@ -1833,7 +1911,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-244",
@@ -1927,7 +2005,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-245",
@@ -1998,7 +2076,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-254",
@@ -2086,7 +2164,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-262",
@@ -2157,7 +2235,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-248",
@@ -2228,7 +2306,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-242",
@@ -2309,7 +2387,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-246",
@@ -2376,7 +2454,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-241",
@@ -2457,7 +2535,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-240",
@@ -2529,7 +2607,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-237",
@@ -2601,7 +2679,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-238",
@@ -2677,7 +2755,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-239",
@@ -2744,7 +2822,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-247",
@@ -2819,7 +2897,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-235",
@@ -2899,7 +2977,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-236",
@@ -2975,7 +3053,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-234",
@@ -3061,7 +3139,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-231",
@@ -3128,7 +3206,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-232",
@@ -3200,7 +3278,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-233",
@@ -3280,7 +3358,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-230",
@@ -3352,7 +3430,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-229",
@@ -3424,7 +3502,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-226",
@@ -3515,7 +3593,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-228",
@@ -3603,7 +3681,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-227",
@@ -3684,7 +3762,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-224",
@@ -3763,7 +3841,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-225",
@@ -3851,7 +3929,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-223",
@@ -3931,7 +4009,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-222",
@@ -4011,7 +4089,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-221",
@@ -4092,83 +4170,6 @@
             "팀 액션: Workspace Agents의 active agent·owner·connector scope·`Never ask`·schedule·last run을 export해 high-risk 조합 review",
             "팀 액션: agent 생성·publish·connector attach·approval downgrade에 explicit confirmation과 role separation 적용 여부 확인",
             "팀 액션: URL parameter·deep link·template import에 server-side CSRF/origin validation과 state-change confirmation regression test 추가"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-220",
-      "title_ko": "Microsoft, MAI-Image-2.5-Pro·MAI-Voice-2-Flash 공개: Bing·Office·Azure에서 자체 모델 전환과 비용·지연 검증",
-      "title_original": "Microsoft launches MAI-Image-2.5-Pro and MAI-Voice-2-Flash public previews",
-      "summary": "핵심: Microsoft가 20B diffusion 이미지 모델 `MAI-Image-2.5-Pro`와 음성 모델 `MAI-Voice-2-Flash` 공개 preview를 발표하고 Bing Image Creator·PowerPoint·OneDrive·Dynamics 365·Azure Voice Live 적용을 공개. 변화: PowerPoint GPU 비용 최대 84% 절감, OneDrive 저장 성공률 26% 증가·지연 약 25% 감소는 Microsoft 운영 수치. 운영: 모델 교체 전 workload별 품질·단가·quota·fallback·data handling을 별도 A/B 검증 필요.",
-      "detail": "Microsoft가 `MAI-Image-2.5-Pro`와 `MAI-Voice-2-Flash`를 공개 preview로 소개하고 자사 서비스의 OpenAI 이미지 모델 일부를 자체 MAI 모델로 전환했다고 보도됨. 이미지 모델의 20B parameter·1MP 출력·가격과 PowerPoint·OneDrive의 비용·성능 수치는 Microsoft가 제시한 운영 결과이며, 외부 workload의 재현성·제한·지역별 제공 범위는 기사만으로 확정할 수 없음.",
-      "why_it_matters": "생성형 이미지·음성 모델의 제공자 전환은 API 품질뿐 아니라 GPU 비용, latency, 안전 필터, 데이터 처리, 장애 fallback, vendor portability를 함께 바꾸는 production 변경임.",
-      "engineering_implication": "이미지·음성 생성 기능을 운영하는 팀은 모델별 request mix·출력 해상도·cache·retry·safety rejection·p95 latency·성공률·GPU/토큰 비용을 baseline으로 수집하고, canary에서 품질 평가와 fallback을 함께 검증 필요.",
-      "korea_implication": "국내 Azure·Microsoft 365 도입 조직은 서비스별 공개 preview·region·계약 SKU·데이터 처리 조건이 실제 tenant에 적용되는지 확인한 뒤 모델 전환을 계획 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Microsoft",
-        "Azure",
-        "image-generation",
-        "voice-ai",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-24 14:14",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213132",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/213132_216542_5026.jpeg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스는 Microsoft가 7월 23일 현지 기준 `MAI-Image-2.5-Pro`와 `MAI-Voice-2-Flash` 공개 preview를 발표했다고 보도함. 기사 `article:published_time`은 2026-07-24 14:14 KST임.",
-          "items": [
-            "대상: Bing Image Creator·PowerPoint·OneDrive의 이미지 생성·편집, Dynamics 365 Contact Center와 Azure Voice Live의 음성 기능",
-            "전환: Bing Image Creator의 생성·편집 전 과정을 `MAI-Image-2.5` 기반으로 운영한다는 Microsoft 설명",
-            "경계: 공개 preview의 tenant·region·quota·SLA·일반 제공 일정은 기사 범위에서 확인 불가"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "`MAI-Image-2.5-Pro`는 20B parameter diffusion 모델로 최대 1MP 이미지, aspect ratio 제어, text-to-image·image-to-image 편집과 visual reasoning을 지원한다고 소개됨.",
-          "items": [
-            "가격: 입력 text 100만 token당 5달러, 입력 image 100만 token당 8달러, 출력 image 100만 token당 106달러로 제시",
-            "음성: `MAI-Voice-2-Flash`는 기존 MAI-Voice-2 대비 처리 속도 2배·비용 32% 감소, 100만 문자당 15달러라는 Microsoft 수치",
-            "제공: Azure AI Foundry 외 OpenRouter·Fireworks·Baseten에도 동시 제공 계획과 외부 개발자 fine-tuning 허용 보도"
-          ]
-        },
-        {
-          "heading": "운영 수치와 증거 경계",
-          "body": "PowerPoint·OneDrive·Dynamics 365 적용 결과의 비용·성능 수치는 Microsoft가 자사 운영 환경에서 제시한 결과임. 모델·prompt·해상도·traffic mix·safety policy가 다른 조직에 그대로 적용되는 보장은 없음.",
-          "items": [
-            "PowerPoint: 이미지 생성·변환에서 GPU 운영 비용 최대 84% 절감이라는 Microsoft 주장",
-            "OneDrive: 저장 성공률 26% 증가·응답 지연 약 25% 감소·중간 부하 처리 효율 2.5배라는 Microsoft 주장",
-            "Dynamics 365: 음성 agent GPU 비용 최대 89% 절감이라는 Microsoft 주장",
-            "미확정: 독립 benchmark, workload 재현 조건, quality metric, rate limit, availability·SLA·data residency 정보"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "대형 SaaS가 특정 기능의 기반 모델을 바꾸면 모델 비용만이 아니라 output 품질, content safety, latency, retry, observability, incident fallback의 운영 계약이 바뀜.",
-          "items": [
-            "비용: image output·voice character·retry·cache hit를 성공 작업당 비용으로 집계할 필요",
-            "품질: brand asset·문서 삽화·voice agent use case별 human preference와 safety rejection을 분리 평가할 필요",
-            "호환성: API schema·prompt template·fine-tuning artifact·moderation policy·fallback model의 regression 범위"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "자체 모델 전환 발표를 범용 비용 절감으로 해석하지 말고 실제 tenant와 workload에서 quality·latency·failure·data boundary를 동시에 검증해야 함.",
-          "items": [
-            "팀 액션: 대표 prompt·image·voice workload로 canary를 구성하고 quality pass rate·p95 latency·rejection·retry·단가 비교",
-            "팀 액션: preview 종료·quota 소진·model regression 시 이전 모델 또는 human handoff로 전환하는 fallback runbook 검증",
-            "팀 액션: Azure·Microsoft 365 tenant별 region·retention·training use·content filter·audit log 조건을 계약·보안 담당과 확인"
           ]
         }
       ],

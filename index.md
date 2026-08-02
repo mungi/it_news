@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-03 | Total pages: 247
+> Last updated: 2026-08-03 | Total pages: 248
 
 ## Entities
 
@@ -153,6 +153,7 @@
 - [[raw/articles/thinking-machines-inkling-small-open-weights-2026-08-01]] — Inkling-Small 276B/12B active MoE 공개 가중치·멀티모달·self-hosting 검증 경계.
 - [[raw/articles/aws-aurora-dsql-multi-region-clusters-2026-07-31]] — Aurora DSQL multi-Region cluster 4개 리전 확대와 active-active·strong-consistency·DR 검증 경계.
 - [[raw/articles/adobe-campaign-classic-cve-2026-48364-48365-2026-08-01]] — Adobe Campaign Classic 무상호작용 code execution·SQL injection 파일 읽기 보도와 build·ingress·workflow patch 검증 경계.
+- [[raw/articles/kubernetes-v1-37-sneak-peek-2026-07-31]] — Kubernetes v1.37 사전 안내의 ipvs·cgroup v1·Static Pod API 참조·CSI/SELinux upgrade 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
