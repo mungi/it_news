@@ -2,13 +2,13 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-02 11:32",
+  "last_updated_kst": "2026-08-02 15:37",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare MoQ provisioning API beta: application별 isolated relay와 publisher/subscriber credential 분리를 global network control plane으로 제공. relay 생성보다 track namespace·credential rotation·revocation·reconnect SLO를 release gate로 관리 필요.",
     "Chrome AI 보안 자동화: Gemini harness가 model interoperability·CVE/git-history context·SECURITY.md·critic·반복 scanning을 결합. source-at-rest·internet deny·destination allowlist·filesystem 제한을 갖춘 analysis sandbox가 전제.",
     "Amazon Aurora DSQL multi-Region cluster: Stockholm·Spain·Mumbai·Singapore에 active-active writable endpoint와 multi-Region strong consistency 구성을 추가. application retry·idempotency·cross-region latency·RTO/RPO·quota·cost는 workload별 chaos test와 SLO evidence로 승인 필요.",
-    "Anthropic cyber evaluation incident: third-party CTF environment의 live-internet misconfiguration으로 실제 조직 3곳에 무단 접근한 3건을 공식 공개. evaluation도 egress deny·scope control·network/transcript telemetry·vendor assurance를 production 수준으로 운영 필요.",
+    "Coldcard seed-generation 결함: 2021년 firmware integration error가 hardware RNG 대신 deterministic PRNG를 연결했고, 1,196개 주소·1,082.65 BTC 이동 분석과 연관 보도. emergency firmware는 기존 seed를 복구하지 않으므로 영향 firmware에서 생성한 key는 새 seed 생성·자산 이전·multisig signer 다양성 검증이 필요.",
     "GitHub Blackbird `casefold`: 1억8천만 repository·480TB code-search scale에서 ASCII case folding hot loop의 early exit를 없애 Apple M4 측정 **45 GiB/s 초과**를 제시. simple/full/Turkic fold contract·mixed Unicode·SIMD·allocation·p95/p99를 own corpus에서 비교한 뒤 search fast path 채택 필요."
   ],
   "deep_dives": [
@@ -183,6 +183,79 @@
   ],
   "items": [
     {
+      "id": "news-265",
+      "title_ko": "Coldcard 하드웨어 지갑 seed 생성 결함: 1,196개 Bitcoin 주소에서 41분간 1,082.65 BTC 이동과 연결된 약한 PRNG",
+      "title_original": "Coldcard Hardware Wallet Flaw Linked to $70 Million Bitcoin Theft in 41 Minutes",
+      "summary": "핵심: The Hacker News는 Coldcard의 2021년 firmware integration error가 STM32 hardware RNG 대신 deterministic software PRNG를 seed 생성에 연결했고, Galaxy Research가 7월 30일 41분 동안 1,196개 주소에서 이동한 1,082.65 BTC를 이 결함과 연관 지었다고 보도. Coinkite는 영향 모델·release track용 emergency firmware를 배포했지만 기존 seed는 복구되지 않으므로, 해당 firmware에서 생성한 seed는 patched firmware에서 새 seed를 만들고 자산을 이전해야 함.",
+      "detail": "The Hacker News는 Galaxy Research와 Block의 분석을 인용해 Coldcard Bitcoin hardware wallet의 seed generation이 2021년 3월부터 STM32 hardware RNG가 아닌 deterministic software PRNG를 사용할 수 있었던 firmware integration error를 보도했다. Block 분석은 device UID, timer state, prior RNG-call history를 알거나 충분히 좁힐 수 있으면 candidate output stream을 offline에서 재현하고 public blockchain address와 대조할 수 있다고 설명한다. 기사에 따르면 Coinkite는 7월 31일 영향 모델과 release track 전체에 emergency firmware를 배포했으며, 기존 seed 자체는 패치되지 않아 새 seed 생성과 자산 이전을 권고했다. Galaxy가 관찰한 1,196-address sweep은 동일 운영자를 식별하는 pattern일 수 있으나 절도 자체를 증명하지 않으며, 공개 보고서가 피해 seed를 재현해 탈취 주소와 일치시킨 것은 아니다. 따라서 자산 탈취의 확정 원인이나 공격자 신원은 주장하지 않는다.",
+      "why_it_matters": "hardware wallet도 entropy source, firmware build flag, seed lifecycle이 보안 경계임. firmware 업데이트만으로 이미 생성된 cryptographic secret의 entropy 결함이 사라지지 않으며, 자산 custody·key rotation·multisig 구성까지 포함한 incident 대응이 필요함.",
+      "engineering_implication": "custody 장비·HSM·hardware wallet의 RNG source와 build configuration을 SBOM·firmware inventory에 연결하고, seed/key가 생성된 firmware window를 추적해야 함. 영향 가능 seed는 patched device에서 새 entropy로 생성하고 address migration·multisig quorum·backup/restore·passphrase 의존성·on-chain transfer verification을 별 change runbook으로 승인 필요.",
+      "korea_implication": "국내 가상자산사업자와 custody 운영 조직은 장비 firmware 버전뿐 아니라 key ceremony 시점·entropy 방식·multisig signer 다양성·고객 자산 이전 통지를 함께 점검해야 함. 단일 vendor device에 의존한 quorum은 독립 codebase·entropy source 기준으로 재평가 필요.",
+      "category": "Security",
+      "tags": [
+        "Coldcard",
+        "Hardware Wallet",
+        "PRNG",
+        "Entropy",
+        "Key Management",
+        "Supply Chain",
+        "Cryptocurrency"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-08-02 02:17",
+      "source_name": "The Hacker News / Coinkite / Galaxy Research",
+      "source_url": "https://thehackernews.com/2026/08/coldcard-hardware-wallet-flaw-linked-to.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiea5Kw_2TLtPI4Ts3s3anmPIQr3S8VxO0G9yL-UV1dSlRrW1Z_L41XoHcSFuk2ThCBDKLFy-xZl_y7DnA0FM2nWHk4G1TpV2iMx6-X6EDT3gK7s0pJu6e1wMUoEsuPifcXseXuqOIHL3W9voWoD_se5gKJPyii4X0mJY7sxJ3uOPlTWVfAyrKs4ixa-18/s1600/coldcard.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News RSS — exact publication timestamp (Sat, 01 Aug 2026 22:47:22 +0530 = 2026-08-02 02:17 KST)",
+          "url": "https://feeds.feedburner.com/TheHackersNews"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Coldcard firmware의 seed-generation integration error와 **1,196개 Bitcoin 주소·1,082.65 BTC** sweep의 연관 분석을 보도함. THN RSS `Sat, 01 Aug 2026 22:47:22 +0530`은 `2026-08-02 02:17 KST`에 해당함.",
+          "items": [
+            "관측: 7월 30일 41분 동안 1,196개 주소에서 1,082.65 BTC 이동이라는 Galaxy Research 분석",
+            "출처: Canadian vendor Coinkite의 Bitcoin-only Coldcard 제품군 관련 보도",
+            "경계: address sweep pattern은 동일 operator를 식별할 수 있으나 theft 원인·공격자·피해 seed 일치의 독립 증명은 아님"
+          ]
+        },
+        {
+          "heading": "결함의 기술적 조건",
+          "body": "보도는 2021년 3월 firmware integration 과정에서 STM32 hardware RNG 대신 deterministic software PRNG가 seed generation에 연결됐다고 설명함. Block 분석은 `MICROPY_HW_ENABLE_RNG`가 존재하는지만 검사한 library 조건 때문에 disabled setting에서도 fallback이 선택됐다고 분석함.",
+          "items": [
+            "entropy: MicroPython Yasmarang fallback은 chip unique ID와 timer register로 초기화되고 이후 fresh entropy 수집이 없었다는 분석",
+            "attack condition: device UID·timer state·prior RNG-call history를 결정하거나 충분히 제약할 수 있을 때 offline candidate search 가능성",
+            "검증: candidate seed에서 address를 유도해 public blockchain data와 대조하는 방식"
+          ]
+        },
+        {
+          "heading": "영향 범위와 대응 경계",
+          "body": "Coinkite가 7월 31일 영향 모델과 release track용 emergency firmware를 배포했다고 보도됐으나, firmware update는 기존 seed의 낮은 entropy를 되돌리지 못함. seed 생성 당시 실행 firmware가 exposure 판단 기준이며 현재 설치 버전만으로 안전을 판단할 수 없음.",
+          "items": [
+            "조치: patched firmware에서 새 seed를 생성하고 기존 자산을 새 wallet으로 이전 필요",
+            "주의: 기존 seed를 업데이트한 firmware 또는 다른 wallet으로 restore하면 약한 seed를 계속 사용하는 상태",
+            "예외: 최소 50회의 공정·독립·비공개 dice roll로 만든 seed는 이 결함만으로 위험하지 않다는 Coinkite 설명 범위"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "key material security는 firmware version, entropy source, build-time feature flag, key ceremony, migration evidence가 함께 구성하는 control plane. strong BIP-39 passphrase나 multisig는 보조 통제가 될 수 있으나 취약한 seed lifecycle의 대체 증거는 아님.",
+          "items": [
+            "팀 액션: affected firmware window·seed creation date·entropy method·device model·signer quorum inventory",
+            "팀 액션: migration 전후 address ownership·transfer confirmation·backup/restore·rollback 불가성 기록",
+            "팀 액션: multisig signer가 동일 codebase·동일 entropy failure에 집중되지 않았는지 독립성 검토"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-263",
       "title_ko": "Adform 공유 스크립트 변조: downstream 사이트에서 암호화폐 주소를 바꾼 JavaScript 공급망 침해",
       "title_original": "Hackers Poison Adform Script to Swap Crypto Wallet Addresses Across Customer Sites",
@@ -256,7 +329,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-260",
@@ -333,7 +406,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-258",
@@ -415,7 +488,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-257",
@@ -498,7 +571,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-259",
@@ -584,7 +657,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-264",
@@ -671,7 +744,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-255",
@@ -747,7 +820,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-256",
@@ -836,7 +909,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-253",
@@ -904,7 +977,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-252",
@@ -990,7 +1063,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-250",
@@ -1084,7 +1157,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-261",
@@ -1155,7 +1228,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-251",
@@ -1257,7 +1330,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-213",
@@ -1337,7 +1410,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-249",
@@ -1436,7 +1509,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-243",
@@ -1526,7 +1599,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-244",
@@ -1620,7 +1693,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-245",
@@ -1691,7 +1764,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-254",
@@ -1779,7 +1852,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-262",
@@ -1850,7 +1923,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-248",
@@ -1921,7 +1994,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-242",
@@ -2002,7 +2075,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-246",
@@ -2069,7 +2142,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-241",
@@ -2150,7 +2223,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-240",
@@ -2222,7 +2295,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-237",
@@ -2294,7 +2367,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-238",
@@ -2370,7 +2443,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-239",
@@ -2437,7 +2510,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-247",
@@ -2512,7 +2585,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-235",
@@ -2592,7 +2665,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-236",
@@ -2668,7 +2741,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-234",
@@ -2754,7 +2827,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-231",
@@ -2821,7 +2894,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-232",
@@ -2893,7 +2966,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-233",
@@ -2973,7 +3046,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-230",
@@ -3045,7 +3118,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-229",
@@ -3117,7 +3190,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-226",
@@ -3208,7 +3281,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-228",
@@ -3296,7 +3369,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-227",
@@ -3377,7 +3450,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-224",
@@ -3456,7 +3529,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-225",
@@ -3544,7 +3617,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-223",
@@ -3624,7 +3697,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-222",
@@ -3704,7 +3777,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-221",
@@ -3788,7 +3861,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-220",
@@ -3865,7 +3938,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-216",
@@ -3932,7 +4005,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-217",
@@ -3999,7 +4072,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-214",
@@ -4076,79 +4149,6 @@
             "팀 액션: app-specific password·forward/filter·delegate·admin audit·unusual DNS query를 보존·hunt",
             "팀 액션: 고위험 계정 credential rotation과 session revoke, forwarding rollback을 incident workflow로 실행",
             "팀 액션: patch 뒤 mail flow·MFA·backup/restore·monitoring alert를 canary 계정으로 검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-215",
-      "title_ko": "Amazon Bedrock AgentCore, agent별 단일 CloudWatch log group에 trace·prompt·로그 통합",
-      "title_original": "Amazon Bedrock AgentCore now delivers unified observability with traces and logs in a single log group",
-      "summary": "핵심: AWS가 AgentCore Runtime의 trace span, prompt·input·output event, structured log, stdout를 agent별 단일 CloudWatch log group으로 통합. 변화: 기존 shared `aws/spans`와 resource-specific log group 분산 구조를 제거해 agent 단위 IAM·CMK encryption·subscription과 debugging correlation을 단순화. 운영: 기존 agent는 `UNIFIED_TRACES_DESTINATION_ENABLED=true`와 ADOT 0.17.1 이상 적용 여부를 rollout·retention·sensitive prompt logging 정책과 함께 검증 필요.",
-      "detail": "AWS는 Amazon Bedrock AgentCore가 agent telemetry를 단일 per-agent CloudWatch log group으로 보낸다고 발표했다. 이전에는 trace span이 shared `aws/spans` log group, prompt·input·output event가 resource-specific log group에 분산됐다. 새 경로는 `/aws/bedrock-agentcore/runtimes/<agent_id>-<endpoint_name>`에 trace, prompt, structured log, stdout를 함께 기록하며, 신규 agent는 2026년 7월 20일부터 supported commercial Region에서 기본 적용된다. 기존 agent는 runtime environment variable `UNIFIED_TRACES_DESTINATION_ENABLED=true`와 ADOT 0.17.1 이상이 필요하므로, prompt/PII logging scope, KMS key, IAM reader, retention, subscription destination을 migration change로 검증해야 한다.",
-      "why_it_matters": "agent 실행은 model trace만으로 tool call·runtime error·prompt injection signal·cost attribution을 연결하기 어려움. per-agent log group은 access control과 KMS encryption boundary를 agent별로 나눌 수 있게 하지만, prompt·input·output이 한 위치에 모이므로 data classification·retention·egress 통제가 더 중요해짐.",
-      "engineering_implication": "AWS platform 팀은 AgentCore inventory를 신규·기존 runtime으로 나누고, 기존 runtime의 ADOT version과 environment variable rollout을 canary로 검증 필요. agent ID별 IAM least privilege, CMK key policy, log retention, cross-account subscription, redaction, trace correlation ID를 설계하고, CloudWatch Logs 비용·query·export volume을 success task당 운영비에 포함 필요.",
-      "korea_implication": "국내 금융·공공의 agent PoC는 observability 통합을 감사 증적 개선으로 볼 수 있으나, prompt·input·output의 log residency·PII masking·KMS key ownership·SOC export 경로를 사전 통제 조건으로 명시할 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloud",
-        "AWS",
-        "Amazon Bedrock",
-        "AgentCore",
-        "Observability",
-        "CloudWatch",
-        "AI Agent"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-24 02:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-bedrock-agentcore-unified-observability-single-log-group/",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "Amazon Bedrock AgentCore Developer Guide",
-          "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 AgentCore Runtime telemetry를 agent별 단일 CloudWatch log group으로 전달하는 기능을 공개함. AWS What’s New RSS `pubDate` 2026-07-23 17:00 UTC를 2026-07-24 02:00 KST로 변환함.",
-          "items": [
-            "대상: Amazon Bedrock AgentCore Runtime의 agent trace·event·runtime log",
-            "기본 경로: `/aws/bedrock-agentcore/runtimes/<agent_id>-<endpoint_name>`",
-            "신규 agent: supported AWS commercial Region에서 2026-07-20부터 default 적용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기존 AgentCore는 trace span을 shared `aws/spans`에, prompt·input·output event를 resource-specific log group에 나눠 기록함. 새 구조는 trace, prompt, structured log, stdout를 agent 단위로 모음.",
-          "items": [
-            "운영 변화: 단일 query scope에서 invocation trace와 runtime error correlation 가능",
-            "보안 변화: agent별 IAM policy와 customer-managed key encryption scope 적용 가능",
-            "export 변화: agent별 log group subscription 하나로 downstream telemetry 전달 가능"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "multi-agent debugging에서는 caller·tool·runtime의 telemetry가 여러 destination에 흩어지면 incident timeline 재구성이 느려짐. 단일 log group은 ownership과 query를 단순화하지만 prompt·input·output의 집중 보관으로 민감정보 노출 범위도 명확해짐.",
-          "items": [
-            "경계: AWS 발표는 operational observability 기능이며 prompt redaction·PII classification을 자동 보장하지 않음",
-            "비용: trace·prompt·stdout 통합 보관이 ingestion·retention·query·subscription 비용을 증가시킬 수 있음",
-            "감사: agent별 reader role·KMS key·retention·export destination을 control evidence로 관리할 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "기존 AgentCore runtime은 configuration migration으로 처리해야 함. application code 변경 없이도 telemetry destination과 access boundary가 달라질 수 있으므로 staging canary와 rollback 기준을 먼저 정해야 함.",
-          "items": [
-            "팀 액션: runtime별 ADOT version과 `UNIFIED_TRACES_DESTINATION_ENABLED=true` 적용 상태 inventory",
-            "팀 액션: agent ID별 IAM least privilege·CMK key policy·retention·redaction을 template화",
-            "팀 액션: trace ID로 tool call·error·approval·egress log를 연결하는 runbook 검증",
-            "팀 액션: CloudWatch ingestion·storage·subscription·SIEM export 비용을 agent workload SLO와 함께 측정"
           ]
         }
       ],
