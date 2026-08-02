@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-eu-ai-act-transparency-labeling-2026-08-02]] — EU AI Act 소비자 투명성 규정 적용 보도와 chatbot·생성 콘텐츠 라벨·provenance release control 경계.
 - [[raw/articles/coldcard-hardware-wallet-prng-seed-generation-2026-08-02]] — Coldcard seed 생성의 deterministic PRNG 결함 보도와 firmware·key migration·multisig entropy 대응 경계.
 - [[raw/articles/adform-trackpoint-async-script-supply-chain-2026-08-01]] — Adform 공유 JavaScript 변조의 지갑 주소 rewrite·cache·SRI/CSP·third-party script 공급망 대응 경계.
 - [[raw/articles/github-casefold-blackbird-memory-speed-2026-07-31]] — GitHub Blackbird code search의 branchless ASCII case folding·Unicode contract·SIMD/할당 검증 경계.
