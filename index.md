@@ -21,6 +21,7 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W33]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W32]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W31]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 - [[weekly/2026-W30]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
@@ -28,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/qwen-qwen3-8-max-autonomous-coding-2026-08-03]] — Qwen3.8-Max 공식 공개, 장기 자율 코딩 trace와 agent control-plane 검증 경계.
 - [[raw/articles/docker-github-actions-oidc-connections-2026-08-01]] — Docker 조직용 GitHub Actions OIDC 연결과 Docker Hub workload identity·ruleset·CI/CD 권한 경계.
 - [[raw/articles/microsoft-captivecrunch-hospitality-wifi-2026-08-01]] — Microsoft CaptiveCrunch의 hospitality captive portal DNS·HTTP 조작, 가짜 update·Entra token theft와 travel-security 대응 경계.
 - [[raw/articles/aitimes-openai-astra-mathematics-2026-08-02]] — OpenAI Astra 수학 결과 보도와 Lean artifact·재현성·human review 증거 경계.
