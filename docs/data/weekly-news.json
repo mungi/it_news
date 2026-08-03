@@ -2,7 +2,7 @@
   "week": "2026-W32",
   "coverage_start_kst": "2026-07-27 17:00",
   "coverage_end_kst": "2026-08-03 13:00",
-  "last_updated_kst": "2026-08-03 12:09",
+  "last_updated_kst": "2026-08-03 16:14",
   "audience": "developers and engineers",
   "executive_summary": [
     "OpenAI Astra 수학 결과 보도: AI타임스는 장기 난제 10개 결과와 Lean 기반 기계 검증 가능한 증명서를 전함. OpenAI 원문 본문은 현재 Cloudflare challenge로 직접 재검증하지 못했으므로 문제 해결·약 2,000달러 token 비용은 기사 인용 범위로 관리하고, proof artifact·checker replay·human review·재실행 비용을 분리한 research-agent control이 필요.",
@@ -981,6 +981,73 @@
       "rank": 10
     },
     {
+      "id": "news-271",
+      "title_ko": "Docker 조직용 GitHub Actions OIDC 연결: Docker Hub PAT·OAT를 짧은 workflow identity로 교체",
+      "title_original": "Docker OIDC connections for GitHub Actions available for Docker Orgs",
+      "summary": "핵심: Docker가 GitHub Actions에서 Docker Hub 인증용 OIDC를 지원해 repository·branch·environment claim을 담은 GitHub JWT를 Docker Admin Console ruleset과 대조하고, resource scope가 제한된 수분 단위 access token을 발급함. Docker Team·Business·Hardened Images 및 DSOS 조직이 대상이며, 기존 PAT·OAT는 즉시 제거되지 않음. 운영: secret 삭제만으로 끝내지 말고 `id-token: write`, trigger·fork·reusable workflow·protected environment·ruleset·registry scope를 한 permission matrix로 검증 필요.",
+      "detail": "Docker는 GitHub Actions workflow가 Docker Hub에 image를 push·pull·build할 때 long-lived PAT 또는 organization access token을 GitHub secret에 보관하는 기존 흐름 대신 OIDC connection을 사용할 수 있다고 공개했다. 원문 설명에서 GitHub는 repository·branch·environment 등 run metadata가 담긴 signed JWT identity token을 발급하고, `docker/login-action`이 이를 Docker에 제시한다. Docker는 GitHub public-key registry로 signature를 검증하고 Admin Console ruleset과 claim을 대조한 뒤 일치할 때만 지정 resource 범위의 short-lived Docker access token을 반환한다. token은 수분 내 만료되고 재사용할 수 없다고 설명된다. 대상은 Docker Team, Docker Business, Docker Hardened Images 구독 조직과 Docker Sponsored Open Source Program 조직이다. 다만 legacy workflow와 personal project는 기존 PAT·OAT 방식을 계속 쓸 수 있으며, 원문은 GitHub Actions와 Docker Hub를 넘는 registry·CI provider·claim enforcement 범위를 보장하지 않는다.",
+      "why_it_matters": "CI에서 registry write 권한을 가진 PAT·OAT는 secret leak·퇴사자 계정·수동 rotation·scope 과다의 누적 위험을 만듦. OIDC는 run마다 issuer·repository·branch·environment claim과 ruleset을 검증해 credential lifetime을 줄이지만, workflow trigger와 claim policy가 넓으면 token theft 없는 권한 오용 경로는 남음.",
+      "engineering_implication": "Docker Hub image push 경로마다 `permissions: id-token: write`, allowed repository·branch·environment, reusable workflow caller, fork PR, protected environment, Docker organization/repository scope, token exchange·denial event를 permission matrix로 관리 필요. canary에서 allowed/denied claim, push·pull·build, key rotation, audit trace, rollback을 검증한 뒤 PAT/OAT secret 제거와 revocation evidence를 change record로 보존해야 함.",
+      "korea_implication": "국내 개발 조직도 GitHub Actions에서 Docker Hub private image를 배포하면 repository default branch와 environment protection, 외주·fork contribution, shared reusable workflow의 claim 범위를 먼저 좁혀야 함. 구독·조직 eligibility와 Docker Hub 외 registry 지원은 실제 tenant에서 확인 필요.",
+      "category": "DevTools",
+      "tags": [
+        "Docker",
+        "GitHub Actions",
+        "OIDC",
+        "CI/CD",
+        "Docker Hub",
+        "Workload Identity",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-08-01 01:30",
+      "source_name": "Docker Blog",
+      "source_url": "https://www.docker.com/blog/docker-oidc-connections-for-github-actions-available-for-docker-orgs/",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Docker가 GitHub Actions의 Docker Hub 인증에 **OIDC connection**을 지원한다고 공개함. Docker RSS `Thu, 31 Jul 2026 16:30:00 +0000`을 `2026-08-01 01:30 KST`로 변환함.",
+          "items": [
+            "대상: Docker Team·Docker Business·Docker Hardened Images 구독 조직과 Docker Sponsored Open Source Program 조직",
+            "목적: GitHub secret에 장기 PAT·OAT를 저장하던 Docker Hub push·pull·build 인증 경로 축소",
+            "경계: legacy workflow와 personal project의 기존 PAT·OAT 방식은 계속 지원"
+          ]
+        },
+        {
+          "heading": "토큰 교환과 권한 경계",
+          "body": "원문 흐름에서 GitHub는 repository·branch·environment 등 workflow run metadata가 포함된 signed JWT identity token을 발급하고, `docker/login-action`이 이를 Docker에 전달함. Docker는 GitHub public-key registry 기반 signature와 Admin Console ruleset을 확인한 뒤 조건 일치 시 resource scope가 제한된 access token을 반환함.",
+          "items": [
+            "수명: Docker access token은 수분 내 만료되고 재사용할 수 없다는 Docker 설명",
+            "검증: repository·branch·environment claim과 Docker Admin Console ruleset의 일치 조건",
+            "범위: 반환 token의 resource scope는 ruleset에서 정의한 대상에 한정"
+          ]
+        },
+        {
+          "heading": "CI/CD 보안 구현 포인트",
+          "body": "OIDC는 secret rotation 부담을 줄이지만 identity policy가 새 credential boundary가 됨. `id-token: write` 권한, event trigger, fork PR, reusable workflow와 caller, branch protection, protected environment가 서로 어긋나면 예상하지 않은 run이 registry write token을 얻을 수 있는 운영 리스크.",
+          "items": [
+            "설계: repository·branch·environment·workflow path·Docker organization/repository scope를 permission matrix로 관리",
+            "통제: untrusted fork·pull request·manual dispatch·reusable workflow caller별 token issuance와 ruleset match를 분리",
+            "관측: token exchange·ruleset denial·image push·tag overwrite·credential revocation event를 correlation ID로 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "PAT·OAT 제거는 목표가 아니라 claim-bound workload identity 전환의 마지막 단계. Docker의 공개 범위는 GitHub Actions와 Docker Hub 중심이므로 다른 registry·CI·tenant feature와 audit retention은 도입 전 별도 확인 필요.",
+          "items": [
+            "팀 액션: canary workflow에서 allowed/denied claim, pull·build·push, token expiry, rollback을 재현",
+            "팀 액션: 기존 secret inventory·last-used·resource scope·revocation owner를 정리한 뒤 단계적 폐기",
+            "팀 액션: production gate를 protected environment 통과, ruleset least privilege, denial audit, emergency PAT rollback으로 정의"
+          ]
+        }
+      ],
+      "rank": 11
+    },
+    {
       "id": "news-264",
       "title_ko": "GitHub Blackbird code search의 `casefold` 공개: early-exit 제거로 ASCII case folding을 memory bandwidth까지 끌어올린 Rust 구현",
       "title_original": "Don’t stop early: Case-folding source code at memory speed",
@@ -1065,7 +1132,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-269",
@@ -1143,7 +1210,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-255",
@@ -1219,7 +1286,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-256",
@@ -1308,7 +1375,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-253",
@@ -1376,7 +1443,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-252",
@@ -1462,7 +1529,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-250",
@@ -1556,7 +1623,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-261",
@@ -1627,7 +1694,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-251",
@@ -1729,7 +1796,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-213",
@@ -1809,7 +1876,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-249",
@@ -1908,7 +1975,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-243",
@@ -1998,7 +2065,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-244",
@@ -2092,7 +2159,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-245",
@@ -2163,7 +2230,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-254",
@@ -2251,7 +2318,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-262",
@@ -2322,7 +2389,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-248",
@@ -2393,7 +2460,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-242",
@@ -2474,7 +2541,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-246",
@@ -2541,7 +2608,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-241",
@@ -2622,7 +2689,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-240",
@@ -2694,7 +2761,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-237",
@@ -2766,7 +2833,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-238",
@@ -2842,7 +2909,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-239",
@@ -2909,7 +2976,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-247",
@@ -2984,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-235",
@@ -3064,7 +3131,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-236",
@@ -3140,7 +3207,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-234",
@@ -3226,7 +3293,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-231",
@@ -3293,7 +3360,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-232",
@@ -3365,7 +3432,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-233",
@@ -3445,7 +3512,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-230",
@@ -3517,7 +3584,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-229",
@@ -3589,7 +3656,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-226",
@@ -3680,7 +3747,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-228",
@@ -3768,7 +3835,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-227",
@@ -3849,7 +3916,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-224",
@@ -3928,7 +3995,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-225",
@@ -4016,7 +4083,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-223",
@@ -4093,86 +4160,6 @@
             "팀 액션: Bedrock과 Claude Platform on AWS 각각의 region·ZDR·IAM/SSO·logging·quota·가격 matrix 작성",
             "팀 액션: 대표 coding·agent task에서 품질 pass rate·p95 latency·retry·tool error·성공 작업당 비용 canary 비교",
             "팀 액션: model access 제한·quota 소진·Guardrails rejection·provider 장애 시 fallback과 audit preservation runbook 시험"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-222",
-      "title_ko": "AWS, 실제 클라우드 환경에서 AI coding agent를 평가하는 오픈소스 aws-bench 연구 preview 공개",
-      "title_original": "AWS announces aws-bench, an open-source benchmark for AI agents on AWS",
-      "summary": "핵심: AWS가 실제 disposable account·CDK scenario·scoped credential에서 agent의 AWS 작업 수행을 평가하는 오픈소스 `aws-bench` 연구 preview를 공개. 구성: 진단형 task는 LLM judge, resource 생성·수정 task는 live AWS state의 programmatic verifier로 채점하며 quickstart는 9 task·1 scenario 제공. 운영: benchmark 자체가 AWS Organization·member account·quota·Docker·cleanup을 요구하므로 test account 격리·예산·권한·잔존 resource 확인을 evaluation runbook에 포함 필요.",
-      "detail": "AWS는 `aws-bench`를 실제 AWS 작업을 수행하는 AI coding agent 평가용 연구 preview로 공개했다. GitHub README는 isolated AWS account에 CDK stack 기반 scenario를 배포하고 scoped credential이 든 sandboxed container에서 agent를 실행한 뒤, read-only 진단은 LLM judge로, create·modify 작업은 live AWS resource state의 programmatic verifier로 판정하는 구조를 설명한다. `aws-bench-quickstart`는 9 task·1 scenario, basic은 78 task·4 scenario, advanced는 47 task·3 scenario로 안내된다. 실행에는 AWS Organization·member account 생성 권한, quota, Docker Compose v2와 buildx 0.17 이상, Python 3.12 이상, `uv`가 필요하며 cleanup·account termination 전까지 생성 자원의 비용·권한·데이터 경계를 별도로 통제해야 한다.",
-      "why_it_matters": "정적 fixture가 아닌 live cloud state에서 agent를 평가하면 실제 IaC·권한·resource lifecycle 오류를 포착할 수 있으나, benchmark의 성공률은 model 성능만 아니라 scenario·quota·credential scope·verifier·cleanup 품질의 결과임.",
-      "engineering_implication": "플랫폼 팀은 production credential 대신 격리 Organization·명시적 budget·SCP·짧은 credential·resource tag·자동 cleanup을 사용하고, reward 외 IAM denial·예산·resource drift·cleanup success·trial 비용을 함께 수집 필요.",
-      "korea_implication": "국내 AWS 조직도 agent 도입 평가에서 데모 task만 비교하지 말고 계정 분리·비용 한도·data residency·change approval·rollback evidence를 포함한 자체 scenario로 재현성 검증 필요.",
-      "category": "DevTools",
-      "tags": [
-        "DevTools",
-        "AWS",
-        "AI Agent",
-        "Benchmark",
-        "Cloud Security",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-24 22:00",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-bench/",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "aws-bench GitHub repository and README",
-          "url": "https://github.com/aws-bench/aws-bench"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 실제 AWS task에서 AI coding agent와 model 조합을 평가하는 오픈소스 `aws-bench` 연구 preview를 공개함. AWS What’s New는 날짜만 제공하고, RSS `pubDate` 2026-07-24 13:00 UTC를 **2026-07-24 22:00 KST**로 변환해 카드 시각으로 사용함.",
-          "items": [
-            "목적: misconfiguration 진단·infrastructure provisioning·live cloud 운영 task의 정확도와 효율 평가",
-            "배포: 공개 GitHub repository와 companion `aws-bench-datasets` repository 제공",
-            "경계: research preview이며 production agent의 안전성·비용·권한 적합성을 자동 보증하지 않음"
-          ]
-        },
-        {
-          "heading": "평가 환경과 채점 구조",
-          "body": "각 scenario는 전용 AWS account에 CDK stack과 setup script로 배포되며, agent는 scoped AWS credential을 가진 sandboxed container에서 task를 수행함. static fixture가 아닌 실제 resource state를 평가 대상으로 삼는 구조임.",
-          "items": [
-            "진단형: read-only introspection task의 답변을 reference answer와 LLM judge로 비교",
-            "변경형: create·modify task 뒤 live AWS state를 programmatic verifier로 검사하고 변경 rollback",
-            "결과: trial별 `reward.json`에 pass `1.0`, fail `0.0`을 기록하는 README 설명"
-          ]
-        },
-        {
-          "heading": "dataset·실행 전제",
-          "body": "README 기준 quickstart는 9 task·1 scenario, basic은 78 task·4 scenario, advanced는 47 task·3 scenario로 구성됨. incremental test를 위한 scenario 단위 dataset도 제공됨.",
-          "items": [
-            "환경: macOS 또는 Linux, Python 3.12 이상, `uv`, Docker Compose v2와 buildx 0.17 이상 요구",
-            "AWS 권한: Organization과 disposable member account 생성 권한 및 quota 처리 필요",
-            "수명주기: `env init`·`env setup` 뒤 `run`, 이후 `env cleanup`·`env terminate` 순서의 resource·account 종료 절차"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "agent benchmark가 real cloud state를 쓰면 tool call 형식이나 code completion을 넘어 policy·resource dependency·검증 가능 outcome을 평가할 수 있음. 반대로 평가 harness가 새 계정·resource·credential을 만들기 때문에 benchmark를 안전한 read-only test로 취급할 수 없음.",
-          "items": [
-            "측정: reward만으로 model 품질을 단정하지 않고 scenario 난이도·retry·quota·verifier false positive를 함께 기록",
-            "보안: agent credential scope와 scenario account를 production control plane에서 격리할 필요",
-            "비용: trial 수·idle resource·failed cleanup·quota request를 evaluation 비용과 운영 리스크로 집계"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "agent 평가를 도입하는 팀은 benchmark score와 cloud-control evidence를 같은 release gate로 관리해야 함. score가 높아도 cleanup 실패·권한 과다·resource drift가 있으면 production readiness 근거가 될 수 없음.",
-          "items": [
-            "팀 액션: 전용 Organization 또는 sandbox account·SCP·budget alarm·mandatory tag·time-bound credential을 사전 구성",
-            "팀 액션: task별 IAM denial·API call·resource diff·cost·cleanup·account close 상태를 audit artifact로 저장",
-            "팀 액션: production workflow를 복제한 bounded scenario에서 success rate·p95 runtime·trial 비용·rollback success를 비교"
           ]
         }
       ],

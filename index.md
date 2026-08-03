@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-03 | Total pages: 248
+> Last updated: 2026-08-03 | Total pages: 249
 
 ## Entities
 
@@ -28,6 +28,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/docker-github-actions-oidc-connections-2026-08-01]] — Docker 조직용 GitHub Actions OIDC 연결과 Docker Hub workload identity·ruleset·CI/CD 권한 경계.
 - [[raw/articles/microsoft-captivecrunch-hospitality-wifi-2026-08-01]] — Microsoft CaptiveCrunch의 hospitality captive portal DNS·HTTP 조작, 가짜 update·Entra token theft와 travel-security 대응 경계.
 - [[raw/articles/aitimes-openai-astra-mathematics-2026-08-02]] — OpenAI Astra 수학 결과 보도와 Lean artifact·재현성·human review 증거 경계.
 - [[raw/articles/aitimes-eu-ai-act-transparency-labeling-2026-08-02]] — EU AI Act 소비자 투명성 규정 적용 보도와 chatbot·생성 콘텐츠 라벨·provenance release control 경계.
