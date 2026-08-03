@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-03 | Total pages: 249
+> Last updated: 2026-08-04 | Total pages: 250
 
 ## Entities
 
@@ -29,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimeskr-eu-ai-act-transparency-machine-readable-2026-08-03]] — EU AI Act 투명성 의무 보완 보도: machine-readable 식별 정보·AI 생성 텍스트·감정 인식/생체정보 분류 적용 범위.
 - [[raw/articles/qwen-qwen3-8-max-autonomous-coding-2026-08-03]] — Qwen3.8-Max 공식 공개, 장기 자율 코딩 trace와 agent control-plane 검증 경계.
 - [[raw/articles/docker-github-actions-oidc-connections-2026-08-01]] — Docker 조직용 GitHub Actions OIDC 연결과 Docker Hub workload identity·ruleset·CI/CD 권한 경계.
 - [[raw/articles/microsoft-captivecrunch-hospitality-wifi-2026-08-01]] — Microsoft CaptiveCrunch의 hospitality captive portal DNS·HTTP 조작, 가짜 update·Entra token theft와 travel-security 대응 경계.
