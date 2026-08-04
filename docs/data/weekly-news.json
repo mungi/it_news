@@ -2,10 +2,10 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-05 00:56",
+  "last_updated_kst": "2026-08-05 05:01",
   "audience": "developers and engineers",
   "executive_summary": [
-    "cPanel `CVE-2026-58048`(CVSS 9.4) 패치: 인증된 cPanel account와 MySQL/MariaDB feature 접근 조건에서 database rename 과정의 database-root SQL 실행 가능성을 수정. shared hosting은 fixed build·feature exposure·tenant boundary·database audit을 함께 점검 필요.",
+    "Keyv 연계 npm 웜은 12개 조직으로 확산해 SafeDep 확인 기준 444개 package·2,234개 악성 version을 남김. `preinstall`과 CI secret·credential 탈취, revoke-trigger watcher 때문에 lockfile·runner 실행 증거를 기준으로 격리·watcher 제거·rotation 순서를 운영 필요.",
     "Amazon Bedrock GPT-5.6 Sol·Terra·Luna가 100만 token context를 지원. explicit cache breakpoint의 prompt caching discount는 제공되지만, long-context 도입은 token·cache hit·tail latency·retrieval quality·prompt injection blast radius를 workload별로 측정 필요.",
     "Kubernetes Gateway API v1.6에서 TCPRoute·UDPRoute가 Standard channel로 승격. upstream API maturity와 controller/cloud LB 구현·health check·connection drain·policy enforcement를 분리해 canary 필요.",
     "Cloudflare `@cloudflare/computer`와 Qwen3.8-Max 사례: agent runtime·long-horizon coding 도입은 tool 권한·workspace state·CI evidence·human approval·budget cap을 같은 control plane에서 검증 필요."
@@ -213,6 +213,88 @@
   ],
   "items": [
     {
+      "id": "news-277",
+      "title_ko": "Keyv 연계 npm 웜: 444개 package·2,234개 악성 version의 `preinstall`·CI secret 탈취를 lockfile incident로 대응",
+      "title_original": "Keyv-Linked npm Worm Poisons Hundreds of Packages, Plants Claude Code and VS Code Hooks",
+      "summary": "핵심: SafeDep은 8월 4일 npm 웜이 12개 무관 조직을 침해해 **444개 package·2,234개 악성 version**을 배포했다고 분석. 각 악성 release는 `preinstall: node setup.mjs`로 install 전에 payload를 실행하며 GitHub·npm·cloud·Vault·Kubernetes credential, database connection string, private key와 GitHub Actions runner memory의 secret을 노린다는 분석. `latest` tag나 namespace 차단 목록만으로 복구를 판단하지 말고 lockfile·install log·runner/workstation 실행 여부를 기준으로 격리, watcher 제거 후 credential rotation, package provenance 재검증 필요.",
+      "detail": "The Hacker News와 SafeDep 분석에 따르면 Keyv·Cacheable 계열에서 확인된 npm 웜은 8월 4일 09:35~13:18 UTC 사이 12개 무관 조직의 namespace를 초당 약 한 package 속도로 재배포했다. SafeDep의 현재 확인 범위는 444개 package 이름과 2,234개 악성 version이며, 이 수치는 감염된 개발자 시스템 수가 아니라 registry artifact 수다. 악성 version은 `preinstall` lifecycle script로 `node setup.mjs`를 실행하고, runtime 확보 뒤 credential·CI secret을 수집하며 npm publishing 권한을 이용해 확산할 수 있다. SafeDep은 token revoke 시 attacker-supplied command를 실행하는 watcher도 설명하므로, 노출 의심 endpoint에서는 무작정 credential부터 rotate하지 말고 격리·forensic preservation·watcher 제거·credential invalidation 순서를 incident runbook으로 확인해야 한다. Keyv repository의 `.claude/settings.json` hook과 `.vscode/tasks.json` `runOn: folderOpen` task는 workspace trust/permission 조건에서 별도 실행 경로가 될 수 있으나 모든 기본 환경에서 무조건 실행되는 것은 아니다.",
+      "why_it_matters": "package install과 CI runner는 source code review 밖에서 lifecycle script를 실행할 수 있으며, transitive dependency의 resolved version 하나가 repository·registry·cloud credential 경계에 닿을 수 있음. SafeDep의 artifact 수는 피해 host 수나 실제 credential 탈취를 증명하지 않지만, lockfile과 runner execution evidence를 보존해야 하는 공급망 incident 범위를 뒷받침함.",
+      "engineering_implication": "조직 registry mirror, lockfile/SBOM, CI dependency cache, npm install log, endpoint EDR를 함께 조회해 exact package/version·install 시각·lifecycle script 실행·runner identity를 매핑 필요. 영향을 받은 endpoint는 outbound network와 publish token을 우선 제한하고, forensic snapshot과 malicious watcher 유무를 확인한 뒤 GitHub/npm/cloud/Vault/Kubernetes/database key를 scope별로 rotate·revoke해야 함. 향후에는 lifecycle script approval, immutable lockfile, trusted registry/provenance, CI secret isolation, untrusted workspace hook 차단을 release gate에 연결 필요.",
+      "korea_implication": "국내 개발 조직도 public npm과 GitHub Actions·self-hosted runner·cloud credential을 함께 쓰면 같은 dependency resolution 경로에 노출될 수 있음. 특정 국내 피해나 package 사용 여부는 각 조직의 lockfile·runner·endpoint 증거 없이 단정하지 않음.",
+      "category": "Security",
+      "tags": [
+        "npm",
+        "Software Supply Chain",
+        "Malware",
+        "CI/CD",
+        "GitHub Actions",
+        "Credential Theft",
+        "Claude Code",
+        "VS Code"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 98,
+      "published_kst": "2026-08-04 22:30",
+      "source_name": "The Hacker News / SafeDep",
+      "source_url": "https://thehackernews.com/2026/08/keyv-linked-npm-worm-poisons-hundreds.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAb0f5sNdFs0uLbgh9_rBZ-SaCrUjv3c4mL7OLF7pFPxH5pusnFJyInc_7S-QqgMa0DsEm2fId6v2sWX7hJcaA0eHTHngKBXGOA3ysg7NYz1CyMAgwsrWnJ3FA1HGFkzglgj5pGsXeLWzXjCUhNGi5ecEsqIu2oOzz_koXsQAAC0EV5HkuAJGtAVvWotE/s1700-e365/npmnpm.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "SafeDep payload analysis and affected package indicators",
+          "url": "https://safedep.io/keyv-npm-supply-chain-compromise/"
+        },
+        {
+          "title": "Socket campaign analysis",
+          "url": "https://socket.dev/blog/popular-npm-packages-in-the-keyv-and-cacheable-namespaces-compromised-in-active-supply-chain"
+        },
+        {
+          "title": "npm 12 approve-scripts documentation",
+          "url": "https://docs.npmjs.com/cli/v12/commands/npm-approve-scripts/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News RSS `Tue, 04 Aug 2026 19:00:23 +0530`을 `2026-08-04 22:30 KST`로 환산함. SafeDep은 8월 4일 09:35~13:18 UTC 사이 npm 웜이 12개 무관 조직의 namespace로 확산했다고 분석함.",
+          "items": [
+            "확인 범위: **444개 package 이름·2,234개 악성 version**이라는 SafeDep 최신 분석",
+            "확산: 각 victim namespace를 약 초당 한 package 속도로 재배포했다는 SafeDep 분석",
+            "경계: package/version 수는 registry artifact 수이며 실제 피해 host·credential 탈취 수를 뜻하지 않음"
+          ]
+        },
+        {
+          "heading": "실행 경로와 탈취 대상",
+          "body": "악성 release는 `preinstall: node setup.mjs`를 추가해 일반 `npm install`에서 application code보다 먼저 payload를 실행한다는 분석. Stage one은 필요 시 Bun 1.3.13을 내려받고 compiled bundle로 넘긴다는 SafeDep 설명.",
+          "items": [
+            "lifecycle: `keyv@6.0.0`에서 `node setup.mjs` preinstall과 추가 JavaScript file 확인",
+            "대상: GitHub·npm·AWS/GCP/Azure·Vault·Kubernetes credential, database connection string, private key 수집이라는 분석",
+            "CI: GitHub Actions runner memory의 secret을 읽을 수 있다는 SafeDep 분석"
+          ]
+        },
+        {
+          "heading": "workspace hook과 복구 순서",
+          "body": "SafeDep과 THN은 Keyv repository의 `.claude/settings.json` hook과 `.vscode/tasks.json`의 `runOn: folderOpen` task를 별도 실행 경로로 설명함. workspace trust 또는 project configuration permission 조건이 있어 clone만으로 무조건 실행되는 경로는 아님.",
+          "items": [
+            "watcher: stolen GitHub token revoke 시 attacker-supplied command를 실행하도록 설계됐다는 SafeDep 분석",
+            "순서: network/publish access 격리·forensic evidence 보존·watcher 제거·credential rotation/revocation 순서 검토",
+            "경계: npm 12의 unapproved lifecycle script 기본 차단은 이전 client와 허용된 다른 install path의 안전을 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "조사와 시사점",
+          "body": "tag가 빠르게 바뀌고 일부 package는 clean version으로 복구됐으므로 current `latest`나 namespace 단위 blocklist만으로 exposure를 판정할 수 없음. exact dependency resolution과 script execution evidence가 incident 판정 단위.",
+          "items": [
+            "조사: lockfile·SBOM·package manager cache·CI log·runner identity로 package/version/install time 매핑",
+            "격리: affected runner/workstation의 egress·registry publish token·cloud role session 우선 제한",
+            "예방: lifecycle script approval·immutable lockfile·registry provenance·secret isolation·untrusted workspace hook 차단을 CI gate로 적용"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-274",
       "title_ko": "cPanel `CVE-2026-58048` 패치: hosting account의 database-root SQL 실행 가능성을 account-boundary incident로 대응",
       "title_original": "New cPanel Critical Flaw Could Let Hosting Customers Run SQL as Database Root",
@@ -286,7 +368,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-273",
@@ -355,7 +437,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-275",
@@ -427,7 +509,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-276",
@@ -500,7 +582,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-272",
@@ -582,7 +664,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-266",
@@ -655,7 +737,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-267",
@@ -723,7 +805,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-268",
@@ -793,7 +875,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-265",
@@ -866,7 +948,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-263",
@@ -942,7 +1024,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-260",
@@ -1019,7 +1101,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-258",
@@ -1101,7 +1183,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-257",
@@ -1184,7 +1266,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-270",
@@ -1271,7 +1353,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-259",
@@ -1357,7 +1439,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-271",
@@ -1424,7 +1506,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-264",
@@ -1511,7 +1593,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-269",
@@ -1589,7 +1671,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-255",
@@ -1665,7 +1747,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-256",
@@ -1754,7 +1836,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-253",
@@ -1822,7 +1904,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-252",
@@ -1908,7 +1990,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-250",
@@ -2002,7 +2084,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-261",
@@ -2073,7 +2155,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-251",
@@ -2175,7 +2257,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-213",
@@ -2255,7 +2337,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-249",
@@ -2354,7 +2436,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-243",
@@ -2444,7 +2526,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-244",
@@ -2538,7 +2620,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-245",
@@ -2609,7 +2691,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-254",
@@ -2697,7 +2779,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-262",
@@ -2768,7 +2850,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-248",
@@ -2839,7 +2921,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-242",
@@ -2920,7 +3002,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-246",
@@ -2987,7 +3069,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-241",
@@ -3068,7 +3150,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-240",
@@ -3140,7 +3222,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-237",
@@ -3212,7 +3294,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-238",
@@ -3288,7 +3370,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-239",
@@ -3355,7 +3437,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-247",
@@ -3430,7 +3512,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-235",
@@ -3510,7 +3592,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-236",
@@ -3586,7 +3668,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-234",
@@ -3672,7 +3754,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-231",
@@ -3739,7 +3821,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-232",
@@ -3811,7 +3893,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-233",
@@ -3891,7 +3973,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-230",
@@ -3963,7 +4045,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-229",
@@ -4032,97 +4114,6 @@
             "팀 액션: agent run별 immutable event log, clock synchronization, model·prompt·tool·policy provenance 수집",
             "팀 액션: unexpected egress·monitor disconnect·privilege change에 대한 detection drill과 operator escalation rehearsal 수행",
             "팀 액션: third-party incident claim은 source tier·unverified field·follow-up owner·expiry를 incident register에 기록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-226",
-      "title_ko": "Fastjson 1.x RCE: 기본 구성 Spring Boot fat-JAR에서 악용 가능, 1.x 패치 부재·공격 관측 보도",
-      "title_original": "Fastjson 1.x RCE Vulnerability Targeted in Attacks With No Patched Available",
-      "summary": "핵심: Alibaba 공지는 fastjson 1.x `1.2.68`~`1.2.83`가 기본 설정의 Spring Boot executable fat-JAR에서 AutoType·classpath gadget 없이 RCE될 수 있다고 확인. 상태: 7월 25일 보도는 ThreatBook·Imperva의 공격 관측과 1.x patch 부재를 전하지만, 피해·성공 실행은 공개 증거로 확정되지 않음. 대응: 직접·전이 dependency와 fat-JAR·JSON entry point·SafeMode를 inventory하고 SafeMode/`noneautotype` 호환성 검증 또는 fastjson2 이관을 우선 처리 필요.",
-      "detail": "Alibaba의 2026년 7월 21일 공식 GitHub Wiki 공지는 fastjson 1.x `1.2.68`~`1.2.83`의 RCE를 Critical로 분류한다. 기본 구성에서 AutoType 활성화나 classpath gadget이 없어도, network-reachable JSON parser를 가진 Spring Boot executable fat-JAR 조건에서 악용 가능하다고 명시한다. Spring Boot 2.x·3.x·4.x와 JDK 8·11·17·21에서 end-to-end 검증됐으며 fastjson2 전체 버전, SafeMode 활성화, `noneautotype` build, non-fat-JAR·WAR 배포는 영향 없음으로 열거한다. The Hacker News의 7월 25일 보도는 ThreatBook·Imperva의 exploit activity 관측과 patched fastjson 1.x artifact 부재를 전하지만, 공격 횟수·피해 조직·RCE 성공·침해 증거는 공개되지 않았다. 운영팀은 영향 전제를 먼저 식별하고 SafeMode/`noneautotype` 전환 호환성 및 fastjson2 이관을 change-control로 처리해야 한다.",
-      "why_it_matters": "Java 서비스의 JSON parser는 외부 입력 경계이며, affected version과 Spring Boot executable fat-JAR·SafeMode 기본값·reachable parser 조합이 맞으면 애플리케이션 프로세스 권한으로 RCE 경로가 열릴 수 있음. 공격 관측 보도는 우선순위를 높이지만 개별 서비스 침해를 뜻하지 않으므로 배포 조건과 telemetry로 판단 필요.",
-      "engineering_implication": "애플리케이션·플랫폼·보안 팀은 SBOM과 Maven dependency graph에서 fastjson 직접·전이 의존성을 찾고, `java -jar` fat-JAR·JSON endpoint·SafeMode·egress를 함께 inventory 필요. 즉시 이관이 어려우면 SafeMode 또는 `noneautotype`를 staging에서 검증하고, unexpected nested JAR URL·outbound connection·child process·web shell을 hunt한 뒤 fastjson2 이관 계획을 owner·기한과 함께 관리 필요.",
-      "korea_implication": "국내 Java·Spring Boot 서비스도 WAS 유형만으로 비영향을 가정하지 말고 실제 packaging과 library graph를 배포 artifact 기준으로 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Java",
-        "Spring Boot",
-        "RCE",
-        "Supply Chain",
-        "Application Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-07-25 21:52",
-      "source_name": "Alibaba fastjson security advisory / The Hacker News",
-      "source_url": "https://github.com/alibaba/fastjson2/wiki/Security-Advisory:-Remote-Code-Execution-in-fastjson-1.2.68%E2%80%931.2.83",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News: Fastjson 1.x RCE attack-observation report (RSS 2026-07-25 18:22:43 +05:30 = 21:52 KST)",
-          "url": "https://thehackernews.com/2026/07/fastjson-1x-rce-vulnerability-targeted.html"
-        },
-        {
-          "title": "ThreatBook: Fastjson 1.2.83 active-exploitation detection report",
-          "url": "https://threatbook.io/blog/fastjson-rce-1.2.83-active-exploitation-detected-detection-mitigation"
-        },
-        {
-          "title": "FearsOff technical analysis",
-          "url": "https://fearsoff.org/research/fastjson-1-2-83-rce"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Alibaba `fastjson2` GitHub Wiki의 2026-07-21 보안 공지는 fastjson 1.x `1.2.68`~`1.2.83`의 RCE를 Critical로 분류함. 카드 시각 **2026-07-25 21:52 KST**는 원 공지의 시각이 아니라 The Hacker News RSS `pubDate` 2026-07-25 18:22:43 +05:30을 변환한 관련 보도 시각임.",
-          "items": [
-            "범위: fastjson 1.x `1.2.68`~`1.2.83`이며 마지막 1.x release인 `1.2.83` 포함",
-            "전제: attacker-controlled JSON이 도달하는 Spring Boot executable fat-JAR와 기본 `SafeMode OFF` 구성",
-            "경계: 원 공지는 2026-07-21 날짜만 제공하며 active exploitation·피해 조직·성공 침해를 직접 주장하지 않음"
-          ]
-        },
-        {
-          "heading": "영향 조건과 비영향 범위",
-          "body": "공식 공지는 AutoType 활성화와 classpath gadget 없이 기본 구성이 영향을 받을 수 있다고 설명함. Spring Boot 2.x·3.x·4.x 및 JDK 8·11·17·21에서 end-to-end 검증을 명시하지만, Java/Spring Boot 전체 배포가 동일하게 취약하다는 뜻은 아님.",
-          "items": [
-            "영향 조건: `java -jar`로 시작하는 Spring Boot executable fat-JAR 배포",
-            "진입점: `JSON.parse`, `JSON.parseObject(String)`, `JSON.parseObject(String, Class)` 도달 가능성",
-            "주의: target DTO class를 고정해도 Object·Map 형식 field에 nested payload가 있으면 완화 불충분",
-            "비영향: all fastjson2, `SafeMode=true`, `noneautotype` build, plain non-fat JAR·generic uber-JAR·Tomcat/Jetty WAR, fastjson 1.2.60 이하"
-          ]
-        },
-        {
-          "heading": "공격 관측 보도의 증거 경계",
-          "body": "The Hacker News는 ThreatBook과 Imperva가 공격 activity를 관측했다고 전함. 이 보도는 대응 우선순위를 높이는 신호지만, 원시 요청·attack count·named victim·실제 RCE execution·breach evidence는 공개되지 않았다고 명시함.",
-          "items": [
-            "관측: ThreatBook이 탐지 지원 뒤 exploitation activity를 포착했다고 보도에서 인용",
-            "관측: Imperva가 여러 산업과 국가를 향한 activity를 보고했다고 보도에서 인용",
-            "불확실성: observed request 또는 exploit activity가 실제 RCE 성공·침해를 자동 증명하지 않는 증거 경계",
-            "상태: 보도는 7월 25일 기준 patched fastjson 1.x artifact를 찾지 못했다고 설명"
-          ]
-        },
-        {
-          "heading": "즉시 완화와 탐지",
-          "body": "공식 공지는 SafeMode 활성화 또는 `noneautotype` build를 즉시 완화로, fastjson2 이관을 장기 조치로 제시함. 변경은 parser 동작 호환성에 영향을 줄 수 있으므로 deployment artifact와 traffic을 기준으로 단계 적용 필요.",
-          "items": [
-            "inventory: SBOM·Maven dependency graph에서 직접·전이 fastjson version과 owning service 식별",
-            "validate: fat-JAR·JSON entry point·`SafeMode`·AutoType 설정·network exposure를 service별 확인",
-            "mitigate: SafeMode 또는 `noneautotype`를 staging·canary에서 contract test와 rollback 조건으로 검증",
-            "detect: suspicious type value·nested JAR URL·unexpected outbound connection·child process·file change·web shell hunt"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "이번 항목은 library version만의 문제가 아니라 JSON input boundary와 Java packaging 방식이 결합된 배포 위험임. patch availability와 별개로 실제 artifact 조건을 먼저 식별해야 대응 범위를 줄일 수 있음.",
-          "items": [
-            "팀 액션: 24시간 내 internet-facing Spring Boot fat-JAR와 fastjson `1.2.68`~`1.2.83` 교집합 목록 생성",
-            "팀 액션: SafeMode/`noneautotype` 변경 영향과 emergency rollback을 서비스 owner별로 승인",
-            "팀 액션: fastjson2 migration backlog에 dependency owner·test evidence·cutover date를 기록"
           ]
         }
       ],
