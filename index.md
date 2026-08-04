@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-04 | Total pages: 251
+> Last updated: 2026-08-04 | Total pages: 252
 
 ## Entities
 
@@ -29,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-elice-40c-warm-water-ai-data-center-2026-08-04]] — 엘리스그룹 B300 2,560장 PMDC와 40도 온수 냉각·PUE 목표의 commissioning 검증 경계.
 - [[raw/articles/cloudflare-computer-agent-workspace-multiruntime-2026-08-03]] — Cloudflare `@cloudflare/computer` early preview의 shared workspace·isolate/container backend·tool audit 운영 경계.
 - [[raw/articles/aitimeskr-eu-ai-act-transparency-machine-readable-2026-08-03]] — EU AI Act 투명성 의무 보완 보도: machine-readable 식별 정보·AI 생성 텍스트·감정 인식/생체정보 분류 적용 범위.
 - [[raw/articles/qwen-qwen3-8-max-autonomous-coding-2026-08-03]] — Qwen3.8-Max 공식 공개, 장기 자율 코딩 trace와 agent control-plane 검증 경계.

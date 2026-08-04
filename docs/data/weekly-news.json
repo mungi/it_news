@@ -2,13 +2,13 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-04 12:34",
+  "last_updated_kst": "2026-08-04 16:41",
   "audience": "developers and engineers",
   "executive_summary": [
     "Qwen3.8-Max 공식 공개: Qwen은 2.4T parameter·95B active 모델을 QwenCloud API로 제공하고 Max급 최초의 open weights를 다음 주 공개한다고 발표. 16일 자율 코딩 run의 265 commits·127 PRs·151 issues는 vendor 공개 실험 범위이므로, 장기 agent 도입은 repo trace·CI gate·권한·비용·rollback을 별도 재현해 승인 필요.",
     "Cloudflare가 8월 3일 22:15 KST `@cloudflare/computer` early preview를 공개. Durable Object의 SQLite-backed workspace를 isolate와 container backend가 공유하는 구조이므로, tool 권한·FUSE 동기화·backend escalation·audit trace·container 비용을 canary에서 함께 검증 필요.",
     "브라우저·코딩 agent 운영: 장기 실행 성능 claim은 task completion과 별개로 issue 상태 전이, CI/E2E evidence, PR approval, secret egress, budget cap, human stop authority를 같은 control plane에서 측정 필요.",
-    "국내 소스 표면 점검: GeekNews·GN⁺·AI타임스·인공지능신문을 직접 확인. 국가 AI 컴퓨팅센터 보도는 2026-08-03 15:32 KST로 현 주간 시작 시각 전이어서 정규 카드에서는 제외하고, 창 내 신규 후보만 반영."
+    "국내 AI 인프라: AI타임스는 엘리스그룹이 B300 GPU 2,560장을 4개 PMDC에 구축하고 40도 이상 온수 액체 냉각·외기 냉각·폐쇄형 순환을 적용한다고 보도. PUE 1.1은 목표치이므로 rack thermal headroom·cooling/power failover·PUE/WUE 실측·누수/정비 drill을 commissioning 기준으로 확인 필요."
   ],
   "deep_dives": [
     {
@@ -212,6 +212,75 @@
   ],
   "items": [
     {
+      "id": "news-273",
+      "title_ko": "엘리스그룹 40도 온수 냉각 AI 데이터센터 보도: B300 2,560장·PUE 1.1 목표를 commissioning 지표로 검증",
+      "title_original": "Elice Group to build Korea's first 40°C warm-water-cooled AI data center",
+      "summary": "핵심: AI타임스는 엘리스그룹이 NVIDIA B300 GPU 2,560장을 4개 PMDC에 구축하고, 40도 이상 온수 액체 냉각·외기 냉각·폐쇄형 순환을 적용한다고 보도. PUE 1.1 유지는 기업의 목표이며, 실제 IT load·외기 조건·랙 밀도·용수·가용성·SLA는 기사에서 확인되지 않음. 운영: GPU 장수보다 rack thermal headroom, 냉각·전력 이중화, PUE/WUE 실측, 누수·failover drill을 commissioning gate로 관리 필요.",
+      "detail": "AI타임스는 엘리스그룹이 과기정통부·NIPA의 AI 컴퓨팅 자원 활용 기반 강화 사업 참여 기업으로 선정돼 NVIDIA B300 GPU 2,560장을 4개 모듈형 AI 데이터센터(PMDC)에 동별 640장씩 구축한다고 보도했다. 기사에 따르면 냉각에는 40도 이상의 온수 액체 냉각과 외기 냉각을 적용하고, 폐쇄형 순환으로 냉각수를 증발 없이 재순환한다. 고하중·고단열 모듈러 컨테이너와 냉각 배관 분리 설계도 언급됐다. PUE 1.1은 기업의 유지 목표이며, 실측 PUE/WUE, IT load·외기 조건·랙 밀도, 냉각수 온도, 전력·네트워크 이중화, 가동 일정과 고객 workload/SLA는 기사에서 확인되지 않는다.",
+      "why_it_matters": "고밀도 AI 클러스터에서 cooling plant·power train·water loop는 GPU 조달과 동등한 capacity 제약임. 온수 냉각의 절감 효과는 목표 PUE가 아니라 계절·부하별 facility 및 rack-level 실측과 가용성 증적으로 판단해야 함.",
+      "engineering_implication": "B300/rack density별 inlet·outlet temperature, coolant flow, thermal headroom, leak detection, water treatment, power/cooling failover, emergency shutdown을 commissioning acceptance criteria로 정의 필요. 월별 PUE/WUE, cooling energy, IT utilization, incident·maintenance window를 workload 태그와 함께 계측하고 목표와 실측을 분리해 검증해야 함.",
+      "korea_implication": "국내 AI 컴퓨팅 인프라 확충 사업의 발표 사례지만, 실제 capacity·서비스 제공 시점·전력/용수 인허가·SLA는 기사만으로 확정하지 않음. 국내 도입 조직은 공급 발표와 별도로 위치·전력 수전·냉각·네트워크·운영 지원 조건을 계약과 acceptance test로 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "AI Data Center",
+        "NVIDIA B300",
+        "Liquid Cooling",
+        "Warm-water Cooling",
+        "PUE",
+        "PMDC",
+        "FinOps",
+        "Korea"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-08-04 13:31",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213501",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/213501_216999_3012.jpg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스는 엘리스그룹이 과기정통부·NIPA의 AI 컴퓨팅 자원 활용 기반 강화 사업 참여 기업으로 선정됐다고 보도함. 페이지 `article:published_time` `2026-08-04T13:31:09+09:00`을 `2026-08-04 13:31 KST`로 사용함.",
+          "items": [
+            "구축: NVIDIA **B300 GPU 2,560장**을 4개 PMDC 동에 동별 640장씩 배치한다는 기사 설명",
+            "범위: 고하중·고단열 모듈러 컨테이너와 냉각 배관 분리 설계를 적용한다는 기업 설명",
+            "경계: 가동 일정·서비스 제공 범위·고객 workload·SLA는 기사에서 확인되지 않음"
+          ]
+        },
+        {
+          "heading": "냉각·용수 구조",
+          "body": "기사는 40도 이상 온수 액체 냉각과 외기 냉각을 적용하고, 외부 공기를 활용한 폐쇄형 순환으로 냉각수를 증발 없이 재순환한다고 전함. 높은 냉각수 온도로 냉동기 가동을 줄여 전력 사용량을 낮추려는 설계라는 기업 발표 범위임.",
+          "items": [
+            "냉각: 40도 이상 온수 액체 냉각과 외기 냉각 적용이라는 보도",
+            "용수: 폐쇄형 순환으로 증발 없는 냉각수 재순환을 목표로 한 설명",
+            "리스크: inlet·outlet 온도, flow, water treatment, 누수 탐지, 계절별 외기 조건의 실제 운전값 미확인"
+          ]
+        },
+        {
+          "heading": "수치와 증거 경계",
+          "body": "PUE 1.1은 운영 실측이 아니라 기업의 유지 목표임. 기사에는 실제 IT load, 랙 밀도, 냉각수 온도, 전력·급수·네트워크 이중화, WUE, 장애·정비 window, availability 또는 고객 SLA가 제시되지 않음.",
+          "items": [
+            "분리: 목표 PUE와 월별·계절별 facility 실측 PUE/WUE를 동일 지표로 취급하지 않기",
+            "분리: GPU 수량과 usable capacity·utilization·thermal throttling·maintenance impact를 별도 확인",
+            "검증: 국내 최초 여부와 Rubin 방식 연계는 기업·기사 서술 범위로 유지"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI 데이터센터의 procurement 평가 단위는 GPU 장수가 아니라 rack thermal headroom, cooling·power redundancy, commissioning evidence, 운영 효율임. 온수 냉각은 설치 발표 뒤 실제 workload와 외기 조건에서의 PUE/WUE·가용성으로 재검증할 대상.",
+          "items": [
+            "팀 액션: B300/rack density별 thermal map·coolant flow·leak detection·emergency shutdown acceptance criteria 정의",
+            "팀 액션: power/cooling failover·maintenance window·load shedding을 포함한 commissioning drill 실행",
+            "팀 액션: PUE/WUE·cooling energy·IT utilization·incident를 workload 태그와 함께 월별 계측"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-272",
       "title_ko": "Cloudflare `@cloudflare/computer` early preview: isolate·container를 공유 workspace와 실행 backend로 분리",
       "title_original": "Your agent needs a computer, not a container — introducing @cloudflare/computer",
@@ -291,7 +360,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-266",
@@ -364,7 +433,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-267",
@@ -432,7 +501,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-268",
@@ -502,7 +571,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-265",
@@ -575,7 +644,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-263",
@@ -651,7 +720,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-260",
@@ -728,7 +797,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-258",
@@ -810,7 +879,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-257",
@@ -893,7 +962,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-270",
@@ -980,7 +1049,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-259",
@@ -1066,7 +1135,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-271",
@@ -1133,7 +1202,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-264",
@@ -1220,7 +1289,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-269",
@@ -1298,7 +1367,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-255",
@@ -1374,7 +1443,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-256",
@@ -1463,7 +1532,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-253",
@@ -1531,7 +1600,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-252",
@@ -1617,7 +1686,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-250",
@@ -1711,7 +1780,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-261",
@@ -1782,7 +1851,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-251",
@@ -1884,7 +1953,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-213",
@@ -1964,7 +2033,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-249",
@@ -2063,7 +2132,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-243",
@@ -2153,7 +2222,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-244",
@@ -2247,7 +2316,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-245",
@@ -2318,7 +2387,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-254",
@@ -2406,7 +2475,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-262",
@@ -2477,7 +2546,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-248",
@@ -2548,7 +2617,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-242",
@@ -2629,7 +2698,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-246",
@@ -2696,7 +2765,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-241",
@@ -2777,7 +2846,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-240",
@@ -2849,7 +2918,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-237",
@@ -2921,7 +2990,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-238",
@@ -2997,7 +3066,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-239",
@@ -3064,7 +3133,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-247",
@@ -3139,7 +3208,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-235",
@@ -3219,7 +3288,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-236",
@@ -3295,7 +3364,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-234",
@@ -3381,7 +3450,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-231",
@@ -3448,7 +3517,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-232",
@@ -3520,7 +3589,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-233",
@@ -3600,7 +3669,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-230",
@@ -3672,7 +3741,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-229",
@@ -3744,7 +3813,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-226",
@@ -3835,7 +3904,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-228",
@@ -3923,7 +3992,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-227",
@@ -4004,7 +4073,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-224",
@@ -4080,94 +4149,6 @@
             "팀 액션: corporate data·secret 없는 sandbox에서 model provider egress와 local/Ollama 경로 packet·log 검증",
             "팀 액션: 파일·shell·MCP·Slack·email·calendar connector를 read-only와 write/send capability로 분리",
             "팀 액션: signed artifact·SBOM·update channel·EDR compatibility·disable/rollback 절차를 managed endpoint gate에 포함"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-225",
-      "title_ko": "Certighost 공개 PoC: 일반 AD 계정으로 Domain Controller 인증서를 발급받아 DCSync까지 연결되는 AD CS 결함",
-      "title_original": "Certighost Exploit Lets Low-Privileged Active Directory Users Impersonate a Domain Controller",
-      "summary": "핵심: 공개 PoC `CVE-2026-54121`은 취약한 AD CS enrollment chase 경로에서 일반 domain account가 Domain Controller 명의 인증서를 받아 PKINIT 인증과 DCSync로 `krbtgt` secret 접근에 이를 수 있는 chain. 조건: network access·domain account·Enterprise CA·default Machine template·CA에서 공격자 SMB/LDAP listener 도달성이 필요하며 admin 권한·사용자 상호작용은 불필요. 대응: AD CS host에 Microsoft 7월 14일 업데이트를 우선 적용하고, patch 전에는 CA·template·machine-account·SMB/LDAP reachability를 포함한 노출 점검과 인증서·DCSync hunt 병행 필요.",
-      "detail": "The Hacker News는 2026년 7월 24일 공개된 working exploit을 바탕으로 `Certighost`를 보도했다. Microsoft Security Update Guide는 `CVE-2026-54121`을 AD CS improper authorization 결함으로 분류하며, 보도는 CVSS 8.8과 7월 14일 패치를 인용한다. 연구자가 공개한 체인은 CA가 requester-supplied `cdc` host를 실제 Domain Controller인지 검증하지 않고 SMB·LDAP로 따라가는 enrollment chase를 악용한다. 일반 domain user는 기본 `ms-DS-MachineAccountQuota` 10에서 computer account를 만들거나 제어 중인 account를 재사용하고, rogue listener와 Netlogon relay를 거쳐 DC의 `objectSid`·`dNSHostName`을 CA에 반환한다. 발급된 PFX로 PKINIT authentication을 수행하면 DC credential로 DCSync를 요청할 수 있다. 공개 보도 기준 7월 24일 현재 in-the-wild exploitation 보고는 없지만 full PoC는 공개 상태이며, 실제 취약성은 Enterprise CA 구성·template·patch 상태·네트워크 경로에 좌우된다.",
-      "why_it_matters": "AD CS는 identity control plane이며 Domain Controller 인증서 위조는 단일 endpoint 권한 상승을 넘어 directory replication과 `krbtgt` 보호 경계까지 연결될 수 있음. 공개 PoC 뒤에는 patch 적용 여부뿐 아니라 CA enrollment path와 AD object 변경 기록을 우선 확인 필요.",
-      "engineering_implication": "Windows·AD 운영 팀은 CA와 AD CS host의 7월 14일 업데이트를 inventory로 확인하고, Enterprise CA·Machine template·`ms-DS-MachineAccountQuota`·최근 computer-account 생성·비정상 certificate issuance·PKINIT·DCSync를 묶어 hunt 필요. patch 지연 시 vendor/연구자가 언급한 chase fallback 비활성화는 정상 enrollment 영향을 낼 수 있으므로 change window와 rollback을 포함해 검증 필요.",
-      "korea_implication": "국내 AD 기반 기업도 인증기관 서버를 일반 Windows patch cycle 밖의 PKI 장비로 취급하지 말고, CA host·도메인 컨트롤러·network segmentation·certificate template owner를 같은 incident 범위로 관리 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Active Directory",
-        "AD CS",
-        "PKI",
-        "CVE",
-        "Identity"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-07-25 08:45",
-      "source_name": "The Hacker News / Microsoft Security Update Guide",
-      "source_url": "https://thehackernews.com/2026/07/certighost-exploit-lets-low-privileged.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdJCaF3dwhncVhtS_dn9W8CUCwJSHRmtCVTK5_fXnS6RpDI4GaVTcSVoXvmo_JgxUyd-H5G3yQaRAg3Ahp__DMlq-M5r9ejhJTdk5QlVuv16HVXDWV7e3HJAijAVBRumD3XSyeyQ1O477nfXFfTvCwgFeXlYF8QIdfTN4mlYAu28JGFN7lOWTEoKwlG9g/s1700-e365/certighost.jpg",
-      "related_links": [
-        {
-          "title": "Microsoft Security Update Guide: CVE-2026-54121",
-          "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-54121"
-        },
-        {
-          "title": "Researchers’ public proof-of-concept repository",
-          "url": "https://github.com/aniqfakhrul/CVE-2026-54121"
-        },
-        {
-          "title": "Windows Certificate Enrollment Protocol specification",
-          "url": "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/f4eb50d5-62f6-470b-8846-9489af9dea62"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 2026-07-24 공개된 working exploit을 `Certighost`로 보도함. RSS `pubDate` 2026-07-24 19:45:21 +05:30은 **2026-07-25 08:45 KST**이며, Microsoft Security Update Guide의 `CVE-2026-54121` 패치와 연구자 PoC repository를 교차 링크로 확인함.",
-          "items": [
-            "분류: Microsoft가 AD CS improper authorization 결함으로 추적하는 `CVE-2026-54121`, 보도 인용 CVSS **8.8**",
-            "상태: Microsoft 7월 14일 업데이트가 배포됐고, 7월 24일 기준 보도에서 in-the-wild exploitation 보고는 확인 불가",
-            "변화: 공개 PoC가 일반 domain account에서 Domain Controller identity 획득까지의 재현 경로를 자동화"
-          ]
-        },
-        {
-          "heading": "공격 전제와 인증서 발급 경로",
-          "body": "보도된 체인은 CA가 enrollment chase의 requester-supplied `cdc` host를 실제 Domain Controller인지 먼저 검증하지 않은 경로를 악용함. CA가 SMB·LDAP로 attacker-controlled listener에 연결한 뒤 Netlogon relay를 거치게 하는 구성임.",
-          "items": [
-            "전제: network access와 domain account, Enterprise CA, default Machine template, CA에서 공격자 SMB 445·LDAP 389 listener까지의 reachability 필요",
-            "계정: 기본 `ms-DS-MachineAccountQuota` 값 **10**에서 computer account를 생성하거나 기존 제어 account를 재사용 가능한 조건",
-            "속성: 공격자가 DC의 `objectSid`·`dNSHostName`을 반환하고 CA가 target DC identity를 certificate에 서명하는 보도된 chain"
-          ]
-        },
-        {
-          "heading": "영향과 범위",
-          "body": "발급된 PFX를 PKINIT에 사용하면 target Domain Controller로 Kerberos authentication을 수행하고 DCSync를 통해 `krbtgt`를 포함한 account secret 요청으로 이어질 수 있음. 이는 PoC와 보도에 근거한 영향 경로이며 모든 AD 환경의 즉시 침해를 의미하지 않음.",
-          "items": [
-            "영향: Domain Controller account의 directory replication rights가 credential theft blast radius를 확대하는 조건",
-            "범위: Enterprise CA 구성·Machine template enrollment·patch level·SMB/LDAP network path에 따라 실제 노출 차이",
-            "경계: 공개 보도는 active exploitation 또는 특정 조직 침해를 확인하지 않으므로 incident 판단에는 조직 telemetry 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AD CS certificate issuance는 endpoint 기능이 아니라 directory identity control plane임. 공개 PoC 이후 patch compliance만 확인하면 CA template·machine account·certificate issuance·replication activity의 연쇄 evidence를 놓칠 수 있음.",
-          "items": [
-            "패치: CA와 AD CS host의 Microsoft 7월 14일 업데이트 적용·재부팅·version evidence 확인",
-            "헌팅: 새 computer account, Machine template certificate issuance, PKINIT, DCSync와 `krbtgt` access를 시간순 상관 분석",
-            "완화: patch 지연 시 chase fallback 비활성화는 정상 enrollment를 손상할 수 있어 lab 검증·change approval·rollback 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "인증기관과 도메인 컨트롤러를 같은 recovery scope로 운영하고, certificate template와 CA network egress를 identity attack surface로 관리해야 함.",
-          "items": [
-            "팀 액션: Enterprise CA·AD CS host·template owner·CA firewall rule·machine-account quota의 inventory와 owner 확인",
-            "팀 액션: certificate issuance와 AD object change 로그를 SIEM에 연결하고 high-privilege template·DC identity alert 추가",
-            "팀 액션: CA patch 적용 뒤 정상 Machine enrollment와 blocked chase path를 staging에서 재검증"
           ]
         }
       ],
