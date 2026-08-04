@@ -2,11 +2,11 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-04 04:29",
+  "last_updated_kst": "2026-08-04 12:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "Qwen3.8-Max 공식 공개: Qwen은 2.4T parameter·95B active 모델을 QwenCloud API로 제공하고 Max급 최초의 open weights를 다음 주 공개한다고 발표. 16일 자율 코딩 run의 265 commits·127 PRs·151 issues는 vendor 공개 실험 범위이므로, 장기 agent 도입은 repo trace·CI gate·권한·비용·rollback을 별도 재현해 승인 필요.",
-    "새 커버리지 창 시작: 2026-08-03 17:00 KST부터 2026-08-10 13:00 KST까지의 AI·Cloud·Infra·Security 소식을 수집 중. Qwen3.8-Max 공식 발표와 EU AI Act 투명성 의무의 machine-readable 식별 범위를 보완 검증했으며, 후속 공식 release·보안 advisory·cloud release를 추가 확인 필요.",
+    "Cloudflare가 8월 3일 22:15 KST `@cloudflare/computer` early preview를 공개. Durable Object의 SQLite-backed workspace를 isolate와 container backend가 공유하는 구조이므로, tool 권한·FUSE 동기화·backend escalation·audit trace·container 비용을 canary에서 함께 검증 필요.",
     "브라우저·코딩 agent 운영: 장기 실행 성능 claim은 task completion과 별개로 issue 상태 전이, CI/E2E evidence, PR approval, secret egress, budget cap, human stop authority를 같은 control plane에서 측정 필요.",
     "국내 소스 표면 점검: GeekNews·GN⁺·AI타임스·인공지능신문을 직접 확인. 국가 AI 컴퓨팅센터 보도는 2026-08-03 15:32 KST로 현 주간 시작 시각 전이어서 정규 카드에서는 제외하고, 창 내 신규 후보만 반영."
   ],
@@ -212,6 +212,88 @@
   ],
   "items": [
     {
+      "id": "news-272",
+      "title_ko": "Cloudflare `@cloudflare/computer` early preview: isolate·container를 공유 workspace와 실행 backend로 분리",
+      "title_original": "Your agent needs a computer, not a container — introducing @cloudflare/computer",
+      "summary": "핵심: Cloudflare가 agent별 virtual filesystem과 실행 runtime을 제공하는 오픈소스 `@cloudflare/computer` early preview를 공개. SQLite-backed workspace를 isolate 기반 `just-bash`와 Linux container backend가 공유하고, 파일·git·shell 작업을 공통 tool interface로 노출함. 운영: runtime 선택·tool 권한·FUSE 동기화·audit evidence·container fallback 비용을 model loop와 별도 control plane으로 검증 필요.",
+      "detail": "Cloudflare는 2026-08-03 `@cloudflare/computer` early preview를 공개했다. 이 패키지는 Durable Object에 workspace를 두고, SQLite-backed virtual filesystem을 isolate 기반 runtime과 Cloudflare Containers의 Linux runtime이 공유하도록 설계됐다. 공식 글은 isolate backend가 `just-bash`로 shell code를 JavaScript로 변환해 dynamic worker에서 실행하고, container backend가 FUSE mount로 workspace 파일을 동기화한다고 설명한다. 공통 `exec` interface와 AI SDK-compatible `read`·`write`·`edit`·`ls`·`exec` tools를 제공하며, platform이 작업을 gate·audit·observe한다고 밝힌다. early preview이므로 production SLA, security isolation 수준, backend 선택 정확도, concurrency·quota·가격, browser runtime, data retention과 tenant boundary는 별도 검증 대상임.",
+      "why_it_matters": "agent runtime을 항상-on container로 고정하지 않고, low-risk file·data·git 작업은 isolate에서 처리하고 Linux·native binary가 필요한 작업만 container로 보내는 abstraction을 제시함. 다만 shared filesystem과 multi-backend tool execution은 execution evidence·권한·동기화·비용을 한데 다뤄야 하는 운영 표면임.",
+      "engineering_implication": "도입 전 workspace data classification, git clone source, tool별 read/write/exec scope, isolate-to-container escalation 조건, FUSE sync failure, audit-log retention, egress와 secret injection을 policy로 분리 필요. canary에서는 backend 선택, file consistency, command artifact, denied tool call, container fallback ratio, task당 비용과 rollback을 같은 correlation ID로 검증해야 함.",
+      "korea_implication": "국내 조직이 Cloudflare Workers·Durable Objects 기반 agent를 운영하면, 데이터 저장 위치와 workspace persistence, source repository·secret·egress 경계, 한국 사용자 데이터 처리 조건을 실제 계정·계약·리전 구성에서 별도 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "Cloudflare",
+        "AI Agent",
+        "Cloudflare Workers",
+        "Durable Objects",
+        "Containers",
+        "Sandbox",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-08-03 22:15",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/cloudflare-computer/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01KZ0Q5WSFNF56H4SS5SERCGQ1.png",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Cloudflare computer repository",
+          "url": "https://github.com/cloudflare/computer"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 **`@cloudflare/computer`** early preview를 오픈소스로 공개함. Cloudflare RSS `2026-08-03T13:15:24Z`는 `2026-08-03 22:15 KST`에 해당하며, source page도 August 3 게시일을 표시함.",
+          "items": [
+            "범위: agent별 virtual filesystem과 isolate·container·web browser 실행 세부를 platform abstraction으로 처리한다는 공식 설명",
+            "배포: npm package와 공개 GitHub repository·tutorial을 제공하는 early preview",
+            "경계: production SLA·quota·가격·지원 리전·browser backend의 구체적 제약은 공식 글에서 확정되지 않음"
+          ]
+        },
+        {
+          "heading": "공유 workspace와 실행 backend",
+          "body": "공식 글은 Durable Object에 workspace를 붙이고, SQLite-backed virtual filesystem을 source control·storage bucket·사용자 파일로 채울 수 있다고 설명함. 파일 조작·data processing·git 작업은 isolate, Linux·`npm`·native binary 필요 작업은 container에서 수행하는 구조임.",
+          "items": [
+            "isolate: `just-bash`가 shell code를 JavaScript로 변환해 dynamic worker에서 실행한다는 구현 설명",
+            "container: Cloudflare Containers Linux runtime에 FUSE mount로 filesystem을 노출하고 변경을 workspace에 동기화한다는 설명",
+            "interface: backend와 무관한 `exec(string, options)`와 node:fs-compatible wrapper를 제공한다는 설명"
+          ]
+        },
+        {
+          "heading": "agent tool과 통제 표면",
+          "body": "패키지는 AI SDK-compatible `read`·`write`·`edit`·`ls`·`exec` tool을 제공하며, 공식 글은 모든 operation을 gate·audit·observe한다고 설명함. 그러나 tool schema만으로 repository write·shell·network·secret의 실제 least privilege가 자동 보장되지는 않음.",
+          "items": [
+            "권한: file read/write, git clone, shell exec, product-specific tool, network egress를 별 policy decision으로 분리 필요",
+            "감사: task input·workspace revision·backend·command·exit code·artifact·policy allow/deny를 correlation ID로 보존 필요",
+            "검증: untrusted issue body·repository content·dependency script가 tool instruction으로 승격되지 않는 deny path 시험 필요"
+          ]
+        },
+        {
+          "heading": "성능·비용·일관성 경계",
+          "body": "Cloudflare는 container가 필요한 작업을 줄여 efficiency와 scale을 최적화하는 방향을 제시하며, frontier model이 적절한 backend를 선택했다는 자체 testing 결과를 언급함. 이 결과는 조직 workload의 completion rate, backend-selection error, filesystem consistency, container spend를 보증하지 않음.",
+          "items": [
+            "비용: task당 isolate CPU·container duration·storage·FUSE I/O·tool retry·human review를 분리 계측 필요",
+            "일관성: container write-back, concurrent workspace access, retry·cancel, partial side effect의 idempotency와 recovery drill 필요",
+            "SLO: backend fallback ratio·sync failure·trace completeness·policy denial precision·rollback time을 rollout 기준으로 설정"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agent computer abstraction은 모델이 어떤 sandbox를 호출할지 선택하는 편의성보다 stateful workspace와 side effect의 governance 문제를 먼저 만듦. early preview는 isolated canary에서 source·tool·data·cost trace를 확인한 뒤 write 권한을 단계적으로 열어야 하는 대상임.",
+          "items": [
+            "팀 액션: workspace data class·persistence·retention·repository allowlist·secret and egress matrix 작성",
+            "팀 액션: read-only analysis부터 시작해 isolate write·container exec·external publish를 독립 approval gate로 확대",
+            "팀 액션: file consistency·backend escalation·prompt injection·container failure·budget exhaustion을 포함한 canary acceptance test 실행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-266",
       "title_ko": "EU AI Act 투명성 규정 적용 보도: 챗봇 고지·AI 생성 콘텐츠 라벨을 제품 release control로 관리",
       "title_original": "EU, 8월부터 AI 챗봇·딥페이크 표기 의무화…'AI 라벨링' 규제 본격화",
@@ -282,7 +364,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-267",
@@ -350,7 +432,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-268",
@@ -420,7 +502,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-265",
@@ -493,7 +575,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-263",
@@ -569,7 +651,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-260",
@@ -646,7 +728,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-258",
@@ -728,7 +810,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-257",
@@ -811,7 +893,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-270",
@@ -898,7 +980,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-259",
@@ -984,7 +1066,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-271",
@@ -1051,7 +1133,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-264",
@@ -1138,7 +1220,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-269",
@@ -1216,7 +1298,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-255",
@@ -1292,7 +1374,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-256",
@@ -1381,7 +1463,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-253",
@@ -1449,7 +1531,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-252",
@@ -1535,7 +1617,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-250",
@@ -1629,7 +1711,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-261",
@@ -1700,7 +1782,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-251",
@@ -1802,7 +1884,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-213",
@@ -1882,7 +1964,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-249",
@@ -1981,7 +2063,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-243",
@@ -2071,7 +2153,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-244",
@@ -2165,7 +2247,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-245",
@@ -2236,7 +2318,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-254",
@@ -2324,7 +2406,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-262",
@@ -2395,7 +2477,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-248",
@@ -2466,7 +2548,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-242",
@@ -2547,7 +2629,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-246",
@@ -2614,7 +2696,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-241",
@@ -2695,7 +2777,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-240",
@@ -2767,7 +2849,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-237",
@@ -2839,7 +2921,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-238",
@@ -2915,7 +2997,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-239",
@@ -2982,7 +3064,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-247",
@@ -3057,7 +3139,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-235",
@@ -3137,7 +3219,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-236",
@@ -3213,7 +3295,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-234",
@@ -3299,7 +3381,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-231",
@@ -3366,7 +3448,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-232",
@@ -3438,7 +3520,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-233",
@@ -3518,7 +3600,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-230",
@@ -3590,7 +3672,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-229",
@@ -3662,7 +3744,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-226",
@@ -3753,7 +3835,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-228",
@@ -3841,7 +3923,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-227",
@@ -3922,7 +4004,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-224",
@@ -4001,7 +4083,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-225",
@@ -4086,86 +4168,6 @@
             "팀 액션: Enterprise CA·AD CS host·template owner·CA firewall rule·machine-account quota의 inventory와 owner 확인",
             "팀 액션: certificate issuance와 AD object change 로그를 SIEM에 연결하고 high-privilege template·DC identity alert 추가",
             "팀 액션: CA patch 적용 뒤 정상 Machine enrollment와 blocked chase path를 staging에서 재검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-223",
-      "title_ko": "AWS, Claude Opus 5 제공 시작: Bedrock 기본 ZDR과 Claude Platform on AWS의 데이터·운영 경계 확인",
-      "title_original": "Claude Opus 5 is now available on AWS",
-      "summary": "핵심: AWS 제공 공지에 이어 AI타임스가 Claude Opus 5의 100만 token context, 최대 12만8천 output token, Effort Ladder, Fast Mode와 보도된 가격을 정리. 운영: Bedrock과 Claude Platform on AWS는 ZDR·인증·청구·guardrail 경로가 다를 수 있으므로, 품질·token·p95·retention·fallback을 provider별 canary로 검증 필요.",
-      "detail": "AWS의 Claude Opus 5 제공 공지와 AI타임스의 2026년 7월 25일 보도를 함께 확인했다. 보도는 100만 token context, 최대 12만8천 output token, 5단계 Effort Ladder, Fast Mode 및 입력 100만 token당 5달러·출력 25달러라는 Anthropic 관련 수치를 전한다. AWS는 Bedrock에서 기본 ZDR·regional data residency·Guardrails를, Claude Platform on AWS에서 AWS billing·authentication과 요청 기반 ZDR을 안내한다. 가격·benchmark·전 리전·tenant별 quota·SLA는 조직 workload에서 별도 검증이 필요하다.",
-      "why_it_matters": "같은 모델 이름이라도 Bedrock과 Anthropic native platform의 데이터 보존 기본값, 인증·청구 경로, 안전 기능, 리전 가용성, API·운영 도구가 달라질 수 있음. 장시간 agent를 production에 넣을 때 모델 품질뿐 아니라 데이터 경계와 failure handling을 함께 비교할 필요.",
-      "engineering_implication": "플랫폼 팀은 Bedrock과 Claude Platform on AWS를 별도 provider surface로 inventory하고, region·ZDR 조건·Guardrails·IAM/SSO·audit log·quota·가격·p95 latency·fallback을 대표 agent workload에서 canary로 검증 필요.",
-      "korea_implication": "국내 AWS 조직은 한국 리전 및 실제 계정의 Claude Opus 5 가용성, cross-region 데이터 경로, ZDR 계약 조건, Guardrails·로그 보존 정책을 security·legal·platform owner와 함께 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "AWS",
-        "Amazon Bedrock",
-        "Claude",
-        "AI Agent",
-        "Data Governance"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-07-25 00:00",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/claude-opus-5-aws/",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "AI타임스: Claude Opus 5 모델 기능·가격 보도 (2026-07-25 09:28 KST)",
-          "url": "https://www.aitimes.com/news/articleView.html?idxno=213161"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 `Claude Opus 5`를 Amazon Bedrock과 Claude Platform on AWS로 제공한다고 공개함. AWS What’s New 페이지는 날짜만 제공하고 RSS `pubDate` 2026-07-24 15:00 UTC를 **2026-07-25 00:00 KST**로 변환해 카드 시각으로 사용함.",
-          "items": [
-            "접근 경로: Amazon Bedrock과 Claude Platform on AWS 두 가지 제공 방식",
-            "대상: coding·장시간 실행 agent·복잡한 전문 문서 분석 workload를 AWS가 제시",
-            "경계: 모델 가격·benchmark·모든 리전·tenant별 quota·SLA는 이 공지에서 확인 불가"
-          ]
-        },
-        {
-          "heading": "Bedrock 경로의 데이터·안전 기능",
-          "body": "AWS는 Amazon Bedrock에서 Claude Opus 5의 ZDR(Zero Data Retention)이 기본 활성화된다고 설명함. 데이터는 AWS 인프라 안에 유지되고 regional data residency, AWS-managed Guardrails, Knowledge Bases를 함께 제공한다고 안내함.",
-          "items": [
-            "데이터: Bedrock 경로의 ZDR 기본 활성화라는 AWS 설명",
-            "거버넌스: regional data residency와 Guardrails·Knowledge Bases를 AWS 관리 기능으로 제시",
-            "검증: 실제 계정의 model access·리전·logging·retention·Guardrails 정책은 tenant별 확인 필요"
-          ]
-        },
-        {
-          "heading": "Claude Platform on AWS 경로",
-          "body": "Claude Platform on AWS는 AWS Console에서 Anthropic native platform의 API·기능·console 경험을 제공하고 AWS billing·authentication과 통합한다고 설명함. 이 경로의 ZDR은 기본값이 아니라 요청 시 지원된다고 AWS가 명시함.",
-          "items": [
-            "인증·청구: AWS Console·AWS billing·authentication과의 통합 제공",
-            "기능 경계: Anthropic 직접 사용과 같은 native API·기능·console 경험이라는 AWS 설명",
-            "데이터 보존: ZDR 지원은 요청 기반이므로 provisioning 전 적용 조건·증적 확인 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "모델 전환은 추론 품질만 바꾸지 않음. provider surface에 따라 데이터 보존 기본값, IAM·SSO, audit trail, safety control, quota, incident support와 비용 집계가 달라질 수 있으며 장시간 agent에서는 retry·tool call·state 처리까지 영향 범위에 포함됨.",
-          "items": [
-            "아키텍처: Bedrock integration과 Anthropic native API의 SDK·tooling·observability 차이 inventory 필요",
-            "보안: ZDR·regional data residency·prompt/tool log retention·Guardrails 적용 위치 분리 확인",
-            "운영: long-running agent의 timeout·retry·tool failure·human handoff·fallback을 provider별로 시험"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "`Claude Opus 5` 채택은 단일 model swap이 아니라 data-governance와 control-plane 선택임. 공식 공지의 제공 범위를 baseline으로 삼되, 계약·리전·tenant 설정과 실제 workload 지표를 확인한 뒤 rollout해야 함.",
-          "items": [
-            "팀 액션: Bedrock과 Claude Platform on AWS 각각의 region·ZDR·IAM/SSO·logging·quota·가격 matrix 작성",
-            "팀 액션: 대표 coding·agent task에서 품질 pass rate·p95 latency·retry·tool error·성공 작업당 비용 canary 비교",
-            "팀 액션: model access 제한·quota 소진·Guardrails rejection·provider 장애 시 fallback과 audit preservation runbook 시험"
           ]
         }
       ],
