@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-04 | Total pages: 252
+> Last updated: 2026-08-04 | Total pages: 255
 
 ## Entities
 
@@ -29,6 +29,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-cpanel-cve-2026-58048-database-root-sql-2026-08-04]] — cPanel database rename의 database-root SQL 권한 상승 보도와 fixed build·tenant boundary 대응.
+- [[raw/articles/aws-bedrock-gpt-5-6-one-million-context-2026-08-04]] — Bedrock GPT-5.6 100만 token context와 cache·리전·long-context 운영 검증 경계.
+- [[raw/articles/kubernetes-gateway-api-v1-6-tcp-udp-standard-2026-08-04]] — Gateway API v1.6 TCPRoute·UDPRoute Standard 승격과 controller migration 검증 경계.
 - [[raw/articles/aitimes-elice-40c-warm-water-ai-data-center-2026-08-04]] — 엘리스그룹 B300 2,560장 PMDC와 40도 온수 냉각·PUE 목표의 commissioning 검증 경계.
 - [[raw/articles/cloudflare-computer-agent-workspace-multiruntime-2026-08-03]] — Cloudflare `@cloudflare/computer` early preview의 shared workspace·isolate/container backend·tool audit 운영 경계.
 - [[raw/articles/aitimeskr-eu-ai-act-transparency-machine-readable-2026-08-03]] — EU AI Act 투명성 의무 보완 보도: machine-readable 식별 정보·AI 생성 텍스트·감정 인식/생체정보 분류 적용 범위.
