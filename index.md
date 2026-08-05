@@ -30,6 +30,7 @@
 
 ## Raw Articles
 - [[raw/articles/cisa-kev-langflow-tomcat-ncentral-2026-08-05]] — CISA KEV Langflow·Tomcat·N-central active-exploitation patch·exposure 대응.
+- [[raw/articles/cursor-mixture-of-kittens-official-2026-08-06]] — Cursor 공식 MoK NVL72 MoE megakernel의 kernel fusion·benchmark·runtime 조건.
 - [[raw/articles/cursor-mok-blackwell-moe-kernel-2026-08-05]] — Cursor MoK Blackwell NVL72 MoE kernel의 topology·memory·benchmark 경계.
 - [[raw/articles/thn-gitea-cve-2026-59774-file-read-2026-08-05]] — Gitea Org-mode unauthenticated file read·secret rotation·endpoint hunt.
 - [[raw/articles/fortinet-quickfox-fdmtp-supply-chain-2026-08-04]] — QuickFox Windows installer 변조·FDMTP implant·IOC·endpoint 조사 경계.
