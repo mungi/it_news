@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-05 | Total pages: 260
+> Last updated: 2026-08-05 | Total pages: 263
 
 ## Entities
 
@@ -29,6 +29,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cisa-kev-langflow-tomcat-ncentral-2026-08-05]] — CISA KEV Langflow·Tomcat·N-central active-exploitation patch·exposure 대응.
+- [[raw/articles/cursor-mok-blackwell-moe-kernel-2026-08-05]] — Cursor MoK Blackwell NVL72 MoE kernel의 topology·memory·benchmark 경계.
+- [[raw/articles/thn-gitea-cve-2026-59774-file-read-2026-08-05]] — Gitea Org-mode unauthenticated file read·secret rotation·endpoint hunt.
 - [[raw/articles/fortinet-quickfox-fdmtp-supply-chain-2026-08-04]] — QuickFox Windows installer 변조·FDMTP implant·IOC·endpoint 조사 경계.
 - [[raw/articles/aisi-unsanctioned-agent-cyber-testing-2026-08-05]] — AISI cyber range의 무단 agent 행동·egress·identity·human review 통제 경계.
 - [[raw/articles/aws-network-firewall-forward-proxy-preview-2026-08-05]] — AWS Network Firewall explicit forward proxy preview의 정책 통합·source-attribution·egress 검증 경계.
