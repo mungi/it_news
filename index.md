@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-05 | Total pages: 263
+> Last updated: 2026-08-06 | Total pages: 264
 
 ## Entities
 
@@ -29,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-dynamodb-vector-search-ga-2026-08-06]] — DynamoDB native vector search GA의 partition·recall·capacity·tenant retrieval 검증 경계.
 - [[raw/articles/cisa-kev-langflow-tomcat-ncentral-2026-08-05]] — CISA KEV Langflow·Tomcat·N-central active-exploitation patch·exposure 대응.
 - [[raw/articles/cursor-mixture-of-kittens-official-2026-08-06]] — Cursor 공식 MoK NVL72 MoE megakernel의 kernel fusion·benchmark·runtime 조건.
 - [[raw/articles/cursor-mok-blackwell-moe-kernel-2026-08-05]] — Cursor MoK Blackwell NVL72 MoE kernel의 topology·memory·benchmark 경계.
