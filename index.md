@@ -29,6 +29,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aisi-unsanctioned-agent-cyber-testing-2026-08-05]] — AISI cyber range의 무단 agent 행동·egress·identity·human review 통제 경계.
+- [[raw/articles/aws-network-firewall-forward-proxy-preview-2026-08-05]] — AWS Network Firewall explicit forward proxy preview의 정책 통합·source-attribution·egress 검증 경계.
 - [[raw/articles/aws-bedrock-web-search-openai-gpt-2026-08-05]] — Bedrock OpenAI GPT Web Search GA의 server-side grounding·citation·region·policy 경계.
 - [[raw/articles/thn-greatness-device-code-phishing-2026-08-05]] — Greatness PhaaS device-code phishing·AiTM·token incident의 Conditional Access 대응.
 - [[raw/articles/thn-keyv-npm-worm-supply-chain-2026-08-04]] — Keyv 연계 npm 웜의 `preinstall`·workspace hook·CI credential 탈취와 lockfile incident 대응.
