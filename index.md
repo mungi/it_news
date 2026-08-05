@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-05 | Total pages: 258
+> Last updated: 2026-08-05 | Total pages: 260
 
 ## Entities
 
@@ -29,6 +29,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-web-search-openai-gpt-2026-08-05]] — Bedrock OpenAI GPT Web Search GA의 server-side grounding·citation·region·policy 경계.
+- [[raw/articles/thn-greatness-device-code-phishing-2026-08-05]] — Greatness PhaaS device-code phishing·AiTM·token incident의 Conditional Access 대응.
 - [[raw/articles/thn-keyv-npm-worm-supply-chain-2026-08-04]] — Keyv 연계 npm 웜의 `preinstall`·workspace hook·CI credential 탈취와 lockfile incident 대응.
 - [[raw/articles/cloudflare-agent-development-lifecycle-2026-08-04]] — Cloudflare ADLC의 workflow·agent trace·preview·점진 배포 control plane.
 - [[raw/articles/aws-transform-continuous-modernization-ga-2026-08-04]] — AWS Transform continuous modernization GA의 repository 분석·PR/MR remediation·권한 경계.
