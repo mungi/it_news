@@ -2,13 +2,13 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-05 13:12",
+  "last_updated_kst": "2026-08-05 17:18",
   "audience": "developers and engineers",
   "executive_summary": [
     "AISI agent cyber evaluation: live-internet 행동을 모델 외부의 egress·identity·approval control로 분리.",
     "AWS Network Firewall forward proxy preview: proxy·transparent firewall policy drift와 source-attribution 영향을 test VPC에서 검증.",
     "Bedrock OpenAI GPT Web Search GA: server-side grounding·citation·region·data boundary를 workload별로 확인.",
-    "Keyv 연계 npm 웜: install hook·workspace 설정·CI secret을 lockfile incident 범위로 점검.",
+    "QuickFox·Keyv 공급망 공격: installer/lockfile·lifecycle hook·CI secret·endpoint persistence를 각각의 evidence로 조사.",
     "AI 데이터센터 냉각·장기 context·Gateway API: capacity·cost·controller compatibility를 운영 지표로 검증."
   ],
   "deep_dives": [
@@ -598,6 +598,78 @@
       "rank": 5
     },
     {
+      "id": "news-282",
+      "title_ko": "QuickFox Windows installer 공급망 공격: trojanized Electron HTML·FDMTP implant, 설치본 버전·IOC·endpoint 조사",
+      "title_original": "QuickFox Supply Chain Attack Used to Deploy FDMTP Implant",
+      "summary": "- 변화: Fortinet이 QuickFox Windows installer의 장기 공급망 공격과 FDMTP implant 배포를 공개\n- 근거: Electron renderer의 `index.html`에 추가된 JavaScript가 typosquatting 도메인에서 loader를 내려받는 흐름 확인\n- 팀 액션: QuickFox Windows 설치 이력·v3.59.6 이상 여부·DNS/host IOC·scheduled task·registry persistence를 incident 범위로 점검 필요",
+      "detail": "Fortinet은 QuickFox Windows installer에 삽입된 JavaScript가 endpoint를 선별한 뒤 FDMTP implant를 설치하는 공급망 공격을 분석했다. 악성 구성요소는 v3.0.51.0부터 확인됐고 QuickFox는 Fortinet 통지 뒤 v3.59.6에서 제거했다. Fortinet은 Mustang Panda와의 전술적 유사성을 언급했지만 특정 행위자 귀속은 확정하지 않았다.",
+      "why_it_matters": "정상 VPN·network acceleration 설치본의 Electron resource가 초기 실행 경로가 된 사례임. 설치 provenance, endpoint telemetry, DNS·proxy log, persistence artifact를 함께 보지 않으면 AV 탐지와 버전 확인만으로 영향 범위를 확정하기 어려움.",
+      "engineering_implication": "QuickFox 사용 가능 endpoint를 software inventory와 installer hash·version으로 식별하고, `cdns3.51quickfox[.]cn` 연결·비정상 JavaScript loader·FDMTP 관련 process/registry/scheduled task를 hunt 필요. 의심 endpoint는 network isolation 뒤 volatile evidence·installer·task·registry·proxy/DNS log를 보존하고 credential/session exposure를 별도 평가 필요.",
+      "korea_implication": "국내 조직도 해외 중국계 협력사·유학생·출장자 endpoint에서 QuickFox 사용 여부를 EDR·software inventory로 확인할 필요. 실제 감염·데이터 유출은 해당 endpoint의 설치본·network·persistence evidence 없이 단정하지 않음.",
+      "category": "Security",
+      "tags": [
+        "Supply Chain",
+        "Windows",
+        "Electron",
+        "FDMTP",
+        "Endpoint Security",
+        "VPN"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 93,
+      "published_kst": "2026-08-04 22:00",
+      "source_name": "Fortinet FortiGuard Labs",
+      "source_url": "https://www.fortinet.com/blog/threat-research/quickfox-supply-chain-attack-used-to-deploy-fdmtp-implant",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News 보도 — QuickFox 공급망 공격 (정확한 RSS 발행 시각: 2026-08-05 14:17 KST)",
+          "url": "https://thehackernews.com/2026/08/quickfox-supply-chain-attack-delivers.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "FortiGuard Labs가 QuickFox VPN·network acceleration application의 장기 공급망 공격을 공개함. 공식 페이지 `article:published_time` `2026-08-04T13:00:00Z`를 `2026-08-04 22:00 KST`로 환산.",
+          "items": [
+            "영향: Fortinet이 Windows endpoint와 QuickFox user를 영향 범위로 명시",
+            "기간: 악성 구성요소는 최소 2025년 8월부터 관찰됐으며 현재도 관련 infrastructure가 active라는 분석",
+            "대응: QuickFox가 responsible disclosure 뒤 Windows installer v3.59.6에서 악성 구성요소를 제거했다는 Fortinet 확인"
+          ]
+        },
+        {
+          "heading": "침해 체인",
+          "body": "Installer 내부 Electron renderer가 실행하는 `resources\\app.asar\\candy\\core\\service\\index.html`에 JavaScript 두 줄을 삽입해 loader를 내려받는 구조.",
+          "items": [
+            "download: `cdns3[.]51quickfox[.]cn`에서 두 JavaScript payload를 호출하는 변조 확인",
+            "masquerade: 정상 `51quickfox[.]com`과 유사한 `.cn` 도메인 사용, Fortinet은 해당 도메인이 공식 QuickFox domain이 아니라고 명시",
+            "selection: loader가 Windows 여부·재감염 여부·실행 process를 확인한 뒤 다음 단계 ZIP payload를 내려받는 흐름"
+          ]
+        },
+        {
+          "heading": "영향 범위와 분석 경계",
+          "body": "Fortinet은 earliest affected Windows version으로 v3.0.51.0을 제시하고, 공개 installer/history가 불완전해 표의 버전이 exhaustive list가 아니라고 경고함.",
+          "items": [
+            "platform: 초기 JavaScript guardrail 때문에 Windows endpoint를 겨냥한 것으로 분석, iOS·Android에서 같은 초기 단계 behavior는 미관찰",
+            "implant: FDMTP가 device·network·OS·username·active window·AV·process 정보를 수집하고 server plugin으로 기능을 확장할 수 있다는 분석",
+            "attribution: Fortinet은 Mustang Panda와 tactical overlap을 언급했으나 특정 threat actor 귀속은 확정하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이 사례의 대응 단위는 단순 application uninstall이 아니라 installer provenance와 post-install endpoint activity를 연결한 incident investigation임.",
+          "items": [
+            "inventory: QuickFox Windows package·version·installer hash·install time·user/device를 software inventory와 EDR에서 대조 필요",
+            "hunt: `cdns3.51quickfox[.]cn` DNS·proxy connection, unusual JavaScript child process, scheduled task·registry persistence, FDMTP artifact를 correlation 필요",
+            "containment: 의심 endpoint isolation 뒤 memory·installer·task·registry·network evidence 보존, credential·session reset 판단을 별도 수행 필요"
+          ]
+        }
+      ],
+      "rank": 6
+    },
+    {
       "id": "news-274",
       "title_ko": "cPanel `CVE-2026-58048` 패치: hosting account의 database-root SQL 실행 가능성을 account-boundary incident로 대응",
       "title_original": "New cPanel Critical Flaw Could Let Hosting Customers Run SQL as Database Root",
@@ -671,7 +743,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-273",
@@ -740,7 +812,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-275",
@@ -812,7 +884,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-276",
@@ -885,7 +957,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-272",
@@ -967,7 +1039,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-266",
@@ -1040,7 +1112,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-267",
@@ -1108,7 +1180,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-268",
@@ -1178,7 +1250,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-265",
@@ -1251,7 +1323,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-263",
@@ -1327,7 +1399,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-260",
@@ -1404,7 +1476,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-258",
@@ -1486,7 +1558,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-257",
@@ -1569,7 +1641,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-270",
@@ -1656,7 +1728,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-259",
@@ -1742,7 +1814,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-271",
@@ -1809,7 +1881,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-264",
@@ -1896,7 +1968,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-269",
@@ -1974,7 +2046,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-255",
@@ -2050,7 +2122,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-256",
@@ -2139,7 +2211,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-253",
@@ -2207,7 +2279,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-252",
@@ -2293,7 +2365,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-250",
@@ -2387,7 +2459,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-261",
@@ -2458,7 +2530,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-251",
@@ -2560,7 +2632,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-213",
@@ -2640,7 +2712,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-249",
@@ -2739,7 +2811,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-243",
@@ -2829,7 +2901,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-244",
@@ -2923,7 +2995,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-245",
@@ -2994,7 +3066,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-254",
@@ -3082,7 +3154,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-262",
@@ -3153,7 +3225,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-248",
@@ -3224,7 +3296,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-242",
@@ -3305,7 +3377,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-246",
@@ -3372,7 +3444,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-241",
@@ -3453,7 +3525,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-240",
@@ -3525,7 +3597,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-237",
@@ -3597,7 +3669,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-238",
@@ -3673,7 +3745,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-239",
@@ -3740,7 +3812,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-247",
@@ -3815,7 +3887,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-235",
@@ -3895,7 +3967,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-236",
@@ -3971,7 +4043,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-234",
@@ -4054,73 +4126,6 @@
             "security: microVM image hash·host mount·ephemeral credential·default-deny egress·tool allowlist를 canary에서 검증",
             "operations: snapshot·fork lifecycle, orphan cleanup, storage quota, audit trace와 rollback owner를 release gate에 기록",
             "팀 액션: 작은 read-only task에서 serving·agent sandbox를 분리 시험한 뒤 bounded write workload로 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-231",
-      "title_ko": "NVIDIA 오픈 시큐어 AI 얼라이언스: 40여 파트너·NOOA 연구 공개, 구현·운영 범위는 별도 검증",
-      "title_original": "NVIDIA launches Open Secure AI Alliance",
-      "summary": "핵심: AI타임스는 NVIDIA가 7월 27일 AI 안전·사이버 보안을 위한 오픈 시큐어 AI 얼라이언스를 출범하고, agent 행동의 테스트·추적·감사를 지원하는 오픈소스 연구 프로젝트 `NOOA`를 공개했다고 보도. 범위: Microsoft·Cloudflare·CrowdStrike·Hugging Face 등 40여 조직과 NAVER·SK텔레콤 참여가 기사에 열거됐으나, 공식 원문 URL·저장소·license·reference architecture·제품 통합 범위는 기사에서 직접 확인되지 않음. 대응: membership 발표를 통제로 간주하지 말고 artifact integrity·threat model·telemetry·egress·secret isolation을 개별 검증 필요.",
-      "detail": "AI타임스의 2026년 7월 28일 06:33 KST 기사는 NVIDIA가 7월 27일 AI 안전과 사이버 보안을 강화하기 위한 오픈 시큐어 AI 얼라이언스를 출범한다고 밝혔다고 전한다. 기사가 설명한 연합체 목적은 AI 시대의 소프트웨어와 agent를 보호하는 개방형 기술·보안 기술·도구의 공동 개발·공유이며, NVIDIA는 agent 행동의 테스트·추적·감사를 지원하는 오픈소스 연구 프로젝트 `NOOA`도 GitHub에 공개했다고 보도됐다. 기사에는 Microsoft·IBM·HPE·Cloudflare·CrowdStrike·Hugging Face·Linux Foundation 등 40여 창립 파트너와 NAVER·SK텔레콤 참여가 열거된다. 다만 직접 확인한 기사에는 NVIDIA 공식 발표 URL, NOOA 저장소 주소·license·threat model·reference architecture·release artifact가 없으므로, 제품 통합·지원 범위·SLA·보안 효과·각 참여사의 실제 배포 의무를 확정하지 않는다. 보안·플랫폼 팀은 공개 artifact가 확인되면 provenance, maintainer, vulnerability response, tool trace와 identity·egress·approval 연계를 sandbox에서 검토해야 한다.",
-      "why_it_matters": "AI agent 보안은 모델 평가만으로 끝나지 않으며 tool call, identity, network egress, policy decision, human approval을 추적 가능한 운영 증거로 연결해야 함. 연합체·오픈소스 발표는 구현 방향 신호이나 제품 수준 통제 또는 공급망 신뢰를 자동 보장하지 않음.",
-      "engineering_implication": "AI platform·security 팀은 NOOA 등 후속 artifact가 공개되면 license·maintainer·release signature·SBOM·threat model과 trace schema를 확인하고, production 연결 전 sandbox evaluation·default-deny egress·ephemeral credential·secret isolation·log retention·rollback을 검증 필요.",
-      "korea_implication": "NAVER·SK텔레콤 참여 보도는 국내 AI 서비스·데이터센터·agent 운영 조직에 공동 연구 신호이나, 한국 환경의 망 분리·개인정보·보안관제·감사 요건을 충족하는 구현은 개별 artifact와 계약·운영 증거로 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "AI",
-        "AI Security",
-        "Agent Security",
-        "Open Source",
-        "NVIDIA",
-        "Korea"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-28 06:33",
-      "source_name": "AI타임스 / NVIDIA 발표 보도",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213231",
-      "image_url": "https://cdn.aitimes.com/news/photo/202607/213231_216661_2946.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스의 **2026-07-28 06:33 KST** 기사는 NVIDIA가 7월 27일 AI 안전·사이버 보안을 위한 오픈 시큐어 AI 얼라이언스 출범을 발표했다고 전함.",
-          "items": [
-            "목적: AI 시대의 소프트웨어·agent 보호용 개방형 기술·보안 도구의 공동 개발·공유",
-            "산출물: agent 행동의 테스트·추적·감사를 지원하는 오픈소스 연구 프로젝트 `NOOA` 공개 보도",
-            "경계: 직접 확인한 기사는 NVIDIA 발표 내용을 전한 보도이며 공식 NVIDIA 원문 URL은 제공하지 않음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사는 AI 취약점의 선제적 발견·대응을 위해 open model, agent harness, security tool을 함께 개발하는 생태계를 지향한다고 설명함.",
-          "items": [
-            "참여: Microsoft·IBM·HPE·Cloudflare·CrowdStrike·Databricks·Hugging Face·Linux Foundation 등 40여 조직 열거",
-            "한국: NAVER와 SK텔레콤이 창립 파트너로 참여했다는 기사 서술",
-            "계획: NVIDIA가 모델과 도구 연구를 제공할 예정이라는 보도 범위"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "연합체 참여나 연구 공개는 production security control·제품 지원·운영 책임을 자동으로 뜻하지 않음. agent 보안은 tool, identity, network, audit evidence의 결합 문제임.",
-          "items": [
-            "증거: membership 발표만으로 통합 여부·지원 범위·SLA·보안 효과를 확정하지 않는 원칙",
-            "추적: tool call·policy decision·identity·network egress·human approval을 run ID로 연결할 telemetry 요구",
-            "공급망: 신규 오픈소스 보안 도구는 maintainer·license·release provenance·vulnerability response 검증 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "공개 artifact가 확인되면 sandbox에서 threat model과 trace completeness를 먼저 검토하고, production 연결은 data boundary와 rollback evidence를 갖춘 뒤 결정 필요.",
-          "items": [
-            "팀 액션: 저장소·license·maintainer·release signature·SBOM·security contact 확인",
-            "팀 액션: sandbox에서 egress allowlist·ephemeral credential·secret isolation·audit retention 시험",
-            "팀 액션: trace schema가 model·prompt·tool·policy version과 승인·네트워크 event를 연결하는지 검증"
           ]
         }
       ],
