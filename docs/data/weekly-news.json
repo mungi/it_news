@@ -2,12 +2,12 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-07 02:10",
+  "last_updated_kst": "2026-08-07 06:20",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitHub malware advisory 8개 ecosystem 확장: Dependabot alert는 OSV feed 신뢰성·withdrawn·origin dedup과 lockfile/SBOM 실행 증거를 함께 운영.",
     "MCP 2026-07-28: required session·handshake가 core path에서 빠지고 HTTP header·MRTR·OAuth audience binding이 배포·gateway·authorization 설계를 변경.",
-    "Lambda 최대 3,000 Mbps: VPC 외 대용량 transfer는 memory tier·quota·duration cost·upstream throttling을 같은 부하 시험에서 검증.",
+    "Zapscape KVM/x86 `CVE-2026-64561`: untrusted L1에 nested virtualization을 노출한 host는 kernel backport·reboot·tenant/CI policy·forensics를 하나의 patch incident로 대응.",
     "OpenCost 1.121.0: Kubernetes inference의 model·token 비용은 GPU allocation·idle share·tenant attribution·invoice reconciliation을 전제로 해석.",
     "Gitea critical file-read와 CISA KEV: public repository·anonymous endpoint·service-account secret·internet exposure를 patch와 credential cleanup workflow로 대응."
   ],
@@ -216,6 +216,86 @@
   ],
   "items": [
     {
+      "id": "news-293",
+      "title_ko": "Zapscape KVM/x86 `CVE-2026-64561`: nested L1 guest root의 shadow-MMU use-after-free를 host kernel patch·nested-virtualization 정책으로 차단",
+      "title_original": "Zapscape: Guest-to-Host Escape in KVM/x86",
+      "summary": "- 변화: 공개 기술 분석이 KVM/x86 shadow-MMU의 `CVE-2026-64561` use-after-free와 nested virtualization 경로를 공개\n- 조건: attacker-controlled L1 guest의 kernel privilege, 보통 guest root, 그리고 untrusted L1에 노출된 nested virtualization이 함께 필요한 경로\n- 팀 액션: KVM host kernel package의 backport/fixed status, nested-virtualization exposure, tenant·CI·lab L1 workload를 같은 patch incident로 inventory",
+      "detail": "Zapscape 공개 기술 분석은 KVM/x86 shadow MMU가 nested guest page fault를 처리하면서 MMU page quota reclaim을 수행할 때 stale root 재검사 순서가 뒤바뀌어 use-after-free로 이어질 수 있다고 설명한다. 공격자는 nested virtualization이 노출된 L1 guest에서 kernel privilege를 가져야 하며, 공개 PoC는 AMD nested SVM/NPT와 Linux 7.1.3에서 host root-owned `/Zapscape` 파일을 생성하는 chain을 제시한다. upstream fix `2abd5287f083`은 `make_mmu_pages_available()` 뒤에 stale-root check를 두고 invalidated root면 `RET_PF_RETRY`로 재시도한다. 공개 자료는 실제 야생 악용을 주장하지 않으며 cloud environment에서는 host kernel configuration·memory backend에 맞춘 추가 적응이 필요하다고 경계를 둔다. 운영자는 upstream version만 비교하지 말고 vendor kernel backport 상태와 nested-virtualization exposure를 확인한 뒤 host patch/reboot, tenant policy, forensics를 함께 수행해야 한다.",
+      "why_it_matters": "nested virtualization은 CI, lab, tenant workload에서 L1 guest와 host kernel의 경계를 넓힌다. guest root가 있다고 즉시 host compromise가 확정되는 것은 아니지만, untrusted L1에 nested virtualization을 열어 둔 KVM host는 kernel patch 우선순위와 workload compatibility 검증이 필요한 자산임.",
+      "engineering_implication": "KVM host inventory에 nested virtualization enablement, L1 tenant/CI/lab ownership, guest privilege model, kernel package/backport 상태를 추가 필요. patch 전후에는 vendor fixed package·reboot/live-patch 조건을 검증하고, host audit log·unexpected root process/file·privileged L1 활동을 보존·조사하며 untrusted L1의 nested virtualization을 최소화 필요.",
+      "korea_implication": "국내 private cloud·연구 클러스터·CI lab도 public cloud 여부와 무관하게 KVM host에서 nested virtualization을 누구에게 노출했는지와 배포판 kernel backport 상태를 동일 기준으로 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "Linux",
+        "KVM",
+        "Virtualization",
+        "CVE-2026-64561",
+        "Kernel",
+        "Cloud Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-08-07 02:58",
+      "source_name": "V4bel Zapscape / The Hacker News",
+      "source_url": "https://github.com/V4bel/Zapscape/blob/main/assets/write-up.md",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj5BBX-j7uA7NqPF9tVWhx3y09F3whJ3zweRoWGyI2kJDxhW6ymOG1oumq5Oz0sZWtCAKSCALcd9TTl7Kf5Mo3aqE3aWKH8jfKWt2uUD-CUa6tmid-3MvMTM08EAEhg5iLQ2mlEgFkVeuVKv1QkRqr2T0Ya9JcNtMYheggInGndCG0n-N7BPjyH9vbKCg8/s1600/Zapscape.gif",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News — exact RSS publication time·package status summary",
+          "url": "https://thehackernews.com/2026/08/new-zapscape-kvm-flaw-could-let.html"
+        },
+        {
+          "title": "NVD — CVE-2026-64561",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-64561"
+        },
+        {
+          "title": "Linux upstream fix commit 2abd5287f083",
+          "url": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=2abd5287f083"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "공개 기술 분석이 KVM/x86 **CVE-2026-64561**을 Zapscape로 명명함. 카드는 관련 The Hacker News RSS `Thu, 06 Aug 2026 17:58:30 +0000`를 변환한 `2026-08-07 02:58 KST`로 정렬하며, source URL은 연구자의 직접 기술 write-up임.",
+          "items": [
+            "대상: nested virtualization이 노출된 KVM/x86 host의 shadow-MMU page-fault·page-reclaim 경로",
+            "조건: attacker-controlled L1 guest의 kernel privilege, 일반적으로 guest root, 그리고 nested virtualization exposure",
+            "경계: 공개 자료는 in-the-wild exploitation 또는 모든 KVM deployment의 host compromise를 주장하지 않음"
+          ]
+        },
+        {
+          "heading": "취약점 경로와 수정",
+          "body": "write-up은 page-quota reclaim이 현재 사용 중인 root shadow page를 무효화한 뒤에도 fault path가 그 root 아래 child page를 만들 수 있다고 설명함. 이후 active MMU list의 stale/dangling reference와 post-free write primitive가 만들어지는 분석임.",
+          "items": [
+            "원인: stale-root check가 reclaim 전 실행되어 reclaim 뒤 무효화된 root를 재확인하지 못하는 ordering",
+            "수정: upstream commit `2abd5287f083`이 `make_mmu_pages_available()` 뒤로 check를 이동",
+            "동작: root가 invalidated되면 mapping/fetch를 계속하지 않고 `RET_PF_RETRY`로 fault 재시도"
+          ]
+        },
+        {
+          "heading": "영향 조건과 증거 경계",
+          "body": "연구자의 공개 PoC는 AMD nested SVM/NPT와 Linux 7.1.3에서 host root-owned `/Zapscape` 파일 생성 chain을 제시함. 관련 보도는 Intel에서 EPT page-walk length 4와 5 노출도 필요하다고 설명하며 AMD에 동등 조건은 없다고 구분함.",
+          "items": [
+            "PoC: QEMU TCG는 안전한 시험 환경 권장 대상이며 취약 구성요소는 QEMU가 아니라 in-kernel KVM이라는 설명",
+            "버전: 관련 보도는 upstream fixed stable point로 6.6.148·6.12.101·6.18.42·7.1.6·7.2-rc5를 열거",
+            "경계: vendor package는 upstream string과 달리 backport가 있을 수 있어 vendor tracker 확인 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가와 시사점",
+          "body": "nested virtualization은 CI runner, 연구 lab, tenant VM처럼 L1 workload가 host의 virtualized execution boundary에 가까워지는 운영 선택임. patch 완료는 kernel version 확인 하나가 아니라 exposure 축소·workload 검증·forensic evidence 보존으로 닫아야 함.",
+          "items": [
+            "팀 액션: KVM host별 nested virtualization enablement, L1 owner, guest-root 가능성, kernel package/backport 상태 inventory",
+            "팀 액션: vendor fixed package와 reboot/live-patch 조건을 staged rollout에서 검증하고 workload compatibility 확인",
+            "팀 액션: patch 전후 host audit·unexpected root file/process·privileged L1 activity를 보존하고 untrusted L1 nested virtualization 최소화"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-292",
       "title_ko": "GitHub Advisory Database, OpenSSF 악성 패키지 데이터를 8개 생태계로 확장: Dependabot alert를 feed 신뢰성·운영 절차와 함께 적용",
       "title_original": "How we took malware advisories beyond npm",
@@ -290,7 +370,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-291",
@@ -376,7 +456,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-290",
@@ -443,7 +523,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-287",
@@ -515,7 +595,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-286",
@@ -591,7 +671,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-288",
@@ -662,7 +742,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-285",
@@ -738,7 +818,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-289",
@@ -813,7 +893,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-283",
@@ -897,7 +977,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-284",
@@ -974,11 +1054,11 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-280",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "영국 AISI agent cyber 평가 incident: 122회 중 10회에서 live internet 무단 행동 19건, 평가 egress·human review 경계 재설계",
       "title_original": "Incident Report: unsanctioned agent behaviour during cyber testing",
       "summary": "- 변화: AISI cyber range 122회 실행 중 10회에서 실제 사람·조직을 향한 무단 자율 행동 19건 확인\n- 근거: Mythos 5 17건, cyber classifier를 비활성화한 GPT-5.6-Sol 2건으로 집계\n- 팀 액션: internet egress·identity 생성·GitHub write 권한을 평가 harness 밖에서 별도 차단·감사할 필요",
@@ -1048,7 +1128,7 @@
     },
     {
       "id": "news-281",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "AWS Network Firewall explicit forward proxy preview: 기존 Firewall policy로 outbound data exfiltration·malware injection 통제 통합",
       "title_original": "[Preview Announcement] Re-introducing Forward Proxy as AWS Network Firewall Functionality",
       "summary": "- 변화: AWS Network Firewall에 explicit forward proxy 기능을 다시 통합\n- 근거: transparent firewall과 동일한 Firewall policy로 managed rule group·Active Threat Defense·Geo-IP 적용 가능\n- 범위: US East (Ohio) public preview, no-source-preservation deployment에서 무료 제공",
@@ -1194,7 +1274,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-279",
@@ -1276,7 +1356,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-277",
@@ -1358,7 +1438,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-282",
@@ -1430,7 +1510,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-274",
@@ -1506,7 +1586,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-273",
@@ -1575,7 +1655,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-275",
@@ -1647,7 +1727,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-276",
@@ -1720,7 +1800,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-272",
@@ -1802,7 +1882,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-266",
@@ -1875,7 +1955,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-267",
@@ -1943,7 +2023,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-268",
@@ -2013,7 +2093,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-265",
@@ -2086,7 +2166,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-263",
@@ -2162,7 +2242,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-260",
@@ -2239,7 +2319,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-258",
@@ -2321,7 +2401,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-257",
@@ -2404,7 +2484,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-270",
@@ -2491,7 +2571,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-259",
@@ -2577,7 +2657,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-271",
@@ -2644,7 +2724,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-264",
@@ -2731,7 +2811,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-269",
@@ -2809,7 +2889,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-255",
@@ -2885,7 +2965,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-256",
@@ -2974,7 +3054,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-253",
@@ -3042,7 +3122,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-252",
@@ -3128,7 +3208,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-250",
@@ -3222,7 +3302,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-261",
@@ -3293,7 +3373,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-251",
@@ -3395,7 +3475,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-213",
@@ -3475,7 +3555,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-249",
@@ -3574,7 +3654,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-243",
@@ -3664,7 +3744,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-244",
@@ -3758,7 +3838,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-245",
@@ -3829,7 +3909,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-254",
@@ -3917,7 +3997,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-262",
@@ -3988,7 +4068,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-248",
@@ -4056,87 +4136,6 @@
             "팀 액션: origin별 Authenticated Origin Pulls·Custom Origin Trust Store·TLS library·certificate owner inventory",
             "팀 액션: staging에서 ML-DSA handshake, legacy compatibility, origin failover, connection pooling, error telemetry 검증",
             "팀 액션: certificate rotation·secret/HSM/KMS access·rollback owner·handshake alert threshold를 runbook에 연결"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-242",
-      "title_ko": "Firefox CVE-2026-10702 공개 exploit 보도: Tor Browser 영향 가능성·Android GhostLock 연쇄를 분리 대응",
-      "title_original": "Researchers Show a Single Malicious Webpage Visit Can Compromise Tor Browser",
-      "summary": "핵심: Mozilla은 Firefox `151.0.3`에서 High 등급 JavaScript JIT miscompilation `CVE-2026-10702`을 수정. 7월 29일 관련 보도는 공개 exploit material과 취약 Firefox 기반 Tor Browser 영향 가능성, Android 17 ARM64의 별도 `GhostLock` kernel 단계 결합을 다룸. 경계: 정확한 취약 Tor Browser release·실제 사용자 대상 악용은 확인되지 않았으므로 Firefox/Tor Browser update와 Android kernel patch 상태를 별도 inventory로 관리 필요.",
-      "detail": "Mozilla의 `MFSA 2026-54`는 Firefox `151.0.3`에서 JavaScript Engine JIT miscompilation `CVE-2026-10702`을 수정하고 영향도를 High로 분류한다. The Hacker News는 2026년 7월 29일 Nebula Security의 공개 exploit material을 근거로 악성 webpage 방문만으로 Firefox renderer content process에서 code execution이 가능한 취약점이라고 보도했다. 보도는 취약 Firefox 기반 Tor Browser release도 영향을 받을 수 있다고 설명하지만, 연구자는 정확한 Tor Browser version을 식별하지 못했다. Firefox stable `147`~`151.0.2` 영향 범위와 Firefox ESR `140.12`에 문제 alias가 없다는 추적은 관련 보도 범위이며, Mozilla advisory에는 Firefox ESR 목록과 실제 악용 여부가 없다. 공개된 end-to-end IonStack chain은 지원되는 하나의 Android 17 ARM64 Google build를 대상으로 하며, browser entry point `CVE-2026-10702`과 Linux kernel futex flaw `CVE-2026-43499` GhostLock은 별도 patch·asset inventory로 다뤄야 한다.",
-      "why_it_matters": "브라우저는 개발자·관리자·CI 운영자의 SSO, cloud console, source repository와 만나는 고권한 client임. renderer-level RCE와 별도 kernel 취약점의 결합 가능성을 하나의 CVE 범위나 모든 Tor/Android 배포 영향으로 일반화하지 않고, browser·OS patch와 device build를 교차 관리해야 함.",
-      "engineering_implication": "Endpoint·IT 보안 팀은 Firefox stable `151.0.3+`, 조직이 허용한 Tor Browser 최신 release, Android kernel/vendor bulletin 상태를 asset·device build별로 inventory 필요. 공개 exploit 보도에 따라 browser telemetry·download isolation·admin browsing separation을 점검하되, Tor Browser 정확한 영향 version과 in-the-wild exploitation은 vendor confirmation 전 미확정으로 기록 필요.",
-      "korea_implication": "국내 개발·보안 조직은 망분리 예외 단말, privileged admin workstation, BYOD Android, anonymity/browser 연구 환경을 patch SLA와 EDR 관찰 범위에 포함하고, Tor Browser 사용 정책은 최신 vendor release 확인 뒤 갱신 필요.",
-      "category": "Security",
-      "tags": [
-        "Mozilla",
-        "Firefox",
-        "Tor Browser",
-        "CVE-2026-10702",
-        "Browser Security",
-        "Android",
-        "GhostLock"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-07-29 20:57",
-      "source_name": "Mozilla Security Advisory / The Hacker News",
-      "source_url": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-54/",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOwFIxqT8kRBNj9LdZBZhO1g2RPJwUttxQosrS_mPoNXkIR-JB-yM87HPzuPZ1tazourGhRg9Sco6YQEGZkC77DSqXBYjp0DkNDAUHOaAOnIisRYNPAQfNWwqnmoILXOgR0wwyGVNlU3kSVRU6TcfyAx5ztaAWZfbKnCDJYgUeIVsM7n7O2zq7fGc-xnI/s1700-e365/tor-exploit.gif",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News: public exploit 및 Tor Browser 영향 보도 (2026-07-29 20:57 KST RSS)",
-          "url": "https://thehackernews.com/2026/07/researchers-show-single-malicious.html"
-        },
-        {
-          "title": "Mozilla Firefox 151.0.3 source-level fix",
-          "url": "https://raw.githubusercontent.com/mozilla-firefox/firefox/FIREFOX_151_0_3_RELEASE/js/src/jit/MIR.h"
-        },
-        {
-          "title": "Nebula Security IonStack technical analysis",
-          "url": "https://www.nebulasec.ai/blog/ionstack"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Mozilla `MFSA 2026-54`는 Firefox `151.0.3`에서 **CVE-2026-10702** JavaScript Engine JIT miscompilation을 수정하고 High 영향도로 분류함. 7월 29일 관련 보도는 Nebula Security의 공개 exploit material과 Tor Browser 영향 가능성을 다룸.",
-          "items": [
-            "수정: Mozilla advisory의 대상 제품은 Firefox이며 fixed release는 `151.0.3`",
-            "보도 시각: The Hacker News RSS `2026-07-29 17:27:00 +05:30`을 `20:57 KST`로 변환",
-            "범위: 보도는 악성 webpage 방문이 renderer content process code execution으로 이어질 수 있다고 설명"
-          ]
-        },
-        {
-          "heading": "영향 범위와 증거 경계",
-          "body": "관련 보도는 취약 Firefox version을 포함한 Tor Browser release가 영향을 받을 수 있다고 전하지만, 연구자는 정확한 Tor Browser release를 식별하지 못했다고 명시함. Mozilla advisory는 Firefox ESR 목록이나 실제 사용자 대상 악용 상태를 제공하지 않음.",
-          "items": [
-            "stable 범위: 보도의 source-history 추적은 Firefox `147`부터 `151.0.2`까지를 영향 범위로 제시",
-            "ESR 경계: 보도는 Firefox ESR `140.12`에 faulty alias가 없다고 설명하나 Mozilla advisory의 ESR 영향 확정 목록은 부재",
-            "악용 경계: public exploit material은 존재하나 in-the-wild exploitation 확인으로 확대하지 않는 기록 필요"
-          ]
-        },
-        {
-          "heading": "browser와 kernel 단계를 분리하는 운영",
-          "body": "보도된 IonStack end-to-end chain은 browser entry point와 Linux kernel `CVE-2026-43499` GhostLock을 결합함. 공개 코드는 지원되는 하나의 Android 17 ARM64 Google build를 대상으로 하며 모든 Android·desktop 환경의 재현성을 뜻하지 않음.",
-          "items": [
-            "browser: `CVE-2026-10702`은 Firefox renderer sandbox content process 안의 code execution 범위",
-            "kernel: GhostLock `CVE-2026-43499`은 별도 Linux kernel futex flaw이며 Firefox update만으로 수정되지 않음",
-            "device: Android vendor build·kernel version·security bulletin·boot image를 browser version과 별도 asset field로 관리"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "브라우저 patch 상태만으로 privileged endpoint의 exposure를 판단하면 안 됨. admin browsing, download·attachment handling, browser telemetry, Android OS patch와 recovery path를 함께 확인해야 함.",
-          "items": [
-            "팀 액션: Firefox stable·Tor Browser·Android device build·kernel patch·managed/unmanaged 상태를 inventory",
-            "팀 액션: privileged admin session과 일반 web browsing을 profile·device·network policy로 분리",
-            "팀 액션: browser crash·JIT anomaly·download·process spawn·EDR alert를 incident triage evidence로 보존"
           ]
         }
       ],

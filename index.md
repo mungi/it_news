@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-07 | Total pages: 267
+> Last updated: 2026-08-07 | Total pages: 268
 
 ## Entities
 
@@ -185,9 +185,7 @@
 
 - [[raw/articles/cloudflare-mcp-v2-stateless-2026-08-07]] — MCP 2026-07-28 stateless core·MRTR·HTTP header·OAuth authorization migration 경계.
 - [[raw/articles/github-malware-advisories-eight-ecosystems-2026-08-07]] — GitHub Advisory Database의 OpenSSF OSV malware ingest·8개 ecosystem·Dependabot alert 운영 경계.
-
-- [[raw/articles/cloudflare-mcp-v2-stateless-2026-08-07]] — MCP 2026-07-28 stateless core·MRTR·HTTP header·OAuth authorization migration 경계.
-- [[raw/articles/github-malware-advisories-eight-ecosystems-2026-08-07]] — GitHub Advisory Database의 OpenSSF OSV malware ingest·8개 ecosystem·Dependabot alert 운영 경계.
+- [[raw/articles/zapscape-kvm-cve-2026-64561-2026-08-07]] — KVM/x86 shadow-MMU Zapscape guest-to-host escape의 nested-virtualization·kernel backport·host 대응 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
