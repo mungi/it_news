@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-06 | Total pages: 265
+> Last updated: 2026-08-07 | Total pages: 267
 
 ## Entities
 
@@ -182,6 +182,12 @@
 - [[raw/articles/aws-aurora-dsql-multi-region-clusters-2026-07-31]] — Aurora DSQL multi-Region cluster 4개 리전 확대와 active-active·strong-consistency·DR 검증 경계.
 - [[raw/articles/adobe-campaign-classic-cve-2026-48364-48365-2026-08-01]] — Adobe Campaign Classic 무상호작용 code execution·SQL injection 파일 읽기 보도와 build·ingress·workflow patch 검증 경계.
 - [[raw/articles/kubernetes-v1-37-sneak-peek-2026-07-31]] — Kubernetes v1.37 사전 안내의 ipvs·cgroup v1·Static Pod API 참조·CSI/SELinux upgrade 검증 경계.
+
+- [[raw/articles/cloudflare-mcp-v2-stateless-2026-08-07]] — MCP 2026-07-28 stateless core·MRTR·HTTP header·OAuth authorization migration 경계.
+- [[raw/articles/github-malware-advisories-eight-ecosystems-2026-08-07]] — GitHub Advisory Database의 OpenSSF OSV malware ingest·8개 ecosystem·Dependabot alert 운영 경계.
+
+- [[raw/articles/cloudflare-mcp-v2-stateless-2026-08-07]] — MCP 2026-07-28 stateless core·MRTR·HTTP header·OAuth authorization migration 경계.
+- [[raw/articles/github-malware-advisories-eight-ecosystems-2026-08-07]] — GitHub Advisory Database의 OpenSSF OSV malware ingest·8개 ecosystem·Dependabot alert 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
