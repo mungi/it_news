@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-06 | Total pages: 264
+> Last updated: 2026-08-06 | Total pages: 265
 
 ## Entities
 
@@ -29,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-meta-muse-code-async-agent-2026-08-06]] — Meta Muse Code 보도의 지속형 coding agent·Git worktree·append-only event log 권한·복구 검증 경계.
 - [[raw/articles/aws-lambda-scalable-network-bandwidth-2026-08-06]] — Lambda VPC 외 execution environment 확장 대역폭의 quota·memory·duration 비용 검증 경계.
 - [[raw/articles/cloudflare-writeguard-mcp-private-beta-2026-08-05]] — Cloudflare WriteGuard MCP write control의 policy·identity·audit 운영 경계.
 - [[raw/articles/cncf-opencost-1-121-inference-cost-tracking-2026-08-05]] — OpenCost inference cost tracking의 model·token·resource attribution·FinOps 검증 경계.

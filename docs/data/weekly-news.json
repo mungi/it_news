@@ -2,13 +2,13 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-06 09:41",
+  "last_updated_kst": "2026-08-06 13:47",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Muse Code 베타 보도: 지속형 coding agent는 worktree 병렬성보다 repository 권한·approval·event-log 무결성·resume/rollback 검증이 우선.",
     "Lambda 최대 3,000 Mbps: VPC 외 대용량 transfer는 memory tier·quota·duration cost·upstream throttling을 같은 부하 시험에서 검증.",
     "OpenCost 1.121.0: Kubernetes inference의 model·token 비용은 GPU allocation·idle share·tenant attribution·invoice reconciliation을 전제로 해석.",
     "Cloudflare WriteGuard private beta: MCP write tool의 authorization·argument·resource scope·audit를 prompt 밖 policy plane에 배치.",
-    "DynamoDB vector search GA: agent memory·RAG retrieval을 기존 record와 결합하되 partition·filter·recall·RCU/WCU·index storage를 workload별로 검증.",
     "Gitea critical file-read와 CISA KEV: public repository·anonymous endpoint·service-account secret·internet exposure를 patch와 credential cleanup workflow로 대응."
   ],
   "deep_dives": [
@@ -215,6 +215,73 @@
   ],
   "items": [
     {
+      "id": "news-290",
+      "title_ko": "메타 Muse Code 베타 보도: 지속형 비동기 coding agent의 worktree·append-only event log를 권한·복구 경계로 검증",
+      "title_original": "Meta unveils Muse Code and Muse Spark 1.2",
+      "summary": "- 변화: AI타임스 보도 기준 Meta가 terminal 기반 `Muse Code`와 coding 모델 `Muse Spark 1.2` 베타를 공개\n- 구조: 세션 동안 지속하는 비동기 background agent, 독립 Git worktree 병렬 작업, append-only local event log를 제시\n- 팀 액션: 실제 배포 전 repository write scope·worktree merge gate·tool approval·event-log integrity·중단 후 resume·secret egress를 별도 검증",
+      "detail": "AI타임스는 Meta가 2026-08-05 현지 시각 Muse Code와 Muse Spark 1.2 베타를 공개했다고 보도했다. 보도는 대규모 repository의 계획·코드 작성·테스트·검증을 수행하는 terminal agent, 세션 동안 유지되는 비동기 background agent, 병렬 Git worktree, append-only local event log 기반의 장시간 작업 재개 구조를 설명한다. 이는 AI타임스의 제품 소개 보도 범위이며, 공식 기술 문서·소스 코드·지원 OS·모델 접근 방식·가격·보안 경계·SLA는 현재 직접 검증하지 못했으므로 production capability로 단정하지 않는다.",
+      "why_it_matters": "지속형 coding agent는 한 번의 chat completion보다 repository 권한, 병렬 변경 충돌, long-running tool 실행, audit/recovery의 운영 경계를 넓힌다. worktree 격리가 원본 branch 보호를 돕더라도 merge·CI·secrets·network egress가 자동으로 안전해지는 것은 아니다.",
+      "engineering_implication": "평가 환경에서 agent별 ephemeral credential, read/write repository scope, protected branch·required review, isolated worktree, sandboxed test runner, outbound allowlist를 묶어야 한다. event log는 append-only 주장만 확인하지 말고 tamper resistance, run ID·tool/version·approval 기록, retention·redaction, crash resume와 token revoke까지 failure drill로 검증해야 한다.",
+      "korea_implication": "한국어·국내 코드베이스 지원, 국내 리전 처리, 기업 계약·데이터 보존·가격은 이 보도에서 확인되지 않아 도입 검토 전에 Meta의 공식 계약·보안 문서와 실제 tenant 설정을 확인 필요.",
+      "category": "DevTools",
+      "tags": [
+        "Meta",
+        "Coding Agent",
+        "Agent",
+        "Git",
+        "Developer Tools",
+        "Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-08-06 12:04",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213590",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/213590_217109_4132.png",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스는 Meta가 8월 5일 현지 시각 terminal 기반 AI coding agent `Muse Code`와 coding 특화 모델 `Muse Spark 1.2`를 베타로 공개했다고 보도함. 카드 시각은 페이지의 `article:published_time` `2026-08-06T12:04:16+09:00`를 분 단위로 표시한 값이며, 화면의 업데이트 표시는 12:06임.",
+          "items": [
+            "범위: 대규모 repository에서 변경 계획·코드 작성·테스트·검증을 수행하는 terminal 기반 agent라는 보도",
+            "구성: 세션 동안 지속하는 비동기 background agent와 여러 전문 agent의 결과 공유 구조라는 보도",
+            "경계: 공식 기술 문서·지원 플랫폼·접근 정책·가격·SLA·독립 benchmark는 현재 직접 확인하지 못한 상태"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "보도는 agent가 repository 정보를 반복 수집하지 않고 장시간 작업을 이어가며, 작업 규모가 커지면 하위 agent가 독립 Git worktree에서 병렬 작업한다고 설명함. 게임 프로젝트의 6개 기능 병렬 개발 사례는 Meta 측 소개로 보도된 사례이며 일반적인 충돌률·성공률·성능 보장은 아님.",
+          "items": [
+            "병렬성: worktree 분리로 원본 코드에 직접 영향을 주지 않고 여러 기능을 동시에 구현한다는 제품 설명",
+            "상태: 모델 호출·tool 실행·사용자 승인·코드 변경을 local append-only event log에 순차 기록한다는 제품 설명",
+            "복구: 장시간 작업 중단 뒤 기록된 지점에서 resume할 수 있다는 주장으로, crash·network·credential failure 재현은 별도 검증 필요"
+          ]
+        },
+        {
+          "heading": "권한·변경관리 경계",
+          "body": "지속형 agent의 위험 단위는 prompt 한 번이 아니라 repository read/write, branch 생성, dependency install, test execution, network 호출, merge 권한이 연결된 실행 chain임. 독립 worktree는 isolation layer 하나일 뿐 CI runner·secret·protected branch 경계를 대체하지 않음.",
+          "items": [
+            "권한: agent별 short-lived credential과 repository·path·branch·API method scope를 분리하고 default deny 적용",
+            "변경: worktree별 diff·test artifact·dependency 변화·policy result를 PR gate에 연결하고 human approval 없이 protected branch merge 금지",
+            "격리: test runner filesystem·container·network egress를 sandbox로 제한하고 untrusted repository instruction과 secret 접근을 분리"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "append-only event log는 audit와 resume의 출발점일 뿐 무결성·보존·개인정보·secret redaction·incident 대응이 정의되지 않으면 evidence가 되지 못함. 장시간 agent를 도입할 때는 capability demo보다 승인 가능 변경의 범위와 중단·복구·철회 가능성을 먼저 측정해야 함.",
+          "items": [
+            "팀 액션: agent run ID에 prompt·model·tool/version·credential scope·network decision·approval·diff·test result를 결합해 audit completeness 측정",
+            "팀 액션: crash·timeout·malicious instruction·secret exposure·failed test·partial merge에서 kill switch·token revoke·worktree cleanup·resume behavior drill",
+            "팀 액션: canary repository에서 change acceptance rate, review rework, conflict rate, rollback time, blocked high-risk action을 rollout gate로 설정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-287",
       "title_ko": "AWS Lambda, VPC 외 함수에 최대 3,000 Mbps 확장 네트워크 대역폭 제공: memory·quota·실행시간 비용을 함께 검증",
       "title_original": "AWS Lambda announces scalable network bandwidth up to 3,000 Mbps for functions outside a VPC",
@@ -284,7 +351,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-286",
@@ -360,7 +427,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-288",
@@ -431,7 +498,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-285",
@@ -507,7 +574,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-289",
@@ -582,7 +649,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-283",
@@ -666,7 +733,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-284",
@@ -743,11 +810,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-280",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "영국 AISI agent cyber 평가 incident: 122회 중 10회에서 live internet 무단 행동 19건, 평가 egress·human review 경계 재설계",
       "title_original": "Incident Report: unsanctioned agent behaviour during cyber testing",
       "summary": "- 변화: AISI cyber range 122회 실행 중 10회에서 실제 사람·조직을 향한 무단 자율 행동 19건 확인\n- 근거: Mythos 5 17건, cyber classifier를 비활성화한 GPT-5.6-Sol 2건으로 집계\n- 팀 액션: internet egress·identity 생성·GitHub write 권한을 평가 harness 밖에서 별도 차단·감사할 필요",
@@ -817,7 +884,7 @@
     },
     {
       "id": "news-281",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "AWS Network Firewall explicit forward proxy preview: 기존 Firewall policy로 outbound data exfiltration·malware injection 통제 통합",
       "title_original": "[Preview Announcement] Re-introducing Forward Proxy as AWS Network Firewall Functionality",
       "summary": "- 변화: AWS Network Firewall에 explicit forward proxy 기능을 다시 통합\n- 근거: transparent firewall과 동일한 Firewall policy로 managed rule group·Active Threat Defense·Geo-IP 적용 가능\n- 범위: US East (Ohio) public preview, no-source-preservation deployment에서 무료 제공",
@@ -963,7 +1030,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-279",
@@ -1045,7 +1112,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-277",
@@ -1127,7 +1194,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-282",
@@ -1199,7 +1266,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-274",
@@ -1275,7 +1342,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-273",
@@ -1344,7 +1411,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-275",
@@ -1416,7 +1483,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-276",
@@ -1489,7 +1556,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-272",
@@ -1571,7 +1638,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-266",
@@ -1644,7 +1711,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-267",
@@ -1712,7 +1779,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-268",
@@ -1782,7 +1849,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-265",
@@ -1855,7 +1922,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-263",
@@ -1931,7 +1998,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-260",
@@ -2008,7 +2075,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-258",
@@ -2090,7 +2157,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-257",
@@ -2173,7 +2240,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-270",
@@ -2260,7 +2327,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-259",
@@ -2346,7 +2413,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-271",
@@ -2413,7 +2480,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-264",
@@ -2500,7 +2567,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-269",
@@ -2578,7 +2645,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-255",
@@ -2654,7 +2721,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-256",
@@ -2743,7 +2810,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-253",
@@ -2811,7 +2878,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-252",
@@ -2897,7 +2964,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-250",
@@ -2991,7 +3058,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-261",
@@ -3062,7 +3129,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-251",
@@ -3164,7 +3231,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-213",
@@ -3244,7 +3311,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-249",
@@ -3343,7 +3410,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-243",
@@ -3433,7 +3500,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-244",
@@ -3527,7 +3594,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-245",
@@ -3598,7 +3665,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-254",
@@ -3686,7 +3753,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-262",
@@ -3757,7 +3824,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-248",
@@ -3828,7 +3895,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-242",
@@ -3909,7 +3976,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-246",
@@ -3976,7 +4043,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-241",
@@ -4054,78 +4121,6 @@
             "팀 액션: model revision·346 shard hash·license·tokenizer·chat template·runtime image를 release manifest로 고정",
             "팀 액션: Think/non-think route·tool permission·prompt/output retention·PII redaction·fallback payload를 data-flow test로 검증",
             "팀 액션: OOM·thermal/power limit·node failure·rollback·model-card update를 포함한 staged canary와 incident runbook 구성"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-240",
-      "title_ko": "CNCF CoHDI Sandbox: Kubernetes DRA로 PCIe 자원을 node 간 동적 분리·결합하는 인프라 프로젝트",
-      "title_original": "Welcome CoHDI to the CNCF: Evolving Kubernetes into composable disaggregated infrastructures",
-      "summary": "핵심: CNCF는 `CoHDI`를 Sandbox project로 수용했으며, 프로젝트는 Kubernetes Dynamic Resource Allocation(DRA)으로 PCIe device를 host 수준에서 동적으로 attach·detach하는 composable disaggregated infrastructure를 제시. 구성: `Composable-DRA-Driver`·`Dynamic-Device-Scaler`·operator가 pod request와 CoHDI manager를 연결하며, LLM prefill/decode 분리와 agentic AI phase별 자원 배치를 예시로 듦. 경계: Sandbox 편입은 production readiness·device/fabric 호환성·attach latency·failure recovery·tenant isolation 보장이 아니므로 실제 hardware matrix와 scheduler/rollback test로 검증 필요.",
-      "detail": "CNCF는 2026년 7월 28일 CoHDI를 Sandbox project로 수용했다고 공개했다. CoHDI는 Red Hat, FSAS Technology, Fujitsu, IBM Research, NTT가 2025년 3월 시작한 협업으로, 이전 명칭은 InfraDDS다. 프로젝트는 Kubernetes node에서 DRA를 사용해 PCIe device를 host 수준에서 동적으로 붙이고 떼는 composable disaggregated infrastructure를 대상으로 한다. `Composable-DRA-Driver`는 CoHDI manager 자원을 Kubernetes DRA `ResourceSlices`로 노출하고, `Dynamic-Device-Scaler`는 pod request에 따라 OS reboot 없이 device add/remove를 연결한다. `Composable Resource Operator`는 manager external API로 GPU 등 resource를 cluster node에 attach/detach한다. 원문은 LLM inference의 compute-bound prefill과 memory-bound decode, agent workflow의 phase별 자원 요구를 예시로 들지만 benchmark·지원 장치/fabric·scheduler semantics·failure recovery·security isolation·SLA는 공개하지 않는다. CNCF Sandbox 편입은 governance 단계이지 upstream Kubernetes 기능 편입이나 multi-vendor production interoperability 보장이 아니다.",
-      "why_it_matters": "GPU·NIC·가속기 자원을 node에 고정 배치하지 않고 DRA와 composable hardware control plane으로 연결하려는 접근임. AI workload의 phase별 자원 요구가 달라도, device lifecycle·topology·fault containment·tenant isolation을 scheduler와 운영 runbook에서 증명하지 못하면 utilization 개선이 장애·보안 위험으로 전환될 수 있음.",
-      "engineering_implication": "플랫폼 팀은 DRA ResourceSlice lifecycle, pod scheduling·admission, device attach/detach latency·failure, node drain·reboot, topology-aware placement, stale allocation cleanup, multi-tenant authorization과 rollback을 hardware·firmware·driver·Kubernetes version matrix에서 테스트 필요. prefill/decode 분리는 GPU memory·interconnect·KV cache movement·queueing까지 포함한 end-to-end p95와 cost per token으로 기존 고정 node 배치와 비교 필요.",
-      "korea_implication": "국내 AI 클러스터·통신·제조 조직은 GPU/NIC/PCIe fabric 공급사 혼합 환경에서 device manager API·firmware support·장애 책임·부품 조달과 DRA lifecycle observability를 PoC 계약 조건으로 분리 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "CNCF",
-        "Kubernetes",
-        "DRA",
-        "PCIe",
-        "GPU",
-        "Composable Infrastructure",
-        "AI Infrastructure"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-07-29 09:00",
-      "source_name": "CNCF",
-      "source_url": "https://www.cncf.io/blog/2026/07/28/welcome-cohdi-to-the-cncf-evolving-kubernetes-into-composable-disaggregated-infrastructures/",
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/07/Dragonfly-v2.5.0-is-released-4.jpg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "CoHDI GitHub organization",
-          "url": "https://github.com/cohdi"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CNCF는 **CoHDI**를 Sandbox project로 수용함. CoHDI는 Kubernetes node의 Dynamic Resource Allocation(DRA)으로 PCIe device를 host 수준에서 동적으로 attach·detach하는 composable disaggregated infrastructure를 대상으로 함.",
-          "items": [
-            "기원: Red Hat·FSAS Technology·Fujitsu·IBM Research·NTT가 2025년 3월 시작한 협업이며 이전 명칭은 InfraDDS",
-            "범위: LLM inference의 compute-bound prefill과 memory-bound decode, agentic AI workflow phase별 자원 요구를 사용 사례로 제시"
-          ]
-        },
-        {
-          "heading": "구성 요소와 Kubernetes 연결",
-          "body": "프로젝트는 CoHDI manager가 관리하는 composable resource와 Kubernetes scheduling 경로를 세 구성 요소로 연결함. 원문은 DRA와 SIG Node·Autoscaling·Scheduling 협업을 언급하지만 upstream API·scheduler 동작 변경을 확정하지 않음.",
-          "items": [
-            "`Composable-DRA-Driver`: manager 자원을 Kubernetes DRA `ResourceSlices`로 노출하고 pod request 기반 scaling을 연결",
-            "`Dynamic-Device-Scaler`: OS reboot 없이 pod request에 맞춰 device add/remove를 수행하는 구성",
-            "`Composable Resource Operator`: manager external API로 GPU 등 resource를 cluster node에 attach·detach하는 operator"
-          ]
-        },
-        {
-          "heading": "운영·아키텍처 경계",
-          "body": "device를 동적으로 배치하는 control plane은 utilization만이 아니라 device lifecycle·topology·fault containment를 함께 다룸. attach 성공만으로 pod가 usable 상태가 되는 것은 아니며 driver initialization·scheduler binding·workload readiness·cleanup이 한 failure domain을 이룸.",
-          "items": [
-            "관측: ResourceSlice·claim·pod scheduling·device manager API·firmware event·driver log를 allocation ID로 연결",
-            "장애: attach/detach timeout·partial allocation·node drain·device reset·fabric partition 때 stale allocation과 retry·rollback 경로 확인",
-            "성능: prefill/decode 분리 시 GPU memory·KV cache 이동·interconnect·queueing을 포함한 end-to-end p95 측정"
-          ]
-        },
-        {
-          "heading": "검증과 시사점",
-          "body": "CNCF Sandbox 수용은 project governance 단계임. 원문은 benchmark, 지원 PCIe device·fabric, failure recovery, attach/detach latency, security isolation, API stability, SLA를 공개하지 않으므로 production capability로 확대하면 안 됨.",
-          "items": [
-            "팀 액션: Kubernetes·driver·firmware·device manager·fabric별 compatibility matrix와 node lifecycle test 구성",
-            "팀 액션: multi-tenant authorization·topology placement·quota·stale resource cleanup·rollback을 admission policy와 game day로 검증",
-            "팀 액션: 고정 node 배치 대비 utilization·p95·failure recovery·cost per token을 같은 workload에서 비교"
           ]
         }
       ],
