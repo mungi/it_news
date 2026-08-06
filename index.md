@@ -29,6 +29,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-lambda-scalable-network-bandwidth-2026-08-06]] — Lambda VPC 외 execution environment 확장 대역폭의 quota·memory·duration 비용 검증 경계.
+- [[raw/articles/cloudflare-writeguard-mcp-private-beta-2026-08-05]] — Cloudflare WriteGuard MCP write control의 policy·identity·audit 운영 경계.
+- [[raw/articles/cncf-opencost-1-121-inference-cost-tracking-2026-08-05]] — OpenCost inference cost tracking의 model·token·resource attribution·FinOps 검증 경계.
 - [[raw/articles/aws-dynamodb-vector-search-ga-2026-08-06]] — DynamoDB native vector search GA의 partition·recall·capacity·tenant retrieval 검증 경계.
 - [[raw/articles/cisa-kev-langflow-tomcat-ncentral-2026-08-05]] — CISA KEV Langflow·Tomcat·N-central active-exploitation patch·exposure 대응.
 - [[raw/articles/cursor-mixture-of-kittens-official-2026-08-06]] — Cursor 공식 MoK NVL72 MoE megakernel의 kernel fusion·benchmark·runtime 조건.
