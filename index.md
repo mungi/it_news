@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-07 | Total pages: 270
+> Last updated: 2026-08-07 | Total pages: 274
 
 ## Entities
 
@@ -191,6 +191,11 @@
 - [[raw/articles/zapscape-kvm-cve-2026-64561-2026-08-07]] — KVM/x86 shadow-MMU Zapscape guest-to-host escape의 nested-virtualization·kernel backport·host 대응 경계.
 
 - [[raw/articles/oligo-teampcp-shadowray-redis-supply-chain-2026-08-07]] — TeamPCP·ShadowRay 2.0·TA-NATALSTATUS 연계 분석과 Redis·Ray·Docker·React·CI/CD·Kubernetes hunt 경계.
+
+- [[raw/articles/cloudflare-workers-ai-gateway-control-plane-2026-08-07]] — Workers AI·AI Gateway 통합의 model routing·observability·billing control plane.
+- [[raw/articles/linux-sctphantom-cve-2026-64564-2026-08-07]] — Linux SCTP CVE-2026-64564의 local root·container host patch 경계.
+- [[raw/articles/claude-gemini-cli-ci-harness-cves-2026-08-07]] — Claude Code·Gemini CLI CI harness CVE와 runner·secret 경계.
+- [[raw/articles/aws-bedrock-agentcore-temporal-policy-rate-limit-2026-08-06]] — AgentCore temporal authorization·rate-limit 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
