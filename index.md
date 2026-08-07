@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-07 | Total pages: 274
+> Last updated: 2026-08-08 | Total pages: 275
 
 ## Entities
 
@@ -194,6 +194,7 @@
 
 - [[raw/articles/cloudflare-workers-ai-gateway-control-plane-2026-08-07]] — Workers AI·AI Gateway 통합의 model routing·observability·billing control plane.
 - [[raw/articles/linux-sctphantom-cve-2026-64564-2026-08-07]] — Linux SCTP CVE-2026-64564의 local root·container host patch 경계.
+- [[raw/articles/tencent-sctphantom-cve-2026-64564-2026-08-08]] — Tencent Zhuque Lab primary write-up의 SCTP ASCONF UAF·upstream fix·container 재현 증거 경계.
 - [[raw/articles/claude-gemini-cli-ci-harness-cves-2026-08-07]] — Claude Code·Gemini CLI CI harness CVE와 runner·secret 경계.
 - [[raw/articles/aws-bedrock-agentcore-temporal-policy-rate-limit-2026-08-06]] — AgentCore temporal authorization·rate-limit 운영 경계.
 
