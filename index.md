@@ -190,6 +190,8 @@
 - [[raw/articles/github-malware-advisories-eight-ecosystems-2026-08-07]] — GitHub Advisory Database의 OpenSSF OSV malware ingest·8개 ecosystem·Dependabot alert 운영 경계.
 - [[raw/articles/zapscape-kvm-cve-2026-64561-2026-08-07]] — KVM/x86 shadow-MMU Zapscape guest-to-host escape의 nested-virtualization·kernel backport·host 대응 경계.
 
+- [[raw/articles/oligo-teampcp-shadowray-redis-supply-chain-2026-08-07]] — TeamPCP·ShadowRay 2.0·TA-NATALSTATUS 연계 분석과 Redis·Ray·Docker·React·CI/CD·Kubernetes hunt 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
