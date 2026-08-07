@@ -29,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/github-actions-pages-critical-incident-2026-08-07]] — GitHub Actions·Pages critical incident의 queue·webhook·ARC idle runner·CI 재실행 검증 경계.
 - [[raw/articles/aws-ecs-fractional-gpu-g6f-2026-08-07]] — Amazon ECS G6f fractional GPU scheduling의 packing·격리·telemetry·FinOps 검증 경계.
 - [[raw/articles/aws-bedrock-agentcore-runtime-instances-2026-08-07]] — AgentCore Runtime instances GA의 14일 session·EC2 capacity provider·recovery·비용 검증 경계.
 - [[raw/articles/cisa-kev-teamcity-cve-2026-63077-2026-08-06]] — CISA KEV TeamCity agent polling 무인증 RCE의 CI/CD control plane·credential·artifact 대응 경계.

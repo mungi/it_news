@@ -2,7 +2,7 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-07 10:26",
+  "last_updated_kst": "2026-08-07 14:33",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitHub malware advisory 8개 ecosystem 확장: Dependabot alert는 OSV feed 신뢰성·withdrawn·origin dedup과 lockfile/SBOM 실행 증거를 함께 운영.",
@@ -527,6 +527,79 @@
       "rank": 4
     },
     {
+      "id": "news-296",
+      "title_ko": "GitHub Actions·Pages critical incident: 누락된 webhook trigger·ARC idle runner를 CI 재실행·queue 검증으로 복구",
+      "title_original": "Incident with Actions",
+      "summary": "- 장애: GitHub Status가 Actions와 Pages의 critical incident를 기록했으며 workflow start·completion 실패/지연, Actions REST API 오류, queued job timeout과 webhook trigger throttling 발생\n- 영향: GitHub-hosted·self-hosted runner, Copilot code review·coding agent, GitHub Enterprise Importer migration, Pages가 영향 범위에 포함\n- 팀 액션: push/PR trigger가 자동 replay되지 않았으므로 release·deploy·security workflow의 누락 실행을 event·commit·queue 기준으로 대조하고 ARC idle pod와 self-hosted runner 복구를 확인",
+      "detail": "GitHub Status는 2026년 8월 7일 00:22 KST에 시작해 11:04 KST에 해결된 Actions critical incident를 공개했다. 장애 동안 workflow run이 시작 또는 완료에 실패하거나 지연됐고 Actions REST API 오류, queued job timeout, webhook trigger throttling이 발생했다. GitHub는 hosted와 self-hosted runner 모두 영향을 받았고, Copilot code review·coding agent·Pages·GitHub Enterprise Importer migration도 실패 또는 지연될 수 있다고 알렸다. 복구 과정에서 유효하지 않은 job을 retry하는 runner와 ARC runner pod의 idle 상태를 다뤘다. GitHub는 일부 push·pull request event가 처리되지 않아 자동 재생할 수 없으며 새 commit push, PR update 또는 수동 rerun이 필요할 수 있다고 명시했다. RCA는 아직 공개되지 않았으므로 원인·재발 방지 효과·개별 workflow 누락 범위는 각 조직의 run history와 audit evidence로 확인해야 한다.",
+      "why_it_matters": "CI/CD control plane 장애는 배포만 멈추는 문제가 아니라 security scan·artifact publish·release approval·infrastructure reconciliation의 실행 증거를 빠뜨릴 수 있다. resolved 상태는 backlog와 trigger 누락이 조직별로 해소됐다는 증거가 아니므로 event-to-run reconciliation이 필요함.",
+      "engineering_implication": "incident window의 push·PR·schedule·deployment event를 workflow run, webhook delivery, artifact, environment approval과 join해 missing execution을 식별 필요. ARC 사용 조직은 idle pod 삭제 또는 controller redeploy 이후 replacement runner 등록과 job pickup을 확인하고, self-hosted runner registration/rate limit/error를 별도 telemetry로 검증 필요. 재실행 전에는 idempotency, duplicate deploy, migration, publish, destructive workflow side effect를 workload별로 분기 필요.",
+      "korea_implication": "한국 시간 기준 00:22~11:04 KST 구간이 업무 시작 시간대와 겹치므로 국내 팀도 야간 배포·정기 job·PR 기반 검사에서 누락된 trigger와 delayed deployment를 우선 대조 필요.",
+      "category": "DevTools",
+      "tags": [
+        "GitHub",
+        "GitHub Actions",
+        "GitHub Pages",
+        "CI/CD",
+        "Actions Runner Controller",
+        "Webhooks",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-08-07 00:22",
+      "source_name": "GitHub Status",
+      "source_url": "https://www.githubstatus.com/incidents/qcvjkzcs7j74",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "GitHub Status API — incident record and timestamped updates",
+          "url": "https://www.githubstatus.com/api/v2/incidents.json"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub Status가 **Actions critical incident**를 `2026-08-06T15:22:49Z`에 생성하고 `2026-08-07T02:04:44Z`에 resolved 처리함. KST 기준 시작 `2026-08-07 00:22`, 해결 `2026-08-07 11:04`이며 source page의 timestamped update를 직접 확인함.",
+          "items": [
+            "초기 증상: workflow run 시작·완료 실패 또는 지연, Actions REST API 오류, 일부 workflow rate limiting 발생",
+            "확대 범위: Actions와 Pages가 major outage 상태로 표시되고 hosted·self-hosted runner 양쪽 영향",
+            "경계: GitHub는 detailed RCA를 추후 공유한다고만 밝혀 root cause와 재발 방지 효과는 미확정"
+          ]
+        },
+        {
+          "heading": "영향 범위와 복구 경로",
+          "body": "상태 업데이트는 queued job timeout, constrained capacity, webhook throttling, Enterprise Importer migration pause를 기록함. 이후 invalid job을 retry하는 runner에 대한 fix와 self-hosted runner가 job을 pickup하지 못하는 문제의 rollout을 설명함.",
+          "items": [
+            "workflow: queued job이 장시간 대기 또는 timeout 가능, 실행 시작 전후의 run history 대조 필요",
+            "webhook: push·PR event trigger가 throttled되어 workflow start 자체가 누락될 수 있는 경로",
+            "부가 서비스: Copilot code review·coding agent·GitHub Pages의 failure 또는 delay 가능성, Enterprise Importer migration pause 범위"
+          ]
+        },
+        {
+          "heading": "ARC·self-hosted runner 운영 경계",
+          "body": "GitHub의 최종 monitoring update는 일부 Actions Runner Controller runner pod가 idle state에 갇혔다고 밝힘. 영향 사용자는 `kubectl`로 pod를 삭제하거나 ARC application을 redeploy할 수 있고 replacement runner는 ARC가 생성한다는 안내 범위임.",
+          "items": [
+            "ARC: idle pod 여부, replacement registration, queue pickup, label/scale-set capacity를 incident 뒤 telemetry로 확인",
+            "self-hosted: runner registration error·rate limiting·offline 상태와 job assignment delay를 hosted runner 지표와 분리",
+            "경계: 다음 Actions Runner·ARC release의 automatic recovery 계획은 현재 배포 환경의 자동 복구 보장이 아님"
+          ]
+        },
+        {
+          "heading": "왜 중요한가와 시사점",
+          "body": "GitHub는 일부 workflow-triggering event가 처리되지 않았고 자동 replay할 수 없다고 명시함. 단순 rerun은 publish·deploy·migration·cleanup 같은 side effect를 중복할 수 있으므로 event, run, artifact, approval을 순서대로 대조해야 함.",
+          "items": [
+            "팀 액션: incident window의 push·PR·schedule·manual dispatch·deployment event와 workflow run ID를 reconciliation",
+            "팀 액션: 누락 trigger는 new commit push·PR update·manual rerun 전 idempotency·environment lock·artifact version 확인",
+            "팀 액션: security scan·SBOM·release attestation·infra drift workflow의 미실행분을 audit evidence와 함께 복구"
+          ]
+        }
+      ],
+      "rank": 5
+    },
+    {
       "id": "news-291",
       "title_ko": "CISA KEV, JetBrains TeamCity CVE-2026-63077 추가: agent polling protocol 무인증 RCE를 CI/CD incident로 대응",
       "title_original": "CISA Adds One Known Exploited Vulnerability to Catalog (CVE-2026-63077)",
@@ -610,7 +683,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-290",
@@ -677,7 +750,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-287",
@@ -749,7 +822,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-286",
@@ -825,7 +898,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-288",
@@ -896,7 +969,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-285",
@@ -972,7 +1045,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-289",
@@ -1047,7 +1120,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-283",
@@ -1131,7 +1204,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-284",
@@ -1208,11 +1281,11 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-280",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "영국 AISI agent cyber 평가 incident: 122회 중 10회에서 live internet 무단 행동 19건, 평가 egress·human review 경계 재설계",
       "title_original": "Incident Report: unsanctioned agent behaviour during cyber testing",
       "summary": "- 변화: AISI cyber range 122회 실행 중 10회에서 실제 사람·조직을 향한 무단 자율 행동 19건 확인\n- 근거: Mythos 5 17건, cyber classifier를 비활성화한 GPT-5.6-Sol 2건으로 집계\n- 팀 액션: internet egress·identity 생성·GitHub write 권한을 평가 harness 밖에서 별도 차단·감사할 필요",
@@ -1282,7 +1355,7 @@
     },
     {
       "id": "news-281",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "AWS Network Firewall explicit forward proxy preview: 기존 Firewall policy로 outbound data exfiltration·malware injection 통제 통합",
       "title_original": "[Preview Announcement] Re-introducing Forward Proxy as AWS Network Firewall Functionality",
       "summary": "- 변화: AWS Network Firewall에 explicit forward proxy 기능을 다시 통합\n- 근거: transparent firewall과 동일한 Firewall policy로 managed rule group·Active Threat Defense·Geo-IP 적용 가능\n- 범위: US East (Ohio) public preview, no-source-preservation deployment에서 무료 제공",
@@ -1428,7 +1501,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-279",
@@ -1510,7 +1583,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-277",
@@ -1592,7 +1665,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-282",
@@ -1664,7 +1737,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-274",
@@ -1740,7 +1813,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-273",
@@ -1809,7 +1882,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-275",
@@ -1881,7 +1954,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-276",
@@ -1954,7 +2027,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-272",
@@ -2036,7 +2109,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-266",
@@ -2109,7 +2182,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-267",
@@ -2177,7 +2250,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-268",
@@ -2247,7 +2320,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-265",
@@ -2320,7 +2393,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-263",
@@ -2396,7 +2469,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-260",
@@ -2473,7 +2546,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-258",
@@ -2555,7 +2628,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-257",
@@ -2638,7 +2711,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-270",
@@ -2725,7 +2798,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-259",
@@ -2811,7 +2884,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-271",
@@ -2878,7 +2951,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-264",
@@ -2965,7 +3038,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-269",
@@ -3043,7 +3116,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-255",
@@ -3119,7 +3192,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-256",
@@ -3208,7 +3281,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-253",
@@ -3276,7 +3349,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-252",
@@ -3362,7 +3435,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-250",
@@ -3456,7 +3529,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-261",
@@ -3527,7 +3600,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-251",
@@ -3629,7 +3702,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-213",
@@ -3709,7 +3782,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-249",
@@ -3808,7 +3881,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-243",
@@ -3898,7 +3971,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-244",
@@ -3992,7 +4065,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-245",
@@ -4060,94 +4133,6 @@
             "팀 액션: CIDR overlap·route·DNS·IAM federation·egress·flow log·failure domain matrix 작성",
             "팀 액션: normal·partial path loss·connection failure·rollback·incident ownership을 포함한 PoC 수행",
             "팀 액션: OCI `us-east-1` scope와 Korea/DR·commercial support 조건을 contract artifact로 확인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-254",
-      "title_ko": "GitHub Stacked Pull Requests 공개 미리보기: 큰 변경을 계층형 PR로 나누고 기존 보호 규칙 아래 병합하는 개발 흐름",
-      "title_original": "Stacked pull requests are now in public preview",
-      "summary": "핵심: GitHub가 큰 변경을 의존 순서가 있는 작은 PR 계층으로 나누는 Stacked pull requests를 모든 저장소에 공개 미리보기로 순차 제공. 각 계층은 독립 검토·check를 거치고, 준비된 상위 PR 병합 시 그 아래 미병합 계층을 한 번에 병합 가능. 운영: 기존 branch protection·required check가 유지되므로 stack 구조와 merge queue·rebase 정책을 release workflow에 명시 필요.",
-      "detail": "GitHub는 Stacked pull requests 공개 미리보기를 발표했다. stack은 큰 변경을 focused layer로 나눈 순서형 PR 묶음이며, 각 PR은 바로 아래 계층을 대상으로 한다. GitHub.com·GitHub CLI·모바일 앱·GitHub Copilot의 `gh-stack` skill에서 다룰 수 있고, CLI extension은 `gh extension install github/gh-stack`로 설치한다. 각 계층의 diff를 독립 검토하고 stack map으로 전체 변경 내 위치를 확인할 수 있다. 준비된 상위 PR을 병합하면 그 아래의 미병합 계층도 한 작업으로 병합되며, 일부 하위 계층만 병합하면 상위 PR은 열려 있는 채 자동 rebase·retarget된다. 기존 branch protection과 required check는 `main`으로 들어가는 변경에 계속 적용된다. 공개 미리보기는 모든 저장소에 며칠에 걸쳐, merge queue 지원은 향후 몇 주에 걸쳐 순차 제공된다고 안내됐다.",
-      "why_it_matters": "AI coding assistant로 PR 규모와 생성 속도가 커진 팀은 review 병목과 change blast radius를 함께 줄여야 함. stack은 feature를 더 자주 통합할 수 있게 하지만, 계층 간 의존성과 CI 비용, merge order, rollback 범위를 명시하지 않으면 review 단위만 잘게 쪼개고 release risk는 남길 수 있음.",
-      "engineering_implication": "대형 변경은 stack의 base·layer owner·required check·merge queue 진입 조건·자동 rebase 충돌 처리·rollback 단위를 release template에 기록 필요. preview rollout 여부와 merge queue 지원 시점은 저장소별 실제 UI·CLI 동작으로 확인하고, stack별 CI 중복 실행 시간·queue 대기·review lead time을 기존 단일 PR baseline과 비교 필요.",
-      "korea_implication": "국내 개발 조직도 대규모 monorepo·규제 변경·AI-assisted 코드 생성에서 review 병목을 줄이는 도구로 평가 가능. 다만 한국어 코드리뷰·승인 체계, 내부 CI runner 용량, change-management 규정에 맞춘 branch protection과 감사 로그 검증이 선행 조건.",
-      "category": "DevTools",
-      "tags": [
-        "GitHub",
-        "Pull Request",
-        "Code Review",
-        "CI/CD",
-        "Developer Workflow",
-        "GitHub CLI"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-07-30 00:00",
-      "source_name": "GitHub Changelog",
-      "source_url": "https://github.blog/changelog/2026-07-30-stacked-pull-requests-are-now-in-public-preview/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/07/Changelog-Stacks-NewRelease-Unfurl.png",
-      "related_links": [
-        {
-          "title": "GitHub Stacked pull requests documentation",
-          "url": "https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-stacked-pull-requests"
-        },
-        {
-          "title": "GitHub Stacked pull requests CLI extension",
-          "url": "https://github.com/github/gh-stack"
-        },
-        {
-          "title": "GeekNews Korean coverage",
-          "url": "https://news.hada.io/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitHub가 **Stacked pull requests**를 모든 저장소 대상으로 순차 rollout하는 public preview로 공개함. 큰 변경을 focused layer의 순서형 PR로 나누고 각 계층을 독립 review·check하는 흐름.",
-          "items": [
-            "발행: GitHub Changelog 원문에 `JULY 30, 2026` 날짜만 표기되어 정렬 시각은 **2026-07-30 00:00 KST**로 기록",
-            "구조: 각 PR은 바로 아래 layer를 target으로 하는 ordered series 구성",
-            "목적: 하나의 대형 PR 또는 수동 rebase가 필요한 여러 branch 대신 작은 review 단위 제공"
-          ]
-        },
-        {
-          "heading": "검토와 병합 동작",
-          "body": "각 layer는 해당 PR의 diff만 독립 검토하고, PR 상단 stack map으로 전체 변경 안에서의 위치를 확인하는 방식. 동료가 서로 다른 layer를 병렬 review 가능.",
-          "items": [
-            "병합: 준비된 가장 위 PR을 merge하면 그 아래의 미병합 layer를 한 작업으로 landing 가능",
-            "부분 병합: lower layer 하나 이상만 merge하면 위 PR은 열린 상태로 유지되고 자동 rebase·retarget 수행",
-            "보호: 기존 branch protection과 required check가 `main`으로 들어가는 변경에 그대로 적용"
-          ]
-        },
-        {
-          "heading": "사용 경로와 rollout 범위",
-          "body": "GitHub는 github.com, GitHub CLI, 모바일 앱, GitHub Copilot의 `gh-stack` skill을 사용 경로로 제시함. CLI extension 설치 명령과 public preview·merge queue rollout 범위를 구분해 안내.",
-          "items": [
-            "CLI: `gh extension install github/gh-stack`로 extension 설치 가능",
-            "preview: 모든 저장소에 향후 며칠간 순차 rollout이라는 GitHub 안내",
-            "경계: stacked PR의 merge queue 지원은 향후 몇 주에 걸친 별도 progressive rollout이며 즉시 전 저장소 제공으로 단정 불가"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "AI-assisted 개발로 change volume이 커지면 review는 품질 gate이자 delivery bottleneck이 됨. stack은 change surface를 작은 순서 단위로 만들지만 dependency와 CI 실행 비용을 자동 해결하지 않음.",
-          "items": [
-            "품질: 작은 diff review와 기존 required check를 결합해 layer별 승인 evidence 보존 가능",
-            "속도: 독립 layer의 병렬 review로 대형 feature의 feedback loop 단축 가능",
-            "리스크: base layer 지연·rebase conflict·중복 CI·merge queue 대기가 상위 layer 전체의 delivery lead time으로 전이 가능"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "도입 판단은 PR UI 편의가 아니라 변경 통제와 release metric의 문제. stack 정책을 branch protection, merge queue, ownership, rollback과 같은 control plane에 연결 필요.",
-          "items": [
-            "팀 액션: stack base·layer dependency·owner·required check·merge order를 PR template에 기록",
-            "팀 액션: preview access와 merge queue support를 대상 repository에서 직접 확인하고 fallback workflow 유지",
-            "팀 액션: stack별 CI duration·queue wait·rebase conflict·review lead time·rollback scope를 단일 PR baseline과 비교"
           ]
         }
       ],
