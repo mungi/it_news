@@ -195,6 +195,7 @@
 - [[raw/articles/cloudflare-workers-ai-gateway-control-plane-2026-08-07]] — Workers AI·AI Gateway 통합의 model routing·observability·billing control plane.
 - [[raw/articles/linux-sctphantom-cve-2026-64564-2026-08-07]] — Linux SCTP CVE-2026-64564의 local root·container host patch 경계.
 - [[raw/articles/tencent-sctphantom-cve-2026-64564-2026-08-08]] — Tencent Zhuque Lab primary write-up의 SCTP ASCONF UAF·upstream fix·container 재현 증거 경계.
+- [[raw/articles/thn-npm-wel1dropper-malicious-packages-2026-08-08]] — npm 약 800개 악성 패키지의 `require()` 유도·WEL1DROPPER·Cloudflare Workers/DNS TXT 전달과 CI·endpoint 조사 경계.
 - [[raw/articles/claude-gemini-cli-ci-harness-cves-2026-08-07]] — Claude Code·Gemini CLI CI harness CVE와 runner·secret 경계.
 - [[raw/articles/aws-bedrock-agentcore-temporal-policy-rate-limit-2026-08-06]] — AgentCore temporal authorization·rate-limit 운영 경계.
 
