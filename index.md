@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-08 | Total pages: 275
+> Last updated: 2026-08-09 | Total pages: 276
 
 ## Entities
 
@@ -29,6 +29,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aaif-agent-plugins-1-0-2026-08-08]] — Agent Plugins 1.0의 `plugin.json`·`skills/`·`mcp.json` portable package contract와 공급망·권한 검증 경계.
 - [[raw/articles/github-actions-pages-critical-incident-2026-08-07]] — GitHub Actions·Pages critical incident의 queue·webhook·ARC idle runner·CI 재실행 검증 경계.
 - [[raw/articles/aws-ecs-fractional-gpu-g6f-2026-08-07]] — Amazon ECS G6f fractional GPU scheduling의 packing·격리·telemetry·FinOps 검증 경계.
 - [[raw/articles/aws-bedrock-agentcore-runtime-instances-2026-08-07]] — AgentCore Runtime instances GA의 14일 session·EC2 capacity provider·recovery·비용 검증 경계.
