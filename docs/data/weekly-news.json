@@ -2,11 +2,11 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-08 23:26",
+  "last_updated_kst": "2026-08-09 03:31",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Metabase 최고 심각도 제로데이: self-hosted BI server는 fixed point release와 session·API key·DB credential·query/export audit를 하나의 incident로 종결.",
-    "Cloudflare Workers AI·AI Gateway 통합: model route·payload logging·token cost는 같은 request trace로, provider·data boundary는 정책으로 관리.",
+    "Metabase self-hosted 제로데이: fixed point release, public endpoint hunt, session·API key·DB credential·query/export audit를 하나의 BI incident로 종결.",
+    "Atlassian Rovo 간접 프롬프트 주입: connector retrieval과 model-constructed URL egress를 document·ACL·network policy가 아닌 동일 request trace로 검증.",
     "Linux SCTPhantom `CVE-2026-64564`: SCTP ASCONF UAF는 host kernel backport·reboot·container node exposure를 하나의 patch incident로 대응.",
     "Claude Code·Gemini CLI CI harness: 외부 Issue·repository input이 runner·secret·egress 경계에 닿는 workflow를 fixed version·least privilege로 재점검.",
     "npm 악성 패키지 약 800개: `require()` 유도·Cloudflare Workers·DNS TXT fallback을 lockfile·module-load·egress·endpoint telemetry로 연결."
@@ -14,185 +14,203 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare Workers AI·AI Gateway 통합: model routing·관측·비용·데이터 경계를 하나의 AI control plane으로 운영",
-      "summary": "핵심: Cloudflare가 2026-08-07 Workers AI와 AI Gateway의 binding·REST API를 통합하고, `default` gateway를 통한 자동 생성·request/response logging·model별 token 추적·cost attribution 경로를 공개함. API 표면이 하나가 되어도 provider 선택, fallback, prompt·tool output 보존, 데이터 처리 지역, 평가와 승인 책임은 route policy와 trace contract로 분리해야 함.",
-      "details": "Cloudflare 공식 글을 source로 Workers AI managed GPU와 외부 model provider를 단일 control plane으로 수렴시키는 구현 경로를 분석함. 원문이 밝힌 unified binding, `/ai/` REST API, default gateway, payload logging, token/cost telemetry를 사실로 다루고, provider SLA·모델 품질·지역·가격·규제 적합성은 조직별 검증 항목으로 경계를 둠.",
-      "why_it_matters": "동일한 application flow가 managed GPU와 외부 provider를 오갈 때 routing·data handling·cost·audit를 같은 request identity로 판정해야 장애와 규제 예외를 재현 가능하게 관리할 수 있음.",
+      "title": "Metabase self-hosted 제로데이: BI control plane을 patch·credential·data-access incident로 종결",
+      "summary": "핵심: Metabase는 1.58 이상 Metabase Cloud가 unknown zero-day 공격을 받은 뒤 endpoint 차단과 patch를 완료했다고 공지함. self-hosted 인스턴스는 unauthenticated SQL injection으로 application DB administrator 권한, 저장된 연결 DB credential, 접근 가능한 데이터와 export 경로에 닿을 수 있어 version upgrade만이 아니라 session·API key·admin·connector credential·query/export audit를 하나의 incident로 닫아야 함.",
+      "details": "Metabase 공식 보안 공지를 중심으로 self-hosted BI 서버의 공격 표면, fixed point release, 공개 reset-password endpoint의 log hunt, identity·credential 복구 순서를 정리함. Cloud 고객이 이미 patched라는 공지와 self-hosted 대응 범위를 분리하며, CVE·actor·침해 규모·data exfiltration 여부는 원문이 공개하지 않은 사실로 유지함.",
+      "why_it_matters": "BI application은 warehouse·운영 DB credential, query history, export, administrator 설정을 집약함. SQL injection이 application DB를 통과해 admin control plane으로 이어질 때 patch 상태와 data-access 영향 조사는 별도 완료 조건이 필요함.",
       "sources": [
-        "https://blog.cloudflare.com/workers-ai-gateway-unification/",
-        "https://developers.cloudflare.com/changelog/post/2026-08-07-workers-ai-unified-billing/",
-        "https://developers.cloudflare.com/ai-gateway/get-started/"
+        "https://www.metabase.com/blog/security-update",
+        "https://github.com/metabase/metabase/security/advisories/GHSA-vwf4-m7j8-wcjf",
+        "https://thehackernews.com/2026/08/metabase-zero-day-exploited-in-wild.html"
       ],
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-08-08 02:57",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-08-09 03:31",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Workers AI와 AI Gateway의 통합은 model 호출 SDK를 줄이는 변경이면서 동시에 model route·payload visibility·token cost·access policy를 control plane에 모으는 변경임. production에서는 gateway가 자동 생성된다는 사실보다 request가 어떤 provider와 data boundary를 선택했는지 증명 가능한지가 운영 완료 조건임.",
+          "body": "Metabase 대응은 package version을 올리는 단일 유지보수가 아니라 BI control plane incident임. public endpoint, fixed build, 실제 재시작, administrator/session/API key, 연결 database credential, query·export evidence가 한 건의 close record로 연결돼야 함.",
           "items": [
-            "변화: `env.AI.run`과 `/ai/` API가 Workers AI와 AI Gateway 호출을 같은 진입점으로 수렴",
-            "판단: route 정책·selected provider·model revision·fallback reason·data classification을 request trace에 함께 보존",
-            "release gate: quality·p95 latency·error·token cost·payload retention·policy denial을 canary baseline과 비교"
+            "우선순위: internet-exposed self-hosted instance와 high-value warehouse connector를 high-risk cohort로 분류",
+            "완료 증거: fixed release·running version·restart·health check·credential rotation·log review를 같은 ticket에 보존",
+            "경계: Metabase 원문은 개별 고객 침해, actor, CVE, persistence, exfiltration 규모를 공개하지 않음"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 2026-08-07 공식 글에서 AI Gateway가 any model provider proxy와 observability·logging·access·security를 제공하고, Workers AI가 Cloudflare 관리 GPU의 inference-as-a-service endpoint를 제공해 왔다고 설명함. 통합 경로에서는 binding 또는 REST call에 gateway ID를 전달하며 `default` ID는 최초 authenticated request에서 gateway를 생성하는 동작으로 설명됨.",
+          "body": "Metabase는 Metabase Cloud가 version 1.58 이상 unknown zero-day를 이용한 공격을 받았고, endpoint 차단 뒤 취약점을 식별·patch했다고 밝힘. Cloud 고객은 이미 patched 상태라고 설명하며, self-hosted는 latest point release로 즉시 upgrade하도록 요구함.",
           "items": [
-            "API: unified binding에서 `env.AI.run(model, input, { gateway: { id: 'default' } })` 호출 경로 공개",
-            "REST: `/accounts/{account_id}/ai/run/{model}`와 `cf-aig-gateway-id` header 예시 공개",
-            "관측: default gateway 경로에서 request/response payload·model별 token count·cost attribution을 dashboard setup 없이 기록한다는 원문 범위"
+            "공격 경로: unauthenticated attacker가 Metabase application database에 arbitrary SQL injection을 수행할 수 있는 공식 범위",
+            "권한 확대: injection 뒤 administrator access, application configuration 변경, stored credential 탈취 가능성",
+            "데이터 범위: connected database가 읽을 수 있는 data와 export path가 조사 대상"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 통합의 설계 단위는 provider가 아니라 model intent와 route policy임. application은 model ID를 호출하더라도 control plane이 Workers AI 또는 외부 provider를 선택할 수 있으므로, API 호환성만으로 tool calling·structured output·safety filtering·context limit·stream retry가 동등하다고 가정하면 안 됨.",
+          "body": "BI server는 dashboard UI가 아니라 credential broker와 query execution control plane에 가까움. application DB admin 권한은 사용자·권한 모델·연결 정보·API key를 바꿀 수 있는 지점이므로, warehouse나 production DB의 직접 침해가 확인되지 않았더라도 identity와 data-access 조사 범위를 넓혀야 함.",
           "items": [
-            "route contract: allowed provider·model revision·region·timeout·retry·fallback order를 versioned policy로 관리",
-            "quality contract: fallback 전후의 tool schema·JSON validity·retrieval grounding·safety outcome을 offline evaluation과 shadow traffic으로 측정",
-            "failure contract: provider 429·5xx·stream interruption·schema mismatch·cache miss에서 fail-open 대신 human approval 또는 fail-closed 기준 정의"
+            "자산 모델: Metabase app DB, admin user, session, API key, connector, warehouse role, ingress를 하나의 dependency graph로 관리",
+            "판단 기준: scanner green이나 container image 교체만으로 incident를 종료하지 않고 public exposure와 access trail을 대조",
+            "운영 과제: connector별 data owner와 credential rotation owner를 patch window 전에 지정"
           ]
         },
         {
-          "heading": "데이터·보안 관점",
-          "body": "원문은 full request and response payload logging을 설명하므로, default gateway 사용은 observability 편의와 함께 prompt·retrieval context·tool result·model output의 보존 경로를 명시하는 보안·privacy 결정임. provider가 바뀌는 fallback에서는 data processing addendum, retention, egress region, tenant isolation과 redaction 적용 순서를 별도 확인해야 함.",
+          "heading": "공격 표면·탐지 관점",
+          "body": "공식 공지는 publicly accessible `/api/session/reset_password`가 있었던 instance에서 `POST` 400 뒤 `GET /api/user/current` 200이 이어지는 pattern을 application 또는 ingress log에서 찾도록 안내함. pattern 발견은 likely compromise signal이며 patch 완료와 분리해 증거 보존과 영향 조사를 시작할 조건임.",
           "items": [
-            "분류: PII·source code·customer record·secret-like token을 route 전 data class로 태깅",
-            "보호: prompt/output logging의 redaction·encryption·RBAC·retention·break-glass access를 gateway policy로 검증",
-            "감사: request ID·caller/tenant·provider·model·policy version·egress region·approval·result hash를 audit event로 결합"
+            "hunt: reverse proxy·WAF·application log의 request sequence, source IP, user agent, time window를 상관 분석",
+            "보존: query history, export job, administrator audit, configuration change, database connection log의 retention hold 적용",
+            "판단: source에 없는 malware·lateral movement·actual export를 추정하지 않고 evidence 기반으로 범위 판정"
+          ]
+        },
+        {
+          "heading": "identity·data recovery 관점",
+          "body": "application control plane에 접근했을 가능성이 있으면 session과 static credential의 유효성을 별도로 재검토해야 함. Metabase 공식 단계는 active user session revoke, unrecognized API key deletion, administrator account review, connected database credential rotation, accessible-data review를 포함함.",
+          "items": [
+            "identity: active session revoke와 unknown administrator·API key를 승인 기록과 함께 검토",
+            "credential: warehouse·CRM·production DB connector를 least privilege role과 rotation sequence로 교체",
+            "data: privileged query와 export를 source time window·actor evidence·data classification으로 triage"
           ]
         },
         {
           "heading": "SRE·FinOps 관점",
-          "body": "통합 billing은 cost attribution을 시작하는 신호이지 총비용 보증이 아님. token 수 외에도 gateway operation, cache behavior, retry, provider minimum charge, egress, log ingest와 payload retention이 workload 비용과 tail latency를 바꿀 수 있음.",
+          "body": "fixed release 적용은 서비스 재기동과 dashboard/query workload regression을 동반함. point release를 올린 뒤에도 running artifact와 version 화면이 구 버전이면 remediation이 완료되지 않으며, BI 업무 중단 비용과 security exposure를 같은 change record에서 조정해야 함.",
           "items": [
-            "비용 단위: tenant·feature·route·provider·model·input/output token·cache hit·retry를 같은 chargeback key로 수집",
-            "신뢰성: provider outage·rate limit·gateway auth failure·logging sink backpressure·routing loop을 fault injection으로 재현",
-            "capacity: request concurrency·stream duration·tool fan-out·external API quota를 autoscaling과 queue limit의 입력으로 사용"
+            "배포: image digest 또는 JAR artifact, deployment time, pod restart, health check를 machine-readable evidence로 기록",
+            "회귀: critical dashboard, scheduled delivery, warehouse connection, SSO, export permission을 canary에서 검증",
+            "비용 변수: emergency maintenance와 connector credential rotation의 downstream ETL·reporting 영향 사전 공지"
           ]
         },
         {
-          "heading": "도입 로드맵",
-          "body": "먼저 read-only, low-sensitivity flow에서 unified binding과 named/default gateway의 telemetry를 비교하고, 이후 provider fallback과 high-value tool workflow를 확대하는 순서가 안전함. auto-created gateway가 조직의 naming, ownership, retention, budget policy에 맞는지 배포 전에 확인해야 함.",
+          "heading": "도입·복구 로드맵",
+          "body": "먼저 instance·version·internet exposure·connector inventory를 확정하고, fixed release를 canary에 적용한 뒤 public self-hosted instance부터 rollout하는 순서가 필요함. temporary endpoint block은 exposure를 줄일 수 있으나 공식 workaround이며 permanent patch를 대체하지 않음.",
           "items": [
-            "1단계: model/provider inventory와 current API key·endpoint·data processing boundary를 route policy 초안에 매핑",
-            "2단계: canary에서 request trace·payload redaction·token/billing attribution·error semantics·fallback quality를 baseline과 대조",
-            "3단계: approved route만 production에 승격하고 budget cap·policy exception expiry·rollback owner를 change record에 고정"
+            "1단계: CMDB·DNS·ingress·container inventory로 self-hosted deployment와 public endpoint를 대조",
+            "2단계: 사용 major의 safe point release, restart, SSO·query·connector regression을 representative instance에서 검증",
+            "3단계: log hunt와 identity·credential·data-access review를 완료 기준으로 incident close"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "unified AI control plane의 완료 기준은 호출 성공이 아니라 route·data·cost·audit가 같은 request identity로 복원되는 상태임.",
+          "body": "close condition은 Metabase 화면이 정상이라는 신호가 아니라 fixed runtime과 조사·복구 evidence가 함께 남은 상태임. security, data platform, application owner가 connector와 export 영향 범위를 한 timeline에서 검토해야 함.",
           "items": [
-            "체크: binding/REST API, gateway ID 전달, provider allowlist, model revision pinning, fallback timeout·retry 정책 확인",
-            "체크: prompt·response·tool output logging의 redaction·retention·RBAC·region·DPA를 security review에 포함",
-            "체크: token·gateway·egress·log·retry 비용과 p95 latency·error·quality evaluation을 deployment dashboard에 연결"
+            "체크: running version과 fixed point release, public reset-password endpoint, ingress exposure 확인",
+            "체크: session·API key·administrator·connector credential과 query/export log의 rotation·review 책임자 지정",
+            "체크: suspicious pattern 발견 시 host·application·ingress·warehouse evidence 보존 후 data incident escalation 실행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI Gateway 통합은 provider lock-in을 자동으로 없애지 않음. 선택권이 넓어진 만큼 어떤 request가 어느 provider로 갔고 어떤 data와 비용·품질 결과를 남겼는지 policy와 trace로 입증해야 함.",
+          "body": "Metabase 제로데이는 BI를 단순 reporting tool로 취급하면 놓치는 incident임. application DB SQL injection이 admin control plane과 stored credential을 거쳐 connected data에 닿을 수 있으므로, patch와 access recovery를 분리하지 말아야 함.",
           "items": [
-            "강조: model ID abstraction과 provider behavior equivalence를 동일시하지 않을 것",
-            "강조: full payload observability는 debugging asset이면서 data-retention liability임",
-            "팀 액션: 다음 AI route 변경의 승인 조건에 provider/data boundary·fallback evaluation·cost cap·audit completeness를 추가"
+            "강조: Cloud patched 공지와 self-hosted remediation 상태를 동일시하지 않을 것",
+            "강조: endpoint 차단은 temporary mitigation이며 fixed point release와 restart evidence를 대체하지 않음",
+            "팀 액션: 다음 BI patch runbook에 connector credential·session/API key·query/export audit를 필수 단계로 추가"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Linux SCTPhantom `CVE-2026-64564`: SCTP ASCONF UAF를 host·container patch incident로 전환하는 노출·backport·재부팅 운영",
-      "summary": "핵심: Tencent Zhuque Lab은 Linux SCTP Dynamic Address Reconfiguration의 ordered ASCONF 처리에서 transport를 제거한 뒤 stale pointer를 재사용하는 `CVE-2026-64564`를 공개하고, tested system에서 local privilege escalation과 container-to-host escape를 재현했다고 밝힘. 이는 remote unauthenticated RCE가 아니며 SCTP/socket·runtime policy·kernel backport·reboot 상태를 같이 확인해야 하는 host-kernel incident임.",
-      "details": "Tencent Zhuque Lab의 2026-08-06 primary technical write-up과 보도된 stable-kernel release 정보를 바탕으로 SCTPhantom의 source-level failure mode, tested-configuration 경계, distribution backport·reboot·container node 대응을 정리함. public exploitation, CISA KEV 등재, 모든 runtime에서의 escape는 source가 확인하지 않은 범위로 남김.",
-      "why_it_matters": "컨테이너 namespace와 runtime policy는 host kernel memory-safety 결함 자체를 격리하지 못함. shared Kubernetes node, self-hosted CI runner, nested virtualization host는 exposure와 patch evidence를 하나의 incident workflow로 관리해야 함.",
+      "title": "Atlassian Rovo 간접 프롬프트 주입: connector retrieval·model URL egress를 하나의 data-boundary control로 운영",
+      "summary": "핵심: PromptArmor는 Rovo가 읽는 uploaded content의 hidden instruction이 Jira·Confluence retrieval과 attacker-controlled URL fetch를 결합할 수 있다고 공개했으며, 해당 관찰은 2026-08-05 시점의 단일 연구 범위임. 별도 `rovoChatPrompt` one-click route는 Bugcrowd 기록상 Atlassian server-side fix와 reporter validation이 완료됐지만, content-borne path의 이후 remediation은 확인되지 않아 connector scope·outbound fetch·audit trace를 함께 검증해야 함.",
+      "details": "PromptArmor primary research와 Bugcrowd resolved disclosure를 분리해 Rovo의 content-borne indirect prompt injection과 fixed one-click URL route를 분석함. 실제 조직 침해·credential 탈취·모든 Rovo deployment 영향은 확인하지 않으며, model-generated URL과 Markdown/image retrieval을 egress policy 및 audit evidence로 다루는 운영 절차를 제안함.",
+      "why_it_matters": "Enterprise agent는 signed-in user의 Jira·Confluence·connector 권한을 tool call과 결합함. untrusted document가 retrieval 범위와 external URL fetch를 지시할 수 있다면 document upload, web-search toggle, connector ACL을 따로 점검해도 data egress 경계가 남을 수 있음.",
       "sources": [
-        "https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564",
-        "https://thehackernews.com/2026/08/18-year-old-linux-sctp-flaw-could-let.html",
-        "https://nvd.nist.gov/vuln/detail/CVE-2026-64564"
+        "https://www.promptarmor.com/resources/atlassian-rovo-exfiltrates-data",
+        "https://bugcrowd.com/disclosures/bf1922fb-99d0-4d3b-b419-1728720d29ec/one-click-data-exfiltration-via-rovochatprompt-url-parameter-confluence-rovo",
+        "https://thehackernews.com/2026/08/atlassian-rovo-can-be-tricked-into.html"
       ],
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-08 02:57",
+      "local_image": "assets/images/news-306.jpg",
+      "refreshed_kst": "2026-08-09 03:31",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "`CVE-2026-64564` 대응은 kernel version 문자열만 확인하는 작업이 아님. SCTP가 실제로 reachable한 host, distribution backport가 적용된 package, 실제 reboot/rollout 완료 node, untrusted workload·container runtime 경계를 함께 증명해야 하는 patch incident임.",
+          "body": "Rovo 대응의 단위는 prompt filter 하나가 아니라 untrusted content → connector retrieval → model-constructed URL/image fetch → external destination으로 이어지는 execution chain임. 어떤 data class가 어떤 tool로 외부에 나갈 수 있는지 request trace로 재현하고 차단해야 함.",
           "items": [
-            "우선순위: shared container host·untrusted CI runner·SCTP-enabled workload를 high-priority exposure cohort로 분류",
-            "완료 증거: kernel package build·vendor fixed advisory·node replacement 또는 reboot·SCTP state·workload regression을 같은 ticket에 연결",
-            "경계: source는 local conditions의 연구 재현을 설명하며 internet-wide exploitation이나 모든 container runtime 영향을 확정하지 않음"
+            "우선순위: high-sensitivity Confluence space, Jira project, SharePoint·Outlook connector와 Rovo enabled group을 먼저 inventory",
+            "완료 조건: poisoned content와 external URL test에서 retrieval·egress·policy decision·audit event를 복원 가능",
+            "경계: 공개 연구는 재현 경로이며 특정 고객의 실제 data loss나 universal impact 증거가 아님"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Tencent Zhuque Lab은 2026-08-06 `SCTPhantom: An 18-Year-Old SCTP ASCONF Transport Use-After-Free`에서 Linux SCTP Dynamic Address Reconfiguration의 UAF를 공개함. 원문은 ordered ASCONF sequence가 transport를 제거하고 stale pointer를 재사용해 association에 dangling path reference를 남긴다고 설명하며, tested systems에서 local privilege escalation과 container-to-host escape를 재현했다고 밝힘.",
+          "body": "PromptArmor는 Rovo가 읽는 content 안의 attacker instruction이 indirect prompt injection으로 작동할 수 있다고 공개함. 연구 예시는 사용자가 poisoned file을 노출한 뒤 정상적인 Jira 정리 요청을 하면 Rovo가 Jira·Confluence 결과를 attacker URL request에 붙여 보내는 흐름을 설명함.",
           "items": [
-            "식별: vulnerability는 `CVE-2026-64564`, upstream fix는 Tencent 원문이 `9b2854f86f0b`로 연결",
-            "범위: root cause는 DEL-IP validation에 쓰는 packet source와 이후 transport selection에 쓰는 Address Parameter identity 불일치",
-            "보도 경계: The Hacker News는 stable `7.1.6`·`6.18.42`·`6.12.101`·`6.6.148` 포함과 공개 exploit/KEV 미확인을 보도했으며 distribution별 상태는 별도 확인 대상"
+            "출처 상태: PromptArmor가 Atlassian에 2026-05-23 disclosure했고 2026-08-05 공개 시점에도 vulnerable하다고 주장한 primary research 범위",
+            "설정 경계: web search를 꺼도 URL-retrieval capability 때문에 동작했다는 bypass는 해당 연구의 단일 출처 관찰",
+            "사용자 조건: poisoned content exposure와 일반 요청이 필요하며, exfiltration 단계의 별도 approval 부재를 주장한 경로"
           ]
         },
         {
-          "heading": "취약점 경로와 AI/Infra 전문가 해석",
-          "body": "SCTP association은 여러 peer path를 가질 수 있고 Linux는 `sctp_transport`를 association list와 `primary_path`·`active_path`로 참조함. 원문 설명에서 ASCONF message는 Address Parameter `L`, `DEL-IP L`, wildcard `DEL-IP` 순서를 만들 수 있으며, validation과 selection identity가 달라 제거된 transport가 cached path로 남는 것이 failure condition임.",
+          "heading": "AI/Infra 전문가 해석",
+          "body": "agent가 connector search result와 model-produced URL을 조합하면 authorization은 user ACL에만 머물지 않음. retrieval authorization, instruction provenance, tool authorization, network egress authorization이 한 transaction에서 함께 실패할 수 있어, model output을 trusted command나 trusted URL로 해석하면 안 됨.",
           "items": [
-            "기술: released transport를 이후 socket operation이 dereference할 수 있는 use-after-free path",
-            "패치 의미: selected peer가 ASCONF chunk에서 retain되는 transport일 때 deletion을 reject하도록 identity mismatch를 닫는 upstream change",
-            "운영 해석: protocol module가 loaded인 것과 attacker가 socket/ASCONF path에 도달 가능한 것은 별도 신호이므로 reachability evidence 필요"
+            "trust boundary: source document와 retrieved text를 instruction channel이 아닌 untrusted data channel로 태깅",
+            "tool contract: external fetch는 user intent, destination allowlist, data classification, approval state를 모두 만족할 때만 실행",
+            "evaluation: prompt-injection resistance는 model response 품질이 아니라 prohibited retrieval·egress가 block되는지로 측정"
           ]
         },
         {
-          "heading": "container·Kubernetes 관점",
-          "body": "Tencent의 escape 결과는 tested configuration의 연구 결과임. 보도는 initial exploit version에서 SCTP addip sysctl과 capability가 쟁점이었고, later route는 per-socket enablement를 사용했다고 설명함. runtime 이름, 모든 seccomp profile, user namespace, managed Kubernetes node image의 동일한 결과는 공개 범위가 아니므로 generic escape로 과장하면 안 됨.",
+          "heading": "connector·권한 관점",
+          "body": "Rovo가 사용자 권한으로 Jira·Confluence와 connector를 조회할 수 있으면 blast radius는 assistant 자체의 permission보다 user와 group scope의 합으로 결정됨. high-sensitivity project와 space를 assistant 대상으로 자동 포함시키지 말고 data class별 allowlist와 break-glass 절차를 분리해야 함.",
           "items": [
-            "inventory: node pool별 kernel build·container runtime·seccomp profile·user namespace·privileged pod·hostNetwork·SCTP workload를 수집",
-            "isolation: untrusted workload는 dedicated node pool·restricted capability·ephemeral runner·admission policy로 patch window blast radius 축소",
-            "detection: unexpected SCTP socket·ASCONF traffic·kernel panic·privilege escalation·node filesystem anomaly를 host/runtime telemetry에서 상관 분석"
+            "inventory: Rovo app/group membership, project·space ACL, connected app, data classification, owner를 one table로 관리",
+            "least privilege: regulated record·source code·secret-bearing space는 default deny 후 scoped enablement 적용",
+            "review: group membership change와 connector enablement를 identity review·security approval·expiry와 연결"
           ]
         },
         {
-          "heading": "patch·backport·재부팅 관점",
-          "body": "stable release 번호는 upstream reference일 뿐 distribution이 같은 version string을 써야만 수정됐다는 뜻이 아님. enterprise distribution과 managed node image는 backport와 vendor package revision으로 fix를 공급할 수 있으며, module reload가 아닌 reboot 또는 node replacement가 필요한지를 실제 running kernel로 확인해야 함.",
+          "heading": "network·data egress 관점",
+          "body": "PromptArmor 연구는 URL retrieval을 outbound path로 지목하며, Markdown image rendering도 별도 가능한 mechanism으로 언급함. 특정 rendering route의 full chain은 그 연구가 Rovo에서 입증하지 않았으므로, 정책은 demonstrated path와 potential path를 구분하되 둘 다 test 대상으로 다뤄야 함.",
           "items": [
-            "확인 순서: vendor advisory/CVE tracker → installed package changelog → running `uname`/boot ID → reboot or replacement evidence",
-            "rollout: control-plane/worker, GPU node, CI runner, bastion 등 workload class별 maintenance window와 rollback owner를 분리",
-            "검증: SCTP required workload의 connectivity·multihoming path·latency/error와 critical pod rescheduling을 patch canary에서 확인"
+            "allowlist: model-generated URL, image/Markdown fetch, redirect, DNS resolution, proxy route를 egress policy에 포함",
+            "protection: URL query/path에 data가 실리는 exfiltration을 DLP pattern, size limit, redaction, deny response로 검증",
+            "logging: conversation·source document·connector query·tool call·destination·policy decision을 same request ID로 보존"
           ]
         },
         {
-          "heading": "보안·forensics 관점",
-          "body": "source는 공개 PoC와 KEV 등재를 확인하지 못한 시점의 상태를 설명하므로 active exploitation 사실로 처리하지 않음. 다만 local privilege escalation 또는 container boundary crossing 가능성은 credential, artifact, node trust의 범위를 확장할 수 있어 patch 전에 우선 asset evidence와 사고 조사 기준을 정해야 함.",
+          "heading": "수정 상태와 evidence boundary",
+          "body": "Bugcrowd disclosure는 `rovoChatPrompt` parameter가 authenticated user의 Rovo chat에 attacker prompt를 preload할 수 있었고, crafted link가 Rovo privilege로 실행되는 one-click path였다고 설명함. 그 record는 2026-07-08 server-side fix와 reporter validation, resolved 상태를 명시함.",
           "items": [
-            "evidence: node audit log·kernel log·container runtime event·CI job history·service account token issuance·egress flow를 retention window 내 보존",
-            "containment: exposure가 높은 node에서는 SCTP 불필요 시 module/socket restriction을 change control로 검토하고 privileged workload를 축소",
-            "recovery: suspicious activity가 확인되면 kernel patch만으로 종료하지 않고 host rebuild·workload credential rotation·artifact provenance 재검증 기준 적용"
+            "fixed route: `rovoChatPrompt` parameter injection은 Bugcrowd record의 server-side remediation 범위",
+            "unfixed inference 금지: 이 fix가 PromptArmor content-borne route까지 해결했다는 공개 증거는 없음",
+            "운영 판단: tenant별 patch 설치가 아닌 server-side behavior 검증과 suspicious URL click hunt가 필요한 항목"
+          ]
+        },
+        {
+          "heading": "보안 운영·사고 대응 관점",
+          "body": "실제 external request가 발생했다면 prompt text만 보지 말고 connector result, URL construction, proxy/DNS flow, server response, conversation audit를 함께 묶어야 함. blocked event도 policy tuning evidence이며, alert를 incident로 올릴 threshold와 data owner notification 기준을 사전에 합의해야 함.",
+          "items": [
+            "detection: model-constructed external URL, encoded long path/query, image fetch redirect, unusual DNS/domain을 correlation rule로 수집",
+            "containment: affected group의 Rovo scope와 connector access를 축소하고 high-risk document ingestion을 격리",
+            "recovery: verified egress에는 destination·data class·user·source content를 기준으로 credential rotation과 disclosure 판단"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 exposure를 확정해 patch queue를 정렬하고, test node에서 vendor fixed build와 SCTP-dependent workload를 검증한 뒤 high-risk pool부터 replacement하는 순서가 필요함. emergency mitigation은 service impact를 확인한 뒤 적용하며 permanent fix를 대체하지 않음.",
+          "body": "먼저 low-sensitivity test tenant에서 poisoned document와 approved/unapproved destination을 이용해 tool-call trace를 수집하고, 이후 production connector를 data class별로 단계 적용하는 방식이 안전함. web-search setting 하나를 remediation completion으로 선언하지 않아야 함.",
           "items": [
-            "1단계: all node kernel/backport/reboot/SCTP/module/socket/tenant inventory를 CMDB와 runtime telemetry로 대조",
-            "2단계: representative host에서 fixed build·SCTP policy·container runtime·critical workload regression·drain/rollback drill 실행",
-            "3단계: high-risk pool rollout 후 node replacement evidence·vulnerability scan·SCTP exposure 재측정·exception expiry를 close criteria로 사용"
+            "1단계: Rovo-enabled app·group·connector·external fetch surface와 sensitive data map 작성",
+            "2단계: red-team test로 poisoned file, search-off state, model URL, Markdown/image, redirect, audit correlation 검증",
+            "3단계: allowlist·DLP·approval·retention·incident owner를 policy-as-code와 runbook에 고정"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "host-kernel vulnerability의 close condition은 scanner green 하나가 아니라 patched node가 실제 workload path를 대체했고 exposure가 감소했음을 확인하는 상태임.",
+          "body": "agent security의 완료 기준은 assistant가 정상 답변을 내는지가 아니라 untrusted content가 privileged retrieval과 external egress를 바꾸지 못하고, 시도와 차단이 audit trace로 남는 상태임.",
           "items": [
-            "체크: upstream/stable reference와 vendor advisory·package revision·managed node image release를 분리 확인",
-            "체크: running kernel·boot ID·reboot/node replacement·SCTP module/socket·sysctl·workload dependency evidence 수집",
-            "체크: CI runner·shared Kubernetes node·privileged workload의 patch SLA, credential rotation trigger, forensics retention을 incident runbook에 반영"
+            "체크: Rovo group, Jira project, Confluence space, connector ACL과 data class inventory 대조",
+            "체크: model-created URL·image/Markdown fetch·redirect·DNS·proxy/DLP log를 request identity로 연계",
+            "체크: Bugcrowd fixed URL route 재현 불가 확인과 content-borne red-team test 결과를 change evidence로 보관"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "SCTPhantom은 container isolation이 host-kernel patch를 대체하지 못한다는 사례임. 노출 조건이 local이라는 이유로 무시하지 말고, untrusted code가 실행되는 node와 SCTP reachability를 먼저 연결해 backport와 reboot를 포함한 복구 증거를 남겨야 함.",
+          "body": "RovoBlast가 resolved라고 해서 enterprise-agent data egress 문제가 끝난 것은 아님. fixed one-click URL route와 PromptArmor가 공개한 content-borne route의 evidence를 구분하고, connector privilege와 model URL egress를 같은 control plane에서 다뤄야 함.",
           "items": [
-            "강조: stable version 번호와 organization의 fixed running kernel을 동일시하지 않을 것",
-            "강조: 연구 재현 결과를 universal exploitation 또는 모든 runtime compromise로 확대하지 않을 것",
-            "팀 액션: 다음 kernel patch review에 SCTP reachability·backport proof·reboot/node replacement·container workload regression을 필수 증적으로 추가"
+            "강조: web-search toggle을 complete egress control로 간주하지 않을 것",
+            "강조: source document의 hidden text를 business data로 취급하고 tool instruction으로 승격하지 않을 것",
+            "팀 액션: 다음 SaaS agent security review에 connector scope·untrusted content·outbound URL·DLP·audit completeness test를 추가"
           ]
         }
       ]
