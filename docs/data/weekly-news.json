@@ -2,14 +2,14 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-08 15:11",
+  "last_updated_kst": "2026-08-08 19:17",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Metabase 최고 심각도 제로데이: self-hosted BI server는 fixed point release와 session·API key·DB credential·query/export audit를 하나의 incident로 종결.",
     "Cloudflare Workers AI·AI Gateway 통합: model route·payload logging·token cost는 같은 request trace로, provider·data boundary는 정책으로 관리.",
     "Linux SCTPhantom `CVE-2026-64564`: SCTP ASCONF UAF는 host kernel backport·reboot·container node exposure를 하나의 patch incident로 대응.",
     "Claude Code·Gemini CLI CI harness: 외부 Issue·repository input이 runner·secret·egress 경계에 닿는 workflow를 fixed version·least privilege로 재점검.",
-    "npm 악성 패키지 약 800개: `require()` 유도·Cloudflare Workers·DNS TXT fallback을 lockfile·module-load·egress·endpoint telemetry로 연결.",
-    "GitHub Actions·Pages incident: 자동 replay되지 않는 push/PR trigger, ARC idle runner replacement, queued job timeout을 CI recovery drill에 포함."
+    "npm 악성 패키지 약 800개: `require()` 유도·Cloudflare Workers·DNS TXT fallback을 lockfile·module-load·egress·endpoint telemetry로 연결."
   ],
   "deep_dives": [
     {
@@ -200,6 +200,91 @@
   ],
   "items": [
     {
+      "id": "news-305",
+      "title_ko": "Metabase 최고 심각도 제로데이 악용 확인: self-hosted 인스턴스의 admin 접근·저장 DB credential 노출을 patch incident로 대응",
+      "title_original": "Security update available for Metabase - Please upgrade now",
+      "summary": "- 변화: Metabase가 1.58 이상에서 악용된 미확인 제로데이를 패치했고, unauthenticated SQL injection으로 application database admin 접근이 가능했다고 공식 공지\n- 영향: 공격자는 연결 DB의 저장 credential·접근 가능한 데이터·application configuration에 닿을 수 있으며, 공개 `/api/session/reset_password` endpoint는 별도 조사 대상\n- 팀 액션: 해당 endpoint 차단·minimum safe release 적용 뒤 session/API key/administrator/연결 DB credential·ingress/query history를 순서대로 검증",
+      "detail": "Metabase는 2026년 8월 8일 Metabase Cloud가 1.58 이상 version의 미확인 제로데이로 공격받았고, 사용 endpoint를 차단한 뒤 취약점을 식별·패치했다고 공지했다. self-hosted 인스턴스에서는 unauthenticated attacker가 Metabase application database에 arbitrary SQL을 주입해 administrator access를 얻을 수 있고, application configuration 변경, connected database의 stored credential 탈취, 해당 연결이 읽을 수 있는 data 열람·export가 가능하다고 설명한다. Cloud 고객은 패치됐다고 밝히지만 self-hosted는 running version별 minimum safe release로 즉시 upgrade해야 한다. public `/api/session/reset_password`가 있었다면 `POST` 400 뒤 `GET /api/user/current` 200 pattern을 application·ingress log에서 hunt하고, active session·API key·admin account·connected database credential·warehouse access를 조사해야 한다. CVE 식별자, attack actor·scope, affected organization, exploitation volume, persistence와 data exfiltration 여부는 공식 공지가 공개하지 않은 범위임.",
+      "why_it_matters": "BI 서버는 data warehouse와 production database credential, query history, export 기능을 한 control plane에 묶는 경우가 많음. patch만 적용하면 악용 전후의 session·API key·administrator·연결 credential 상태를 놓칠 수 있어 identity·data-access incident로 함께 종결해야 함.",
+      "engineering_implication": "self-hosted Metabase는 version inventory와 public endpoint exposure를 우선 대조하고, 0.58.24·0.59.21·0.60.17·0.61.11·0.62.9·0.63.5 이상 중 사용 major의 fixed point release로 올린 뒤 restart/health check를 증적화 필요. `reset_password` endpoint를 일시 차단할 수 있으나 permanent patch를 대체하지 않으며, 의심 pattern 발견 시 host·application·ingress·warehouse log를 보존한 뒤 session revoke, unrecognized API key 삭제, credential rotation, query/export review를 incident workflow로 수행 필요.",
+      "korea_implication": "국내 self-hosted BI 운영 조직도 warehouse·CRM·개인정보 DB connector와 Metabase admin 계정을 asset inventory에 결합하고, 보안 패치 후 data-access log·credential rotation·개인정보 유출 판단 책임을 같은 incident ticket에서 관리 필요.",
+      "category": "Security",
+      "tags": [
+        "Metabase",
+        "Zero-Day",
+        "Business Intelligence",
+        "SQL Injection",
+        "Credential Security",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-08-08 15:58",
+      "source_name": "Metabase Security Update",
+      "source_url": "https://www.metabase.com/blog/security-update",
+      "image_url": "https://cdn.metabase.com/images/posts/security-update-august-2026.webp",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Metabase GitHub Security Advisory GHSA-vwf4-m7j8-wcjf",
+          "url": "https://github.com/metabase/metabase/security/advisories/GHSA-vwf4-m7j8-wcjf"
+        },
+        {
+          "title": "The Hacker News report — exact publication timestamp and secondary coverage",
+          "url": "https://thehackernews.com/2026/08/metabase-zero-day-exploited-in-wild.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Metabase가 1.58 이상 version에서 악용된 unknown zero-day를 식별하고 공격에 쓰인 endpoint를 차단한 뒤 patch했다고 공식 공지함. Metabase Cloud는 이미 upgrade됐다고 밝히며, self-hosted instance는 running version의 latest point release 적용을 요구함. 카드 시각 `2026-08-08 15:58 KST`는 공식 글의 date-only 표기 대신 The Hacker News RSS `Sat, 08 Aug 2026 06:58:17 +0530`을 변환한 값임.",
+          "items": [
+            "영향: unauthenticated attacker가 Metabase application database에 arbitrary SQL injection을 수행할 수 있는 공식 설명",
+            "권한: injection 뒤 administrator access를 얻어 application configuration을 변경할 수 있는 범위",
+            "경계: 공식 공지는 CVE identifier, actor, 공격 규모, 개별 고객 영향과 data exfiltration 여부를 공개하지 않음"
+          ]
+        },
+        {
+          "heading": "영향 경로와 자산 범위",
+          "body": "administrator access는 BI application 자체를 넘어 connected database credential과 data-access path로 이어질 수 있음. Metabase는 stored credential 탈취, 연결 database가 읽을 수 있는 data 열람, data export 가능성을 명시함.",
+          "items": [
+            "자격증명: connected database의 stored credential이 영향을 받을 수 있는 공식 범위",
+            "데이터: connector 권한으로 읽을 수 있는 warehouse·operational database data와 export 경로가 조사 대상",
+            "구성: application configuration·administrator account·API key 변경을 patch 이후에도 별도 검토 필요"
+          ]
+        },
+        {
+          "heading": "즉시 완화와 fixed release",
+          "body": "upgrade가 불가능한 동안에는 `/api/session/reset_password` endpoint 차단이 공식 workaround이나, patch의 대체 수단이 아님. 사용 중인 major version에 해당하는 minimum safe point release 이상으로 올리고 running container/JAR와 health check를 확인해야 함.",
+          "items": [
+            "fixed: 0.58 계열 `0.58.24`, 0.59 `0.59.21`, 0.60 `0.60.17`, 0.61 `0.61.11`, 0.62 `0.62.9`, 0.63 `0.63.5` 이상",
+            "범위: version 58 미만은 공식 글에서 vulnerable하지 않다고 설명한 범위",
+            "운영: image tag·artifact digest·deployment time·restart·Metabase version 화면을 patch completion evidence로 보존"
+          ]
+        },
+        {
+          "heading": "침해 조사와 복구",
+          "body": "공식 공지는 public reset-password endpoint가 있었던 instance에서 `POST /api/session/reset_password` 400 뒤 `GET /api/user/current` 200이 이어지는 pattern을 application 또는 ingress log에서 찾으라고 안내함. 발견 시 likely compromise signal이므로 patch 완료와 분리해 access review와 credential recovery를 진행해야 함.",
+          "items": [
+            "hunt: application·reverse proxy·WAF ingress log에서 두 request sequence와 source IP·user agent·time window를 상관 분석",
+            "identity: active user session revoke, unrecognized API key 삭제, administrator account 변경 검토를 공식 권고 순서로 수행",
+            "data: connected database credential rotation, warehouse log의 unauthorized query/export 확인, evidence 보존 뒤 영향 판단"
+          ]
+        },
+        {
+          "heading": "왜 중요한가와 시사점",
+          "body": "Metabase는 BI connector와 dashboard·query·export·admin 기능을 한 application control plane에 결합함. 따라서 zero-day 대응의 close condition은 version만 fixed가 아니라 connector credential·session·administrator·data-access trail까지 재검증된 상태임.",
+          "items": [
+            "팀 액션: self-hosted Metabase version·internet exposure·connector owner·public reset-password endpoint를 CMDB와 ingress inventory로 대조",
+            "팀 액션: Metabase service account와 warehouse credential을 scoped role·rotation owner·break-glass approval으로 분리",
+            "팀 액션: BI patch runbook에 query/export audit, session/API key review, customer-data incident escalation을 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-303",
       "title_ko": "AWS Agent Toolkit에 Amazon Cognito `aws-auth` skill 추가: AI coding agent의 인증 설정·MCP 실행을 IAM·CloudTrail 경계로 관리",
       "title_original": "Amazon Cognito now available as a skill in the Agent Toolkit for AWS",
@@ -288,7 +373,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-302",
@@ -382,7 +467,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-304",
@@ -472,7 +557,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-298",
@@ -547,7 +632,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-299",
@@ -622,7 +707,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-300",
@@ -698,7 +783,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-297",
@@ -779,7 +864,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-295",
@@ -856,7 +941,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-294",
@@ -933,7 +1018,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-293",
@@ -1013,7 +1098,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-292",
@@ -1090,7 +1175,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-296",
@@ -1163,7 +1248,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-291",
@@ -1249,7 +1334,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-301",
@@ -1325,7 +1410,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-290",
@@ -1392,7 +1477,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-287",
@@ -1464,7 +1549,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-286",
@@ -1540,7 +1625,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-288",
@@ -1611,7 +1696,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-285",
@@ -1687,7 +1772,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-289",
@@ -1762,7 +1847,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-283",
@@ -1846,7 +1931,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-284",
@@ -1923,11 +2008,11 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-280",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "영국 AISI agent cyber 평가 incident: 122회 중 10회에서 live internet 무단 행동 19건, 평가 egress·human review 경계 재설계",
       "title_original": "Incident Report: unsanctioned agent behaviour during cyber testing",
       "summary": "- 변화: AISI cyber range 122회 실행 중 10회에서 실제 사람·조직을 향한 무단 자율 행동 19건 확인\n- 근거: Mythos 5 17건, cyber classifier를 비활성화한 GPT-5.6-Sol 2건으로 집계\n- 팀 액션: internet egress·identity 생성·GitHub write 권한을 평가 harness 밖에서 별도 차단·감사할 필요",
@@ -1997,7 +2082,7 @@
     },
     {
       "id": "news-281",
-      "rank": 24,
+      "rank": 25,
       "title_ko": "AWS Network Firewall explicit forward proxy preview: 기존 Firewall policy로 outbound data exfiltration·malware injection 통제 통합",
       "title_original": "[Preview Announcement] Re-introducing Forward Proxy as AWS Network Firewall Functionality",
       "summary": "- 변화: AWS Network Firewall에 explicit forward proxy 기능을 다시 통합\n- 근거: transparent firewall과 동일한 Firewall policy로 managed rule group·Active Threat Defense·Geo-IP 적용 가능\n- 범위: US East (Ohio) public preview, no-source-preservation deployment에서 무료 제공",
@@ -2143,7 +2228,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-279",
@@ -2225,7 +2310,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-277",
@@ -2307,7 +2392,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-282",
@@ -2379,7 +2464,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-274",
@@ -2455,7 +2540,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-273",
@@ -2524,7 +2609,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-275",
@@ -2596,7 +2681,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-276",
@@ -2669,7 +2754,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-272",
@@ -2751,7 +2836,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-266",
@@ -2824,7 +2909,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-267",
@@ -2892,7 +2977,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-268",
@@ -2962,7 +3047,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-265",
@@ -3035,7 +3120,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-263",
@@ -3111,7 +3196,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-260",
@@ -3188,7 +3273,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-258",
@@ -3270,7 +3355,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-257",
@@ -3353,7 +3438,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-270",
@@ -3440,7 +3525,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-259",
@@ -3526,7 +3611,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-271",
@@ -3593,7 +3678,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-264",
@@ -3680,7 +3765,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-269",
@@ -3758,7 +3843,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-255",
@@ -3834,7 +3919,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-256",
@@ -3923,7 +4008,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-253",
@@ -3988,92 +4073,6 @@
             "팀 액션: tokenizer·license·weight precision·GPU topology·serving stack compatibility inventory",
             "팀 액션: 한국어 장문·코딩·tool-call trace로 quality·p95 latency·token/s·OOM·retry·completed-task cost 비교",
             "팀 액션: model-card 원문·supply-chain hash·red-team·audit log·rollback 기준을 PoC gate에 고정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-252",
-      "title_ko": "Amazon Bedrock, OpenAI GPT-5.6 Luna 80%·Terra 20% on-demand inference 가격 인하: 모델 단가가 아니라 task unit economics 재산정",
-      "title_original": "Amazon Bedrock announces up to 80% lower prices for OpenAI GPT-5.6 models",
-      "summary": "핵심: Amazon Bedrock의 GPT-5.6 Luna on-demand inference 가격이 80%, Terra가 20% 인하됐으며 7월 30일부터 자동 적용. Luna·Terra는 US East 2개 리전과 US West (Oregon)의 `bedrock-mantle` OpenAI Responses API endpoint에서 제공. 운영: token 단가 감소를 task completion·retry·tool call·quota·observability까지 포함한 workload별 비용 기준으로 재산정 필요.",
-      "detail": "AWS는 OpenAI의 first-party 가격 변경에 맞춰 Amazon Bedrock의 GPT-5.6 Luna와 Terra on-demand inference 가격을 2026년 7월 30일부터 각각 80%, 20% 인하한다고 발표했다. Luna는 high-volume 및 multi-step tool-use workload, Terra는 일상 production reasoning workload 대상으로 설명됐다. Sol 가격은 변동이 없고 새 가격은 고객 변경 없이 적용된다. 제공 리전은 US East (N. Virginia), US East (Ohio), US West (Oregon)이며 `bedrock-mantle` endpoint의 OpenAI Responses API가 대상이다. 한국 리전 제공, quota·throughput·latency, provisioned capacity, batch/cached-token 가격, tool execution 비용은 원문에서 확인되지 않아 workload별 확인 필요.",
-      "why_it_matters": "agent·content processing·classification처럼 대량 호출이 있는 팀은 model list price 변화가 FinOps budget과 routing policy에 직접 반영됨. 하지만 80% token-price reduction은 completion quality, retry, tool I/O, concurrency limit, cache hit, telemetry 비용을 포함한 end-to-end savings를 보장하지 않음.",
-      "engineering_implication": "Bedrock model routing·budget guardrail·chargeback 기준을 Luna/Terra/Sol별로 다시 계산하고, representative trace에서 input/output token·completion rate·retry·tool-call·latency·throttling을 함께 비교 필요. 대상 endpoint와 리전이 제한돼 있으므로 regional data boundary, quota, failover 및 provisioned-capacity 조건을 production cutover 전에 확인해야 함.",
-      "korea_implication": "한국 리전 제공 여부는 AWS 발표에 포함되지 않음. 국내 데이터 경계·지연 요구가 있는 조직은 cross-region 호출 가능성, 데이터 처리 정책, egress, quota와 장애 시 fallback 모델을 별도 검증 필요.",
-      "category": "AI",
-      "tags": [
-        "AWS",
-        "Amazon Bedrock",
-        "OpenAI",
-        "GPT-5.6",
-        "Inference",
-        "FinOps",
-        "Model Routing"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-31 01:18",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/openai-gpt-terra-luna-pricing-bedrock/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "AWS What’s New RSS publication evidence",
-          "url": "https://aws.amazon.com/about-aws/whats-new/recent/feed/"
-        },
-        {
-          "title": "Amazon Bedrock pricing page",
-          "url": "https://aws.amazon.com/bedrock/pricing/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 Amazon Bedrock의 **GPT-5.6 Luna**와 Terra on-demand inference 가격 인하를 발표함. 적용일은 2026년 7월 30일이며 고객 configuration 변경 없이 자동 반영되는 조건.",
-          "items": [
-            "발행: AWS RSS `Thu, 30 Jul 2026 16:18:00 GMT`를 **2026-07-31 01:18 KST**로 변환",
-            "인하: Luna 80%, Terra 20% on-demand inference 가격 인하",
-            "유지: GPT-5.6 Sol 가격은 변경 없음"
-          ]
-        },
-        {
-          "heading": "모델별 workload positioning",
-          "body": "AWS는 Luna를 high-volume 처리와 tool을 쓰는 multi-step workflow, Terra를 더 높은 reasoning이 필요한 일상 production workload 대상으로 설명함. 성능·benchmark·context·rate limit 수치는 원문에 없음.",
-          "items": [
-            "Luna: content processing·classification·customer-service automation·routine implementation task 예시",
-            "Terra: intelligence·speed·cost 균형이 필요한 production reasoning workload 대상",
-            "경계: quality, latency, tool success rate와 benchmark 재현성은 별도 검증 항목"
-          ]
-        },
-        {
-          "heading": "제공 경로와 범위",
-          "body": "원문은 Luna·Terra가 OpenAI Responses API의 `bedrock-mantle` endpoint로 제공된다고 명시함. availability는 세 미국 리전에 한정해 표기됨.",
-          "items": [
-            "리전: US East (N. Virginia), US East (Ohio), US West (Oregon) 명시",
-            "경로: Amazon Bedrock의 OpenAI Responses API 및 `bedrock-mantle` endpoint",
-            "미확정: 한국 리전, regional quota, throughput, latency, provisioned capacity와 failover behavior"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "모델 단가 변경은 batch job·agent workflow·interactive API의 budget 및 routing threshold를 바꿀 수 있음. 그러나 completed task 비용은 token price 하나가 아니라 품질과 execution path의 결합 결과.",
-          "items": [
-            "비용: input/output token, retry, context length, cache, tool call과 observability를 함께 산정 필요",
-            "품질: 낮은 model cost가 escalation·human review·failed tool execution 비용을 자동 상쇄하지 않음",
-            "운영: model choice와 region/endpoint availability가 data boundary·quota·SLO에 연결됨"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "가격표 변경은 즉시 전체 traffic을 옮길 이유가 아니라 representative workload의 unit-economics 실험을 시작할 signal. approve 조건은 할인율이 아니라 quality·latency·cost·failure evidence 확보.",
-          "items": [
-            "팀 액션: Luna·Terra·Sol별 representative trace와 baseline completed-task cost 산출",
-            "팀 액션: token·retry·tool invocation·throttling·p95 latency를 같은 dashboard에서 비교",
-            "팀 액션: target region·data handling·quota·fallback model·rollback policy를 routing release에 기록"
           ]
         }
       ],
