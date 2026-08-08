@@ -199,6 +199,8 @@
 - [[raw/articles/claude-gemini-cli-ci-harness-cves-2026-08-07]] — Claude Code·Gemini CLI CI harness CVE와 runner·secret 경계.
 - [[raw/articles/aws-bedrock-agentcore-temporal-policy-rate-limit-2026-08-06]] — AgentCore temporal authorization·rate-limit 운영 경계.
 
+- [[raw/articles/aws-cognito-agent-toolkit-skill-2026-08-08]] — AWS Agent Toolkit Cognito `aws-auth` skill의 IAM·MCP·CloudTrail 인증 변경 통제 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

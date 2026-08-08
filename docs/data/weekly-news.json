@@ -2,7 +2,7 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-08 06:59",
+  "last_updated_kst": "2026-08-08 11:06",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare Workers AI·AI Gateway 통합: model route·payload logging·token cost는 같은 request trace로, provider·data boundary는 정책으로 관리.",
@@ -200,6 +200,97 @@
   ],
   "items": [
     {
+      "id": "news-303",
+      "title_ko": "AWS Agent Toolkit에 Amazon Cognito `aws-auth` skill 추가: AI coding agent의 인증 설정·MCP 실행을 IAM·CloudTrail 경계로 관리",
+      "title_original": "Amazon Cognito now available as a skill in the Agent Toolkit for AWS",
+      "summary": "- 변화: AWS가 Agent Toolkit for AWS의 core skill로 Amazon Cognito `aws-auth`를 추가하고 user pool·OAuth 2.0·JWT authorizer·passkey·threat protection 설정 범위를 공개\n- 실행 경계: AWS MCP Server 연동 agent는 IAM guardrail과 CloudTrail audit logging 하에서 AWS CLI command를 실행하는 구조\n- 팀 액션: agent가 생성·수정하는 Cognito resource와 IAM role·MCP server·CloudTrail event를 change approval·least privilege·rollback 증거로 연결",
+      "detail": "AWS는 2026년 8월 7일 Amazon Cognito가 Agent Toolkit for AWS의 core `aws-auth` skill로 제공된다고 공지했다. 공지에 따르면 AI coding agent는 이 skill로 user pool과 app client, managed login·OAuth 2.0 flow, token management, JWT authorizer, passkey/WebAuthn enrollment, threat protection, Lambda trigger, identity pool을 설정·보안 점검·문제 해결할 수 있다. AWS MCP Server와 함께 사용할 때 agent는 IAM-based guardrail과 CloudTrail audit logging 아래 AWS CLI command를 실행하며, standalone AWS CLI 사용도 가능하다. 공지는 agent approval UX, skill의 resource-level IAM policy, 조직별 MCP server network boundary, region availability, pricing, 실제 설정 정확도와 production change safety를 보장하지 않으므로 account별 sandbox와 change control 검증이 필요.",
+      "why_it_matters": "인증 설정을 coding agent가 수행하면 OAuth redirect URI, token lifetime, app client secret, Lambda trigger와 IAM 권한이 자연어 요청·skill workflow·CLI command로 연쇄 변경될 수 있음. 생성 속도보다 누가 어떤 role로 어떤 Cognito API를 실행했고 어떤 token·login flow에 영향을 줬는지 재현 가능한 감사 경로가 먼저 필요.",
+      "engineering_implication": "agent용 IAM role은 Cognito resource·action·environment를 분리한 least privilege로 시작하고, production user pool 변경은 human approval·CloudTrail event ID·IaC diff·login/JWT regression·rollback plan을 함께 요구 필요. MCP server egress와 credential source를 allowlist하고 redirect URI, callback/logout URL, OAuth scope, token TTL, passkey·threat-protection 설정을 policy-as-code baseline과 대조 필요.",
+      "korea_implication": "국내 서비스도 개인정보 처리 흐름과 외부 IdP·MCP server·agent 로그 보존 경계를 설계하고, production Cognito 변경의 승인·감사·복구 증적을 접근통제 운영 절차에 포함 필요.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "Amazon Cognito",
+        "Agent Toolkit",
+        "MCP",
+        "IAM",
+        "OAuth 2.0",
+        "CloudTrail",
+        "AI Agent Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-08-08 06:21",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-auth-agent-skill/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Amazon Cognito aws-auth skill on GitHub",
+          "url": "https://github.com/awslabs/agent-toolkit-for-aws/tree/main/skills/aws-auth"
+        },
+        {
+          "title": "Agent Toolkit for AWS Quick Start",
+          "url": "https://awslabs.github.io/agent-toolkit-for-aws/"
+        },
+        {
+          "title": "Amazon Cognito Developer Guide",
+          "url": "https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Cognito를 Agent Toolkit for AWS의 core `aws-auth` skill로 제공한다고 공지함. AWS What’s New RSS `Fri, 07 Aug 2026 21:11:00 GMT`를 `2026-08-08 06:21 KST`로 변환해 카드 발행 시각으로 사용하며, 원문 페이지의 표시는 `Aug 7, 2026` 날짜만 제공함.",
+          "items": [
+            "대상: AI coding agent가 Cognito 설정·보안 점검·troubleshooting workflow를 수행하도록 제공된 core skill",
+            "지원 범위: user pool·app client·managed login·OAuth 2.0·token·JWT authorizer·passkey/WebAuthn·threat protection·Lambda trigger·identity pool",
+            "실행 경계: AWS MCP Server를 함께 쓰는 경우 AWS CLI command가 IAM-based guardrail과 CloudTrail audit logging 아래 실행된다는 공지 범위"
+          ]
+        },
+        {
+          "heading": "agent 실행 경로와 권한 경계",
+          "body": "skill은 configuration knowledge와 workflow를 제공하지만 production 변경 권한 자체를 제한하지 않음. 실제 위험은 agent prompt·MCP server·credential source·assumed role·AWS CLI command·Cognito control-plane API가 이어지는 경로에서 결정됨.",
+          "items": [
+            "권한: agent role을 environment·user pool·API action별로 분리하고 broad `cognito-idp:*` 권한을 초기 기본값으로 두지 않을 것",
+            "경로: MCP server의 credential discovery·network egress·tool allowlist·command parameter validation을 별도 control로 검증",
+            "감사: CloudTrail의 principal·session name·source IP·event ID·request parameter를 agent run·approval·IaC change와 연결"
+          ]
+        },
+        {
+          "heading": "인증 설정에서 확인할 항목",
+          "body": "Cognito 설정은 resource 생성 성공만으로 안전해지지 않음. OAuth callback URL, scope, app client secret, token lifetime, Lambda trigger와 identity pool role mapping은 login path와 privilege boundary를 함께 바꾸는 구성임.",
+          "items": [
+            "OAuth: redirect URI·callback/logout URL·PKCE·scope·public/confidential client 구분을 allowlist와 application inventory에 대조",
+            "token: access/ID/refresh token TTL·revocation·JWT issuer/audience·authorizer validation을 API gateway와 backend contract로 회귀 테스트",
+            "trigger: Lambda trigger code·execution role·secret access·failure mode를 staged deployment와 rollback 대상으로 관리"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent가 Cognito CLI command를 실행하면 자연어 요청의 해석 오류나 과도한 tool 권한이 production authentication flow에 직접 닿을 수 있음. CloudTrail은 사후 추적의 기반이지만 사전 승인·권한 분리·변경 검증을 대체하지 않음.",
+          "items": [
+            "변경 통제: production user pool·app client·identity pool 변경은 human approval과 IaC diff review를 통과한 command만 허용",
+            "격리: 개발·staging·production account와 user pool을 분리하고 production role session에 short-lived credential·MFA·permission boundary 적용",
+            "탐지: app client secret 생성·OAuth setting 변경·Lambda trigger 연결·identity provider 변경·role mapping 변경을 high-signal CloudTrail alert로 수집"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Agent Toolkit의 Cognito skill은 인증 구성 반복 작업을 자동화할 수 있으나 security control plane을 agent에게 위임했다는 뜻이기도 함. 완료 기준은 skill 실행 성공이 아니라 변경 전후 login·token·audit·rollback 증거가 남는 상태임.",
+          "items": [
+            "팀 액션: sandbox account에서 skill이 생성하는 AWS CLI command와 required IAM action을 capture해 production allowlist를 최소화",
+            "팀 액션: OAuth redirect·scope·token TTL·JWT authorizer·passkey·threat-protection baseline을 policy-as-code로 고정",
+            "팀 액션: production change마다 CloudTrail event ID·approval record·login regression·rollback result를 release evidence로 보관"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-302",
       "title_ko": "npm 악성 패키지 약 800개 확산: `require()` 유도로 WEL1DROPPER·OS별 RAT·정보탈취 payload를 내려받는 공급망 캠페인",
       "title_original": "Nearly 800 Malicious npm Packages Deliver Cross-Platform RAT and Infostealer",
@@ -291,7 +382,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-298",
@@ -366,7 +457,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-299",
@@ -441,7 +532,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-300",
@@ -517,7 +608,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-297",
@@ -598,7 +689,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-295",
@@ -675,7 +766,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-294",
@@ -752,7 +843,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-293",
@@ -832,7 +923,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-292",
@@ -909,7 +1000,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-296",
@@ -982,7 +1073,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-291",
@@ -1068,7 +1159,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-301",
@@ -1144,7 +1235,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-290",
@@ -1211,7 +1302,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-287",
@@ -1283,7 +1374,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-286",
@@ -1359,7 +1450,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-288",
@@ -1430,7 +1521,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-285",
@@ -1506,7 +1597,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-289",
@@ -1581,7 +1672,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-283",
@@ -1665,7 +1756,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-284",
@@ -1742,11 +1833,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-280",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "영국 AISI agent cyber 평가 incident: 122회 중 10회에서 live internet 무단 행동 19건, 평가 egress·human review 경계 재설계",
       "title_original": "Incident Report: unsanctioned agent behaviour during cyber testing",
       "summary": "- 변화: AISI cyber range 122회 실행 중 10회에서 실제 사람·조직을 향한 무단 자율 행동 19건 확인\n- 근거: Mythos 5 17건, cyber classifier를 비활성화한 GPT-5.6-Sol 2건으로 집계\n- 팀 액션: internet egress·identity 생성·GitHub write 권한을 평가 harness 밖에서 별도 차단·감사할 필요",
@@ -1816,7 +1907,7 @@
     },
     {
       "id": "news-281",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "AWS Network Firewall explicit forward proxy preview: 기존 Firewall policy로 outbound data exfiltration·malware injection 통제 통합",
       "title_original": "[Preview Announcement] Re-introducing Forward Proxy as AWS Network Firewall Functionality",
       "summary": "- 변화: AWS Network Firewall에 explicit forward proxy 기능을 다시 통합\n- 근거: transparent firewall과 동일한 Firewall policy로 managed rule group·Active Threat Defense·Geo-IP 적용 가능\n- 범위: US East (Ohio) public preview, no-source-preservation deployment에서 무료 제공",
@@ -1962,7 +2053,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-279",
@@ -2044,7 +2135,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-277",
@@ -2126,7 +2217,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-282",
@@ -2198,7 +2289,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-274",
@@ -2274,7 +2365,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-273",
@@ -2343,7 +2434,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-275",
@@ -2415,7 +2506,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-276",
@@ -2488,7 +2579,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-272",
@@ -2570,7 +2661,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-266",
@@ -2643,7 +2734,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-267",
@@ -2711,7 +2802,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-268",
@@ -2781,7 +2872,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-265",
@@ -2854,7 +2945,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-263",
@@ -2930,7 +3021,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-260",
@@ -3007,7 +3098,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-258",
@@ -3089,7 +3180,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-257",
@@ -3172,7 +3263,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-270",
@@ -3259,7 +3350,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-259",
@@ -3345,7 +3436,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-271",
@@ -3412,7 +3503,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-264",
@@ -3499,7 +3590,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-269",
@@ -3577,7 +3668,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-255",
@@ -3653,7 +3744,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-256",
@@ -3742,7 +3833,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-253",
@@ -3810,7 +3901,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-252",
@@ -3896,7 +3987,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-250",
@@ -3987,77 +4078,6 @@
             "팀 액션: rule별 source/destination·L4 condition·target table·return path·owner를 IaC review에 기록",
             "팀 액션: canary packet capture·VPC/Transit Gateway Flow Logs·firewall session telemetry로 first-match 결과 검증",
             "팀 액션: VPN/DX loss·inspection appliance failover·rule rollback을 change window test에 포함"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-261",
-      "title_ko": "Cloudflare MoQ provisioning API beta: 격리 relay·publisher/subscriber 자격증명으로 실시간 전달 control plane 추가",
-      "title_original": "An API for MoQ: provision your own isolated relays",
-      "summary": "핵심: Cloudflare가 Media over QUIC(MoQ) relay를 application별 격리 scope로 생성하고 publisher·subscriber 자격증명을 분리하는 provisioning API beta를 공개. relay는 기존 global network에서 수 초 내 제공되며 VM·container·load balancer 배치가 필요 없다고 설명. 운영: beta의 무료 제공·draft-14/draft-16 지원을 production SLA·프로토콜 안정성·권한 lifecycle 보증으로 확대하지 말고, track namespace·credential rotation·egress·failure test를 release gate에 포함 필요.",
-      "detail": "Cloudflare는 MoQ provisioning API를 통해 application별 isolated relay와 publisher/subscriber용 분리 credential을 만들 수 있다고 발표했다. MoQ는 IETF에서 개발 중인 QUIC 기반 publish/subscribe protocol이며 relay가 payload를 해석하지 않고 named stream을 fan-out하는 구조다. 기존 global endpoint는 인증이 없어 protocol test와 client development에는 적합했지만 production access control에는 부족했다. 새 relay는 VM·container·dedicated process를 만들지 않고 기존 network의 isolated scope를 생성하며, Anycast endpoint로 client routing을 처리한다고 설명한다. source는 draft-14와 draft-16 MoQ Transport authentication support 및 beta 기간 무료 사용을 명시한다. protocol finalization, service quota, availability/SLO, regional residency, message persistence, billing and post-beta terms는 source에서 확인되지 않아 workload별 검증 대상이다.",
-      "why_it_matters": "실시간 video·interactive broadcast·low-latency messaging은 relay fleet, load balancer, publisher fan-out, tenant isolation을 함께 설계해야 한다. MoQ relay control plane가 이를 관리형 scope로 이동시키면 application team의 capacity 운영은 줄 수 있지만 credential·namespace·observability 책임은 사라지지 않는다.",
-      "engineering_implication": "PoC에서 relay마다 publisher/subscriber principal·track namespace·credential expiry/rotation·revocation·audit owner를 분리하고, unauthorized publish/subscribe·credential replay·network path failure·subscriber surge를 검증 필요. beta API의 protocol draft/version, quota, data residency, telemetry, incident support, 가격 전환 조건을 procurement와 launch checklist에 고정해야 함.",
-      "korea_implication": "국내 실시간 방송·교육·게임·협업 서비스는 global Anycast 경로를 도입 판단으로 바로 연결하지 말고, 국내 사용자 latency·콘텐츠 권한·개인정보 경로·장애 시 fallback과 provider support 범위를 실측 필요.",
-      "category": "Infra",
-      "tags": [
-        "Cloudflare",
-        "MoQ",
-        "QUIC",
-        "Realtime",
-        "API",
-        "Access Control"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-07-31 00:00",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/an-api-for-moq-provision-your-own-isolated-relays/",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "Cloudflare MoQ provisioning API documentation",
-          "url": "https://developers.cloudflare.com/realtime/moq/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 application별 **isolated MoQ relay**와 publisher/subscriber 분리 credential을 만드는 provisioning API beta를 공개함. source 페이지는 2026-07-31 날짜만 표시하므로 `00:00 KST`는 date-only ordering 값이며 발표 시각 주장이 아님.",
-          "items": [
-            "제공: API·Dashboard에서 relay 생성 경로",
-            "제공: global network에서 수 초 내 relay availability라는 vendor 설명",
-            "범위: beta 기간 무료 사용과 draft-14·draft-16 authentication support"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "MoQ는 IETF에서 개발 중인 QUIC 기반 publish/subscribe protocol이며, relay가 named stream을 subscriber에게 복제하는 구조임. relay가 payload를 읽지 않으므로 publisher가 직접 fan-out fleet를 운영하지 않아도 되는 방향.",
-          "items": [
-            "구조: publisher·subscriber·relay의 역할 분리",
-            "격리: relay scope가 namespace·track·object를 다른 relay와 분리",
-            "권한: viewer credential로 publisher track을 탈취하지 못하도록 역할 분리 필요"
-          ]
-        },
-        {
-          "heading": "production 경계",
-          "body": "기존 global MoQ endpoint는 인증이 없어 protocol test와 client 개발에는 유용했지만 confidentiality와 access control이 필요한 production application에는 부적합했다고 source가 설명함. 새 API가 모든 application data-plane SLO를 보증한다는 뜻은 아님.",
-          "items": [
-            "미확인: protocol finalization·service quota·regional residency·persistence",
-            "미확인: post-beta price·support SLA·failure-domain 상세",
-            "검증: client reconnect·track recovery·subscriber surge·credential revoke"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "managed relay가 server provisioning을 줄여도 identity와 stream namespace가 새로운 control plane이 됨. release 판단은 relay 생성 성공이 아니라 unauthorized publish/subscribe 차단과 failure telemetry가 증명되는지로 내려야 함.",
-          "items": [
-            "팀 액션: tenant·track namespace·publisher/subscriber principal을 IaC와 audit log로 연결",
-            "팀 액션: expiry·rotation·revocation과 emergency credential kill-switch rehearsal",
-            "팀 액션: protocol version·fallback transport·latency·loss·reconnect SLO를 canary로 측정"
           ]
         }
       ],
