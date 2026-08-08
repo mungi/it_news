@@ -203,6 +203,7 @@
 
 - [[raw/articles/aws-vpc-ipam-bgp-rpki-byoip-2026-08-08]] — AWS VPC IPAM BYOIP의 BGP route protection·delegated RPKI·ROA lifecycle 운영 경계.
 - [[raw/articles/metabase-security-update-zero-day-2026-08-08]] — Metabase self-hosted zero-day의 fixed release·session/API key·DB credential·query/export incident 대응 경계.
+- [[raw/articles/thn-atlassian-rovo-prompt-injection-rovoblast-2026-08-08]] — Atlassian Rovo 간접 프롬프트 주입·RovoBlast의 connector 데이터 egress·server-side fix·audit 통제 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
