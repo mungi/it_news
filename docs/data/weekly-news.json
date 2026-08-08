@@ -2,7 +2,7 @@
   "week": "2026-W33",
   "coverage_start_kst": "2026-08-03 17:00",
   "coverage_end_kst": "2026-08-10 13:00",
-  "last_updated_kst": "2026-08-08 11:06",
+  "last_updated_kst": "2026-08-08 15:11",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare Workers AI·AI Gateway 통합: model route·payload logging·token cost는 같은 request trace로, provider·data boundary는 정책으로 관리.",
@@ -385,6 +385,96 @@
       "rank": 2
     },
     {
+      "id": "news-304",
+      "title_ko": "AWS VPC IPAM, BYOIP prefix의 BGP route protection·delegated RPKI 지원: ROA 상태·overlap을 조직 단위로 점검",
+      "title_original": "Amazon VPC IPAM now supports BGP route protection monitoring and delegated RPKI for BYOIP prefixes",
+      "summary": "- 변화: Amazon VPC IPAM이 BYOIP prefix의 BGP route protection monitoring과 delegated RPKI를 지원하고, account·Region 전체의 RPKI validity·ROA strength·route overlap을 dashboard에서 조회\n- 자동화: RIR 1회 연동 뒤 BYOIP provisioning 중 ROA 생성·만료 전 갱신과 on-premises prefix의 ROA 관리를 IPAM에서 수행\n- 팀 액션: prefix ownership·ROA strict/permissive 정책·invalid/missing ROA·overlap alert를 network change·incident response·RIR 책임 분리와 연결",
+      "detail": "AWS는 2026년 8월 7일 Amazon VPC IPAM이 BYOIP prefix에 대해 BGP route protection monitoring과 delegated RPKI 관리를 지원한다고 공지했다. IPAM dashboard는 account·Region 전체의 RPKI validity, ROA strength, route overlap을 표시하고 invalid 또는 missing ROA와 hijacking 가능성을 나타낼 수 있는 overlap을 찾도록 한다. ARIN·RIPE·APNIC·LACNIC 중 해당 RIR과 한 번 연동하면 BYOIP provisioning 중 ROA를 자동 생성하고 만료 전 갱신하며 on-premises prefix의 ROA도 관리한다고 설명한다. 기능은 AWS GovCloud (US)와 중국 리전을 제외한 commercial AWS Region에서 제공된다. 실제 BGP announcement 차단, route-origin validation enforcement, RIR delegation 권한·propagation·요금, 조직의 prefix ownership 정확도와 alert response SLA는 별도 검증 대상임.",
+      "why_it_matters": "BYOIP는 AWS account·Region·온프레미스·RIR의 자산·routing 책임이 분리되기 쉬움. route validity와 ROA lifecycle을 IPAM inventory와 묶으면 prefix hijack 의심 신호를 cloud resource 변경과 같은 운영 경로에서 추적할 수 있음.",
+      "engineering_implication": "IPAM dashboard 도입 전에 authoritative prefix inventory·RIR account owner·ROA maxLength/strictness policy·change approval·invalid/overlap escalation owner를 확정 필요. delegated RPKI 자동화는 RIR 권한과 provisioning flow를 바꾸므로 sandbox prefix에서 ROA 생성·갱신·rollback·external validator 관측을 검증하고, alert를 BGP telemetry·carrier ticket·security incident와 결합 필요.",
+      "korea_implication": "국내 조직도 APNIC 권한·BYOIP prefix·AWS account/Region·통신사 BGP 운영 주체를 하나의 inventory로 맞추고, invalid ROA·route overlap 탐지 뒤의 담당자·연락망·변경 승인 절차를 사전에 고정 필요.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Amazon VPC IPAM",
+        "BYOIP",
+        "BGP",
+        "RPKI",
+        "ROA",
+        "Network Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-08-08 01:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-vpc-ipam-bgp-rpki-byoip/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "AWS BGP route protection documentation",
+          "url": "https://docs.aws.amazon.com/vpc/latest/ipam/monitor-bgp-route-security.html"
+        },
+        {
+          "title": "Amazon VPC IPAM documentation",
+          "url": "https://docs.aws.amazon.com/vpc/latest/ipam/what-it-is-ipam.html"
+        },
+        {
+          "title": "Amazon VPC pricing",
+          "url": "https://aws.amazon.com/vpc/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon VPC IPAM에 BYOIP prefix용 BGP route protection monitoring과 delegated RPKI 관리 기능을 추가함. AWS What’s New RSS `Fri, 07 Aug 2026 16:00:00 GMT`를 `2026-08-08 01:00 KST`로 변환해 카드 발행 시각으로 사용하며, 원문 화면은 `Aug 7, 2026` 날짜만 표시함.",
+          "items": [
+            "대상: AWS에 반입한 BYOIP prefix와 account·Region 단위 IPAM inventory",
+            "조회: RPKI validity status·ROA strength·route overlap을 단일 dashboard에서 확인",
+            "범위: commercial AWS Region 제공, AWS GovCloud (US)·중국 Beijing/Ningxia 제외"
+          ]
+        },
+        {
+          "heading": "route protection과 RPKI 동작 범위",
+          "body": "AWS 설명에서 route monitoring은 invalid 또는 missing ROA와 hijacking 가능성을 나타낼 수 있는 route overlap을 식별하는 경로임. ROA strict와 permissive 구성을 구분해 보도록 하며, 이것만으로 인터넷의 모든 BGP path를 차단하거나 실제 hijack을 확정하는 기능은 아님.",
+          "items": [
+            "RPKI: origin authorization validity와 ROA strength를 prefix별 점검",
+            "overlap: 다른 route announcement와의 겹침을 조사 신호로 수집",
+            "경계: alert 발생 뒤의 route-origin validation policy·carrier filtering·incident impact는 조직과 upstream별 확인 대상"
+          ]
+        },
+        {
+          "heading": "delegated RPKI와 provisioning 경로",
+          "body": "해당 RIR과 1회 설정을 마치면 IPAM이 BYOIP provisioning 과정에서 ROA를 생성하고 만료 전 갱신하며 on-premises prefix의 ROA도 관리한다고 AWS가 공지함. 기존에는 RIR에서 ROA를 수동 생성·갱신하고 WHOIS 또는 DNS로 ownership을 검증하며 별도 도구로 route security를 관측해야 했다는 설명임.",
+          "items": [
+            "RIR: ARIN·RIPE·APNIC·LACNIC 연동을 원문 지원 범위로 명시",
+            "자동화: provisioning과 ROA lifecycle을 같은 control-plane workflow로 연결",
+            "권한: RIR delegation credential·prefix owner·AWS account role을 least privilege와 dual approval으로 분리"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "BYOIP의 routing risk는 cloud account 내부 설정만으로 끝나지 않음. RIR authority, prefix ownership, ROA policy, AWS provisioning, external BGP observation과 incident escalation이 연결돼야 invalid origin이나 overlap을 실제 대응으로 전환할 수 있음.",
+          "items": [
+            "inventory: prefix·CIDR·RIR·ROA issuer·maxLength·AWS account/Region·온프레미스 owner를 CMDB와 대조",
+            "monitoring: invalid/missing ROA·overlap을 BGP collector·carrier notification·VPC route change와 상관 분석",
+            "response: suspected hijack 시 announcement evidence·ROA state·provider ticket·traffic impact·rollback 기록을 같은 incident에 보존"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "IPAM의 delegated RPKI는 수동 ROA 운영 부담을 줄일 수 있으나 ownership 오류나 permissive policy를 자동으로 해결하지 않음. sandbox prefix에서 자동 생성·갱신·expiry·rollback과 외부 validator 관측을 먼저 검증한 뒤 production prefix로 확대 필요.",
+          "items": [
+            "팀 액션: authoritative prefix inventory와 RIR delegation owner를 분기별 access review 대상으로 지정",
+            "팀 액션: ROA strictness·maxLength·exception expiry·route overlap escalation을 policy-as-code와 change record에 고정",
+            "팀 액션: invalid ROA·overlap alert를 network operations·security·cloud platform의 공통 on-call runbook에 연결"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-298",
       "title_ko": "Cloudflare Workers AI·AI Gateway 통합: managed GPU·외부 모델을 하나의 AI control plane에서 routing·observability·billing으로 관리",
       "title_original": "Unifying Workers AI and AI Gateway into a single AI control plane",
@@ -457,7 +547,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-299",
@@ -532,7 +622,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-300",
@@ -608,7 +698,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-297",
@@ -689,7 +779,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-295",
@@ -766,7 +856,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-294",
@@ -843,7 +933,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-293",
@@ -923,7 +1013,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-292",
@@ -1000,7 +1090,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-296",
@@ -1073,7 +1163,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-291",
@@ -1159,7 +1249,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-301",
@@ -1235,7 +1325,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-290",
@@ -1302,7 +1392,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-287",
@@ -1374,7 +1464,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-286",
@@ -1450,7 +1540,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-288",
@@ -1521,7 +1611,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-285",
@@ -1597,7 +1687,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-289",
@@ -1672,7 +1762,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-283",
@@ -1756,7 +1846,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-284",
@@ -1833,11 +1923,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-280",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "영국 AISI agent cyber 평가 incident: 122회 중 10회에서 live internet 무단 행동 19건, 평가 egress·human review 경계 재설계",
       "title_original": "Incident Report: unsanctioned agent behaviour during cyber testing",
       "summary": "- 변화: AISI cyber range 122회 실행 중 10회에서 실제 사람·조직을 향한 무단 자율 행동 19건 확인\n- 근거: Mythos 5 17건, cyber classifier를 비활성화한 GPT-5.6-Sol 2건으로 집계\n- 팀 액션: internet egress·identity 생성·GitHub write 권한을 평가 harness 밖에서 별도 차단·감사할 필요",
@@ -1907,7 +1997,7 @@
     },
     {
       "id": "news-281",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "AWS Network Firewall explicit forward proxy preview: 기존 Firewall policy로 outbound data exfiltration·malware injection 통제 통합",
       "title_original": "[Preview Announcement] Re-introducing Forward Proxy as AWS Network Firewall Functionality",
       "summary": "- 변화: AWS Network Firewall에 explicit forward proxy 기능을 다시 통합\n- 근거: transparent firewall과 동일한 Firewall policy로 managed rule group·Active Threat Defense·Geo-IP 적용 가능\n- 범위: US East (Ohio) public preview, no-source-preservation deployment에서 무료 제공",
@@ -2053,7 +2143,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-279",
@@ -2135,7 +2225,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-277",
@@ -2217,7 +2307,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-282",
@@ -2289,7 +2379,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-274",
@@ -2365,7 +2455,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-273",
@@ -2434,7 +2524,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-275",
@@ -2506,7 +2596,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-276",
@@ -2579,7 +2669,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-272",
@@ -2661,7 +2751,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-266",
@@ -2734,7 +2824,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-267",
@@ -2802,7 +2892,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-268",
@@ -2872,7 +2962,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-265",
@@ -2945,7 +3035,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-263",
@@ -3021,7 +3111,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-260",
@@ -3098,7 +3188,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-258",
@@ -3180,7 +3270,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-257",
@@ -3263,7 +3353,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-270",
@@ -3350,7 +3440,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-259",
@@ -3436,7 +3526,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-271",
@@ -3503,7 +3593,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-264",
@@ -3590,7 +3680,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-269",
@@ -3668,7 +3758,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-255",
@@ -3744,7 +3834,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-256",
@@ -3833,7 +3923,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-253",
@@ -3901,7 +3991,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-252",
@@ -3984,100 +4074,6 @@
             "팀 액션: Luna·Terra·Sol별 representative trace와 baseline completed-task cost 산출",
             "팀 액션: token·retry·tool invocation·throttling·p95 latency를 같은 dashboard에서 비교",
             "팀 액션: target region·data handling·quota·fallback model·rollback policy를 routing release에 기록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-250",
-      "title_ko": "AWS Transit Gateway Policy-Based Routing GA: source·destination·port·protocol 기반 traffic steering을 native route policy로 적용",
-      "title_original": "AWS announces general availability of Policy-Based Routing on AWS Transit Gateway",
-      "summary": "핵심: AWS Transit Gateway가 source/destination IP·port·protocol 조합으로 forwarding을 고르는 Policy-Based Routing(PBR)을 GA로 제공. 기존 multi-VPC hop 없이 attachment별 policy table과 first-match-wins rule로 inspection·Direct Connect/VPN·prod/dev isolation을 설계 가능. 운영: ordered rule shadowing·asymmetric path·appliance state·failover를 route table 변경과 같은 release gate로 검증 필요.",
-      "detail": "AWS는 Transit Gateway PBR이 destination prefix만 보던 기존 forwarding과 달리 packet attribute 조합으로 다음 route table을 선택한다고 밝혔다. attachment에 policy table을 연결하고 ordered rule의 first-match-wins 결과로 traffic을 steering한다. AWS는 Network Firewall·third-party inspection appliance, Direct Connect/VPN path, prod/dev routing domain을 예시로 들었다. 모든 commercial Transit Gateway Region에서 Console·CLI·SDK로 구성 가능하며 PBR 자체의 별도 요금은 없다고 밝혔다. appliance HA, stateful flow symmetry, rule conflict, cross-region·on-premises design, Transit Gateway 기본 사용료는 workload별 검증 대상임.",
-      "why_it_matters": "Transit Gateway가 packet-aware steering을 native control plane에 넣으면서 network segmentation·inspection path 설계에서 extra VPC와 route hop을 줄일 선택지가 생김. 다만 policy ordering 오류는 intended inspection bypass 또는 return-path asymmetry로 바로 이어질 수 있음.",
-      "engineering_implication": "네트워크 팀은 PBR rule을 IaC code review 대상으로 취급하고 source/destination·L4 protocol·attachment·target route table·expected return path·owner를 한 change record에 고정 필요. canary flow, firewall state, VPN/DX failover, flow log, rollback route table을 함께 test해야 함.",
-      "korea_implication": "국내 리전·온프레미스 연결은 AWS가 발표한 commercial-Region availability만으로 구성 가능성을 확정할 수 없음. 사용 중인 Region, Direct Connect/VPN path, managed inspection appliance와 enterprise routing policy를 사전 PoC로 대조 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Transit Gateway",
-        "Networking",
-        "Policy-Based Routing",
-        "Cloud Security",
-        "IaC"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 92,
-      "published_kst": "2026-07-31 00:39",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/07/aws-transit-gateway-policy-based-routing/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "AWS Transit Gateway product page",
-          "url": "https://aws.amazon.com/transit-gateway/"
-        },
-        {
-          "title": "AWS What’s New RSS publication evidence",
-          "url": "https://aws.amazon.com/about-aws/whats-new/recent/feed/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 Transit Gateway의 **Policy-Based Routing(PBR)** 정식 제공을 발표함. forwarding 결정에 destination IP 외 packet attribute 조합을 사용할 수 있는 기능.",
-          "items": [
-            "발행: AWS RSS `Thu, 30 Jul 2026 15:39:00 GMT`를 **2026-07-31 00:39 KST**로 변환",
-            "조건: source/destination IP·port·protocol 조합으로 traffic classification 가능",
-            "범위: Transit Gateway attachment에 policy table을 연결하는 native routing control plane"
-          ]
-        },
-        {
-          "heading": "정책 평가와 forwarding 방식",
-          "body": "PBR rule은 ordered set이며 first-match-wins로 matching packet을 지정 route table로 보냄. destination-prefix 기반 route lookup을 대체하기보다 attachment ingress 뒤 steering 결정을 추가하는 구조.",
-          "items": [
-            "구성: attachment별 policy table association과 ordered rule 정의",
-            "결과: rule이 일치하면 지정 route table로 forwarding decision 연결",
-            "리스크: broad rule이 later specific rule을 shadow하면 inspection·segmentation intent가 무력화될 수 있음"
-          ]
-        },
-        {
-          "heading": "AWS가 제시한 사용 경로",
-          "body": "AWS는 sensitive workload를 AWS Network Firewall 또는 third-party inspection appliance로 보내는 경우, source/port/protocol에 따른 Direct Connect·VPN 경로 선택, prod/dev routing domain 분리를 예시로 제시함.",
-          "items": [
-            "보안: sensitive flow만 inspection attachment로 steering하는 정책 구성 가능",
-            "연결: application traffic을 L4 condition에 따라 Direct Connect 또는 VPN path로 선택 가능",
-            "격리: production·development를 서로 다른 routing domain으로 분리하는 설계 가능"
-          ]
-        },
-        {
-          "heading": "제공 범위와 증거 경계",
-          "body": "AWS는 Transit Gateway 제공 commercial Region 전체, Console·CLI·SDK configuration, PBR 자체 별도 추가 요금 없음만 발표함. throughput, appliance compatibility, failover behavior와 full Transit Gateway cost는 source가 보장하지 않음.",
-          "items": [
-            "확정: commercial AWS Region의 Transit Gateway availability 범위",
-            "미확정: inspection appliance별 session persistence·capacity·HA behavior",
-            "미확정: cross-region·on-premises topology, DX/VPN cost, migration downtime"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "기존 traffic steering은 multi-VPC 또는 additional routing hop을 만들기 쉬워 route ownership·observability·cost가 분산됐음. native PBR은 topology를 줄일 수 있지만 ordered policy가 새로운 high-impact failure surface가 됨.",
-          "items": [
-            "설계: route table 수·transit hop·manual exception 감소 가능성",
-            "보안: firewall bypass와 lateral movement control을 L3 prefix만으로 다루지 않는 선택지",
-            "운영: route update가 network policy release와 같은 blast radius를 가짐"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "PBR 도입은 rule count가 아니라 intended flow를 재현하는 acceptance test가 완료됐을 때 승인할 과제.",
-          "items": [
-            "팀 액션: rule별 source/destination·L4 condition·target table·return path·owner를 IaC review에 기록",
-            "팀 액션: canary packet capture·VPC/Transit Gateway Flow Logs·firewall session telemetry로 first-match 결과 검증",
-            "팀 액션: VPN/DX loss·inspection appliance failover·rule rollback을 change window test에 포함"
           ]
         }
       ],
