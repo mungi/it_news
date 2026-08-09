@@ -206,6 +206,9 @@
 - [[raw/articles/metabase-security-update-zero-day-2026-08-08]] — Metabase self-hosted zero-day의 fixed release·session/API key·DB credential·query/export incident 대응 경계.
 - [[raw/articles/thn-atlassian-rovo-prompt-injection-rovoblast-2026-08-08]] — Atlassian Rovo 간접 프롬프트 주입·RovoBlast의 connector 데이터 egress·server-side fix·audit 통제 경계.
 
+- [[raw/articles/anthropic-fable-5-biology-safeguards-2026-08-07]] — Fable 5 biology classifier 정밀화·fallback routing·dual-use access 통제 경계.
+- [[raw/articles/cloudflare-radar-researcher-2026-08-07]] — Radar Researcher의 API provenance·MCP Code Mode·chart rendering·agent runtime 운영 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
