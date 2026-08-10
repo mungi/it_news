@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-09 | Total pages: 276
+> Last updated: 2026-08-11 | Total pages: 281
 
 ## Entities
 
@@ -21,6 +21,7 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W34]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W33]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W32]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W31]] — 이번 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
@@ -29,6 +30,11 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/genians-kimsuky-offline-ai-stack-2026-08-10]] — Kimsuky 연계 offline AI·RAG·developer component 관측과 endpoint hunting 경계.
+- [[raw/articles/thn-passkey-attacks-2026-08-10]] — Windows·Chrome·Windows Hello passkey 주변 attack surface와 patch·identity telemetry 경계.
+- [[raw/articles/thn-trueconf-phantomcore-2026-08-10]] — TrueConf Server exploitation과 poisoned installer 배포·server/client 조사 경계.
+- [[raw/articles/aws-drs-linux-uefi-2026-08-10]] — AWS DRS Linux UEFI boot mode preservation과 DR drill 검증 범위.
+- [[raw/articles/cloudflare-fedramp-high-2026-08-10]] — Cloudflare Government FedRAMP High와 authorization boundary·shared-responsibility 검토 경계.
 - [[raw/articles/aaif-agent-plugins-1-0-2026-08-08]] — Agent Plugins 1.0의 `plugin.json`·`skills/`·`mcp.json` portable package contract와 공급망·권한 검증 경계.
 - [[raw/articles/github-actions-pages-critical-incident-2026-08-07]] — GitHub Actions·Pages critical incident의 queue·webhook·ARC idle runner·CI 재실행 검증 경계.
 - [[raw/articles/aws-ecs-fractional-gpu-g6f-2026-08-07]] — Amazon ECS G6f fractional GPU scheduling의 packing·격리·telemetry·FinOps 검증 경계.
