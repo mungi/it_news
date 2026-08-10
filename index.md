@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-11 | Total pages: 281
+> Last updated: 2026-08-11 | Total pages: 284
 
 ## Entities
 
@@ -30,6 +30,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-stormencryptor-ncentral-2026-08-11]] — StormEncryptor·N-central initial-access 가능성, RMM·LSASS·egress incident 조사 경계.
+- [[raw/articles/aws-ec2-application-status-checks-2026-08-11]] — EC2 application status check·Auto Scaling replacement와 health contract 검증 경계.
+- [[raw/articles/github-copilot-sdk-java-2026-08-11]] — Java Copilot SDK preview의 BYOK·tool call·CLI credential·trace control 경계.
 - [[raw/articles/genians-kimsuky-offline-ai-stack-2026-08-10]] — Kimsuky 연계 offline AI·RAG·developer component 관측과 endpoint hunting 경계.
 - [[raw/articles/thn-passkey-attacks-2026-08-10]] — Windows·Chrome·Windows Hello passkey 주변 attack surface와 patch·identity telemetry 경계.
 - [[raw/articles/thn-trueconf-phantomcore-2026-08-10]] — TrueConf Server exploitation과 poisoned installer 배포·server/client 조사 경계.

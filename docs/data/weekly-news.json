@@ -2,14 +2,14 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-11 00:10",
+  "last_updated_kst": "2026-08-11 08:21",
   "audience": "developers and engineers",
   "executive_summary": [
+    "StormEncryptor: N-central authentication-bypass 연계 가능성 보도, RMM·LSASS·egress를 하나의 incident chain으로 조사.",
+    "EC2 application status checks: 60초 HTTP(S) check와 Auto Scaling replacement 연결, health contract·false positive 검증 필요.",
+    "GitHub Copilot SDK for Java preview: Java agent harness에 BYOK·tool call·structured response 통합, CLI·credential·trace control 선행.",
     "Kimsuky offline AI stack: local LLM·RAG·Whisper·.NET library 조립 관측, victim-side execution과 자체 모델 학습은 미확인.",
-    "Passkey 주변 공격 3종: Windows logging·Chrome synced key·WHfB session boundary를 하나의 bug로 묶지 않고 patch·endpoint·identity telemetry로 분리 대응.",
-    "TrueConf Server exploitation: server 취약점이 client installer distribution tampering으로 이어져 server·endpoint supply chain을 함께 조사.",
-    "AWS DRS UEFI preservation: Linux recovery firmware drift를 자동 줄이되 DR drill은 application boot chain 검증 유지.",
-    "Cloudflare Government FedRAMP High: certification label이 아닌 authorization boundary·data flow·shared responsibility matrix 검토."
+    "Passkey 주변 공격 3종: Windows logging·Chrome synced key·WHfB session boundary를 patch·endpoint·identity telemetry로 분리 대응."
   ],
   "deep_dives": [
     {
@@ -205,8 +205,207 @@
   ],
   "items": [
     {
+      "id": "news-315",
+      "title_ko": "GitHub Copilot SDK for Java preview: framework-agnostic agent session·tool·structured response를 서버 코드에서 제어",
+      "title_original": "Using the GitHub Copilot SDK for Java",
+      "summary": "- 공개: GitHub가 Java 서버 코드에서 Copilot agent session·tool·prompt·structured response를 다루는 SDK preview를 소개\n- 구성: Maven `com.github:copilot-sdk-java:1.0.7-preview.1`, JDK 17 또는 25, Maven 3.9+, Copilot CLI 1.0.71+를 예시로 제시\n- 경계: BYOK direct provider는 base URL·API key 또는 bearer token으로 설정 가능하나, vendor neutrality가 production security·cost·availability 보증을 뜻하지는 않음\n- 팀 액션: Java agent harness 도입 전 CLI·provider credential·tool permission·request trace를 서비스 runtime boundary별로 검증",
+      "detail": "GitHub는 Copilot SDK for Java가 Jakarta EE와 Spring을 포함한 서버 환경에서 agent session 생성, tool 등록, prompt 전송, structured response 수신을 programmatically 처리한다고 소개함. 공식 예시는 Jakarta EE 11과 Open Liberty에서 virtual thread 기반 isolated agent pipeline을 사용하며, Maven artifact·JDK·Maven·Copilot CLI 사전 조건을 명시함. BYOK 경로는 OpenAI·Azure·Anthropic 또는 OpenAI-compatible endpoint의 base URL과 credential을 provider configuration으로 전달하는 범위임.",
+      "why_it_matters": "엔터프라이즈 Java 서비스가 framework-specific AI abstraction 밖에서 agent runtime을 통합할 수 있으나, SDK preview 의존성과 CLI·credential 공급망이 새 운영 경계가 됨.",
+      "engineering_implication": "SDK preview를 sandbox tenant에서 먼저 실행하고 Copilot CLI version, provider credential rotation, tool allowlist, structured-output schema, virtual-thread concurrency, trace·cost·failure telemetry를 release gate로 관리 필요.",
+      "korea_implication": "국내 Java 중심 조직은 기존 Spring/Jakarta 서비스의 identity·network·secret policy를 agent tool-call boundary까지 확장 필요.",
+      "category": "DevTools",
+      "tags": [
+        "GitHub Copilot",
+        "Java",
+        "Agent SDK",
+        "BYOK",
+        "Jakarta EE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-08-11 04:30",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/engineering/using-the-github-copilot-sdk-for-java/",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "GitHub Copilot SDK Java sample application",
+          "url": "https://github.com/microsoft/Build26-BRK206-your-agent-anywhere-multiclient-multidevice-with-github-copilot-sdk"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub가 Java에서 Copilot agent session과 tool call을 서버 코드로 다루는 SDK preview 사용법을 공개",
+          "items": [
+            "배포: Maven artifact `com.github:copilot-sdk-java:1.0.7-preview.1` 제시",
+            "범위: server-side Java code에서 prompt 전송과 structured response 수신 지원"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공식 예시는 Jakarta EE 11·Open Liberty application과 virtual thread 기반 isolated agent pipeline을 사용",
+          "items": [
+            "사전 조건: JDK 17 또는 25, Maven 3.9+, Copilot CLI 1.0.71+ 명시",
+            "통합: Jakarta EE·Spring을 포함한 server environment 사용 범위"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "BYOK provider configuration은 direct model endpoint를 선택할 수 있게 하지만 credential과 service boundary 책임을 제거하지 않음",
+          "items": [
+            "설정: provider base URL과 API key 또는 bearer token 전달 방식",
+            "경계: preview stability·provider SLA·model behavior·cost는 source가 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "SDK preview를 sandbox tenant에서 먼저 실행하고 Copilot CLI version, provider credential rotation, tool allowlist, structured-output schema, virtual-thread concurrency, trace·cost·failure telemetry를 release gate로 관리 필요.",
+          "items": [
+            "보안: tool invocation별 identity·permission·network egress audit 확보",
+            "운영: provider failure와 schema validation error의 retry·fallback policy 분리"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-316",
+      "title_ko": "EC2 application status checks: HTTP(S) endpoint를 60초마다 확인하고 Auto Scaling recovery에 연결",
+      "title_original": "Amazon EC2 introduces application status checks",
+      "summary": "- 공개: AWS가 EC2 application status checks를 도입해 web server·Docker daemon·network interface 등 application-level issue를 감지\n- 동작: protocol·port·path·healthy response code를 지정하고 instance ID 또는 tag로 연결하면 60초마다 HTTP/HTTPS 요청 수행\n- 복구: Auto Scaling group이 unhealthy application status에 따라 instance replacement를 시작 가능\n- 팀 액션: 기존 ELB·synthetic·agent monitoring과 health semantics·false positive·replacement blast radius를 먼저 정렬",
+      "detail": "AWS는 EC2 instance·system status check가 reachability alert를 제공하는 것과 달리 새 application status check가 application-level 문제를 확인한다고 설명함. 사용자는 protocol, port, path와 정상 response code를 정하고 instance ID 또는 tag로 check를 연결함. EC2는 매 60초 HTTP 또는 HTTPS 요청을 보내 상태를 보고하며 Auto Scaling group은 unhealthy application status에 대응해 instance replacement를 시작할 수 있음. 제공 범위는 모든 commercial AWS Region과 AWS GovCloud (US) Region임.",
+      "why_it_matters": "host reachability만으로는 daemon stop·잘못된 network setting·application path failure를 구분하기 어려우며, check 결과가 replacement로 연결되면 health definition 자체가 deployment safety control이 됨.",
+      "engineering_implication": "application check를 기존 load-balancer target health·SLO·alert와 중복 정의하지 말고 path/auth/TLS/response-code, grace period, rollout suppression, replacement rate limit, incident evidence를 failure mode별로 검증 필요.",
+      "korea_implication": "국내 AWS 운영 조직도 multi-Region DR·autoscaling 정책에서 health-check semantics와 자동 교체 승인 범위를 runbook으로 정렬 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS EC2",
+        "Auto Scaling",
+        "Health Check",
+        "SRE",
+        "Application Availability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-08-11 02:47",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-ec2-application-status-checks/",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon EC2 User Guide — application status checks",
+          "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/application-status-checks.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 EC2 instance의 application-level issue를 확인하는 application status checks를 공개",
+          "items": [
+            "대상: request를 받지 않는 web server, 중지된 Docker daemon, 잘못된 network configuration, traffic이 지나지 않는 interface 예시",
+            "차이: 기존 instance·system status check의 reachability alert와 별도 application signal"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "사용자는 protocol·port·path·healthy response code를 지정하고 instance ID 또는 tag로 check를 연결",
+          "items": [
+            "주기: EC2가 configured port·path에 HTTP 또는 HTTPS 요청을 60초마다 수행",
+            "연결: Auto Scaling group이 unhealthy status에 따라 instance replacement 시작 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "자동 replacement는 stale process와 endpoint failure 대응을 단축할 수 있지만 check contract 오류가 정상 instance 교체로 확대될 수 있음",
+          "items": [
+            "범위: 모든 commercial AWS Region과 AWS GovCloud US Region 제공",
+            "검증: protected path의 auth·TLS·response code와 deployment warm-up time 분리 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "application check를 기존 load-balancer target health·SLO·alert와 중복 정의하지 말고 path/auth/TLS/response-code, grace period, rollout suppression, replacement rate limit, incident evidence를 failure mode별로 검증 필요.",
+          "items": [
+            "운영: canary Auto Scaling group에서 false positive와 recovery latency 먼저 측정",
+            "증적: check configuration, response history, replacement event를 incident timeline에 연결"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-317",
+      "title_ko": "StormEncryptor ransomware: N-central authentication-bypass CVE 악용 가능성 보고, RMM·LSASS·data exfiltration hunt 긴급화",
+      "title_original": "China-Linked Hackers Deploy New StormEncryptor Ransomware, Likely via N-central Flaw",
+      "summary": "- 관측: Microsoft를 인용한 THN이 Storm-1175의 신규 C++ ransomware `StormEncryptor` 사용을 보도\n- 경계: initial access가 N-able N-central `CVE-2026-18577` 악용일 가능성으로 표현되며, 정확한 exploited vulnerability는 미확정\n- 행위: `.encrypted` extension, `!!!README_FIRST!!!.txt`, AnyDesk·SimpleHelp·Advanced IP Scanner·Mimikatz LSASS dumping을 report scope로 제시\n- 팀 액션: internet-facing N-central patch와 RMM session·endpoint persistence·LSASS·outbound exfiltration을 같은 incident timeline에서 조사",
+      "detail": "THN은 Microsoft Threat Intelligence의 Bluesky 게시물을 인용해 중국 연계로 분류된 금전 목적 actor Storm-1175가 이전 Medusa 대신 StormEncryptor ransomware를 사용했다고 보도함. 기사에 따르면 StormEncryptor는 C++로 작성됐고 암호화 파일에 `.encrypted` extension을 붙이며 scan한 directory마다 `!!!README_FIRST!!!.txt`를 남김. THN은 N-able N-central의 `CVE-2026-18577`이 initial access에 악용됐을 가능성을 언급하지만 정확한 exploit은 불명확하다고 명시함. CISA는 `CVE-2026-18577`과 `CVE-2026-18556`을 known exploited로 표기한 것으로 기사에 인용됨.",
+      "why_it_matters": "RMM control plane의 authentication bypass 의심과 ransomware post-compromise behavior가 한 incident chain에 놓이면 patch 확인만으로는 managed endpoint와 credential exposure 범위를 닫을 수 없음.",
+      "engineering_implication": "N-central 노출·fixed build·Hotfix 적용을 즉시 확인하고, RMM remote session·AnyDesk/SimpleHelp·scanner execution·LSASS access·ransom note/file extension·unusual egress를 host와 management server 양쪽에서 보존·hunt 필요.",
+      "korea_implication": "국내 MSP·managed endpoint 운영 조직은 customer tenant별 RMM admin 권한·tunnel·incident notification·credential rotation 책임 경계를 사전 확정 필요.",
+      "category": "Security",
+      "tags": [
+        "N-able N-central",
+        "Ransomware",
+        "StormEncryptor",
+        "RMM",
+        "CISA KEV"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-08-11 02:38",
+      "source_name": "The Hacker News / Microsoft Threat Intelligence",
+      "source_url": "https://thehackernews.com/2026/08/china-linked-hackers-deploy-new.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjNv5C82jT_6YlarerdXnoAR_tT3E8xP65ZWuJfpvOKU9baBT5UACUTb88XvDQgQA6RrYuqPK3FstaqwacR9gDjD0qwk3HUYl0wK848phyphenhyphenFuqRrOA1AqdISQaA6tpEqg0n2XJIA22NeNNbhei1bAgcyghnc2qaVfSvh4fd9J1oD4xVi-DQcNSOYWQovyUst/s1700-e365/strom-ransomware.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Microsoft Threat Intelligence Bluesky post cited by The Hacker News",
+          "url": "https://bsky.app/profile/threatintel.microsoft.com/post/3msjiybnb252n"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "THN이 Microsoft Threat Intelligence를 인용해 Storm-1175의 신규 StormEncryptor ransomware 사용을 보도",
+          "items": [
+            "변화: report는 actor의 이전 Medusa 사용에서 StormEncryptor로의 전환 언급",
+            "형식: C++ binary가 encrypted file에 `.encrypted` extension과 `!!!README_FIRST!!!.txt` ransom note 생성"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "THN은 N-able N-central `CVE-2026-18577`이 initial access에 악용됐을 가능성을 제시하되 exact exploited vulnerability는 불명확하다고 명시",
+          "items": [
+            "경계: authentication bypass·account takeover 영향 설명은 기사 인용 범위",
+            "행위: AnyDesk 또는 SimpleHelp, Advanced IP Scanner, Mimikatz LSASS dumping이 post-compromise behavior로 보고"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "internet-facing RMM server가 initial access와 managed endpoint lateral control의 공통 경계가 되면 patch verification과 endpoint hunt를 분리할 수 없음",
+          "items": [
+            "속도: source는 initial access에서 exfiltration·ransomware deployment까지 수일 내 이동 가능성을 인용",
+            "제한: 피해 조직·data theft·actor identity·모든 N-central deployment 영향은 이 source로 확정하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "N-central 노출·fixed build·Hotfix 적용을 즉시 확인하고, RMM remote session·AnyDesk/SimpleHelp·scanner execution·LSASS access·ransom note/file extension·unusual egress를 host와 management server 양쪽에서 보존·hunt 필요.",
+          "items": [
+            "대응: RMM administrator credential rotation과 remote-control tool approval 기록 보존",
+            "조사: managed endpoint·management server·tunnel·backup restoration evidence를 같은 incident timeline에 결합"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-310",
-      "rank": 1,
+      "rank": 4,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -273,7 +472,7 @@
     },
     {
       "id": "news-313",
-      "rank": 2,
+      "rank": 5,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -335,7 +534,7 @@
     },
     {
       "id": "news-314",
-      "rank": 3,
+      "rank": 6,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -397,7 +596,7 @@
     },
     {
       "id": "news-311",
-      "rank": 4,
+      "rank": 7,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -464,7 +663,7 @@
     },
     {
       "id": "news-312",
-      "rank": 5,
+      "rank": 8,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
