@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimeskr-samsung-sds-national-ai-gpu-computing-2026-08-11]] — 삼성SDS 국가 AI 연구 GPU 서비스의 H100·B300·자원 할당·운영 검증 경계.
 - [[raw/articles/thn-stormencryptor-ncentral-2026-08-11]] — StormEncryptor·N-central initial-access 가능성, RMM·LSASS·egress incident 조사 경계.
 - [[raw/articles/aws-ec2-application-status-checks-2026-08-11]] — EC2 application status check·Auto Scaling replacement와 health contract 검증 경계.
 - [[raw/articles/github-copilot-sdk-java-2026-08-11]] — Java Copilot SDK preview의 BYOK·tool call·CLI credential·trace control 경계.
