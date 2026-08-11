@@ -2,14 +2,14 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-11 12:29",
+  "last_updated_kst": "2026-08-11 16:34",
   "audience": "developers and engineers",
   "executive_summary": [
+    "폴란드 열병합발전소 OT 침해: private APN client isolation 부재와 controller 관리면이 turbine·process-water 설비 정지 경로가 됨.",
     "삼성SDS 국가 AI GPU 컴퓨팅: H100·B300 cluster와 사전 구성 인프라를 학·연 연구 과제에 제공, quota·scheduler·data governance 검증 필요.",
     "EC2 application status checks: 60초 HTTP(S) check와 Auto Scaling replacement 연결, health contract·false positive 검증 필요.",
     "GitHub Copilot SDK for Java preview: Java agent harness에 BYOK·tool call·structured response 통합, CLI·credential·trace control 선행.",
-    "Kimsuky offline AI stack: local LLM·RAG·Whisper·.NET library 조립 관측, victim-side execution과 자체 모델 학습은 미확인.",
-    "Passkey 주변 공격 3종: Windows logging·Chrome synced key·WHfB session boundary를 patch·endpoint·identity telemetry로 분리 대응."
+    "Kimsuky offline AI stack: local LLM·RAG·Whisper·.NET library 조립 관측, victim-side execution과 자체 모델 학습은 미확인."
   ],
   "deep_dives": [
     {
@@ -205,6 +205,74 @@
   ],
   "items": [
     {
+      "id": "news-319",
+      "title_ko": "폴란드 열병합발전소 OT 침해: private APN 횡이동으로 터빈·공정수 설비 정지",
+      "title_original": "Follow-Up Report of the December 2025 Energy Sector Incident",
+      "summary": "- 공개: CERT Polska가 2025년 12월 폴란드 열병합발전소 침해 후속 보고서를 공개, private cellular APN을 통한 OT 접근과 터빈·공정수 처리 설비 정지 확인\n- 경로: 풍력발전 단지 VPN·router에서 client-to-client 통신이 허용된 APN으로 이동한 뒤, default credential이 남은 WAGO PFC200과 Siemens PLC를 거친 흐름\n- 영향: 약 5만 명 난방 공급 설비에서 cogeneration이 단기간 중단됐으나 사업자 대응으로 고객 열·전력 공급 중단은 미발생\n- 팀 액션: cellular APN을 OT 신뢰구간으로 보지 말고 client isolation·management interface 분리·MFA·default credential 제거·PLC STOP/factory-reset telemetry를 함께 점검",
+      "detail": "CERT Polska는 2025년 12월 발생한 폴란드 소규모 열병합발전소 침해의 후속 보고서를 2026년 8월 공개함. 공격자는 private APN에서 허용된 단말 간 통신을 이용해 별도 시설인 풍력발전 단지 경로에서 WAGO PFC200 controller와 발전소 OT network로 이동한 것으로 조사됨. 공격 중 Siemens S7-300·S7-1200·S7-1500 controller가 STOP mode로 전환되고 password protection이 적용돼 steam turbine과 process-water treatment system이 정지했으며, Moxa serial device server·switch 초기화와 unreachable IP 설정도 관측됨. CERT는 단일 CVE 또는 malware를 침해 원인으로 확정하지 않았고 router credential 획득 방식도 확인하지 못함. The Hacker News의 보도 시각은 2026-08-11 15:55 KST이며, 카드 정렬에는 이 secondary report RSS 시각을 사용함.",
+      "why_it_matters": "private cellular APN과 원격 관리 interface가 OT segmentation 밖에 남으면 DNP3 같은 protocol requirement를 충족해도 management plane이 우회 경로가 될 수 있음.",
+      "engineering_implication": "APN client isolation, APN-reachable router·controller management service inventory, default credential 제거, VPN MFA, OT allowlist를 검증하고 PLC STOP·SSH tunnel·factory reset·network device IP 변경 로그를 동일 incident timeline으로 보존 필요.",
+      "korea_implication": "국내 전력·열·수처리·제조 OT 조직은 LTE/5G private APN을 isolation control로 간주하지 말고 통신사·설비사업자·운영사 간 APN routing과 원격관리 책임 경계를 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "OT Security",
+        "Private APN",
+        "ICS",
+        "Siemens PLC",
+        "Network Segmentation"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-08-11 15:55",
+      "source_name": "CERT Polska",
+      "source_url": "https://cert.pl/en/posts/2026/08/incident-follow-up-report-energy-sector-2025/",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News — Polish power plant private cellular network report (RSS publication time provenance)",
+          "url": "https://thehackernews.com/2026/08/hackers-breach-polish-power-plant.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CERT Polska가 2025년 12월 폴란드 소규모 열병합발전소에서 발생한 침해의 후속 보고서를 공개",
+          "items": [
+            "영향: steam turbine과 process-water treatment system 정지로 cogeneration 단기간 중단",
+            "공급: 약 5만 명 대상 열 공급 설비였으나 사업자 대응으로 고객 열·전력 공급 중단은 미발생"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "조사는 private APN의 client-to-client 통신 허용과 APN-reachable controller 관리면을 OT 침투 경로로 설명",
+          "items": [
+            "경로: compromised wind-farm network에서 APN을 거쳐 default credential이 남은 WAGO PFC200 controller로 횡이동",
+            "행위: Siemens S7-300·S7-1200·S7-1500 controller STOP mode 전환과 password protection 적용",
+            "훼손: Moxa serial device server·switch 초기화와 unreachable IP 설정을 자동화 행위 가능성으로 조사"
+          ]
+        },
+        {
+          "heading": "확인된 범위와 한계",
+          "body": "CERT는 단일 software vulnerability나 malware를 침해 원인으로 확정하지 않았으며, router credential 획득 방식도 미확인",
+          "items": [
+            "경계: RUTX50 router의 published firmware vulnerability가 unauthenticated password 탈취를 제공한다는 증거는 미확인",
+            "경계: 공격 주체, 다른 시설의 동일 침해 여부, 모든 private APN 환경의 영향은 이 보고서로 확정 불가"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "APN을 OT 신뢰구간으로 보지 말고 client isolation·management interface 분리·MFA·default credential 제거·OT allowlist를 함께 운영 필요",
+          "items": [
+            "점검: APN client isolation과 device-to-device route, router·controller web/SSH 관리 interface 노출 범위 확인",
+            "탐지: PLC STOP, SSH tunnel, factory reset, network device IP 변경, VPN administrator login을 동일 incident timeline으로 상관 분석",
+            "복구: controller configuration backup·serial device inventory·out-of-band access·log retention을 OT recovery drill에 포함"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-318",
       "title_ko": "삼성SDS 국가 AI GPU 컴퓨팅 서비스: H100·B300 클러스터를 학·연 연구 과제에 2027년 3월까지 제공",
       "title_original": "Samsung SDS launches national AI GPU computing service for Korean academic and research institutions",
@@ -264,7 +332,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-315",
@@ -330,7 +398,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-316",
@@ -396,7 +464,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-317",
@@ -463,11 +531,11 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-310",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -534,7 +602,7 @@
     },
     {
       "id": "news-313",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -596,7 +664,7 @@
     },
     {
       "id": "news-314",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -658,7 +726,7 @@
     },
     {
       "id": "news-311",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -725,7 +793,7 @@
     },
     {
       "id": "news-312",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
