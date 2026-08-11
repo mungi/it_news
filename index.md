@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-ghostsplice-mcp-secret-egress-2026-08-11]] — GhostSplice 분할 MCP 지시의 coding agent secret egress·client guardrail·tool data-flow 통제 경계.
 - [[raw/articles/certpl-private-apn-chp-ot-incident-2026-08-11]] — 폴란드 열병합발전소 private APN 횡이동·OT controller 정지와 segmentation 대응 경계.
 - [[raw/articles/aitimeskr-samsung-sds-national-ai-gpu-computing-2026-08-11]] — 삼성SDS 국가 AI 연구 GPU 서비스의 H100·B300·자원 할당·운영 검증 경계.
 - [[raw/articles/thn-stormencryptor-ncentral-2026-08-11]] — StormEncryptor·N-central initial-access 가능성, RMM·LSASS·egress incident 조사 경계.

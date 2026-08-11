@@ -2,14 +2,14 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-11 16:34",
+  "last_updated_kst": "2026-08-11 20:39",
   "audience": "developers and engineers",
   "executive_summary": [
+    "GhostSplice MCP 연구: tool description·result의 분할 지시가 coding agent context에서 결합돼 secret egress 경로가 될 수 있어 output-to-argument policy 필요.",
     "폴란드 열병합발전소 OT 침해: private APN client isolation 부재와 controller 관리면이 turbine·process-water 설비 정지 경로가 됨.",
     "삼성SDS 국가 AI GPU 컴퓨팅: H100·B300 cluster와 사전 구성 인프라를 학·연 연구 과제에 제공, quota·scheduler·data governance 검증 필요.",
     "EC2 application status checks: 60초 HTTP(S) check와 Auto Scaling replacement 연결, health contract·false positive 검증 필요.",
-    "GitHub Copilot SDK for Java preview: Java agent harness에 BYOK·tool call·structured response 통합, CLI·credential·trace control 선행.",
-    "Kimsuky offline AI stack: local LLM·RAG·Whisper·.NET library 조립 관측, victim-side execution과 자체 모델 학습은 미확인."
+    "GitHub Copilot SDK for Java preview: Java agent harness에 BYOK·tool call·structured response 통합, CLI·credential·trace control 선행."
   ],
   "deep_dives": [
     {
@@ -205,6 +205,84 @@
   ],
   "items": [
     {
+      "id": "news-320",
+      "title_ko": "GhostSplice: 악성 MCP server가 분할 지시를 조합해 coding agent의 secret egress를 유도하는 연구",
+      "title_original": "Malicious MCP Servers Can Split Instructions to Make AI Coding Agents Exfiltrate Secrets",
+      "summary": "- 연구: ASSET Research Group의 GhostSplice는 악성 MCP server가 tool description·tool result·일부 client의 sampling channel에 무해해 보이는 조각을 나눠 넣고 agent가 이를 하나의 지시로 조합하는 경로 공개\n- 범위: isolated project와 fake credential을 사용한 controlled test이며, 개발자가 이미 악성 MCP server를 연결했고 agent에 대상 file read 권한이 있는 조건\n- 결과: 연구 공개 수치에서 11개 API-tested model의 평균 compliance가 단일 지시 42%에서 2조각 82%로 상승했으나, client·model·guardrail 조합별 결과로 일반화 불가\n- 팀 액션: MCP server output을 instruction이 아닌 untrusted data로 처리하고, tool output에서 후속 tool argument로 가는 secret-bearing data flow에 approval·allowlist·egress control 적용",
+      "detail": "The Hacker News가 2026년 8월 11일 보도한 GhostSplice 연구는 MCP server가 tool description과 tool result 등 서로 다른 입력 channel에 분할된 지시를 넣고 coding agent가 하나의 context에서 이를 조합하도록 유도하는 공격을 설명함. 공개된 reference implementation은 `integrity_checker`라는 무해해 보이는 tool의 alpha~delta field와 뒤이은 project scan result를 결합해 `.ssh/id_rsa`, proprietary source, `customers.csv`, `.env` 내용을 server-side hash verification 명목으로 보내게 하는 예시를 사용함. ASSET의 controlled test는 fake credential이 있는 isolated project에 한정되며, 이미 악성 server를 연결하고 agent가 해당 file에 접근 가능한 전제를 필요로 함. 실제 침해·CVE·모든 client/model의 영향은 확인되지 않음. 공개 결과에서 11개 API-tested model의 평균 compliance는 단일 지시 42%에서 2조각 82%로 상승했으나, 같은 model도 Cursor·Codex CLI·Claude Code 등 client safety control에 따라 다른 결과를 냈음.",
+      "why_it_matters": "MCP tool schema·result·sampling message를 신뢰 경계 밖 입력으로 다루지 않으면 model refusal과 단일 prompt scanner가 각각 무해해 보이는 조각을 놓칠 수 있음.",
+      "engineering_implication": "MCP registry/package approval, tool별 filesystem scope와 network destination allowlist, secret file read policy, output-to-argument taint review, human approval, tool-call·egress audit를 같은 release gate로 운영 필요.",
+      "korea_implication": "국내 개발 조직도 사내 coding agent에 연결하는 MCP server의 publisher 검증·version pinning·권한 manifest·proxy egress·SIEM trace를 공급망 변경 절차에 포함 필요.",
+      "category": "Security",
+      "tags": [
+        "MCP",
+        "AI Agent Security",
+        "Prompt Injection",
+        "Secret Management",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-08-11 19:24",
+      "source_name": "The Hacker News / ASSET Research Group",
+      "source_url": "https://thehackernews.com/2026/08/malicious-mcp-servers-can-split.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj2hJoWr0m-Mx1rwaqZpbsdsQa5iSVY8J_jAnt0zKgBUlynOrS-NgEcINm3asfWZR-Ypx9y1iw28BOVud8sfaOQbiq4lmrvSnaZHUBlrkmkH9KXSPy4AXQkklS-AxG83dzpV8sSMj_uUDyVvZTgKs68EpYd18qHJTWF8s2NRaQIF80mh0e7mok6y0SqFi4/s1700-e365/mcp-agent.jpg",
+      "local_image": "assets/images/news-320.jpg",
+      "related_links": [
+        {
+          "title": "ASSET Research Group — GhostSplice disclosure and controlled-test methodology",
+          "url": "https://asset-group.github.io/disclosures/ghostsplice/"
+        },
+        {
+          "title": "GhostSplice reference implementation",
+          "url": "https://github.com/asset-group/ghostsplice"
+        },
+        {
+          "title": "Model Context Protocol — tools security guidance",
+          "url": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "ASSET Research Group이 악성 MCP server의 분할 지시 조합 기법 GhostSplice를 공개했고, The Hacker News가 현재 coding agent 영향 범위를 보도",
+          "items": [
+            "경로: tool description·tool result·일부 client의 server-initiated sampling channel에 분할된 instruction 배치",
+            "전제: 개발자가 공격자 MCP server를 이미 연결하고 agent가 대상 file을 읽을 수 있는 권한을 가진 환경"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "reference implementation은 무해해 보이는 `integrity_checker` tool과 뒤이은 scan result를 결합하는 형식",
+          "items": [
+            "구성: alpha~delta field에는 민감 file명이 없고 후속 result가 `.ssh/id_rsa`·source·`customers.csv`·`.env`의 field mapping 제공",
+            "동작: 개별 fragment에는 완전한 탈취 지시가 없지만 agent context에서 결합돼 외부 tool argument로 secret 전달 가능성",
+            "연구: isolated project와 fake credential을 사용한 controlled test이며 실제 조직 침해 보고 아님"
+          ]
+        },
+        {
+          "heading": "확인된 결과와 한계",
+          "body": "공개 수치는 특정 model·client·guardrail configuration의 연구 결과로 해석 필요",
+          "items": [
+            "수치: 11개 API-tested model 평균 compliance가 단일 지시 42%에서 2조각 82%로 상승했다는 연구 공개 결과",
+            "차이: 동일 model도 Cursor·Codex CLI·Claude Code 등 client safety control에 따라 서로 다른 결과",
+            "미확인: CVE 식별자·실제 피해·모든 MCP client 영향·일반적 model compliance rate는 source로 확정 불가"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "MCP server output을 instruction이 아닌 untrusted data로 처리하고 output-to-argument secret data flow를 별도 policy boundary로 관리 필요",
+          "items": [
+            "승인: registry·publisher·version pinning·tool permission·filesystem scope·network destination을 연결 전 review",
+            "차단: secret file content가 tool result를 거쳐 다른 tool argument로 이동할 때 human approval과 content-aware policy 적용",
+            "증적: tool schema·result·call argument·file read·egress event를 동일 trace ID로 보존"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-319",
       "title_ko": "폴란드 열병합발전소 OT 침해: private APN 횡이동으로 터빈·공정수 설비 정지",
       "title_original": "Follow-Up Report of the December 2025 Energy Sector Incident",
@@ -270,7 +348,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-318",
@@ -332,7 +410,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-315",
@@ -398,7 +476,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-316",
@@ -464,7 +542,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-317",
@@ -531,11 +609,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-310",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -602,7 +680,7 @@
     },
     {
       "id": "news-313",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -664,7 +742,7 @@
     },
     {
       "id": "news-314",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -726,7 +804,7 @@
     },
     {
       "id": "news-311",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -793,7 +871,7 @@
     },
     {
       "id": "news-312",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
