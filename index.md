@@ -222,6 +222,9 @@
 - [[raw/articles/anthropic-fable-5-biology-safeguards-2026-08-07]] — Fable 5 biology classifier 정밀화·fallback routing·dual-use access 통제 경계.
 - [[raw/articles/cloudflare-radar-researcher-2026-08-07]] — Radar Researcher의 API provenance·MCP Code Mode·chart rendering·agent runtime 운영 경계.
 
+- [[raw/articles/openai-gpt-5-6-cyber-daybreak-2026-08-11]] — GPT-5.6-Cyber Daybreak Red의 authorized cyber research·access control·disclosure 운영 경계.
+- [[raw/articles/usenix-malicious-sim-run-at-cellular-iot-2026-08-11]] — 악성 SIM RUN AT command와 cellular IoT modem·SIM custody·fleet telemetry 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
