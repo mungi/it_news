@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-gemini-app-one-billion-mau-2026-08-12]] — Gemini 앱 10억 MAU 보도와 앱 집계·inference 운영지표 증거 경계.
 - [[raw/articles/thn-microsoft-august-2026-patch-tuesday-2026-08-12]] — Windows `afd.sys` 활성 악용 권한 상승과 DNS·WDS·QUIC·HPC Patch Tuesday 우선순위 경계.
 - [[raw/articles/rapid7-sharepoint-cve-2026-63520-rce-2026-08-12]] — SharePoint JWT 인증 우회·BCS RCE 연쇄와 on-premises patch·IIS/service-account 대응 경계.
 - [[raw/articles/thn-ghostsplice-mcp-secret-egress-2026-08-11]] — GhostSplice 분할 MCP 지시의 coding agent secret egress·client guardrail·tool data-flow 통제 경계.
