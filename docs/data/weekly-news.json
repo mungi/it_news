@@ -2,11 +2,11 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-12 21:15",
+  "last_updated_kst": "2026-08-13 01:21",
   "audience": "developers and engineers",
   "executive_summary": [
     "Gemini 앱 MAU 10억 공개: 단일 앱 집계는 제품 확산 지표이며, capacity·latency·safety·unit economics는 별도 telemetry로 분리해야 함.",
-    "VMware vCenter `CVE-2026-59310` 활성 악용 보도: management-plane patch와 cron·outbound SSH·appliance log forensics를 동일 incident queue로 처리해야 함.",
+    "LiteLLM 악성 PyPI release 후속 분석: 3월 24일 설치·transitive dependency를 기준으로 CI/CD·cloud·Kubernetes·model API credential rotation과 egress audit를 재점검해야 함.",
     "Rapid7 SharePoint 연쇄: JWT 인증 우회와 BCS RCE 조합은 on-premises farm의 July/August CU·service account·IIS artifact를 함께 점검해야 함.",
     "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업용 model access는 target authorization·tool egress·disclosure workflow를 함께 강제해야 함.",
     "악성 SIM RUN AT 연구: EV charger·industrial router·telematics의 SIM custody·module firmware·AT telemetry가 동일 execution boundary가 됨."
@@ -14,208 +14,285 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업 access를 모델 성능이 아닌 운영 경계로 관리",
-      "summary": "핵심: OpenAI는 GPT-5.6 Sol 기반 GPT-5.6-Cyber를 authorized vulnerability research·exploit validation·security testing용 Daybreak Red tier로 제한 제공함. 공개 평가의 95.0% completion은 내부 Advanced Cybersecurity Completion Rate 결과이므로, 조직은 모델 도입 판단을 benchmark가 아니라 access approval·engagement scope·tool egress·disclosure workflow로 분리해야 함.",
-      "details": "OpenAI의 Daybreak 공지는 GPT-5.6-Cyber가 exploit-chain development·authentication bypass·privilege escalation 등 고위험 이중용도 작업에서 거절을 줄인 전용 모델임을 설명함. The Hacker News가 인용한 OpenAI 공개 수치에서 internal Advanced Cybersecurity Completion Rate는 GPT-5.6-Cyber 95.0%, GPT-5.6 Sol 1.5%, Daybreak Blue access 2.0%, GPT-5.5-Cyber 57.3%임. 이 숫자는 OpenAI의 내부 evaluation이지 독립 보안성·실제 업무 생산성·안전성 보증이 아님. Red access의 trusted-partner 제한, authorized engagement와 disclosure 경로가 모델 출력보다 먼저 enforcement되어야 함.",
-      "why_it_matters": "exploit 개발 보조 capability를 가진 모델은 일반 coding assistant와 다른 권한·데이터·네트워크·감사 경계를 요구하며, refusal rate 감소 자체가 운영 승인 근거가 될 수 없음.",
+      "title": "LiteLLM 악성 PyPI release: AI gateway dependency를 credential incident로 다루는 방법",
+      "summary": "핵심: 3월 24일 LiteLLM 1.82.7·1.82.8 suspect install은 dependency cleanup이 아니라 CI runner·container·transitive resolution과 cloud·Kubernetes·model API credential reachability를 연결하는 incident임. 공개 exposure data는 potential exposure이지 피해 확정이 아니므로, rotation·egress audit·clean rebuild 완료 증적으로 closure를 판단해야 함.",
+      "details": "LiteLLM malicious PyPI release의 운영 대응을 다루는 Deep Dive",
+      "why_it_matters": "AI gateway와 agent framework의 dependency는 CI/CD·cloud·Kubernetes·model API secret에 접근할 수 있어, package removal과 credential containment를 분리할 수 없음.",
       "sources": [
-        "https://openai.com/index/expanding-daybreak-as-the-cyber-defense-window-narrows/",
-        "https://thehackernews.com/2026/08/openai-launches-gpt-56-cyber-with.html"
+        "https://thehackernews.com/2026/08/malicious-litellm-releases-tied-to.html",
+        "https://docs.litellm.ai/blog/security-update-march-2026",
+        "https://www.ic3.gov/CSA/2026/260702.pdf"
       ],
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-12 00:45",
+      "local_image": "assets/images/news-327.jpg",
+      "refreshed_kst": "2026-08-13 01:21",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "GPT-5.6-Cyber의 도입 판단은 더 높은 completion rate가 아니라 **권한 있는 보안 검증 작업**을 어떤 tenant·tool·data·승인 경계 안에서 수행할지의 control-plane 설계임.",
+          "body": "**LiteLLM 1.82.7·1.82.8 incident는 package removal로 끝나지 않음**. 3월 24일 suspect installation과 해당 host·CI runner가 읽을 수 있었던 credential을 함께 추적하는 supply-chain incident로 처리해야 함.",
           "items": [
-            "범위: Daybreak Red는 authorized vulnerability research·exploit validation·security testing 용도로 제한된 access tier",
-            "판단: 모델 capability와 engagement authorization·법무 승인·고객 동의를 별도 evidence로 관리 필요",
-            "경계: 공개 benchmark는 internal evaluation 결과이며 독립 efficacy 또는 안전성 인증 아님"
+            "범위: THN 보도에서 1.82.7·1.82.8은 2026-03-24 10:39 UTC부터 약 40분간 PyPI에 노출된 version",
+            "조건: LiteLLM 프로젝트는 같은 날 16:00 UTC까지의 install을 suspect로 취급하도록 안내",
+            "실행: 1.82.8의 `litellm_init.pth`는 Python interpreter startup에서 처리돼 explicit import 없는 실행 가능성"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "OpenAI는 GPT-5.6 Sol 기반의 cyber-focused model을 공개했고, THN 보도는 Daybreak Red에서 고위험 dual-use task의 refusal을 줄인다고 정리함.",
+          "body": "THN은 malicious build가 environment variable·SSH key·cloud credential·Kubernetes token·database password를 수집해 attacker-controlled domain으로 전송하도록 설계됐다고 보도함.",
           "items": [
-            "대상: zero-day 탐색·exploit chain 개발·penetration testing·incident response 관련 특화 작업",
-            "비교: OpenAI 공개 internal completion 결과에서 GPT-5.6-Cyber 95.0%, GPT-5.6 Sol 1.5%, GPT-5.5-Cyber 57.3% 제시",
-            "접근: Accenture·Akamai·Cisco·Cloudflare·CrowdStrike 등 trusted customer partner 제공 범위 언급"
+            "후속 확인: 8월 12일 PyPI history에서 compromised version은 보이지 않고 1.82.6·1.83.0은 남은 상태",
+            "간접 설치: unpinned transitive dependency가 agent framework 또는 orchestration tool을 통해 package를 전달할 수 있는 프로젝트 advisory 범위",
+            "연결: TeamPCP/Trivy supply-chain campaign과의 연결 보도는 credential rotation urgency를 높이지만 조직별 침해 확정 근거는 아님"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "낮은 refusal은 defensive workflow의 마찰을 줄일 수 있으나, 동일 capability가 승인되지 않은 target discovery·exploit drafting으로 전용될 수 있어 policy가 model prompt 밖에서 집행되어야 함.",
+          "body": "AI gateway는 모델 API key·cloud credential·tool connector를 가까이 두므로 일반 Python library보다 secret blast radius가 넓을 수 있음. dependency risk는 package 이름의 사용 여부가 아니라 build graph와 runtime credential reachability의 교집합으로 평가해야 함.",
           "items": [
-            "분리: model response safety, user identity, target ownership, tool permission, network egress를 독립 control로 설계",
-            "증적: task ticket·scope statement·prompt/tool call·artifact hash·disclosure decision을 같은 case ID로 보존",
-            "제한: source는 일반 모델보다 안전하거나 모든 exploit 결과가 유효하다는 보증을 제공하지 않음"
+            "분리: package provenance, build runner identity, runtime environment, secret store access, outbound egress를 별도 evidence로 수집",
+            "우선순위: shared CI runner·base image·model gateway가 있는 cohort를 개인 개발 workstation보다 먼저 조사",
+            "제한: CloudSEK exposure lookup의 조직명·repository namespace는 stolen credential 사용이나 actual data access의 증거가 아님"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "보안 모델은 production repository·scanner·ticketing system에 직접 연결하기보다 isolated workspace와 최소 권한 connector를 거쳐야 audit와 containment가 가능함.",
+          "body": "`requirements.txt`만 grep하는 방식은 wheel cache·base image·transitive resolver·CI artifact를 놓침. dependency admission과 secret egress control을 build와 runtime 양쪽에 배치해야 함.",
           "items": [
-            "격리: ephemeral sandbox와 synthetic 또는 approved target data를 기본 실행 환경으로 설정",
-            "권한: repository read·scanner execution·proof-of-concept artifact write·external request를 단계별 allowlist로 분리",
-            "관측: prompt, retrieval, tool argument, command output, outbound destination을 trace 단위로 수집"
+            "inventory: lockfile, SBOM, pip cache, artifact manifest, container layer, CI log에서 exact version과 install time을 연결",
+            "격리: package installation network와 build credential scope를 최소화하고 ephemeral runner를 기본값으로 설정",
+            "관측: `models.litellm[.]cloud` 관련 DNS/HTTP, package install, token use, publish event를 common case ID로 상관분석"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "고위험 cyber task는 acceptable-use 문서만으로 충분하지 않으며, owner verification과 human checkpoint가 model invocation 앞뒤에 있어야 함.",
+          "body": "사고 대응은 사용자 계정 password reset보다 machine·service credential의 revocation이 중심임. 장기 key가 이미 복사됐을 가능성을 전제로 credentials의 소유자와 재발급 영향도를 묶어야 함.",
           "items": [
-            "승인: target asset owner·engagement owner·security reviewer의 사전 승인 조건화",
-            "차단: public IP scan, credential use, exploit payload delivery, data export를 default-deny action으로 설정",
-            "공개: 발견 취약점의 reproduction artifact·vendor notification·embargo를 coordinated disclosure workflow로 연결"
+            "교체: CI/CD publishing token, cloud key, SSH key, Kubernetes secret, database credential, OpenAI/Anthropic API key를 exposure 환경별로 rotate/revoke",
+            "승인: production deploy에 필요한 rotation과 normal change를 분리하고 break-glass credential 사용을 별도 감사",
+            "경계: Python package의 제거 또는 clean scan 결과만으로 historical secret exfiltration 부재를 결론 내리지 않음"
           ]
         },
         {
           "heading": "비용·SRE 관점",
-          "body": "전용 model의 비용은 token rate만이 아니라 sandbox, scanner, analyst review, false-positive triage, incident escalation 비용을 포함해 측정해야 함.",
+          "body": "패키지 compromise 대응 비용은 vulnerability scan 비용이 아니라 build provenance 재구성, credential rotation, downstream service validation, 로그 보존, 재발 방지 control의 총합으로 측정해야 함. 다수 프로젝트가 같은 shared runner·base image·secret store를 사용하면 blast radius를 먼저 계산하고, 서비스 중단을 줄이는 staged rotation 계획을 세워야 함.",
           "items": [
-            "지표: validated finding rate, false-positive rate, median review time, scope-violation attempt, containment time 추적",
-            "용량: parallel agent 수와 tool concurrency에 rate limit·budget·queue를 적용",
-            "복구: agent session·token·sandbox snapshot 폐기와 audit export 절차를 incident runbook에 포함"
+            "지표: suspect install coverage, rotation completion, stale credential use, unknown dependency rate, egress investigation lead time 추적",
+            "용량: shared CI runner와 package cache를 isolation·rebuild 대상으로 잡고 production deploy queue와 분리",
+            "복구: known-good dependency lockfile, clean runner image, secret revocation evidence, rollback artifact를 incident case에 보존"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "초기에는 승인된 lab target 한정으로 model output과 기존 analyst workflow를 비교하고, 검증된 control만 production assessment에 확장하는 순서 필요.",
+          "body": "초기 24시간에는 install evidence와 credential reachability를 확정하고, 다음 단계에서 rotation·rebuild·egress hunt를 병렬화하는 순서가 필요.",
           "items": [
-            "1단계: isolated training/lab에서 approved task taxonomy와 tool policy 검증",
-            "2단계: internal application assessment에 dual review·logging·disclosure gate 적용",
-            "3단계: 고객 또는 외부 target은 contract scope·kill switch·reporting SLA 확인 후 제한 확대"
+            "1단계: 3월 24일 CI/build/runtime inventory에서 direct·transitive `litellm` version과 runner identification",
+            "2단계: suspect cohort의 credential rotation/revocation과 clean image rebuild, dependency pinning 적용",
+            "3단계: egress·cloud audit·model API use를 rotation time과 비교하고 residual access를 vendor escalation으로 처리"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "모델 endpoint보다 task ingress와 tool egress를 먼저 inventory하고, 승인·실행·증적·폐기 책임자를 한 runbook으로 연결해야 함.",
+          "body": "dependency graph와 secret graph를 같은 incident ticket에 넣고, 각 rotation의 evidence를 deploy approval 조건으로 관리해야 함.",
           "items": [
-            "체크: Daybreak tier·tenant·user group·MFA·JIT access와 billing account owner 확인",
-            "체크: code repository·scanner·browser·shell·network connector의 filesystem·destination allowlist 확인",
-            "체크: finding validation·vendor disclosure·artifact retention·session revocation 책임자와 SLA 지정"
+            "체크: lockfile·SBOM·container digest·wheel cache·CI artifact retention 기간과 3월 24일 로그 접근성 확인",
+            "체크: shared runner·base image·secret manager policy·model API key owner를 inventory하고 rotation 담당자 지정",
+            "체크: outbound DNS/HTTP, cloud audit, Kubernetes audit, package registry publish 로그의 retention·query 절차 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**Cyber model access는 privileged security tooling**임. completion rate를 목표로 두지 말고 scope violation 0건, trace completeness, validated finding quality를 acceptance criteria로 관리 필요.",
+          "body": "**패키지명 제거는 credential containment가 아님**. 설치 이력과 credential reachability가 겹친 runner·host는 clean rebuild, secret rotation, egress investigation의 세 가지 완료 증적이 있어야 closure 가능.",
           "items": [
-            "팀 액션: Daybreak 또는 동급 model pilot 전에 approved-target registry와 egress policy를 먼저 배포",
-            "볼 것: internal evaluation 수치와 현장 validated-finding·false-positive·review-time을 구분",
-            "피할 것: general coding assistant와 동일한 connector·secret·network 권한 부여"
+            "팀 액션: 24시간 내 suspect install cohort와 secret owner matrix 작성",
+            "볼 것: direct dependency뿐 아니라 agent framework·orchestration tool의 transitive resolution과 cache layer",
+            "피할 것: exposure lookup의 조직명을 confirmed compromise로 해석하거나 package uninstall만으로 incident 종료"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "악성 SIM의 RUN AT 경로: cellular IoT modem을 radio 부품이 아닌 hostile-card 실행 경계로 점검",
-      "summary": "핵심: University of Birmingham·Fuzzware 연구는 시험한 26개 phone·cellular module 중 9개에서 SIM proactive RUN AT command 수용을 관찰했고, commercial EV charger에서 code execution을 재현함. 공격에는 hostile SIM의 physical·operator·supply-chain insertion이 선행되므로, fleet 운영자는 module firmware·SIM custody·RUN AT enablement·AT-command telemetry를 함께 점검해야 함.",
-      "details": "USENIX WOOT 2026에 제시된 연구와 THN 보도는 SIM Toolkit의 proactive command가 modem의 AT command interface를 호출할 수 있는 구현을 조사함. THN은 8개 cellular module 중 6개, 18개 phone 중 3개가 명령을 수용했다고 보도하며, 시험된 9개 수용 device는 Qualcomm communication processor를 사용했다고 정리함. 연구 경로는 victim number만으로 성립하지 않고 malicious SIM이 장치 slot에 이미 삽입되거나 operator·software·supply-chain을 통해 subvert된 조건을 요구함. 공개된 공격 사용 보고는 없음.",
-      "why_it_matters": "EV charger·industrial router·telematics처럼 unattended cellular IoT는 SIM이 removable identity module이면서 modem control input이 될 수 있어, asset inventory와 SIM lifecycle이 endpoint security control이 됨.",
+      "title": "Adobe ColdFusion·Campaign Classic Priority 1 patch: hosted 범위와 self-managed application boundary를 분리",
+      "summary": "핵심: Adobe의 ColdFusion·Campaign Classic critical update는 public application ingress·on-premise/hybrid component·service account·workflow rollback을 같이 검증해야 하는 Priority 1 change임. source에 active exploitation evidence는 없으므로 CVSS·Priority 1을 inventory와 patch urgency의 입력값으로 쓰되, 조직별 compromise로 확대 해석하지 않아야 함.",
+      "details": "Adobe ColdFusion·Campaign Classic 보안 업데이트의 운영 대응을 다루는 Deep Dive",
+      "why_it_matters": "ColdFusion과 Campaign Classic의 self-managed 또는 hybrid component는 public ingress·service account·campaign workflow와 연결될 수 있어, fixed build 확인과 post-patch operational validation을 같은 change로 처리해야 함.",
       "sources": [
-        "https://www.usenix.org/conference/woot26/presentation/lisowski",
-        "https://www.usenix.org/system/files/woot26-lisowski.pdf",
-        "https://thehackernews.com/2026/08/a-malicious-sim-card-can-run-attacker.html"
+        "https://thehackernews.com/2026/08/adobe-patches-three-cvss-100-coldfusion.html",
+        "https://helpx.adobe.com/security.html"
       ],
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-12 00:45",
+      "refreshed_kst": "2026-08-13 01:21",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "SIM은 connectivity credential만이 아니라 modem command의 입력 경로가 될 수 있음. **RUN AT enablement와 SIM custody**를 fleet hardening·incident response 범위에 넣어야 함.",
+          "body": "**Adobe ColdFusion·Campaign Classic patch는 internet-facing application과 on-premise marketing platform의 privilege boundary를 동시에 줄이는 작업**임. source는 active exploitation evidence가 없다고 했으나 Priority 1과 RCE 가능 범위는 빠른 inventory·patch·post-patch validation을 요구함.",
           "items": [
-            "확인: 연구팀은 26개 phone·cellular module 시험 중 9개에서 command acceptance를 관찰",
-            "경계: victim phone number만으로는 공격 불가하며 hostile SIM insertion 또는 동등한 supply-chain/operator 조건 필요",
-            "우선순위: cellular module firmware와 SIM lifecycle을 함께 inventory하는 운영 과제"
+            "대상: ColdFusion command injection `CVE-2026-48362` CVSS 10.0과 eval injection `CVE-2026-48273` CVSS 9.9",
+            "수정: ColdFusion 2025.0.12 및 2023.0.23에서 두 RCE 결함 fixed라는 THN 보도",
+            "대상: Campaign Classic incorrect authorization `CVE-2026-71398`·`CVE-2026-27302` CVSS 10.0, ACC v7 7.4.4 build 9400 수정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "University of Birmingham·Fuzzware의 USENIX WOOT 연구를 인용한 THN은 SIM proactive RUN AT command가 device modem에서 attacker-chosen command를 수행하도록 할 수 있는 구현을 설명함.",
+          "body": "THN은 Adobe 업데이트가 ColdFusion·Commerce·Campaign Classic의 arbitrary code execution 및 privilege escalation 위험을 다룬다고 보도함.",
           "items": [
-            "표본: 8개 cellular module 중 6개와 18개 phone 중 3개가 명령 수용으로 보도된 범위",
-            "실증: commercial EV charger에서 code execution 재현, industrial router·car telematics 사용 module도 시험 범위 포함",
-            "관찰: 수용한 9개 device는 Qualcomm communication processor 사용으로 보도된 조건"
-          ]
-        },
-        {
-          "heading": "공격 전제와 한계",
-          "body": "노출은 wireless remote exploit과 다름. 카드가 slot에 들어가거나 thin interposer, compromised operator, software 또는 production-line subversion 같은 선행 경로가 있어야 함.",
-          "items": [
-            "전제: SIM physical access 또는 SIM provisioning·supply-chain trust compromise 필요",
-            "미확인: 이 interface를 이용한 실제 공격 사례는 source에서 보고되지 않음",
-            "경계: 모든 Qualcomm device 또는 모든 SIM-enabled IoT 장비가 영향을 받는다는 결론은 불가"
+            "범위: Campaign Classic update는 fully on-premise와 hybrid의 on-premise component에 적용되며 Adobe-hosted instance는 customer action 불필요라는 보도",
+            "우선순위: ColdFusion·Campaign Classic update의 Adobe Priority 1 rating과 가능하면 72시간 내 update 권고",
+            "한계: source는 in-the-wild exploitation evidence가 없다고 명시하며 개별 deployment exposure·compromise는 별도 조사 필요"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "cellular module은 radio-only component가 아니라 embedded application processor·vendor AT extension·daemon을 가진 software supply-chain node로 취급해야 함.",
+          "body": "CVSS 10.0은 patch order의 입력값일 뿐, application exposure·authentication boundary·service account privilege·maintenance rollback 계획을 대체하지 않음. customer-hosted component와 SaaS-hosted component를 정확히 분리해야 불필요한 작업과 미패치 risk를 함께 줄일 수 있음.",
           "items": [
-            "모델: SIM, baseband, AT parser, forwarding daemon, application processor, OT workload를 하나의 execution chain으로 inventory",
-            "분석: modem firmware version과 AT interface configuration을 SBOM·asset CMDB에 연결",
-            "탐지: SIM change, registration profile change, unexpected AT command, modem reset, network downgrade를 correlation 대상화"
+            "분리: ColdFusion runtime version, Campaign Classic deployment mode, Commerce role/authorization boundary, external ingress를 asset record에 연결",
+            "검증: fixed build install 뒤 application startup, integration flow, scheduled job, access control regression을 change evidence로 보존",
+            "한계: source는 exploit IOC·fixed configuration·customer-specific mitigation을 제공하지 않으므로 vendor advisory로 deployment-specific detail 확인 필요"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "unattended fleet의 physical tamper control과 remote management control이 분리돼 있으면 hostile SIM insertion 이후 device takeover를 늦게 발견할 수 있음.",
+          "body": "패치 전후에는 web application, campaign workflow, database integration, file system write, service account를 한 service map으로 묶어야 RCE와 privilege-escalation의 secondary impact를 확인할 수 있음.",
           "items": [
-            "분리: charger·router·telematics의 modem management interface를 workload network와 별도 trust zone으로 구성",
-            "보호: accessible SIM tray·maintenance port·enclosure open event를 asset telemetry로 수집",
-            "회복: approved firmware·SIM profile·configuration baseline과 remote rollback path를 장비별로 검증"
+            "inventory: ColdFusion 2025/2023 build, Campaign Classic v7 deployment mode·build, Commerce instance와 public ingress 식별",
+            "격리: update window 동안 admin interface와 application ingress를 최소화하고 backup·rollback checkpoint 확인",
+            "관측: web access/error log, process spawn, scheduled workflow, privileged admin action, database connection을 patch 기준선 전후로 비교"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "module supplier, device OEM, mobile operator, fleet owner 사이의 responsibility boundary가 분명하지 않으면 firmware disablement·SIM revocation·field replacement가 지연될 수 있음.",
+          "body": "Priority 1 공지는 exploit proof가 아니라 higher targeting risk signal임. 공개 서비스의 patch는 forensics와 운영 continuity를 병행해야 하며, hosted 범위와 self-managed 범위를 혼동하지 않아야 함.",
           "items": [
-            "확인: supplier에 shipped firmware의 RUN AT enablement와 disable 가능 여부를 서면 확인",
-            "계약: module advisory·firmware update·SIM compromise notification·field remediation SLA를 공급망 control에 포함",
-            "대응: suspicious SIM은 carrier suspension, device isolation, credential rotation, forensic preservation 순으로 처리"
+            "승인: business owner·campaign operation owner·security owner가 downtime와 rollback 조건을 사전 합의",
+            "대응: suspicious application activity가 있으면 log preservation, ingress restriction, credential review, Adobe support escalation 순으로 처리",
+            "경계: active exploitation evidence 부재를 patch deferral 근거로 사용하지 않고, 반대로 모든 instance compromise로 과장하지 않음"
           ]
         },
         {
           "heading": "비용·SRE 관점",
-          "body": "fleet-wide firmware inventory와 field remediation은 비용이 크므로, exposure·physical accessibility·OT safety impact에 따른 risk tier로 rollout 순서를 정해야 함.",
+          "body": "패키지 compromise 대응 비용은 vulnerability scan 비용이 아니라 build provenance 재구성, credential rotation, downstream service validation, 로그 보존, 재발 방지 control의 총합으로 측정해야 함. 다수 프로젝트가 같은 shared runner·base image·secret store를 사용하면 blast radius를 먼저 계산하고, 서비스 중단을 줄이는 staged rotation 계획을 세워야 함.",
           "items": [
-            "지표: RUN AT status coverage, firmware-baseline compliance, SIM custody exception, remediation lead time 추적",
-            "우선순위: public-access charger·remote industrial router·safety-critical telematics를 highest-risk cohort로 분류",
-            "운영: modem update 실패·connectivity loss·carrier reprovisioning을 change window와 rollback 계획에 반영"
+            "지표: suspect install coverage, rotation completion, stale credential use, unknown dependency rate, egress investigation lead time 추적",
+            "용량: shared CI runner와 package cache를 isolation·rebuild 대상으로 잡고 production deploy queue와 분리",
+            "복구: known-good dependency lockfile, clean runner image, secret revocation evidence, rollback artifact를 incident case에 보존"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 fleet inventory와 supplier attestation을 수집한 뒤 representative device에서 disablement·update·recovery를 검증하고 high-risk cohort부터 조치하는 방식 필요.",
+          "body": "공개 노출과 self-managed component부터 risk-tiered patch를 배치하고, critical business campaign과 application integration은 maintenance·rollback evidence를 남기는 순서가 필요.",
           "items": [
-            "1단계: device model·module SKU·firmware·SIM owner·physical access·service criticality inventory",
-            "2단계: RUN AT enablement 확인과 vendor-provided hardening/update를 lab device에서 시험",
-            "3단계: staged rollout 후 SIM event·modem reset·service availability telemetry로 효과 검증"
+            "1단계: product/version/deployment-mode/public-ingress inventory와 vendor fixed-build matrix 대조",
+            "2단계: internet-facing ColdFusion 및 on-premise/hybrid Campaign Classic을 backup·canary·rollback 조건과 함께 update",
+            "3단계: post-patch health·workflow·authorization regression과 log hunt를 통해 residual risk 확인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "cellular IoT fleet의 SIM과 modem을 managed endpoint처럼 다루고, carrier·vendor·field-ops 간 escalation path를 사전에 합의해야 함.",
+          "body": "vendor advisory의 fixed build와 조직 inventory가 일치하는지, hosted/hybrid/on-premise responsibility가 명확한지부터 검증해야 함.",
           "items": [
-            "체크: Quectel 등 module vendor별 firmware version·RUN AT setting·advisory portal access 확인",
-            "체크: SIM swap·eSIM profile change·IMSI/ICCID change·enclosure event·AT log의 SIEM ingestion 확인",
-            "체크: isolated device, replacement SIM, known-good firmware, recovery credential을 포함한 field runbook 검증"
+            "체크: ColdFusion 2025.0.12·2023.0.23, ACC v7 7.4.4 build 9400 적용 가능 대상과 maintenance window 확인",
+            "체크: public ingress, admin console, service account, database/network integration, backup/rollback owner 확인",
+            "체크: application log·web shell/process anomaly·privileged action·campaign workflow error의 baseline과 escalation path 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**SIM trust는 modem execution trust와 분리되지 않음**. SIM inventory가 없는 fleet에는 firmware patch만 배포하지 말고 card custody·operator process·device telemetry를 같은 control set으로 운영 필요.",
+          "body": "**Priority 1 patch는 version update가 아니라 externally reachable application boundary의 risk reduction change**임. hosted 여부·fixed build·rollback·forensics를 한 change record로 묶어야 함.",
           "items": [
-            "팀 액션: 30일 안에 high-risk cellular fleet의 module SKU·firmware·SIM custody inventory 완성",
-            "볼 것: supplier의 RUN AT disablement statement와 firmware update availability",
-            "피할 것: carrier private APN 또는 SIM authentication만으로 device management plane이 격리됐다고 가정"
+            "팀 액션: 72시간 내 asset inventory와 deployment-mode별 fixed-build gap report 완성",
+            "볼 것: ColdFusion public exposure와 Campaign Classic on-premise/hybrid component, integration credential 영향",
+            "피할 것: Adobe-hosted와 customer-managed component를 같은 patch queue로 취급하거나 exploitation evidence 부재로 지연"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-327",
+      "title_ko": "악성 LiteLLM 1.82.7·1.82.8 후속 분석: CI·클라우드·모델 API secret rotation을 설치 이력 기준으로 재점검",
+      "title_original": "Malicious LiteLLM Releases Tied to Trivy Hack May Have Exposed 2,100+ Organizations",
+      "summary": "- 재확인: The Hacker News는 TeamPCP 연계 악성 PyPI `litellm` 1.82.7·1.82.8이 3월 24일 약 40분간 배포됐고, 설치 환경에서 cloud key·SSH key·Kubernetes token·database password를 수집했다고 보도\n- 실행 조건: 1.82.8의 `litellm_init.pth`는 Python interpreter 시작 시 처리돼 LiteLLM import 여부와 무관하게 실행될 수 있었음\n- 범위 경계: CloudSEK의 약 43만4,000개 캡처 파일과 2,500개 이상 조직 potential exposure는 피해 조직·secret 악용·데이터 유출 확정 수치가 아님\n- 팀 액션: 3월 24일 설치·lockfile·CI artifact를 기준으로 transitive dependency까지 조사하고, 해당 환경에서 접근 가능한 CI/CD·cloud·model API credential을 rotate·revoke",
+      "detail": "The Hacker News는 LiteLLM 프로젝트와 CloudSEK·Aqua·FBI 자료를 인용해 PyPI의 `litellm` 1.82.7·1.82.8이 2026년 3월 24일 10:39 UTC부터 약 40분간 악성 credential-stealing code를 포함한 채 배포됐다고 보도함. 프로젝트는 그날 16:00 UTC까지의 설치를 의심 범위로 보라고 안내했으며, THN은 8월 12일 PyPI release history에서 두 버전이 더는 보이지 않고 1.82.6·1.83.0은 남아 있음을 확인함. 악성 패키지는 environment variable, SSH key, cloud credential, Kubernetes token, database password를 수집해 attacker-controlled `models.litellm[.]cloud`로 전송하도록 설계됐고, 1.82.8의 `.pth` file은 interpreter startup에서 실행될 수 있었음. CloudSEK의 exposure lookup은 captured loot/log file의 identity signal에 기반한 potential exposure이며, 조직명이 있다고 stolen credential 사용·침해·피해를 확정하지 않음. 정확한 PyPI upload 경로는 LiteLLM·CloudSEK·Unit 42의 공개 설명이 서로 달라 단일 원인으로 확정하지 않음.",
+      "why_it_matters": "LiteLLM은 multi-provider model gateway로 사용되며 agent framework나 orchestration tool의 unpinned transitive dependency로도 들어갈 수 있음. 패키지 제거만으로는 당시 host·CI runner에서 읽힌 장기 credential의 재사용 위험이 사라지지 않음.",
+      "engineering_implication": "3월 24일 build log·SBOM·lockfile·PyPI cache·container layer·CI artifact에서 `litellm` 1.82.7/1.82.8과 transitive install을 우선 탐색하고, 노출 가능 환경의 cloud·CI publishing·SSH·Kubernetes·database·OpenAI/Anthropic API credential을 소유자별로 rotate·revoke 필요. outbound DNS/HTTP와 token use audit를 보존해 사후 악용 여부를 별도 조사해야 함.",
+      "korea_implication": "국내 AI 서비스·SI 조직도 모델 gateway를 직접 선택하지 않은 팀의 CI image와 agent framework dependency를 함께 inventory하고, 외부 SaaS·국내 cloud credential rotation 책임을 하나의 incident ticket으로 묶어야 함.",
+      "category": "Security",
+      "tags": [
+        "LiteLLM",
+        "PyPI",
+        "Software Supply Chain",
+        "CI/CD",
+        "Cloud Credentials",
+        "AI Gateway"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-08-12 22:04",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/08/malicious-litellm-releases-tied-to.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgjTLayRrpqM-bUGPU8pmWZIGJ_TCnkLLvykLv9Z_-R-QFmC1f6nIxSff2TTqZ77xC1n-l7Y44qKhUVdvRX9bUgNjVcGhF7A0vkRGnumHe6-bUoCFNH4PAb11zHkdjq3Xd2kF1jiGi8quRW4WFOy-0I_CRCorkQGuh9D2K8KhDAFxzsA7a0yxp2VkM-uGo/s1700-e365/llmhack.jpg",
+      "local_image": "assets/images/news-327.jpg",
+      "related_links": [
+        {
+          "title": "LiteLLM — March 2026 security update",
+          "url": "https://docs.litellm.ai/blog/security-update-march-2026"
+        },
+        {
+          "title": "CloudSEK — AI supply-chain incident exposure report",
+          "url": "https://www.cloudsek.com/blog/ai-supply-chain-breach-2500-companies-434000-cicd-pipelines"
+        },
+        {
+          "title": "FBI FLASH-20260702-01 — TeamPCP credential-rotation guidance",
+          "url": "https://www.ic3.gov/CSA/2026/260702.pdf"
+        },
+        {
+          "title": "PyPA advisory — PYSEC-2026-2",
+          "url": "https://github.com/pypa/advisory-database/tree/main/vulns/litellm/PYSEC-2026-2.yaml"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "THN이 3월 LiteLLM PyPI compromise의 후속 exposure 분석과 credential 대응 필요성을 보도",
+          "items": [
+            "영향 버전: `litellm` 1.82.7·1.82.8이 3월 24일 10:39 UTC부터 약 40분간 PyPI에 노출된 프로젝트 설명",
+            "의심 범위: LiteLLM은 같은 날 16:00 UTC까지의 install을 suspect로 취급하라고 안내",
+            "후속 확인: THN은 8월 12일 PyPI history에서 두 release가 제거됐고 1.82.6·1.83.0은 남았음을 확인"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "악성 build는 dependency presence가 아닌 host startup과 credential access 관점에서 조사해야 하는 공급망 incident",
+          "items": [
+            "수집 대상: environment variable, SSH key, cloud credential, Kubernetes token, database password를 수집하도록 설계된 payload",
+            "실행 경로: 1.82.8의 `litellm_init.pth`가 Python interpreter startup에서 처리돼 explicit import 없이 실행 가능한 조건",
+            "전송지: 수집 자료를 프로젝트와 무관한 attacker-controlled `models.litellm[.]cloud`로 암호화·전송하는 보도 범위"
+          ]
+        },
+        {
+          "heading": "확인된 범위와 한계",
+          "body": "공개 exposure data와 원인 분석은 incident prioritization 근거이나, 조직별 compromise를 자동 확정하지 않음",
+          "items": [
+            "규모 경계: CloudSEK의 약 43만4,000개 captured file과 2,500개 이상 potential exposure는 confirmed victim count 아님",
+            "신뢰도 경계: host identity·legitimate committer domain·조직 domain을 만족한 high-confidence match와 repository namespace 기반 medium-confidence match 구분",
+            "미확인: 각 조직의 stolen credential 사용, data access, actor attribution, individual environment compromise 여부",
+            "원인 경계: malicious release의 PyPI 도달 방식은 LiteLLM·CloudSEK·Unit 42 공개 설명이 달라 단일 경로 확정 불가"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "package remediation과 credential incident response를 분리하지 말고 install evidence를 공통 case key로 연결하는 운영 과제",
+          "items": [
+            "탐색: 3월 24일 CI log·lockfile·SBOM·wheel cache·container layer에서 direct/transitive `litellm` version과 build runner 식별",
+            "교체: 해당 runner·host에서 읽을 수 있었던 CI/CD publishing token, cloud key, SSH key, Kubernetes secret, database password, model API key rotate·revoke",
+            "추적: DNS/HTTP egress, cloud audit, package publish, model API use, Kubernetes audit event를 exposure window와 credential rotation 시각으로 상관분석",
+            "예방: long-lived publishing token 축소, provenance/immutable pinning, isolated build credential, dependency admission policy를 CI baseline에 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-326",
       "title_ko": "VMware vCenter CVE-2026-59310 활성 악용 보도: path traversal 뒤 reverse_ssh cron 지속성 조사",
@@ -291,7 +368,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-325",
@@ -361,7 +438,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-324",
@@ -446,7 +523,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-323",
@@ -533,7 +610,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-321",
@@ -599,7 +676,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-322",
@@ -669,7 +746,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-320",
@@ -747,7 +824,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-319",
@@ -815,7 +892,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-318",
@@ -877,7 +954,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-315",
@@ -943,7 +1020,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-316",
@@ -1009,7 +1086,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-317",
@@ -1076,11 +1153,11 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-310",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -1147,7 +1224,7 @@
     },
     {
       "id": "news-313",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -1209,7 +1286,7 @@
     },
     {
       "id": "news-314",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1271,7 +1348,7 @@
     },
     {
       "id": "news-311",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -1338,7 +1415,7 @@
     },
     {
       "id": "news-312",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
