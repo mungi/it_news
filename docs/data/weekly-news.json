@@ -2,11 +2,11 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-12 17:12",
+  "last_updated_kst": "2026-08-12 21:15",
   "audience": "developers and engineers",
   "executive_summary": [
     "Gemini 앱 MAU 10억 공개: 단일 앱 집계는 제품 확산 지표이며, capacity·latency·safety·unit economics는 별도 telemetry로 분리해야 함.",
-    "CISA KEV 3건 추가: Windows `afd.sys` active-exploitation 신호는 endpoint patch와 pre-patch forensics를 함께 묶고, Cisco ASA/FTD·Metabase는 외부 노출 자산별 queue로 분리해야 함.",
+    "VMware vCenter `CVE-2026-59310` 활성 악용 보도: management-plane patch와 cron·outbound SSH·appliance log forensics를 동일 incident queue로 처리해야 함.",
     "Rapid7 SharePoint 연쇄: JWT 인증 우회와 BCS RCE 조합은 on-premises farm의 July/August CU·service account·IIS artifact를 함께 점검해야 함.",
     "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업용 model access는 target authorization·tool egress·disclosure workflow를 함께 강제해야 함.",
     "악성 SIM RUN AT 연구: EV charger·industrial router·telematics의 SIM custody·module firmware·AT telemetry가 동일 execution boundary가 됨."
@@ -217,6 +217,83 @@
   ],
   "items": [
     {
+      "id": "news-326",
+      "title_ko": "VMware vCenter CVE-2026-59310 활성 악용 보도: path traversal 뒤 reverse_ssh cron 지속성 조사",
+      "title_original": "Attackers Exploit VMware vCenter Vulnerability to Gain Persistent Remote Access",
+      "summary": "- 활성 악용 보도: THN은 QUIRSO incident-response 조사에서 Broadcom VMware vCenter `CVE-2026-59310` path traversal RCE가 실제 침해의 초기 접근 경로였다는 분석을 전함\n- 관찰: 침해 host에서 path traversal 뒤 `reverse_ssh` 기반 malicious cron job과 예상 밖 outbound connection이 발견된 보도 범위\n- 규모 경계: QUIRSO는 47개국 361개 unique victim IP를 언급했으나, IP 수는 확정 피해 조직·데이터 탈취·공격자 귀속 수치가 아님\n- 팀 액션: external vCenter는 patch/build 확인과 cron·outbound SSH·appliance log 보존을 함께 수행하고, `CVE-2026-59309` scan 증가를 동일 침해로 합치지 않음",
+      "detail": "The Hacker News는 QUIRSO의 incident-response 조사 결과를 인용해 Broadcom VMware vCenter Server의 `CVE-2026-59310`이 실제 침해에 사용됐다고 보도함. 해당 CVE는 network access가 있는 공격자가 악용할 수 있는 CVSS 9.8 directory traversal 기반 arbitrary code execution으로 설명되며, Broadcom은 7월 말 patch를 공개한 것으로 기사에 기술됨. QUIRSO가 관찰한 chain은 path traversal activity 뒤 attacker-controlled infrastructure로 이어지는 `reverse_ssh`를 사용하는 malicious cron job 지속성임. 기사상 compromised system의 attacker domain 최초 contact는 8월 3일이며, 47개국 361개 unique victim IP는 조사된 관찰 규모일 뿐 확정 피해 조직·침해 범위·credential/data theft·공격자 identity를 뜻하지 않음. 별도로 Defused Cyber가 `CVE-2026-59309` 관련 scanning 증가를 언급했지만, QUIRSO는 두 CVE의 scanning/exploitation 및 infrastructure를 연결할 증거가 부족하다고 밝힘. 직접 링크된 QUIRSO 원문은 이번 실행 환경에서 Cloudflare block으로 읽지 못했으므로, 카드의 사실은 THN이 직접 서술한 보도 범위에 한정함.",
+      "why_it_matters": "vCenter appliance는 virtualization control plane이므로 RCE 후 cron 기반 지속성과 outbound tunnel이 결합되면 VM·identity·management network 조사 범위가 커짐. patch success만으로 기존 appliance compromise를 배제할 수 없음.",
+      "engineering_implication": "외부 또는 관리망 접근 가능한 vCenter는 affected build·patch 적용·restart 상태를 확인하고, appliance cron·unexpected binary·outbound SSH/DNS·vpxd/auth log·management-plane credential을 incident timeline으로 보존 필요. `reverse_ssh` 단독 존재는 악성 확정 근거가 아니므로 unauthorized install·취약 build·unexpected egress와 결합해 triage 필요.",
+      "korea_implication": "국내 가상화 운영 조직은 vCenter를 일반 VM patch queue에 넣지 말고 cluster·backup·identity·network owner가 함께 참여하는 management-plane incident runbook으로 처리 필요.",
+      "category": "Security",
+      "tags": [
+        "VMware vCenter",
+        "CVE-2026-59310",
+        "Virtualization",
+        "RCE",
+        "Incident Response",
+        "Management Plane"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-08-12 20:01",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/08/attackers-exploit-vmware-vcenter.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhuo4K_GT6YrQhFiPQrrf58NN4PQM0_aYVTxWXeaJ1KsqjBJ69c746Hj6DyhGH-uzhZvEowVR8YMbITHBpOcT3OQevcTJg36qwJ1WfPtFZySMVg_B2JVBE763_JVHh3gn563WAYxf72bnd1g9QC2tkWd6Bbm9_TWXPhMxk1vnk6gxnUM4eDQNxXouVEtJ9i/s1600/vmware.jpg",
+      "local_image": "assets/images/news-326.jpg",
+      "related_links": [
+        {
+          "title": "QUIRSO — active exploitation report (linked primary analysis; direct retrieval blocked in this run)",
+          "url": "https://medium.com/@quirso_de/active-exploitation-of-cve-2026-59310-361-victim-ips-across-47-countries-9783187cc6ff"
+        },
+        {
+          "title": "The Hacker News — Broadcom VMware critical flaws / CVE-2026-59310 coverage",
+          "url": "https://thehackernews.com/2026/07/three-critical-vmware-flaws-allow-auth.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "QUIRSO incident-response 조사 결과를 인용한 THN이 VMware vCenter의 실제 침해와 `CVE-2026-59310` 활용을 보도",
+          "items": [
+            "결함: network access 조건의 vCenter Server directory traversal로 arbitrary code execution 가능 범위",
+            "심각도: 기사 기준 `CVE-2026-59310` CVSS 9.8, Broadcom의 7월 말 patch 공개 사실",
+            "발견: path traversal activity 뒤 `reverse_ssh` 기반 malicious cron job 지속성 관찰 보도"
+          ]
+        },
+        {
+          "heading": "관찰된 침해 흔적",
+          "body": "기사의 incident-response 사실은 initial access와 persistence 가설을 뒷받침하지만 모든 vCenter의 동일 침해를 뜻하지 않음",
+          "items": [
+            "시간: 조사된 compromised system의 attacker domain 최초 contact가 8월 3일이라는 보도",
+            "지속성: cron job이 attacker-controlled infrastructure로 outbound SSH connection을 설정하는 형태",
+            "조사: unauthorized `reverse_ssh` 설치, unexpected egress, vulnerable vCenter 실행이 함께 나타날 때 high-priority investigation 조건"
+          ]
+        },
+        {
+          "heading": "확인된 범위와 한계",
+          "body": "수치·귀속·연관 CVE는 source boundary를 분리해 해석 필요",
+          "items": [
+            "범위: 47개국 361개 unique victim IP는 QUIRSO가 관찰한 IP 규모이며 피해 조직 또는 데이터 유출 확정 수치 아님",
+            "미확인: 공격자 identity, credential/data theft, 모든 vCenter deployment 영향, 개별 조직의 compromise 여부",
+            "분리: `CVE-2026-59309` scanning 증가와 `CVE-2026-59310` 침해 infrastructure의 연관 증거 부족이라는 QUIRSO 설명",
+            "제한: linked QUIRSO Medium 원문은 이번 실행 환경에서 Cloudflare block으로 직접 재검증 불가, THN 보도 범위로 한정"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patch와 appliance forensics를 같은 change/incident queue에 연결하는 management-plane 대응 과제",
+          "items": [
+            "패치: vCenter inventory별 affected build·Broadcom patch·appliance restart·management interface exposure 확인",
+            "헌팅: cron, `reverse_ssh`, unexpected process, outbound SSH/DNS, vpxd·auth log를 patch 전후 timeline으로 보존",
+            "격리: suspicious appliance의 management network egress 차단, credential rotation, backup/cluster 영향 확인과 vendor escalation 준비"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-325",
       "title_ko": "Gemini 앱 MAU 10억: 단일 앱 사용자 기준 대규모 AI 제품 운영 지표 공개",
       "title_original": "Gemini app reaches 1 billion monthly users",
@@ -284,7 +361,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-324",
@@ -369,7 +446,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-323",
@@ -456,7 +533,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-321",
@@ -522,7 +599,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-322",
@@ -592,7 +669,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-320",
@@ -670,7 +747,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-319",
@@ -738,7 +815,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-318",
@@ -800,7 +877,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-315",
@@ -866,7 +943,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-316",
@@ -932,7 +1009,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-317",
@@ -999,11 +1076,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-310",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -1070,7 +1147,7 @@
     },
     {
       "id": "news-313",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -1132,7 +1209,7 @@
     },
     {
       "id": "news-314",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1194,7 +1271,7 @@
     },
     {
       "id": "news-311",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -1261,7 +1338,7 @@
     },
     {
       "id": "news-312",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",

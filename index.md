@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-vmware-vcenter-cve-2026-59310-active-exploitation-2026-08-12]] — VMware vCenter `CVE-2026-59310` 활성 악용 보도와 cron·outbound SSH·management-plane 조사 경계.
 - [[raw/articles/aitimes-gemini-app-one-billion-mau-2026-08-12]] — Gemini 앱 10억 MAU 보도와 앱 집계·inference 운영지표 증거 경계.
 - [[raw/articles/cisa-kev-august-11-2026-windows-metabase-cisco]] — CISA KEV의 Windows `afd.sys`·Cisco ASA/FTD·Metabase active-exploitation 우선순위와 asset별 patch·forensics 경계.
 - [[raw/articles/thn-microsoft-august-2026-patch-tuesday-2026-08-12]] — Windows `afd.sys` 활성 악용 권한 상승과 DNS·WDS·QUIC·HPC Patch Tuesday 우선순위 경계.
