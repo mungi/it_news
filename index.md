@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/nvidia-nemo-switchyard-agent-model-routing-2026-08-12]] — NVIDIA NeMo Switchyard의 agent model routing·quality/cost telemetry·benchmark trade-off 경계.
 - [[raw/articles/thn-litellm-malicious-pypi-trivy-2026-08-12]] — LiteLLM 악성 PyPI release와 CI·cloud·Kubernetes·model API credential rotation·egress 조사 경계.
 - [[raw/articles/thn-vmware-vcenter-cve-2026-59310-active-exploitation-2026-08-12]] — VMware vCenter `CVE-2026-59310` 활성 악용 보도와 cron·outbound SSH·management-plane 조사 경계.
 - [[raw/articles/aitimes-gemini-app-one-billion-mau-2026-08-12]] — Gemini 앱 10억 MAU 보도와 앱 집계·inference 운영지표 증거 경계.

@@ -2,10 +2,10 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-13 01:21",
+  "last_updated_kst": "2026-08-13 05:28",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Gemini 앱 MAU 10억 공개: 단일 앱 집계는 제품 확산 지표이며, capacity·latency·safety·unit economics는 별도 telemetry로 분리해야 함.",
+    "NVIDIA NeMo Switchyard 공개: agent routing은 model·provider 선택을 runtime control plane으로 다루며, cost 절감 수치와 별도로 accuracy·latency·policy·fallback telemetry를 함께 승인해야 함.",
     "LiteLLM 악성 PyPI release 후속 분석: 3월 24일 설치·transitive dependency를 기준으로 CI/CD·cloud·Kubernetes·model API credential rotation과 egress audit를 재점검해야 함.",
     "Rapid7 SharePoint 연쇄: JWT 인증 우회와 BCS RCE 조합은 on-premises farm의 July/August CU·service account·IIS artifact를 함께 점검해야 함.",
     "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업용 model access는 target authorization·tool egress·disclosure workflow를 함께 강제해야 함.",
@@ -371,6 +371,89 @@
       "rank": 2
     },
     {
+      "id": "news-328",
+      "title_ko": "NVIDIA NeMo Switchyard 오픈소스 공개: 에이전트 작업 단계별 모델 라우팅과 비용·품질 telemetry를 함께 설계",
+      "title_original": "Route AI Agent Workloads Across Models with NVIDIA NeMo Switchyard",
+      "summary": "- 공개: NVIDIA가 8월 11일 오픈소스 `NeMo Switchyard`를 공개해 agent workload를 specialized model과 frontier model 사이에서 route하는 library 제공\n- 제어 신호: request·task difficulty·model capability·cost·latency·tool activity·session state를 route decision과 handoff에 반영하는 구조\n- benchmark 경계: LangChain의 145개 multi-turn task 평가에서 Nemotron 3.5 Lightning·Claude Opus 4.8 escalation routing은 frontier-only baseline 대비 **비용 74% 절감**과 frontier call 7%를 기록했으나, 약 6 point accuracy trade-off가 함께 보고됨\n- 팀 액션: production router는 평균 비용 절감률만 승인 지표로 두지 말고 task success·fallback·p95 latency·policy violation·model/provider별 token cost를 route decision과 함께 추적",
+      "detail": "NVIDIA는 2026년 8월 11일 agent workload를 여러 모델에 배분하는 오픈소스 library `NeMo Switchyard`를 공개했다. 공식 설명에서 runtime router는 request와 available context를 평가해 task requirement·constraint·policy에 맞는 model을 선택하며, classification·stage·escalation과 learned/tunable router 방식을 제공한다. stage router는 최근 tool activity를 보고 반복 오류·장기 탐색이면 higher-capability model로, test 통과 뒤 안정적 write/edit면 efficient model로 이동할 수 있다. LangChain의 internal deep-agent evaluation 145개 multi-turn task·5회 run에서 Nemotron 3.5 Lightning과 Claude Opus 4.8을 escalation router로 조합한 결과는 frontier-only baseline 대비 비용 74% 감소, frontier call 7%, 약 6 point accuracy trade-off로 보고됐다. 이 수치는 해당 benchmark 조건의 결과이며 모든 agent, 모델, tool 권한, workload에서의 비용·품질 보장을 뜻하지 않는다. AI타임스는 2026-08-12 19:26 KST에 이 발표를 보도했고, 이 시각은 NVIDIA 공식 글의 날짜-only 표기 대신 카드 최신순 정렬에만 사용함.",
+      "why_it_matters": "multi-model agent는 model selection을 prompt 설정이 아니라 runtime control plane으로 다뤄야 함. 저비용 모델의 반복 실패·tool loop·handoff가 비용 절감분을 상쇄하거나 task quality·policy boundary를 훼손할 수 있어 router 자체의 관측성과 rollback이 필요.",
+      "engineering_implication": "candidate model별 task success, accuracy proxy, p50/p95 latency, input/output token, tool-call count, retry·escalation·fallback rate, provider error와 policy-denial을 trace ID로 묶어 route policy를 평가 필요. 새 router는 shadow mode에서 workload slice별 quality floor와 비용 ceiling을 확인한 뒤 canary rollout하고, provider/model outage 시 deterministic fallback과 session-state compatibility를 검증해야 함.",
+      "korea_implication": "국내 기업은 글로벌 API·자체 호스팅 모델·국내 cloud endpoint를 섞는 경우 데이터 residency, API 계약, token 과금 단위, 한국어 task quality를 같은 routing policy와 audit log에 포함해야 함.",
+      "category": "AI",
+      "tags": [
+        "NVIDIA",
+        "NeMo Switchyard",
+        "AI Agent",
+        "Model Routing",
+        "Inference Cost",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-08-12 19:26",
+      "source_name": "NVIDIA Technical Blog",
+      "source_url": "https://developer.nvidia.com/blog/route-ai-agent-workloads-across-models-with-nvidia-nemo-switchyard/",
+      "image_url": "https://developer-blogs.nvidia.com/wp-content/uploads/2026/08/Agentic-AI-Switchyard.webp",
+      "local_image": "assets/images/news-328.webp",
+      "related_links": [
+        {
+          "title": "AI타임스 — NeMo Switchyard 한국어 보도 및 2026-08-12 19:26 KST 시각",
+          "url": "https://www.aitimes.com/news/articleView.html?idxno=213846"
+        },
+        {
+          "title": "NVIDIA-NeMo/Switchyard GitHub repository",
+          "url": "https://github.com/NVIDIA-NeMo/Switchyard"
+        },
+        {
+          "title": "LangChain — Switchyard agent-routing benchmark",
+          "url": "http://www.langchain.com/blog/switchyard-agent-routing-benchmark"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "NVIDIA가 agent workload의 model selection을 runtime routing library로 분리한 `NeMo Switchyard`를 공개",
+          "items": [
+            "공개일: NVIDIA Technical Blog의 2026-08-11 날짜 표기와 GitHub 기반 오픈소스 제공",
+            "목적: specialized model과 frontier model을 task별로 배분해 quality·cost·latency constraint를 함께 처리하는 orchestration layer",
+            "정렬 근거: AI타임스의 2026-08-12 19:26 KST 보도 시각을 카드 순서에 사용하며 NVIDIA 원문의 exact clock time은 미확인"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "router는 단일 prompt classifier가 아니라 task 진행 상태와 system signal을 함께 사용하도록 설명됨",
+          "items": [
+            "분류형 routing: request topic 또는 estimated difficulty를 candidate model capability와 매칭하는 방식",
+            "stage routing: 최근 tool activity, 반복 오류, exploration duration, test 통과 뒤 안정적 edit/write 신호로 capability tier 조정",
+            "escalation routing: low-cost model에서 시작하고 sustained difficulty를 감지하면 capable model로 session handoff",
+            "tunable routing: predicted accuracy와 cost·latency·deployment constraint를 점수화해 candidate model 선택"
+          ]
+        },
+        {
+          "heading": "benchmark 수치와 증거 경계",
+          "body": "NVIDIA가 인용한 결과는 multi-turn agent benchmark에서의 routing trade-off이며 일반적인 절감률 또는 품질 보장이 아님",
+          "items": [
+            "평가: LangChain internal deep-agent suite의 145개 multi-turn task와 5회 run이라는 NVIDIA 설명",
+            "결과: Nemotron 3.5 Lightning·Claude Opus 4.8 escalation routing이 frontier-only baseline 대비 비용 74% 감소와 frontier call 7% 기록",
+            "trade-off: 같은 NVIDIA 설명에서 약 6 point accuracy trade-off 보고",
+            "미확인: 조직별 model price, prompt/token distribution, tool permission, provider outage, Korean workload, production SLO 충족 여부"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "model router를 비용 최적화 기능으로만 배치하지 말고 quality·safety·reliability control plane으로 운영하는 과제",
+          "items": [
+            "계측: route input, selected model, decision reason, token·tool-call·latency·cost, task outcome, fallback을 trace ID로 연결",
+            "승인: task class별 quality floor·p95 latency ceiling·max retry·max escalation budget·policy-denial 조건을 명시",
+            "배포: shadow mode와 canary cohort에서 frontier-only baseline 대비 success·cost·incident rate를 비교한 뒤 확대",
+            "복구: provider/model failure와 session-state incompatibility 시 deterministic fallback, human handoff, audit retention을 runbook에 포함"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-325",
       "title_ko": "Gemini 앱 MAU 10억: 단일 앱 사용자 기준 대규모 AI 제품 운영 지표 공개",
       "title_original": "Gemini app reaches 1 billion monthly users",
@@ -438,7 +521,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-324",
@@ -523,7 +606,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-323",
@@ -610,7 +693,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-321",
@@ -676,7 +759,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-322",
@@ -746,7 +829,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-320",
@@ -824,7 +907,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-319",
@@ -892,7 +975,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-318",
@@ -954,7 +1037,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-315",
@@ -1020,7 +1103,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-316",
@@ -1086,7 +1169,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-317",
@@ -1153,11 +1236,11 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-310",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -1224,7 +1307,7 @@
     },
     {
       "id": "news-313",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -1286,7 +1369,7 @@
     },
     {
       "id": "news-314",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1348,7 +1431,7 @@
     },
     {
       "id": "news-311",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -1415,7 +1498,7 @@
     },
     {
       "id": "news-312",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
