@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-11 | Total pages: 285
+> Last updated: 2026-08-12 | Total pages: 286
 
 ## Entities
 
@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-microsoft-august-2026-patch-tuesday-2026-08-12]] — Windows `afd.sys` 활성 악용 권한 상승과 DNS·WDS·QUIC·HPC Patch Tuesday 우선순위 경계.
 - [[raw/articles/rapid7-sharepoint-cve-2026-63520-rce-2026-08-12]] — SharePoint JWT 인증 우회·BCS RCE 연쇄와 on-premises patch·IIS/service-account 대응 경계.
 - [[raw/articles/thn-ghostsplice-mcp-secret-egress-2026-08-11]] — GhostSplice 분할 MCP 지시의 coding agent secret egress·client guardrail·tool data-flow 통제 경계.
 - [[raw/articles/certpl-private-apn-chp-ot-incident-2026-08-11]] — 폴란드 열병합발전소 private APN 횡이동·OT controller 정지와 segmentation 대응 경계.

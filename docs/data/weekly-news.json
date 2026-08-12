@@ -2,14 +2,14 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-12 04:55",
+  "last_updated_kst": "2026-08-12 08:57",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Microsoft 8월 보안 업데이트: 활성 악용 Windows `afd.sys` 권한 상승과 DNS·WDS·QUIC·HPC Pack 무인증 RCE는 exploit status·설치·노출 기준으로 patch queue를 분리해야 함.",
     "Rapid7 SharePoint 연쇄: JWT 인증 우회와 BCS RCE 조합은 on-premises farm의 July/August CU·service account·IIS artifact를 함께 점검해야 함.",
     "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업용 model access는 target authorization·tool egress·disclosure workflow를 함께 강제해야 함.",
     "악성 SIM RUN AT 연구: EV charger·industrial router·telematics의 SIM custody·module firmware·AT telemetry가 동일 execution boundary가 됨.",
-    "GhostSplice MCP 연구: tool description·result의 분할 지시가 coding agent context에서 결합돼 secret egress 경로가 될 수 있어 output-to-argument policy 필요.",
-    "폴란드 열병합발전소 OT 침해: private APN client isolation 부재와 controller 관리면이 turbine·process-water 설비 정지 경로가 됨."
+    "GhostSplice MCP 연구: tool description·result의 분할 지시가 coding agent context에서 결합돼 secret egress 경로가 될 수 있어 output-to-argument policy 필요."
   ],
   "deep_dives": [
     {
@@ -217,6 +217,81 @@
   ],
   "items": [
     {
+      "id": "news-324",
+      "title_ko": "Microsoft 8월 보안 업데이트: 활성 악용 Windows afd.sys 권한 상승과 무인증 서버 RCE 우선 대응",
+      "title_original": "Microsoft Patches 398 Flaws Including a Windows Driver Zero-Day Under Active Attack",
+      "summary": "- 활성 악용: `CVE-2026-68820`은 Windows `afd.sys` race condition 기반 local privilege escalation이며, Microsoft가 이번 배포에서 유일하게 active exploitation으로 표시\n- 원격 노출: Windows DNS Server·Windows Deployment Services·Microsoft QUIC·HPC Pack의 무인증 RCE 4건은 CVSS 9.8이나, source 기준 배포 시점 active exploitation 표시는 없음\n- 규모: Zero Day Initiative 집계 기준 신규 CVE 398건·Critical 62건이며, patch 순서는 총량보다 exploit status·service exposure·reachability에 따라 결정 필요\n- 팀 액션: Windows endpoint의 post-compromise escalation hunt와 DNS/WDS/QUIC/HPC service inventory를 분리하고, on-premises SharePoint에는 July 인증 우회와 August RCE 업데이트를 함께 확인",
+      "detail": "The Hacker News가 정리한 2026년 8월 Microsoft 보안 업데이트에는 Microsoft가 active exploitation으로 표시한 `CVE-2026-68820`이 포함됨. 이 결함은 WinSock Ancillary Function Driver(`afd.sys`)의 race condition을 악용하는 local privilege escalation으로, 공격자가 먼저 endpoint에서 code execution을 확보한 뒤 SYSTEM까지 권한을 올릴 수 있는 조건임. 같은 배포에는 Windows DNS Server `CVE-2026-62878`, Windows Deployment Services `CVE-2026-62893`, Microsoft QUIC `CVE-2026-62815`, HPC Pack `CVE-2026-59124`의 unauthenticated RCE가 있으며 모두 CVSS 9.8로 소개됐지만, 해당 보도는 배포 시점 active exploitation을 표시하지 않음. 보도는 SharePoint `CVE-2026-55040` 인증 우회와 `CVE-2026-63520` RCE 연쇄의 August 수정도 함께 언급함. CVE별 실제 노출·patch build·원격 접근성은 Microsoft Security Update Guide와 조직의 service inventory로 확인해야 함.",
+      "why_it_matters": "active-exploited local escalation은 이미 foothold를 얻은 endpoint의 blast radius를 SYSTEM까지 넓힐 수 있고, 무인증 server RCE는 설치·노출 여부에 따라 별도 긴급 patch 대상이 됨.",
+      "engineering_implication": "EDR에서 `afd.sys` 관련 local escalation 징후와 suspicious child process·credential access를 우선 hunt하고, DNS·WDS·QUIC·HPC Pack의 설치·listening path·internet exposure·maintenance window를 inventory해 exploit status와 분리된 patch queue를 운영 필요.",
+      "korea_implication": "국내 Windows server 운영 조직은 월간 patch window만으로 우선순위를 고정하지 말고 AD/DNS·배포 서버·HPC cluster·on-premises SharePoint의 외부 노출과 업무 중단 비용을 같은 change record에 연결 필요.",
+      "category": "Security",
+      "tags": [
+        "Microsoft",
+        "Windows",
+        "Patch Tuesday",
+        "CVE-2026-68820",
+        "Privilege Escalation",
+        "Server Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-08-12 05:10",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/08/microsoft-patches-398-flaws-including.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg4HtkIdWjqoYaSkO4edq9d5ZotqTE-LNMM14UlVoPaVKw2hwBahFYrPkB3jttURH0gcBXxCDtyHhiGMAIrxCX74gYCb_ivX4INmfRzt7HRb-bPTNt1lV-nUQm_pHQQHrhUwx4JWS7DtAzOZ1etx-yjPAVrNJXGBltqXjHPSI5NcfnWQqYurz0LK-dRRMo/s1700-e365/aug-ms-patch.jpg",
+      "local_image": "assets/images/news-324.jpg",
+      "related_links": [
+        {
+          "title": "Rapid7 — CVE-2026-63520 SharePoint RCE technical analysis",
+          "url": "https://www.rapid7.com/blog/post/etr-cve-2026-63520-microsoft-sharepoint-remote-code-execution-fixed/"
+        },
+        {
+          "title": "Microsoft Security Update Guide — organization-specific CVE/build verification",
+          "url": "https://msrc.microsoft.com/update-guide/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Microsoft의 8월 보안 업데이트를 정리한 THN 보도가 active exploitation 1건과 server-side RCE 4건을 우선순위 분리 대상으로 제시",
+          "items": [
+            "`CVE-2026-68820`: Windows WinSock Ancillary Function Driver `afd.sys`의 race condition 기반 local privilege escalation",
+            "활성 악용: Microsoft가 이번 배포에서 active exploitation으로 표시한 유일한 결함이라는 보도 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "총 CVE 수보다 attacker precondition과 서비스 노출이 patch order를 바꾸는 조건",
+          "items": [
+            "규모: Zero Day Initiative 집계 기준 신규 CVE 398건, Critical 62건으로 소개된 배포 범위",
+            "권한 상승: `CVE-2026-68820` 악용에는 먼저 endpoint에서 code execution을 확보한 precondition",
+            "서버 RCE: DNS Server `CVE-2026-62878`, WDS `CVE-2026-62893`, QUIC `CVE-2026-62815`, HPC Pack `CVE-2026-59124`의 no-auth/no-user-interaction 조건 보도"
+          ]
+        },
+        {
+          "heading": "확인된 범위와 한계",
+          "body": "보도는 CVE별 우선순위 판단 재료를 제공하지만, 조직별 노출·patch build·침해 범위를 확정하지 않음",
+          "items": [
+            "경계: DNS/WDS/QUIC/HPC Pack RCE 4건은 CVSS 9.8이나 source 기준 배포 시점 active exploitation 표시는 없음",
+            "경계: HPC Pack은 default installation이 아니며, 나머지 서비스도 설치·listening·접근 경로에 따라 실제 위험도 상이",
+            "경계: Lazarus와 Operation Dream Job 연계는 Check Point Research attribution으로 보도된 내용이며 Microsoft의 공개 attribution으로 확인되지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "endpoint intrusion 대응과 exposed server patching을 하나의 CVSS 정렬표로 합치지 않는 운영 과제",
+          "items": [
+            "헌팅: `afd.sys` local escalation과 SYSTEM-level persistence·credential access를 endpoint incident triage에 포함",
+            "점검: DNS·WDS·QUIC·HPC Pack의 install state·port/path·network reachability·patch build를 CMDB와 change record로 연결",
+            "확인: on-premises SharePoint는 July `CVE-2026-55040` 수정과 August `CVE-2026-63520` 수정 적용 여부를 별도 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-323",
       "title_ko": "Rapid7 SharePoint 연구: JWT 인증 우회와 BCS RCE 연쇄로 on-premises 무인증 코드 실행",
       "title_original": "CVE-2026-63520: Microsoft SharePoint Remote Code Execution (FIXED)",
@@ -301,7 +376,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-321",
@@ -367,7 +442,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-322",
@@ -437,7 +512,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-320",
@@ -515,7 +590,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-319",
@@ -583,7 +658,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-318",
@@ -645,7 +720,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-315",
@@ -711,7 +786,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-316",
@@ -777,7 +852,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-317",
@@ -844,11 +919,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-310",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -915,7 +990,7 @@
     },
     {
       "id": "news-313",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -977,7 +1052,7 @@
     },
     {
       "id": "news-314",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1039,7 +1114,7 @@
     },
     {
       "id": "news-311",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -1106,7 +1181,7 @@
     },
     {
       "id": "news-312",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
