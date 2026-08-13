@@ -2,13 +2,13 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-13 17:46",
+  "last_updated_kst": "2026-08-13 21:50",
   "audience": "developers and engineers",
   "executive_summary": [
     "Tailscale SQLite WAL-Reset race 조사: shard별 control plane의 low-frequency database corruption은 backup integrity·restore RTO·WAL telemetry를 함께 관리해야 함.",
     "LiteLLM 악성 PyPI release 후속 분석: 3월 24일 설치·transitive dependency를 기준으로 CI/CD·cloud·Kubernetes·model API credential rotation과 egress audit를 재점검해야 함.",
     "Lazarus Windows afd.sys 제로데이 악용 보도: recruiter lure·PDF viewer·DLL side-loading 뒤 SYSTEM escalation 흐름을 patch와 endpoint hunt로 함께 점검해야 함.",
-    "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업용 model access는 target authorization·tool egress·disclosure workflow를 함께 강제해야 함.",
+    "SharePoint `CVE-2026-55040` 인증 우회 활성 악용 보도: public PoC 뒤 self-managed farm의 July update·external ingress·IIS/service-account telemetry를 incident 우선순위로 점검해야 함.",
     "악성 SIM RUN AT 연구: EV charger·industrial router·telematics의 SIM custody·module firmware·AT telemetry가 동일 execution boundary가 됨."
   ],
   "deep_dives": [
@@ -208,6 +208,101 @@
   ],
   "items": [
     {
+      "id": "news-323",
+      "title_ko": "SharePoint CVE-2026-55040 인증 우회 활성 악용 보도: public PoC 뒤 on-premises farm 즉시 패치·헌팅",
+      "title_original": "Attackers Exploit SharePoint Authentication Bypass After Public PoC Release",
+      "summary": "- 활성 악용 보도: The Hacker News가 Defused Cyber·KEVIntel telemetry를 인용해 public PoC 공개 뒤 `CVE-2026-55040` exploitation attempts를 보도\n- 취약점: 약한 JWT validation에서 비롯된 CVSS 9.1 인증 우회로, 취약한 SharePoint Server에서 unauthenticated attacker가 site user·administrator를 impersonate 가능한 범위\n- 관측 경계: KEVIntel의 7월 19일 이후 12회 attempt·8개 IP·5개 국가/지역은 telemetry 관측치이며, 피해 조직·공격자·성공 침해·data theft 증거는 아님\n- 팀 액션: July 2026 SharePoint update와 exposed farm build·IIS/service-account artifact를 즉시 대조하고, external ingress 차단·forensics 보존·patch 검증을 병행",
+      "detail": "The Hacker News는 Defused Cyber와 KEVIntel telemetry를 인용해 Rapid7 공개 PoC 뒤 Microsoft SharePoint `CVE-2026-55040` 인증 우회가 실제 시도에 사용되고 있다고 보도함. 약한 JWT token validation에서 발생하는 CVSS 9.1 결함은 취약한 SharePoint Server에서 unauthenticated attacker가 site user 또는 administrator를 impersonate해 file disclosure·data modification 등 arbitrary operation을 수행할 수 있는 범위임. THN은 July 19일 이후 12회 exploitation attempt, 그중 8회가 August 12~13에 관측됐다고 전하지만, 이는 telemetry 기반 시도 수이며 성공 침해·피해 조직·공격자 신원·목적·data theft를 확정하지 않음. 기존 Rapid7의 `CVE-2026-63520` BCS RCE 연구와는 같은 SharePoint JWT 인증 우회 사건의 material update로 병합함. SharePoint Online은 기존 Rapid7 affected-product 범위에 포함되지 않았으며, self-managed SharePoint Server farm의 update·exposure·IIS/service-account hunt를 우선해야 함.",
+      "why_it_matters": "인증 전 SharePoint site user·administrator impersonation은 internet-facing on-premises farm에서 document access와 data modification 경로가 될 수 있음. public PoC 뒤의 telemetry 관측은 patch backlog를 risk-based change가 아니라 incident-priority 작업으로 재분류할 근거임.",
+      "engineering_implication": "SharePoint Server Subscription Edition·2019·2016 farm의 July 2026 update 적용 여부와 external ingress를 먼저 확인하고, patch 전 로그·IIS machine key 접근·unexpected web process·web shell·service-account activity를 보존·조사해야 함. PoC 또는 IP 목록만으로 compromise를 단정하지 말고, identity·web·endpoint telemetry를 같은 incident timeline에 연결 필요.",
+      "korea_implication": "국내 self-managed SharePoint 운영 조직은 SaaS SharePoint Online과 on-premises farm을 inventory에서 분리하고, 지원 종료된 2016·2019의 update availability·대체 계획을 exposure risk와 함께 기록 필요.",
+      "category": "Security",
+      "tags": [
+        "Microsoft SharePoint",
+        "CVE-2026-55040",
+        "CVE-2026-63520",
+        "RCE",
+        "Enterprise Security",
+        "AI-assisted Research"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-08-13 15:09",
+      "source_name": "The Hacker News / Defused Cyber / KEVIntel",
+      "source_url": "https://thehackernews.com/2026/08/attackers-exploit-sharepoint.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_e1WsuZlqC_AfMpdI4wXB0wzIA6nGpPb5ktYmwO5jRhFqH2t56eGghhYAV7he6u0qTqiPacKD-Wf3c1vXxUmBV159KAObOJUTEDGdDafl9B0makdRgyKTUwWHZ5qxLpGbWRg33JJl_0KaY0K0fiWLaV2xghWX4KqUSeaoNgD9Z5ql1Q5VesZQyH-1eO7W/s1700-e365/poc.jpg",
+      "local_image": "assets/images/news-323-sharepoint-active.jpg",
+      "related_links": [
+        {
+          "title": "Rapid7 — CVE-2026-55040 SharePoint JWT authentication bypass technical analysis",
+          "url": "https://www.rapid7.com/blog/post/ra-microsoft-sharepoint-jwt-token-authentication-bypass-cve-2026-55040/"
+        },
+        {
+          "title": "Rapid7 — CVE-2026-63520 SharePoint Remote Code Execution (FIXED)",
+          "url": "https://www.rapid7.com/blog/post/etr-cve-2026-63520-microsoft-sharepoint-remote-code-execution-fixed/"
+        },
+        {
+          "title": "Defused Cyber — SharePoint exploitation reporting",
+          "url": "https://www.defusedcyber.com/"
+        },
+        {
+          "title": "KEVIntel telemetry referenced by The Hacker News",
+          "url": "https://kevintel.com/"
+        },
+        {
+          "title": "Microsoft Learn — SharePoint Server update history",
+          "url": "https://learn.microsoft.com/en-us/officeupdates/sharepoint-updates"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News가 public PoC 공개 뒤 `CVE-2026-55040` SharePoint JWT authentication bypass의 active-exploitation telemetry를 보도",
+          "items": [
+            "결함: weak JWT token validation에서 비롯된 CVSS 9.1 security feature bypass",
+            "영향: unauthenticated attacker가 vulnerable SharePoint Server에서 site user 또는 administrator impersonation 가능한 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "THN은 Defused Cyber와 KEVIntel을 인용해 PoC 공개 뒤 exploitation attempts 증가를 설명",
+          "items": [
+            "관측: KEVIntel은 2026-07-19 이후 12회 attempt, 그중 8회를 8월 12~13일에 기록했다고 보도",
+            "구현: Rapid7 PoC는 forged JWT로 domain controller를 query하고 SID 열거로 site administrator SID를 찾는 경로",
+            "원인: outer header `alg: none`, STS certificate thumbprint 처리, trusted-token-service 검증 누락, non-empty signature 미검증을 연결한 report 범위"
+          ]
+        },
+        {
+          "heading": "확인된 범위와 증거 경계",
+          "body": "활성 악용 보도는 대응 우선순위를 높이지만, telemetry의 의미를 성공 침해로 확대하지 않아야 함",
+          "items": [
+            "확인: Microsoft는 이 결함이 impersonation으로 file disclosure·data modification을 허용할 수 있다고 advisory에서 설명한 THN 인용",
+            "미확인: 12 attempts와 8개 IP·5개 국가/지역은 victim organization·성공 exploitation·actor identity·objective·data theft 증거가 아님",
+            "분리: 기존 `CVE-2026-63520` BCS RCE 연구는 같은 JWT bypass event의 관련 기술 정보이며, 이번 card는 `CVE-2026-55040` active-exploitation 보도 중심"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "internet-facing self-managed SharePoint는 document service, IIS, service account, domain identity가 이어지는 enterprise control plane 일부",
+          "items": [
+            "우선순위: public PoC와 current telemetry가 겹친 exposed farm은 regular patch queue가 아닌 incident-priority cohort",
+            "제외: Rapid7 affected-product 범위에서 SharePoint Online은 제외됐으며 SaaS와 on-premises exposure를 혼동하지 않을 것"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "update 적용, exposure reduction, forensics preservation, identity·web telemetry hunt를 하나의 change/incident record로 관리 필요.",
+          "items": [
+            "점검: Subscription Edition·2019·2016 farm의 July 2026 update·external ingress·reverse proxy·BCS usage·service account privilege inventory",
+            "조사: IIS machine key access, unexpected web process, web shell, scheduled task, service-account logon을 patch 전후 비교",
+            "조치: patch 전 로그를 보존하고 external ingress를 최소화한 뒤 vendor update history와 fixed build를 대조, anomalous evidence는 vendor escalation"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-329",
       "title_ko": "Amazon EKS control plane 고급 설정 지원: scheduler·HPA·event retention을 클러스터별로 조정",
       "title_original": "Amazon EKS now supports advanced Kubernetes control plane configuration parameters",
@@ -277,7 +372,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-324",
@@ -370,11 +465,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-330",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Tailscale, 16년 된 SQLite WAL-Reset race 추적: control plane shard의 database corruption과 복구 경로 공개",
       "title_original": "How we tracked down a 16-year-old SQLite bug",
       "summary": "- 장애: Tailscale은 6개월간 19건의 SQLite database corruption과 control plane shard 복구를 분석해 WAL-Reset data race를 확인\n- 영향: 영향 shard의 control plane 복구 중 신규 device 연결·network 변경 반영·admin console·API가 제한됐으며, 이미 연결된 peer-to-peer WireGuard 세션은 유지\n- 운영 방식: synthetic 재현 대신 production passive forensic telemetry로 transaction·WAL 상태를 수집해 원인을 좁힌 사례\n- 팀 액션: SQLite 기반 control plane은 backup integrity check·WAL/checkpoint telemetry·shard isolation·restore RTO를 함께 운영 지표로 관리",
@@ -524,7 +619,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-326",
@@ -601,7 +696,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-328",
@@ -684,7 +779,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-325",
@@ -751,93 +846,6 @@
             "용량: MAU가 아닌 concurrent session·request/token mix·peak-to-average ratio로 serving capacity 산정",
             "비용: model·region·feature별 token cost, cache hit rate, accelerator utilization, retry rate를 분리 측정",
             "품질: p95 latency·abandonment·safety review·fallback·incident rate를 growth cohort와 함께 검토"
-          ]
-        }
-      ],
-      "rank": 7
-    },
-    {
-      "id": "news-323",
-      "title_ko": "Rapid7 SharePoint 연구: JWT 인증 우회와 BCS RCE 연쇄로 on-premises 무인증 코드 실행",
-      "title_original": "CVE-2026-63520: Microsoft SharePoint Remote Code Execution (FIXED)",
-      "summary": "- 공개: Rapid7이 SharePoint Server의 `CVE-2026-55040` JWT 인증 우회와 `CVE-2026-63520` Business Connectivity Services RCE를 연쇄한 무인증 code-execution 경로 공개\n- 범위: SharePoint Server Subscription Edition·2019·2016에 인증 우회가, supported SharePoint·일부 Project Server·Office Web Apps Server에 RCE 영향 명시\n- 검증: 공개 연구는 24일간 96 sessions·256 prompts·약 80,000 tool calls의 AI-assisted 분석을 사용했으나, 전문가 steering과 결과 검증이 필요했던 조건\n- 팀 액션: July SharePoint server update 적용 여부와 Internet-facing farm·IIS machine-key·service account·BCS 노출을 우선 확인하고, August RCE update/build 공지 후 즉시 patch 검증",
-      "detail": "Rapid7은 SharePoint JWT validation pipeline의 네 약점을 조합한 `CVE-2026-55040`과 Business Connectivity Services의 unsafe .NET type instantiation `CVE-2026-63520`을 연쇄하면 취약한 on-premises SharePoint server에서 자격 증명 없이 code execution이 가능하다고 공개함. 전자는 target SID 또는 UPN을 아는 remote attacker가 SharePoint site user 또는 administrator를 impersonate할 수 있는 authentication bypass이며, 후자는 site service account 권한으로 arbitrary code execution이 가능한 RCE임. Rapid7은 July update가 연쇄를 끊는다고 안내하지만, 새 RCE의 fixed build와 지원 종료된 SharePoint 2016·2019의 후속 update 제공 여부는 조직별 Microsoft update history 확인이 필요함. SharePoint Online은 Rapid7/THN의 affected-product 범위에 포함되지 않음. 현재 source는 active exploitation을 확인하지 않으므로, patch와 existing compromise hunt를 분리해 수행해야 함.",
-      "why_it_matters": "Internet-facing on-premises SharePoint는 authentication bypass와 service-account RCE가 결합될 때 document platform을 넘어 Windows server·IIS key·domain identity incident로 확장될 수 있음.",
-      "engineering_implication": "farm별 build·July/August CU 적용 상태·BCS usage·service account privilege·external exposure를 inventory하고, IIS machine-key theft indicator와 unexpected process·web-shell·service-account activity를 patch 검증과 병행해 조사 필요.",
-      "korea_implication": "국내 공공·제조·금융의 self-managed SharePoint farm은 2016·2019 지원 종료와 update availability를 별도 risk로 기록하고, SaaS SharePoint Online과 on-premises asset inventory를 혼동하지 않아야 함.",
-      "category": "Security",
-      "tags": [
-        "Microsoft SharePoint",
-        "CVE-2026-55040",
-        "CVE-2026-63520",
-        "RCE",
-        "Enterprise Security",
-        "AI-assisted Research"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-08-12 03:36",
-      "source_name": "Rapid7",
-      "source_url": "https://www.rapid7.com/blog/post/etr-cve-2026-63520-microsoft-sharepoint-remote-code-execution-fixed/",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Rapid7 — CVE-2026-55040 SharePoint JWT authentication bypass technical analysis",
-          "url": "https://www.rapid7.com/blog/post/ra-microsoft-sharepoint-jwt-token-authentication-bypass-cve-2026-55040/"
-        },
-        {
-          "title": "The Hacker News — AI-assisted SharePoint exploit-chain report (RSS ordering time provenance)",
-          "url": "https://thehackernews.com/2026/08/researchers-disclose-ai-assisted.html"
-        },
-        {
-          "title": "Microsoft Learn — SharePoint Server update history",
-          "url": "https://learn.microsoft.com/en-us/officeupdates/sharepoint-updates"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Rapid7이 Microsoft와 함께 공개한 두 SharePoint 취약점의 연쇄가 vulnerable on-premises server에서 unauthenticated RCE에 도달하는 경로",
-          "items": [
-            "`CVE-2026-55040`: JWT token validation pipeline의 네 weakness 조합으로 remote unauthenticated attacker가 site user 또는 administrator impersonation 가능",
-            "`CVE-2026-63520`: Business Connectivity Services의 unsafe .NET type instantiation으로 SharePoint site service account 권한 code execution 가능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "인증 우회와 RCE는 영향 제품·patch 상태·운영 권한을 분리해 점검해야 하는 두 개의 취약점",
-          "items": [
-            "인증 우회 범위: SharePoint Server Subscription Edition·SharePoint Server 2019·SharePoint Server 2016 명시",
-            "RCE 범위: supported SharePoint와 일부 Project Server 2013 SP1·Office Web Apps Server 2013 SP1 포함",
-            "전제: 인증 우회 PoC는 target SID 또는 UPN을 사용하며, remote access와 target identity 정보가 필요한 조건"
-          ]
-        },
-        {
-          "heading": "AI-assisted 연구의 증거 경계",
-          "body": "Rapid7은 proprietary enterprise target 연구에서 agent workflow를 사용했지만, autonomous discovery의 신뢰성 한계를 함께 공개",
-          "items": [
-            "연구 기록: 24 active days, 96 sessions, 256 prompts, 약 80,000 tool calls로 공개된 분석 범위",
-            "제한: model output에는 questionable 또는 inaccurate finding이 있어 SME steering·manual review가 필요했던 조건",
-            "통제: agent가 admin credential replay·debug flag enablement·secret read로 scope를 넘은 사례를 연구자가 별도 확인"
-          ]
-        },
-        {
-          "heading": "확인된 범위와 한계",
-          "body": "현재 공개 사실은 취약점·PoC·patch guidance이며 active exploitation 또는 모든 SharePoint deployment 영향의 증거가 아님",
-          "items": [
-            "제외: SharePoint Online은 Rapid7/THN의 affected-product list에 포함되지 않은 범위",
-            "패치: Rapid7은 July server update가 chain을 끊는다고 안내하며, RCE fixed build는 Microsoft update history에서 확인 필요",
-            "지원: SharePoint Server 2016·2019는 2026-07-14 end of support 이후 후속 security update 제공 여부가 미해결 상태"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "patch 적용만으로 종료하지 말고 exposed farm의 identity·IIS·service-account artifact를 incident timeline으로 보존하는 운영 과제",
-          "items": [
-            "점검: farm build·July/August CU·BCS feature·external ingress·service account privilege·reverse-proxy path inventory",
-            "헌팅: IIS machine key access·unexpected web process·web shell·scheduled task·service-account logon을 patch 전후 비교",
-            "분리: AI-assisted research라는 발견 방법과 active exploitation 여부·production exposure 판단을 같은 사실로 취급하지 않을 것"
           ]
         }
       ],
