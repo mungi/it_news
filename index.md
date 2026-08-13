@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/github-secure-open-source-fund-session-4-2026-08-14]] — GitHub Secure Open Source Fund Session 4의 50개 프로젝트·security feature enablement·CVE·secret remediation 운영 지표와 AI-assisted maintainer 책임 경계.
 - [[raw/articles/thn-sharepoint-cve-2026-55040-active-exploitation-2026-08-13]] — SharePoint `CVE-2026-55040` public PoC 뒤 active-exploitation telemetry와 on-premises farm patch·forensics 증거 경계.
 - [[raw/articles/thn-lazarus-windows-afd-sys-zero-day-2026-08-13]] — Lazarus `CVE-2026-68820` zero-day 악용과 recruiter lure·PDF viewer·SYSTEM persistence endpoint 조사 경계.
 - [[raw/articles/nvidia-nemo-switchyard-agent-model-routing-2026-08-12]] — NVIDIA NeMo Switchyard의 agent model routing·quality/cost telemetry·benchmark trade-off 경계.
