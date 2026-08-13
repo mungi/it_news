@@ -2,10 +2,10 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-13 13:39",
+  "last_updated_kst": "2026-08-13 17:46",
   "audience": "developers and engineers",
   "executive_summary": [
-    "NVIDIA NeMo Switchyard 공개: agent routing은 model·provider 선택을 runtime control plane으로 다루며, cost 절감 수치와 별도로 accuracy·latency·policy·fallback telemetry를 함께 승인해야 함.",
+    "Tailscale SQLite WAL-Reset race 조사: shard별 control plane의 low-frequency database corruption은 backup integrity·restore RTO·WAL telemetry를 함께 관리해야 함.",
     "LiteLLM 악성 PyPI release 후속 분석: 3월 24일 설치·transitive dependency를 기준으로 CI/CD·cloud·Kubernetes·model API credential rotation과 egress audit를 재점검해야 함.",
     "Lazarus Windows afd.sys 제로데이 악용 보도: recruiter lure·PDF viewer·DLL side-loading 뒤 SYSTEM escalation 흐름을 patch와 endpoint hunt로 함께 점검해야 함.",
     "GPT-5.6-Cyber Daybreak Red: 고위험 보안 작업용 model access는 target authorization·tool egress·disclosure workflow를 함께 강제해야 함.",
@@ -373,6 +373,74 @@
       "rank": 2
     },
     {
+      "id": "news-330",
+      "rank": 3,
+      "title_ko": "Tailscale, 16년 된 SQLite WAL-Reset race 추적: control plane shard의 database corruption과 복구 경로 공개",
+      "title_original": "How we tracked down a 16-year-old SQLite bug",
+      "summary": "- 장애: Tailscale은 6개월간 19건의 SQLite database corruption과 control plane shard 복구를 분석해 WAL-Reset data race를 확인\n- 영향: 영향 shard의 control plane 복구 중 신규 device 연결·network 변경 반영·admin console·API가 제한됐으며, 이미 연결된 peer-to-peer WireGuard 세션은 유지\n- 운영 방식: synthetic 재현 대신 production passive forensic telemetry로 transaction·WAL 상태를 수집해 원인을 좁힌 사례\n- 팀 액션: SQLite 기반 control plane은 backup integrity check·WAL/checkpoint telemetry·shard isolation·restore RTO를 함께 운영 지표로 관리",
+      "detail": "Tailscale은 control plane의 shard별 SQLite database에서 2025년 8월부터 6개월 동안 19건의 corruption을 조사해 오래된 SQLite WAL-Reset data race를 찾고 수정했다고 8월 12일 공개함. 각 shard는 단일 Go process가 SQLite database를 독점 접근하며, 몇 분마다 database 전체 snapshot을 S3에 저장하는 구조임. corruption 발생 시 해당 shard의 control plane process를 멈춰 repair 또는 restore해야 했고, 그동안 새 device는 peer 목록을 받아 새 연결을 만들 수 없으며 admin console과 API도 이용할 수 없었음. 기존에 연결된 WireGuard peer-to-peer connection은 유지됐고, database에는 private encryption key나 network traffic이 아닌 tailnet·device metadata가 저장됨. Tailscale은 재현 조건을 찾지 못하자 production passive telemetry로 forensic evidence를 수집했고, 실제 운영 환경에서 드문 transaction/WAL interleaving을 추적해 원인을 확인했다고 설명함. 이 원인과 수정 효과는 Tailscale control plane 사례이며, 다른 SQLite deployment의 동일 장애·영향·수정 필요성을 일반화하지 않음.",
+      "why_it_matters": "SQLite를 단일-writer control plane에 쓰더라도 backup·WAL·checkpoint·restore 절차의 상호작용이 availability risk가 될 수 있음. corruption은 데이터 손실만이 아니라 shard 단위 control plane outage와 device enrollment·configuration propagation 지연으로 이어질 수 있음.",
+      "engineering_implication": "SQLite 기반 서비스는 `PRAGMA integrity_check` 결과, backup restore rehearsal, WAL/checkpoint event, transaction latency·retry, shard별 affected tenant와 RTO를 같은 incident timeline에 묶어야 함. low-frequency corruption은 staging 부하시험만으로 배제하지 말고 production-safe telemetry·backup validation·isolation과 rollback evidence를 준비할 것.",
+      "korea_implication": "국내 SaaS·VPN·edge control plane 운영 조직도 SQLite backup의 저장 성공 여부와 복구 가능한 database snapshot을 구분하고, shard별 고객 영향·복구 공지·device onboarding SLO를 훈련 필요.",
+      "category": "Infra",
+      "tags": [
+        "Tailscale",
+        "SQLite",
+        "WAL",
+        "Control Plane",
+        "Database",
+        "SRE",
+        "Reliability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-08-12 23:00",
+      "source_name": "Tailscale Blog",
+      "source_url": "https://tailscale.com/blog/sqlite-wal-reset-bug",
+      "image_url": "https://tailscale.com/api/og-image?id=45389fc1-da6e-4e0d-82f6-140651c6ba57",
+      "local_image": "assets/images/news-330.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Tailscale이 control plane shard의 SQLite corruption을 장기 forensic 조사로 분석한 공식 기술 보고서",
+          "items": [
+            "기간: 2025년 8월부터 6개월간 **19건의 database corruption** 발생",
+            "구조: 각 tailnet은 한 internal shard에 위치하며 shard마다 단일 Go process가 SQLite database를 독점 접근",
+            "저장: database에는 tailnet·device metadata가 있고 private encryption key와 network traffic은 저장하지 않는 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원인은 일반적인 load spike가 아니라 오래된 SQLite WAL-Reset data race로 좁혀진 상태",
+          "items": [
+            "백업: 몇 분마다 complete database snapshot을 S3에 저장하는 pipeline에서 integrity check로 corruption 확인",
+            "조사: shard·customer·feature·시간대·load level에 공통 조건이 없어 synthetic reproduction 대신 passive forensic telemetry 배치",
+            "복구: corruption 발생 시 shard control plane process를 중지하고 repair 또는 restore 수행"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "control plane database 복구는 data correctness와 connection lifecycle에 함께 영향을 주는 availability incident",
+          "items": [
+            "영향: downtime 동안 새 device는 peer 목록을 받지 못해 새 WireGuard connection 수립 제한",
+            "영향: 이미 online인 device 간 peer-to-peer connection은 유지되지만 network change 반영·admin console·API는 제한",
+            "경계: 원인·수정·영향은 Tailscale deployment 사례이며 다른 SQLite 서비스의 동일 failure를 자동 의미하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "희귀한 database corruption은 backup 성공 여부만으로 닫을 수 없으며 integrity·restore·service recovery를 함께 증명해야 함",
+          "items": [
+            "검증: `PRAGMA integrity_check`와 backup restore drill을 shard별 RTO·RPO·tenant impact evidence에 연결",
+            "관측: WAL/checkpoint·transaction retry·snapshot failure·control-plane health event를 동일 incident correlation key로 수집",
+            "조치: production-safe telemetry, shard isolation, known-good restore artifact, customer communication trigger를 runbook에 명시"
+          ]
+        }
+      ]
+    },
+    {
       "id": "news-327",
       "title_ko": "악성 LiteLLM 1.82.7·1.82.8 후속 분석: CI·클라우드·모델 API secret rotation을 설치 이력 기준으로 재점검",
       "title_original": "Malicious LiteLLM Releases Tied to Trivy Hack May Have Exposed 2,100+ Organizations",
@@ -456,7 +524,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-326",
@@ -533,7 +601,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-328",
@@ -616,7 +684,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-325",
@@ -686,7 +754,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-323",
@@ -773,7 +841,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-321",
@@ -839,7 +907,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-322",
@@ -909,7 +977,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-320",
@@ -987,7 +1055,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-319",
@@ -1055,7 +1123,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-318",
@@ -1117,7 +1185,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-315",
@@ -1183,7 +1251,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-316",
@@ -1249,7 +1317,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-317",
@@ -1316,11 +1384,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-310",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -1387,7 +1455,7 @@
     },
     {
       "id": "news-313",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -1449,7 +1517,7 @@
     },
     {
       "id": "news-314",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1511,7 +1579,7 @@
     },
     {
       "id": "news-311",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -1578,7 +1646,7 @@
     },
     {
       "id": "news-312",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",

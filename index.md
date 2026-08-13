@@ -235,6 +235,7 @@
 
 - [[raw/articles/aws-eks-control-plane-configuration-parameters-2026-08-12]] — Amazon EKS control plane parameter 설정의 scheduler packing·HPA·event lifecycle 운영 경계.
 
+- [[raw/articles/tailscale-sqlite-wal-reset-control-plane-corruption-2026-08-12]] — Tailscale SQLite WAL-Reset race, shard control-plane corruption·backup integrity·restore RTO 운영 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
