@@ -2,7 +2,7 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-13 05:28",
+  "last_updated_kst": "2026-08-13 09:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "NVIDIA NeMo Switchyard 공개: agent routing은 model·provider 선택을 runtime control plane으로 다루며, cost 절감 수치와 별도로 accuracy·latency·policy·fallback telemetry를 함께 승인해야 함.",
@@ -208,6 +208,78 @@
   ],
   "items": [
     {
+      "id": "news-329",
+      "title_ko": "Amazon EKS control plane 고급 설정 지원: scheduler·HPA·event retention을 클러스터별로 조정",
+      "title_original": "Amazon EKS now supports advanced Kubernetes control plane configuration parameters",
+      "summary": "- 변화: Amazon EKS가 scheduler·controller manager·API server의 Kubernetes control plane parameter 설정을 지원하며, pod placement·HPA 반응·event retention을 기본값 밖에서 조정 가능\n- 배치 선택: `MostAllocated` node resource fit strategy는 이미 사용률이 높은 node에 pod를 배치해 같은 workload의 node 수를 줄이는 방향이며, headroom 우선 workload에는 기본 `LeastAllocated` 유지 가능\n- 범위: AWS는 EKS 제공 모든 Region에서 설정할 수 있다고 공지했으나, parameter별 영향·managed add-on 호환성·SLO 변화는 cluster별 검증 대상\n- 팀 액션: production 적용 전 autoscaler·PDB·node group capacity·event/log retention을 포함한 canary workload로 packing 효율과 scale-out·failure recovery를 함께 측정",
+      "detail": "AWS는 Amazon EKS에서 Kubernetes scheduler, controller manager, API server의 parameter를 설정할 수 있다고 8월 12일 공지함. administrator는 pod placement strategy, horizontal pod autoscaling 반응, event retention 같은 lifecycle 값을 조정할 수 있음. AWS가 제시한 `MostAllocated` scheduler node resource fit 전략은 pod를 이미 활용 중인 node에 밀집시켜 node 수를 줄이는 선택지이며, 기본 `LeastAllocated`는 headroom을 우선하는 분산 배치를 유지함. 공지는 제공 범위를 EKS 지원 모든 AWS Region으로 설명하지만, 실제 capacity 절감, scheduling latency, autoscaling 안정성, managed add-on 및 workload 호환성은 조직별 workload·quota·node topology에 따라 검증해야 함.",
+      "why_it_matters": "EKS의 control plane default는 운영 정책을 암묵적으로 결정해 왔음. scheduler packing과 HPA·event lifecycle을 명시적으로 조정할 수 있게 되면 GPU·batch·stateless service 등 서로 다른 cluster profile에 맞춘 비용·여유 용량·관측성 trade-off를 configuration change로 관리할 수 있음.",
+      "engineering_implication": "먼저 cluster별 scheduler profile, HPA stabilization, PDB, Cluster Autoscaler 또는 Karpenter, node group capacity와 event/log retention을 inventory해야 함. `MostAllocated`는 bin packing 비용 절감 가설로만 다루고, canary에서 pending pod·preemption·scale-out latency·node utilization·rollback 조건을 baseline과 비교한 뒤 production에 단계 적용 필요.",
+      "korea_implication": "국내 EKS 운영 조직은 비용 절감 목표만으로 scheduler 전략을 바꾸지 말고, 예약 인스턴스·Savings Plans·GPU node pool과 서비스별 latency SLO를 같은 change review에 연결해야 함.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Amazon EKS",
+        "Kubernetes",
+        "Control Plane",
+        "Scheduling",
+        "HPA",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-08-13 03:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-eks-control-plane-configuration-parameters/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Amazon EKS User Guide — Control plane configuration",
+          "url": "https://docs.aws.amazon.com/eks/latest/userguide/control-plane-configuration.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon EKS가 Kubernetes control plane component의 고급 parameter 설정 범위를 확장한 공식 공지",
+          "items": [
+            "대상: Kubernetes scheduler·controller manager·API server parameter를 cluster administrator가 조정 가능한 범위",
+            "조정 영역: pod placement strategy, horizontal pod autoscaling 반응, event retention duration 등 lifecycle control",
+            "제공 범위: AWS는 Amazon EKS가 제공되는 모든 AWS Region에서 사용 가능하다고 공지"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기본 scheduling policy를 유지하거나 workload profile에 맞춰 packing 우선 전략을 선택하는 configuration surface 추가",
+          "items": [
+            "선택: scheduler `node resource fit` 전략을 `MostAllocated`로 설정하면 사용률이 높은 node 쪽으로 pod를 배치하는 방식",
+            "효과 경계: AWS는 같은 workload를 더 적은 node에서 실행하는 방향을 예시로 들었으며 실제 절감 규모는 미제공",
+            "비교: 기본 `LeastAllocated`는 headroom을 더 중시하는 분산 배치 전략으로 유지 가능"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "scheduler·HPA·event lifecycle 기본값은 비용, failure recovery, 관측성에 동시에 영향을 주므로 cluster policy로 검토할 대상",
+          "items": [
+            "비용: bin packing은 idle node 축소 가능성이 있으나 workload burst와 disruption budget 조건을 함께 고려 필요",
+            "운영: HPA 반응과 node provisioning delay가 어긋나면 pending pod·latency·capacity 부족이 발생할 수 있는 검증 과제"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "한 번의 global default 변경보다 cluster class별 canary와 metric gate를 거친 단계 rollout 필요",
+          "items": [
+            "사전 점검: scheduler profile, HPA stabilization, PDB, Karpenter 또는 Cluster Autoscaler, node group quota·topology inventory",
+            "검증 지표: node utilization·pending pod·scheduling latency·scale-out time·error budget·event/log retention 비용을 기존 baseline과 비교",
+            "롤백: parameter 변경 전 manifest·configuration snapshot과 rollback owner·trigger를 change record에 보존"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-327",
       "title_ko": "악성 LiteLLM 1.82.7·1.82.8 후속 분석: CI·클라우드·모델 API secret rotation을 설치 이력 기준으로 재점검",
       "title_original": "Malicious LiteLLM Releases Tied to Trivy Hack May Have Exposed 2,100+ Organizations",
@@ -291,7 +363,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-326",
@@ -368,7 +440,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-328",
@@ -451,7 +523,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-325",
@@ -521,7 +593,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-324",
@@ -606,7 +678,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-323",
@@ -693,7 +765,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-321",
@@ -759,7 +831,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-322",
@@ -829,7 +901,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-320",
@@ -907,7 +979,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-319",
@@ -975,7 +1047,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-318",
@@ -1037,7 +1109,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-315",
@@ -1103,7 +1175,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-316",
@@ -1169,7 +1241,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-317",
@@ -1236,11 +1308,11 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-310",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -1307,7 +1379,7 @@
     },
     {
       "id": "news-313",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -1369,7 +1441,7 @@
     },
     {
       "id": "news-314",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1431,7 +1503,7 @@
     },
     {
       "id": "news-311",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -1498,7 +1570,7 @@
     },
     {
       "id": "news-312",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",

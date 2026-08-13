@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-12 | Total pages: 286
+> Last updated: 2026-08-13 | Total pages: 287
 
 ## Entities
 
@@ -231,6 +231,8 @@
 
 - [[raw/articles/openai-gpt-5-6-cyber-daybreak-2026-08-11]] — GPT-5.6-Cyber Daybreak Red의 authorized cyber research·access control·disclosure 운영 경계.
 - [[raw/articles/usenix-malicious-sim-run-at-cellular-iot-2026-08-11]] — 악성 SIM RUN AT command와 cellular IoT modem·SIM custody·fleet telemetry 경계.
+
+- [[raw/articles/aws-eks-control-plane-configuration-parameters-2026-08-12]] — Amazon EKS control plane parameter 설정의 scheduler packing·HPA·event lifecycle 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
