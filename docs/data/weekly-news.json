@@ -2,11 +2,11 @@
   "week": "2026-W34",
   "coverage_start_kst": "2026-08-10 17:00",
   "coverage_end_kst": "2026-08-17 13:00",
-  "last_updated_kst": "2026-08-14 22:27",
+  "last_updated_kst": "2026-08-15 02:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "- GLM-5.3 공식 공개: post-training 기반 coding·cyber benchmark는 artifact·safety documentation 공개 뒤 isolated canary로 재현성·권한·egress를 검증 필요.",
-    "- DeepSeek Harness v0.1: plugin형 coding-agent runtime은 model·tool·sandbox·session의 provenance·권한·rollback을 같은 release control로 관리할 대상.",
+    "- DeepSeek V4 시간대별 API 가격 보도: 피크·비피크 단가보다 workload scheduling·cache·retry·fallback을 묶은 successful-task cost 재산정 필요.",
     "GitHub Secure Open Source Fund: 50개 프로젝트 보안 지원 지표는 upstream maintainer 운영 능력과 release evidence 점검 신호.",
     "SharePoint·Windows·vCenter·LiteLLM: public exposure, credential rotation, on-premises patch·forensics를 같은 incident 흐름으로 관리.",
     "EKS control plane·Tailscale control plane: managed configuration과 데이터 복구 경로도 canary·rollback·telemetry로 검증 필요."
@@ -14,162 +14,168 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Gemini 3.7 Flash 가격 전환: coding agent 품질·cache·fallback을 FinOps control로 묶기",
-      "summary": "핵심: Gemini 3.7 Flash의 보도된 2026년 할인과 2027년 표준 가격을 분리하고, 실제 coding agent workload의 token·cache·retry·tool failure·SLO로 도입 결정을 내려야 함. 기사 benchmark와 가격은 출발점이며 공식 API 조건과 조직별 canary가 production evidence임.",
-      "details": "Gemini 3.7 Flash 보도 기반 모델 라우팅·비용 운영 Deep Dive",
-      "why_it_matters": "기간 한정 API 가격은 agent routing과 annual budget을 바꿀 수 있으나, 실제 비용과 신뢰성은 workload·tool loop·cache·fallback 정책에 달림.",
+      "title": "GLM-5.3 공개: post-training coding·cyber 성능을 artifact·권한·safety gate로 검증",
+      "summary": "핵심: Z.ai가 GLM-5.3의 coding·cyber benchmark와 2주 뒤 가중치 공개 계획을 제시했지만, self-hosted agent 전환은 benchmark가 아니라 artifact, license, sandbox, egress, rollback evidence를 통과한 뒤 결정할 대상.",
+      "details": "GLM-5.3의 post-training 성능 주장과 open-weight 배포 전 운영 검증 Deep Dive",
+      "why_it_matters": "핵심: Z.ai가 GLM-5.3의 coding·cyber benchmark와 2주 뒤 가중치 공개 계획을 제시했지만, self-hosted agent 전환은 benchmark가 아니라 artifact, license, sandbox, egress, rollback evidence를 통과한 뒤 결정할 대상.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=213924"
+        "https://z.ai/blog/glm-5.3"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/213924_217518_2912.png",
-      "local_image": "assets/images/news-332.png",
-      "refreshed_kst": "2026-08-14 10:07",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/213974_217570_3536.jpeg",
+      "local_image": "assets/images/news-334.jpeg",
+      "refreshed_kst": "2026-08-15 02:34",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**모델 교체 판단은 benchmark 순위가 아니라 2027년 표준 가격까지 반영한 workload unit economics와 failure evidence로 내려야 함**. AI타임스 보도는 Gemini 3.7 Flash의 가격 조건과 성능 수치를 제공하지만, 공식 API·운영 계약을 확인하기 전 production guarantee가 아님.",
+          "body": "**GLM-5.3 benchmark는 self-hosting 승인 근거가 아니라 release-candidate 검증의 입력값**임. 가중치·license·model card·안전 문서가 공개되기 전에는 격리된 evaluation과 권한 설계를 앞세워야 함.",
           "items": [
-            "사실: AI타임스 기사 메타데이터의 업데이트 시각은 2026-08-14 07:18 KST",
-            "사실: 보도는 Gemini 3.7 Flash를 코딩·에이전트 강화 모델로 소개"
+            "사실: Z.ai는 GLM-5.2와 같은 base model에서 post-training을 확장했다고 설명",
+            "상태: 가중치는 safety evaluation과 hardening 뒤 launch 약 2주 후 공개 예정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "직접 읽은 원문·기사에 명시된 사실과 아직 공개 자료로 확인되지 않은 운영 조건을 분리함",
+          "body": "Z.ai 공식 글은 coding·cyber·agentic benchmark를 함께 공개하고 cyber capability의 예상보다 빠른 발현을 언급함. AI타임스는 2026-08-14 15:39 KST 보도로 ordering provenance와 회사의 training-system 설명을 제공함.",
           "items": [
-            "가격: 2026-12-31까지 입력/출력/cache 100만 token당 0.75/3.75/0.075달러라는 보도",
-            "전환: 2027-01-01부터 1.50/7.50/0.15달러 표준 가격이라는 보도",
-            "한계: 공식 model card, API rate limit, region, cache policy, SLA는 이 기사에서 직접 확인되지 않은 상태"
+            "공식 수치: Terminal Bench 3.0 28.3·DeepSWE v1.1 66.9·FrontierSWE 78.1 공개",
+            "경계: vendor benchmark와 authorized evaluation은 실제 침해·범용 exploit 성공 증거 아님"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "코딩 agent는 한 번의 completion이 아니라 plan·tool·test·retry·escalation의 연쇄임. 따라서 input/output 가격을 더한 값보다 task completion당 token, cache reuse, human correction, failed tool call 비용이 운영 모델 선택을 좌우함.",
+          "body": "post-training scaling은 base-model 재학습 없이 workflow 성능을 높일 수 있으나, coding agent의 실제 위험면은 model output보다 tool 권한·repository mount·network egress·secret handling에서 커짐. 평가는 모델과 실행 런타임을 하나의 release unit으로 다뤄야 함.",
           "items": [
-            "결정 기준: 단일 headline·vendor 수치가 아니라 workload evidence·권한·비용·복구 조건을 같은 change record로 관리",
-            "증거 경계: source에 없는 region, SLA, 고객별 성능, 보안 통제, 계약 조건은 확인 전 가정으로 쓰지 않음"
+            "판단: task success와 false action·retry·human correction을 같은 workload에서 측정",
+            "경계: source에 없는 model card·license·region·SLA·Korean workload 성능은 가정 금지"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "모델 endpoint를 기존 agent runtime에 바로 전면 연결하지 말고 routing layer에서 request class, maximum token, tool scope, timeout, retry, fallback을 명시적으로 분리해야 함. trace에 모델 version과 가격 정책을 남겨야 변경 전후 비용을 비교 가능.",
+          "body": "모델을 전면 교체하지 말고 routing layer에 model digest, maximum token, tool scope, timeout, network policy, fallback을 명시해야 함. prompt·tool call·file diff·egress·rollback event는 correlation ID로 연결해 audit 가능한 상태로 보존 필요.",
           "items": [
-            "관측: request·tool call·error·latency·token·audit event를 correlation ID로 연결",
-            "통제: canary·rollback·least privilege·approval을 production 확대 이전의 기본 조건으로 적용"
+            "통제: read-only repository와 ephemeral credential로 isolated canary 실행",
+            "복구: model version과 prompt/tool policy를 함께 pin하고 rollback owner 지정"
           ]
         },
         {
-          "heading": "비용·FinOps 관점",
-          "body": "프로모션 단가는 short-run 실험 예산에는 유용하지만 renewal 이후 standard price를 적용한 steady-state cost가 별도 필요. cache가 가능한 long-context task와 cache miss가 잦은 interactive task를 같은 평균 단가로 묶으면 margin·quota alarm이 왜곡됨.",
+          "heading": "보안·거버넌스 관점",
+          "body": "cyber benchmark 상승은 shell·network·credential 권한을 확대할 근거가 아니라 evaluation gate를 강화할 신호임. open-weight artifact를 가져오는 경로에는 checksum, license, SBOM, scan, serving image provenance가 필요.",
           "items": [
-            "지표: unit cost, cache hit, retry, queue time, human-review effort, error remediation time을 함께 추적",
-            "경계: 공개 단가나 지원금 규모를 조직별 total cost·security maturity 보장으로 바꾸어 해석하지 않음"
+            "검증: artifact hash·license·model card·container digest를 release evidence로 보관",
+            "피할 것: benchmark headline을 production access approval로 대체하는 운영"
           ]
         },
         {
           "heading": "도입 로드맵과 관점",
-          "body": "먼저 representative coding·retrieval·tool-use task를 고르고 current model과 Gemini candidate를 같은 harness에서 실행. 다음으로 제한된 내부 cohort에서 rate-limit, safety policy, cache, fallback, support path를 관찰한 뒤 annual pricing과 SLO를 포함한 승인으로 확대.",
+          "body": "첫 단계는 representative coding·retrieval·tool-use task의 baseline 확정. 다음은 network-isolated canary에서 quality·latency·token·tool error·egress를 비교하고, 마지막으로 security review와 rollback drill을 통과한 cohort만 확대하는 순서.",
           "items": [
-            "1단계: inventory·owner·baseline·success metric을 확정",
-            "2단계: isolated canary와 failure/rollback drill을 수행",
-            "3단계: production cohort 확대 전 cost·security·SLO evidence를 승인 기록에 첨부"
+            "1단계: owner·baseline·success metric·data classification 확정",
+            "2단계: canary failure와 policy denial을 포함한 rollback drill 수행",
+            "3단계: 운영·보안·비용 evidence를 change approval에 첨부"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "repository sample, tool permission, test isolation, secret redaction, latency budget, vendor account limit, billing export, cache lifecycle, fallback owner를 launch checklist에 포함. 비용 경보는 token뿐 아니라 retry surge와 tool error 증가를 함께 감지.",
+          "body": "검토 항목은 weight artifact, license, VRAM·quantization, serving image, tool allowlist, secret redaction, egress route, trace retention, alert owner, incident handoff임. 모델 품질 점수와 별개로 실행 경계가 문서화돼야 함.",
           "items": [
-            "체크: source claim, 공식 문서, deployment evidence를 URL·시각·owner와 함께 보존",
-            "체크: access key·data flow·retention·alert route·rollback owner를 release 조건으로 확인"
+            "체크: checksum·SBOM·tool permission·network policy·audit log 확인",
+            "체크: quota·latency budget·fallback·rollback owner를 launch 조건으로 지정"
           ]
         },
         {
           "heading": "발표에서 강조할 메세지",
-          "body": "**50% 할인은 도입 결론이 아니라 실험 조건**임. 2027년 가격·실제 agent success·운영 failure를 함께 측정하는 팀만 가격 이벤트를 지속 가능한 routing 정책으로 바꿀 수 있음.",
+          "body": "**공개 예정 가중치는 배포 가능 가중치가 아님**. artifact와 safety 문서가 도착한 뒤 동일한 내부 workload에서 권한·성공률·비용·복구 증거를 모은 팀만 self-hosted coding agent 결정을 내릴 수 있음.",
           "items": [
-            "팀 액션: 다음 sprint에서 하나의 representative workload로 baseline과 canary 결과를 비교",
-            "피할 것: headline 수치·기간 한정 가격·feature enablement만으로 production readiness를 선언"
+            "팀 액션: 다음 sprint에 격리 evaluation harness와 release checklist를 고정",
+            "피할 것: benchmark·예고만으로 production secret와 shell 권한을 여는 배포"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "GitHub Secure Open Source Fund: AI-assisted 보안 작업을 release evidence와 maintainer 책임으로 연결",
-      "summary": "핵심: GitHub의 Secure Open Source Fund 집계는 OSS maintainer에 funding·expert support·security feature를 연결하는 운영 모델을 제시함. 92% enablement와 CVE·secret·alert 수치는 독립 보증이 아니므로, 내부와 upstream 모두 remediation SLA·release gate·secret rotation evidence로 평가해야 함.",
-      "details": "GitHub Secure Open Source Fund의 OSS 보안 운영 모델 Deep Dive",
-      "why_it_matters": "AI framework·build tool·runtime 의존성의 보안은 upstream maintainer capacity와 release control에 영향을 받으며, scanning 활성화만으로 공급망 위험을 종료할 수 없음.",
+      "title": "DeepSeek V4 시간대별 API 요금: agent scheduling·cache·fallback을 FinOps control로 설계",
+      "summary": "핵심: AI타임스 보도의 2026-08-17 KST DeepSeek V4 피크·비피크 가격 전환은 token 단가 이벤트가 아니라 workload scheduling, cache, retry, latency SLO를 함께 재설계할 운영 변경.",
+      "details": "DeepSeek V4 API의 보도된 차등 가격과 agent workload FinOps 운영 Deep Dive",
+      "why_it_matters": "핵심: AI타임스 보도의 2026-08-17 KST DeepSeek V4 피크·비피크 가격 전환은 token 단가 이벤트가 아니라 workload scheduling, cache, retry, latency SLO를 함께 재설계할 운영 변경.",
       "sources": [
-        "https://github.blog/open-source/maintainers/what-50-open-source-projects-taught-us-about-security-in-the-ai-era/"
+        "https://www.aitimes.com/news/articleView.html?idxno=213940"
       ],
-      "image_url": "https://github.blog/wp-content/uploads/2026/02/header.jpg?fit=2400%2C1260",
-      "local_image": "assets/images/news-331.jpg",
-      "refreshed_kst": "2026-08-14 10:07",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/213940_217532_3346.jpg",
+      "local_image": "assets/images/news-336.jpg",
+      "refreshed_kst": "2026-08-15 02:34",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**OSS security program의 성과는 feature enablement 숫자가 아니라 finding이 maintainer owner·SLA·release gate·secret rotation까지 닫혔는지로 평가해야 함**. GitHub Blog의 Session 4 집계는 지원과 tooling의 연결을 설명하지만 개별 project의 침해 부재 증명은 아님.",
+          "body": "**시간대별 API 가격은 단가표 변경이 아니라 scheduling policy 변경**임. cost 절감은 batch 이동으로 가능할 수 있으나 interactive agent의 deadline·queue·fallback과 충돌하므로 workload class별 control이 필요.",
           "items": [
-            "사실: GitHub Blog의 구조화된 publication time은 2026-08-14 01:00 KST",
-            "사실: Session 4는 50개 프로젝트·71명 maintainer·22개국·50만 달러 이상 지원이라는 GitHub 집계"
+            "시행: 기사 기준 2026-08-17 01:00 KST부터 새 요금 적용",
+            "경계: 공식 pricing console·계정별 적용 조건은 이번 직접 확인 범위 밖"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "직접 읽은 원문·기사에 명시된 사실과 아직 공개 자료로 확인되지 않은 운영 조건을 분리함",
+          "body": "AI타임스는 V4 Pro와 V4 Flash의 cache-miss input·output·cache-hit token에 피크와 비피크 가격을 제시하고, 수요 집중을 분산하기 위한 정책이라고 보도함.",
           "items": [
-            "통제: 참여 프로젝트 92%가 핵심 security feature를 활성화했다는 GitHub 집계",
-            "성과: 533 CVE·1,500+ Dependabot update·650+ exposed secret 해결은 운영자 집계",
-            "한계: feature enablement와 aggregate outcome은 독립 감사·침해 부재·개별 프로젝트 maturity 보장이 아님"
+            "V4 Pro output: 기존 0.87달러에서 비피크 1.98달러·피크 3.96달러라는 기사 수치",
+            "V4 Pro cache-hit: 0.003625달러에서 0.022달러·0.044달러라는 기사 수치"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "AI-assisted triage와 code review는 backlog를 빠르게 분류할 수 있지만, exploitability 판단·merge·release·exception 승인 책임을 대체하지 않음. 특히 agent framework와 build dependency는 maintainer bus factor와 disclosure response time을 procurement·architecture risk로 다뤄야 함.",
+          "body": "agent 비용은 prompt 1회가 아니라 plan·tool·retry·repair·escalation 체인의 결과임. 가격 구간을 적용할 때 request arrival, token composition, cache hit, completion, human wait를 함께 측정하지 않으면 낮은 단가가 높은 총비용으로 바뀔 수 있음.",
           "items": [
-            "결정 기준: 단일 headline·vendor 수치가 아니라 workload evidence·권한·비용·복구 조건을 같은 change record로 관리",
-            "증거 경계: source에 없는 region, SLA, 고객별 성능, 보안 통제, 계약 조건은 확인 전 가정으로 쓰지 않음"
+            "측정: task completion당 cost·retry·tool error·human correction time 수집",
+            "경계: 기사 가격을 조직별 total cost·quality·availability 보증으로 확장 금지"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "upstream dependency를 SBOM 이름 목록으로만 관리하면 advisory, branch protection, private disclosure, signed release, security contact, patch cadence 같은 운영 신호를 놓침. 내부 inner-source도 동일 baseline을 policy-as-code와 release evidence로 적용해야 함.",
+          "body": "routing layer가 request class와 deadline을 인지해야 scheduled batch만 비피크로 이동할 수 있음. interactive coding, incident response, synchronous user path는 time window보다 latency SLO와 fallback readiness를 우선해야 함.",
           "items": [
-            "관측: request·tool call·error·latency·token·audit event를 correlation ID로 연결",
-            "통제: canary·rollback·least privilege·approval을 production 확대 이전의 기본 조건으로 적용"
+            "분리: batch evaluation·embedding backfill·offline synthesis와 interactive agent queue 분리",
+            "관측: model·KST time bucket·token type·cache·latency·fallback reason을 trace에 기록"
           ]
         },
         {
           "heading": "비용·FinOps 관점",
-          "body": "지원금·alert closure 수를 security ROI의 완결 지표로 쓰면 false positive, stale finding, emergency patch, secret rotation, maintainer review load를 숨길 수 있음. 투자와 도입 우선순위는 critical dependency의 exposure·owner capacity·remediation lead time으로 계층화 필요.",
+          "body": "월 예산은 비피크·피크·failure surge 세 가지 시나리오로 재계산 필요. cache-hit 단가 변화가 큰 경우 long-context reuse 정책, prefix stability, cache TTL이 비용 통제의 직접 변수이며, cache miss와 retry가 겹치면 alert 기준을 재조정해야 함.",
           "items": [
-            "지표: unit cost, cache hit, retry, queue time, human-review effort, error remediation time을 함께 추적",
-            "경계: 공개 단가나 지원금 규모를 조직별 total cost·security maturity 보장으로 바꾸어 해석하지 않음"
+            "지표: spend per successful task·cache-hit ratio·output share·peak spend·queue time",
+            "통제: account budget·per-workload cap·rate limit·anomaly alert를 같은 owner에게 연결"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 관점",
+          "body": "비용을 피하려고 batch를 장시간 보류하거나 fallback provider로 자동 전환하면 data route와 retention이 바뀔 수 있음. 모델 라우팅 변경도 vendor security review, data classification, audit trail, approval을 거치는 변경 관리 대상.",
+          "items": [
+            "체크: fallback endpoint의 data handling·credential scope·logging 조건 확인",
+            "피할 것: cost policy가 permission·data residency policy를 우회하는 자동 전환"
           ]
         },
         {
           "heading": "도입 로드맵과 관점",
-          "body": "우선 critical dependency를 service map과 연결하고, 다음으로 disclosure channel·security owner·branch protection·scan coverage·patch SLA를 확인. 이후 selected upstream 및 internal project에 private reporting, rotation drill, emergency release process를 적용하고 분기별 evidence를 검토.",
+          "body": "먼저 billing export와 application trace의 join key를 확인하고, 다음으로 low-risk batch workload에서 schedule canary를 수행. 이후 interactive workload에 quota·spend cap·fallback을 적용하되 SLO 악화 시 즉시 원복하는 조건을 사전 합의해야 함.",
           "items": [
-            "1단계: inventory·owner·baseline·success metric을 확정",
-            "2단계: isolated canary와 failure/rollback drill을 수행",
-            "3단계: production cohort 확대 전 cost·security·SLO evidence를 승인 기록에 첨부"
+            "1단계: workload inventory와 기존 KST 시간대별 token baseline 확보",
+            "2단계: batch canary로 cost·queue·completion 변화 측정",
+            "3단계: production 확대 전 budget·SLO·security owner 승인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "핵심 upstream마다 security contact, supported version, advisory intake, SBOM/provenance, secret scanning, dependency update owner, severity SLA, release approver, rollback and revocation runbook을 확인. AI-generated fix에는 test·human review·threat model 재검토를 release 조건으로 설정.",
+          "body": "모델별 token pricing version, time zone, cache key·TTL, queue policy, retry ceiling, max output, billing lag, anomaly alert, fallback order, rollback owner를 runbook에 명시. 가격표 확인이 안 된 필드는 unknown으로 보존해야 함.",
           "items": [
-            "체크: source claim, 공식 문서, deployment evidence를 URL·시각·owner와 함께 보존",
-            "체크: access key·data flow·retention·alert route·rollback owner를 release 조건으로 확인"
+            "체크: pricing assumption과 invoice·console 결과의 차이를 daily reconciliation",
+            "체크: deadline breach·retry surge·spend surge에 대한 stop condition 설정"
           ]
         },
         {
           "heading": "발표에서 강조할 메세지",
-          "body": "**AI가 security work를 가속해도 maintainer 책임과 release evidence는 자동화되지 않음**. 투자·tooling·AI triage를 owner와 measurable closure에 연결해야 dependency risk를 실제로 줄일 수 있음.",
+          "body": "**가장 싼 시간대가 항상 가장 싼 실행이 아님**. cache miss, queue, retry, fallback, 사람 대기까지 포함한 successful-task cost를 측정해야 시간대별 가격이 실제 FinOps control로 작동함.",
           "items": [
-            "팀 액션: 다음 sprint에서 하나의 representative workload로 baseline과 canary 결과를 비교",
-            "피할 것: headline 수치·기간 한정 가격·feature enablement만으로 production readiness를 선언"
+            "팀 액션: 8월 17일 전 세 가격 시나리오와 stop condition을 승인 기록에 추가",
+            "피할 것: headline 인상률이나 단일 token 가격만으로 provider migration을 결정"
           ]
         }
       ]
@@ -256,8 +262,80 @@
       ]
     },
     {
-      "id": "news-335",
+      "id": "news-336",
       "rank": 2,
+      "title_ko": "딥시크 V4 API 피크·비피크 요금 도입 보도: agent workload의 시간대별 token 비용 재산정 필요",
+      "title_original": "DeepSeek V4 API pricing changes with peak and off-peak rates",
+      "summary": "- 변경: AI타임스 보도 기준 **2026-08-17 01:00 KST**부터 DeepSeek V4 Pro·Flash API에 피크·비피크 차등 요금 적용\n- 비용: V4 Pro output은 100만 token당 기존 0.87달러에서 비피크 1.98달러·피크 3.96달러라는 기사 수치\n- cache: V4 Pro cache-hit은 0.003625달러에서 비피크 0.022달러·피크 0.044달러라는 기사 수치\n- 증거 경계: 지역·계정별 적용 조건·rate limit·SLA·billing export 형식은 기사에서 직접 확인되지 않음\n- 팀 액션: 시간대·token type·cache hit·retry·latency를 trace와 billing에 연결해 가격 시뮬레이션·fallback·spend cap을 8월 17일 전 검증 필요",
+      "detail": "AI타임스는 딥시크가 DeepSeek-V4 Pro와 V4 Flash API 가격을 바꾸고 피크·비피크 시간대별 요금을 도입한다고 2026-08-14 12:49 KST에 보도했다. 기사 기준 새 요금은 2026-08-17 01:00 KST부터 적용된다. V4 Pro의 cache-miss input은 기존 100만 token당 0.435달러에서 비피크 0.66달러·피크 1.32달러, output은 0.87달러에서 1.98달러·3.96달러로 바뀐다는 기사 수치다. V4 Flash의 cache-miss input은 0.14달러에서 0.22달러·0.44달러, output은 0.28달러에서 0.66달러·1.32달러로 제시됐다. V4 Pro cache-hit의 0.003625→0.022/0.044달러 조정도 기사에 포함된다. 이는 보도된 가격 정보이며 직접 확인 가능한 공식 API 가격표·지역·계정별 eligibility·quota·rate limit·SLA·data handling·billing export 조건은 이번 확인 범위에서 확정하지 않음.",
+      "why_it_matters": "피크 시간대 차등 가격은 coding agent, batch evaluation, retrieval workload의 token 비용을 실행 시점과 cache behavior에 연결함. 평균 단가만으로 예산을 잡으면 retry·output-heavy task·cache miss가 겹치는 구간의 run-rate를 놓칠 수 있음.",
+      "engineering_implication": "8월 17일 전 request class별 KST 시간대·model·input/output/cache token·retry·queue time·task success를 billing export와 trace에 묶어 baseline을 작성하고, batch schedule·spend cap·quota·fallback을 별도 canary로 검증 필요.",
+      "korea_implication": "국내 팀은 KST 피크가 글로벌 공급자 구간과 어떻게 대응하는지, 계약 계정의 요금·quota·지원 조건에 실제 적용되는지를 공식 billing 문서와 account console에서 별도 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "DeepSeek",
+        "API Pricing",
+        "Inference Cost",
+        "FinOps",
+        "Coding Agent"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 83,
+      "published_kst": "2026-08-14 12:49",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213940",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/213940_217532_3346.jpg",
+      "local_image": "assets/images/news-336.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스가 2026-08-14 12:49 KST에 딥시크의 V4 Pro·V4 Flash API 요금 변경을 보도. 8월 17일 01:00 KST부터 피크·비피크 시간대별 가격을 적용한다는 기사 범위의 정보.",
+          "items": [
+            "대상: DeepSeek-V4 Pro와 V4 Flash API의 입력·출력·cache-hit token 가격 조정",
+            "시행: 기사 기준 2026-08-17 01:00 KST부터 피크·비피크 차등 요금 적용"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사에 따르면 V4 Pro cache-miss input은 100만 token당 기존 0.435달러에서 비피크 0.66달러·피크 1.32달러로, output은 0.87달러에서 1.98달러·3.96달러로 조정됨. V4 Flash도 입력과 출력 가격이 시간대별로 인상됨.",
+          "items": [
+            "V4 Pro: output 피크 가격은 100만 token당 3.96달러라는 기사 수치",
+            "V4 Flash: cache-miss input 0.14달러에서 비피크 0.22달러·피크 0.44달러라는 기사 수치",
+            "cache-hit: V4 Pro는 0.003625달러에서 비피크 0.022달러·피크 0.044달러로 조정된다는 기사 수치"
+          ]
+        },
+        {
+          "heading": "가격 신호와 운영 경계",
+          "body": "차등 가격은 특정 시간대의 compute 집중을 분산하려는 공급자 정책으로 설명됐지만, 실제 적용 지역·계정별 eligibility·rate limit·SLA·billing export 형식·예약량 또는 계약 예외는 기사에서 직접 확인되지 않음.",
+          "items": [
+            "해석: 최대 1,100%라는 headline은 token 유형·모델·피크 구간을 조합한 비교이며 모든 request의 동일 인상률 아님",
+            "경계: 경쟁 모델 가격 비교는 기사 언급 범위이며 조직별 총비용·품질·가용성 보증 아님"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "coding agent와 batch inference는 input·output·cache·retry·tool loop가 혼합되므로 token 평균 단가만으로 run-rate를 예측하기 어려움. 피크 구간에서 interactive workload와 scheduled batch가 겹치면 budget alarm과 fallback 정책이 동시에 흔들릴 수 있음.",
+          "items": [
+            "비용: workload별 cache-hit ratio와 output token 분포를 분리하지 않으면 월간 예산 편차 확대 가능성",
+            "신뢰성: 단가 회피를 위한 시간 이동이 queue time·deadline·human review latency를 악화할 가능성"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "8월 17일 이전에 모델별 request class, KST 시간대, token type, cache hit, retry, success, p95 latency를 billing export와 trace에서 결합해 baseline을 고정할 필요. 피크 회피는 batch에만 적용하고 latency-sensitive agent에는 quota·fallback·spend cap을 별도 설계해야 함.",
+          "items": [
+            "검증: price simulation에 비피크·피크·retry surge 세 scenario를 반영",
+            "운영: billing anomaly·queue·tool error·fallback activation을 동일 alert route로 연결",
+            "피할 것: headline 인상률만으로 모든 API workflow의 단가와 provider 전환 효과를 단정하는 판단"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-335",
+      "rank": 3,
       "title_ko": "딥시크 하네스 v0.1 공개: 모델·도구·샌드박스를 플러그인으로 조립하는 오픈소스 coding-agent 런타임",
       "title_original": "DeepSeek Harness: Everything is a Plugin.",
       "summary": "- 공개: 딥시크가 **DeepSeek Harness v0.1**을 developer preview·MIT license로 공개, 모델·도구·스킬·세션·샌드박스·파일 시스템·agent loop를 플러그인으로 교체하는 구조\n- 실행 범위: 저장소 분석·파일 수정·shell·파일/웹 검색·계획·subagent·workflow와 민감 작업 approval을 제공한다는 보도\n- 운영 경계: preview는 breaking change 가능성을 명시하며, 공개 GitHub 저장소의 현재 88.8k star·8k fork는 채택·보안성·production readiness 보증 아님\n- 팀 액션: plugin provenance·tool permission·sandbox escape boundary·secret egress·session trace·rollback을 함께 검증한 isolated repository canary부터 적용 필요",
@@ -337,7 +415,7 @@
     },
     {
       "id": "news-332",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Google Gemini 3.7 Flash 공식 공개: 코딩·에이전트 성능·2026년 도입가를 운영 지표로 검증",
       "title_original": "Introducing Gemini 3.7 Flash",
       "summary": "- 공식 공개: Google이 **Gemini 3.7 Flash**를 코딩·에이전트용 workhorse 모델로 발표, 원문은 2026-08-13 날짜만 제시\n- 성능: Google 비교에서 FrontierCode 43.6% 대 34.4%, DeepSWE 65.3% 대 49.0%, WebDev Arena Elo 1588 대 1538 공개\n- 가격: 2026년 말까지 입력·출력 100만 token당 0.75달러·3.75달러 도입가 제시, 원문에서 cache·2027년 표준 가격은 확인되지 않음\n- 팀 액션: 동일 task·tool 권한에서 성공률·재시도·cache hit·p95 latency·월 비용을 canary로 수집 필요",
@@ -419,7 +497,7 @@
     },
     {
       "id": "news-331",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "GitHub Secure Open Source Fund: 50개 프로젝트의 AI 시대 보안 작업과 측정 지표",
       "title_original": "What 50 open source projects taught us about security in the AI era",
       "summary": "- 운영 결과: GitHub Secure Open Source Fund Session 4가 **50개 오픈소스 프로젝트·71명 maintainer·22개국**에 50만 달러 이상을 지원한 결과 공개\n- 통제 적용: 참여 프로젝트의 92%가 secret scanning·code scanning·protected branch·private vulnerability reporting·Dependabot 핵심 기능을 활성화한 집계\n- 누적 지표: 전체 session 기준 533개 신규 CVE 공개, 1,500건 이상 Dependabot security update, 650건 이상 exposed secret 해결이라는 GitHub 집계\n- 팀 액션: AI-assisted triage를 도입하더라도 alert closure·release decision·exception approval은 maintainer ownership과 remediation SLA로 관리",
@@ -595,7 +673,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-329",
@@ -667,7 +745,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-324",
@@ -760,11 +838,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-330",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "Tailscale, 16년 된 SQLite WAL-Reset race 추적: control plane shard의 database corruption과 복구 경로 공개",
       "title_original": "How we tracked down a 16-year-old SQLite bug",
       "summary": "- 장애: Tailscale은 6개월간 19건의 SQLite database corruption과 control plane shard 복구를 분석해 WAL-Reset data race를 확인\n- 영향: 영향 shard의 control plane 복구 중 신규 device 연결·network 변경 반영·admin console·API가 제한됐으며, 이미 연결된 peer-to-peer WireGuard 세션은 유지\n- 운영 방식: synthetic 재현 대신 production passive forensic telemetry로 transaction·WAL 상태를 수집해 원인을 좁힌 사례\n- 팀 액션: SQLite 기반 control plane은 backup integrity check·WAL/checkpoint telemetry·shard isolation·restore RTO를 함께 운영 지표로 관리",
@@ -914,11 +992,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-333",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "OpenAI·Anthropic·Google reasoning block 재생 공격 연구: 공개 agent trace의 비밀·프롬프트 주입 경계 점검",
       "title_original": "OpenAI, Anthropic, Google API Flaw Let Weaker AI Models Decode Stronger Models' Reasoning",
       "summary": "- 연구 보도: 공개된 agent trace의 encrypted reasoning block을 같은 provider의 호환 모델에 재생해 plaintext 복원을 시연했다는 보도\n- 노출 범위: 6,708개 공개 trajectory에서 315,320개 block을 처리해 non-benchmark session의 privacy artifact 704개를 집계했다는 보고\n- 완화 상태: 연구진은 responsible disclosure 뒤 주된 extraction attack이 2026년 8월 기준 재현되지 않는다고 설명, vendor의 공개 확인은 미확인\n- 팀 액션: raw API transcript·opaque reasoning field를 로그·artifact·issue에서 제거하고 model-switch·trace-sharing 경로를 점검 필요",
@@ -1079,7 +1157,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-328",
@@ -1162,7 +1240,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-325",
@@ -1232,7 +1310,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-321",
@@ -1318,7 +1396,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-322",
@@ -1388,7 +1466,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-320",
@@ -1466,7 +1544,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-319",
@@ -1534,7 +1612,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-318",
@@ -1596,7 +1674,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-315",
@@ -1662,7 +1740,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-316",
@@ -1728,7 +1806,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-317",
@@ -1795,11 +1873,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-310",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -1866,7 +1944,7 @@
     },
     {
       "id": "news-313",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -1928,7 +2006,7 @@
     },
     {
       "id": "news-314",
-      "rank": 24,
+      "rank": 25,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -1990,7 +2068,7 @@
     },
     {
       "id": "news-311",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -2057,7 +2135,7 @@
     },
     {
       "id": "news-312",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
