@@ -242,6 +242,7 @@
 - [[raw/articles/aitimes-gemini-3-7-flash-api-pricing-2026-08-14]] — Gemini 3.7 Flash API 프로모션·2027 표준 가격 전환과 benchmark·region·SLO 증거 경계.
 - [[raw/articles/google-gemini-3-7-flash-official-2026-08-14]] — Gemini 3.7 Flash 공식 모델 공개, benchmark·도입가·가격·운영 검증 경계.
 - [[raw/articles/thn-reasoning-traces-api-replay-2026-08-12]] — 공개 agent trace encrypted reasoning block 재생·secret·prompt injection 연구와 export boundary.
+- [[raw/articles/zai-glm-5-3-post-training-coding-cyber-2026-08-14]] — GLM-5.3 post-training scaling의 coding·cyber benchmark, 가중치 공개 전 safety·artifact·self-hosting 검증 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
