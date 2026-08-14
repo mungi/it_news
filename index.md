@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-14 | Total pages: 288
+> Last updated: 2026-08-14 | Total pages: 289
 
 ## Entities
 
@@ -243,6 +243,7 @@
 - [[raw/articles/google-gemini-3-7-flash-official-2026-08-14]] — Gemini 3.7 Flash 공식 모델 공개, benchmark·도입가·가격·운영 검증 경계.
 - [[raw/articles/thn-reasoning-traces-api-replay-2026-08-12]] — 공개 agent trace encrypted reasoning block 재생·secret·prompt injection 연구와 export boundary.
 - [[raw/articles/zai-glm-5-3-post-training-coding-cyber-2026-08-14]] — GLM-5.3 post-training scaling의 coding·cyber benchmark, 가중치 공개 전 safety·artifact·self-hosting 검증 경계.
+- [[raw/articles/aitimes-deepseek-harness-plugin-agent-runtime-2026-08-14]] — DeepSeek Harness v0.1의 plugin형 coding-agent runtime, tool·sandbox·session provenance·권한·rollback 운영 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
