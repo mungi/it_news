@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-13 | Total pages: 287
+> Last updated: 2026-08-14 | Total pages: 288
 
 ## Entities
 
@@ -239,6 +239,7 @@
 
 - [[raw/articles/tailscale-sqlite-wal-reset-control-plane-corruption-2026-08-12]] — Tailscale SQLite WAL-Reset race, shard control-plane corruption·backup integrity·restore RTO 운영 경계.
 - [[raw/articles/aws-bedrock-openai-daybreak-red-blue-2026-08-14]] — OpenAI Daybreak Red·Blue의 Bedrock eligible-customer 제공, US East (N. Virginia) 리전·ZOA·approval 경계.
+- [[raw/articles/aitimes-gemini-3-7-flash-api-pricing-2026-08-14]] — Gemini 3.7 Flash API 프로모션·2027 표준 가격 전환과 benchmark·region·SLO 증거 경계.
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
