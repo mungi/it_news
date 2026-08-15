@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-enterprise-revenue-2026-08-15]] — OpenAI 기업용 매출 비중 역전 보도와 ARR·효율·계약·FinOps 증거 경계.
 - [[raw/articles/aitimeskr-lg-nvidia-physical-ai-factory-2026-08-14]] — LG·NVIDIA 로봇·AI 팩토리·모빌리티 MOU의 Jetson Thor·Isaac GR00T·DSX·80MW 계획과 PoC·commissioning 검증 경계.
 - [[raw/articles/github-secure-open-source-fund-session-4-2026-08-14]] — GitHub Secure Open Source Fund Session 4의 50개 프로젝트·security feature enablement·CVE·secret remediation 운영 지표와 AI-assisted maintainer 책임 경계.
 - [[raw/articles/thn-sharepoint-cve-2026-55040-active-exploitation-2026-08-13]] — SharePoint `CVE-2026-55040` public PoC 뒤 active-exploitation telemetry와 on-premises farm patch·forensics 증거 경계.
