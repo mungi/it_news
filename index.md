@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-14 | Total pages: 289
+> Last updated: 2026-08-15 | Total pages: 290
 
 ## Entities
 
@@ -240,6 +240,7 @@
 
 - [[raw/articles/tailscale-sqlite-wal-reset-control-plane-corruption-2026-08-12]] — Tailscale SQLite WAL-Reset race, shard control-plane corruption·backup integrity·restore RTO 운영 경계.
 - [[raw/articles/aws-bedrock-openai-daybreak-red-blue-2026-08-14]] — OpenAI Daybreak Red·Blue의 Bedrock eligible-customer 제공, US East (N. Virginia) 리전·ZOA·approval 경계.
+- [[raw/articles/aitimes-anthropic-ipo-profitability-2026-08-15]] — Anthropic IPO 전 잠정 매출·조정 영업흑자 보도와 Claude API·Code 수요, cloud channel 매출 인식·FinOps 증거 경계.
 - [[raw/articles/aitimes-gemini-3-7-flash-api-pricing-2026-08-14]] — Gemini 3.7 Flash API 프로모션·2027 표준 가격 전환과 benchmark·region·SLO 증거 경계.
 - [[raw/articles/google-gemini-3-7-flash-official-2026-08-14]] — Gemini 3.7 Flash 공식 모델 공개, benchmark·도입가·가격·운영 검증 경계.
 - [[raw/articles/thn-reasoning-traces-api-replay-2026-08-12]] — 공개 agent trace encrypted reasoning block 재생·secret·prompt injection 연구와 export boundary.
