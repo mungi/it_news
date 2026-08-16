@@ -1753,3 +1753,9 @@
 - `news-343`을 2026-08-16 17:39 KST에 추가. Anthropic 공식 source와 국내 보도의 exact-time provenance를 분리했으며, watermark probability를 user identity·저작권·제재의 단독 판정으로 확장하지 않음.
 - AI타임스 `GLM-5.3, 커서 보안 취약점 찾아냈다`를 본문·`article:published_time` `2026-08-16T18:16:38+09:00`·Open Graph image와 함께 직접 확인. Z.ai 개발자 옹호자 X 인용의 private disclosure·Cursor fix 협력·세부 정보 비공개 상태만 기록했고 vulnerability class·affected version·CVE·fixed release·wild exploitation·독립 재현은 미확인으로 제한. 기존 `news-334`를 같은 GLM-5.3 event의 material follow-up으로 업데이트하고 기존 Z.ai 공식 공개 및 8월 14일 보도를 related link로 보존.
 - `news-334`와 `news-343` 반영 뒤 34개 regular card를 newest-first 정렬하고 rank 1–34 재부여. 오늘 03:02 KST에 두 Deep Dive가 전면 재구성됐으므로 timestamp-only 변경을 하지 않음. raw capture 2건의 persisted UTF-8 raw-body SHA-256을 생성 뒤 재계산해 일치 확인, weekly archive와 index를 동기화.
+
+## [2026-08-17] update | 일일 Deep Dive 후보 재검토 및 유지 사유 기록
+- 확인 시각: 2026-08-17 03:32 KST. 필수 Korean/community HTML surface GeekNews·GeekNews Plus·인공지능신문·AI타임스를 이번 실행에서 직접 점검했으며 HTML discovery는 XML parsed-feed 산술에 포함하지 않음. Anthropic 공식 Newsroom도 직접 점검했고 최신 공식 항목은 2026-08-14 텍스트 워터마크로 확인되어 이미 `news-343`에 반영된 상태.
+- 첫 KST 일일 Deep Dive 정책에 따라 두 후보를 재검토. Qwen3.8-27B 이후에는 동등한 공식 artifact·구현 세부와 더 높은 AI/Infra 운영 가치를 함께 충족한 별도 이벤트를 확인하지 못했고, ChatGPT Mac Computer History 이후에는 endpoint local-memory·DLP·prompt-injection 경계를 더 구체화하는 새 primary/credible source를 확인하지 못함. 두 Deep Dive를 유지하고 각 `refreshed_kst`를 실제 검토 시각으로 갱신했으며 검증 가능한 `refresh_note`에 점검 표면·제외 사유를 기록.
+- `docs/data/weekly-news.json`의 `last_updated_kst`를 2026-08-17 03:32 KST로 동기화하고 `weekly/2026-W34.md`를 canonical JSON에서 재생성. 정규 뉴스 34건의 순위·출처·콘텐츠는 변경하지 않음.
+- 검증 통과: `python3 scripts/validate_weekly_news.py` (34 items, 2 Deep Dives), `node --check docs/app.js`, `git diff --check`. Local static server `http://127.0.0.1:65432/`에서 34 regular cards를 렌더링했고, programmatic `news-334` click은 예상 modal title·5 rich sections·open 상태를 확인. Qwen Deep Dive button click은 예상 제목·9 rich sections·open 상태를 확인.
