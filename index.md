@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-16 | Total pages: 292
+> Last updated: 2026-08-16 | Total pages: 294
 
 ## Entities
 
@@ -252,6 +252,9 @@
 - [[raw/articles/zai-glm-5-3-post-training-coding-cyber-2026-08-14]] — GLM-5.3 post-training scaling의 coding·cyber benchmark, 가중치 공개 전 safety·artifact·self-hosting 검증 경계.
 - [[raw/articles/aitimes-deepseek-harness-plugin-agent-runtime-2026-08-14]] — DeepSeek Harness v0.1의 plugin형 coding-agent runtime, tool·sandbox·session provenance·권한·rollback 운영 경계.
 - [[raw/articles/aitimes-deepseek-v4-api-peak-offpeak-pricing-2026-08-14]] — DeepSeek V4 API 피크·비피크 가격 보도와 token·cache·queue·fallback FinOps 운영 경계.
+- [[raw/articles/aitimes-glm-5-3-cursor-vulnerability-report-2026-08-16]] — GLM-5.3의 Cursor 잠재 취약점 비공개 제보 보도와 disclosure·fix evidence 경계.
+- [[raw/articles/anthropic-claude-text-watermark-2026-08-14]] — Claude 텍스트 watermark의 probability attribution·C2PA·detection API 운영 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
