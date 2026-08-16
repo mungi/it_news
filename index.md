@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-chatgpt-law-enforcement-report-2026-08-16]] — ChatGPT 대화 safety escalation·human review·법집행기관 제공·privacy notice 운영 증거 경계.
 - [[raw/articles/aitimes-anthropic-2028-revenue-ipo-forecast-2026-08-16]] — Anthropic 2028년 매출 목표·IPO 가치 산정 보도와 Claude API·Code 수요, 계약·usage·GPU 원가 증거 경계.
 - [[raw/articles/aitimes-openai-chatgpt-computer-history-2026-08-15]] — ChatGPT Mac Computer History의 accessibility event·local Markdown memory·endpoint/DLP·prompt-injection 운영 경계.
 - [[raw/articles/aitimes-qwen-3-8-27b-open-weights-2026-08-15]] — Qwen3.8-27B Apache-2.0 공개 가중치, 262K/1M context·framework·benchmark 방법론과 self-hosting 검증 경계.
