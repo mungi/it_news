@@ -30,6 +30,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-deepseek-v4-flash-harness-benchmark-2026-08-17]] — DeepSeek-V4 Flash의 agent harness별 완료율·성공비용·지연 trade-off와 재현·권한 증거 경계.
 - [[raw/articles/aitimes-openai-chatgpt-law-enforcement-report-2026-08-16]] — ChatGPT 대화 safety escalation·human review·법집행기관 제공·privacy notice 운영 증거 경계.
 - [[raw/articles/aitimes-anthropic-2028-revenue-ipo-forecast-2026-08-16]] — Anthropic 2028년 매출 목표·IPO 가치 산정 보도와 Claude API·Code 수요, 계약·usage·GPU 원가 증거 경계.
 - [[raw/articles/aitimes-openai-chatgpt-computer-history-2026-08-15]] — ChatGPT Mac Computer History의 accessibility event·local Markdown memory·endpoint/DLP·prompt-injection 운영 경계.
