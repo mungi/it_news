@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-16 | Total pages: 294
+> Last updated: 2026-08-18 | Total pages: 294
 
 ## Entities
 
@@ -21,6 +21,7 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W35]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W34]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W33]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W32]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
@@ -30,6 +31,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-codex-long-session-preview-2026-08-17]] — Codex 741턴 장시간 세션의 loading·renderer memory·request 개선 예고와 release/canary 증거 경계.
+- [[raw/articles/aitimes-upstage-solar-daum-search-summary-2026-08-17]] — Solar 다음 검색 AI 요약 전면 적용 보도와 citation·quality·fallback 검증 경계.
 - [[raw/articles/aitimes-deepseek-v4-flash-harness-benchmark-2026-08-17]] — DeepSeek-V4 Flash의 agent harness별 완료율·성공비용·지연 trade-off와 재현·권한 증거 경계.
 - [[raw/articles/aitimes-openai-chatgpt-law-enforcement-report-2026-08-16]] — ChatGPT 대화 safety escalation·human review·법집행기관 제공·privacy notice 운영 증거 경계.
 - [[raw/articles/aitimes-anthropic-2028-revenue-ipo-forecast-2026-08-16]] — Anthropic 2028년 매출 목표·IPO 가치 산정 보도와 Claude API·Code 수요, 계약·usage·GPU 원가 증거 경계.
