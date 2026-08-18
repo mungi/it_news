@@ -2,11 +2,11 @@
   "week": "2026-W35",
   "coverage_start_kst": "2026-08-17 17:00",
   "coverage_end_kst": "2026-08-24 13:00",
-  "last_updated_kst": "2026-08-18 20:11",
+  "last_updated_kst": "2026-08-19 00:16",
   "audience": "developers and engineers",
   "executive_summary": [
-    "- 앤트로픽 8월 위험 보고서 보도: 고위험 환경의 정렬 위험을 Very Low→Low로 상향하고 monitoring 우회·misaligned behavior 사례와 classifier·sandbox 통제를 공개한 범위. 고권한 agent 배포는 provider rating이 아니라 tool scope·egress·observability·human approval·kill switch·rollback drill evidence로 승인 필요.",
-    "- Wiz Red Agent가 Snowflake 공개 GitHub Actions workflow의 issue-title shell interpolation을 찾아 runner command execution·Jira token 접근을 검증한 연구: public trigger·event guard·structured parsing·short-lived secret·egress control을 묶어 점검 필요.",
+    "- 앤트로픽 Risk Report Deep Dive: high-risk alignment rating의 Very Low→Low 상향은 공급사 safety rating이 아니라 고권한 agent의 tool scope·egress·approval·telemetry·kill switch·rollback drill을 독립 release gate로 점검할 신호.",
+    "- Wiz Red Agent Deep Dive: Snowflake public GitHub Actions의 issue-title shell interpolation은 runner command execution·Jira token 접근 경로가 된 사례. public trigger·structured parsing·OIDC·egress·audit을 함께 통제 필요.",
     "- OpenAI Codex 장시간 세션 개선 예고: AI타임스가 인용한 741턴 테스트의 로딩 27.6→1.7초·renderer memory 증가 88% 감소·요청 98% 감소는 출시 전 수치이므로 version·workload·telemetry·rollback canary 필요.",
     "- 업스테이지 Solar의 다음 AI 요약 전면 적용 보도: 다음 검색 AI 요약이 Solar 단일 LLM으로 생성되고 7월 15일 기준 전체 검색 Q&A의 약 20%를 처리했다는 기사 범위의 production signal. 정확도·citation·latency·비용·failover는 별도 측정 필요.",
     "- Claude 텍스트 워터마크: probability signal은 attribution evidence이지 user identity·저작권·자동 제재 판정이 아니므로 threshold·human review·audit·appeal 설계 필요."
@@ -14,189 +14,190 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Codex 장시간 세션 개선 예고: UI 지표를 task 성공·복구·release evidence로 분리",
-      "summary": "핵심: 741턴 테스트의 27.6초→1.7초 로딩·renderer memory 증가 88% 감소·요청 98% 감소는 장시간 coding agent의 client 병목을 점검할 신호임. 다만 기사 인용의 출시 전 결과이므로 실제 승인 기준은 배포 version, representative repository, task completion, memory peak, error·retry, rollback evidence임.",
-      "details": "AI타임스 보도 범위의 Codex 장시간 세션 성능 개선 예고를 UI·agent runtime·SRE·release control로 해석한 Deep Dive",
-      "why_it_matters": "장시간 agent의 체감 성능은 모델 benchmark뿐 아니라 UI rendering, session state, request fan-out, context·tool trace, failure recovery에 좌우됨. 특정 preload 수치를 production capacity·자율성·SLO 증거로 치환할 수 없음.",
+      "title": "Anthropic 8월 위험 보고서: 고권한 agent 승인에 safety rating 대신 control-plane evidence 적용",
+      "summary": "핵심: Anthropic의 redacted 2026년 8월 Risk Report와 이를 인용한 국내 보도는 고위험 환경의 alignment risk를 **Very Low→Low**로 상향하고 monitoring 우회·misaligned behavior 사례 및 blocking classifier·sandboxing을 설명함. 공급사 risk rating은 deployment 승인서가 아니며, 실제 고권한 agent는 tool scope·egress·approval·telemetry·kill switch·rollback drill을 독립 evidence로 통과해야 함.",
+      "details": "Anthropic redacted Risk Report의 공개 범위와 AI타임스의 2026-08-18 보도를 분리해, 고권한 agent의 control-plane·보안·SRE·거버넌스 release gate로 해석한 Deep Dive",
+      "why_it_matters": "모델의 위험 등급은 특정 조직의 data path·tool 권한·runtime isolation·monitoring coverage·incident response를 검증하지 않음. agent의 실질 위험은 모델 행위와 control plane이 결합되는 지점에서 관리 대상.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=214016"
+        "https://www.aitimes.com/news/articleView.html?idxno=214079"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214016_217632_3326.jpg",
-      "local_image": "assets/images/news-345.jpg",
-      "refreshed_kst": "2026-08-18 03:49",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/214079_217709_438.png",
+      "local_image": "",
+      "refreshed_kst": "2026-08-19 00:16",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**1.7초 로딩은 출시 승인서가 아님**. 741턴 UI 테스트는 장시간 Codex session의 병목 후보를 좁히는 신호이며, production 결정은 version·repo·model·tool 조건을 고정한 task completion·memory·retry·rollback evidence로 수행 필요.",
+          "body": "**위험 등급 상향은 조직별 배포 허가가 아님**. Risk Report는 고권한 환경에서 alignment failure와 monitoring·sandbox control을 별도 검토할 신호이며, production 승인은 실제 권한·관측·중지·복구 시험 결과로 판단 필요.",
           "items": [
-            "사실: AI타임스는 741턴 대화에서 loading time `27.6초→1.7초`라는 인용 수치를 보도",
-            "결정: preload·renderer 개선과 agent task 품질·권한·SLO를 별도 release gate로 관리"
+            "사실: redacted 2026년 8월 Risk Report와 8월 18일 국내 보도는 high-risk environment의 alignment risk `Very Low→Low` 상향을 설명",
+            "결정: provider rating과 내부 change approval을 분리하고 tool scope·egress·human approval·rollback evidence를 release gate로 설정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스는 OpenAI 개발자 Andrew Ambrosino가 8월 14일 공개한 내부 Slack 메시지를 인용해 이번 주 Codex 장시간 작업 개선이 예정됐다고 보도함. 기사 설명은 741턴 테스트의 renderer memory 증가 약 88% 감소와 server-client 요청 약 98% 감소를 포함함.",
+          "body": "직접 선택한 1차 자료는 Anthropic의 redacted Risk Report PDF임. 국내 보도는 이 문서의 위험 등급·내부 관찰·통제 설명을 한국어로 전달하며, 공개 범위를 넘어 특정 고객 deployment의 effectiveness를 증명하지 않음.",
           "items": [
-            "범위: 공개된 기사와 인용 메시지가 직접 확인된 evidence",
-            "상태: 적용 version·client/OS·plan·GA 일정·rollout cohort는 기사에서 확정되지 않은 항목",
-            "경계: 수치는 특정 출시 전 test condition의 결과이며 실제 repository·업무 성공률 증거 아님"
+            "원문 범위: 고위험 환경의 alignment risk 등급 조정과 안전 절차·통제 방향 확인",
+            "관련 보도: monitoring 우회 시도와 production code의 misaligned behavior 학습 사례를 내부 평가·개발에서 관찰했다는 설명",
+            "통제 설명: blocking classifier, data-access sandboxing, 비동기 코드 감시와 취약점 점검 언급"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent가 수십~수백 turn으로 길어질수록 병목은 model inference 한 곳에 있지 않음. conversation state hydration, DOM/rendering, local cache, tool trace, file diff, websocket/HTTP fan-out, retry queue와 context compaction이 함께 작동함. UI request 감소가 inference token·tool latency·task correctness까지 동일 비율로 줄었다는 뜻은 아님.",
+          "body": "alignment risk는 모델 응답 품질 하나가 아니라 agent가 어떤 identity로 어떤 tool·data·network path를 실행하는가의 문제임. classifier가 위험 출력을 막더라도 stale credential, broad IAM, permissive egress, missing audit, delayed human review가 남으면 incident boundary는 넓어짐.",
           "items": [
-            "분리: client responsiveness, server request fan-out, model latency, tool latency, task success를 다른 SLI로 계측",
-            "측정: turn bucket별 p50/p95 load·memory peak·network request·tool error·completion·human correction 수집"
+            "분리: model behavior, tool authorization, data classification, runtime isolation, network egress, operator response를 별도 control로 관리",
+            "계측: policy denial·override·tool error·unexpected egress·monitoring loss·human correction·rollback time을 correlation ID로 연결"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "장시간 coding agent를 운영할 때 session identity와 checkpoint boundary가 중요함. message·tool result·diff·test result의 retention과 rehydration path를 correlation ID로 묶고, client refresh·network retry·model fallback 때 동일 task가 이중 실행되지 않도록 idempotency와 approval boundary를 검증해야 함.",
+          "body": "고권한 agent는 task state·prompt·tool result·diff·approval·retry를 보존하므로 checkpoint와 idempotency boundary를 먼저 정해야 함. session이 길어져도 write·deploy·external send가 이전 approval을 재사용하지 않도록 action class별 재승인과 stop condition이 필요.",
           "items": [
-            "설계: turn count·context size·open files·tool calls·pending approvals를 session telemetry에 기록",
-            "복구: reconnect·refresh·timeout 뒤 task replay·duplicate write·stale context를 chaos test로 확인",
-            "용량: renderer memory 절대 peak와 endpoint resource limit을 cohort·OS별로 수집"
+            "설계: read·write·deploy·external-send를 서로 다른 permission tier와 approval policy로 분리",
+            "복구: network retry·client reconnect·model fallback 후 duplicate write와 stale context를 chaos test로 검증",
+            "운영: kill switch·credential rotation·queue drain·incident handoff owner를 runbook에 명시"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 관점",
+          "body": "공개 자료는 classifier threshold, precision/recall, false-positive/negative, sandbox isolation 경계, customer workspace 적용 범위, external audit을 제공하지 않음. 따라서 공급사 control의 존재를 조직 규제 준수나 무사고 증거로 확대할 수 없음.",
+          "items": [
+            "경계: risk rating만으로 개인정보·금융·공공 workload의 적합성 또는 계약상 책임을 판정하지 않음",
+            "검증: tenant isolation·secret redaction·retention·DLP·egress allowlist·audit export를 조직 환경에서 시험",
+            "승인: policy exception은 data owner·security·platform owner와 만료 시각을 남기는 방식으로 관리"
           ]
         },
         {
           "heading": "비용·FinOps 관점",
-          "body": "요청 수 감소는 네트워크와 control-plane 비용 후보일 수 있으나 successful task cost를 대신하지 않음. 긴 session의 비용에는 input/output token, cache hit, tool invocation, CI/test runtime, retry, human review, endpoint CPU/memory와 support load가 포함됨.",
+          "body": "안전 control은 latency와 human review 비용을 수반할 수 있으나, 이를 제거해 autonomy를 높이는 비용 절감은 incident 비용과 복구 시간을 숨길 수 있음. successful task당 모델 token 외에 sandbox runtime, tool invocation, review, rollback drill, security investigation 시간을 함께 귀속해야 함.",
           "items": [
-            "지표: successful task당 token·tool/CI seconds·request·memory peak·retry·human correction",
-            "비교: 동일 repo·task·permission·model revision에서 pre/post release A/B canary 수행"
-          ]
-        },
-        {
-          "heading": "보안·거버넌스 관점",
-          "body": "더 긴 session이 안정화되면 agent가 더 오래 context·file diff·credential scope를 보유할 수 있음. performance release와 별도로 session retention, local cache, log redaction, tool approval, egress, workspace offboarding을 확인해야 함.",
-          "items": [
-            "통제: secret가 포함된 tool result·diff·browser artifact의 redaction과 retention policy 검증",
-            "통제: write·send·deploy action은 session 지속성만으로 재승인 면제가 되지 않도록 policy 분리",
-            "피할 것: UI 응답성 개선을 privilege 확대 또는 unattended execution 근거로 사용하는 운영"
+            "지표: successful task당 token·tool runtime·human review·policy denial·retry·rollback drill time 수집",
+            "비교: 동일 task·model revision·tool scope 조건으로 enforced-control cohort와 exception cohort를 분리 측정"
           ]
         },
         {
           "heading": "도입 로드맵과 관점",
-          "body": "1단계에서 현 version의 representative task baseline을 만들고, 2단계에서 업데이트 cohort에 동일 repo·test suite·network policy를 적용해 telemetry를 비교하며, 3단계에서 SLO·security·rollback drill을 통과한 workspace만 확대하는 순서.",
+          "body": "1단계는 read-only·non-sensitive task에서 asset inventory와 baseline telemetry를 만든 뒤, 2단계에서 scoped write와 sandbox escape·egress simulation을 통과시키고, 3단계에서 production change는 approval·rollback SLO를 충족한 workspace로만 확대하는 순서.",
           "items": [
-            "1단계: version·model·prompt·tool allowlist·repo fixture·stop condition 고정",
-            "2단계: 100·300·700+ turn bucket별 load·memory·error·completion 비교",
-            "3단계: regression·data exposure·duplicate action threshold를 change approval에 첨부"
+            "1단계: model·prompt·tool schema·identity·data class·egress path·stop metric 고정",
+            "2단계: least privilege·short-lived credential·approval·audit log·kill switch를 adversarial canary로 검증",
+            "3단계: policy override·monitoring gap·rollback threshold를 change review에 첨부"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "검증 대상은 deployed Codex version, release note, client/OS, session persistence, renderer memory, request telemetry, model/context policy, tool idempotency, CI quota, audit retention, feature flag, rollback owner임.",
+          "body": "확인 대상은 deployed model revision, tool allowlist, IAM scope, secret lifecycle, sandbox boundary, outbound route, logging/redaction, approval UI, feature flag, rollback owner, incident escalation과 retention policy임.",
           "items": [
-            "체크: 741턴 수치와 조직의 task topology·repo size·endpoint 사양을 동일시하지 않음",
-            "체크: UI refresh·network drop·timeout에서 duplicate tool/write가 없는지 재현",
-            "체크: p95 load·memory peak·tool error·completion·human correction의 stop condition 설정"
+            "체크: monitoring이 끊기거나 classifier가 unavailable일 때 fail-open이 아닌 fail-safe behavior 확인",
+            "체크: write·send·deploy tool마다 human approval·idempotency key·audit event 존재 확인",
+            "체크: credential rotation과 kill switch를 실제 workload에서 drill하고 recovery time 기록"
           ]
         },
         {
           "heading": "발표에서 강조할 메세지",
-          "body": "**장시간 agent의 성능은 화면 로딩 한 지표로 승인할 수 없음**. 이번 보도는 session control plane을 관측할 필요를 보여주며, 채택팀은 release version과 실제 업무 success·복구·권한 evidence를 같이 제시해야 함.",
+          "body": "**고권한 agent의 안전은 공급사 등급이 아니라 조직이 재현한 control evidence로 판단**. 이번 자료는 model safety와 platform operations를 한 release gate로 묶어야 한다는 근거이며, 다음 배포 전에 권한·관측·중지·복구 drill을 완료해야 함.",
           "items": [
-            "팀 액션: 다음 sprint에 long-session canary와 checkpoint/rollback drill을 운영 backlog로 등록",
-            "피할 것: 사전 테스트의 퍼센트 감소만으로 production capacity·autonomy·SLA를 약속하는 배포"
+            "팀 액션: 다음 sprint에 agent permission inventory와 monitoring-loss·egress·rollback game day 등록",
+            "피할 것: 위험 보고서의 정성 등급을 production autonomy·규제 적합성·SLA 근거로 전환하는 승인"
           ]
         }
       ],
-      "refresh_note": ""
+      "refresh_note": "2026-08-19 KST 첫 실행에서 전날 Codex 장시간 세션 보도를 대체. 직접 확인한 Anthropic redacted Risk Report PDF를 유일한 Deep Dive primary source로 사용하고, 2026-08-18 KST 국내 보도는 publication/image provenance와 해석 보조로만 사용. 기존 source와 중복되지 않음."
     },
     {
       "id": "deep-dive-002",
-      "title": "ChatGPT Mac 컴퓨터 히스토리 보도: local memory·accessibility event를 endpoint·DLP·prompt-injection control로 검토",
-      "summary": "핵심: AI타임스가 보도한 ChatGPT Mac의 Computer History는 화면 녹화 대신 accessibility interaction event를 로컬 Markdown memory로 변환하는 opt-in 기능으로 소개됨. 업무 도입은 자동화 편의보다 endpoint file exposure, memory retention, enterprise approval, prompt-injection 경계를 먼저 확인할 대상.",
-      "details": "AI타임스 보도 기준 ChatGPT Mac Computer History의 데이터 흐름·endpoint 보안·enterprise 도입 통제 Deep Dive",
-      "why_it_matters": "핵심: AI타임스가 보도한 ChatGPT Mac의 Computer History는 화면 녹화 대신 accessibility interaction event를 로컬 Markdown memory로 변환하는 opt-in 기능으로 소개됨. 업무 도입은 자동화 편의보다 endpoint file exposure, memory retention, enterprise approval, prompt-injection 경계를 먼저 확인할 대상.",
+      "title": "Wiz Red Agent Snowflake CI injection: public trigger·shell interpolation·runner secret를 함께 차단",
+      "summary": "핵심: Wiz Research는 Snowflake 공개 repository의 `issues: opened` workflow에서 attacker-controlled issue title이 `run:` shell에 직접 보간돼 runner command execution과 Jira token 접근 경로가 됐다고 공개함. 6월 23일 same-day patch와 6월 24일 token rotation이 이뤄졌지만, 공개 trigger·string interpolation·long-lived secret를 함께 관리하지 않으면 AI review 통과 여부와 무관하게 CI control plane이 노출됨.",
+      "details": "Wiz Research의 공개 연구를 1차 source로 사용해 GitHub Actions event boundary·shell parsing·credential blast radius·AI-assisted review limit을 CI/CD 운영 관점에서 해석한 Deep Dive",
+      "why_it_matters": "외부 사용자가 issue 하나로 실행할 수 있는 workflow에서 template interpolation, null-prone event guard, credential scope가 결합하면 source repository와 internal SaaS 사이의 trust boundary가 무너질 수 있음.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=213986"
+        "https://www.wiz.io/blog/red-agent-snowflake-copilot-cicd-bug"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/213986_217594_053.jpg",
-      "local_image": "",
-      "refreshed_kst": "2026-08-18 03:49",
+      "image_url": "https://www.datocms-assets.com/75231/1786964856-image.png?fm=webp",
+      "local_image": "assets/images/news-347.webp",
+      "refreshed_kst": "2026-08-19 00:16",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**Computer History는 개인 생산성 기능이면서 endpoint telemetry·local memory 기능**임. AI타임스가 인용한 OpenAI 설명 범위를 넘지 않되, 기업 환경에서는 data classification·local file protection·admin approval·prompt injection 대응을 launch gate로 두어야 함.",
+          "body": "**CI 입력값은 shell code가 아님**. Wiz가 공개한 사례는 public `issues: opened` event, direct interpolation, broad runner credential이 하나의 exploit chain이 된 구조이며, event guard·structured parsing·OIDC·egress·audit을 함께 바꾸는 대응 필요.",
           "items": [
-            "상태: AI타임스 보도 기준 Mac용 ChatGPT의 Pro·Business·Enterprise 대상 opt-in 제공",
-            "경계: 직접 열람 가능한 OpenAI 공식 문서·관리자 console·API·data-processing 계약은 이번 검토 범위 밖"
+            "사실: Wiz는 specially crafted issue title로 GitHub Actions runner command execution과 Jira token 접근 proof-of-concept을 설명",
+            "결정: input escaping 하나가 아니라 public trigger·permission·secret·network egress를 하나의 attack path로 검토"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스는 2026-08-15 16:23 KST 기사에서 Computer History가 이전 Chronicle 연구 프리뷰를 대체하며 macOS accessibility system의 클릭·키 입력·shortcut·app 전환 event를 기록한다고 보도함. 화면 screenshot·recording, microphone, system audio와 private browsing 활동은 수집하지 않는다는 설명도 함께 제시함.",
+          "body": "직접 선택한 1차 자료는 Wiz Research의 2026년 8월 17일 공개 연구임. Wiz는 Snowflake HackerOne disclosure program에서 `snowflakedb/snowflake-connector-net`의 `jira_issue.yml`을 분석했고, source에 포함된 Snowflake response와 remediation timeline을 함께 공개함.",
           "items": [
-            "저장: event를 주기적으로 text summary로 변환하고 Mac에 Markdown local memory file 생성이라는 기사 설명",
-            "기능: 날짜·시간별 timeline, 활동 검색, 반복 workflow 기반 skill/automation 제안이라는 기사 설명",
-            "제공 범위: EEA·영국·스위스 및 Windows 지원은 기사 시점에서 제한 또는 미제공 상태"
+            "발견: `issues: opened` workflow가 issue title을 `run:` shell block에 직접 확장한 구조",
+            "원인: GitHub template expansion 뒤 single quote로 shell context를 이탈할 수 있었다는 Wiz 설명",
+            "정정: 8월 18일 04:57 KST update는 Copilot의 co-author/all-clear review 역할을 좁혔고 code change의 AI-assisted 여부는 불명확하다고 명시"
+          ]
+        },
+        {
+          "heading": "공격 경로와 증거 경계",
+          "body": "Wiz 설명에 따르면 취약 코드는 6월 18일 merge돼 6월 23일 disclosure까지 노출됐고, Snowflake는 same-day patch와 6월 24일 token rotation을 수행. Wiz와 Snowflake는 audit log에서 5일 window의 외부 unauthorized access 증거가 없었다고 밝혔으나, 독립 forensic artifact와 모든 downstream system scope는 공개 자료만으로 확인할 수 없음.",
+          "items": [
+            "영향 경로: unauthenticated issue creation → runner command execution → Jira credential access라는 POC 범위",
+            "조사 결과: Wiz testing IP 외 anomalous query와 external third-party access evidence가 없다는 source·Snowflake response 범위",
+            "경계: 실제 data exfiltration, 모든 runner secret inventory, downstream SaaS/cloud 영향은 독립 확인 불가"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "스크린샷을 남기지 않는다고 해도 app·website activity와 텍스트 요약은 업무 맥락을 재구성할 수 있는 metadata가 될 수 있음. 생성된 memory를 agent context로 재주입하는 순간 local capture, ChatGPT conversation, model-training setting은 서로 다른 data boundary로 분리해 설계해야 함.",
+          "body": "AI-assisted code authoring이나 automated security scan은 trust boundary를 이해하는 policy engine이 아님. workflow YAML은 application code와 동등한 production attack surface이며, event payload·expression expansion·shell parser·runner identity·network route가 결합된 data flow로 test해야 함.",
           "items": [
-            "분리: raw interaction event·summary·local Markdown·subsequent chat context는 동일 보존 정책으로 가정 불가",
-            "측정: enablement rate·excluded app coverage·memory file count·deletion latency·security alert를 운영 지표로 설정"
+            "분리: static finding, PR review, workflow unit test, runtime policy, credential telemetry를 독립 gate로 운영",
+            "검증: `github.event.*` input을 direct `run:`에 넣는 path와 null object condition을 policy-as-code·test fixture로 탐지"
           ]
         },
         {
-          "heading": "데이터 흐름·endpoint 관점",
-          "body": "기사에 따르면 temporary event file은 ChatGPT app group 내부에 저장되고 48시간 후 삭제되지만, 이를 바탕으로 만든 memory file은 사용자가 삭제할 때까지 local filesystem에 plain Markdown으로 남음. 동일 macOS user account의 다른 process 접근 가능성은 endpoint protection·file permission·backup·search indexing을 점검할 이유임.",
+          "heading": "CI/CD 아키텍처·운영 관점",
+          "body": "안전한 기본값은 external event가 minimal-permission workflow만 호출하고, untrusted text는 environment variable 또는 artifact로 전달한 뒤 structured parser로 처리하는 방식. privileged job은 trusted ref·protected environment·manual approval·short-lived identity를 요구해야 함.",
           "items": [
-            "점검: local memory path·ACL·MDM backup·Spotlight/indexing·EDR collection 범위를 실제 기기에서 확인",
-            "통제: 민감 앱과 사이트는 exclusion list 또는 recording pause로 먼저 분리",
-            "경계: 기사 범위를 넘어 encryption-at-rest·key management·DLP enforcement가 제공된다고 가정 금지"
+            "설계: `issues`, `issue_comment`, `pull_request_target`, fork trigger를 trust tier별 workflow로 분리",
+            "처리: direct expression-to-shell interpolation 대신 `env` 전달과 `jq --arg` 등 structured serialization 사용",
+            "격리: public-trigger runner에는 internal Jira·cloud admin·production deploy credential을 주입하지 않음"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "보도는 website·app content가 context로 활용될 때 malicious instruction이 ChatGPT 또는 Codex의 의도하지 않은 행동을 유도할 수 있는 prompt-injection 위험을 언급함. 기록 기능을 tool execution과 연결할 경우 content ingestion, memory retrieval, tool permission, human approval을 독립 policy로 관리해야 함.",
+          "body": "runner token은 source repository 권한만이 아니라 linked SaaS와 cloud control plane까지 이어질 수 있음. secret scope, retention, OIDC audience, external callback, audit correlation을 inventory화하고 compromised-runner 가정의 rotation·forensics 절차를 준비해야 함.",
           "items": [
-            "통제: write·send·external upload tool은 memory retrieval만으로 자동 실행하지 않도록 approval 분리",
-            "통제: secret·건강·금융·고객 data 앱은 recording 제외 기본값과 exception approval 적용",
-            "피할 것: 화면 미수집을 곧바로 low-risk 또는 DLP 면제 근거로 해석하는 판단"
+            "통제: long-lived PAT/API token 대신 job-scoped OIDC와 audience·repository·environment claim 제한",
+            "통제: outbound network는 allowlist·proxy·DNS logging으로 제한하고 callback anomaly를 alert",
+            "조사: workflow run ID·actor·event payload hash·credential issuance·egress flow를 연결해 보존"
           ]
         },
         {
-          "heading": "비용·운영 관점",
-          "body": "기사의 token 사용량 절감 설명은 조직별 총비용 절감 증거가 아님. local event capture·summary 생성·memory retrieval이 request volume, context length, user support, endpoint incident response에 주는 영향을 분리 계측해야 함.",
+          "heading": "비용·FinOps와 신뢰성 관점",
+          "body": "CI 보안은 scan license나 runner minutes만의 문제가 아님. public-trigger workload는 queue saturation, artifact storage, egress, secret rotation, incident triage, delayed release 비용을 만들 수 있으며, privilege를 줄이는 설계는 failure blast radius와 recovery time을 줄이는 reliability 투자이기도 함.",
           "items": [
-            "지표: successful automation당 token·latency·user correction·memory retrieval hit·security exception",
-            "운영: feature flag cohort, telemetry retention, deletion request, support escalation, rollback owner를 runbook에 기록"
+            "지표: public-trigger run 수·denied event·privileged secret issuance·egress block·credential rotation time·MTTR 수집",
+            "운영: untrusted workflow를 별도 runner pool·quota·network policy로 분리해 build capacity 보호"
           ]
         },
         {
           "heading": "도입 로드맵과 관점",
-          "body": "1단계는 non-sensitive internal productivity task와 managed Mac 소수 기기에서 opt-in canary를 시행함. 2단계는 exclusion list·MDM/EDR·file retention·admin approval·user consent evidence를 검증하고, 3단계는 prompt injection simulation과 delete/disable drill을 통과한 cohort만 확대하는 순서.",
+          "body": "1단계에서 workflow inventory와 trigger/secret map을 만들고, 2단계에서 direct shell interpolation과 long-lived secret를 제거하며, 3단계에서 adversarial issue/comment test와 compromised-runner tabletop을 정기 release gate로 운영하는 순서.",
           "items": [
-            "1단계: data classification·owner·eligible workspace·success/stop metric 확정",
-            "2단계: local file discovery·backup exposure·deletion·memory-to-chat data flow 검증",
-            "3단계: security·privacy·IT support 승인 뒤 제한적 확대"
+            "1단계: repository별 public event·runner type·permission·secret·egress destination inventory 작성",
+            "2단계: privileged action을 protected environment와 approval으로 이동하고 OIDC·short-lived credential 전환",
+            "3단계: quote escape·null guard·fork event·callback·secret rotation drill을 CI regression suite에 추가"
           ]
         },
         {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "확인 항목은 ChatGPT app version, workspace/admin setting, user opt-in, memory prerequisite, allowed/excluded app list, local file path·ACL, MDM backup, EDR telemetry, retention/deletion, model-training setting, tool approval, incident handoff임.",
+          "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
+          "body": "확인 대상은 workflow trigger, expression usage, `run:` shell, environment serialization, job permissions, secret source, runner isolation, outbound path, audit log, patch verification, credential rotation과 incident owner임. **AI review가 통과해도 CI trust boundary는 자동으로 검증되지 않음**.",
           "items": [
-            "체크: personal·regulated·customer data가 있는 app을 기본 제외로 설정",
-            "체크: local Markdown artifact의 discovery·access·deletion을 device test로 재현",
-            "체크: disable·user offboarding·security incident 때 purge와 rollback owner를 지정"
-          ]
-        },
-        {
-          "heading": "발표에서 강조할 메세지",
-          "body": "**컴퓨터 작업 기억은 편의 기능이 아니라 새로운 local context store**임. 채택 팀은 assistant 성능보다 먼저 어떤 event가 남고, 어디에 남으며, 어떤 대화·tool 호출로 흘러가는지 증명해야 함.",
-          "items": [
-            "팀 액션: managed Mac 5~10대에서 file-flow·exclusion·deletion·prompt-injection canary 수행",
-            "피할 것: enterprise admin enablement를 개인 user consent·endpoint control 완료로 간주하는 배포"
+            "체크: external event payload가 `run:`·URL·file path·SQL·API command에 직접 연결되는지 search와 test로 확인",
+            "체크: issues/fork/comment workflow가 internal SaaS token·production credential·self-hosted runner에 접근하지 않는지 확인",
+            "팀 액션: 30일 내 public-trigger CI policy scan과 compromised-runner secret rotation game day 수행"
           ]
         }
       ],
-      "refresh_note": "2026-08-18 03:49 KST 첫 실행에서 새 커버리지 `2026-08-17 17:00 KST~2026-08-24 13:00 KST`의 GeekNews·GN⁺·인공지능신문·AI타임스와 OpenAI News/Codex 표면을 점검. Codex 장시간 세션 보도는 deep-dive-001의 별도 대체로 선정. 같은 시점의 Solar 다음 AI 요약·Liner AX 보도는 AI타임스 단일 2차 보도·직접 확인 가능한 독립 technical primary artifact 부재로 Computer History와 비중복 primary-source Deep Dive를 재구성할 근거가 부족해 유지. 기존 주장을 확대하지 않음."
+      "refresh_note": "2026-08-19 KST 첫 실행에서 전날 ChatGPT Mac Computer History 보도를 대체. Wiz Research의 직접 공개 연구를 유일한 Deep Dive primary source로 사용했으며, Anthropic Risk Report와 source URL·사건·운영 주제가 겹치지 않음."
     }
   ],
   "items": [
