@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimeskr-alibaba-cloud-third-korea-datacenter-2026-08-18]] — 알리바바 클라우드 국내 세 번째 데이터센터 출범 보도와 region/AZ·residency·SLA·agent control 검증 경계.
 - [[raw/articles/wiz-red-agent-snowflake-copilot-cicd-bug-2026-08-17]] — Wiz Red Agent의 Snowflake GitHub Actions issue-title injection·Jira token 경로, disclosure·CI/CD control 경계.
 - [[raw/articles/aitimes-openai-codex-long-session-preview-2026-08-17]] — Codex 741턴 장시간 세션의 loading·renderer memory·request 개선 예고와 release/canary 증거 경계.
 - [[raw/articles/aitimes-upstage-solar-daum-search-summary-2026-08-17]] — Solar 다음 검색 AI 요약 전면 적용 보도와 citation·quality·fallback 검증 경계.
