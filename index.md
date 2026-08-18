@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-anthropic-august-risk-report-2026-08-18]] — Anthropic 2026년 8월 위험 보고서의 정렬 위험 등급 상향·internal safety control·고권한 agent 배포 검증 경계.
 - [[raw/articles/aitimes-nvidia-openai-ohio-datacenter-guarantee-2026-08-18]] — 엔비디아·OpenAI 오하이오 AI 데이터센터 보증의 8GW 목표·잔존가치 보증·capacity 계약 검증 경계.
 - [[raw/articles/aitimeskr-alibaba-cloud-third-korea-datacenter-2026-08-18]] — 알리바바 클라우드 국내 세 번째 데이터센터 출범 보도와 region/AZ·residency·SLA·agent control 검증 경계.
 - [[raw/articles/wiz-red-agent-snowflake-copilot-cicd-bug-2026-08-17]] — Wiz Red Agent의 Snowflake GitHub Actions issue-title injection·Jira token 경로, disclosure·CI/CD control 경계.
