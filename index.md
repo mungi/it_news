@@ -265,6 +265,8 @@
 - [[raw/articles/aitimes-glm-5-3-cursor-vulnerability-report-2026-08-16]] — GLM-5.3의 Cursor 잠재 취약점 비공개 제보 보도와 disclosure·fix evidence 경계.
 - [[raw/articles/anthropic-claude-text-watermark-2026-08-14]] — Claude 텍스트 watermark의 probability attribution·C2PA·detection API 운영 경계.
 
+- [[raw/articles/cursor-origin-code-hosting-2026-08-17]] — Cursor Origin Code Hosting 얼리 베타의 GitHub 동기화·PR·agent/CI/deploy 권한 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
