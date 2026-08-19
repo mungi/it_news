@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-19 | Total pages: 295
+> Last updated: 2026-08-19 | Total pages: 296
 
 ## Entities
 
@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-kt-npu-llm-station-2026-08-19]] — KT NPU LLM 스테이션의 ATOM-MAX·믿음 K 2.5 Pro·운영 API 결합과 온프레미스 RAG control-plane 검증 경계.
 - [[raw/articles/aitimes-openai-astra-training-security-pause-2026-08-19]] — OpenAI 아스트라 RL 훈련 중단 보도와 연구망 격리·untrusted code·행동 모니터링 증거 경계.
 - [[raw/articles/aitimes-msit-everyones-ai-project-2026-08-18]] — 과기정통부 모두의 AI 공모 6개 사업 주체·국산 모델 비중·B200 GPU 지원과 public-service 운영 검증 경계.
 - [[raw/articles/anthropic-redacted-risk-report-august-2026]] — Anthropic 2026년 8월 redacted Risk Report 원문과 고권한 agent control-plane 검증 경계.
