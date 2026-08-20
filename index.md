@@ -281,6 +281,8 @@
 
 - [[raw/articles/bun-1-4-rust-node-compatibility-2026-08-20]] — Bun 1.4 Rust 재구현, Node.js 호환성·package/CI·resource·supply-chain 검증 경계.
 
+- [[raw/articles/aitimes-cerebras-cs4-inference-2026-08-20]] — Cerebras CS-4 WSE-3 Turbo 3개·RoCE v2·직접 액체 냉각의 추론·전력·fabric 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
