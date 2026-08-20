@@ -272,6 +272,9 @@
 
 - [[raw/articles/aitimes-openai-openrouter-gpt-5-6-discount-2026-08-19]] — OpenRouter GPT-5.6 할인 보도와 가격 기반 모델 라우팅·FinOps·품질 검증 경계.
 - [[raw/articles/aitimes-openai-chatgpt-for-teens-2026-08-19]] — ChatGPT for Teens의 연령 추정·기본 안전설정·보호자 알림과 age-assurance 운영 경계.
+- [[raw/articles/aws-bedrock-external-web-access-2026-08-20]] — Bedrock Web Search 외부 웹 접근의 IAM·request parameter·AWS boundary retrieval control.
+- [[raw/articles/cloudflare-workers-remote-spectre-2026-08-20]] — Workers 원격 Spectre 재평가와 DyPrIs·V8 Sandbox·tenant-isolation 운영 경계.
+- [[raw/articles/cisa-siemens-s7-active-threat-2026-08-20]] — Siemens S7 PLC 활성 위협 advisory의 exposure·patch·ladder logic·OT incident 대응.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.

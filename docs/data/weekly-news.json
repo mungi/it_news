@@ -2,14 +2,14 @@
   "week": "2026-W35",
   "coverage_start_kst": "2026-08-17 17:00",
   "coverage_end_kst": "2026-08-24 13:00",
-  "last_updated_kst": "2026-08-20 09:02",
+  "last_updated_kst": "2026-08-20 13:10",
   "audience": "developers and engineers",
   "executive_summary": [
-    "OpenRouter GPT-5.6 할인 보도: Luna·Terra와 Sol의 OpenAI 공식 API 대비 50% 수준 가격은 routing policy를 바꿀 수 있는 FinOps 신호. list price가 아닌 request별 token·retry·fallback·quality·p95 latency·data boundary를 canary로 검증 필요.",
+    "Amazon Bedrock Web Search 외부 웹 접근: `bedrock-websearch:ExternalWebAccess` IAM permission과 `external_web_access` request parameter가 public web fetch와 AWS 내부 index 모드를 가름. query 분류·egress·citation·freshness·quality·latency·cost를 같은 retrieval release gate로 검증 필요.",
+    "CISA Siemens S7 PLC 활성 위협: internet-exposed·구형·보호 미흡 PLC를 찾고 monitoring tool로 위장한 AI-generated script를 쓴다는 advisory. PLC inventory·internet 비노출·access control·patch·ladder logic integrity·anomaly hunt를 OT safety change로 실행 필요.",
+    "Cloudflare Workers Spectre 재평가: shared-process V8 isolate 환경에서 최대 12 bit/s·99% accuracy proof-of-concept 뒤 DyPrIs·V8 Sandbox·in-process isolation을 보완. runtime version·tenant boundary·secret scope·anomaly telemetry를 별도 evidence로 확인 필요.",
     "Mojo Deep Dive: compiler·tooling 전체 Apache 2.0 공개 뒤 source build·Bazel dependency·prebuilt nightly·artifact provenance·accelerator correctness를 별도 release gate로 검증 필요.",
-    "KT NPU LLM 스테이션: ATOM-MAX·믿음 K 2.5 Pro·운영 API를 고객사 내부 서버에 결합한 온프레미스 AI appliance 발표. RAG data path·API compatibility·NPU capacity·patch/rollback·audit은 PoC evidence로 검증 필요.",
-    "과기정통부 ‘모두의 AI’ 공모: 6개 사업 주체의 접수와 국산 모델 50%·타사 국산 모델 30% 조건, 9월 베타·12월 정식 출시 목표, B200 512장 분배 계획은 model provenance·GPU quota·data governance·fallback·SLO를 분리 검증할 공공 AI release gate.",
-    "OpenAI 아스트라 RL 훈련 2주 중단 보도: Hugging Face 보안 평가 사건과 Critical Cybersecurity Capability 초기 평가 뒤 workload·network isolation·untrusted code sandbox·standing privilege 축소·multi-stage monitoring을 학습 재개 gate로 제시. 원 평가·forensic·threshold는 별도 evidence 필요."
+    "KT NPU LLM 스테이션: ATOM-MAX·믿음 K 2.5 Pro·운영 API를 고객사 내부 서버에 결합한 온프레미스 AI appliance 발표. RAG data path·API compatibility·NPU capacity·patch/rollback·audit은 PoC evidence로 검증 필요."
   ],
   "deep_dives": [
     {
@@ -187,6 +187,239 @@
   ],
   "items": [
     {
+      "id": "news-357",
+      "title_ko": "Amazon Bedrock Web Search 외부 웹 접근: IAM·request parameter로 retrieval egress를 분리",
+      "title_original": "Launching External Web Access for Web Search on Amazon Bedrock",
+      "summary": "- 변경: AWS가 Bedrock Web Search에 public web live fetch를 위한 `external_web_access` 제어를 추가\n- 권한: request identity에 `bedrock-websearch:ExternalWebAccess` IAM permission을 부여하고 parameter 기본값 `true`를 유지해야 외부 접근 가능\n- 경계: 민감 데이터 처리에서 `external_web_access: false`를 설정하면 Amazon의 AWS 내 web index·knowledge graph만 사용하고 request data가 AWS boundary를 나가지 않는다는 AWS 설명\n- 제공: 외부 접근은 US East (N. Virginia)·US East (Ohio)·US West (Oregon)에서 제공\n- 팀 액션: query 분류별 external access policy·IAM least privilege·domain filter·citation·egress decision을 audit하고 live fetch와 in-AWS index의 quality·freshness·latency·cost를 canary 비교 필요",
+      "detail": "AWS는 2026년 8월 19일 Web Search on Amazon Bedrock의 외부 웹 접근 기능을 발표했다. `bedrock-websearch:ExternalWebAccess` IAM permission을 request identity에 부여하고 `external_web_access` parameter를 기본값 `true`로 두면 최신 문서·가격처럼 freshness가 필요한 use case에서 public web content를 live fetch할 수 있다. 민감 데이터는 `external_web_access: false`로 설정해 Amazon의 AWS 내 web index와 knowledge graph 결과만 사용하고 request data가 AWS boundary를 나가지 않게 할 수 있다고 AWS는 설명했다. 외부 접근 제공 리전은 US East (N. Virginia), US East (Ohio), US West (Oregon)이다. AgentCore Web Search의 domain·published-date filtering과 Europe·Asia Pacific 확장은 별도 AWS 공지로 확인했다. 한국 리전, index coverage·freshness SLA, provider/subprocessor, retention, citation quality, quota와 가격은 이번 공지에서 확인하지 못했다.",
+      "why_it_matters": "검색 grounding의 freshness 선택은 model parameter가 아니라 request data의 external egress, IAM 권한, citation provenance, latency·cost를 바꾸는 retrieval control plane 변경임.",
+      "engineering_implication": "data classification마다 `external_web_access` 기본값과 override 권한을 분리하고, request별 IAM principal·mode·domain filter·citation·egress decision을 correlation ID에 연결해야 함. public web과 in-AWS index를 동일 workload로 canary 비교한 뒤 quality·freshness·latency·cost·prompt injection stop condition과 rollback policy를 승인 필요.",
+      "korea_implication": "국내 리전 제공·국외 이전·위탁 처리·보존·지원 범위는 공지에 없으므로, AWS boundary 표현을 국내 데이터 처리 요건 충족으로 해석하지 말고 account·region·subprocessor·log export·contract evidence를 별도 검증 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "Web Search",
+        "Grounding",
+        "IAM",
+        "Data Egress"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-08-20 08:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-web-access-web-search/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "AgentCore Web Search domain/date filtering 및 리전 확장",
+          "url": "https://aws.amazon.com/about-aws/whats-new/2026/08/web-search-amazon-bedrock/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Bedrock Web Search가 public web을 live fetch하는 external access mode를 추가한 AWS 공식 공지",
+          "items": [
+            "발행: AWS RSS `2026-08-19 23:00 UTC`, KST `2026-08-20 08:00`",
+            "대상: 최신 문서·가격·점수처럼 최신성이 필요한 Web Search use case",
+            "권한: request identity에 `bedrock-websearch:ExternalWebAccess` IAM permission 필요"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "retrieval 결과의 외부 접근 여부를 IAM permission과 request parameter로 분리하는 제품 범위",
+          "items": [
+            "외부 모드: `external_web_access` 기본값 `true`를 유지하면 public web content live fetch",
+            "내부 모드: `external_web_access: false`면 Amazon의 in-AWS web index와 knowledge graph 결과만 사용",
+            "경계: false 설정에서 request data가 AWS boundary를 나가지 않는다는 AWS 설명"
+          ]
+        },
+        {
+          "heading": "아키텍처·보안 경계",
+          "body": "검색 grounding의 freshness 선택은 prompt와 retrieval query가 어느 boundary로 가는지를 결정하는 control plane 정책",
+          "items": [
+            "분리: data classification별 external mode 허용, IAM principal, domain allowlist와 override owner 관리",
+            "기록: request마다 mode·identity·domain filter·citation·egress decision을 correlation ID로 보존",
+            "피할 것: AWS boundary 표현만으로 국내 규제·subprocessor·retention·support 요건을 충족한다고 판단"
+          ]
+        },
+        {
+          "heading": "제공 범위와 증거 경계",
+          "body": "공식 공지는 제공 리전과 접근 control을 설명하며 retrieval 품질·SLA·가격의 보증 자료는 아님",
+          "items": [
+            "리전: US East (N. Virginia)·US East (Ohio)·US West (Oregon) 제공",
+            "관련: AgentCore Web Search의 domain·published-date filtering과 Europe·Asia Pacific 확장은 별도 공지",
+            "미확인: 한국 리전·index coverage·freshness SLA·quota·pricing·retention·citation quality"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "외부 web grounding은 enabled/disabled 옵션이 아니라 data egress와 evidence provenance를 포함한 release 대상",
+          "items": [
+            "검증: 동일 workload에서 live fetch와 in-AWS index의 citation·freshness·quality·latency·cost·injection resistance 비교",
+            "통제: 민감 query는 deny-by-default mode와 narrow IAM grant, policy revision, approval path 적용",
+            "팀 액션: 30일 내 대표 search workflow에 mode별 canary·audit query·rollback drill 등록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-359",
+      "title_ko": "Cloudflare Workers 원격 Spectre 재평가: shared-process tenant isolation에 DyPrIs·V8 Sandbox·in-process 방어 추가",
+      "title_original": "A revisit of remote Spectre attacks on Cloudflare Workers",
+      "summary": "- 연구: Cloudflare가 production Workers에서 Dynamic Process Isolation(DyPrIs) 구현 한계를 확인하고 remote Spectre proof-of-concept으로 최대 **12 bit/s·99% accuracy** leakage를 시연\n- 구조: V8 isolate별 JavaScript heap은 분리하지만 다수 tenant가 같은 OS process를 공유하는 runtime에서 arbitrary read는 cross-tenant leakage 경계\n- 조치: DyPrIs 개선, V8 Sandbox 통합, in-process isolation 적용을 공개\n- 상태: 발표 시점 production mitigation 완료 및 최근 3년 active exploitation indicator 미발견이라는 Cloudflare 범위\n- 팀 액션: shared-process runtime의 V8 patch·isolation escalation·timer/shared-memory policy·secret scope·anomaly telemetry를 workload별 release gate로 검증 필요",
+      "detail": "Cloudflare는 2026년 8월 19일 production Workers 환경에서 remote Spectre 공격을 재평가한 결과를 공개했다. 연구진은 Dynamic Process Isolation(DyPrIs)의 구현 한계를 찾아 production workload에서 최대 12 bit/s, 99% accuracy로 memory leakage를 시연했다고 밝혔다. Workers는 V8 isolate와 separate JavaScript heap을 사용하지만 다수 tenant가 같은 operating-system process를 공유한다. Cloudflare는 이런 shared-process 구조에서 arbitrary read가 cross-tenant leakage로 이어질 수 있다고 설명했다. 대응으로 DyPrIs 개선, V8 Sandbox 통합, in-process isolation을 적용했으며 공개된 공격은 production system에서 이미 완화됐고 최근 3년 active exploitation indicator는 찾지 못했다고 밝혔다. 이 내용은 Cloudflare Workers Runtime의 발표 범위이며, 다른 V8 isolate·serverless runtime의 동일 취약성 또는 방어 효과를 보증하지 않는다.",
+      "why_it_matters": "서버리스 multi-tenancy는 언어 런타임 격리만으로 끝나지 않으며, CPU microarchitecture·process boundary·script classification·patch pipeline·incident telemetry를 함께 설계해야 하는 infrastructure security 문제임.",
+      "engineering_implication": "untrusted code runtime은 V8/engine patch level, process isolation escalation, timer·shared-memory 제한, secret scope, egress, cross-tenant anomaly signal을 inventory화해야 함. vendor mitigation을 적용 사실로만 기록하고 runtime version·workload topology·policy·incident detection evidence를 tenant별 acceptance gate와 rollback drill로 확인 필요.",
+      "korea_implication": "국내 서버리스·edge·multi-tenant PaaS도 해외 벤더의 mitigation 발표를 자체 isolation 보증으로 해석하지 말고, shared process 여부·runtime revision·tenant boundary·비밀정보 접근·monitoring export를 서비스 계약과 운영 evidence에서 확인해야 함.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "Workers",
+        "Spectre",
+        "Serverless",
+        "V8",
+        "Tenant Isolation"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-08-20 01:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/revisiting-spectre-attacks-on-workers/",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 production Workers에서 remote Spectre attack을 재평가하고 mitigation 변경을 공개",
+          "items": [
+            "발행: Cloudflare RSS `2026-08-19 16:00:28 UTC`, KST `2026-08-20 01:00`",
+            "결과: DyPrIs 구현 한계를 확인하고 최대 `12 bit/s`, `99% accuracy` leakage proof-of-concept 시연",
+            "상태: 발표 시점 production mitigation 완료와 최근 3년 active exploitation indicator 미발견"
+          ]
+        },
+        {
+          "heading": "공유 runtime 구조",
+          "body": "Workers는 V8 isolate별 JavaScript heap을 분리하면서 다수 tenant가 한 OS process를 공유해 startup latency와 density를 확보하는 설계",
+          "items": [
+            "경계: Worker process 내 arbitrary read가 cross-tenant leakage로 이어질 수 있는 구조",
+            "원리: speculative execution이 cache 같은 microarchitectural state에 남긴 흔적으로 out-of-bounds memory bit를 추론",
+            "조건: remote attacker는 shared hardware activity·interrupt·context switch·coarse timer 같은 production obstacle을 통과 필요"
+          ]
+        },
+        {
+          "heading": "방어 변경",
+          "body": "Cloudflare는 기존 Dynamic Process Isolation을 보완하고 V8 Sandbox와 in-process isolation을 결합했다고 발표",
+          "items": [
+            "기존: CPU-only execution timer freeze, multithreading/shared memory 제한, suspicious script detection·memory shuffle·process isolation 설명",
+            "변경: DyPrIs 개선, V8 Sandbox 통합, in-process isolation 추가",
+            "경계: 본문은 Cloudflare Workers Runtime의 mitigation이며 타 serverless/V8 runtime의 동일 보증 자료가 아님"
+          ]
+        },
+        {
+          "heading": "운영·공급망 관점",
+          "body": "multi-tenant runtime의 isolation은 engine patch와 process boundary뿐 아니라 secret·network·script policy·incident signal의 결합 control",
+          "items": [
+            "inventory: runtime engine revision·shared-process topology·isolation escalation·timer/shared-memory policy·secret scope 식별",
+            "관측: anomalous script, process migration, egress, credential access, cross-tenant error signal을 incident timeline으로 연결",
+            "피할 것: 연구 disclosure 또는 vendor mitigation을 active compromise·모든 tenant protection의 증거로 치환하는 판단"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "untrusted code의 고밀도 실행은 성능 최적화와 isolation strength를 같은 release gate에서 검증할 필요",
+          "items": [
+            "검증: runtime update 전후 tenant isolation·latency·density·secret access·egress·rollback 조건을 representative workload로 비교",
+            "통제: high-risk script의 escalation process, narrow credential, egress allowlist, patch deployment evidence 적용",
+            "팀 액션: shared runtime 사용 서비스를 대상으로 engine patch·tenant boundary·incident telemetry·rollback owner inventory 완료"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-358",
+      "title_ko": "CISA, Siemens S7 PLC 활성 위협 경고: 인터넷 노출·patch·ladder logic integrity를 OT incident 우선순위로 지정",
+      "title_original": "Defending Against an Active Threat to Siemens S7 Series PLCs",
+      "summary": "- 경고: CISA·NSA·FBI·DOE·EPA가 Siemens S7 Series PLC를 겨냥한 **active threat** advisory `AA26-231A` 공개\n- 행위: internet scanning으로 노출된 구형·보호 미흡 PLC를 찾고 정상 monitoring tool로 위장한 AI-generated exploitation script를 사용한다는 advisory 범위\n- 대상: 제조·에너지·상하수도·화학·식품·상업시설을 주요 targeting sector로 명시\n- 완화: PLC inventory·critical patch·internet 비노출·access control·unauthorized activity monitoring·service/protocol/ladder logic integrity hardening·anomaly hunt 제시\n- 팀 액션: PLC·engineering workstation·remote access·jump host의 연결도를 먼저 확인하고 exposure reduction·segment·patch/rollback·logic hash·forensic retention을 OT safety owner와 같이 실행 필요",
+      "detail": "CISA는 2026년 8월 19일 Cybersecurity Advisory `AA26-231A`에서 Siemens S7 Series PLC를 겨냥한 활성 위협을 경고했다. CISA·NSA·FBI·DOE·EPA는 PLC targeting activity가 Siemens 제품에만 한정되지 않는다고 명시했다. advisory에 따르면 행위자는 internet scanning service로 인터넷에 노출된 구형 또는 보호 미흡 PLC를 찾고, 정상 monitoring tool로 위장한 AI-generated exploitation script를 reconnaissance와 capability development에 사용한다. CISA는 제조, 에너지, 상하수도, 화학, 식품·농업, 상업시설을 주요 targeting sector로 열거했다. 우선 완화는 Siemens S7 PLC inventory, critical patch, 인터넷 비노출, access control 강화, unauthorized activity monitoring, PLC service·protocol·ladder logic integrity hardening, anomaly hunt다. source는 active threat를 명시하지만 특정 한국 시설 침해, CVE, IoC, exploit code, 개별 제품 patch matrix는 이번 확인 범위에 없다.",
+      "why_it_matters": "PLC 노출과 engineering path는 IT 취약점보다 공정 안전·설비 손상·운영 중단으로 이어질 수 있으며, patch 여부만이 아니라 reachable path·controller logic·remote access·forensic evidence를 함께 관리해야 함.",
+      "engineering_implication": "OT asset·connection map에서 PLC, engineering workstation, jump host, remote vendor access, internet route를 연결하고 public exposure 제거와 allowlist·MFA·segmentation을 우선 적용해야 함. patch 전후에는 ladder logic hash·configuration·network telemetry·rollback package를 보존하고, safety owner·OT vendor가 참여하는 change window와 unauthorized command hunt를 runbook으로 검증 필요.",
+      "korea_implication": "국내 제조·에너지·상하수도 OT도 해외 advisory의 제품명을 지역 무관성의 근거로 확대하지 말고, 현장별 PLC inventory·인터넷 노출·vendor remote path·운전 안전·KISA/제조사 공지와 함께 동일한 exposure-reduction 절차를 적용할 필요.",
+      "category": "Security",
+      "tags": [
+        "CISA",
+        "Siemens",
+        "PLC",
+        "OT Security",
+        "ICS",
+        "Active Exploitation"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-08-19 21:00",
+      "source_name": "CISA",
+      "source_url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa26-231a",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CISA와 미국 연방 기관들이 Siemens S7 Series PLC를 겨냥한 활성 위협을 경고한 Cybersecurity Advisory `AA26-231A`",
+          "items": [
+            "발행: CISA release date `2026-08-19`, RSS `12:00 UTC` 기준 KST `21:00`",
+            "범위: Siemens PLC에 국한되지 않는 broader PLC targeting activity 경고",
+            "기관: CISA·NSA·FBI·DOE·EPA 공동 advisory"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "노출된 구형·보호 미흡 PLC를 찾는 reconnaissance와 위장 script 사용이 advisory의 직접 확인 범위",
+          "items": [
+            "탐색: internet scanning service로 internet-exposed PLC를 식별",
+            "도구: legitimate monitoring tool로 위장한 AI-generated exploitation script를 capability development에 사용",
+            "대상: 제조·에너지·상하수도·화학·식품·농업·상업시설을 주요 sector로 열거"
+          ]
+        },
+        {
+          "heading": "우선 완화",
+          "body": "CISA는 patch만이 아니라 asset visibility·network exposure·controller logic·행위 monitoring을 묶은 조치를 제시",
+          "items": [
+            "inventory: Siemens S7 Series PLC 전체 식별과 asset owner·criticality 매핑",
+            "차단: PLC의 internet 접근 제거와 access control 강화",
+            "보존: PLC service·protocol·ladder logic integrity hardening과 unauthorized activity monitoring·anomaly hunt"
+          ]
+        },
+        {
+          "heading": "OT 운영·안전 경계",
+          "body": "OT patch는 공정 안전과 vendor support·maintenance window·rollback을 고려해야 하며 exposure reduction과 firmware update를 같은 승인으로 묶지 않는 운영 필요",
+          "items": [
+            "연결: PLC·engineering workstation·jump host·remote vendor access·internet route를 포함한 connection map 확인",
+            "검증: patch 전후 ladder logic hash·configuration backup·network telemetry·rollback package 보존",
+            "피할 것: active threat 경고를 특정 한국 시설 침해·CVE·IoC·exploit code 존재로 확대하는 판단"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "공장·설비 환경은 public exposure 제거와 unauthorized command 탐지가 patch schedule보다 먼저 필요한 incident control일 수 있음",
+          "items": [
+            "우선: public exposure, default/standing credential, remote access allowlist와 MFA·segmentation을 즉시 점검",
+            "훈련: safety owner·OT vendor가 참여하는 patch/rollback drill과 unauthorized command·configuration-change hunt 실행",
+            "팀 액션: 30일 내 high-criticality PLC의 reachability·patch state·logic backup·forensic retention evidence를 risk register에 등록"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-355",
       "title_ko": "OpenRouter의 GPT-5.6 50% 할인 보도: 가격 기반 자동 라우팅을 FinOps·품질 gate로 분리",
       "title_original": "OpenAI offers GPT-5.6 models at 50% of official API price on OpenRouter",
@@ -260,7 +493,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 4
     },
     {
       "id": "news-354",
@@ -337,7 +570,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 5
     },
     {
       "id": "news-356",
@@ -413,7 +646,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-353",
@@ -489,7 +722,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-351",
@@ -566,7 +799,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-350",
@@ -642,7 +875,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-349",
@@ -726,7 +959,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-348",
@@ -803,7 +1036,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 11
     },
     {
       "id": "news-347",
@@ -888,7 +1121,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 12
     },
     {
       "id": "news-346",
@@ -962,7 +1195,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 13
     },
     {
       "why_it_matters": "AI coding agent의 장시간 세션은 모델 응답 품질과 별개로 클라이언트 상태·네트워크 요청·메모리·작업 재개 경험이 생산성과 운영 비용을 좌우함.",
@@ -1036,11 +1269,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 14
     },
     {
       "id": "news-344",
-      "rank": 12,
+      "rank": 15,
       "title_ko": "DeepSeek-V4 Flash 하네스 비교 보도: 동일 모델도 tool orchestration에 따라 완료율·성공비용·지연이 달라짐",
       "title_original": "DeepSeek-V4 Flash agent harness benchmark",
       "summary": "- 검증: AI타임스가 보도한 Composio 평가는 Gmail·GitHub·Slack·Google Sheets를 쓰는 **30개 다단계 업무**를 Claude Code·Codex·OpenCode·Oh My Pi 하네스에서 총 240회 실행\n- 품질: 과제 완료율은 하네스별 46.7~56.7%, 모든 환경에서 완료된 과제는 30개 중 6개라는 보도 수치\n- 비용·지연: 성공 1회당 평균 비용은 Oh My Pi 0.073달러·Claude Code 0.195달러, 평균 수행 시간은 Claude Code 122.7초·Oh My Pi 272.4초라는 보도 수치\n- 증거 경계: Composio 원 실험, task 정의·계정·prompt·model revision·tool 권한·재시도 정책·통계 방법은 직접 확인하지 않아 일반 성능·SLO·ROI 보증으로 확대 불가\n- 팀 액션: 모델 선정과 별도로 harness별 task success·tool failure·retry·token·성공비용·p95 latency·approval/egress를 동일 workload에서 canary 측정 필요",
@@ -1115,7 +1348,7 @@
     },
     {
       "id": "news-352",
-      "rank": 13,
+      "rank": 16,
       "title_ko": "Cursor Origin 코드 호스팅 얼리 베타: GitHub 동기화·PR·agent 작업면의 권한·배포 경계 점검",
       "title_original": "Origin Code Hosting",
       "summary": "- 공개: Cursor가 유료 플랜 대상 `Origin Code Hosting`을 8월 17일 얼리 베타로 순차 제공\n- 범위: Cursor-hosted repo, pull request, code browsing, GitHub sync를 우선 제공하고 agent-native 기능은 후속 예정\n- 동기화: GitHub 원본 repo는 GitHub를 source of truth로 유지하며, Cursor와 양방향 PR comment·reaction·reply 동기화\n- 연동: Vercel preview deployment, Depot·Buildkite CI 연결을 제시하지만 실제 권한·secret·approval·SLA·GA 범위는 source에 미공개\n- 팀 액션: repo host·GitHub sync·agent branch push·PR merge·preview deployment를 하나의 trust boundary로 inventory화하고 최소 권한·audit·rollback canary 적용 필요",
@@ -1193,7 +1426,7 @@
     },
     {
       "id": "news-334",
-      "rank": 14,
+      "rank": 17,
       "title_ko": "GLM-5.3 Cursor 잠재 취약점 비공개 제보 보도: AI 사이버 capability는 disclosure·fix evidence로 분리 검토",
       "title_original": "GLM-5.3, 'Cursor' security vulnerability report",
       "summary": "- 공개: AI타임스가 2026-08-16 18:16 KST에 Z.ai 개발자 옹호자의 X 게시물을 인용, **GLM-5.3**이 Cursor에서 잠재적으로 심각한 취약점을 찾았다고 보도\n- disclosure: 발견 내용은 Cursor에 비공개 제보됐고 수정 전 세부 사항은 공개하지 않겠다는 설명\n- 범위: 취약점 유형·영향 버전·공격 조건·CVE·수정 릴리스·사용자 영향은 기사와 인용문에서 확인되지 않은 상태\n- 증거 경계: 단일 공급자 측 주장과 미공개 취약점은 benchmark·실제 보안 성숙도·일반적 exploit capability의 독립 검증 근거 아님\n- 팀 액션: Cursor 사용 조직은 공급자 공지·릴리스 노트·CVE·업데이트 가능 여부를 추적하고, 모델 평가는 authorized environment·disclosure workflow·tool 권한 gate와 함께 운영 필요",
@@ -1275,7 +1508,7 @@
     },
     {
       "id": "news-343",
-      "rank": 15,
+      "rank": 18,
       "title_ko": "Anthropic Claude 텍스트 워터마크 예고: EU AI Act 대응은 detection API·false positive·콘텐츠 흐름 검증 과제",
       "title_original": "How Claude's text watermark works",
       "summary": "- 공개: Anthropic이 향후 Claude 생성 텍스트에 **텍스트 워터마크**를 적용하고 전 세계 출시를 계획한다고 2026-08-14 공식 설명\n- 방식: 다음 단어 후보 중 의미 영향이 작은 확률적 선택에 key 기반 패턴을 남기며, 검증자는 Claude 관여 가능성을 확률로 산출하는 구조\n- 한계: 짧은 텍스트·사람 작성문 교정·사실 문장·정확성이 필요한 코드에서는 검출 신호가 약하거나 제한적이라는 공식 설명\n- 비용·식별: 추가 token을 만들지 않아 가격은 같고, watermark·key에 사용자·조직·대화 식별 정보는 없다는 설명\n- 팀 액션: 예정된 detection API의 threshold·권한·audit·retention·false-positive 대응과 C2PA file credential 검증 흐름을 content governance에 별도 설계 필요",
@@ -1359,7 +1592,7 @@
     },
     {
       "id": "news-342",
-      "rank": 16,
+      "rank": 19,
       "title_ko": "OpenAI ChatGPT 대화 경찰 신고 보도: safety escalation·human review·privacy notice의 운영 증거 점검",
       "title_original": "OpenAI reported ChatGPT conversation containing murder plan to police",
       "summary": "- 보도: AI타임스가 **ChatGPT 대화의 위해 계획을 FBI에 신고**해 체포로 이어진 사례를 보도, OpenAI는 임박한 심각한 신체 위해 가능성을 별도 검토 뒤 법 집행기관에 신고하는 정책을 설명\n- 흐름: 기사 기준 OpenAI는 대화를 별도 review system으로 보내고 소수 전문 인력이 검토하며, FBI는 약 두 달간의 대화 기록을 지역 보안관실에 전달\n- 경계: 신고 threshold·human review 기준·보존 기간·법집행기관 제공 범위·사용자 통지·이의제기·국가별 적용은 기사에서 구체적으로 확인되지 않음\n- 운영: enterprise AI team은 safety escalation을 product claim이 아니라 data classification·human access·legal request·audit·incident response control로 분리 설계 필요\n- 팀 액션: 대화 로그의 detection→review→disclosure→retention→deletion 흐름과 owner·SLA·evidence를 계약·관리자 문서·실제 exercise로 확인 필요",
@@ -1433,7 +1666,7 @@
     },
     {
       "id": "news-338",
-      "rank": 17,
+      "rank": 20,
       "title_ko": "앤트로픽 IPO 보도 업데이트: 2028년 매출 목표 1,900억~2,000억달러는 계약·usage·GPU 원가 분리 검토 신호",
       "title_original": "Anthropic reportedly targets $190–200 billion in 2028 revenue ahead of IPO",
       "summary": "- 보도: AI타임스가 Reuters 소식통 보도를 인용해 Anthropic이 IPO 투자자에게 **2028년 매출 1,900억~2,000억달러** 목표를 제시했다고 보도\n- 변경: 기사 기준 과거 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높은 목표이며, Claude Code·Claude API 기업 채택과 5월 ARR 470억달러 초과를 배경으로 제시\n- 비용 경계: 모델 훈련·인프라·GPU 투자 때문에 EBITDA만으로 가치 산정이 어렵다는 기사 설명이며, 목표 매출은 계약·capacity·SLO·수익성 실현 증거 아님\n- 불확실성: 직접 확인한 것은 AI타임스의 Reuters 인용 보도이며 Reuters 원문·투자자료·감사 재무제표·고객 usage·할인·GPU/cloud 원가는 미확인\n- 팀 액션: provider forecast 대신 workload별 successful-task cost, quota·commitment·discount, fallback·data handling을 invoice·trace·계약 문서로 대조 필요",
@@ -1516,7 +1749,7 @@
     },
     {
       "id": "news-341",
-      "rank": 18,
+      "rank": 21,
       "title_ko": "ChatGPT Mac 컴퓨터 히스토리 보도: accessibility event·local Markdown memory의 endpoint 경계 점검",
       "title_original": "ChatGPT Computer History for Mac",
       "summary": "- 보도: AI타임스가 Mac용 ChatGPT의 **Computer History** 도입을 보도, accessibility system의 클릭·키 입력·앱 전환 event를 기록해 작업 맥락을 활용하는 구조\n- 저장: 기사 기준 screenshot·screen recording·microphone·system audio·private browsing 활동은 수집하지 않고, event summary에서 local Markdown memory file을 생성\n- 통제: 기능은 opt-in이며 Business·Enterprise는 admin 허용 뒤에도 user별 동의가 필요하다는 기사 설명\n- 위험: local memory plain Markdown, 이후 chat context, prompt injection, excluded app·deletion·backup 경로는 별도 data boundary로 검증 필요\n- 팀 액션: managed Mac canary에서 file path·ACL·MDM/EDR·exclusion·deletion·tool approval을 검증한 뒤 제한 확대 필요",
@@ -1598,7 +1831,7 @@
     },
     {
       "id": "news-340",
-      "rank": 19,
+      "rank": 22,
       "title_ko": "Qwen3.8-27B 가중치 공개: 27B 멀티모달·262K 컨텍스트를 self-hosted agent 검증 대상으로",
       "title_original": "Qwen3.8-27B",
       "summary": "- 공개: Qwen 공식 Hugging Face 저장소가 **Qwen3.8-27B** post-trained 가중치·구성을 공개, Apache-2.0·Transformers·vLLM·SGLang·TokenSpeed 호환을 명시\n- 구성: 27B native vision-language dense model, 기본 **262,144 token**·최대 1M 확장 컨텍스트, thinking mode 기본 활성화와 `reasoning_effort` 제어 제공\n- 성능 경계: Qwen card의 Terminal Bench 2.1 73.0·SWE-bench Pro 61.7·OSWorld-Verified 84.3은 공급자 benchmark이며 내부 workload·GPU 비용·SLO 보증 아님\n- 운영: Qwen은 framework별 추론 효율·throughput 차이를 명시하고 production/high-throughput에는 SGLang·vLLM·TokenSpeed를 권장\n- 팀 액션: revision hash·license·serving image·VRAM·context cap·thinking token·tool permission을 pin한 격리 canary로 task 성공률·p95·token·egress·rollback을 검증 필요",
@@ -1677,7 +1910,7 @@
     },
     {
       "id": "news-339",
-      "rank": 20,
+      "rank": 23,
       "title_ko": "오픈AI 기업용 매출 보도: B2B 비중 역전은 usage·효율·계약 조건을 분리할 FinOps 신호",
       "title_original": "OpenAI enterprise revenue reportedly surpasses ChatGPT consumer revenue",
       "summary": "- 보도: AI타임스가 CNBC 보도를 인용해 OpenAI 매출의 절반 이상이 기업용 사업에서 발생하며, 올해 초 B2B/B2C 40/60 비중이 역전됐다고 보도\n- 수치: 기사 기준 ARR은 **400억달러 초과**, 7월 매출은 전월 대비 20%, 기업 고객 수는 32% 증가\n- 효율: CFO가 GPT-5.6 Sol의 agent coding 작업 효율을 54% 높였다고 언급했으나 workload·측정법·가격·SLO는 직접 확인되지 않음\n- 증거 경계: 비공개 투자자 회의와 CNBC 인용 보도 범위이며, 감사 재무제표·고객별 usage·retention·계약 할인·cloud/GPU 원가·지역별 quota는 미확인\n- 팀 액션: ARR·고객 수 headline 대신 successful-task cost, cache·retry, committed spend, quota, data handling, fallback을 invoice·trace·계약 문서로 대조 필요",
@@ -1756,7 +1989,7 @@
     },
     {
       "id": "news-336",
-      "rank": 21,
+      "rank": 24,
       "title_ko": "딥시크 V4 API 피크·비피크 요금 도입 보도: agent workload의 시간대별 token 비용 재산정 필요",
       "title_original": "DeepSeek V4 API pricing changes with peak and off-peak rates",
       "summary": "- 변경: AI타임스 보도 기준 **2026-08-17 01:00 KST**부터 DeepSeek V4 Pro·Flash API에 피크·비피크 차등 요금 적용\n- 비용: V4 Pro output은 100만 token당 기존 0.87달러에서 비피크 1.98달러·피크 3.96달러라는 기사 수치\n- cache: V4 Pro cache-hit은 0.003625달러에서 비피크 0.022달러·피크 0.044달러라는 기사 수치\n- 증거 경계: 지역·계정별 적용 조건·rate limit·SLA·billing export 형식은 기사에서 직접 확인되지 않음\n- 팀 액션: 시간대·token type·cache hit·retry·latency를 trace와 billing에 연결해 가격 시뮬레이션·fallback·spend cap을 8월 17일 전 검증 필요",
@@ -1828,7 +2061,7 @@
     },
     {
       "id": "news-335",
-      "rank": 22,
+      "rank": 25,
       "title_ko": "딥시크 하네스 v0.1 공개: 모델·도구·샌드박스를 플러그인으로 조립하는 오픈소스 coding-agent 런타임",
       "title_original": "DeepSeek Harness: Everything is a Plugin.",
       "summary": "- 공개: 딥시크가 **DeepSeek Harness v0.1**을 developer preview·MIT license로 공개, 모델·도구·스킬·세션·샌드박스·파일 시스템·agent loop를 플러그인으로 교체하는 구조\n- 실행 범위: 저장소 분석·파일 수정·shell·파일/웹 검색·계획·subagent·workflow와 민감 작업 approval을 제공한다는 보도\n- 운영 경계: preview는 breaking change 가능성을 명시하며, 공개 GitHub 저장소의 현재 88.8k star·8k fork는 채택·보안성·production readiness 보증 아님\n- 팀 액션: plugin provenance·tool permission·sandbox escape boundary·secret egress·session trace·rollback을 함께 검증한 isolated repository canary부터 적용 필요",
@@ -1908,7 +2141,7 @@
     },
     {
       "id": "news-337",
-      "rank": 23,
+      "rank": 26,
       "title_ko": "LG·엔비디아 전략 협력: Jetson Thor 휴머노이드·DSX AI 팩토리 계획은 현장 PoC와 전력·냉각 검증 과제",
       "title_original": "LG and NVIDIA strategic collaboration for physical AI, AI factory, and mobility",
       "summary": "- 협력: LG와 NVIDIA가 로봇·AI 팩토리·모빌리티 MOU를 체결, 공동 TF로 R&D·현장 실증·사업화를 추진한다는 보도\n- 로봇: **2027년 1분기** Jetson Thor·Isaac GR00T·Halos for Robotics 기반 이족보행 휴머노이드 공개를 목표로 제시\n- 제조: 올해 미국 테네시 세탁기 생산라인에 휠 기반 LG 클로이드를 투입해 실제 제조 환경 PoC를 진행할 계획\n- 인프라: 2027년 상반기 Vera Rubin 레퍼런스 사이트, 2028년 상반기 충남 천안 **80MW** AI 팩토리 확대 계획과 20% 이상 공기 단축 목표를 보도\n- 팀 액션: 계획·MOU 수치를 capacity·PUE·GPU delivery·network·safety·SLO 확정값으로 취급하지 말고, PoC telemetry와 commissioning evidence로 단계별 검증 필요",
@@ -1989,7 +2222,7 @@
     },
     {
       "id": "news-332",
-      "rank": 24,
+      "rank": 27,
       "title_ko": "Google Gemini 3.7 Flash 공식 공개: 코딩·에이전트 성능·2026년 도입가를 운영 지표로 검증",
       "title_original": "Introducing Gemini 3.7 Flash",
       "summary": "- 공식 공개: Google이 **Gemini 3.7 Flash**를 코딩·에이전트용 workhorse 모델로 발표, 원문은 2026-08-13 날짜만 제시\n- 성능: Google 비교에서 FrontierCode 43.6% 대 34.4%, DeepSWE 65.3% 대 49.0%, WebDev Arena Elo 1588 대 1538 공개\n- 가격: 2026년 말까지 입력·출력 100만 token당 0.75달러·3.75달러 도입가 제시, 원문에서 cache·2027년 표준 가격은 확인되지 않음\n- 팀 액션: 동일 task·tool 권한에서 성공률·재시도·cache hit·p95 latency·월 비용을 canary로 수집 필요",
@@ -2071,7 +2304,7 @@
     },
     {
       "id": "news-331",
-      "rank": 25,
+      "rank": 28,
       "title_ko": "GitHub Secure Open Source Fund: 50개 프로젝트의 AI 시대 보안 작업과 측정 지표",
       "title_original": "What 50 open source projects taught us about security in the AI era",
       "summary": "- 운영 결과: GitHub Secure Open Source Fund Session 4가 **50개 오픈소스 프로젝트·71명 maintainer·22개국**에 50만 달러 이상을 지원한 결과 공개\n- 통제 적용: 참여 프로젝트의 92%가 secret scanning·code scanning·protected branch·private vulnerability reporting·Dependabot 핵심 기능을 활성화한 집계\n- 누적 지표: 전체 session 기준 533개 신규 CVE 공개, 1,500건 이상 Dependabot security update, 650건 이상 exposed secret 해결이라는 GitHub 집계\n- 팀 액션: AI-assisted triage를 도입하더라도 alert closure·release decision·exception approval은 maintainer ownership과 remediation SLA로 관리",
@@ -2247,7 +2480,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 29
     },
     {
       "id": "news-329",
@@ -2319,7 +2552,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 30
     },
     {
       "id": "news-324",
@@ -2412,11 +2645,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 31
     },
     {
       "id": "news-330",
-      "rank": 29,
+      "rank": 32,
       "title_ko": "Tailscale, 16년 된 SQLite WAL-Reset race 추적: control plane shard의 database corruption과 복구 경로 공개",
       "title_original": "How we tracked down a 16-year-old SQLite bug",
       "summary": "- 장애: Tailscale은 6개월간 19건의 SQLite database corruption과 control plane shard 복구를 분석해 WAL-Reset data race를 확인\n- 영향: 영향 shard의 control plane 복구 중 신규 device 연결·network 변경 반영·admin console·API가 제한됐으며, 이미 연결된 peer-to-peer WireGuard 세션은 유지\n- 운영 방식: synthetic 재현 대신 production passive forensic telemetry로 transaction·WAL 상태를 수집해 원인을 좁힌 사례\n- 팀 액션: SQLite 기반 control plane은 backup integrity check·WAL/checkpoint telemetry·shard isolation·restore RTO를 함께 운영 지표로 관리",
@@ -2566,11 +2799,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 33
     },
     {
       "id": "news-333",
-      "rank": 31,
+      "rank": 34,
       "title_ko": "OpenAI·Anthropic·Google reasoning block 재생 공격 연구: 공개 agent trace의 비밀·프롬프트 주입 경계 점검",
       "title_original": "OpenAI, Anthropic, Google API Flaw Let Weaker AI Models Decode Stronger Models' Reasoning",
       "summary": "- 연구 보도: 공개된 agent trace의 encrypted reasoning block을 같은 provider의 호환 모델에 재생해 plaintext 복원을 시연했다는 보도\n- 노출 범위: 6,708개 공개 trajectory에서 315,320개 block을 처리해 non-benchmark session의 privacy artifact 704개를 집계했다는 보고\n- 완화 상태: 연구진은 responsible disclosure 뒤 주된 extraction attack이 2026년 8월 기준 재현되지 않는다고 설명, vendor의 공개 확인은 미확인\n- 팀 액션: raw API transcript·opaque reasoning field를 로그·artifact·issue에서 제거하고 model-switch·trace-sharing 경로를 점검 필요",
@@ -2731,7 +2964,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 35
     },
     {
       "id": "news-328",
@@ -2814,7 +3047,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 36
     },
     {
       "id": "news-325",
@@ -2884,7 +3117,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 37
     },
     {
       "id": "news-321",
@@ -2970,7 +3203,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 38
     },
     {
       "id": "news-322",
@@ -3040,7 +3273,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 39
     },
     {
       "id": "news-320",
@@ -3118,7 +3351,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 40
     },
     {
       "id": "news-319",
@@ -3186,7 +3419,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 41
     },
     {
       "id": "news-318",
@@ -3248,7 +3481,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 42
     },
     {
       "id": "news-315",
@@ -3314,7 +3547,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 43
     },
     {
       "id": "news-316",
@@ -3380,7 +3613,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 44
     },
     {
       "id": "news-317",
@@ -3447,11 +3680,11 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 45
     },
     {
       "id": "news-310",
-      "rank": 43,
+      "rank": 46,
       "title_ko": "Kimsuky의 오프라인 AI 스택 관측: local LLM·RAG·음성 전사·.NET 라이브러리를 phishing·malware workflow 준비 단계로 추적",
       "title_original": "Kimsuky Builds Offline AI Stack to Boost Phishing and Automate Malware Development",
       "summary": "- 관측: Genians가 Kimsuky 연계 인프라에서 Ollama·GPT4All·Msty, LocalDocs RAG DB, Whisper, Cursor와 .NET AI library를 확인\n- 경계: 자체 모델 학습·피해자 대상 실제 실행·GitPower 피해 건수는 확인되지 않은 범위\n- 팀 액션: lure 문체가 아닌 LNK·PowerShell·scheduled task·GitHub traffic·후속 payload를 같은 trace에서 hunt",
@@ -3518,7 +3751,7 @@
     },
     {
       "id": "news-314",
-      "rank": 44,
+      "rank": 47,
       "title_ko": "Cloudflare for Government FedRAMP High 인증: 공공 workload의 authorization boundary·region·data handling을 별도 검증",
       "title_original": "Serving the most critical missions: Cloudflare for Government achieves FedRAMP Class D (High) Certified status",
       "summary": "- 변화: Cloudflare가 Cloudflare for Government의 FedRAMP High 인증 상태를 공개\n- 범위: compliance certification은 product·authorization boundary·tenant configuration·data flow의 자동 보증이 아님\n- 팀 액션: 공공 workload는 서비스 authorization scope·region·logging·subprocessor·identity·egress를 system security plan과 대조",
@@ -3580,7 +3813,7 @@
     },
     {
       "id": "news-313",
-      "rank": 45,
+      "rank": 48,
       "title_ko": "AWS DRS Linux UEFI boot mode 보존: recovery instance의 firmware mode drift를 자동 제거",
       "title_original": "AWS Elastic Disaster Recovery now preserves UEFI boot mode for Linux servers",
       "summary": "- 변화: AWS Elastic Disaster Recovery가 UEFI로 부팅한 Linux source server 복구 시 UEFI boot mode를 그대로 보존\n- 범위: 이전 legacy BIOS launch로 인한 post-recovery configuration 필요성을 줄이며 DRS 제공 모든 Region에서 추가 비용 없이 제공\n- 팀 액션: DR test에 boot mode뿐 아니라 image·driver·secure boot·network·application start order 검증을 유지",
@@ -3642,7 +3875,7 @@
     },
     {
       "id": "news-311",
-      "rank": 46,
+      "rank": 49,
       "title_ko": "Passkey 주변 공격 3종: Windows signed assertion·Chrome synced key·Windows Hello session 사용을 분리 대응",
       "title_original": "New Passkey Attacks Can Recover Synced Private Keys or Bypass Phishing-Resistant MFA",
       "summary": "- 연구: SpecterOps·Unit 42·Mollema가 cryptography 파괴 없이 passkey 주변 Windows·browser·session boundary를 노린 서로 다른 경로 공개\n- 영향: Windows Event Logging `CVE-2026-34348` patch, endpoint malware 전제의 Chrome synced-key risk, Windows Hello session misuse를 하나의 bug로 합치지 말 것\n- 팀 액션: patch·WebAuthn user verification·endpoint defense·unusual Windows Hello sign-in/device registration hunt를 분리 실행",
@@ -3709,7 +3942,7 @@
     },
     {
       "id": "news-312",
-      "rank": 47,
+      "rank": 50,
       "title_ko": "TrueConf Server 취약점 악용: installer 교체로 PhantomCore 배포, server·client distribution을 함께 조사",
       "title_original": "TrueConf Server Flaws Exploited to Replace Client Installers with PhantomCore",
       "summary": "- 관측: Kaspersky가 Head Mare의 unpatched TrueConf Server exploitation과 PhantomCore-infected client installer 교체를 보고\n- 영향: TCP 4307에서 KLCERT-26-057·058 연쇄 뒤 SYSTEM command·web shell·client distribution tampering 경로 설명\n- 팀 액션: fixed version 적용뿐 아니라 installer hash·web root·service·reverse tunnel·LSASS access를 incident 범위에 포함",
