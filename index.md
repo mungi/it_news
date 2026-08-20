@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-20 | Total pages: 298
+> Last updated: 2026-08-21 | Total pages: 299
 
 ## Entities
 
@@ -278,6 +278,8 @@
 
 - [[raw/articles/aitimes-openai-zero-data-retention-private-safety-2026-08-20]] — OpenAI frontier 모델 ZDR·Private Safety Processing 보도와 prompt/response·safety signal·enterprise data-path 검증 경계.
 - [[raw/articles/aitimes-anthropic-claude-cowork-web-mobile-2026-08-20]] — Claude Cowork 웹·모바일·Google Workspace connector의 계정 저장·원격 실행·권한·보존 검증 경계.
+
+- [[raw/articles/bun-1-4-rust-node-compatibility-2026-08-20]] — Bun 1.4 Rust 재구현, Node.js 호환성·package/CI·resource·supply-chain 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
