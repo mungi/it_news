@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/openrouter-stripe-acquisition-2026-08-19]] — OpenRouter의 Stripe 합류 발표와 기존 integration·라우팅 연속성, provider·가격·SLA·data path 검증 경계.
 - [[raw/articles/modular-mojo-open-source-2026-08-18]] — Mojo compiler·tooling 전체 Apache 2.0 공개와 Bazel source/prebuilt build·contribution·supply-chain 검증 경계.
 - [[raw/articles/aitimes-kt-npu-llm-station-2026-08-19]] — KT NPU LLM 스테이션의 ATOM-MAX·믿음 K 2.5 Pro·운영 API 결합과 온프레미스 RAG control-plane 검증 경계.
 - [[raw/articles/aitimes-openai-astra-training-security-pause-2026-08-19]] — OpenAI 아스트라 RL 훈련 중단 보도와 연구망 격리·untrusted code·행동 모니터링 증거 경계.
