@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-21 | Total pages: 299
+> Last updated: 2026-08-21 | Total pages: 301
 
 ## Entities
 
@@ -274,6 +274,8 @@
 - [[raw/articles/aitimes-openai-chatgpt-for-teens-2026-08-19]] — ChatGPT for Teens의 연령 추정·기본 안전설정·보호자 알림과 age-assurance 운영 경계.
 - [[raw/articles/aws-bedrock-external-web-access-2026-08-20]] — Bedrock Web Search 외부 웹 접근의 IAM·request parameter·AWS boundary retrieval control.
 - [[raw/articles/cloudflare-workers-remote-spectre-2026-08-20]] — Workers 원격 Spectre 재평가와 DyPrIs·V8 Sandbox·tenant-isolation 운영 경계.
+- [[raw/articles/aws-ec2-p6-b300-seoul-2026-08-21]] — EC2 P6-B300 서울 리전 제공의 Blackwell Ultra·EFA·capacity·collective 검증 경계.
+- [[raw/articles/aws-eks-ca-rotation-2026-08-21]] — EKS CA rotation managed lifecycle의 worker node·외부 API client trust·rollback 운영 경계.
 - [[raw/articles/cisa-siemens-s7-active-threat-2026-08-20]] — Siemens S7 PLC 활성 위협 advisory의 exposure·patch·ladder logic·OT incident 대응.
 
 - [[raw/articles/aitimes-openai-zero-data-retention-private-safety-2026-08-20]] — OpenAI frontier 모델 ZDR·Private Safety Processing 보도와 prompt/response·safety signal·enterprise data-path 검증 경계.
