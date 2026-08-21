@@ -2,7 +2,7 @@
   "week": "2026-W35",
   "coverage_start_kst": "2026-08-17 17:00",
   "coverage_end_kst": "2026-08-24 13:00",
-  "last_updated_kst": "2026-08-21 21:56",
+  "last_updated_kst": "2026-08-22 02:04",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitHub 8월 17일 장애: 7시간 47분 동안 github.com·인증·Actions·API·PR·Issues·Copilot 영향을 공식 공개. Central US critical component scale failure와 recovery retry loop가 겹친 capacity incident이므로 workflow·webhook·artifact·deployment의 retry budget·idempotency·reconciliation·rollback drill 필요.",
@@ -14,170 +14,171 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Bun 1.4 Rust 재구현: Node 호환성·패키지·운영 경계를 workload로 검증",
-      "summary": "핵심: Bun이 **Zig→Rust 재구현**과 Node.js test 1,517개 추가 통과, 2,900개 이상 issue 수정, 내장 browser/terminal/cron API를 묶은 1.4를 공개. release 수치는 migration 보증이 아니므로 Node API·native addon·lockfile·CI image·resource·rollback을 서비스별 evidence로 승인 필요.",
-      "details": "Bun 공식 1.4 release를 primary source로 사용해 runtime 재구현, Node 호환성, package workflow, SRE/FinOps, 공급망과 rollout gate를 재구성한 Deep Dive",
-      "why_it_matters": "runtime 구현 언어와 built-in tool surface 변경은 JavaScript API뿐 아니라 CI·container·native dependency·resource profile·security control에 영향을 주므로, version upgrade를 application release와 동일한 운영 변경으로 취급해야 함.",
+      "title": "GitHub 8월 17일 장애: capacity failure를 CI/CD 복구 계약으로 전환",
+      "summary": "핵심: GitHub가 **7시간 47분** global outage의 Central US scale failure·capacity pressure·Copilot client retry loop를 공식 공개. vendor RCA는 조직의 queued workflow·webhook·artifact·deployment 정합성을 복구하지 않으므로 retry budget·idempotency·reconciliation·rollback을 서비스 계약으로 시험 필요.",
+      "details": "GitHub 공식 사후 분석을 primary source로 사용해 capacity incident의 영향 범위, retry storm, CI/CD control plane, SRE/FinOps 의사결정과 복구 gate를 재구성한 Deep Dive",
+      "why_it_matters": "GitHub는 source control, identity, Actions, API, PR approval, Copilot이 결합된 개발 control plane이며, platform 복구와 조직의 release-state 복구는 별도 작업임.",
       "sources": [
-        "https://bun.com/blog/bun-v1.4"
+        "https://github.blog/news-insights/company-news/the-august-17-outage-and-the-work-ahead/"
       ],
-      "image_url": "https://bun.com/og/blog/bun-v1.4.png",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-logo-left.png",
       "local_image": "",
-      "refreshed_kst": "2026-08-21 01:29",
+      "refreshed_kst": "2026-08-22 02:04",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**Bun 1.4는 Zig에서 Rust로 구현을 옮기면서 Node.js 호환성·리소스 사용량·내장 개발 API를 함께 바꾼 major runtime release**. 공식 수치가 실제 서비스의 성능·호환성·upgrade safety를 보증하지는 않으므로, Node API·native addon·lockfile·CI image·production traffic을 같은 release gate에서 검증해야 함.",
+          "body": "**GitHub 8월 17일 장애는 Central US의 capacity failure가 authentication·Actions·API·Copilot으로 번지고 복구 중 client retry loop가 traffic을 늘린 control-plane incident**. GitHub 상태 복구를 deployment 완료로 보지 말고, workflow·webhook·artifact·approval·external side effect를 release ID별로 대조해야 함.",
           "items": [
-            "사실: Bun 공식 블로그가 2026년 8월 20일 `Bun 1.4`와 Rust 재구현을 공개",
-            "결정: runtime 교체 효과와 application compatibility를 분리해 workload별 evidence로 승인"
+            "사실: 공식 RCA가 장애 지속 **7시간 47분**과 다수 GitHub 서비스 영향을 공개",
+            "결정: vendor incident 종료와 조직의 CI/CD reconciliation 완료를 분리"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "직접 확인한 Bun 공식 원문은 Node.js 26.3.0 test suite에서 1,517개가 새로 통과했고 2,900개 이상 issue를 수정했다고 설명. idle CPU 사용량 5배 감소, memory 최대 35% 감소, Linux 시작 50% 단축은 Bun이 제시한 release-level 수치이며 workload·측정 조건별 production 결과는 별도 검증 대상.",
+          "body": "직접 확인한 GitHub 공식 원문은 traffic이 새 peak에 이른 뒤 Central US data center의 critical infrastructure component가 scale하지 못했고, capacity pressure가 authentication failure와 복수 서비스 중단으로 확산했다고 설명. code 또는 configuration change가 원인이 아닌 capacity failure라는 발표 범위.",
           "items": [
-            "호환성: `node:http`·`node:fs`·`node:cluster`·`node:timers`·`node:zlib`·`node:vm`·`node:stream`의 Node 자체 test 97% 통과라는 공식 설명",
-            "기능: `Bun.Image`·`Bun.WebView`·`Bun.markdown`·`Bun.cron()`·`Bun.Terminal` 및 parallel run/test·audit/dedupe/prune 추가",
-            "업그레이드: 공식 경로는 `bun upgrade`이며 release는 1.3.0 이후 변경을 포함"
+            "영향: github.com·authentication·GitHub Actions·API·pull request·issue·Copilot의 중단 또는 오류",
+            "복구: traffic reroute·affected infrastructure isolation·staged restoration 수행",
+            "추가 요인: Copilot service error가 client-side retry loop를 일으켜 recovery traffic 증가"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "runtime 언어 재구현은 API surface만의 변화가 아니라 parser·GC·scheduler·networking·filesystem·TLS·process spawning·binary distribution과 observability 특성이 동시 변경되는 event. Node test 통과 수는 좋은 regression signal이지만 native addon ABI, edge case, framework adapter, production traffic pattern을 대체하지 않음.",
+          "body": "개발 플랫폼 장애는 Git remote 접근 불능만이 아니라 identity token 갱신, queue admission, runner polling, webhook delivery, artifact publish, environment approval, deployment state machine의 partial failure를 동시에 만들 수 있음. 따라서 status page의 green 상태는 application change의 exactly-once 완료 증거가 아님.",
           "items": [
-            "분리: JavaScript/TypeScript semantics·Node built-in API·native dependency·OS image·CI runner·production SLO를 독립 acceptance 항목으로 관리",
-            "추적: Bun version·base image digest·lockfile·package manager mode·test corpus·canary cohort를 deployment record에 연결"
+            "분리: provider availability·client retry·queue backlog·webhook delivery·artifact integrity·external side effect를 별도 SLO로 관리",
+            "추적: commit SHA·workflow run ID·deployment ID·artifact digest·webhook delivery ID를 하나의 reconciliation key로 연결"
           ]
         },
         {
-          "heading": "호환성·개발 워크플로 관점",
-          "body": "Bun이 Node drop-in replacement를 목표로 하더라도 기존 서비스는 `package.json` lifecycle script, optional dependency, postinstall binary, workspace hoisting, ESM/CJS boundary, test runner, source map과 debugging behavior에 의존할 수 있음. 새 global virtual store는 설치 속도 이점과 별개로 cache locality·offline build·artifact provenance·cleanup behavior를 검토할 대상.",
+          "heading": "아키텍처·retry 관점",
+          "body": "공식 글은 service-to-service interaction에 consistent retry limits, retry budgets, variable timeouts를 적용한다고 설명. client와 pipeline이 unbounded retry·fixed timeout·동시 replay를 유지하면 provider 개선과 무관하게 recovery load와 duplicate mutation을 키울 수 있음.",
           "items": [
-            "검증: representative repository에서 install·build·test·lint·typecheck·container build·SBOM 결과를 기존 Node/npm/pnpm 경로와 비교",
-            "검증: `bun audit fix` 자동 수정은 lockfile diff·license·transitive dependency·rollback review를 거쳐 적용",
-            "피할 것: Node test 증가 또는 install speed를 native module·framework·CI compatibility의 포괄 보증으로 해석하는 판단"
+            "설계: API·webhook·runner별 deadline·retry cap·budget·jitter·circuit breaker를 dependency class별로 정의",
+            "설계: create·publish·deploy·migration action에 idempotency key와 duplicate guard 적용",
+            "피할 것: HTTP success 또는 status recovery만으로 queued job과 side effect의 정상 완료를 판정하는 운영"
           ]
         },
         {
-          "heading": "성능·SRE·FinOps 관점",
-          "body": "idle CPU·memory·startup 수치는 scale-to-zero, CI density, developer laptop, long-lived API pod에서 효과가 다를 수 있음. Rust 전환이 CPU profile·RSS·GC pause·cold start·crash signature·debug tooling에 주는 영향도 source의 aggregate release 수치만으로는 알 수 없음.",
+          "heading": "SRE·FinOps 관점",
+          "body": "GitHub는 4월 이후 monthly commits가 14억에서 29억으로 증가했다고 밝히고, 300만 CPU core·120 PB high-speed storage 추가와 Azure migration을 제시. 이는 GitHub platform aggregate의 변화이며 조직별 Actions queue duration, API quota, Copilot availability, build cost를 보증하지 않음.",
           "items": [
-            "측정: endpoint별 p50/p95/p99 latency·RSS·CPU·cold start·error rate·event-loop lag·build duration을 동일 traffic과 image로 수집",
-            "측정: dependency install cache hit·CI minute·image size·security scan time·rollback time을 cost record로 연결",
-            "운영: canary 중 heap growth·OOM·file descriptor·DNS/TLS·worker exit·source-map error를 기존 baseline과 비교"
+            "측정: queue age·start latency·completion ratio·webhook lag·artifact publish latency·deployment reconciliation time 수집",
+            "측정: outage 중 retry request·runner minute·cancel/re-run·artifact duplication의 비용 귀속",
+            "운영: degraded-mode feature와 noncritical workflow pause 조건을 error budget에 결합"
           ]
         },
         {
-          "heading": "보안·공급망 관점",
-          "body": "runtime upgrade는 Bun binary와 container image, package registry, lockfile, postinstall, audit database, browser automation·terminal API의 권한 경계를 함께 변경할 수 있음. 공식 글은 특정 CVE remediation SLA, signing scheme, FIPS status, sandbox isolation 또는 enterprise support contract를 제시하지 않음.",
+          "heading": "보안·거버넌스 관점",
+          "body": "장애 복구 시 사람과 automation이 manual rerun, token 재발급, emergency deploy를 수행하면 duplicate publish와 권한 우회 위험이 커짐. break-glass는 속도를 위한 예외이지 audit 생략이 아니며, recovery 후 credential·approval·artifact provenance를 반드시 재대조해야 함.",
           "items": [
-            "통제: pinned version·checksum·trusted registry·SBOM·image signature·egress allowlist·least-privilege CI token 적용",
-            "통제: `Bun.WebView`·`Bun.Terminal`·`Bun.cron()`을 사용하는 service는 browser/session·shell·schedule 권한을 app identity와 별도 inventory",
-            "경계: 2,900개 issue 수정은 조직의 security approval 또는 모든 dependency vulnerability 해소 증거가 아님"
+            "통제: break-glass owner·time-bound credential·approval override·audit trail을 사전 정의",
+            "통제: webhook replay와 manual rerun 전에 environment lock·migration state·external side effect 검사",
+            "대응: token rotation·artifact digest 검증·unauthorized deployment 탐지를 incident close 조건으로 유지"
           ]
         },
         {
           "heading": "도입 로드맵과 관점",
-          "body": "1단계는 non-critical CI job 또는 read-only internal tool에서 runtime·package-manager compatibility baseline을 만드는 단계. 2단계는 isolated canary에서 traffic·resource·incident telemetry를 비교하고, 3단계에서 rollback image와 on-call owner를 갖춘 workload만 확대하는 순서.",
+          "body": "1단계는 GitHub dependency map과 critical workflow의 state transition을 inventory하는 단계. 2단계는 GitHub API failure·webhook delay·Actions queue backlog에서 retry와 reconciliation을 game day로 시험하는 단계. 3단계는 measured recovery evidence를 release control에 반영하는 단계.",
           "items": [
-            "1단계: Node API·native addon·framework·OS/arch·package manager·test suite inventory 작성",
-            "2단계: 1.3.x 대비 build/install·unit/e2e·resource·security scan·failure injection 결과를 release gate로 기록",
-            "3단계: error budget·rollback RTO·binary/image provenance·support escalation을 production change record에 첨부"
+            "1단계: repository·Actions·webhook consumer·artifact registry·deploy target·approval owner 목록화",
+            "2단계: retry storm·missed event·partial artifact·duplicate deploy·manual replay failure injection 수행",
+            "3단계: RTO·queue-age threshold·replay authority·rollback evidence를 production gate에 기록"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "**Bun 1.4의 release note는 migration 완료 증명서가 아니라 검증 범위를 좁히는 출발점**. Rust 재구현·Node compatibility·새 built-in API를 각각의 change surface로 보고, production 전에는 own workload의 semantic regression·resource·supply-chain·rollback evidence를 확보해야 함.",
+          "body": "**capacity incident의 복구 단위는 GitHub 서비스가 아니라 조직의 release transaction**. 장애 뒤에는 source, build, scan, publish, deploy, approval, rollback의 상태를 own telemetry로 재구성해야 하며, 이 검증이 없으면 재시도한 변경이 중복 배포·누락 artifact·stale approval으로 남을 수 있음.",
           "items": [
-            "체크: Node built-in·native addon·lockfile·container base·CI runner·target architecture의 compatibility matrix 확인",
-            "체크: canary에서 latency·RSS·CPU·crash·install/build·audit diff·rollback을 request 및 build ID로 보존",
-            "팀 액션: 30일 내 low-risk service 하나에서 dual-run 또는 shadow CI를 수행하고 migration acceptance 기준 확정"
+            "체크: workflow·webhook·artifact·deployment의 idempotency key·retry budget·queue alert 확인",
+            "체크: status event와 own run/deploy/log evidence를 조회하는 reconciliation query 준비",
+            "팀 액션: 30일 내 GitHub outage game day에서 backlog drain·manual replay·rollback RTO 측정"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Cloudflare Workers Spectre 재평가: shared-process serverless의 tenant boundary를 재검증",
-      "summary": "핵심: Cloudflare가 Workers production에서 **최대 12 bit/s·99% accuracy** remote Spectre proof-of-concept과 DyPrIs 한계를 공개하고 DyPrIs·V8 Sandbox·in-process isolation 보완을 설명. vendor mitigation을 일반 보증으로 바꾸지 말고 engine·process·secret·egress·telemetry를 workload별 release gate로 검증 필요.",
-      "details": "Cloudflare 공식 remote Spectre 분석을 primary source로 사용해 shared-process V8 isolate의 architecture, side-channel, incident response, performance trade-off와 tenant control을 재구성한 Deep Dive",
-      "why_it_matters": "multi-tenant serverless의 isolation은 language runtime만으로 완성되지 않으며 CPU·process assignment·secret/data path·patch telemetry와 결합된 infrastructure security control임.",
+      "title": "Anthropic 기업 데이터 보존 보도: 고객 클라우드 보관은 data-plane 설계 변경",
+      "summary": "핵심: AI타임스가 Reuters 보도를 인용해 Anthropic이 올해 말 **30일 보존 데이터를 고객 관리 클라우드에 보관**하는 안전 시스템을 준비한다고 보도. 아직 provider 원문·지원 모델·signal schema·암호화·key custody가 확인되지 않아 ZDR·규제 적합성 보증이 아닌 data-plane·audit·incident workflow 검증 후보로 취급 필요.",
+      "details": "AI타임스의 timestamped secondary report를 source로 사용해 보도된 Anthropic enterprise retention 변경의 safety telemetry, customer-managed storage, governance, architecture와 rollout evidence 경계를 재구성한 Deep Dive",
+      "why_it_matters": "모델 provider가 기업 prompt·response의 보존 주체와 safety detection 경로를 바꾸면 API endpoint, storage, key, access, audit, legal hold, incident response의 책임 배분도 함께 바뀜.",
       "sources": [
-        "https://blog.cloudflare.com/revisiting-spectre-attacks-on-workers/"
+        "https://www.aitimes.com/news/articleView.html?idxno=214191"
       ],
-      "image_url": "assets/images/fallback-security.svg",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/214191_217850_4124.jpg",
       "local_image": "",
-      "refreshed_kst": "2026-08-21 01:29",
+      "refreshed_kst": "2026-08-22 02:04",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**Cloudflare Workers의 remote Spectre 재평가는 V8 isolate가 JavaScript heap을 분리해도 shared OS process와 CPU microarchitecture가 tenant boundary의 일부라는 사실을 확인한 자료**. Cloudflare가 mitigation 완료를 발표했지만, 다른 serverless runtime 또는 고객 workload의 보호 수준으로 일반화하지 말고 engine revision·process topology·secret scope를 따로 검증해야 함.",
+          "body": "**보도된 Anthropic 변경은 30일 보존 요건을 없애는 발표이 아니라, enterprise data의 보관 주체를 provider server에서 customer-managed cloud로 옮기는 data-plane 설계안**. 원문 계약·지원 범위·암호화와 safety signal 처리가 직접 확인되지 않았으므로, 도입 승인 전 storage·key·access·export·deletion·incident evidence를 contract와 PoC로 확인해야 함.",
           "items": [
-            "사실: Cloudflare가 production Workers에서 최대 12 bit/s·99% accuracy remote leakage proof-of-concept을 공개",
-            "결정: language-level isolate·process boundary·hardware side-channel·incident telemetry를 한 release gate로 관리"
+            "사실: AI타임스가 Reuters 인용으로 올해 말 새 안전 시스템 계획을 보도",
+            "경계: provider 공식 기술 문서와 endpoint별 retention·security specification은 이번 점검에서 직접 확인하지 못함"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "직접 확인한 Cloudflare 공식 원문은 V8 isolate마다 separate JavaScript heap을 두면서 다수 tenant가 하나의 OS process를 공유하는 Workers 구조를 설명. 연구진은 Dynamic Process Isolation(DyPrIs)의 구현 한계를 확인했고 remote Spectre proof-of-concept을 production workload에서 시연했다고 기록.",
+          "body": "직접 확인한 AI타임스 기사는 Anthropic이 고성능 모델 오남용·사이버 공격 감시를 위해 도입한 30일 보존 정책을 enterprise customer cloud에 보관하는 방식으로 바꾸는 방안을 준비 중이라고 전함. 기사에는 safety system 유지, 100개 이상 enterprise customer와의 구축 협력, 올해 말 출시 계획이 서술됨.",
           "items": [
-            "발행: Cloudflare RSS `2026-08-19 16:00:28 UTC`, KST `2026-08-20 01:00`",
-            "조치: DyPrIs 개선·V8 Sandbox 통합·in-process isolation 적용이라는 공식 발표",
-            "상태: 발표 시점 mitigation 완료 및 최근 3년 active exploitation indicator 미발견이라는 Cloudflare 범위"
+            "보도 범위: 기존 provider server 보관 대신 고객이 직접 관리하는 cloud infrastructure 보관 선택지",
+            "보도 범위: 30일 보존 요건은 유지하면서 safety system 운영을 목표",
+            "관련 맥락: 기사에서 6월의 frontier-model enterprise traffic 30일 보존 정책과 규제 산업 우려를 설명"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "Spectre class는 speculative execution이 cache 같은 microarchitectural state에 남긴 흔적에서 out-of-bounds memory bit를 추론하는 문제. JavaScript isolate는 언어 heap을 나누지만 process·address-space·hardware scheduling 결정이 남아 있으면 untrusted tenant code의 risk calculation은 runtime policy와 CPU behavior까지 확장됨.",
+          "body": "보관 위치 변경은 storage bucket을 바꾸는 작업이 아님. request payload, safety signal, correlation ID, access path, encryption key, deletion job, legal hold, support access, cross-region replication과 incident evidence가 data lifecycle 전체에서 다시 정의되어야 함. customer-managed라는 표현도 provider read path와 processing boundary가 문서화되지 않으면 책임 분리를 증명하지 못함.",
           "items": [
-            "분리: isolate semantics·process assignment·CPU scheduling·timer/shared-memory policy·secret injection·egress control을 별도 asset으로 inventory",
-            "경계: arbitrary read·research proof-of-concept을 고객 데이터 유출·active exploitation·다른 platform 취약성의 확정 증거로 치환하지 않음"
+            "분리: raw prompt/response·derived safety signal·metadata·audit log·support telemetry를 독립 data class로 inventory",
+            "질문: provider가 어떤 event를 읽는지, 어떤 identifier로 결합하는지, 누가 key와 retention policy를 실행하는지 contract로 확인",
+            "피할 것: customer cloud 보관을 zero provider access·zero egress·zero retention의 동의어로 해석하는 판단"
           ]
         },
         {
-          "heading": "runtime 아키텍처 관점",
-          "body": "Workers가 shared process를 택한 이유는 startup latency와 density이지만, process density는 isolation escalation 기준과 같은 architecture decision이 됨. Cloudflare는 CPU-only 실행 시 timer freezing, multithreading/shared memory 제한, suspicious-script detection, memory shuffle, process isolation을 기존 control로 설명했으며 새 mitigation은 이 control stack을 보완하는 범위.",
+          "heading": "data-plane·아키텍처 관점",
+          "body": "안전 탐지와 고객 보관을 함께 운영하려면 ingest, classification, durable storage, provider query 또는 attestation, alert delivery, deletion의 명시적 흐름이 필요함. 기사만으로는 interface, network path, tenant isolation, fail-open/fail-closed, backfill, disaster recovery, regional routing을 확인할 수 없음.",
           "items": [
-            "검증: workload가 shared process·dedicated process·container 중 어떤 execution tier를 쓰는지 vendor evidence로 확인",
-            "검증: timer precision·SharedArrayBuffer·Wasm·threading·JIT behavior가 security policy와 배포 revision에 따라 어떻게 바뀌는지 regression test",
-            "운영: tenant density와 cold-start/latency 목표를 isolation escalation·error budget과 함께 기록"
+            "설계: request ID·tenant ID·data class·retention expiry·policy version을 storage object와 audit event에 연결",
+            "설계: provider access가 필요하면 least-privilege role·short-lived credential·query purpose·immutable audit을 적용",
+            "검증: network egress·encryption boundary·replication·restore·deletion·safety alert failure를 representative tenant로 시험"
           ]
         },
         {
-          "heading": "보안·incident 대응 관점",
-          "body": "untrusted-code platform의 customer secret은 process boundary만이 아니라 binding, environment variable, KV/object access, token lifetime, network egress와 log visibility로 보호됨. vendor mitigation이 있어도 exploit detection signal, notification contract, forensic retention, patch rollout timeline을 실제 tenant incident workflow에서 확인해야 함.",
+          "heading": "보안·privacy·거버넌스 관점",
+          "body": "규제 산업에서는 data location만으로 compliance가 완성되지 않음. controller/processor 역할, subprocessor, support access, lawful request, incident notification, export, deletion certificate, key rotation, retention exception과 model training use를 함께 검토해야 함. 기사는 기존 보존 데이터를 model training에 쓰지 않는다는 이전 정책 맥락을 전하지만 새 체계의 계약 문구는 직접 확인되지 않음.",
           "items": [
-            "통제: narrow credential·per-tenant secret scope·egress allowlist·sensitive binding access log·break-glass owner 적용",
-            "관측: suspicious script·process migration·engine crash·credential access·cross-tenant error·egress anomaly를 common correlation ID로 연결",
-            "대응: runtime revision rollback·tenant isolation escalation·token revoke·evidence preservation의 on-call runbook 시험"
+            "통제: DPA·security addendum·region·subprocessor·access log·retention/deletion SLA를 procurement gate로 확인",
+            "통제: customer key, KMS policy, break-glass, legal hold, eDiscovery와 provider support workflow를 책임 매트릭스로 문서화",
+            "경계: secondary report의 설명을 국내 개인정보·금융·의료 규제 적합성 또는 audit pass 보증으로 확대하지 않음"
           ]
         },
         {
-          "heading": "성능·SRE·FinOps 관점",
-          "body": "강한 isolation은 CPU/process density, startup latency, memory footprint, scheduler behavior와 trade-off를 만들 수 있음. 공식 글은 mitigation 뒤 cost, latency, density, false positive, isolation escalation delay, availability SLA를 공개하지 않으므로 security control이 SLO에 주는 비용은 자체 workload에서 측정해야 함.",
+          "heading": "SRE·FinOps 관점",
+          "body": "customer-managed retention은 storage·network·KMS·logging·query·export·DR 비용을 enterprise가 직접 배분해야 할 수 있음. safety detection이 asynchronous pipeline이라면 alert latency, backlog, retry, false positive, evidence completeness가 reliability target이 됨. 기사에는 pricing, storage class, SLA, RPO/RTO, alert quality가 제시되지 않음.",
           "items": [
-            "측정: mitigation 전후 p95/p99 latency·cold start·RSS·CPU·process churn·error rate·tenant density 비교",
-            "측정: high-risk code가 isolation escalation될 때 queue time·capacity·cost attribution·rollback duration 기록",
-            "피할 것: 최근 active exploitation indicator 미발견을 지속 안전성·universal availability 보증으로 해석하는 판단"
+            "측정: request-to-store·store-to-detect·detect-to-alert latency와 backlog·drop·retry ratio 수집",
+            "측정: GB-month·PUT/GET·KMS·egress·log ingest·retention exception 비용을 tenant/workload별 배분",
+            "운영: safety pipeline failure가 model serving·customer notification·evidence preservation에 미치는 정책을 사전 결정"
           ]
         },
         {
           "heading": "도입 로드맵과 관점",
-          "body": "1단계는 public code와 secret-bearing workload를 분류하고 runtime revision·process topology·binding inventory를 만드는 단계. 2단계는 canary에서 abnormal script·network loss·engine upgrade·credential rotation을 시험하고, 3단계에서 tenant별 acceptance evidence와 incident owner를 갖춘 service만 확대하는 순서.",
+          "body": "1단계는 Anthropic enterprise traffic의 data classification과 현재 retention contract를 기준선으로 만드는 단계. 2단계는 isolated tenant에서 policy, storage, KMS, audit, deletion, safety alert failure를 검증하는 단계. 3단계는 contract evidence와 incident owner가 있는 workload만 확대하는 단계.",
           "items": [
-            "1단계: untrusted code source·tenant boundary·secret·network path·engine version map 작성",
-            "2단계: isolation escalation·egress denial·runtime crash·rollback·forensic log retrieval game day 수행",
-            "3단계: vendor patch evidence·service SLO·security exception·notification path를 change record에 결합"
+            "1단계: prompt·response·attachment·tool output·safety metadata·support log data-flow map 작성",
+            "2단계: access denial·key rotation·partial write·alert delay·deletion·restore·provider support scenario 시험",
+            "3단계: privacy, security, SRE, legal owner의 acceptance evidence와 rollback/exit plan 결합"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "**shared-process runtime의 보안은 V8 version 하나가 아니라 process·CPU·credential·network·telemetry의 결합 control**. Cloudflare 발표는 Workers의 mitigation 상태를 설명하며, 조직은 own tenant boundary와 secret data-flow의 관찰 가능한 evidence로 승인해야 함.",
+          "body": "**보관 주체가 고객으로 이동해도 safety·observability·incident 대응의 data-flow가 사라지는 것은 아님**. 확인되지 않은 product statement를 control로 가정하지 말고, provider access path·derived signal·key custody·retention/deletion·alert evidence를 endpoint와 tenant별로 입증해야 함.",
           "items": [
-            "체크: engine patch·process allocation·timer/shared-memory·Wasm/JIT·binding scope·egress policy의 current state 확인",
-            "체크: cross-tenant anomaly·process migration·token access·runtime crash·rollback log의 retention과 query path 확인",
-            "팀 액션: 30일 내 untrusted runtime 서비스의 isolation inventory와 secret/egress incident drill 완료"
+            "체크: provider 원문·DPA·지원 모델/endpoint·region·retention·training-use·audit artifact 확인",
+            "체크: storage/KMS/IAM/network/alert/deletion/DR의 책임자와 evidence location 확인",
+            "팀 액션: 30일 내 one-tenant PoC에서 data lifecycle·safety alert·access denial·deletion/restore drill 완료"
           ]
         }
       ]
