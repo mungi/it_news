@@ -2,13 +2,13 @@
   "week": "2026-W35",
   "coverage_start_kst": "2026-08-17 17:00",
   "coverage_end_kst": "2026-08-24 13:00",
-  "last_updated_kst": "2026-08-22 18:27",
+  "last_updated_kst": "2026-08-22 22:33",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitHub 8월 17일 장애: 7시간 47분 동안 github.com·인증·Actions·API·PR·Issues·Copilot 영향을 공식 공개. Central US critical component scale failure와 recovery retry loop가 겹친 capacity incident이므로 workflow·webhook·artifact·deployment의 retry budget·idempotency·reconciliation·rollback drill 필요.",
     "EC2 P6-B300 서울 리전: 8× Blackwell Ultra·2.1 TB GPU memory·6.4 Tbps EFA·300 Gbps ENA·4 TB system memory를 제공. P6-B200 대비 수치는 AWS 사양이므로 quota·capacity·placement·NCCL/EFA·model/precision·J/token·recovery를 같은 workload로 검증 필요.",
     "EKS CA rotation: 2018년 이후 EKS cluster의 10년 CA 만료를 앞두고 managed lifecycle·자동 safeguard 제공. AWS-managed component와 Auto Mode/Fargate 갱신 외 customer worker node·external API client trust는 고객 책임이므로 kubeconfig·CI/CD·GitOps·webhook 전환/rollback drill 필요.",
-    "Anthropic custom silicon 보도: 전 Google TPU 리더 영입·chip 조직·Fractile 주문·Samsung 2nm 사전 협력 논의가 기사 범위. architecture·생산 계약·물량·성능·전력·software stack은 미확인이므로 accelerator roadmap을 capacity 확정으로 환산하지 말고 PoC·procurement evidence 분리 필요.",
+    "DeepSeek-V4-Flash-Vision-Exp 보도: 2,840억 parameter MoE·token당 130억 활성화, 100만 token context와 image·text 단일 요청, image 최대 384 token 환산 및 OpenAI·Anthropic 호환 API가 기사 범위. 자체 Harness Minimal Mode benchmark·실험 identifier·endpoint별 SLA·retention은 독립 검증 전 canary의 cost·quality·latency·data-boundary 측정 대상으로 분리 필요.",
     "AWS Glue 6.0: 공식 GA와 30% 가격 인하, Spark 4.1·Python 3.13·Scala 2.13, Iceberg v3를 함께 제공. 단가 변경만으로 처리하지 말고 UDF·connector·catalog·schema evolution·streaming checkpoint와 DPU/utilization·retry·scan/storage/network를 포함한 job-level 비용·rollback을 representative workload에서 비교 필요."
   ],
   "deep_dives": [
@@ -260,6 +260,74 @@
       "rank": 1
     },
     {
+      "id": "news-373",
+      "title_ko": "DeepSeek-V4-Flash-Vision-Exp 공개 보도: 멀티모달 agent 비용·harness 재현성을 분리 검증",
+      "title_original": "DeepSeek-V4-Flash-Vision-Exp",
+      "summary": "- 공개: AI타임스가 DeepSeek API platform의 실험적 **V4-Flash-Vision-Exp** 출시를 보도\n- 구조: 2,840억 parameter MoE에서 token당 130억 parameter 활성화, 최대 100만 token context와 image·text 단일 요청 처리 범위\n- 비용: image 한 장을 최대 384 token으로 환산하며 off-peak 입력·출력은 100만 token당 각각 0.22달러·0.66달러라는 기사 수치\n- 호환: OpenAI Chat Completions·Anthropic Messages·Responses API, Harness 0.1.1 기본 지원·Files API 재사용 경로를 기사에서 설명\n- 경계: benchmark는 DeepSeek Harness Minimal Mode의 vendor 자체 평가이며 실험 버전·model identifier 변경 가능성, 독립 재현·SLA·region·retention 미확인\n- 팀 액션: image tokenization·cache·tool loop·p95 latency·task success·fallback·data egress를 같은 trace에서 canary 검증 필요",
+      "detail": "AI타임스는 2026년 8월 22일 10:08 KST에 DeepSeek가 API platform에서 실험적 멀티모달 모델 DeepSeek-V4-Flash-Vision-Exp를 출시했다고 보도했다. 기사는 텍스트 중심 V4-Flash에 이미지 이해를 결합했으며, 2,840억 전체 parameter 중 token당 130억 parameter를 활성화하는 MoE와 최대 100만 token context를 설명한다. 자체 DeepSeek Harness Minimal Mode 평가에서 ApexBench pass@1 36.5, Agents’ Last Exam 27.3, ZeroBench 35.0 수치를 제시했지만 독립 재현은 확인되지 않았다. 기사 기준 image는 최대 384 token으로 환산되고 off-peak 가격은 input 0.22달러·output 0.66달러/1M token이며, OpenAI·Anthropic 호환 API와 Files API를 제공한다. 직접 확인한 것은 AI타임스의 secondary report로, DeepSeek 공식 모델 문서·지원 리전·endpoint별 가격·rate limit·data retention·security·SLA·benchmark protocol은 직접 확인하지 못했다.",
+      "why_it_matters": "멀티모달 agent는 screenshot·chart·document image를 OCR→text model로 분리하던 data path를 한 model request로 줄일 수 있으나, image token 비용·tool loop·cache·latency·재현성·data boundary가 함께 바뀜.",
+      "engineering_implication": "새 model을 production route로 고정하지 말고 동일 screenshot/document task에서 image token 수·request cost·TTFT·TPOT·tool-loop 성공률·fallback·rate-limit·egress를 baseline과 비교해야 함. Files API 사용 시 object retention·access URL·tenant isolation·deletion·audit evidence를 별도 확인 필요.",
+      "korea_implication": "국내 API 도입 시 제공 리전·계약 주체·data residency·개인정보·이미지 파일 보존과 삭제, 지원/장애 대응 조건은 기사에서 확인되지 않음. PoC와 계약 문서로 확인 전 규제 적합성이나 국내 서비스 품질을 가정하지 않아야 함.",
+      "category": "AI",
+      "tags": [
+        "DeepSeek",
+        "Multimodal",
+        "Agent",
+        "MoE",
+        "Inference",
+        "API",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 90,
+      "published_kst": "2026-08-22 10:08",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214238",
+      "image_url": "https://cdn.aitimes.com/news/photo/202608/214238_217908_254.jpg",
+      "local_image": "assets/images/news-373.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스가 DeepSeek API platform의 `DeepSeek-V4-Flash-Vision-Exp` 출시를 보도. 직접 확인한 `article:published_time` `2026-08-22T10:08:55+09:00`를 KST `2026-08-22 10:08`로 기록.",
+          "items": [
+            "모델: 기존 V4-Flash의 텍스트 처리에 image understanding을 결합한 실험 버전이라는 기사 설명",
+            "구조: 전체 2,840억 parameter 중 token당 130억 parameter 활성화 MoE와 최대 100만 token context",
+            "경계: DeepSeek 공식 model card·API 문서·release note 본문은 이번 실행에서 직접 확인하지 못함"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사는 텍스트·image를 하나의 request에서 처리해 OCR 뒤 text model로 넘기던 분리 path를 줄일 수 있다고 설명. Harness 0.1.1, Files API와 OpenAI·Anthropic 호환 interface도 함께 언급.",
+          "items": [
+            "평가: DeepSeek Harness Minimal Mode 자체 시험에서 ApexBench pass@1 36.5, Agents’ Last Exam 27.3, ZeroBench 35.0이라는 vendor 수치",
+            "호환: OpenAI Chat Completions·Anthropic Messages·Responses API 지원이라는 기사 범위",
+            "파일: Base64·public HTTP(S) URL·Files API file ID의 세 image input 경로와 업로드 파일 재사용 설명"
+          ]
+        },
+        {
+          "heading": "비용·성능 검증 관점",
+          "body": "기사는 image 1장을 최대 384 token으로 변환하고 off-peak input 0.22달러·output 0.66달러/1M token, peak 두 배 가격을 제시. 실제 completed-task cost는 image 크기·tool call·retry·cache·queue와 output length에 따라 달라짐.",
+          "items": [
+            "측정: 동일 screenshot·chart·document task에서 image token·input/output·tool-loop·retry를 trace 단위로 수집",
+            "검증: task success·visual error detection·TTFT·p95 latency·rate-limit·fallback을 기존 OCR+text route와 비교",
+            "피할 것: vendor harness score 또는 token list price를 independent quality·production unit cost·SLO 보증으로 해석하는 판단"
+          ]
+        },
+        {
+          "heading": "운영·보안 시사점",
+          "body": "실험 identifier와 developer feedback에 따른 변경 가능성이 기사에 명시돼 model pinning과 rollback이 필요. 이미지·파일을 API에 넣는 경로는 content safety뿐 아니라 object retention, public URL fetch, tenant boundary와 audit 설계를 요구.",
+          "items": [
+            "통제: model version pinning·canary·quality regression threshold·fallback route·rollback owner를 release gate로 정의",
+            "통제: Files API object의 retention·deletion·access control·audit log와 public URL fetch의 egress policy 확인",
+            "팀 액션: 30일 내 representative visual-agent workload에서 cost·quality·latency·privacy evidence를 포함한 acceptance test 수행"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-371",
       "title_ko": "Amazon Bedrock GPT-5.6 Sol 가격 인하: 입·출력 token mix와 프로모션 종료를 agent FinOps gate로 고정",
       "title_original": "Amazon Bedrock announces reduced pricing for OpenAI GPT-5.6 Sol",
@@ -331,7 +399,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-370",
@@ -409,7 +477,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-366",
@@ -495,7 +563,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-364",
@@ -564,7 +632,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-365",
@@ -633,7 +701,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-368",
@@ -709,7 +777,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-361",
@@ -785,7 +853,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-363",
@@ -862,7 +930,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-360",
@@ -943,7 +1011,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-362",
@@ -1020,7 +1088,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-367",
@@ -1096,7 +1164,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-357",
@@ -1177,7 +1245,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-359",
@@ -1253,7 +1321,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-358",
@@ -1329,7 +1397,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-355",
@@ -1405,7 +1473,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-354",
@@ -1482,7 +1550,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-356",
@@ -1558,7 +1626,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-353",
@@ -1634,7 +1702,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-369",
@@ -1710,7 +1778,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-351",
@@ -1787,7 +1855,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-350",
@@ -1863,7 +1931,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-349",
@@ -1947,7 +2015,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-348",
@@ -2024,7 +2092,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-347",
@@ -2109,7 +2177,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-346",
@@ -2183,7 +2251,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "why_it_matters": "AI coding agent의 장시간 세션은 모델 응답 품질과 별개로 클라이언트 상태·네트워크 요청·메모리·작업 재개 경험이 생산성과 운영 비용을 좌우함.",
@@ -2257,11 +2325,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-344",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "DeepSeek-V4 Flash 하네스 비교 보도: 동일 모델도 tool orchestration에 따라 완료율·성공비용·지연이 달라짐",
       "title_original": "DeepSeek-V4 Flash agent harness benchmark",
       "summary": "- 검증: AI타임스가 보도한 Composio 평가는 Gmail·GitHub·Slack·Google Sheets를 쓰는 **30개 다단계 업무**를 Claude Code·Codex·OpenCode·Oh My Pi 하네스에서 총 240회 실행\n- 품질: 과제 완료율은 하네스별 46.7~56.7%, 모든 환경에서 완료된 과제는 30개 중 6개라는 보도 수치\n- 비용·지연: 성공 1회당 평균 비용은 Oh My Pi 0.073달러·Claude Code 0.195달러, 평균 수행 시간은 Claude Code 122.7초·Oh My Pi 272.4초라는 보도 수치\n- 증거 경계: Composio 원 실험, task 정의·계정·prompt·model revision·tool 권한·재시도 정책·통계 방법은 직접 확인하지 않아 일반 성능·SLO·ROI 보증으로 확대 불가\n- 팀 액션: 모델 선정과 별도로 harness별 task success·tool failure·retry·token·성공비용·p95 latency·approval/egress를 동일 workload에서 canary 측정 필요",
@@ -2336,7 +2404,7 @@
     },
     {
       "id": "news-352",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Cursor Origin 코드 호스팅 얼리 베타: GitHub 동기화·PR·agent 작업면의 권한·배포 경계 점검",
       "title_original": "Origin Code Hosting",
       "summary": "- 공개: Cursor가 유료 플랜 대상 `Origin Code Hosting`을 8월 17일 얼리 베타로 순차 제공\n- 범위: Cursor-hosted repo, pull request, code browsing, GitHub sync를 우선 제공하고 agent-native 기능은 후속 예정\n- 동기화: GitHub 원본 repo는 GitHub를 source of truth로 유지하며, Cursor와 양방향 PR comment·reaction·reply 동기화\n- 연동: Vercel preview deployment, Depot·Buildkite CI 연결을 제시하지만 실제 권한·secret·approval·SLA·GA 범위는 source에 미공개\n- 팀 액션: repo host·GitHub sync·agent branch push·PR merge·preview deployment를 하나의 trust boundary로 inventory화하고 최소 권한·audit·rollback canary 적용 필요",
@@ -2414,7 +2482,7 @@
     },
     {
       "id": "news-334",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "GLM-5.3 Cursor 잠재 취약점 비공개 제보 보도: AI 사이버 capability는 disclosure·fix evidence로 분리 검토",
       "title_original": "GLM-5.3, 'Cursor' security vulnerability report",
       "summary": "- 공개: AI타임스가 2026-08-16 18:16 KST에 Z.ai 개발자 옹호자의 X 게시물을 인용, **GLM-5.3**이 Cursor에서 잠재적으로 심각한 취약점을 찾았다고 보도\n- disclosure: 발견 내용은 Cursor에 비공개 제보됐고 수정 전 세부 사항은 공개하지 않겠다는 설명\n- 범위: 취약점 유형·영향 버전·공격 조건·CVE·수정 릴리스·사용자 영향은 기사와 인용문에서 확인되지 않은 상태\n- 증거 경계: 단일 공급자 측 주장과 미공개 취약점은 benchmark·실제 보안 성숙도·일반적 exploit capability의 독립 검증 근거 아님\n- 팀 액션: Cursor 사용 조직은 공급자 공지·릴리스 노트·CVE·업데이트 가능 여부를 추적하고, 모델 평가는 authorized environment·disclosure workflow·tool 권한 gate와 함께 운영 필요",
@@ -2496,7 +2564,7 @@
     },
     {
       "id": "news-343",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Anthropic Claude 텍스트 워터마크 예고: EU AI Act 대응은 detection API·false positive·콘텐츠 흐름 검증 과제",
       "title_original": "How Claude's text watermark works",
       "summary": "- 공개: Anthropic이 향후 Claude 생성 텍스트에 **텍스트 워터마크**를 적용하고 전 세계 출시를 계획한다고 2026-08-14 공식 설명\n- 방식: 다음 단어 후보 중 의미 영향이 작은 확률적 선택에 key 기반 패턴을 남기며, 검증자는 Claude 관여 가능성을 확률로 산출하는 구조\n- 한계: 짧은 텍스트·사람 작성문 교정·사실 문장·정확성이 필요한 코드에서는 검출 신호가 약하거나 제한적이라는 공식 설명\n- 비용·식별: 추가 token을 만들지 않아 가격은 같고, watermark·key에 사용자·조직·대화 식별 정보는 없다는 설명\n- 팀 액션: 예정된 detection API의 threshold·권한·audit·retention·false-positive 대응과 C2PA file credential 검증 흐름을 content governance에 별도 설계 필요",
@@ -2580,7 +2648,7 @@
     },
     {
       "id": "news-342",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "OpenAI ChatGPT 대화 경찰 신고 보도: safety escalation·human review·privacy notice의 운영 증거 점검",
       "title_original": "OpenAI reported ChatGPT conversation containing murder plan to police",
       "summary": "- 보도: AI타임스가 **ChatGPT 대화의 위해 계획을 FBI에 신고**해 체포로 이어진 사례를 보도, OpenAI는 임박한 심각한 신체 위해 가능성을 별도 검토 뒤 법 집행기관에 신고하는 정책을 설명\n- 흐름: 기사 기준 OpenAI는 대화를 별도 review system으로 보내고 소수 전문 인력이 검토하며, FBI는 약 두 달간의 대화 기록을 지역 보안관실에 전달\n- 경계: 신고 threshold·human review 기준·보존 기간·법집행기관 제공 범위·사용자 통지·이의제기·국가별 적용은 기사에서 구체적으로 확인되지 않음\n- 운영: enterprise AI team은 safety escalation을 product claim이 아니라 data classification·human access·legal request·audit·incident response control로 분리 설계 필요\n- 팀 액션: 대화 로그의 detection→review→disclosure→retention→deletion 흐름과 owner·SLA·evidence를 계약·관리자 문서·실제 exercise로 확인 필요",
@@ -2654,7 +2722,7 @@
     },
     {
       "id": "news-338",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "앤트로픽 IPO 보도 업데이트: 2028년 매출 목표 1,900억~2,000억달러는 계약·usage·GPU 원가 분리 검토 신호",
       "title_original": "Anthropic reportedly targets $190–200 billion in 2028 revenue ahead of IPO",
       "summary": "- 보도: AI타임스가 Reuters 소식통 보도를 인용해 Anthropic이 IPO 투자자에게 **2028년 매출 1,900억~2,000억달러** 목표를 제시했다고 보도\n- 변경: 기사 기준 과거 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높은 목표이며, Claude Code·Claude API 기업 채택과 5월 ARR 470억달러 초과를 배경으로 제시\n- 비용 경계: 모델 훈련·인프라·GPU 투자 때문에 EBITDA만으로 가치 산정이 어렵다는 기사 설명이며, 목표 매출은 계약·capacity·SLO·수익성 실현 증거 아님\n- 불확실성: 직접 확인한 것은 AI타임스의 Reuters 인용 보도이며 Reuters 원문·투자자료·감사 재무제표·고객 usage·할인·GPU/cloud 원가는 미확인\n- 팀 액션: provider forecast 대신 workload별 successful-task cost, quota·commitment·discount, fallback·data handling을 invoice·trace·계약 문서로 대조 필요",
@@ -2737,7 +2805,7 @@
     },
     {
       "id": "news-341",
-      "rank": 34,
+      "rank": 35,
       "title_ko": "ChatGPT Mac 컴퓨터 히스토리 보도: accessibility event·local Markdown memory의 endpoint 경계 점검",
       "title_original": "ChatGPT Computer History for Mac",
       "summary": "- 보도: AI타임스가 Mac용 ChatGPT의 **Computer History** 도입을 보도, accessibility system의 클릭·키 입력·앱 전환 event를 기록해 작업 맥락을 활용하는 구조\n- 저장: 기사 기준 screenshot·screen recording·microphone·system audio·private browsing 활동은 수집하지 않고, event summary에서 local Markdown memory file을 생성\n- 통제: 기능은 opt-in이며 Business·Enterprise는 admin 허용 뒤에도 user별 동의가 필요하다는 기사 설명\n- 위험: local memory plain Markdown, 이후 chat context, prompt injection, excluded app·deletion·backup 경로는 별도 data boundary로 검증 필요\n- 팀 액션: managed Mac canary에서 file path·ACL·MDM/EDR·exclusion·deletion·tool approval을 검증한 뒤 제한 확대 필요",
@@ -2819,7 +2887,7 @@
     },
     {
       "id": "news-340",
-      "rank": 35,
+      "rank": 36,
       "title_ko": "Qwen3.8-27B 가중치 공개: 27B 멀티모달·262K 컨텍스트를 self-hosted agent 검증 대상으로",
       "title_original": "Qwen3.8-27B",
       "summary": "- 공개: Qwen 공식 Hugging Face 저장소가 **Qwen3.8-27B** post-trained 가중치·구성을 공개, Apache-2.0·Transformers·vLLM·SGLang·TokenSpeed 호환을 명시\n- 구성: 27B native vision-language dense model, 기본 **262,144 token**·최대 1M 확장 컨텍스트, thinking mode 기본 활성화와 `reasoning_effort` 제어 제공\n- 성능 경계: Qwen card의 Terminal Bench 2.1 73.0·SWE-bench Pro 61.7·OSWorld-Verified 84.3은 공급자 benchmark이며 내부 workload·GPU 비용·SLO 보증 아님\n- 운영: Qwen은 framework별 추론 효율·throughput 차이를 명시하고 production/high-throughput에는 SGLang·vLLM·TokenSpeed를 권장\n- 팀 액션: revision hash·license·serving image·VRAM·context cap·thinking token·tool permission을 pin한 격리 canary로 task 성공률·p95·token·egress·rollback을 검증 필요",
@@ -2898,7 +2966,7 @@
     },
     {
       "id": "news-339",
-      "rank": 36,
+      "rank": 37,
       "title_ko": "오픈AI 기업용 매출 보도: B2B 비중 역전은 usage·효율·계약 조건을 분리할 FinOps 신호",
       "title_original": "OpenAI enterprise revenue reportedly surpasses ChatGPT consumer revenue",
       "summary": "- 보도: AI타임스가 CNBC 보도를 인용해 OpenAI 매출의 절반 이상이 기업용 사업에서 발생하며, 올해 초 B2B/B2C 40/60 비중이 역전됐다고 보도\n- 수치: 기사 기준 ARR은 **400억달러 초과**, 7월 매출은 전월 대비 20%, 기업 고객 수는 32% 증가\n- 효율: CFO가 GPT-5.6 Sol의 agent coding 작업 효율을 54% 높였다고 언급했으나 workload·측정법·가격·SLO는 직접 확인되지 않음\n- 증거 경계: 비공개 투자자 회의와 CNBC 인용 보도 범위이며, 감사 재무제표·고객별 usage·retention·계약 할인·cloud/GPU 원가·지역별 quota는 미확인\n- 팀 액션: ARR·고객 수 headline 대신 successful-task cost, cache·retry, committed spend, quota, data handling, fallback을 invoice·trace·계약 문서로 대조 필요",
@@ -2977,7 +3045,7 @@
     },
     {
       "id": "news-336",
-      "rank": 37,
+      "rank": 38,
       "title_ko": "딥시크 V4 API 피크·비피크 요금 도입 보도: agent workload의 시간대별 token 비용 재산정 필요",
       "title_original": "DeepSeek V4 API pricing changes with peak and off-peak rates",
       "summary": "- 변경: AI타임스 보도 기준 **2026-08-17 01:00 KST**부터 DeepSeek V4 Pro·Flash API에 피크·비피크 차등 요금 적용\n- 비용: V4 Pro output은 100만 token당 기존 0.87달러에서 비피크 1.98달러·피크 3.96달러라는 기사 수치\n- cache: V4 Pro cache-hit은 0.003625달러에서 비피크 0.022달러·피크 0.044달러라는 기사 수치\n- 증거 경계: 지역·계정별 적용 조건·rate limit·SLA·billing export 형식은 기사에서 직접 확인되지 않음\n- 팀 액션: 시간대·token type·cache hit·retry·latency를 trace와 billing에 연결해 가격 시뮬레이션·fallback·spend cap을 8월 17일 전 검증 필요",
@@ -3049,7 +3117,7 @@
     },
     {
       "id": "news-335",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "딥시크 하네스 v0.1 공개: 모델·도구·샌드박스를 플러그인으로 조립하는 오픈소스 coding-agent 런타임",
       "title_original": "DeepSeek Harness: Everything is a Plugin.",
       "summary": "- 공개: 딥시크가 **DeepSeek Harness v0.1**을 developer preview·MIT license로 공개, 모델·도구·스킬·세션·샌드박스·파일 시스템·agent loop를 플러그인으로 교체하는 구조\n- 실행 범위: 저장소 분석·파일 수정·shell·파일/웹 검색·계획·subagent·workflow와 민감 작업 approval을 제공한다는 보도\n- 운영 경계: preview는 breaking change 가능성을 명시하며, 공개 GitHub 저장소의 현재 88.8k star·8k fork는 채택·보안성·production readiness 보증 아님\n- 팀 액션: plugin provenance·tool permission·sandbox escape boundary·secret egress·session trace·rollback을 함께 검증한 isolated repository canary부터 적용 필요",
@@ -3129,7 +3197,7 @@
     },
     {
       "id": "news-337",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "LG·엔비디아 전략 협력: Jetson Thor 휴머노이드·DSX AI 팩토리 계획은 현장 PoC와 전력·냉각 검증 과제",
       "title_original": "LG and NVIDIA strategic collaboration for physical AI, AI factory, and mobility",
       "summary": "- 협력: LG와 NVIDIA가 로봇·AI 팩토리·모빌리티 MOU를 체결, 공동 TF로 R&D·현장 실증·사업화를 추진한다는 보도\n- 로봇: **2027년 1분기** Jetson Thor·Isaac GR00T·Halos for Robotics 기반 이족보행 휴머노이드 공개를 목표로 제시\n- 제조: 올해 미국 테네시 세탁기 생산라인에 휠 기반 LG 클로이드를 투입해 실제 제조 환경 PoC를 진행할 계획\n- 인프라: 2027년 상반기 Vera Rubin 레퍼런스 사이트, 2028년 상반기 충남 천안 **80MW** AI 팩토리 확대 계획과 20% 이상 공기 단축 목표를 보도\n- 팀 액션: 계획·MOU 수치를 capacity·PUE·GPU delivery·network·safety·SLO 확정값으로 취급하지 말고, PoC telemetry와 commissioning evidence로 단계별 검증 필요",
@@ -3210,7 +3278,7 @@
     },
     {
       "id": "news-332",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Google Gemini 3.7 Flash 공식 공개: 코딩·에이전트 성능·2026년 도입가를 운영 지표로 검증",
       "title_original": "Introducing Gemini 3.7 Flash",
       "summary": "- 공식 공개: Google이 **Gemini 3.7 Flash**를 코딩·에이전트용 workhorse 모델로 발표, 원문은 2026-08-13 날짜만 제시\n- 성능: Google 비교에서 FrontierCode 43.6% 대 34.4%, DeepSWE 65.3% 대 49.0%, WebDev Arena Elo 1588 대 1538 공개\n- 가격: 2026년 말까지 입력·출력 100만 token당 0.75달러·3.75달러 도입가 제시, 원문에서 cache·2027년 표준 가격은 확인되지 않음\n- 팀 액션: 동일 task·tool 권한에서 성공률·재시도·cache hit·p95 latency·월 비용을 canary로 수집 필요",
@@ -3292,7 +3360,7 @@
     },
     {
       "id": "news-331",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "GitHub Secure Open Source Fund: 50개 프로젝트의 AI 시대 보안 작업과 측정 지표",
       "title_original": "What 50 open source projects taught us about security in the AI era",
       "summary": "- 운영 결과: GitHub Secure Open Source Fund Session 4가 **50개 오픈소스 프로젝트·71명 maintainer·22개국**에 50만 달러 이상을 지원한 결과 공개\n- 통제 적용: 참여 프로젝트의 92%가 secret scanning·code scanning·protected branch·private vulnerability reporting·Dependabot 핵심 기능을 활성화한 집계\n- 누적 지표: 전체 session 기준 533개 신규 CVE 공개, 1,500건 이상 Dependabot security update, 650건 이상 exposed secret 해결이라는 GitHub 집계\n- 팀 액션: AI-assisted triage를 도입하더라도 alert closure·release decision·exception approval은 maintainer ownership과 remediation SLA로 관리",
@@ -3468,7 +3536,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-329",
@@ -3540,7 +3608,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-324",
@@ -3633,11 +3701,11 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-330",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Tailscale, 16년 된 SQLite WAL-Reset race 추적: control plane shard의 database corruption과 복구 경로 공개",
       "title_original": "How we tracked down a 16-year-old SQLite bug",
       "summary": "- 장애: Tailscale은 6개월간 19건의 SQLite database corruption과 control plane shard 복구를 분석해 WAL-Reset data race를 확인\n- 영향: 영향 shard의 control plane 복구 중 신규 device 연결·network 변경 반영·admin console·API가 제한됐으며, 이미 연결된 peer-to-peer WireGuard 세션은 유지\n- 운영 방식: synthetic 재현 대신 production passive forensic telemetry로 transaction·WAL 상태를 수집해 원인을 좁힌 사례\n- 팀 액션: SQLite 기반 control plane은 backup integrity check·WAL/checkpoint telemetry·shard isolation·restore RTO를 함께 운영 지표로 관리",
@@ -3787,11 +3855,11 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-333",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "OpenAI·Anthropic·Google reasoning block 재생 공격 연구: 공개 agent trace의 비밀·프롬프트 주입 경계 점검",
       "title_original": "OpenAI, Anthropic, Google API Flaw Let Weaker AI Models Decode Stronger Models' Reasoning",
       "summary": "- 연구 보도: 공개된 agent trace의 encrypted reasoning block을 같은 provider의 호환 모델에 재생해 plaintext 복원을 시연했다는 보도\n- 노출 범위: 6,708개 공개 trajectory에서 315,320개 block을 처리해 non-benchmark session의 privacy artifact 704개를 집계했다는 보고\n- 완화 상태: 연구진은 responsible disclosure 뒤 주된 extraction attack이 2026년 8월 기준 재현되지 않는다고 설명, vendor의 공개 확인은 미확인\n- 팀 액션: raw API transcript·opaque reasoning field를 로그·artifact·issue에서 제거하고 model-switch·trace-sharing 경로를 점검 필요",
@@ -3952,7 +4020,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-328",
@@ -4032,76 +4100,6 @@
             "승인: task class별 quality floor·p95 latency ceiling·max retry·max escalation budget·policy-denial 조건을 명시",
             "배포: shadow mode와 canary cohort에서 frontier-only baseline 대비 success·cost·incident rate를 비교한 뒤 확대",
             "복구: provider/model failure와 session-state incompatibility 시 deterministic fallback, human handoff, audit retention을 runbook에 포함"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-325",
-      "title_ko": "Gemini 앱 MAU 10억: 단일 앱 사용자 기준 대규모 AI 제품 운영 지표 공개",
-      "title_original": "Gemini app reaches 1 billion monthly users",
-      "summary": "- 공개: AI타임스는 Google Gemini 앱의 월간 활성 사용자(MAU)가 `10억 명`을 넘었다고 보도\n- 범위: Search·Android·Workspace 등에 통합된 Gemini 사용자는 제외한 앱 자체 집계이며, Google AI 전체 사용자는 이 수치보다 클 수 있음\n- 변화: AI타임스는 2분기 실적 발표의 9억5,000만 MAU 뒤 수주 만의 증가와 전년 대비 DAU 약 3배 증가를 전함\n- 팀 액션: 대규모 agent·assistant 서비스는 MAU와 별도로 concurrency·inference capacity·retention·safety incident·cost-to-serve를 같은 운영 지표로 추적",
-      "detail": "AI타임스는 Sundar Pichai의 8월 11일 X 게시물을 인용해 Gemini 앱의 월간 활성 사용자(MAU)가 10억 명을 넘었다고 보도함. 이 수치는 Google Search·Android·Workspace 등 다른 제품에 통합된 Gemini 사용자를 제외한 앱 자체 사용자 집계로 설명됨. AI타임스는 Google이 2분기 실적 발표에서 Gemini 앱 MAU 9억5,000만 명 이상을 공개한 뒤 수주 만에 10억 명에 도달했고, 지난 1년간 DAU도 약 3배 늘었다고 전함. 독립 감사 수치, 지역·유료 구독·모델별 분포, 요청량, GPU 용량, 매출·수익성, 안전성 사건 비율은 기사와 인용 게시물만으로 확정할 수 없음.",
-      "why_it_matters": "단일 AI 앱 기준 10억 MAU 공개는 consumer AI의 대규모 서비스 운영 단계 진입을 보여주는 지표이나, 사용자 수만으로 inference capacity·수익성·안전성·기업 활용도를 판단할 수 없음.",
-      "engineering_implication": "AI product·platform 팀은 MAU를 capacity 계획의 입력값으로만 사용하고, peak concurrency·request/token mix·cache hit rate·GPU/TPU utilization·p95 latency·safety review rate·단위 요청 비용을 region·model·feature별로 분리 추적 필요.",
-      "korea_implication": "국내 AI 서비스 운영 조직은 MAU 보도 수치를 자체 성장 목표로 단순 비교하지 말고 한국어 트래픽의 peak pattern·모델 라우팅·데이터 보존·비용 구조를 별도 계측 필요.",
-      "category": "AI",
-      "tags": [
-        "Google",
-        "Gemini",
-        "AI Product",
-        "Inference Infrastructure",
-        "MAU"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-08-12 12:51",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213830",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/213830_217411_4852.png",
-      "local_image": "assets/images/news-325.png",
-      "related_links": [
-        {
-          "title": "Sundar Pichai X post cited by AI타임스",
-          "url": "https://x.com/sundarpichai"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 Google Gemini 앱의 월간 활성 사용자 10억 명 돌파를 보도",
-          "items": [
-            "집계: Search·Android·Workspace 통합 사용자를 제외한 Gemini 앱 자체 MAU라는 기사 설명",
-            "근거: Sundar Pichai가 8월 11일 X에서 10억 사용자 돌파를 언급한 인용 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사의 성장 수치는 앱 사용자 규모를 설명하지만 서비스별 workload나 수익성을 직접 나타내지 않음",
-          "items": [
-            "비교: 2분기 실적 발표 당시 앱 MAU 9억5,000만 명 이상 공개 뒤 수주 만의 10억 명 도달이라는 보도",
-            "추세: 지난 1년간 DAU가 약 3배 증가했다는 AI타임스 보도",
-            "범위: Gemini 앱 사용자는 Google의 다른 통합 surface 사용자를 제외한 집계"
-          ]
-        },
-        {
-          "heading": "확인된 범위와 한계",
-          "body": "기사와 인용 게시물은 사용자 수를 제공하지만 AI serving의 비용·용량·품질을 분해하지 않음",
-          "items": [
-            "미확인: region·유료 사용자·enterprise seat·모델별 요청 비중·token volume·peak concurrency",
-            "미확인: GPU/TPU capacity·cache hit rate·latency SLO·매출·unit economics·safety incident rate",
-            "경계: MAU 10억은 다른 Google 제품에 통합된 Gemini 사용자를 포함한 전체 AI 생태계 규모와 동일하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "대형 AI 앱은 growth metric과 inference·safety control-plane을 같은 운영 대시보드에서 연결하는 과제",
-          "items": [
-            "용량: MAU가 아닌 concurrent session·request/token mix·peak-to-average ratio로 serving capacity 산정",
-            "비용: model·region·feature별 token cost, cache hit rate, accelerator utilization, retry rate를 분리 측정",
-            "품질: p95 latency·abandonment·safety review·fallback·incident rate를 growth cohort와 함께 검토"
           ]
         }
       ],

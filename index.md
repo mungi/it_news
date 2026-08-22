@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-deepseek-v4-flash-vision-2026-08-22]] — DeepSeek V4-Flash-Vision-Exp의 멀티모달 agent·MoE·이미지 token 과금·Harness benchmark와 재현성·data-boundary 검증 경계.
 - [[raw/articles/aitimes-anthropic-google-tpu-lead-custom-silicon-2026-08-22]] — Anthropic의 전 Google TPU 리더 영입 보도, custom silicon 조직·공급망 논의와 accelerator capacity 검증 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-5-6-sol-price-reduction-2026-08-22]] — Bedrock GPT-5.6 Sol 입력·출력 token 가격 인하와 프로모션 종료, agent routing·FinOps 검증 경계.
 - [[raw/articles/aws-glue-6-0-price-reduction-iceberg-v3-2026-08-22]] — AWS Glue 6.0의 30% 가격 인하·Iceberg v3·Spark 4.1/Python 3.13 runtime 변경과 ETL 호환성·비용 검증 경계.
