@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-22 | Total pages: 304
+> Last updated: 2026-08-23 | Total pages: 305
 
 ## Entities
 
@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-bot-preference-sync-2026-08-22]] — Cloudflare AI bot Search·Agent·Training 정책과 `robots.txt` 동기화, edge enforcement·custom rule·crawler 준수 검증 경계.
 - [[raw/articles/aitimes-deepseek-v4-flash-vision-2026-08-22]] — DeepSeek V4-Flash-Vision-Exp의 멀티모달 agent·MoE·이미지 token 과금·Harness benchmark와 재현성·data-boundary 검증 경계.
 - [[raw/articles/aitimes-anthropic-google-tpu-lead-custom-silicon-2026-08-22]] — Anthropic의 전 Google TPU 리더 영입 보도, custom silicon 조직·공급망 논의와 accelerator capacity 검증 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-5-6-sol-price-reduction-2026-08-22]] — Bedrock GPT-5.6 Sol 입력·출력 token 가격 인하와 프로모션 종료, agent routing·FinOps 검증 경계.
