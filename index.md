@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-openai-gpt-5-6-sol-price-reduction-2026-08-22]] — Bedrock GPT-5.6 Sol 입력·출력 token 가격 인하와 프로모션 종료, agent routing·FinOps 검증 경계.
 - [[raw/articles/aws-glue-6-0-price-reduction-iceberg-v3-2026-08-22]] — AWS Glue 6.0의 30% 가격 인하·Iceberg v3·Spark 4.1/Python 3.13 runtime 변경과 ETL 호환성·비용 검증 경계.
 - [[raw/articles/openrouter-stripe-acquisition-2026-08-19]] — OpenRouter의 Stripe 합류 발표와 기존 integration·라우팅 연속성, provider·가격·SLA·data path 검증 경계.
 - [[raw/articles/modular-mojo-open-source-2026-08-18]] — Mojo compiler·tooling 전체 Apache 2.0 공개와 Bazel source/prebuilt build·contribution·supply-chain 검증 경계.
