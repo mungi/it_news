@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-21 | Total pages: 303
+> Last updated: 2026-08-22 | Total pages: 304
 
 ## Entities
 
@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-glue-6-0-price-reduction-iceberg-v3-2026-08-22]] — AWS Glue 6.0의 30% 가격 인하·Iceberg v3·Spark 4.1/Python 3.13 runtime 변경과 ETL 호환성·비용 검증 경계.
 - [[raw/articles/openrouter-stripe-acquisition-2026-08-19]] — OpenRouter의 Stripe 합류 발표와 기존 integration·라우팅 연속성, provider·가격·SLA·data path 검증 경계.
 - [[raw/articles/modular-mojo-open-source-2026-08-18]] — Mojo compiler·tooling 전체 Apache 2.0 공개와 Bazel source/prebuilt build·contribution·supply-chain 검증 경계.
 - [[raw/articles/aitimes-kt-npu-llm-station-2026-08-19]] — KT NPU LLM 스테이션의 ATOM-MAX·믿음 K 2.5 Pro·운영 API 결합과 온프레미스 RAG control-plane 검증 경계.
