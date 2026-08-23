@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/nvidia-avo-agentic-variation-operators-2026-08-23]] — NVIDIA AVO의 장기 agent harness·Blackwell attention kernel 자율 탐색, 재현성·change-control 검증 경계.
 - [[raw/articles/mcp-roadmap-2026-08-22]] — MCP 5개 로드맵: 장시간 agent messaging·HTTP-native transport·workload identity·tool discovery·SDK conformance의 명세/운영 경계.
 - [[raw/articles/cloudflare-bot-preference-sync-2026-08-22]] — Cloudflare AI bot Search·Agent·Training 정책과 `robots.txt` 동기화, edge enforcement·custom rule·crawler 준수 검증 경계.
 - [[raw/articles/aitimes-deepseek-v4-flash-vision-2026-08-22]] — DeepSeek V4-Flash-Vision-Exp의 멀티모달 agent·MoE·이미지 token 과금·Harness benchmark와 재현성·data-boundary 검증 경계.
