@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-24 | Total pages: 306
+> Last updated: 2026-08-24 | Total pages: 307
 
 ## Entities
 
@@ -33,6 +33,7 @@
 ## Raw Articles
 - [[raw/articles/cncf-kubeflow-graduation-2026-08-18]] — CNCF Kubeflow Graduated 승격의 Kubernetes 기반 AI lifecycle 성숙도·거버넌스와 platform integration 검증 경계.
 - [[raw/articles/nvidia-avo-agentic-variation-operators-2026-08-23]] — NVIDIA AVO의 장기 agent harness·Blackwell attention kernel 자율 탐색, 재현성·change-control 검증 경계.
+- [[raw/articles/liquid-ai-lfm2-5-dspark-speculative-decoding-2026-08-23]] — Liquid AI LFM2.5-DSpark speculative decoding의 GPU·온디바이스 decode throughput, acceptance rate·tail latency·fallback 검증 경계.
 - [[raw/articles/mcp-roadmap-2026-08-22]] — MCP 5개 로드맵: 장시간 agent messaging·HTTP-native transport·workload identity·tool discovery·SDK conformance의 명세/운영 경계.
 - [[raw/articles/cloudflare-bot-preference-sync-2026-08-22]] — Cloudflare AI bot Search·Agent·Training 정책과 `robots.txt` 동기화, edge enforcement·custom rule·crawler 준수 검증 경계.
 - [[raw/articles/aitimes-deepseek-v4-flash-vision-2026-08-22]] — DeepSeek V4-Flash-Vision-Exp의 멀티모달 agent·MoE·이미지 token 과금·Harness benchmark와 재현성·data-boundary 검증 경계.
