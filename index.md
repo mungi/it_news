@@ -31,6 +31,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-deepseek-weekend-offpeak-pricing-2026-08-24]] — DeepSeek 주말 API 비성수기 단일 적용 보도와 시간대별 token 비용·scheduler 검증 경계.
 - [[raw/articles/aitimes-google-antigravity-remote-control-2026-08-23]] — Google Antigravity Remote Control의 장시간 coding-agent 원격 session, device·권한·감사·revocation 검증 경계.
 - [[raw/articles/cncf-kubeflow-graduation-2026-08-18]] — CNCF Kubeflow Graduated 승격의 Kubernetes 기반 AI lifecycle 성숙도·거버넌스와 platform integration 검증 경계.
 - [[raw/articles/nvidia-avo-agentic-variation-operators-2026-08-23]] — NVIDIA AVO의 장기 agent harness·Blackwell attention kernel 자율 탐색, 재현성·change-control 검증 경계.
