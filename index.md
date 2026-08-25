@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-24 | Total pages: 308
+> Last updated: 2026-08-26 | Total pages: 309
 
 ## Entities
 
@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-batch-ecs-managed-instances-2026-08-26]] — AWS Batch의 ECS Managed Instances compute option, GPU batch 패치·수명주기·capacity 검증 경계.
 - [[raw/articles/aws-lambda-full-iam-resource-based-policies-2026-08-25]] — AWS Lambda full IAM resource-based policy·condition key·effective permission 검증 경계.
 - [[raw/articles/aws-ecs-agent-connectivity-health-2026-08-25]] — ECS `AGENT_CONNECTIVITY` event·compute option별 drain·replacement·SRE 복구 검증 경계.
 - [[raw/articles/aitimes-deepseek-weekend-offpeak-pricing-2026-08-24]] — DeepSeek 주말 API 비성수기 단일 적용 보도와 시간대별 token 비용·scheduler 검증 경계.
