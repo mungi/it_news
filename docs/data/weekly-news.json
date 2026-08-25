@@ -2,203 +2,177 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-08-25 23:50",
+  "last_updated_kst": "2026-08-26 03:56",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Amazon ECS agent connectivity 자동 감지·복구: `AGENT_CONNECTIVITY` event를 모든 compute option에 제공하고 Fargate·Managed Instances는 task drain·replacement·deregistration을 자동 수행. ECS on EC2는 customer workflow가 필요하므로 event delivery·p95 recovery·duplicate execution·capacity·traffic recovery를 fault injection으로 검증 필요.",
+    "AWS Lambda full IAM resource-based policy: multiple principal·action과 full IAM condition key를 단일 policy에 사용할 수 있음. condition 편의가 effective permission 보증은 아니므로 caller identity·SCP·event source를 포함한 allow/deny matrix·IAM simulation·CloudTrail·rollback을 policy-as-code gate로 운영 필요.",
     "Amazon EKS 외부 OIDC provider 최대 10개 지원: 직원·계약자·CI/CD population별 federation을 cluster에 직접 연결하고 기존 IAM authentication과 병행 가능. provider별 issuer·audience·claim·RBAC·token revoke·IdP outage·break-glass·audit을 test cluster에서 검증한 뒤 production 확대 필요.",
     "Liquid AI LFM2.5-DSpark: LFM2.5용 speculative decoding draft checkpoint와 llama.cpp·SGLang integration을 공개하고 GPU 최대 3.18배·온디바이스 최대 2.87배 throughput이라는 자체 평가를 제시. target/draft pair·acceptance·TTFT/TPOT·p95·VRAM·J/token·fallback·output equivalence를 동일 trace에서 baseline과 비교 필요.",
-    "MCP 새 로드맵: 장시간 agent messaging, HTTP-native transport, workload identity·delegation, progressive tool discovery, SDK conformance를 다음 명세 우선순위로 설정. roadmap은 release 보증이 아니므로 task lifecycle·identity adapter·tool telemetry를 canary와 compatibility matrix로 검증 필요.",
-    "CNCF Kubeflow Graduated 승격: Kubernetes 기반 data·training·fine-tuning·inference lifecycle의 upstream maturity·governance milestone을 공식화. managed offering SLA나 운영 안전성은 보장하지 않으므로 version·GPU·KServe/Kueue·identity·tenant isolation·pipeline rollback을 representative workload에서 검증 필요.",
-    "DeepSeek 주말 API 요금 보도: 베이징 시간 토·일 전량을 off-peak으로 단일 적용한다는 timestamped 보도와 현재 공식 가격표를 교차 확인. 주말 batch·평가 scheduling은 account별 KST/베이징 시간·token mix·quota·p95·retry·invoice·fallback을 같은 trace에서 검증 필요."
+    "MCP 새 로드맵: 장시간 agent messaging, HTTP-native transport, workload identity·delegation, progressive tool discovery, SDK conformance를 다음 명세 우선순위로 설정. roadmap은 release 보증이 아니므로 task lifecycle·identity adapter·tool telemetry를 canary와 compatibility matrix로 검증 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Liquid AI LFM2.5-DSpark: speculative decoding을 throughput 주장 아닌 서빙 계약으로 검증",
-      "summary": "핵심: Liquid AI가 LFM2.5 3개 모델용 **DSpark draft checkpoint**와 llama.cpp·SGLang upstream integration을 공개하고 GPU 최대 3.18배·온디바이스 최대 2.87배 decode throughput이라는 자체 평가를 제시. speculative decoding의 실효성은 target/draft pair·acceptance·tail latency·VRAM·output equivalence·fallback을 동일 trace에서 확인한 뒤에만 production route로 승격해야 함.",
-      "details": "Liquid AI 공식 DSpark 발표을 기준으로 speculative decoding의 모델·runtime·scheduler·SRE·FinOps·품질 통제 계약을 재구성한 Deep Dive",
-      "why_it_matters": "decode가 memory-bound인 LLM serving에서는 target weight stream을 줄이면 token throughput과 비용 구조가 바뀔 수 있음. 그러나 추가 draft model·scheduler·acceptance variance는 VRAM, TTFT/TPOT, tail latency, output parity, rollback 경로까지 함께 바꾸므로 benchmark headline만으로 승인할 수 없음.",
+      "title": "Amazon ECS agent connectivity 자동 복구: 감지 이벤트를 task-level 복구 계약으로 검증",
+      "summary": "핵심: Amazon ECS가 `AGENT_CONNECTIVITY` health change event를 Fargate·ECS Managed Instances·ECS on EC2에 추가. Fargate와 Managed Instances는 impaired instance의 task drain·replacement capacity launch·deregistration을 자동 수행하며, ECS on EC2는 event를 자체 replacement workflow에 연결해야 함.",
+      "details": "AWS 공식 발표을 기준으로 agent connectivity loss의 감지·drain·replacement·SLO·state consistency를 운영 계약으로 재구성한 Deep Dive",
+      "why_it_matters": "ECS agent와 control plane 연결 단절은 task process 생존과 별개로 scheduler visibility·placement·traffic recovery를 훼손할 수 있음. 자동 복구 범위와 compute option별 책임 경계를 failure injection으로 검증해야 함.",
       "sources": [
-        "https://www.liquid.ai/blog/lfm2.5-dspark"
+        "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-ecs-agent-connectivity-health/"
       ],
-      "image_url": "https://aypchzzf9pftwuto.public.blob.vercel-storage.com/dspark_decode_synthetic-eW9KEMLo5fpFfBlmbspCgi8N7GbxDD.gif",
-      "local_image": "assets/images/news-378.gif",
-      "refreshed_kst": "2026-08-25 03:33",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-08-26 03:56",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**DSpark의 승인 단위는 최대 throughput 수치가 아니라 target-only 대비 품질·지연·메모리·비용·복구를 재현하는 request-level 계약임**. draft model을 빠른 경로로 넣더라도 acceptance 저하·load 실패·runtime incompatibility에서 target-only fallback이 같은 SLO와 audit trace를 유지해야 함.",
+          "body": "**ECS agent connectivity 자동 복구는 host 장애를 task-level availability로 흡수하는 기능이지만, 실제 승인 단위는 감지 이벤트가 아니라 drain·replacement·capacity·deployment·데이터 정합성까지 재현되는 복구 계약임. Fargate와 ECS Managed Instances의 자동 회복과 ECS on EC2의 customer-driven replacement를 같은 운영 결과로 간주하면 안 됨.",
           "items": [
-            "사실: Liquid AI가 LFM2.5 1.2B-Instruct·2.6B·8B-A1B용 DSpark checkpoint를 공개",
-            "결정: 모델별 canary에서 output equivalence와 completed-request cost를 함께 통과한 route만 확대"
+            "사실: ECS가 `AGENT_CONNECTIVITY` health change event를 모든 compute option에 추가",
+            "결정: auto-recovery 여부와 task SLO·stateful workload 복구를 별도 release gate로 운영"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "직접 읽은 Liquid AI 원문은 decode 단계가 H100 같은 GPU와 MacBook·iPhone 같은 edge device 모두에서 DRAM→SRAM weight streaming에 묶일 수 있다고 설명. lightweight draft가 candidate token을 만들고 target이 한 forward pass에서 검증해 weight-loading cost를 여러 token에 공유하는 speculative decoding 구조임.",
+          "body": "AWS 공식 What’s New와 RSS exact timestamp `2026-08-24T22:42:00Z`를 직접 확인해 KST `2026-08-25 07:42`로 변환. EBS volume degradation, host thermal event, network failure가 ECS agent와 control plane 연결을 끊을 수 있다는 원문 설명이 출발점임.",
           "items": [
-            "공개: GPU 최대 3.18배·온디바이스 최대 2.87배 throughput이라는 Liquid AI 자체 평가",
-            "구성: context-conditioned parallel backbone·neighbor-token sequential head·acceptance probability head와 hardware-aware suffix pruning",
-            "배포: LFM-compatible integration을 llama.cpp와 SGLang upstream으로 공개"
+            "범위: Fargate·ECS Managed Instances·ECS on EC2 전체에 `AGENT_CONNECTIVITY` event 제공",
+            "자동 조치: Fargate와 Managed Instances는 running task drain·replacement capacity launch·impaired instance deregistration 수행",
+            "운영 분기: ECS on EC2는 event로 자체 instance replacement workflow 구동"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "speculative decoding은 target model 호출의 유효 token 수를 늘리는 최적화이지 모든 request의 latency를 자동으로 낮추는 기능이 아님. acceptance가 낮거나 request가 짧고 queue가 혼잡하면 draft compute·메모리 reservation·scheduler decision이 이득을 상쇄할 수 있음.",
+          "body": "agent 연결 단절은 application health check 실패와 다름. task process가 host에서 계속 실행돼도 scheduler가 desired state와 task placement를 신뢰하지 못할 수 있으며, control-plane visibility 회복과 workload correctness는 독립적으로 증명해야 함.",
           "items": [
-            "분리: model checkpoint 품질·runtime 구현·scheduler policy·prompt distribution·serving topology를 독립 evidence로 기록",
-            "측정: accepted token per target forward·draft length·rejection point·fallback rate·tokens/s를 request trace에 연결",
-            "경계: 원문은 tenant별 output parity·SLO·regional availability·compatibility를 보증하지 않음"
+            "분리: agent heartbeat·task health·load balancer target health·application synthetic check을 별도 signal로 수집",
+            "경계: AWS 공지는 detection threshold·drain timeout·replacement latency·capacity reservation·cross-AZ behavior를 보증하지 않음"
           ]
         },
         {
-          "heading": "서빙 아키텍처 관점",
-          "body": "draft와 target은 version pinning, quantization, KV/prefix cache, batching, streaming cadence, autoscaling과 상호작용함. target/draft pair를 route configuration의 원자 단위로 보고, pair 변경은 model-only 교체가 아닌 serving topology 변경으로 검토해야 함.",
+          "heading": "아키텍처·운영 관점",
+          "body": "자동 drain은 stateless service에는 유리하지만, long-running job·local ephemeral data·EBS attachment·connection draining·idempotency가 있는 workload에서는 side effect를 남길 수 있음. deployment circuit breaker나 Auto Scaling과 동시에 작동할 때 replacement storm을 피할 정책이 필요함.",
           "items": [
-            "설계: target/draft pair·runtime version·quantization·sampling·cache policy·fallback target-only route를 release record에 고정",
-            "격리: canary traffic과 baseline traffic을 같은 prompt class·context length·concurrency bucket으로 비교",
-            "복구: draft artifact load·scheduler error·acceptance collapse에서 target-only route로 전환하고 in-flight request 처리 기준 정의"
+            "설계: service별 stateless/stateful·graceful shutdown·checkpoint·idempotent retry·maximum replacement rate를 manifest에 고정",
+            "계측: `AGENT_CONNECTIVITY`, desired/running count, drain duration, placement failure, queue age, error budget을 동일 trace로 연결"
           ]
         },
         {
-          "heading": "성능·품질 관점",
-          "body": "원문은 final checkpoint를 validation loss가 아니라 benchmark acceptance가 가장 높은 epoch로 선택했다고 설명. validation loss가 개선돼도 larger draft에서 acceptance가 함께 오르지 않을 수 있으므로 offline loss 하나로 serving gain을 추정하면 안 됨.",
+          "heading": "SRE·복구 관점",
+          "body": "Fargate/Managed Instances의 자동 복구는 고객 runbook을 없애지 않음. event가 발생했을 때 affected task가 정상적으로 deregister됐는지, replacement가 원하는 subnet·AZ·capacity provider에 배치됐는지, upstream/downstream connection이 복구됐는지 검증해야 함.",
           "items": [
-            "측정: TTFT·TPOT·p50/p95/p99·streaming inter-token gap·timeout·retry·quality regression을 baseline과 비교",
-            "고정: model revision·prompt·sampling·seed·sequence length·batch·GPU/driver·runtime을 experiment manifest에 기록",
-            "검증: Korean·English, short·long context, tool-call, constrained-output workload에서 deterministic 또는 허용오차 기반 equivalence 확인"
+            "훈련: network partition·host impairment·capacity shortage·deployment 중 agent disconnect를 staging에서 주입",
+            "복구: replacement 불가·drain 지연·중복 실행 시 escalation owner·manual stop·reconciliation 순서를 사전 정의"
           ]
         },
         {
-          "heading": "FinOps·용량 관점",
-          "body": "3.18배와 2.87배는 Liquid AI의 workload·hardware 평가 수치임. fleet 비용은 generated token만이 아니라 draft VRAM, prefill/decode queue, GPU utilization, autoscaling headroom, power, failed request, investigation 시간을 포함한 successful request 단위로 계산해야 함.",
+          "heading": "비용·용량 관점",
+          "body": "자동 replacement는 availability를 높일 수 있으나 burst replacement, spare capacity, cross-AZ traffic, retry 작업과 investigation 시간은 비용 변수임. fleet 평균보다 impaired event 동안의 p95 recovery time과 successful task당 비용을 함께 봐야 함.",
           "items": [
-            "집계: GPU-hour·J/token·VRAM headroom·queue age·autoscaling instance·completed-request cost 수집",
-            "비교: throughput 최대값이 아닌 prompt class별 p95와 cost-per-success를 rollout threshold로 사용",
-            "피할 것: vendor 최고 수치를 GPU 증설 회피·invoice 절감·모든 edge device latency 보증으로 환산하는 판단"
+            "집계: replacement instance/task 수·capacity provider utilization·queue delay·retry·cross-AZ bytes·completed-job cost",
+            "피할 것: event 공개를 모든 ECS on EC2 fleet의 자동 heal 또는 무중단 보증으로 해석하는 판단"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "draft checkpoint와 upstream runtime은 모델 artifact와 deployment dependency를 추가함. artifact provenance, license, hash, registry access, rollout owner, telemetry retention을 target model과 동일하게 통제하지 않으면 speed path가 공급망·감사 공백이 될 수 있음.",
+          "heading": "도입 로드맵",
+          "body": "1단계는 non-production service에서 event 수신과 dashboard·alert 연결을 확인하는 단계. 2단계는 Fargate/Managed Instances와 EC2 각각에서 failure injection·drain·placement·rollback을 시험하는 단계. 3단계는 stateful dependency와 deployment traffic을 제한한 canary 확대 단계임.",
           "items": [
-            "통제: signed artifact digest·model card·license·runtime SBOM·registry permission을 release evidence에 연결",
-            "통제: prompt·response log의 retention·redaction과 trace access를 baseline serving policy와 동일하게 적용",
-            "피할 것: upstream integration 공개를 managed-service support·security review 완료·enterprise policy 충족으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "도입 로드맵과 관점",
-          "body": "1단계는 one target model·one runtime·대표 prompt set에서 read-only benchmark와 route telemetry를 만드는 단계. 2단계는 bounded canary에서 rejection·fallback·load failure·queue spike를 주입하는 단계. 3단계는 SLO·quality·budget·rollback 조건이 문서화된 workload만 확대하는 단계.",
-          "items": [
-            "1단계: baseline trace와 target/draft acceptance matrix·quality oracle·cost budget 작성",
-            "2단계: short request·long context·burst queue·draft failure·runtime upgrade에서 failure injection 수행",
-            "3단계: promotion threshold·fallback owner·rollback time·post-rollout reconciliation을 change record에 고정"
+            "1단계: service·capacity provider·AZ·state class별 baseline recovery trace 작성",
+            "2단계: synthetic request와 durable queue를 사용해 data loss·duplicate execution·SLO breach 확인",
+            "3단계: promotion threshold·maximum concurrent replacement·incident commander·postmortem evidence를 change record에 고정"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "**속도 개선은 acceptance와 fallback까지 포함한 운영 결과로만 인정해야 함**. DSpark를 도입하는 팀은 headline throughput 대신 request-level evidence를 남기고, target-only로 안전하게 되돌릴 수 없는 pair는 production dependency로 승격하지 않아야 함.",
+          "body": "**자동 감지는 복구의 시작 신호일 뿐이며, task correctness와 customer-visible SLO는 별도 검증 대상임**. 운영팀은 event가 발생한 뒤의 drain·replacement·data consistency·traffic recovery를 서비스별로 측정하고, ECS on EC2에는 event consumer와 replacement owner를 명시해야 함.",
           "items": [
-            "체크: target/draft revision·sampling·acceptance·TTFT/TPOT·p95/p99·VRAM·GPU-hour·output equivalence 확인",
-            "체크: artifact provenance·runtime version·fallback trigger·rollback owner·trace retention과 dashboard alert 확인",
-            "팀 액션: 30일 내 representative workload에서 quality·cost·recovery evidence를 포함한 canary 결과를 release gate로 운영"
+            "체크리스트: event delivery·task drain·deregistration·replacement placement·connection draining·checkpoint·alert 확인",
+            "체크리스트: Fargate/Managed Instances auto-recovery와 ECS on EC2 workflow의 책임 경계 확인",
+            "팀 액션: 30일 내 대표 service별 impaired-agent drill과 p95 recovery·duplicate-work evidence를 release gate로 운영"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Google Antigravity Remote Control 보도: 장시간 coding agent의 원격 control surface를 권한·감사 계약으로 분리",
-      "summary": "핵심: 공식 @antigravity 게시물은 **Remote Control** rollout과 browser·iOS·Android 접근을 알렸고, AI타임스는 실행 중인 coding-agent session의 원격 확인·개입과 workspace·file·build tool 접근을 보도. remote UI의 편의성과 별개로 device posture·MFA·write approval·secret scope·event audit·expiry/revoke·rollback을 test tenant에서 증명해야 함.",
-      "details": "공식 rollout 공지와 timestamped AI타임스 보도를 분리해, browser/mobile에서 장시간 coding-agent session을 감독하는 권한·감사·복구 control plane으로 재구성한 Deep Dive",
-      "why_it_matters": "remote control은 developer의 위치 제약을 줄이지만 browser와 mobile을 agent workspace의 새 제어면으로 추가함. session이 repository·build tool·environment·credential에 닿는다면 UI 기능 발표은 enterprise access control, device trust, audit completeness, revoke 동작을 대체하지 못함.",
+      "title": "AWS Lambda full IAM resource-based policy: statement 축소보다 effective permission 검증",
+      "summary": "핵심: AWS Lambda가 multiple principal·action과 전체 IAM condition key를 쓰는 full resource-based policy를 지원. source IP·principal tag 조건과 policy-as-code는 shared function의 접근 제어를 정교화할 수 있지만, caller identity·SCP·event source·audit을 포함한 effective permission 검증이 선행돼야 함.",
+      "details": "AWS 공식 발표을 기준으로 Lambda resource-based policy의 권한·감사·IaC·rollback 계약을 재구성한 Deep Dive",
+      "why_it_matters": "principal별 permission을 병합하면 policy management는 단순해질 수 있으나, condition 조합과 cross-account invoke path의 blast radius가 확대될 수 있음. allow/deny matrix·CloudTrail·rollback template를 release evidence로 관리해야 함.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=214259",
-        "https://x.com/antigravity/status/2090853908138676507"
+        "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-lambda-full-iam-resource-based-policies/"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214259_217942_1345.png",
-      "local_image": "assets/images/news-379.png",
-      "refreshed_kst": "2026-08-25 03:33",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-08-26 03:56",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**원격 control의 승인 단위는 “어디서든 agent를 볼 수 있음”이 아니라 어떤 device·principal·session이 어떤 read/write/deploy side effect를 만들었는지 되돌릴 수 있는 계약임**. privileged repository와 production environment는 UI rollout과 분리해 MFA·managed device·approval·audit·revoke evidence 뒤에만 연결해야 함.",
+          "body": "**Lambda full IAM resource-based policy의 승인 단위는 JSON 편집 편의가 아니라 principal·action·condition이 실제 invoke path와 audit trace에서 least privilege를 지키는 authorization 계약임**. 여러 principal을 한 policy로 묶을 수 있어도 source IP·principal tag 같은 condition이 의도치 않은 invoke 권한을 열지 않게 simulation과 canary가 필요함.",
           "items": [
-            "사실: 공식 게시물은 Remote Control과 Ultra subscriber부터 시작하는 rollout, browser·iOS·Android 접근을 언급",
-            "결정: observation·command·repository write·deploy 권한을 같은 버튼이나 session access로 묶지 않음"
+            "사실: multiple principal·action과 전체 IAM condition key를 하나의 resource-based policy에 사용 가능",
+            "결정: policy consolidation 전후의 effective permission과 denied invoke를 automated test로 비교"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "공식 @antigravity artifact는 `Remote Control is here!`와 rollout 범위를 공지. 직접 읽은 AI타임스 기사에는 developer가 실행 중인 session을 browser에서 확인·개입하고, 노트북·desktop·server·cloud의 workspace·file·build tool·environment를 원격으로 다루는 흐름과 push notification이 서술됨.",
+          "body": "AWS 공식 What’s New와 RSS `2026-08-25T02:00:00Z`를 직접 확인해 KST `2026-08-25 11:00`으로 기록. 기존 Lambda는 principal별 권한 추가 방식이었고, 새 기능은 full IAM resource-based policy와 full condition key를 지원한다는 공식 범위임.",
           "items": [
-            "공식 범위: Ultra subscriber부터 전체 사용자 rollout을 시작한다는 공지",
-            "보도 범위: long-running refactor·test·build 중 progress 확인·변경 검토·명령 실행",
-            "증거 경계: session 내부 접근 범위와 enterprise control 설명은 timestamped AI타임스 보도이며 공식 X 게시물의 상세 contract 아님"
+            "변경: single policy document에서 multiple principal·multiple action 정의 가능",
+            "예시: source IP 또는 principal tag 기반 invoke access restriction 가능",
+            "작성 경로: Lambda console JSON editor·AWS CLI·SDK·CloudFormation·AWS SAM 지원",
+            "범위: AWS commercial Regions·추가 비용 없음이라는 공식 공지"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "long-running coding agent의 위험은 model output 한 번이 아니라 session이 유지되는 동안 누적되는 tool call·credential use·file write·build artifact·notification metadata에 있음. remote surface를 추가하면 local workstation의 보안 경계가 browser profile과 mobile device 상태, session handoff, remote revoke까지 확장됨.",
+          "body": "resource-based policy는 caller identity policy, organization SCP, permission boundary, VPC endpoint policy, event-source integration과 합쳐져 최종 접근을 결정함. policy statement 수가 줄어도 effective permission reasoning이 단순해진다고 단정할 수 없으며, condition key 조합은 blast radius를 넓힐 수 있음.",
           "items": [
-            "분리: human identity·device identity·agent session ID·workspace identity·tool authority를 한 trace에 연결",
-            "분리: read-only observation, command execution, repository write, merge, deploy를 독립 policy decision으로 구성",
-            "경계: 발표만으로 MFA·device attestation·browser isolation·data residency·SLA·audit retention을 확인할 수 없음"
+            "분리: who can invoke, which action, from which source, under which context를 separate assertion으로 테스트",
+            "경계: 원문은 condition-key 조합별 service support, existing statement migration, cross-account rollout order를 보증하지 않음"
           ]
         },
         {
-          "heading": "권한·identity 관점",
-          "body": "remote access는 로그인 성공만으로 충분하지 않음. privileged action에는 managed-device posture, phishing-resistant MFA, re-auth, short-lived session, audience-bound credential, network condition을 조합하고 session handoff가 새 device에서 권한 승격이 되지 않게 설계해야 함.",
+          "heading": "권한·거버넌스 관점",
+          "body": "플랫폼 팀은 tag 또는 IP 조건을 사용해 shared function의 invoke path를 줄일 수 있지만, mutable tag·NAT egress·forwarded network path·assumed role session의 해석을 확인하지 않으면 control이 약해질 수 있음. policy-as-code review와 exception expiry가 필요함.",
           "items": [
-            "통제: device·principal·repository·environment·tool별 least privilege와 explicit approval 적용",
-            "통제: session creation·attach·command·write·approve·cancel·revoke event를 immutable audit trail에 기록",
-            "검증: lost device·expired credential·network change·concurrent attach·role change에서 authorization denial과 recovery 확인"
+            "통제: explicit principal·action·`SourceArn`/`SourceAccount`·condition을 template review rule로 고정",
+            "검증: allowed·denied principal, wrong action, wrong source IP, tag mutation, cross-account invocation의 authorization matrix 실행"
           ]
         },
         {
-          "heading": "보안·data boundary 관점",
-          "body": "기사에서 언급된 workspace·file·build tool·authentication·environment variable 접근은 source code와 secret이 같은 session에 존재할 수 있음을 뜻함. notification·screen rendering·browser cache·mobile OS backup·clipboard·remote command는 별도의 data path이므로 convenience feature로 축소해 평가하면 안 됨.",
+          "heading": "아키텍처·운영 관점",
+          "body": "여러 event producer와 service principal이 하나의 Lambda를 호출하는 경우 policy consolidation은 drift를 줄일 수 있음. 반대로 event source별 retry·DLQ·concurrency·payload trust boundary가 다르면 한 policy 문서가 운영 책임을 숨길 수 있음.",
           "items": [
-            "설계: secret masking·redacted notification·repository/host allowlist·egress policy·ephemeral credential 적용",
-            "통제: browser extension·screen capture·download·clipboard·session recording의 enterprise policy와 log visibility 확인",
-            "대응: prompt injection·session hijack·lost device·malicious repository·partial command 실행에서 revoke·kill·rotation·reconciliation runbook 시험"
+            "설계: invoke source별 policy statement ID·owner·data classification·retry/DLQ·concurrency budget을 inventory화",
+            "감사: CloudTrail invoke authorization failure·policy change·IaC deployment·function alias traffic을 change record에 연결"
           ]
         },
         {
-          "heading": "SRE·변경관리 관점",
-          "body": "agent를 원격 감독한다고 해서 change management가 대체되지 않음. state transition, tool action, diff, build/test result, approval, cancellation, rollback을 동일 trace에서 재현해야 stalled agent와 unintended side effect를 처리할 수 있음.",
+          "heading": "보안·FinOps 관점",
+          "body": "정책 오류는 unauthorized invocation, cost spike, downstream data exposure로 이어질 수 있음. 조건을 추가해도 function URL, event source mapping, API Gateway, EventBridge 등의 별도 exposure와 billing path가 자동으로 닫히지 않음.",
           "items": [
-            "계측: session duration·heartbeat gap·tool error·retry·queue age·human intervention·cancel latency·rollback duration 수집",
-            "통제: max iteration·budget ceiling·timeout·stop condition·checkpoint·escalation owner를 workflow 시작 전에 선언",
-            "복구: network interruption·client crash·agent stall·partial write에서 idempotent retry와 reconciliation owner를 사전 지정"
+            "계측: invoke count·denied invoke·throttle·concurrent execution·error·DLQ·cost allocation을 principal/source dimension으로 수집",
+            "피할 것: full policy support를 automatic least privilege, all-region parity, existing integration 무변경 보증으로 해석하는 판단"
           ]
         },
         {
-          "heading": "비용·운영 관점",
-          "body": "remote supervision은 unattended run의 human response 시간을 줄일 수 있지만 mobile/browser support, audit retention, device fleet, security review, failed run recovery 비용도 생김. productivity claim은 completion time·intervention rate·failed change·cost-per-accepted-change로 검증해야 함.",
+          "heading": "도입 로드맵",
+          "body": "1단계는 inventory에서 기존 `AddPermission` statement와 invoke source를 mapping하는 단계. 2단계는 dev account에서 generated policy와 IAM simulation·negative test를 비교하는 단계. 3단계는 alias canary와 rollback-ready deployment를 통해 production에 확대하는 단계임.",
           "items": [
-            "측정: completion time·review latency·human intervention·retry·failed change·rollback·support ticket을 workflow별 집계",
-            "비교: local-only baseline과 remote observation·remote write policy를 분리해 quality와 security event를 비교",
-            "피할 것: 어디서나 접속 가능하다는 사실을 delivery throughput·developer productivity·compliance 보증으로 환산하는 판단"
-          ]
-        },
-        {
-          "heading": "도입 로드맵과 관점",
-          "body": "1단계는 non-production read-only observation에서 supported client, session lifecycle, notification metadata, audit completeness를 검증하는 단계. 2단계는 작은 allowlist에 제한한 command/write canary와 failure injection 단계. 3단계는 approval·revoke·rollback evidence가 있는 workflow만 production으로 확대하는 단계.",
-          "items": [
-            "1단계: device/OS/browser·MFA·MDM·VPN·conditional access·session timeout matrix 작성",
-            "2단계: secret denial·expired session·lost device·duplicate command·partial write·network outage failure injection 수행",
-            "3단계: approver·audit owner·revoke SLA·rollback time·post-run reconciliation을 release record에 고정"
+            "1단계: function·alias·principal·action·source ARN/account·condition·owner baseline 작성",
+            "2단계: policy size·duplicate SID·explicit deny·cross-account·tag/IP condition failure injection 수행",
+            "3단계: staged IaC apply·CloudTrail alert·revert template·post-deploy effective access review 실행"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "**원격 UI는 agent 권한을 줄여 주지 않으며, control surface와 audit 요구를 늘림**. rollout 전에는 browser/mobile의 편의성보다 write authority·secret scope·device posture·revoke가 실제 trace와 drill로 증명되는지를 먼저 확인해야 함.",
+          "body": "**policy statement 수 감소는 권한 축소의 증거가 아님**. security와 platform 팀은 모든 invoke route의 allow/deny 결과와 policy change audit을 먼저 증명하고, 검증되지 않은 condition 조합은 production shared function에 적용하지 않아야 함.",
           "items": [
-            "체크: device posture·MFA·re-auth·session binding·expiry·lost-device revoke·event audit 확인",
-            "체크: observation/command/write/merge/deploy permission 분리와 secret·notification data path 확인",
-            "팀 액션: 30일 내 representative coding-agent session에서 access·approval·recovery·audit evidence를 포함한 test-tenant canary 운영"
+            "체크리스트: principal·action·condition·source ARN/account·alias·cross-account authorization matrix 확인",
+            "체크리스트: CloudFormation/SAM diff·IAM simulation·CloudTrail·denied invoke alert·rollback template 확인",
+            "팀 액션: 30일 내 고위험 shared Lambda 한 개에서 negative test와 effective-permission review를 포함한 canary 운영"
           ]
         }
       ]
@@ -206,8 +180,134 @@
   ],
   "items": [
     {
+      "id": "news-382",
+      "title_ko": "AWS Lambda full IAM resource-based policy 지원: condition·cross-account invoke를 effective permission으로 검증",
+      "title_original": "AWS Lambda functions now support full IAM resource-based policies",
+      "summary": "- 공개: Lambda resource-based policy에서 multiple principal·action과 **전체 IAM condition key** 지원\n- 예시: source IP·principal tag 조건으로 invoke access 제한 가능\n- 작성: Console JSON editor·AWS CLI·SDK·CloudFormation·AWS SAM에서 정책 갱신 가능\n- 범위: AWS commercial Regions·추가 비용 없음이라는 공식 공지\n- 경계: caller identity policy·SCP·permission boundary·event source와 합친 effective permission, 기존 policy migration, service별 condition support는 별도 검증 대상\n- 팀 액션: allow/deny matrix·IAM simulation·CloudTrail alert·rollback template를 policy-as-code release gate로 운영 필요",
+      "detail": "AWS는 Lambda functions가 full IAM resource-based policies를 지원한다고 2026년 8월 25일 공지했다. 하나의 policy document에서 multiple principal과 action을 정의하고 전체 IAM condition key를 사용할 수 있으며 source IP나 principal tag에 따른 invoke restriction을 예시로 든다. 기존에는 principal별 permission을 개별 추가해야 했고, 이번 기능은 multi-account 또는 multiple resource를 운영하는 platform team의 policy management 범위를 넓힌다. AWS는 Console JSON editor, AWS CLI, SDK, CloudFormation, SAM에서 한 번에 갱신할 수 있고 AWS commercial Regions에서 추가 비용 없이 제공한다고 명시한다. 다만 resource policy는 caller identity policy, SCP, permission boundary, event-source integration과 함께 최종 허용 결과를 만들며 공지는 service별 condition compatibility, migration, cross-account behavior, audit retention을 보증하지 않는다. shared Lambda에는 principal·action·source·condition별 allow/deny test, CloudTrail, IaC diff, rollback을 함께 적용해야 한다.",
+      "why_it_matters": "Lambda invoke 권한을 principal별 statement로 분산하지 않고 조건 기반 policy로 관리할 수 있음. policy 문서가 짧아져도 effective permission과 cross-account blast radius가 자동으로 줄어들지는 않음.",
+      "engineering_implication": "function·alias·principal·action·SourceArn/SourceAccount·condition을 inventory화하고, allowed·denied invocation을 IAM simulation과 integration test로 비교해야 함. staging에서 policy diff, denied invoke alert, rollback template를 검증한 뒤 shared function에 단계 적용 필요.",
+      "korea_implication": "국내 멀티계정 환경은 source IP·principal tag 조건을 망 경계나 조직 분류의 완전한 대체로 보지 말고 계정 간 invoke와 접근기록 보존 정책을 함께 확인해야 함.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "Lambda",
+        "IAM",
+        "Serverless",
+        "Cloud Security",
+        "Policy as Code"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-08-25 11:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-lambda-full-iam-resource-based-policies/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS What’s New와 RSS exact timestamp `2026-08-25T02:00:00Z`를 직접 확인해 KST `2026-08-25 11:00`으로 기록. Lambda resource-based policy가 full IAM capabilities를 지원하는 공식 발표임.",
+          "items": [
+            "변경: 하나의 policy document에 multiple principal·action 정의 가능",
+            "변경: 전체 IAM condition key 활용 가능"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기존 principal별 permission 추가 방식과 달리 source IP·principal tag 등 condition으로 access를 제한하고, 여러 service invoke 권한을 단일 policy에 둘 수 있음. Console JSON editor·CLI·SDK·CloudFormation·SAM이 작성 경로임.",
+          "items": [
+            "예시: source IP 또는 principal tag 조건의 invoke restriction",
+            "범위: AWS commercial Regions·추가 비용 없음이라는 공식 공지"
+          ]
+        },
+        {
+          "heading": "권한·감사 경계",
+          "body": "effective permission은 resource policy 하나가 아니라 caller identity policy, SCP, permission boundary, event source와 함께 결정됨. 공지는 service별 condition support, migration compatibility, cross-account outcome을 보증하지 않음.",
+          "items": [
+            "검증: allowed/denied principal·wrong action·wrong source·tag mutation authorization matrix",
+            "감사: policy diff·CloudTrail denial·IaC deployment·rollback template 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "statement를 합치는 일은 least privilege 증명이 아님. shared Lambda는 invoke source별 owner·payload trust boundary·retry·DLQ·concurrency와 policy를 함께 inventory화해야 함.",
+          "items": [
+            "측정: denied invoke·throttle·concurrency·DLQ·source별 cost",
+            "팀 액션: 고위험 function에서 IAM simulation과 negative test canary 실행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-381",
+      "title_ko": "Amazon ECS agent connectivity 자동 감지·복구: drain·replacement를 서비스 SLO로 검증",
+      "title_original": "Amazon ECS now automatically detects and repairs container instances with impaired agent connectivity",
+      "summary": "- 공개: ECS가 모든 compute option에 **`AGENT_CONNECTIVITY` health change event** 제공\n- 원인: EBS volume degradation·host thermal event·network failure가 ECS agent-control plane 연결을 끊는 경우\n- 자동: Fargate·ECS Managed Instances는 task drain·replacement capacity launch·impaired instance deregistration 수행\n- 운영: ECS on EC2는 health event를 자체 instance replacement workflow에 연결 필요\n- 경계: detection threshold·drain timeout·replacement latency·capacity·state consistency는 공식 공지의 보증 범위 아님\n- 팀 액션: agent disconnect·capacity shortage·deployment 동시 발생을 주입해 p95 recovery·duplicate execution·queue age 확인 필요",
+      "detail": "AWS는 Amazon ECS가 agent connectivity를 지속 감시하고 연결 장애가 난 container instance를 감지·복구하는 기능을 2026년 8월 25일 KST 기준으로 공지했다. EBS volume degradation, host thermal event, network connectivity failure가 ECS agent와 control plane 연결을 끊을 수 있으며, 새 `AGENT_CONNECTIVITY` health change event는 Fargate, ECS Managed Instances, ECS on EC2에 제공된다. Fargate와 Managed Instances는 running task를 자동 drain하고 replacement capacity를 launch한 뒤 impaired instance를 deregister한다. ECS on EC2 고객은 event로 instance replacement workflow를 구동해야 한다. 공지는 agent disconnect detection threshold, drain/replacement time, capacity availability, application data consistency, cross-AZ behavior를 보증하지 않는다. 서비스별 graceful shutdown, checkpoint, idempotent retry, connection draining, replacement rate와 traffic recovery를 fault injection으로 검증해야 한다.",
+      "why_it_matters": "ECS agent-control plane 연결 단절은 task process 생존과 무관하게 scheduler visibility와 placement·recovery를 훼손할 수 있음. compute option마다 자동 복구 책임이 달라 operational runbook을 분리해야 함.",
+      "engineering_implication": "`AGENT_CONNECTIVITY` event, desired/running count, drain duration, placement failure, queue age, error budget을 같은 trace에 연결해야 함. Fargate/Managed Instances와 ECS on EC2 각각에서 network partition·capacity shortage·deployment 중 disconnect drill을 실행하고 rollback owner를 지정 필요.",
+      "korea_implication": "국내 리전 ECS 서비스도 managed capacity와 EC2 capacity provider의 replacement 책임을 혼동하지 말고, AZ capacity·connection draining·데이터 재처리 비용을 장애 훈련에서 확인해야 함.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Amazon ECS",
+        "Containers",
+        "SRE",
+        "Auto Recovery",
+        "Fargate"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-08-25 07:42",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-ecs-agent-connectivity-health/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS What’s New와 RSS exact timestamp를 직접 확인. `2026-08-24T22:42:00Z`는 KST `2026-08-25 07:42`이며, ECS agent-control-plane connectivity impairment에 대한 새 health change event가 대상임.",
+          "items": [
+            "공개: `AGENT_CONNECTIVITY` health change event를 ECS compute option 전체에 제공",
+            "원인 예시: EBS volume degradation·host thermal event·network connectivity failure"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Fargate와 ECS Managed Instances는 impaired instance에서 running task를 drain하고 replacement capacity를 launch한 뒤 instance를 deregister하는 자동 recovery 범위임. ECS on EC2에는 event가 제공되며 customer workflow가 replacement를 구동해야 함.",
+          "items": [
+            "자동: Fargate·Managed Instances의 drain·replacement·deregistration",
+            "운영: ECS on EC2는 event consumer·Auto Scaling/instance replacement workflow 필요"
+          ]
+        },
+        {
+          "heading": "운영·복구 경계",
+          "body": "agent disconnect는 application health, load balancer target health, persistent-state correctness와 동일하지 않음. 공지는 detection threshold, drain timeout, replacement latency, capacity availability를 보증하지 않음.",
+          "items": [
+            "검증: event delivery·drain duration·placement failure·traffic recovery·duplicate execution trace",
+            "훈련: network partition·capacity shortage·deployment 중 disconnect와 manual reconciliation"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "서비스별 stateless/stateful 구분과 graceful shutdown·checkpoint·idempotency 정책이 recovery 결과를 결정함. Fargate/Managed Instances 자동 동작과 EC2 customer workflow의 책임을 같은 dashboard에서 분리해야 함.",
+          "items": [
+            "측정: p95 recovery·queue age·error budget·replacement cost",
+            "팀 액션: representative service에서 impaired-agent drill을 release gate로 운영"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-380",
-      "rank": 1,
+      "rank": 3,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -284,7 +384,7 @@
     },
     {
       "id": "news-336",
-      "rank": 2,
+      "rank": 4,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -445,7 +545,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-378",
@@ -531,7 +631,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-376",
@@ -622,7 +722,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-375",
@@ -699,7 +799,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-372",
@@ -773,7 +873,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-373",
@@ -841,7 +941,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-374",
@@ -918,7 +1018,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-371",
@@ -992,7 +1092,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-370",
@@ -1070,7 +1170,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-366",
@@ -1156,7 +1256,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-364",
@@ -1225,7 +1325,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-365",
@@ -1294,7 +1394,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-368",
@@ -1370,7 +1470,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-361",
@@ -1446,7 +1546,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-363",
@@ -1523,7 +1623,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-360",
@@ -1604,7 +1704,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-362",
@@ -1681,7 +1781,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-367",
@@ -1757,7 +1857,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-357",
@@ -1838,7 +1938,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-359",
@@ -1914,7 +2014,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-358",
@@ -1990,7 +2090,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-355",
@@ -2066,7 +2166,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-354",
@@ -2143,7 +2243,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-356",
@@ -2219,7 +2319,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-353",
@@ -2295,7 +2395,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-369",
@@ -2371,7 +2471,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-351",
@@ -2448,7 +2548,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-350",
@@ -2524,7 +2624,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-349",
@@ -2608,7 +2708,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-348",
@@ -2685,7 +2785,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-377",
@@ -2759,7 +2859,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-347",
@@ -2844,7 +2944,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-346",
@@ -2918,7 +3018,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "why_it_matters": "AI coding agent의 장시간 세션은 모델 응답 품질과 별개로 클라이언트 상태·네트워크 요청·메모리·작업 재개 경험이 생산성과 운영 비용을 좌우함.",
@@ -2992,11 +3092,11 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-344",
-      "rank": 37,
+      "rank": 39,
       "title_ko": "DeepSeek-V4 Flash 하네스 비교 보도: 동일 모델도 tool orchestration에 따라 완료율·성공비용·지연이 달라짐",
       "title_original": "DeepSeek-V4 Flash agent harness benchmark",
       "summary": "- 검증: AI타임스가 보도한 Composio 평가는 Gmail·GitHub·Slack·Google Sheets를 쓰는 **30개 다단계 업무**를 Claude Code·Codex·OpenCode·Oh My Pi 하네스에서 총 240회 실행\n- 품질: 과제 완료율은 하네스별 46.7~56.7%, 모든 환경에서 완료된 과제는 30개 중 6개라는 보도 수치\n- 비용·지연: 성공 1회당 평균 비용은 Oh My Pi 0.073달러·Claude Code 0.195달러, 평균 수행 시간은 Claude Code 122.7초·Oh My Pi 272.4초라는 보도 수치\n- 증거 경계: Composio 원 실험, task 정의·계정·prompt·model revision·tool 권한·재시도 정책·통계 방법은 직접 확인하지 않아 일반 성능·SLO·ROI 보증으로 확대 불가\n- 팀 액션: 모델 선정과 별도로 harness별 task success·tool failure·retry·token·성공비용·p95 latency·approval/egress를 동일 workload에서 canary 측정 필요",
@@ -3071,7 +3171,7 @@
     },
     {
       "id": "news-352",
-      "rank": 38,
+      "rank": 40,
       "title_ko": "Cursor Origin 코드 호스팅 얼리 베타: GitHub 동기화·PR·agent 작업면의 권한·배포 경계 점검",
       "title_original": "Origin Code Hosting",
       "summary": "- 공개: Cursor가 유료 플랜 대상 `Origin Code Hosting`을 8월 17일 얼리 베타로 순차 제공\n- 범위: Cursor-hosted repo, pull request, code browsing, GitHub sync를 우선 제공하고 agent-native 기능은 후속 예정\n- 동기화: GitHub 원본 repo는 GitHub를 source of truth로 유지하며, Cursor와 양방향 PR comment·reaction·reply 동기화\n- 연동: Vercel preview deployment, Depot·Buildkite CI 연결을 제시하지만 실제 권한·secret·approval·SLA·GA 범위는 source에 미공개\n- 팀 액션: repo host·GitHub sync·agent branch push·PR merge·preview deployment를 하나의 trust boundary로 inventory화하고 최소 권한·audit·rollback canary 적용 필요",
@@ -3149,7 +3249,7 @@
     },
     {
       "id": "news-334",
-      "rank": 39,
+      "rank": 41,
       "title_ko": "GLM-5.3 Cursor 잠재 취약점 비공개 제보 보도: AI 사이버 capability는 disclosure·fix evidence로 분리 검토",
       "title_original": "GLM-5.3, 'Cursor' security vulnerability report",
       "summary": "- 공개: AI타임스가 2026-08-16 18:16 KST에 Z.ai 개발자 옹호자의 X 게시물을 인용, **GLM-5.3**이 Cursor에서 잠재적으로 심각한 취약점을 찾았다고 보도\n- disclosure: 발견 내용은 Cursor에 비공개 제보됐고 수정 전 세부 사항은 공개하지 않겠다는 설명\n- 범위: 취약점 유형·영향 버전·공격 조건·CVE·수정 릴리스·사용자 영향은 기사와 인용문에서 확인되지 않은 상태\n- 증거 경계: 단일 공급자 측 주장과 미공개 취약점은 benchmark·실제 보안 성숙도·일반적 exploit capability의 독립 검증 근거 아님\n- 팀 액션: Cursor 사용 조직은 공급자 공지·릴리스 노트·CVE·업데이트 가능 여부를 추적하고, 모델 평가는 authorized environment·disclosure workflow·tool 권한 gate와 함께 운영 필요",
@@ -3231,7 +3331,7 @@
     },
     {
       "id": "news-343",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "Anthropic Claude 텍스트 워터마크 예고: EU AI Act 대응은 detection API·false positive·콘텐츠 흐름 검증 과제",
       "title_original": "How Claude's text watermark works",
       "summary": "- 공개: Anthropic이 향후 Claude 생성 텍스트에 **텍스트 워터마크**를 적용하고 전 세계 출시를 계획한다고 2026-08-14 공식 설명\n- 방식: 다음 단어 후보 중 의미 영향이 작은 확률적 선택에 key 기반 패턴을 남기며, 검증자는 Claude 관여 가능성을 확률로 산출하는 구조\n- 한계: 짧은 텍스트·사람 작성문 교정·사실 문장·정확성이 필요한 코드에서는 검출 신호가 약하거나 제한적이라는 공식 설명\n- 비용·식별: 추가 token을 만들지 않아 가격은 같고, watermark·key에 사용자·조직·대화 식별 정보는 없다는 설명\n- 팀 액션: 예정된 detection API의 threshold·권한·audit·retention·false-positive 대응과 C2PA file credential 검증 흐름을 content governance에 별도 설계 필요",
@@ -3315,7 +3415,7 @@
     },
     {
       "id": "news-342",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "OpenAI ChatGPT 대화 경찰 신고 보도: safety escalation·human review·privacy notice의 운영 증거 점검",
       "title_original": "OpenAI reported ChatGPT conversation containing murder plan to police",
       "summary": "- 보도: AI타임스가 **ChatGPT 대화의 위해 계획을 FBI에 신고**해 체포로 이어진 사례를 보도, OpenAI는 임박한 심각한 신체 위해 가능성을 별도 검토 뒤 법 집행기관에 신고하는 정책을 설명\n- 흐름: 기사 기준 OpenAI는 대화를 별도 review system으로 보내고 소수 전문 인력이 검토하며, FBI는 약 두 달간의 대화 기록을 지역 보안관실에 전달\n- 경계: 신고 threshold·human review 기준·보존 기간·법집행기관 제공 범위·사용자 통지·이의제기·국가별 적용은 기사에서 구체적으로 확인되지 않음\n- 운영: enterprise AI team은 safety escalation을 product claim이 아니라 data classification·human access·legal request·audit·incident response control로 분리 설계 필요\n- 팀 액션: 대화 로그의 detection→review→disclosure→retention→deletion 흐름과 owner·SLA·evidence를 계약·관리자 문서·실제 exercise로 확인 필요",
@@ -3389,7 +3489,7 @@
     },
     {
       "id": "news-338",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "앤트로픽 IPO 보도 업데이트: 2028년 매출 목표 1,900억~2,000억달러는 계약·usage·GPU 원가 분리 검토 신호",
       "title_original": "Anthropic reportedly targets $190–200 billion in 2028 revenue ahead of IPO",
       "summary": "- 보도: AI타임스가 Reuters 소식통 보도를 인용해 Anthropic이 IPO 투자자에게 **2028년 매출 1,900억~2,000억달러** 목표를 제시했다고 보도\n- 변경: 기사 기준 과거 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높은 목표이며, Claude Code·Claude API 기업 채택과 5월 ARR 470억달러 초과를 배경으로 제시\n- 비용 경계: 모델 훈련·인프라·GPU 투자 때문에 EBITDA만으로 가치 산정이 어렵다는 기사 설명이며, 목표 매출은 계약·capacity·SLO·수익성 실현 증거 아님\n- 불확실성: 직접 확인한 것은 AI타임스의 Reuters 인용 보도이며 Reuters 원문·투자자료·감사 재무제표·고객 usage·할인·GPU/cloud 원가는 미확인\n- 팀 액션: provider forecast 대신 workload별 successful-task cost, quota·commitment·discount, fallback·data handling을 invoice·trace·계약 문서로 대조 필요",
@@ -3472,7 +3572,7 @@
     },
     {
       "id": "news-341",
-      "rank": 43,
+      "rank": 45,
       "title_ko": "ChatGPT Mac 컴퓨터 히스토리 보도: accessibility event·local Markdown memory의 endpoint 경계 점검",
       "title_original": "ChatGPT Computer History for Mac",
       "summary": "- 보도: AI타임스가 Mac용 ChatGPT의 **Computer History** 도입을 보도, accessibility system의 클릭·키 입력·앱 전환 event를 기록해 작업 맥락을 활용하는 구조\n- 저장: 기사 기준 screenshot·screen recording·microphone·system audio·private browsing 활동은 수집하지 않고, event summary에서 local Markdown memory file을 생성\n- 통제: 기능은 opt-in이며 Business·Enterprise는 admin 허용 뒤에도 user별 동의가 필요하다는 기사 설명\n- 위험: local memory plain Markdown, 이후 chat context, prompt injection, excluded app·deletion·backup 경로는 별도 data boundary로 검증 필요\n- 팀 액션: managed Mac canary에서 file path·ACL·MDM/EDR·exclusion·deletion·tool approval을 검증한 뒤 제한 확대 필요",
@@ -3554,7 +3654,7 @@
     },
     {
       "id": "news-340",
-      "rank": 44,
+      "rank": 46,
       "title_ko": "Qwen3.8-27B 가중치 공개: 27B 멀티모달·262K 컨텍스트를 self-hosted agent 검증 대상으로",
       "title_original": "Qwen3.8-27B",
       "summary": "- 공개: Qwen 공식 Hugging Face 저장소가 **Qwen3.8-27B** post-trained 가중치·구성을 공개, Apache-2.0·Transformers·vLLM·SGLang·TokenSpeed 호환을 명시\n- 구성: 27B native vision-language dense model, 기본 **262,144 token**·최대 1M 확장 컨텍스트, thinking mode 기본 활성화와 `reasoning_effort` 제어 제공\n- 성능 경계: Qwen card의 Terminal Bench 2.1 73.0·SWE-bench Pro 61.7·OSWorld-Verified 84.3은 공급자 benchmark이며 내부 workload·GPU 비용·SLO 보증 아님\n- 운영: Qwen은 framework별 추론 효율·throughput 차이를 명시하고 production/high-throughput에는 SGLang·vLLM·TokenSpeed를 권장\n- 팀 액션: revision hash·license·serving image·VRAM·context cap·thinking token·tool permission을 pin한 격리 canary로 task 성공률·p95·token·egress·rollback을 검증 필요",
@@ -3633,7 +3733,7 @@
     },
     {
       "id": "news-339",
-      "rank": 45,
+      "rank": 47,
       "title_ko": "오픈AI 기업용 매출 보도: B2B 비중 역전은 usage·효율·계약 조건을 분리할 FinOps 신호",
       "title_original": "OpenAI enterprise revenue reportedly surpasses ChatGPT consumer revenue",
       "summary": "- 보도: AI타임스가 CNBC 보도를 인용해 OpenAI 매출의 절반 이상이 기업용 사업에서 발생하며, 올해 초 B2B/B2C 40/60 비중이 역전됐다고 보도\n- 수치: 기사 기준 ARR은 **400억달러 초과**, 7월 매출은 전월 대비 20%, 기업 고객 수는 32% 증가\n- 효율: CFO가 GPT-5.6 Sol의 agent coding 작업 효율을 54% 높였다고 언급했으나 workload·측정법·가격·SLO는 직접 확인되지 않음\n- 증거 경계: 비공개 투자자 회의와 CNBC 인용 보도 범위이며, 감사 재무제표·고객별 usage·retention·계약 할인·cloud/GPU 원가·지역별 quota는 미확인\n- 팀 액션: ARR·고객 수 headline 대신 successful-task cost, cache·retry, committed spend, quota, data handling, fallback을 invoice·trace·계약 문서로 대조 필요",
@@ -3712,7 +3812,7 @@
     },
     {
       "id": "news-335",
-      "rank": 46,
+      "rank": 48,
       "title_ko": "딥시크 하네스 v0.1 공개: 모델·도구·샌드박스를 플러그인으로 조립하는 오픈소스 coding-agent 런타임",
       "title_original": "DeepSeek Harness: Everything is a Plugin.",
       "summary": "- 공개: 딥시크가 **DeepSeek Harness v0.1**을 developer preview·MIT license로 공개, 모델·도구·스킬·세션·샌드박스·파일 시스템·agent loop를 플러그인으로 교체하는 구조\n- 실행 범위: 저장소 분석·파일 수정·shell·파일/웹 검색·계획·subagent·workflow와 민감 작업 approval을 제공한다는 보도\n- 운영 경계: preview는 breaking change 가능성을 명시하며, 공개 GitHub 저장소의 현재 88.8k star·8k fork는 채택·보안성·production readiness 보증 아님\n- 팀 액션: plugin provenance·tool permission·sandbox escape boundary·secret egress·session trace·rollback을 함께 검증한 isolated repository canary부터 적용 필요",
@@ -3792,7 +3892,7 @@
     },
     {
       "id": "news-337",
-      "rank": 47,
+      "rank": 49,
       "title_ko": "LG·엔비디아 전략 협력: Jetson Thor 휴머노이드·DSX AI 팩토리 계획은 현장 PoC와 전력·냉각 검증 과제",
       "title_original": "LG and NVIDIA strategic collaboration for physical AI, AI factory, and mobility",
       "summary": "- 협력: LG와 NVIDIA가 로봇·AI 팩토리·모빌리티 MOU를 체결, 공동 TF로 R&D·현장 실증·사업화를 추진한다는 보도\n- 로봇: **2027년 1분기** Jetson Thor·Isaac GR00T·Halos for Robotics 기반 이족보행 휴머노이드 공개를 목표로 제시\n- 제조: 올해 미국 테네시 세탁기 생산라인에 휠 기반 LG 클로이드를 투입해 실제 제조 환경 PoC를 진행할 계획\n- 인프라: 2027년 상반기 Vera Rubin 레퍼런스 사이트, 2028년 상반기 충남 천안 **80MW** AI 팩토리 확대 계획과 20% 이상 공기 단축 목표를 보도\n- 팀 액션: 계획·MOU 수치를 capacity·PUE·GPU delivery·network·safety·SLO 확정값으로 취급하지 말고, PoC telemetry와 commissioning evidence로 단계별 검증 필요",
@@ -3873,7 +3973,7 @@
     },
     {
       "id": "news-332",
-      "rank": 48,
+      "rank": 50,
       "title_ko": "Google Gemini 3.7 Flash 공식 공개: 코딩·에이전트 성능·2026년 도입가를 운영 지표로 검증",
       "title_original": "Introducing Gemini 3.7 Flash",
       "summary": "- 공식 공개: Google이 **Gemini 3.7 Flash**를 코딩·에이전트용 workhorse 모델로 발표, 원문은 2026-08-13 날짜만 제시\n- 성능: Google 비교에서 FrontierCode 43.6% 대 34.4%, DeepSWE 65.3% 대 49.0%, WebDev Arena Elo 1588 대 1538 공개\n- 가격: 2026년 말까지 입력·출력 100만 token당 0.75달러·3.75달러 도입가 제시, 원문에서 cache·2027년 표준 가격은 확인되지 않음\n- 팀 액션: 동일 task·tool 권한에서 성공률·재시도·cache hit·p95 latency·월 비용을 canary로 수집 필요",
@@ -3952,186 +4052,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "news-331",
-      "rank": 49,
-      "title_ko": "GitHub Secure Open Source Fund: 50개 프로젝트의 AI 시대 보안 작업과 측정 지표",
-      "title_original": "What 50 open source projects taught us about security in the AI era",
-      "summary": "- 운영 결과: GitHub Secure Open Source Fund Session 4가 **50개 오픈소스 프로젝트·71명 maintainer·22개국**에 50만 달러 이상을 지원한 결과 공개\n- 통제 적용: 참여 프로젝트의 92%가 secret scanning·code scanning·protected branch·private vulnerability reporting·Dependabot 핵심 기능을 활성화한 집계\n- 누적 지표: 전체 session 기준 533개 신규 CVE 공개, 1,500건 이상 Dependabot security update, 650건 이상 exposed secret 해결이라는 GitHub 집계\n- 팀 액션: AI-assisted triage를 도입하더라도 alert closure·release decision·exception approval은 maintainer ownership과 remediation SLA로 관리",
-      "detail": "GitHub는 Secure Open Source Fund Session 4에서 50개 프로젝트와 71명 maintainer가 AI-assisted workflow, GitHub Security Lab 지원, GitHub security tool, funding을 결합해 보안 개선을 수행했다고 공개함. 참여 프로젝트의 92%는 secret scanning, code scanning, protected branch, private vulnerability reporting, Dependabot을 활성화했으며, GitHub가 집계한 모든 session 및 후속 기간의 누적 결과는 188개 프로젝트·290명 maintainer·42개국, 533개 신규 CVE 공개, 1,500건 이상 Dependabot security update, 650건 이상 exposed secret 해결임. 2026년 7월까지의 최근 6개월에는 참여·alumni 프로젝트가 CodeQL alert 4,210건을 수정하고 secret 119건 노출을 차단했다고 밝힘. 다만 이 수치는 GitHub 프로그램 운영자의 집계이며 독립 감사나 각 프로젝트의 침해 부재 증거는 아님. AI는 triage·threat modeling·review·remediation 보조 수단으로 활용하되, deploy 승인과 security accountability는 maintainer와 조직의 release control에 남겨야 함.",
-      "why_it_matters": "AI·agent framework, runtime, build tool, API·infra component는 소수 maintainer의 보안 운영에 의존함. feature enablement와 측정 가능한 remediation work를 funding·expert review·12개월 follow-up에 연결한 방식은 OSS dependency risk를 소비자가 아닌 공급자 측에서도 낮추는 운영 모델임.",
-      "engineering_implication": "의존성이 큰 오픈소스 프로젝트와 내부 inner-source 모두 secret scanning·code scanning·protected branch·private disclosure·Dependabot을 baseline으로 선언하고, 활성화율 대신 alert severity·exploitability·remediation SLA·release exception·secret rotation 완료 증적을 dashboard와 release gate에 연결 필요.",
-      "korea_implication": "국내 기업의 오픈소스 의존성 관리도 SBOM 수집만으로 끝내지 말고, 핵심 upstream의 disclosure channel·maintainer bus factor·security feature 적용·patch SLA를 vendor/inner-source 평가 항목으로 포함 필요.",
-      "category": "Open Source",
-      "tags": [
-        "GitHub",
-        "Open Source",
-        "Supply Chain Security",
-        "CodeQL",
-        "Secret Scanning",
-        "Dependabot",
-        "AI Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-08-14 01:00",
-      "source_name": "GitHub Blog",
-      "source_url": "https://github.blog/open-source/maintainers/what-50-open-source-projects-taught-us-about-security-in-the-ai-era/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/02/header.jpg?fit=2400%2C1260",
-      "local_image": "assets/images/news-331.jpg",
-      "related_links": [
-        {
-          "title": "GitHub Secure Open Source Fund",
-          "url": "https://github.com/sponsors/secure-open-source-fund"
-        },
-        {
-          "title": "GitHub Docs — Security features for repositories",
-          "url": "https://docs.github.com/code-security/getting-started/securing-your-repository"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitHub가 Secure Open Source Fund Session 4의 funding·security tooling·expert support 결합 결과를 공개",
-          "items": [
-            "규모: Session 4에 50개 프로젝트, 71명 maintainer, 22개국, 50만 달러 이상 non-dilutive funding 지원",
-            "운영: 3주 security sprint와 12개월 engagement, GitHub Security Lab expert·office hour·security resource·Azure credit 제공"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "프로그램은 feature enablement와 vulnerability·secret remediation을 결과 지표로 제시",
-          "items": [
-            "적용: 참여 프로젝트의 92%가 secret scanning·code scanning·protected branch·private vulnerability reporting·Dependabot 활성화",
-            "누적: 모든 session과 후속 기간 기준 188개 프로젝트·290명 maintainer·42개국 참여와 188만 달러 지원이라는 GitHub 집계",
-            "성과: 533개 신규 CVE 공개, 1,500건 이상 Dependabot security update, 650건 이상 exposed secret 해결이라는 GitHub 집계"
-          ]
-        },
-        {
-          "heading": "AI-assisted 보안 작업의 범위",
-          "body": "GitHub는 AI를 vulnerability triage·threat modeling·code review·remediation 보조에 사용하되 maintainer 판단을 대체하지 않는다고 설명",
-          "items": [
-            "역할: AI가 investigation·prioritization·response 속도를 보조하고 release context·judgement·accountability는 maintainer 책임",
-            "사례: OpenClaw가 incident response plan, GitHub security tooling 확대, GitHub Actions workflow audit, issue identification·response process를 강화한 프로그램 사례",
-            "제한: AI-assisted workflow의 사용은 generated fix 정확성·production safety·독립 code review를 보장하지 않는 범위"
-          ]
-        },
-        {
-          "heading": "수치 해석과 증거 경계",
-          "body": "공개 지표는 security work의 규모를 보여주지만 각 프로젝트의 위험 제거 또는 생태계 전체 수준으로 일반화할 수 없음",
-          "items": [
-            "최근 지표: 2026년 7월 종료 6개월에 참여·alumni 프로젝트가 CodeQL alert 4,210건 수정, secret 119건 노출 차단이라는 GitHub 집계",
-            "경계: feature enablement는 configuration 적용 지표이며 exploitable defect 부재·침해 부재·동일 maturity의 증거 아님",
-            "경계: CVE·Dependabot·secret 수치는 GitHub 프로그램 운영자 집계로 독립 감사 수치가 아님"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "security feature의 켜짐 여부보다 finding을 release control과 owner·SLA에 묶는 반복 가능한 운영 체계가 필요",
-          "items": [
-            "기준선: secret scanning·code scanning·protected branch·private disclosure·dependency update 정책을 repository baseline으로 선언",
-            "측정: severity·exploitability·alert age·remediation SLA·secret rotation·exception approval을 release readiness에 연결",
-            "검증: AI 생성 수정은 test·human review·threat model 재검토·rollback 조건을 통과한 뒤 merge하는 운영 과제"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-323",
-      "title_ko": "SharePoint CVE-2026-55040 인증 우회 활성 악용 보도: public PoC 뒤 on-premises farm 즉시 패치·헌팅",
-      "title_original": "Attackers Exploit SharePoint Authentication Bypass After Public PoC Release",
-      "summary": "- 활성 악용 보도: The Hacker News가 Defused Cyber·KEVIntel telemetry를 인용해 public PoC 공개 뒤 `CVE-2026-55040` exploitation attempts를 보도\n- 취약점: 약한 JWT validation에서 비롯된 CVSS 9.1 인증 우회로, 취약한 SharePoint Server에서 unauthenticated attacker가 site user·administrator를 impersonate 가능한 범위\n- 관측 경계: KEVIntel의 7월 19일 이후 12회 attempt·8개 IP·5개 국가/지역은 telemetry 관측치이며, 피해 조직·공격자·성공 침해·data theft 증거는 아님\n- 팀 액션: July 2026 SharePoint update와 exposed farm build·IIS/service-account artifact를 즉시 대조하고, external ingress 차단·forensics 보존·patch 검증을 병행",
-      "detail": "The Hacker News는 Defused Cyber와 KEVIntel telemetry를 인용해 Rapid7 공개 PoC 뒤 Microsoft SharePoint `CVE-2026-55040` 인증 우회가 실제 시도에 사용되고 있다고 보도함. 약한 JWT token validation에서 발생하는 CVSS 9.1 결함은 취약한 SharePoint Server에서 unauthenticated attacker가 site user 또는 administrator를 impersonate해 file disclosure·data modification 등 arbitrary operation을 수행할 수 있는 범위임. THN은 July 19일 이후 12회 exploitation attempt, 그중 8회가 August 12~13에 관측됐다고 전하지만, 이는 telemetry 기반 시도 수이며 성공 침해·피해 조직·공격자 신원·목적·data theft를 확정하지 않음. 기존 Rapid7의 `CVE-2026-63520` BCS RCE 연구와는 같은 SharePoint JWT 인증 우회 사건의 material update로 병합함. SharePoint Online은 기존 Rapid7 affected-product 범위에 포함되지 않았으며, self-managed SharePoint Server farm의 update·exposure·IIS/service-account hunt를 우선해야 함.",
-      "why_it_matters": "인증 전 SharePoint site user·administrator impersonation은 internet-facing on-premises farm에서 document access와 data modification 경로가 될 수 있음. public PoC 뒤의 telemetry 관측은 patch backlog를 risk-based change가 아니라 incident-priority 작업으로 재분류할 근거임.",
-      "engineering_implication": "SharePoint Server Subscription Edition·2019·2016 farm의 July 2026 update 적용 여부와 external ingress를 먼저 확인하고, patch 전 로그·IIS machine key 접근·unexpected web process·web shell·service-account activity를 보존·조사해야 함. PoC 또는 IP 목록만으로 compromise를 단정하지 말고, identity·web·endpoint telemetry를 같은 incident timeline에 연결 필요.",
-      "korea_implication": "국내 self-managed SharePoint 운영 조직은 SaaS SharePoint Online과 on-premises farm을 inventory에서 분리하고, 지원 종료된 2016·2019의 update availability·대체 계획을 exposure risk와 함께 기록 필요.",
-      "category": "Security",
-      "tags": [
-        "Microsoft SharePoint",
-        "CVE-2026-55040",
-        "CVE-2026-63520",
-        "RCE",
-        "Enterprise Security",
-        "AI-assisted Research"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-08-13 15:09",
-      "source_name": "The Hacker News / Defused Cyber / KEVIntel",
-      "source_url": "https://thehackernews.com/2026/08/attackers-exploit-sharepoint.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_e1WsuZlqC_AfMpdI4wXB0wzIA6nGpPb5ktYmwO5jRhFqH2t56eGghhYAV7he6u0qTqiPacKD-Wf3c1vXxUmBV159KAObOJUTEDGdDafl9B0makdRgyKTUwWHZ5qxLpGbWRg33JJl_0KaY0K0fiWLaV2xghWX4KqUSeaoNgD9Z5ql1Q5VesZQyH-1eO7W/s1700-e365/poc.jpg",
-      "local_image": "assets/images/news-323-sharepoint-active.jpg",
-      "related_links": [
-        {
-          "title": "Rapid7 — CVE-2026-55040 SharePoint JWT authentication bypass technical analysis",
-          "url": "https://www.rapid7.com/blog/post/ra-microsoft-sharepoint-jwt-token-authentication-bypass-cve-2026-55040/"
-        },
-        {
-          "title": "Rapid7 — CVE-2026-63520 SharePoint Remote Code Execution (FIXED)",
-          "url": "https://www.rapid7.com/blog/post/etr-cve-2026-63520-microsoft-sharepoint-remote-code-execution-fixed/"
-        },
-        {
-          "title": "Defused Cyber — SharePoint exploitation reporting",
-          "url": "https://www.defusedcyber.com/"
-        },
-        {
-          "title": "KEVIntel telemetry referenced by The Hacker News",
-          "url": "https://kevintel.com/"
-        },
-        {
-          "title": "Microsoft Learn — SharePoint Server update history",
-          "url": "https://learn.microsoft.com/en-us/officeupdates/sharepoint-updates"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News가 public PoC 공개 뒤 `CVE-2026-55040` SharePoint JWT authentication bypass의 active-exploitation telemetry를 보도",
-          "items": [
-            "결함: weak JWT token validation에서 비롯된 CVSS 9.1 security feature bypass",
-            "영향: unauthenticated attacker가 vulnerable SharePoint Server에서 site user 또는 administrator impersonation 가능한 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "THN은 Defused Cyber와 KEVIntel을 인용해 PoC 공개 뒤 exploitation attempts 증가를 설명",
-          "items": [
-            "관측: KEVIntel은 2026-07-19 이후 12회 attempt, 그중 8회를 8월 12~13일에 기록했다고 보도",
-            "구현: Rapid7 PoC는 forged JWT로 domain controller를 query하고 SID 열거로 site administrator SID를 찾는 경로",
-            "원인: outer header `alg: none`, STS certificate thumbprint 처리, trusted-token-service 검증 누락, non-empty signature 미검증을 연결한 report 범위"
-          ]
-        },
-        {
-          "heading": "확인된 범위와 증거 경계",
-          "body": "활성 악용 보도는 대응 우선순위를 높이지만, telemetry의 의미를 성공 침해로 확대하지 않아야 함",
-          "items": [
-            "확인: Microsoft는 이 결함이 impersonation으로 file disclosure·data modification을 허용할 수 있다고 advisory에서 설명한 THN 인용",
-            "미확인: 12 attempts와 8개 IP·5개 국가/지역은 victim organization·성공 exploitation·actor identity·objective·data theft 증거가 아님",
-            "분리: 기존 `CVE-2026-63520` BCS RCE 연구는 같은 JWT bypass event의 관련 기술 정보이며, 이번 card는 `CVE-2026-55040` active-exploitation 보도 중심"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "internet-facing self-managed SharePoint는 document service, IIS, service account, domain identity가 이어지는 enterprise control plane 일부",
-          "items": [
-            "우선순위: public PoC와 current telemetry가 겹친 exposed farm은 regular patch queue가 아닌 incident-priority cohort",
-            "제외: Rapid7 affected-product 범위에서 SharePoint Online은 제외됐으며 SaaS와 on-premises exposure를 혼동하지 않을 것"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "update 적용, exposure reduction, forensics preservation, identity·web telemetry hunt를 하나의 change/incident record로 관리 필요.",
-          "items": [
-            "점검: Subscription Edition·2019·2016 farm의 July 2026 update·external ingress·reverse proxy·BCS usage·service account privilege inventory",
-            "조사: IIS machine key access, unexpected web process, web shell, scheduled task, service-account logon을 patch 전후 비교",
-            "조치: patch 전 로그를 보존하고 external ingress를 최소화한 뒤 vendor update history와 fixed build를 대조, anomalous evidence는 vendor escalation"
-          ]
-        }
-      ],
-      "rank": 50
     }
   ]
 }
