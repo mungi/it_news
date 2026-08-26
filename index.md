@@ -310,6 +310,8 @@
 - [[raw/articles/aws-capacity-reservation-resource-groups-ec2-2026-08-26]] — EC2 Capacity Reservation Resource Group의 Capacity Blocks·interruptible 예약 통합과 fallback·FinOps 검증 경계.
 - [[raw/articles/aws-lambda-microvms-privatelink-2026-08-26]] — Lambda MicroVMs PrivateLink의 VPC endpoint·DNS·authorization·audit·비용 검증 경계.
 
+- [[raw/articles/kubernetes-v1-37-garhwal-2026-08-26]] — Kubernetes v1.37 Garhwal의 feature graduation·cgroup v1/ipvs 수명주기와 upgrade 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

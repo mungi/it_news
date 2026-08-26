@@ -2,14 +2,14 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-08-27 04:30",
+  "last_updated_kst": "2026-08-27 08:37",
   "audience": "developers and engineers",
   "executive_summary": [
     "OpenAI 자체 추론 ASIC `Jalapeño` 성능 보도: GPT-OSS 120B·DeepSeek R1·Kimi K2.5 대상 자체 평가에서 와트당 AI 작업량 1.5~1.9배·end-to-end latency 1.7~3.6배 개선을 제시. vendor-reported benchmark를 production TCO로 환산하지 말고 TTFT·TPOT·p95/p99·J/token·token당 비용·utilization·failure recovery를 동일 trace로 검증 필요.",
     "AWS Lambda Node.js 26·Python 3.15 managed runtime public preview: GA 전 breaking change가 가능한 기간에 workload·observability·IaC·deployment framework를 검증할 수 있음. preview는 SLA·Technical Support 대상이 아니며 같은 runtime identifier의 자동 GA 승격 전 dependency·native extension·cold start·telemetry·rollback canary가 필요.",
     "AWS Batch가 Amazon ECS Managed Instances를 GPU·compute-intensive batch용 compute option으로 지원: AMI update·security patching·instance lifecycle은 AWS 관리 범위이나 GPU SKU·quota·Spot interruption·startup latency·image compatibility·completed-job cost는 기존 EC2 environment와 canary 비교 필요.",
     "Amazon ECS agent connectivity 자동 감지·복구: `AGENT_CONNECTIVITY` event를 모든 compute option에 제공하고 Fargate·Managed Instances는 task drain·replacement·deregistration을 자동 수행. ECS on EC2는 customer workflow가 필요하므로 event delivery·p95 recovery·duplicate execution·capacity·traffic recovery를 fault injection으로 검증 필요.",
-    "AWS Lambda full IAM resource-based policy: multiple principal·action과 full IAM condition key를 단일 policy에 사용할 수 있음. condition 편의가 effective permission 보증은 아니므로 caller identity·SCP·event source를 포함한 allow/deny matrix·IAM simulation·CloudTrail·rollback을 policy-as-code gate로 운영 필요."
+    "Kubernetes v1.37 Garhwal 정식 출시: watchcache·Pod certificates·metrics API·SELinux/DRA 기능이 Stable로 승격되고 HPA scale-to-zero·gang scheduling·cgroups v2 Memory QoS가 확대. `kube-proxy` ipvs·`kube-dns` deprecation, static Pod Secret/ConfigMap 참조 금지, cgroup v1 제거 계획에 따라 node OS·proxy·manifest·CNI/CSI·autoscaling을 staging upgrade와 rollback으로 검증 필요."
   ],
   "deep_dives": [
     {
@@ -247,6 +247,74 @@
       "rank": 1
     },
     {
+      "id": "news-389",
+      "title_ko": "Kubernetes v1.37 Garhwal 정식 출시: cgroup v1·ipvs 제거 일정을 포함해 업그레이드 계약 재점검",
+      "title_original": "Kubernetes v1.37: Garhwal",
+      "summary": "- 공개: Kubernetes **v1.37 Garhwal** 정식 출시\n- 안정화: resilient watchcache initialization·Pod certificates/Cluster Trust Bundles·`metrics.k8s.io` API·SELinuxMount/SELinuxChangePolicy·DRA 기능의 Stable 승격\n- 베타: HPA scale-to-zero·gang scheduling·native histogram·cgroups v2 Memory QoS·Pod-level resource manager·etcd RangeStream 등 기능 확대\n- 변경: `kube-dns` deprecation, `kube-proxy`의 ipvs mode 지원 deprecation, static Pod의 Secret/ConfigMap 참조 불가, cgroup v1 지원 제거 계획을 명시\n- 팀 액션: control plane·node OS·CNI/CSI·autoscaler·metrics adapter·admission policy·StatefulSet·static Pod manifest를 staging upgrade에서 inventory와 rollback 기준으로 검증 필요",
+      "detail": "Kubernetes 프로젝트는 2026년 8월 26일 00:00 UTC에 Kubernetes v1.37 “Garhwal”을 공개했다. 이번 릴리스는 resilient watchcache initialization, Pod certificates와 Cluster Trust Bundles, `metrics.k8s.io` API, SELinuxMount·SELinuxChangePolicy 및 일부 Dynamic Resource Allocation 기능을 Stable로 승격한다. HorizontalPodAutoscaler의 scale-to-zero, manifest 기반 admission control configuration, gang scheduling, native histogram, cgroups v2 기반 Memory QoS, Pod-level resource manager, etcd RangeStream 등은 Beta 또는 Alpha 기능으로 포함된다. 동시에 `kube-dns`와 `kube-proxy` ipvs mode 지원의 deprecation, `kubectl run --filename/-f` deprecation 예정, static Pod가 Secret 또는 ConfigMap을 참조할 수 없게 된 변경, cgroup v1 지원의 향후 제거 계획을 고지했다. 기능의 지원 상태는 distribution·managed service·CNI/CSI·node OS·add-on별 호환성과 동일하지 않으므로, upgrade는 API removal·node configuration·workload manifest·metric/autoscaling·rollback을 묶은 검증 작업으로 진행해야 한다.",
+      "why_it_matters": "Kubernetes minor release는 control plane 기능 추가와 함께 node runtime·network proxy·static workload·autoscaling 계약을 바꾼다. 특히 ipvs와 cgroup v1의 수명주기 변경은 단순 version bump가 아니라 node image·kubelet·monitoring·capacity 정책의 교체 범위를 만들 수 있음.",
+      "engineering_implication": "현재 cluster별 Kubernetes·kubelet·container runtime·Linux cgroup mode·kube-proxy mode·CNI/CSI·metrics adapter·static Pod·admission plugin inventory를 먼저 만들고, representative workload에서 HPA, StatefulSet rollout, watch reconnect, DRA, SELinux volume, rollback을 통과 조건으로 확인해야 함.",
+      "korea_implication": "국내 managed Kubernetes 사용 조직도 제공 시점과 지원 버전·node image·CNI/CSI·addon compatibility가 upstream 발표와 다를 수 있으므로 서비스별 release note와 upgrade window를 별도 확인해야 함.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "Kubernetes v1.37",
+        "Upgrade",
+        "cgroups v2",
+        "kube-proxy",
+        "HPA",
+        "DRA",
+        "Platform Engineering"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-08-26 09:00",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/08/26/kubernetes-v1-37-release/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes 프로젝트 공식 release post와 Atom feed의 exact timestamp `2026-08-26T00:00:00+00:00`를 확인해 KST `2026-08-26 09:00`으로 기록. Kubernetes `v1.37 Garhwal` 정식 릴리스와 feature graduation·deprecation·removal 방향을 공개함.",
+          "items": [
+            "출시: upstream Kubernetes `v1.37` 정식 release 공개",
+            "범위: API·scheduler·autoscaling·storage·node·network proxy·client-go 변경을 함께 포함"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공식 발표는 resilient watchcache initialization, Pod certificates·Cluster Trust Bundles, `metrics.k8s.io` API, SELinuxMount·SELinuxChangePolicy와 DRA 기능을 Stable로 열거. HPA scale-to-zero, manifest 기반 admission control configuration, gang scheduling, native histogram, cgroups v2 Memory QoS, Pod-level resource managers 등은 Beta 또는 Alpha 범위로 설명함.",
+          "items": [
+            "Stable: watchcache initialization·Pod certificates·Cluster Trust Bundles·`metrics.k8s.io` API·SELinux volume 기능",
+            "스케줄링: gang scheduling·Node storage capacity scoring·in-place Pod resize preemption 관련 기능 확대",
+            "관측: native histogram·cAdvisor-less CRI-full stats·stale controller mitigation 항목 추가"
+          ]
+        },
+        {
+          "heading": "업그레이드·호환성 경계",
+          "body": "이번 release는 `kube-dns` deprecation, `kube-proxy` ipvs mode 지원 deprecation, `kubectl run --filename/-f` deprecation 예정, static Pod의 Secret·ConfigMap 참조 금지, cgroup v1 지원 향후 제거를 명시. upstream feature state가 managed Kubernetes, CNI/CSI, node OS, container runtime, add-on의 지원 계약을 보증하지는 않음.",
+          "items": [
+            "inventory: cluster별 kube-proxy mode·cgroup mode·static Pod manifest·metrics/autoscaler dependency 확인",
+            "호환성: CNI·CSI·ingress·service mesh·security agent·GPU/DRA plugin의 version matrix 확인",
+            "복구: control plane·node pool·workload·data plane을 분리한 rollback path와 backup/restore drill 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "v1.37 도입 승인은 feature 목록이 아니라 실제 production contract로 판단해야 함. representative workload에서 watch reconnect, HPA scale, StatefulSet rollout, static Pod bootstrap, volume mount/SELinux, node replacement를 함께 검증해 API·node·runtime 변화가 SLO와 recovery에 미치는 영향을 측정해야 함.",
+          "items": [
+            "측정: control-plane API latency·watch reconnect·HPA reaction·pod scheduling·node recovery·error budget",
+            "검증: cgroups v2 Memory QoS·ipvs 대체 proxy path·admission config·DRA·SELinux volume 동작",
+            "팀 액션: staging upgrade에서 manifest/API scan과 workload canary를 통과시킨 cluster만 단계 확대"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-384",
       "title_ko": "AWS IoT Core InfluxDB rule action: 시계열 telemetry를 custom pipeline 없이 직접 적재하되 batching·인증·운영 경계를 검증",
       "title_original": "AWS IoT Core now supports native InfluxDB routing for time-series data",
@@ -309,7 +377,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-383",
@@ -373,7 +441,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-386",
@@ -439,7 +507,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-387",
@@ -503,7 +571,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-385",
@@ -577,7 +645,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-382",
@@ -640,7 +708,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-381",
@@ -703,11 +771,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-380",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -784,7 +852,7 @@
     },
     {
       "id": "news-336",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -945,7 +1013,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-378",
@@ -1031,7 +1099,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-376",
@@ -1122,7 +1190,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-375",
@@ -1199,7 +1267,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-372",
@@ -1273,7 +1341,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-373",
@@ -1341,7 +1409,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-374",
@@ -1418,7 +1486,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-371",
@@ -1492,7 +1560,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-370",
@@ -1570,7 +1638,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-366",
@@ -1656,7 +1724,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-364",
@@ -1725,7 +1793,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-365",
@@ -1794,7 +1862,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-368",
@@ -1870,7 +1938,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-361",
@@ -1946,7 +2014,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-363",
@@ -2023,7 +2091,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-360",
@@ -2104,7 +2172,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-362",
@@ -2181,7 +2249,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-367",
@@ -2257,7 +2325,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-357",
@@ -2338,7 +2406,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-359",
@@ -2414,7 +2482,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-358",
@@ -2490,7 +2558,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-355",
@@ -2566,7 +2634,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-354",
@@ -2643,7 +2711,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-356",
@@ -2719,7 +2787,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-353",
@@ -2795,7 +2863,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-369",
@@ -2871,7 +2939,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-351",
@@ -2948,7 +3016,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-350",
@@ -3024,7 +3092,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-349",
@@ -3108,7 +3176,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-348",
@@ -3185,7 +3253,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-377",
@@ -3259,7 +3327,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-347",
@@ -3344,7 +3412,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-346",
@@ -3418,7 +3486,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "why_it_matters": "AI coding agent의 장시간 세션은 모델 응답 품질과 별개로 클라이언트 상태·네트워크 요청·메모리·작업 재개 경험이 생산성과 운영 비용을 좌우함.",
@@ -3492,11 +3560,11 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-344",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "DeepSeek-V4 Flash 하네스 비교 보도: 동일 모델도 tool orchestration에 따라 완료율·성공비용·지연이 달라짐",
       "title_original": "DeepSeek-V4 Flash agent harness benchmark",
       "summary": "- 검증: AI타임스가 보도한 Composio 평가는 Gmail·GitHub·Slack·Google Sheets를 쓰는 **30개 다단계 업무**를 Claude Code·Codex·OpenCode·Oh My Pi 하네스에서 총 240회 실행\n- 품질: 과제 완료율은 하네스별 46.7~56.7%, 모든 환경에서 완료된 과제는 30개 중 6개라는 보도 수치\n- 비용·지연: 성공 1회당 평균 비용은 Oh My Pi 0.073달러·Claude Code 0.195달러, 평균 수행 시간은 Claude Code 122.7초·Oh My Pi 272.4초라는 보도 수치\n- 증거 경계: Composio 원 실험, task 정의·계정·prompt·model revision·tool 권한·재시도 정책·통계 방법은 직접 확인하지 않아 일반 성능·SLO·ROI 보증으로 확대 불가\n- 팀 액션: 모델 선정과 별도로 harness별 task success·tool failure·retry·token·성공비용·p95 latency·approval/egress를 동일 workload에서 canary 측정 필요",
@@ -3571,7 +3639,7 @@
     },
     {
       "id": "news-352",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Cursor Origin 코드 호스팅 얼리 베타: GitHub 동기화·PR·agent 작업면의 권한·배포 경계 점검",
       "title_original": "Origin Code Hosting",
       "summary": "- 공개: Cursor가 유료 플랜 대상 `Origin Code Hosting`을 8월 17일 얼리 베타로 순차 제공\n- 범위: Cursor-hosted repo, pull request, code browsing, GitHub sync를 우선 제공하고 agent-native 기능은 후속 예정\n- 동기화: GitHub 원본 repo는 GitHub를 source of truth로 유지하며, Cursor와 양방향 PR comment·reaction·reply 동기화\n- 연동: Vercel preview deployment, Depot·Buildkite CI 연결을 제시하지만 실제 권한·secret·approval·SLA·GA 범위는 source에 미공개\n- 팀 액션: repo host·GitHub sync·agent branch push·PR merge·preview deployment를 하나의 trust boundary로 inventory화하고 최소 권한·audit·rollback canary 적용 필요",
@@ -3649,7 +3717,7 @@
     },
     {
       "id": "news-334",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "GLM-5.3 Cursor 잠재 취약점 비공개 제보 보도: AI 사이버 capability는 disclosure·fix evidence로 분리 검토",
       "title_original": "GLM-5.3, 'Cursor' security vulnerability report",
       "summary": "- 공개: AI타임스가 2026-08-16 18:16 KST에 Z.ai 개발자 옹호자의 X 게시물을 인용, **GLM-5.3**이 Cursor에서 잠재적으로 심각한 취약점을 찾았다고 보도\n- disclosure: 발견 내용은 Cursor에 비공개 제보됐고 수정 전 세부 사항은 공개하지 않겠다는 설명\n- 범위: 취약점 유형·영향 버전·공격 조건·CVE·수정 릴리스·사용자 영향은 기사와 인용문에서 확인되지 않은 상태\n- 증거 경계: 단일 공급자 측 주장과 미공개 취약점은 benchmark·실제 보안 성숙도·일반적 exploit capability의 독립 검증 근거 아님\n- 팀 액션: Cursor 사용 조직은 공급자 공지·릴리스 노트·CVE·업데이트 가능 여부를 추적하고, 모델 평가는 authorized environment·disclosure workflow·tool 권한 gate와 함께 운영 필요",
@@ -3731,7 +3799,7 @@
     },
     {
       "id": "news-343",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "Anthropic Claude 텍스트 워터마크 예고: EU AI Act 대응은 detection API·false positive·콘텐츠 흐름 검증 과제",
       "title_original": "How Claude's text watermark works",
       "summary": "- 공개: Anthropic이 향후 Claude 생성 텍스트에 **텍스트 워터마크**를 적용하고 전 세계 출시를 계획한다고 2026-08-14 공식 설명\n- 방식: 다음 단어 후보 중 의미 영향이 작은 확률적 선택에 key 기반 패턴을 남기며, 검증자는 Claude 관여 가능성을 확률로 산출하는 구조\n- 한계: 짧은 텍스트·사람 작성문 교정·사실 문장·정확성이 필요한 코드에서는 검출 신호가 약하거나 제한적이라는 공식 설명\n- 비용·식별: 추가 token을 만들지 않아 가격은 같고, watermark·key에 사용자·조직·대화 식별 정보는 없다는 설명\n- 팀 액션: 예정된 detection API의 threshold·권한·audit·retention·false-positive 대응과 C2PA file credential 검증 흐름을 content governance에 별도 설계 필요",
@@ -3815,7 +3883,7 @@
     },
     {
       "id": "news-342",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "OpenAI ChatGPT 대화 경찰 신고 보도: safety escalation·human review·privacy notice의 운영 증거 점검",
       "title_original": "OpenAI reported ChatGPT conversation containing murder plan to police",
       "summary": "- 보도: AI타임스가 **ChatGPT 대화의 위해 계획을 FBI에 신고**해 체포로 이어진 사례를 보도, OpenAI는 임박한 심각한 신체 위해 가능성을 별도 검토 뒤 법 집행기관에 신고하는 정책을 설명\n- 흐름: 기사 기준 OpenAI는 대화를 별도 review system으로 보내고 소수 전문 인력이 검토하며, FBI는 약 두 달간의 대화 기록을 지역 보안관실에 전달\n- 경계: 신고 threshold·human review 기준·보존 기간·법집행기관 제공 범위·사용자 통지·이의제기·국가별 적용은 기사에서 구체적으로 확인되지 않음\n- 운영: enterprise AI team은 safety escalation을 product claim이 아니라 data classification·human access·legal request·audit·incident response control로 분리 설계 필요\n- 팀 액션: 대화 로그의 detection→review→disclosure→retention→deletion 흐름과 owner·SLA·evidence를 계약·관리자 문서·실제 exercise로 확인 필요",
@@ -3883,89 +3951,6 @@
             "검증: tenant·region별 reviewer access, legal-request workflow, audit log, retention/deletion, customer notification 확인",
             "운영: security·privacy·legal·support owner와 escalation SLA·incident handoff를 runbook에 기록",
             "피할 것: vendor safety 문구만으로 데이터 처리·법집행기관 제공·사용자 통제 조건을 확정하는 운영"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-338",
-      "rank": 50,
-      "title_ko": "앤트로픽 IPO 보도 업데이트: 2028년 매출 목표 1,900억~2,000억달러는 계약·usage·GPU 원가 분리 검토 신호",
-      "title_original": "Anthropic reportedly targets $190–200 billion in 2028 revenue ahead of IPO",
-      "summary": "- 보도: AI타임스가 Reuters 소식통 보도를 인용해 Anthropic이 IPO 투자자에게 **2028년 매출 1,900억~2,000억달러** 목표를 제시했다고 보도\n- 변경: 기사 기준 과거 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높은 목표이며, Claude Code·Claude API 기업 채택과 5월 ARR 470억달러 초과를 배경으로 제시\n- 비용 경계: 모델 훈련·인프라·GPU 투자 때문에 EBITDA만으로 가치 산정이 어렵다는 기사 설명이며, 목표 매출은 계약·capacity·SLO·수익성 실현 증거 아님\n- 불확실성: 직접 확인한 것은 AI타임스의 Reuters 인용 보도이며 Reuters 원문·투자자료·감사 재무제표·고객 usage·할인·GPU/cloud 원가는 미확인\n- 팀 액션: provider forecast 대신 workload별 successful-task cost, quota·commitment·discount, fallback·data handling을 invoice·trace·계약 문서로 대조 필요",
-      "detail": "AI타임스는 `article:published_time` 기준 2026-08-16 09:33 KST에 Reuters가 소식통을 인용해 Anthropic이 IPO 투자자와 투자은행에 2028년 매출 1,900억~2,000억달러 목표를 제시했다고 보도했다. 기사에 따르면 이는 지난해 말 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높고, Claude Code·Claude API의 기업 채택 확대와 5월 ARR 470억달러 초과를 배경으로 제시됐다. 같은 보도는 모델 훈련·인프라·GPU 수급에 큰 투자가 들어가는 AI 기업의 재무 구조 때문에 미래 매출을 IPO 가치 산정에 반영하는 관점을 설명한다. 이 수치는 회사 목표와 Reuters 인용 보도의 범위다. Reuters 원문, Anthropic 투자자료, 감사 재무제표, 현금흐름, 고객별 usage·retention, 계약 할인, GPU·cloud 원가, quota·SLA, IPO valuation은 직접 확인하지 못했다. 기존 잠정 2분기 실적 보도와 같은 Anthropic IPO·기업 수요 이벤트이므로 별도 카드가 아니라 기존 `news-338`을 material update하고 이전 AI타임스 기사를 관련 링크로 보존한다.",
-      "why_it_matters": "frontier AI provider의 장기 매출 목표는 Claude API·Claude Code 수요와 training·inference capacity 투자의 균형을 검토할 시장 신호다. 그러나 목표 매출은 조직별 모델 가격, API quota, region, data handling, SLO, 공급자 장기 가용성의 보증이 아니다.",
-      "engineering_implication": "AI platform 팀은 provider forecast를 조달·routing 결론으로 쓰지 말고 모델·workload별 input/output/cache token, retry·fallback·human correction, successful-task cost를 invoice와 trace로 조인해야 한다. committed spend·discount expiry·quota·retention·support·exit 조건은 계약 변경 gate에서 별도 확인 필요.",
-      "korea_implication": "국내 조직은 글로벌 IPO·매출 전망과 별개로 한국 사용자 workload의 리전·데이터 처리·지원·환율·세금·장애 대응 조건을 해당 계정과 계약 문서에서 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "Anthropic",
-        "Claude API",
-        "Claude Code",
-        "Enterprise AI",
-        "Cloud Revenue",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 83,
-      "published_kst": "2026-08-16 09:33",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214003",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214003_217614_2625.jpg",
-      "local_image": "assets/images/news-338-ipo-forecast.jpg",
-      "related_links": [
-        {
-          "title": "AI타임스 — Anthropic 2026년 2분기 잠정 매출·조정 영업흑자 보도, 이번 IPO 목표 보도와 동일 이벤트의 이전 근거",
-          "url": "https://www.aitimes.com/news/articleView.html?idxno=213990"
-        },
-        {
-          "title": "Reuters 보도 — AI타임스 기사에서 인용, 이번 실행에서 직접 원문·투자자료 미확인",
-          "url": "https://www.reuters.com/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 Reuters 소식통 보도를 인용해 Anthropic의 IPO 투자자 대상 2028년 매출 목표와 가치 산정 논의를 보도",
-          "items": [
-            "시점: `article:published_time` 기준 2026-08-16 09:33 KST 기사 발행",
-            "목표: 2028년 매출 1,900억~2,000억달러라는 Reuters 인용 수치"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에서는 지난해 말 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높은 목표를 제시하고, enterprise AI 채택 확대를 배경으로 설명",
-          "items": [
-            "배경: Claude Code·Claude API 기업 채택 확대와 5월 ARR 470억달러 초과라는 기사 설명",
-            "비교: 2028년 최대 700억달러였던 과거 투자자료 전망 대비 목표 상향",
-            "IPO: 투자은행·주요 투자자가 미래 실적을 기업가치 산정에 사용한다는 Reuters 인용"
-          ]
-        },
-        {
-          "heading": "수치·가치 산정의 증거 경계",
-          "body": "직접 읽은 것은 AI타임스의 Reuters 인용 보도이며, 장기 목표와 IPO 평가 관점은 실적 확정치나 계약된 수요를 뜻하지 않음",
-          "items": [
-            "미확인: Reuters 원문·Anthropic 투자자료·감사 재무제표·현금흐름·고객별 usage·retention",
-            "미확인: 계약 할인·cloud/GPU 원가·capacity 확보·모델 가격·quota·SLA·IPO valuation",
-            "분리: 목표 매출과 provider별 실제 unit economics·가용성·데이터 처리 보증은 별도 증거 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "장기 매출 목표는 frontier model 수요와 대규모 training·inference 투자의 재무 가정을 드러내지만, procurement와 플랫폼 운영의 단일 의사결정 근거로 쓰기 어려움",
-          "items": [
-            "FinOps: provider 성장 전망보다 successful-task cost와 capacity·fallback 비용을 workload별로 측정",
-            "조달: 미래 매출 배수 논리와 API 계약의 committed spend·discount·support·exit 조항을 분리 검토"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "기존 Anthropic 잠정 실적 카드의 source enrichment로서 2028년 목표를 추가했으며, 운영팀은 forecast가 아닌 관측 가능한 사용량·비용·통제 증거를 release와 조달 검토에 사용 필요",
-          "items": [
-            "측정: model·workload·token type·cache·retry·latency·task success·human correction을 trace와 invoice로 조인",
-            "검토: quota·region·retention·data handling·SLA·fallback·exit plan을 계약 변경 gate에 기록",
-            "피할 것: 장기 매출 목표만으로 가격 지속성·GPU capacity·production readiness를 확정하는 판단"
           ]
         }
       ]
