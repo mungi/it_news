@@ -2,13 +2,13 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-08-26 12:11",
+  "last_updated_kst": "2026-08-26 20:18",
   "audience": "developers and engineers",
   "executive_summary": [
+    "AWS Lambda Node.js 26·Python 3.15 managed runtime public preview: GA 전 breaking change가 가능한 기간에 workload·observability·IaC·deployment framework를 검증할 수 있음. preview는 SLA·Technical Support 대상이 아니며 같은 runtime identifier의 자동 GA 승격 전 dependency·native extension·cold start·telemetry·rollback canary가 필요.",
     "AWS Batch가 Amazon ECS Managed Instances를 GPU·compute-intensive batch용 compute option으로 지원: AMI update·security patching·instance lifecycle은 AWS 관리 범위이나 GPU SKU·quota·Spot interruption·startup latency·image compatibility·completed-job cost는 기존 EC2 environment와 canary 비교 필요.",
     "Amazon ECS agent connectivity 자동 감지·복구: `AGENT_CONNECTIVITY` event를 모든 compute option에 제공하고 Fargate·Managed Instances는 task drain·replacement·deregistration을 자동 수행. ECS on EC2는 customer workflow가 필요하므로 event delivery·p95 recovery·duplicate execution·capacity·traffic recovery를 fault injection으로 검증 필요.",
     "AWS Lambda full IAM resource-based policy: multiple principal·action과 full IAM condition key를 단일 policy에 사용할 수 있음. condition 편의가 effective permission 보증은 아니므로 caller identity·SCP·event source를 포함한 allow/deny matrix·IAM simulation·CloudTrail·rollback을 policy-as-code gate로 운영 필요.",
-    "Amazon EKS 외부 OIDC provider 최대 10개 지원: 직원·계약자·CI/CD population별 federation을 cluster에 직접 연결하고 기존 IAM authentication과 병행 가능. provider별 issuer·audience·claim·RBAC·token revoke·IdP outage·break-glass·audit을 test cluster에서 검증한 뒤 production 확대 필요.",
     "AWS IoT Core InfluxDB rule action: device time-series data를 line protocol로 자동 변환해 Timestream managed 또는 self-hosted InfluxDB에 직접 적재하고 device/server-side batching을 지원. destination 인증·write durability·ordering·retry·tag cardinality·retention·ingest lag·retained-point cost를 staging telemetry에서 검증 필요."
   ],
   "deep_dives": [
@@ -309,6 +309,80 @@
       "rank": 2
     },
     {
+      "id": "news-385",
+      "title_ko": "AWS Lambda Node.js 26·Python 3.15 public preview: 자동 GA 승격 전 runtime·IaC 호환성을 검증",
+      "title_original": "AWS Lambda introduces managed runtimes in public preview for Node.js 26 and Python 3.15",
+      "summary": "- 공개: AWS Lambda가 **Node.js 26·Python 3.15 managed runtime** public preview 제공\n- 목적: GA 전 breaking change가 가능한 기간에 workload·observability·IaC·deployment framework 호환성 검증\n- 사용: Console 또는 `nodejs26.x`·`python3.15` runtime identifier를 CLI·CloudFormation·SAM·CDK에 지정\n- 전환: preview와 GA가 같은 runtime identifier를 사용해 GA 시 함수가 별도 작업 없이 자동 승격\n- 경계: preview runtime은 Lambda SLA·AWS Technical Support 대상이 아니며 production workload 사용 비권장\n- 팀 액션: dependency·native extension·cold start·handler error·telemetry·rollback을 non-production canary에서 검증 필요",
+      "detail": "AWS는 Node.js 26과 Python 3.15 Lambda managed runtime을 public preview로 제공한다고 2026년 8월 25일 22:00 KST에 공지했다. 기존에는 managed runtime을 바로 GA로 출시해 production function에 영향을 줄 breaking change를 이후 적용하기 어려웠다. preview는 GA 전 workload, third-party observability provider, infrastructure-as-code tool, deployment framework의 호환성 문제를 확인하고 피드백할 기간을 제공한다. Console의 preview runtime 선택 또는 CLI·CloudFormation·SAM·CDK에서 `nodejs26.x`·`python3.15` identifier를 지정해 사용할 수 있다. preview와 향후 GA는 같은 identifier를 사용하므로 GA 시 함수가 자동 승격된다. 다만 preview 기간에는 breaking change가 가능하고 Lambda SLA와 AWS Technical Support plans가 적용되지 않으므로 production deployment 근거로 삼으면 안 된다. 지원 범위는 AWS commercial·GovCloud (US)·China Regions이며 standard Lambda rate가 적용된다.",
+      "why_it_matters": "언어 runtime 업그레이드의 위험을 GA 전 실측할 수 있는 경로가 생김. identifier 자동 승격은 운영 편의를 주지만 preview artifact를 production readiness 또는 GA 호환성 보증으로 해석하면 안 됨.",
+      "engineering_implication": "non-production account에서 runtime별 dependency lockfile·native extension·handler contract·event payload·cold start·memory/duration·error/retry·observability agent·IaC synth/diff를 검증해야 함. GA 전후 deployment artifact와 runtime behavior를 비교하고 rollback 가능한 이전 runtime을 release record에 유지 필요.",
+      "korea_implication": "국내 리전 사용 가능 여부는 공지의 broad regional scope와 별도로 실제 account·region console에서 확인해야 하며, regulated workload는 preview의 SLA·support 제외와 vendor library support window를 change approval에 반영 필요.",
+      "category": "DevTools",
+      "tags": [
+        "AWS",
+        "Lambda",
+        "Node.js",
+        "Python",
+        "Serverless",
+        "Runtime",
+        "IaC"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-08-25 22:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-lambda-node-js-python-public-preview/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "AWS Compute Blog: Introducing public preview runtimes on AWS Lambda",
+          "url": "https://aws.amazon.com/blogs/compute/introducing-public-preview-runtimes-on-aws-lambda-starting-with-node-js-26-and-python-3-15/"
+        },
+        {
+          "title": "AWS Lambda SLA",
+          "url": "https://aws.amazon.com/lambda/sla/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS What’s New embedded announcement body와 RSS exact timestamp `2026-08-25T13:00:00Z`를 직접 확인해 KST `2026-08-25 22:00`으로 기록. Lambda가 Node.js 26과 Python 3.15 managed runtime을 public preview로 제공하는 변경임.",
+          "items": [
+            "공개: GA 전 managed runtime을 사용해 workload와 ecosystem compatibility를 시험하는 preview 경로",
+            "전환: preview runtime과 eventual GA runtime이 같은 identifier를 사용해 GA 시 함수 자동 승격"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기존 managed runtime은 곧바로 GA로 출시돼 production function에 영향을 줄 변경을 이후 적용하기 어려웠음. preview에서는 AWS가 breaking change를 적용할 수 있으며 customer·partner·upstream language community가 issue를 보고할 수 있음.",
+          "items": [
+            "지정: Console의 `Node.js 26 (Preview)`·`Python 3.15 (Preview)`, 또는 `nodejs26.x`·`python3.15` runtime identifier",
+            "도구: AWS CLI·CloudFormation·AWS SAM·AWS CDK에서 runtime 구성 가능",
+            "범위: AWS commercial·GovCloud (US)·China Regions, standard Lambda rate 적용이라는 공식 공지"
+          ]
+        },
+        {
+          "heading": "지원·운영 경계",
+          "body": "preview 기간에는 breaking change가 가능하고 Lambda SLA와 AWS Technical Support plans가 적용되지 않음. 자동 GA 승격은 runtime identifier 변경이 없다는 뜻이며 dependency, ABI, handler, extension, deployment artifact의 production compatibility까지 보증하지 않음.",
+          "items": [
+            "제외: production workload, customer-facing SLO, regulated change의 승인 근거로 preview runtime 사용 금지",
+            "검증: native dependency·layer·extension·handler·event source·retry·timeout·memory·cold start·telemetry compatibility 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "runtime upgrade를 GA day migration으로 처리하지 말고 preview canary로 앞당겨야 함. 같은 identifier의 자동 승격은 migration ticket를 줄일 수 있으나, GA 직전과 직후의 artifact·metric·rollback evidence는 별도 유지가 필요함.",
+          "items": [
+            "측정: init duration·invoke duration·error·throttle·retry·extension log·deployment failure·cost를 기존 runtime과 비교",
+            "팀 액션: non-production representative function에서 IaC synth/diff·integration test·observability·rollback runbook을 GA 전 release gate로 운영"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-382",
       "title_ko": "AWS Lambda full IAM resource-based policy 지원: condition·cross-account invoke를 effective permission으로 검증",
       "title_original": "AWS Lambda functions now support full IAM resource-based policies",
@@ -369,7 +443,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-381",
@@ -432,11 +506,11 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-380",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -513,7 +587,7 @@
     },
     {
       "id": "news-336",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -674,7 +748,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-378",
@@ -760,7 +834,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-376",
@@ -851,7 +925,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-375",
@@ -928,7 +1002,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-372",
@@ -1002,7 +1076,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-373",
@@ -1070,7 +1144,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-374",
@@ -1147,7 +1221,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-371",
@@ -1221,7 +1295,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-370",
@@ -1299,7 +1373,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-366",
@@ -1385,7 +1459,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-364",
@@ -1454,7 +1528,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-365",
@@ -1523,7 +1597,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-368",
@@ -1599,7 +1673,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-361",
@@ -1675,7 +1749,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-363",
@@ -1752,7 +1826,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-360",
@@ -1833,7 +1907,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-362",
@@ -1910,7 +1984,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-367",
@@ -1986,7 +2060,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-357",
@@ -2067,7 +2141,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-359",
@@ -2143,7 +2217,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-358",
@@ -2219,7 +2293,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-355",
@@ -2295,7 +2369,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-354",
@@ -2372,7 +2446,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-356",
@@ -2448,7 +2522,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-353",
@@ -2524,7 +2598,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-369",
@@ -2600,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-351",
@@ -2677,7 +2751,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-350",
@@ -2753,7 +2827,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-349",
@@ -2837,7 +2911,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-348",
@@ -2914,7 +2988,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-377",
@@ -2988,7 +3062,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-347",
@@ -3073,7 +3147,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-346",
@@ -3147,7 +3221,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "why_it_matters": "AI coding agent의 장시간 세션은 모델 응답 품질과 별개로 클라이언트 상태·네트워크 요청·메모리·작업 재개 경험이 생산성과 운영 비용을 좌우함.",
@@ -3221,11 +3295,11 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-344",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "DeepSeek-V4 Flash 하네스 비교 보도: 동일 모델도 tool orchestration에 따라 완료율·성공비용·지연이 달라짐",
       "title_original": "DeepSeek-V4 Flash agent harness benchmark",
       "summary": "- 검증: AI타임스가 보도한 Composio 평가는 Gmail·GitHub·Slack·Google Sheets를 쓰는 **30개 다단계 업무**를 Claude Code·Codex·OpenCode·Oh My Pi 하네스에서 총 240회 실행\n- 품질: 과제 완료율은 하네스별 46.7~56.7%, 모든 환경에서 완료된 과제는 30개 중 6개라는 보도 수치\n- 비용·지연: 성공 1회당 평균 비용은 Oh My Pi 0.073달러·Claude Code 0.195달러, 평균 수행 시간은 Claude Code 122.7초·Oh My Pi 272.4초라는 보도 수치\n- 증거 경계: Composio 원 실험, task 정의·계정·prompt·model revision·tool 권한·재시도 정책·통계 방법은 직접 확인하지 않아 일반 성능·SLO·ROI 보증으로 확대 불가\n- 팀 액션: 모델 선정과 별도로 harness별 task success·tool failure·retry·token·성공비용·p95 latency·approval/egress를 동일 workload에서 canary 측정 필요",
@@ -3300,7 +3374,7 @@
     },
     {
       "id": "news-352",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "Cursor Origin 코드 호스팅 얼리 베타: GitHub 동기화·PR·agent 작업면의 권한·배포 경계 점검",
       "title_original": "Origin Code Hosting",
       "summary": "- 공개: Cursor가 유료 플랜 대상 `Origin Code Hosting`을 8월 17일 얼리 베타로 순차 제공\n- 범위: Cursor-hosted repo, pull request, code browsing, GitHub sync를 우선 제공하고 agent-native 기능은 후속 예정\n- 동기화: GitHub 원본 repo는 GitHub를 source of truth로 유지하며, Cursor와 양방향 PR comment·reaction·reply 동기화\n- 연동: Vercel preview deployment, Depot·Buildkite CI 연결을 제시하지만 실제 권한·secret·approval·SLA·GA 범위는 source에 미공개\n- 팀 액션: repo host·GitHub sync·agent branch push·PR merge·preview deployment를 하나의 trust boundary로 inventory화하고 최소 권한·audit·rollback canary 적용 필요",
@@ -3378,7 +3452,7 @@
     },
     {
       "id": "news-334",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "GLM-5.3 Cursor 잠재 취약점 비공개 제보 보도: AI 사이버 capability는 disclosure·fix evidence로 분리 검토",
       "title_original": "GLM-5.3, 'Cursor' security vulnerability report",
       "summary": "- 공개: AI타임스가 2026-08-16 18:16 KST에 Z.ai 개발자 옹호자의 X 게시물을 인용, **GLM-5.3**이 Cursor에서 잠재적으로 심각한 취약점을 찾았다고 보도\n- disclosure: 발견 내용은 Cursor에 비공개 제보됐고 수정 전 세부 사항은 공개하지 않겠다는 설명\n- 범위: 취약점 유형·영향 버전·공격 조건·CVE·수정 릴리스·사용자 영향은 기사와 인용문에서 확인되지 않은 상태\n- 증거 경계: 단일 공급자 측 주장과 미공개 취약점은 benchmark·실제 보안 성숙도·일반적 exploit capability의 독립 검증 근거 아님\n- 팀 액션: Cursor 사용 조직은 공급자 공지·릴리스 노트·CVE·업데이트 가능 여부를 추적하고, 모델 평가는 authorized environment·disclosure workflow·tool 권한 gate와 함께 운영 필요",
@@ -3460,7 +3534,7 @@
     },
     {
       "id": "news-343",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "Anthropic Claude 텍스트 워터마크 예고: EU AI Act 대응은 detection API·false positive·콘텐츠 흐름 검증 과제",
       "title_original": "How Claude's text watermark works",
       "summary": "- 공개: Anthropic이 향후 Claude 생성 텍스트에 **텍스트 워터마크**를 적용하고 전 세계 출시를 계획한다고 2026-08-14 공식 설명\n- 방식: 다음 단어 후보 중 의미 영향이 작은 확률적 선택에 key 기반 패턴을 남기며, 검증자는 Claude 관여 가능성을 확률로 산출하는 구조\n- 한계: 짧은 텍스트·사람 작성문 교정·사실 문장·정확성이 필요한 코드에서는 검출 신호가 약하거나 제한적이라는 공식 설명\n- 비용·식별: 추가 token을 만들지 않아 가격은 같고, watermark·key에 사용자·조직·대화 식별 정보는 없다는 설명\n- 팀 액션: 예정된 detection API의 threshold·권한·audit·retention·false-positive 대응과 C2PA file credential 검증 흐름을 content governance에 별도 설계 필요",
@@ -3544,7 +3618,7 @@
     },
     {
       "id": "news-342",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "OpenAI ChatGPT 대화 경찰 신고 보도: safety escalation·human review·privacy notice의 운영 증거 점검",
       "title_original": "OpenAI reported ChatGPT conversation containing murder plan to police",
       "summary": "- 보도: AI타임스가 **ChatGPT 대화의 위해 계획을 FBI에 신고**해 체포로 이어진 사례를 보도, OpenAI는 임박한 심각한 신체 위해 가능성을 별도 검토 뒤 법 집행기관에 신고하는 정책을 설명\n- 흐름: 기사 기준 OpenAI는 대화를 별도 review system으로 보내고 소수 전문 인력이 검토하며, FBI는 약 두 달간의 대화 기록을 지역 보안관실에 전달\n- 경계: 신고 threshold·human review 기준·보존 기간·법집행기관 제공 범위·사용자 통지·이의제기·국가별 적용은 기사에서 구체적으로 확인되지 않음\n- 운영: enterprise AI team은 safety escalation을 product claim이 아니라 data classification·human access·legal request·audit·incident response control로 분리 설계 필요\n- 팀 액션: 대화 로그의 detection→review→disclosure→retention→deletion 흐름과 owner·SLA·evidence를 계약·관리자 문서·실제 exercise로 확인 필요",
@@ -3618,7 +3692,7 @@
     },
     {
       "id": "news-338",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "앤트로픽 IPO 보도 업데이트: 2028년 매출 목표 1,900억~2,000억달러는 계약·usage·GPU 원가 분리 검토 신호",
       "title_original": "Anthropic reportedly targets $190–200 billion in 2028 revenue ahead of IPO",
       "summary": "- 보도: AI타임스가 Reuters 소식통 보도를 인용해 Anthropic이 IPO 투자자에게 **2028년 매출 1,900억~2,000억달러** 목표를 제시했다고 보도\n- 변경: 기사 기준 과거 투자자료의 2028년 최대 700억달러 전망보다 약 3배 높은 목표이며, Claude Code·Claude API 기업 채택과 5월 ARR 470억달러 초과를 배경으로 제시\n- 비용 경계: 모델 훈련·인프라·GPU 투자 때문에 EBITDA만으로 가치 산정이 어렵다는 기사 설명이며, 목표 매출은 계약·capacity·SLO·수익성 실현 증거 아님\n- 불확실성: 직접 확인한 것은 AI타임스의 Reuters 인용 보도이며 Reuters 원문·투자자료·감사 재무제표·고객 usage·할인·GPU/cloud 원가는 미확인\n- 팀 액션: provider forecast 대신 workload별 successful-task cost, quota·commitment·discount, fallback·data handling을 invoice·trace·계약 문서로 대조 필요",
@@ -3701,7 +3775,7 @@
     },
     {
       "id": "news-341",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "ChatGPT Mac 컴퓨터 히스토리 보도: accessibility event·local Markdown memory의 endpoint 경계 점검",
       "title_original": "ChatGPT Computer History for Mac",
       "summary": "- 보도: AI타임스가 Mac용 ChatGPT의 **Computer History** 도입을 보도, accessibility system의 클릭·키 입력·앱 전환 event를 기록해 작업 맥락을 활용하는 구조\n- 저장: 기사 기준 screenshot·screen recording·microphone·system audio·private browsing 활동은 수집하지 않고, event summary에서 local Markdown memory file을 생성\n- 통제: 기능은 opt-in이며 Business·Enterprise는 admin 허용 뒤에도 user별 동의가 필요하다는 기사 설명\n- 위험: local memory plain Markdown, 이후 chat context, prompt injection, excluded app·deletion·backup 경로는 별도 data boundary로 검증 필요\n- 팀 액션: managed Mac canary에서 file path·ACL·MDM/EDR·exclusion·deletion·tool approval을 검증한 뒤 제한 확대 필요",
@@ -3783,7 +3857,7 @@
     },
     {
       "id": "news-340",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "Qwen3.8-27B 가중치 공개: 27B 멀티모달·262K 컨텍스트를 self-hosted agent 검증 대상으로",
       "title_original": "Qwen3.8-27B",
       "summary": "- 공개: Qwen 공식 Hugging Face 저장소가 **Qwen3.8-27B** post-trained 가중치·구성을 공개, Apache-2.0·Transformers·vLLM·SGLang·TokenSpeed 호환을 명시\n- 구성: 27B native vision-language dense model, 기본 **262,144 token**·최대 1M 확장 컨텍스트, thinking mode 기본 활성화와 `reasoning_effort` 제어 제공\n- 성능 경계: Qwen card의 Terminal Bench 2.1 73.0·SWE-bench Pro 61.7·OSWorld-Verified 84.3은 공급자 benchmark이며 내부 workload·GPU 비용·SLO 보증 아님\n- 운영: Qwen은 framework별 추론 효율·throughput 차이를 명시하고 production/high-throughput에는 SGLang·vLLM·TokenSpeed를 권장\n- 팀 액션: revision hash·license·serving image·VRAM·context cap·thinking token·tool permission을 pin한 격리 canary로 task 성공률·p95·token·egress·rollback을 검증 필요",
@@ -3862,7 +3936,7 @@
     },
     {
       "id": "news-339",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "오픈AI 기업용 매출 보도: B2B 비중 역전은 usage·효율·계약 조건을 분리할 FinOps 신호",
       "title_original": "OpenAI enterprise revenue reportedly surpasses ChatGPT consumer revenue",
       "summary": "- 보도: AI타임스가 CNBC 보도를 인용해 OpenAI 매출의 절반 이상이 기업용 사업에서 발생하며, 올해 초 B2B/B2C 40/60 비중이 역전됐다고 보도\n- 수치: 기사 기준 ARR은 **400억달러 초과**, 7월 매출은 전월 대비 20%, 기업 고객 수는 32% 증가\n- 효율: CFO가 GPT-5.6 Sol의 agent coding 작업 효율을 54% 높였다고 언급했으나 workload·측정법·가격·SLO는 직접 확인되지 않음\n- 증거 경계: 비공개 투자자 회의와 CNBC 인용 보도 범위이며, 감사 재무제표·고객별 usage·retention·계약 할인·cloud/GPU 원가·지역별 quota는 미확인\n- 팀 액션: ARR·고객 수 headline 대신 successful-task cost, cache·retry, committed spend, quota, data handling, fallback을 invoice·trace·계약 문서로 대조 필요",
@@ -3935,86 +4009,6 @@
             "측정: provider·model·workload·token type·cache·retry·latency·task success를 trace와 invoice로 조인",
             "검토: quota·rate limit·retention·region·SLA·fallback·exit plan을 procurement gate에 기록",
             "피할 것: ARR·고객 수·효율 headline만으로 가격 지속성·production readiness·벤더 위험을 확정하는 판단"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-335",
-      "rank": 50,
-      "title_ko": "딥시크 하네스 v0.1 공개: 모델·도구·샌드박스를 플러그인으로 조립하는 오픈소스 coding-agent 런타임",
-      "title_original": "DeepSeek Harness: Everything is a Plugin.",
-      "summary": "- 공개: 딥시크가 **DeepSeek Harness v0.1**을 developer preview·MIT license로 공개, 모델·도구·스킬·세션·샌드박스·파일 시스템·agent loop를 플러그인으로 교체하는 구조\n- 실행 범위: 저장소 분석·파일 수정·shell·파일/웹 검색·계획·subagent·workflow와 민감 작업 approval을 제공한다는 보도\n- 운영 경계: preview는 breaking change 가능성을 명시하며, 공개 GitHub 저장소의 현재 88.8k star·8k fork는 채택·보안성·production readiness 보증 아님\n- 팀 액션: plugin provenance·tool permission·sandbox escape boundary·secret egress·session trace·rollback을 함께 검증한 isolated repository canary부터 적용 필요",
-      "detail": "AI타임스는 딥시크가 2026-08-14 12:40 KST에 DeepSeek Harness v0.1과 DeepSeek-V4-Pro를 공개했다고 보도했다. Harness는 Cordis 기반의 모델 중립 오픈소스 agent runtime으로, model·tool·skill·session·sandbox·filesystem·execution loop·orchestration·UI를 플러그인으로 교체·조합하는 ‘Everything is a Plugin’ 설계를 제시한다. 기사와 직접 확인한 GitHub 저장소는 public repository, MIT license, developer preview 및 breaking-change 가능성을 확인한다. 표준 모드의 repository analysis·file edit·shell·search·planning·subagent·workflow·sensitive-action approval은 공급망·권한·데이터 경계를 운영자가 조립해야 한다는 뜻이기도 하다. 기사에 언급된 V4-Pro benchmark·가격·외부 비교는 Harness production SLO 또는 plugin 안전성을 입증하지 않는다. sandbox implementation, isolation guarantee, plugin signing/provenance, network egress default, credential retention, multi-tenant support, support SLA, 한국어 task 품질은 직접 확인한 범위에서 확정하지 않는다.",
-      "why_it_matters": "모델과 도구를 고정 제품으로 쓰지 않고 agent runtime 구성요소를 교체하려는 조직에는 실행 환경의 통제 지점을 노출하는 기반이 될 수 있음. 반대로 plugin 단위 선택은 dependency provenance·권한 조합·secret egress·upgrade compatibility 책임을 사용자 조직으로 이동시킴.",
-      "engineering_implication": "처음에는 network-isolated sample repository에서 allowlisted plugin·read-only credential·bounded shell/filesystem mount·approval policy로 실행하고, plugin digest·SBOM·tool call·file diff·network egress·rollback owner를 release evidence에 기록 필요.",
-      "korea_implication": "국내 조직은 모델 API 경로와 별개로 plugin 공급망·소스코드 반출·비밀정보 처리·상용 지원·라이선스 의무를 procurement와 보안 검토에서 분리해 확인 필요.",
-      "category": "DevTools",
-      "tags": [
-        "DeepSeek",
-        "Coding Agent",
-        "Open Source",
-        "Plugin Architecture",
-        "Sandbox",
-        "AI Agent Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 82,
-      "published_kst": "2026-08-14 12:40",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=213938",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/213938_217529_128.png",
-      "local_image": "assets/images/news-335.png",
-      "related_links": [
-        {
-          "title": "DeepSeek Harness GitHub repository — public repository, developer preview, MIT License",
-          "url": "https://github.com/deepseek-ai/deepseek-harness"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "딥시크가 DeepSeek Harness v0.1을 developer preview·MIT license 조건의 모델 중립 오픈소스 agent runtime으로 공개",
-          "items": [
-            "구조: Cordis 기반 실행 환경에서 model·tool·skill·session·sandbox·filesystem·agent loop·orchestration·UI를 plugin으로 교체·조합하는 설계",
-            "출처: AI타임스는 2026-08-14 12:40 KST에 Harness와 DeepSeek-V4-Pro 공개를 보도, 직접 확인한 GitHub 저장소는 public repository 상태"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에서 설명한 표준 모드는 coding agent에 필요한 실행 구성요소를 함께 제공하되 각 경계의 안전성을 자동으로 보장하지 않는 범위",
-          "items": [
-            "작업: repository analysis·file edit·shell command·file/web search·planning·subagent delegation·workflow 실행 범위",
-            "승인: local web UI에서 workspace를 고르고 sensitive action 이전 user approval을 적용할 수 있다는 보도",
-            "호환성: developer preview는 breaking change 가능성을 명시, API·plugin contract를 production 고정 인터페이스로 가정할 수 없는 상태"
-          ]
-        },
-        {
-          "heading": "구성요소 교체와 보안 경계",
-          "body": "Everything is a Plugin은 모델만 바꾸는 routing보다 넓은 변경면을 만들므로 tool·sandbox·filesystem·session을 한 release unit으로 검토 필요",
-          "items": [
-            "공급망: plugin source·commit digest·license·dependency SBOM·maintainer ownership을 allowlist와 release record에 연결",
-            "권한: shell·filesystem·network·credential access를 plugin 기본값에 맡기지 않고 per-tool least privilege와 approval으로 분리",
-            "관측: prompt·tool call·file diff·subagent handoff·network egress·error·rollback event를 correlation ID로 보존"
-          ]
-        },
-        {
-          "heading": "확인된 범위와 증거 경계",
-          "body": "GitHub의 star·fork 수와 기사 benchmark·가격은 관심 또는 특정 평가 결과이며 운영 품질·보안성·장기 채택을 보증하지 않는 범위",
-          "items": [
-            "저장소: 직접 확인 시 public repository는 약 88.8k star·8k fork·master branch·0 tag를 표시, 수치는 변동 가능",
-            "미확인: sandbox isolation guarantee·plugin signing·provenance enforcement·network egress default·credential retention·multi-tenant support·SLA",
-            "분리: V4-Pro의 model benchmark와 task price는 Harness 자체의 tool safety·plugin compatibility·production SLO 증거가 아님"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "도입은 모델 성능 비교보다 실행 환경의 변경 통제부터 시작해야 하며, plugin 교체가 가능한 구조일수록 rollback과 provenance 검증이 release 조건",
-          "items": [
-            "canary: network-isolated sample repository에서 allowlisted plugin·read-only test credential·bounded mount·timeout으로 재현",
-            "release gate: plugin digest·SBOM·tool permission·secret redaction·egress alert·human approval·rollback owner를 승인 항목으로 고정",
-            "피할 것: public repository의 관심도나 preview 기능만으로 production data·shell 권한·비밀정보 접근을 일괄 허용하는 배포"
           ]
         }
       ]
