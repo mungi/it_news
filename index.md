@@ -306,6 +306,9 @@
 
 - [[raw/articles/aitimes-cerebras-cs4-inference-2026-08-20]] — Cerebras CS-4 WSE-3 Turbo 3개·RoCE v2·직접 액체 냉각의 추론·전력·fabric 검증 경계.
 
+- [[raw/articles/aws-capacity-reservation-resource-groups-ec2-2026-08-26]] — EC2 Capacity Reservation Resource Group의 Capacity Blocks·interruptible 예약 통합과 fallback·FinOps 검증 경계.
+- [[raw/articles/aws-lambda-microvms-privatelink-2026-08-26]] — Lambda MicroVMs PrivateLink의 VPC endpoint·DNS·authorization·audit·비용 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
