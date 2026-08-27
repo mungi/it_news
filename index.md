@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-26 | Total pages: 311
+> Last updated: 2026-08-27 | Total pages: 312
 
 ## Entities
 
@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/zai-glm-5-3-flash-2026-08-26]] — GLM-5.3-Flash native multimodal MoE·hybrid attention·KV cache 비용과 production 검증 경계.
 - [[raw/articles/aitimeskr-openai-jalapeno-inference-asic-2026-08-26]] — OpenAI Jalapeño 자체 추론 ASIC의 vendor-reported benchmark·full-stack inference·fleet TCO 검증 경계.
 - [[raw/articles/aws-lambda-nodejs26-python315-public-preview-2026-08-25]] — AWS Lambda Node.js 26·Python 3.15 preview runtime의 SLA·지원·자동 GA 승격과 canary 검증 경계.
 - [[raw/articles/aws-iot-core-influxdb-2026-08-26]] — AWS IoT Core InfluxDB rule action의 direct telemetry routing·batching·인증·ingest 운영 검증 경계.
