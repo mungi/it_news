@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-redshift-streaming-kds-10mib-2026-08-28]] — Redshift streaming ingestion의 KDS 10 MiB record 지원과 payload·throughput·지연·비용 검증 경계.
 - [[raw/articles/aws-drs-recovery-plans-2026-08-28]] — AWS DRS Recovery Plans의 서버 순서·승인·비중단 drill과 RTO/RPO 검증 경계.
 - [[raw/articles/aws-redshift-agent-toolkit-2026-08-28]] — Amazon Redshift AWS Agent Toolkit 통합의 MCP·SQL·migration 권한·감사·비용 운영 경계.
 - [[raw/articles/aitimes-nvidia-huggingface-acquisition-report-2026-08-27]] — 엔비디아의 허깅페이스 인수 보도와 model hub·artifact·inference 공급망 계약 검증 경계.
