@@ -316,6 +316,7 @@
 - [[raw/articles/aws-lambda-microvms-privatelink-2026-08-26]] — Lambda MicroVMs PrivateLink의 VPC endpoint·DNS·authorization·audit·비용 검증 경계.
 
 - [[raw/articles/kubernetes-v1-37-garhwal-2026-08-26]] — Kubernetes v1.37 Garhwal의 feature graduation·cgroup v1/ipvs 수명주기와 upgrade 검증 경계.
+- [[raw/articles/kubernetes-v1-37-metrics-api-stable-2026-08-28]] — `metrics.k8s.io/v1` Stable 승격의 API client·HPA·metrics pipeline 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.

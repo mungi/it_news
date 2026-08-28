@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-08-28 17:15",
+  "last_updated_kst": "2026-08-29 01:25",
   "audience": "developers and engineers",
   "executive_summary": [
     "AWS Elastic Disaster Recovery가 Recovery Plans를 추가: 다중 서버 애플리케이션의 recovery·drill 시작 순서, step별 wait, human approval, 진행 상태를 하나의 실행 절차로 관리 가능. application dependency·data consistency·traffic cutover·RTO/RPO는 자동 보증이 아니므로 non-disruptive drill의 증적으로 release gate를 구성 필요.",
@@ -14,163 +14,166 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "GLM-5.3-Flash: 저활성 MoE의 장문맥 비용 주장을 production trace로 검증",
-      "summary": "핵심: Z.ai가 320B total·18B active parameter의 native multimodal MoE `GLM-5.3-Flash`를 공개. hybrid attention·`IndexPool`로 장문맥 attention과 KV cache 절감을 제시했지만, vendor benchmark·할인 가격은 실제 agent workload의 quality·tail latency·invoice를 대체하지 않음.",
-      "details": "Z.ai 공식 발표을 기준으로 GLM-5.3-Flash의 architecture claim, long-context serving, model-routing 및 FinOps 검증 계약을 재구성한 Deep Dive",
-      "why_it_matters": "장문맥 agent의 단가는 active parameter 수가 아니라 context 성장, KV cache, tool loop, cache hit, retry, concurrency와 fallback의 결합 결과임. 모델 교체 전 동일 trace의 결과·지연·비용 evidence가 필요.",
+      "title": "AWS DRS Recovery Plans: 서버 기동 자동화가 아닌 애플리케이션 복구 증명으로 운영",
+      "summary": "핵심: AWS Elastic Disaster Recovery가 Recovery Plans를 추가해 다중 서버 복구·drill의 순서, 대기, 사람 승인, 진행 상태를 실행 절차로 묶음. 서버 launch 순서 자동화만으로 database consistency·traffic cutover·실제 RTO/RPO가 충족되지는 않으므로, 비중단 drill 증적을 release gate로 전환해야 함.",
+      "details": "AWS 공식 공지와 RSS의 정확한 발행 시각을 기준으로 Recovery Plans의 오케스트레이션 범위와 DR runbook·SRE·감사 운영 계약을 재구성한 Deep Dive",
+      "why_it_matters": "복구는 VM이 실행된 시점이 아니라 데이터 일관성, 의존 서비스 readiness, DNS·load balancer cutover, 업무 트래픽 수용까지 검증돼야 완료됨. Plan 정의·승인·drill telemetry를 실제 runbook과 같은 change record로 관리할 필요.",
       "sources": [
-        "https://z.ai/blog/glm-5.3-flash"
+        "https://aws.amazon.com/about-aws/whats-new/2026/08/elastic-disaster-recovery-plans/"
       ],
-      "image_url": "https://z-cdn-media.chatglm.cn/prompts-rich-media-resources/5-blog/z-icon.png",
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-08-28 01:00",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-08-29 01:25",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**GLM-5.3-Flash의 승인 단위는 18B active parameter나 task당 $0.045라는 발표 수치가 아니라, 고정한 한국어·멀티모달·tool-use trace에서 기존 모델 대비 task success·quality·TTFT/TPOT·p95/p99·completed-task 비용을 동시에 만족하는지의 운영 계약임**. attention/KV cache 절감은 후보 선별 근거이지 production SLO 보증이 아님.",
+          "body": "**Recovery Plans의 승인 단위는 server launch 성공이 아니라, dependency graph·data consistency·application readiness·traffic cutover·rollback을 포함한 representative drill이 목표 RTO/RPO를 충족하는지의 복구 계약임**. 순서 자동화는 사람이 문서에서 추적하던 절차를 실행 가능한 plan으로 옮기지만 업무 복구를 자동 보증하지 않음.",
           "items": [
-            "사실: Z.ai가 GLM-5 시리즈 첫 native multimodal 모델로 total 320B·active 18B MoE 구성 공개",
-            "결정: provider 교체 전 동일 prompt·context·tool set·approval policy를 고정한 canary 비교 필요"
+            "사실: AWS DRS가 recovery와 drill에서 다중 서버 애플리케이션을 순차 실행하는 Recovery Plans 공개",
+            "결정: application owner와 platform/SRE owner가 같은 drill evidence로 promotion을 승인할 운영 과제"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Z.ai 공식 원문을 이번 실행에서 직접 재확인. 페이지는 `2026-08-26`과 Research 분류를 표시하고, sparse·linear attention hybrid와 Manifold-Constrained Hyper-Connections(mHC), 30T-token multimodal pre-training corpus를 설명함. `ox-alpha`라는 익명 이름으로 OpenCode·OpenRouter에서 사용자 피드백을 수집했으며 그 traffic이 중국 AI chip에서 제공됐다고 명시함.",
+          "body": "AWS What’s New canonical announcement와 RSS의 `Thu, 27 Aug 2026 18:00:00 GMT`를 직접 확인해 KST `2026-08-28 03:00`으로 정렬함. 원문은 database, application tier, supporting service처럼 특정 기동 순서가 필요한 multi-server application을 대상으로, sequence를 한 번 정의하고 단일 action으로 실행하는 기능을 설명함.",
           "items": [
-            "구조: 1M-token context에서 네 indexer key vector를 weighted pooling으로 하나로 압축하는 `IndexPool` 제시",
-            "수치: GLM-5.3 대비 attention compute 3.0배·layer당 BF16 KV cache 4.4배 감소라는 자체 비교",
-            "평가: Artificial Analysis Intelligence Index v4.1.1 score 57·discounted task price $0.045, DeepSWE v1.1 63.4·AutomationBench 48.8이라는 발표 수치"
+            "구성: 서버를 sequential step으로 묶고 step 사이 configurable wait time 설정",
+            "검증: non-disruptive drill mode로 production workload를 중단하지 않는 절차 확인",
+            "통제: 사람 개입이 필요한 지점에 approval step 추가, progress를 real time으로 모니터링",
+            "범위: AWS DRS 제공 모든 AWS Region에서 standard DRS usage 외 추가 기능 요금 없음"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "저활성 MoE는 dispatch·expert placement·serving batch와 결합되어야 비용 이득으로 나타남. hybrid attention과 IndexPool도 context length별 memory footprint와 prefill/decode path의 일부일 뿐, tool 호출이 늘어난 agent loop 또는 low-concurrency traffic에서 같은 비율의 이득을 보장하지 않음.",
+          "body": "DR 오케스트레이션은 compute recovery와 application recovery를 분리해 다뤄야 함. instance가 실행돼도 replication lag, schema migration state, secret availability, service discovery, queue backlog, external dependency가 준비되지 않으면 업무 요청을 받으면 안 됨. Recovery Plan의 step은 의존성 그래프를 표현하는 시작점이며, 서비스별 success probe와 fail-safe를 별도로 정의해야 함.",
           "items": [
-            "분리: total/active parameter·attention/KV cache 수치와 request-level TTFT·TPOT·tail latency·GPU utilization을 별도 지표로 관리",
-            "경계: 공식 글의 benchmark·in-house evaluation·가격은 model revision·harness·sampling·cache·batch·region·SLA를 고정한 production 비교가 아님"
+            "분리: infrastructure launch, data consistency, application readiness, traffic acceptance를 다른 success gate로 기록",
+            "경계: AWS 공지는 dependency discovery·readiness probe·business transaction correctness를 자동 검증한다고 명시하지 않음"
           ]
         },
         {
-          "heading": "아키텍처·서빙 관점",
-          "body": "장문맥 rollout은 model endpoint 하나를 바꾸는 작업이 아니라 retrieval chunking, conversation compaction, tool result retention, cache key, concurrency limit, fallback을 함께 바꾸는 change임. context가 길어져도 irrelevant retrieval과 tool output이 누적되면 quality와 latency가 악화될 수 있어 application trace의 token composition을 먼저 분해해야 함.",
+          "heading": "아키텍처·복구 관점",
+          "body": "각 step은 단순 sleep이 아니라 의존 서비스가 다음 tier를 안전하게 받을 조건을 검증해야 함. database step은 replica lag·restore point·checksum, application step은 migration·configuration·secret, edge step은 DNS TTL·load balancer health·session policy를 가진다. multi-account 또는 multi-Region 환경에서는 IAM role, KMS key, private connectivity와 data replication 경로도 recovery graph에 포함해야 함.",
           "items": [
-            "설계: input·output·cached token, tool-result token, retrieval token, context length bucket을 request trace에 분리 기록",
-            "검증: vision input·coding task·tool retry별 quality regression, TTFT·TPOT·p95/p99와 memory/GPU utilization 비교"
+            "설계: 서비스별 dependency·owner·wait/timeout·health probe·acceptance query·rollback action을 plan 외부 runbook과 상호 참조",
+            "검증: database lag·missing secret·unhealthy instance·DNS failure·approval delay·partial step failure를 failure injection으로 재현"
           ]
         },
         {
-          "heading": "FinOps·데이터 거버넌스 관점",
-          "body": "할인 task price는 account별 청구 단가나 completed business task 비용이 아님. cache hit, output length, failed tool call, retry, fallback, concurrency throttling이 invoice를 바꾸며, API region·retention·support·rate limit·availability는 이번 원문에서 계약으로 확인되지 않음.",
+          "heading": "SRE·감사·보안 관점",
+          "body": "approval step은 책임자를 기록하는 기능일 뿐 승인 품질을 보장하지 않음. on-call 권한, break-glass role, 연락 경로, change freeze 예외, evidence retention을 평시부터 훈련해야 함. 복구 실행에는 backup snapshot, replicated data, temporary credentials, network path가 함께 노출되므로 least privilege와 audit correlation이 필요함.",
           "items": [
-            "측정: task success당 input/output/cache token·GPU/endpoint 시간·retry·fallback·egress 비용",
-            "통제: model revision·price effective date·quota·spend cap·data classification·retention 확인을 release gate로 고정"
+            "관측: step duration·approval latency·replication lag·health probe·traffic error·end-to-end RTO/RPO를 동일 incident timeline으로 저장",
+            "통제: plan version·operator·assumed role·approval·step event·rollback·drill result를 immutable change evidence로 보존"
           ]
         },
         {
-          "heading": "SRE·보안 관점",
-          "body": "모델 교체는 prompt/template와 tool authority가 같아도 output shape·refusal·structured call recovery를 바꿀 수 있음. provider error, rate limit, malformed tool call, context overflow에서 target-only fallback과 human approval이 안전하게 동작하는지 failure injection으로 확인해야 함.",
+          "heading": "비용·FinOps 관점",
+          "body": "추가 기능 요금 없음은 drill이 무료라는 뜻이 아님. DRS usage, recovered instance, storage·data transfer, standby dependency, 테스트 환경, operator time이 복구 준비 비용을 결정함. drill을 줄여 비용을 낮추면 실제 failover에서 미확인 dependency와 manual work가 더 큰 손실로 돌아올 수 있어, drill frequency와 recovery evidence의 비용을 함께 측정해야 함.",
           "items": [
-            "훈련: rate-limit·provider 5xx·vision parse failure·tool timeout·context overflow·fallback 전환 주입",
-            "관측: provider/model revision별 error rate·retry depth·tool denial·secret exposure·rollback time alert 설정"
+            "측정: drill당 DRS·compute·storage·transfer·operator time과 service별 recovery duration을 분리 귀속",
+            "결정: 정해진 RTO/RPO·data-loss 허용치·drill coverage를 비용 절감보다 우선하는 service tier 기준으로 설정"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "1단계는 offline replay에서 고정 task corpus와 scoring rubric을 만드는 단계. 2단계는 shadow/canary traffic에서 latency·quality·cost trace를 비교하는 단계. 3단계는 명시한 threshold를 넘는 workload만 incremental rollout하고, revision pin과 rollback endpoint를 유지하는 단계임.",
+          "body": "1단계는 business service를 database·stateful middleware·application·edge·external dependency로 분해하고 owner와 recovery objective를 확정하는 단계. 2단계는 non-production 또는 isolated recovery network에서 plan과 health probe를 replay하는 단계. 3단계는 non-disruptive drill 결과를 기준으로 change window와 production failover authority를 승인하는 단계임.",
           "items": [
-            "1단계: 한국어·멀티모달·coding·agent task별 context/tool/cost baseline 작성",
-            "2단계: task success·human review·TTFT/TPOT·p95/p99·cache hit·completed-task cost 비교",
-            "3단계: quality regression·spend ceiling·error budget·rollback owner를 release record에 고정"
+            "1단계: dependency graph·RTO/RPO·data consistency query·traffic acceptance·rollback owner 문서화",
+            "2단계: step order·timeout·approval·DNS/load balancer·secret·network recovery를 representative workload에서 canary 검증",
+            "3단계: drill result와 gap remediation을 service release record에 연결, 분기별 재훈련 일정 고정"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "**모델의 효율 주장은 workload trace를 대신하지 않음**. application 팀은 task correctness와 approval boundary를, platform·FinOps 팀은 serving telemetry와 billing·data contract를 같은 promotion gate에서 승인해야 함.",
+          "body": "**Recovery Plan은 runbook의 대체물이 아니라 실행 가능하고 감사 가능한 runbook임**. 개발팀은 transaction·readiness·degraded-mode 기준을, 인프라팀은 orchestration·identity·network·telemetry·rollback을 같은 drill에서 증명해야 함.",
           "items": [
-            "체크리스트: model revision·endpoint region·data retention·quota·price·support 조건 확인",
-            "체크리스트: context bucket·cache·tool loop·fallback·retry·tail latency·completed-task 비용 계측",
-            "팀 액션: 30일 내 대표 workload의 baseline과 canary evidence를 저장하고 조건 미달 route는 기존 모델 유지"
+            "체크리스트: sequential step별 dependency·success probe·timeout·approval·rollback·owner 확인",
+            "체크리스트: replica lag·data checksum·secret/KMS·DNS·load balancer·external API·monitoring restoration 확인",
+            "팀 액션: 다음 production change 전에 대표 애플리케이션의 non-disruptive drill 결과와 remediation owner를 release gate에 등록"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Kubernetes v1.37 Garhwal: 기능 목록보다 node·network·workload upgrade 계약을 검증",
-      "summary": "핵심: Kubernetes v1.37은 watchcache·Pod certificates·Cluster Trust Bundles·`metrics.k8s.io`·SELinux/DRA 기능을 안정화하고 HPA scale-to-zero·gang scheduling·cgroups v2 Memory QoS 등을 확대. 동시에 ipvs·cgroup v1·static Pod 설정 수명주기 변화가 있어 upgrade는 API·node image·add-on·workload recovery를 묶은 검증 작업임.",
-      "details": "Kubernetes 공식 v1.37 release post를 기준으로 feature graduation과 deprecation을 managed service·node runtime·SRE upgrade evidence로 분리한 Deep Dive",
-      "why_it_matters": "upstream minor release의 feature state는 managed Kubernetes와 CNI/CSI·node OS·security agent·GPU plugin의 지원 계약이 아님. ipvs·cgroup v1·static Pod 의존성은 rollout 실패와 recovery risk를 만들 수 있음.",
+      "title": "Kubernetes Metrics API v1: 안정화와 HPA·관측 파이프라인 경계를 분리",
+      "summary": "핵심: Kubernetes v1.37이 `metrics.k8s.io`를 stable `v1`로 승격. NodeMetrics·PodMetrics의 CPU·memory API surface는 `v1beta1`와 같고 `kubectl top`은 v1을 우선하지만, v1.37 HPA controller는 아직 `v1beta1`만 지원함. API version 안정화는 metrics-server 데이터 품질·custom metrics·autoscaling SLO를 보장하지 않음.",
+      "details": "Kubernetes 공식 feature post와 Atom의 정확한 발행 시각을 기준으로 Metrics API v1의 client migration, HPA 경계, SRE observability 계약을 재구성한 Deep Dive",
+      "why_it_matters": "resource metrics는 `kubectl top`과 resource-metrics-based autoscaling의 입력면임. API version만 바뀌어도 discovery, aggregation layer, metrics-server, client library, HPA controller의 지원 조합이 달라질 수 있으므로 version upgrade와 autoscaling 안정성을 같은 검증으로 취급하면 안 됨.",
       "sources": [
-        "https://kubernetes.io/blog/2026/08/26/kubernetes-v1-37-release/"
+        "https://kubernetes.io/blog/2026/08/27/kubernetes-v1-37-metrics-api-ga/"
       ],
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-08-28 01:00",
+      "refreshed_kst": "2026-08-29 01:25",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**v1.37 승인 단위는 Stable/Beta 목록이 아니라 각 cluster에서 kube-proxy mode·cgroup mode·static Pod·CNI/CSI·metrics/autoscaler·node image가 representative workload의 scaling·recovery·rollback SLO를 지키는지의 upgrade contract임**. upstream release를 managed-service availability로 해석하면 안 됨.",
+          "body": "**`metrics.k8s.io/v1`의 Stable 승격은 CPU·memory resource metric API의 호환성 계약이며, HPA가 v1을 사용한다거나 metrics freshness·autoscaling outcome이 개선된다는 보증이 아님**. cluster upgrade 전 API discovery·metrics implementation·HPA path·alerting과 workload scale test를 분리해 확인해야 함.",
           "items": [
-            "사실: Kubernetes v1.37 Garhwal 공식 release 공개",
-            "결정: control plane·node pool·add-on·workload를 분리한 staged upgrade와 rollback drill 필요"
+            "사실: Kubernetes v1.37이 `metrics.k8s.io` API를 stable `v1`으로 승격",
+            "결정: API client migration과 autoscaling reliability를 서로 다른 release gate로 운영 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes 공식 release post를 이번 실행에서 직접 재확인. 공식 페이지와 Atom feed의 `2026-08-26T00:00:00+00:00` timestamp를 KST `2026-08-26 09:00` ordering provenance로 사용함. resilient watchcache initialization, Pod certificates·Cluster Trust Bundles, `metrics.k8s.io`, SELinuxMount·SELinuxChangePolicy 및 DRA 항목의 Stable 승격을 열거함.",
+          "body": "Kubernetes 공식 feature post와 RSS entry `Thu, 27 Aug 2026 10:30:00 -0800`를 직접 확인해 KST `2026-08-28 03:30`으로 정렬함. 원문은 Metrics API가 node와 Pod의 CPU·memory usage를 제공하고 `kubectl top` 및 resource-metrics-based autoscaling의 기반이라고 설명함. API는 v1.6 alpha, v1.8 beta 이후 production에서 사용됐으며 v1.37에서 공식 stable 단계로 승격됨.",
           "items": [
-            "확대: HPA scale-to-zero·gang scheduling·native histogram·cgroups v2 Memory QoS·Pod-level resource manager·etcd RangeStream 항목",
-            "수명주기: `kube-dns`와 kube-proxy ipvs mode 지원 deprecation, static Pod Secret/ConfigMap 참조 금지, cgroup v1 지원 제거 계획 명시"
+            "리소스: `NodeMetrics`는 node CPU·memory usage, `PodMetrics`는 container별 breakdown을 포함한 Pod usage 제공",
+            "호환성: v1은 `v1beta1`과 resource type·field가 동일하며 metric 의미 변경 없음",
+            "범위: basic inspection·resource autoscaling용 소형 API이며 full monitoring pipeline 또는 `custom.metrics.k8s.io` 대체 아님"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "minor version은 control plane 기능 추가와 node/runtime의 제거 경고가 겹치는 배포 이벤트임. 기능을 쓰지 않는 cluster도 ipvs, cgroup, static Pod, client-go dependency, admission configuration 같은 잠재 의존성 때문에 영향을 받을 수 있음. feature gate를 켜는 일과 version을 올리는 일을 같은 risk tier로 취급하면 안 됨.",
+          "body": "Stable은 Kubernetes API lifecycle 관점의 promise임. scrape interval, aggregation delay, node pressure, cgroup accounting, metrics-server availability, adapter behavior를 포함한 telemetry quality promise는 아님. CPU·memory resource metric과 request rate·queue depth·GPU utilization·business SLI를 혼합하는 autoscaler는 Metrics API v1 안정화만으로 capacity policy를 바꿀 근거가 부족함.",
           "items": [
-            "분리: upstream feature state와 managed control plane·node image·CNI/CSI·GPU/DRA plugin support matrix",
-            "경계: 공식 release는 distribution별 upgrade window·SLA·add-on compatibility·workload reliability를 보증하지 않음"
+            "분리: API version compatibility, data freshness/accuracy, autoscaler control-loop outcome을 독립 지표로 관리",
+            "경계: 공식 원문은 full observability, custom/external metric semantics, GPU/accelerator utilization reliability를 보증하지 않음"
           ]
         },
         {
-          "heading": "노드·네트워크·스토리지 관점",
-          "body": "ipvs deprecation은 proxy path·connection tracking·network policy·observability의 migration scope를 만들고, cgroup v1 제거 계획은 node OS·container runtime·resource monitoring·memory tuning과 연결됨. SELinux와 DRA 기능은 storage driver·device plugin·security policy가 함께 맞아야 효과와 failure mode를 판단할 수 있음.",
+          "heading": "클라이언트·HPA 관점",
+          "body": "원문 기준 `kubectl top`은 두 API version을 지원하며 v1이 있으면 우선하고 없으면 `v1beta1`로 fallback함. 반면 Kubernetes v1.37의 HPA controller는 아직 `v1beta1`만 지원하고 v1/v1beta1 discovery-based selection은 계획 상태임. 따라서 CLI에서 v1 endpoint가 동작하는 결과를 HPA의 v1 adoption 또는 scaling behavior 변화로 해석하면 안 됨.",
           "items": [
-            "inventory: cluster/node pool별 kube-proxy mode·cgroup mode·CNI/CSI·container runtime·security agent·GPU/DRA plugin 수집",
-            "검증: Service traffic·NetworkPolicy·volume mount/SELinux label·device allocation·node replacement를 staging workload로 재현"
+            "검증: `kubectl get --raw /apis/metrics.k8s.io/`로 served version과 discovery response 확인",
+            "검증: `kubectl get apiservice v1.metrics.k8s.io`로 implementation registration·availability 확인",
+            "피할 것: `kubectl top` 성공만으로 HPA metric path·adapter·scale-out latency를 승인하는 운영 판단"
           ]
         },
         {
-          "heading": "SRE·관측 관점",
-          "body": "watchcache, metrics API, HPA와 native histogram의 변화는 controller·autoscaler·dashboard가 보는 signal과 recovery 동작을 바꿀 수 있음. upgrade 중 API watch reconnect, metric freshness, scheduling delay, HPA reaction, StatefulSet convergence를 workload별 error budget으로 관측해야 함.",
+          "heading": "아키텍처·SRE 관점",
+          "body": "metrics-server와 aggregation layer는 control-plane dependency이며, stale or missing metric은 HPA reaction delay 또는 alert noise로 이어질 수 있음. upgrade canary는 API response schema뿐 아니라 node/pod metric timestamp, missing series, HPA desired/current replicas, pending Pod, scheduler delay, application saturation을 같은 trace에 넣어야 함. high-cardinality application telemetry는 Prometheus 같은 monitoring path에 남겨야 함.",
           "items": [
-            "훈련: API server reconnect·metrics adapter failure·node drain·autoscaler surge·StatefulSet rollback 주입",
-            "관측: API latency·watch reconnect·pending Pod·HPA reaction·volume attach·node recovery·error budget 기록"
+            "관측: APIService availability·metric age·scrape error·HPA sync·desired/current replicas·pending Pod·request saturation 기록",
+            "훈련: metrics-server unavailable·stale metric·aggregation TLS failure·node pressure·sudden load surge를 failure injection으로 재현"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "Pod certificate·Cluster Trust Bundle·manifest-based admission configuration은 identity와 policy surface를 넓힐 수 있음. Stable 표기는 조직의 CA rotation, RBAC, admission exception, audit retention, secret bootstrap 설계를 자동으로 해결하지 않음.",
+          "body": "Metrics API는 aggregation layer를 통해 제공되므로 APIService registration, serving certificate, RBAC, network reachability, tenant visibility를 함께 검토해야 함. resource usage는 workload 규모와 실행 패턴을 드러낼 수 있으며, shared cluster의 read access를 broad developer role에 주는 일은 data minimization과 다를 수 있음. v1 migration은 access review의 계기여야 함.",
           "items": [
-            "통제: issuer·trust bundle·RBAC·admission policy·break-glass·audit retention을 version migration checklist에 포함",
-            "관점: static Pod의 Secret/ConfigMap 참조 금지에 따른 bootstrap credential과 node-local configuration 경로 재점검"
+            "통제: `metrics.k8s.io` read 권한을 namespace·role·service account별로 inventory, broad wildcard permission 제거",
+            "점검: APIService TLS·metrics-server deployment·network policy·audit log와 managed Kubernetes add-on support matrix 확인"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "1단계는 inventory와 vendor support matrix를 고정하는 단계. 2단계는 non-production cluster에서 API/manifest scan과 representative workload canary를 수행하는 단계. 3단계는 SLO와 rollback drill을 통과한 node pool부터 확장하는 단계임.",
+          "body": "1단계는 cluster와 client library가 요청하는 Metrics API version, metrics implementation, HPA configuration, custom/external metric dependency를 inventory하는 단계. 2단계는 staging에서 v1 discovery와 v1beta1 fallback, metric freshness, HPA scaling을 workload별로 replay하는 단계. 3단계는 managed provider 지원 상태와 rollback 조건을 충족한 cluster부터 점진 전환하는 단계임.",
           "items": [
-            "1단계: kube-proxy·cgroup·static Pod·API version·CNI/CSI·add-on dependency matrix 작성",
-            "2단계: HPA·StatefulSet·batch·GPU/DRA·SELinux volume·network policy regression 검증",
-            "3단계: control plane/node pool 순서·freeze window·rollback owner·backup/restore evidence 기록"
+            "1단계: API consumer·metrics-server version·APIService·HPA metric type·managed support matrix 작성",
+            "2단계: normal/peak load에서 metric age·HPA reaction·Pod scheduling·application SLO·rollback을 canary 비교",
+            "3단계: client deprecation 일정·fallback 종료 조건·alert threshold·incident owner를 change record로 고정"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트와 강조 메세지",
-          "body": "**Kubernetes release note는 migration plan이 아니라 migration input임**. platform 팀은 component matrix와 rollback을, application 팀은 workload correctness·recovery·resource behavior를 함께 승인해야 함.",
+          "body": "**Stable API는 monitoring과 autoscaling의 입력 계약을 단단하게 만들지만, capacity correctness를 대신하지 않음**. 개발팀은 saturation과 workload SLI를, 플랫폼팀은 metric pipeline·HPA behavior·access control을 같은 scale test에서 증명해야 함.",
           "items": [
-            "체크리스트: managed service availability·node image·CNI/CSI·ingress·service mesh·security agent 지원 여부 확인",
-            "체크리스트: ipvs 대체 path·cgroups v2·static Pod bootstrap·metrics/HPA·DRA·SELinux regression 확인",
-            "팀 액션: 다음 upgrade 전에 cluster별 dependency inventory와 canary/rollback 결과를 change record로 보존"
+            "체크리스트: `v1.metrics.k8s.io` availability·metrics-server 지원·API client compatibility·HPA version path 확인",
+            "체크리스트: metric age·missing series·HPA reaction·pending Pod·rate/queue/GPU custom metric과 workload SLO 상관관계 확인",
+            "팀 액션: 다음 cluster upgrade 전에 representative service의 load/metric failure/rollback 결과를 autoscaling release evidence로 보존"
           ]
         }
       ]
