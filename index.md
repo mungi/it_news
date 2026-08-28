@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-28 | Total pages: 314
+> Last updated: 2026-08-29 | Total pages: 316
 
 ## Entities
 
@@ -32,6 +32,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-cloudwatch-agent-journald-2026-08-29]] — CloudWatch agent의 native journald 수집과 structured metadata·filter·권한·비용 검증 경계.
+- [[raw/articles/cloudflare-1111-dns-cache-memory-optimization-2026-08-28]] — 1.1.1.1 DNS cache 2,500억 entry의 memory layout·100 TB 절감·latency 검증 경계.
 - [[raw/articles/aws-redshift-streaming-kds-10mib-2026-08-28]] — Redshift streaming ingestion의 KDS 10 MiB record 지원과 payload·throughput·지연·비용 검증 경계.
 - [[raw/articles/aws-drs-recovery-plans-2026-08-28]] — AWS DRS Recovery Plans의 서버 순서·승인·비중단 drill과 RTO/RPO 검증 경계.
 - [[raw/articles/aws-redshift-agent-toolkit-2026-08-28]] — Amazon Redshift AWS Agent Toolkit 통합의 MCP·SQL·migration 권한·감사·비용 운영 경계.

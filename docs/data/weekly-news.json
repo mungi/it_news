@@ -2,13 +2,13 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-08-29 01:25",
+  "last_updated_kst": "2026-08-29 05:27",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Amazon CloudWatch agent가 Linux `journald`를 직접 읽어 CloudWatch Logs로 전송: file export 없이 systemd unit·priority·process metadata와 field/regex filter를 활용할 수 있음. journal 권한·민감 field redaction·cursor restart·delivery lag·GB/day·retention/KMS는 file-tail 경로와 canary 비교 필요.",
+    "Cloudflare Big Pineapple DNS cache는 immutable entry layout 최적화로 per-entry footprint를 953 B에서 420 B로 낮추고 fleet working set 약 100 TB를 절감. 2,500억 entry 규모의 결과이므로 타 환경에 수치를 환산하지 말고 allocation·p99 memory·hit/eviction·tail latency·upstream load를 함께 검증 필요.",
     "AWS Elastic Disaster Recovery가 Recovery Plans를 추가: 다중 서버 애플리케이션의 recovery·drill 시작 순서, step별 wait, human approval, 진행 상태를 하나의 실행 절차로 관리 가능. application dependency·data consistency·traffic cutover·RTO/RPO는 자동 보증이 아니므로 non-disruptive drill의 증적으로 release gate를 구성 필요.",
-    "AI타임스 보도 기준 엔비디아의 허깅페이스 인수 합의는 모델 허브·inference·artifact 공급망의 집중도를 다시 점검할 신호이며, 공식 거래·제품·계약 변경은 별도 확인 필요.",
     "Z.ai `GLM-5.3-Flash` 공개: total 320B·active 18B의 native multimodal MoE와 hybrid attention·`IndexPool`을 제시. 공식 수치인 attention compute 3.0배·layer당 BF16 KV cache 4.4배 감소 및 task당 할인 가격 $0.045는 vendor-reported 결과이므로 model revision·context·tool harness·cache·batch를 고정한 task success·TTFT/TPOT·p95/p99·token당 비용·fallback 비교 필요.",
-    "AWS Lambda Node.js 26·Python 3.15 managed runtime public preview: GA 전 breaking change가 가능한 기간에 workload·observability·IaC·deployment framework를 검증할 수 있음. preview는 SLA·Technical Support 대상이 아니며 같은 runtime identifier의 자동 GA 승격 전 dependency·native extension·cold start·telemetry·rollback canary가 필요.",
     "Amazon Redshift streaming ingestion이 Kinesis Data Streams의 record 상한을 1 MiB에서 10 MiB로 확대: 대형 payload의 split/reassembly 단계를 줄일 수 있지만, shard throughput·producer retry·ingest lag·parse error·Redshift queue/compute·completed-record 비용은 payload-size bucket별 canary로 기존 pipeline과 비교 필요."
   ],
   "deep_dives": [
@@ -181,8 +181,86 @@
   ],
   "items": [
     {
+      "id": "news-395",
+      "title_ko": "Amazon CloudWatch agent의 journald 네이티브 수집: 파일 export 없이 structured Linux 로그를 필터링·비용 관리",
+      "title_original": "Amazon CloudWatch agent adds support for journald logs",
+      "summary": "- 공개: Amazon CloudWatch agent가 Linux systemd journal(`journald`)을 직접 읽어 CloudWatch Logs로 전송하는 기능 추가\n- 변화: Amazon Linux 2023처럼 `/var/log/messages`를 기본 생성하지 않는 systemd 기반 환경에서 journal을 파일로 export하는 별도 경로 제거\n- 메타데이터: systemd unit·priority·process 정보를 보존하고 unit·priority·journal field·정규식 필터 적용 가능\n- 범위: 모든 AWS Commercial Region과 GovCloud(US)에서 지원, CloudWatch Logs 수집 표준 요금 적용\n- 팀 액션: agent upgrade 전 journal 권한·필터 순서·PII/secret redaction·retention·ingestion volume·delivery lag를 file-tail 경로와 canary 비교 필요",
+      "detail": "AWS는 2026년 8월 28일 Amazon CloudWatch agent가 Linux의 systemd journal(journald) 로그를 직접 수집해 Amazon CloudWatch Logs로 전송할 수 있다고 공지했다. 기존에는 journald 로그를 먼저 디스크 파일로 export한 뒤 agent가 tail하는 추가 구성이 필요했다. 새 경로는 systemd unit, priority, process 등 journald의 structured metadata를 보존하며, unit·priority·journal field match와 publish 전 정규식 필터를 지원한다. Amazon Linux 2023처럼 traditional text log를 기본 생성하지 않는 Linux 환경의 수집 구성을 단순화하는 범위다. 지원은 모든 AWS Commercial Region과 GovCloud(US)이며 CloudWatch Logs ingestion에는 표준 요금이 적용된다. 공지는 agent별 journal 접근 권한, structured field의 민감정보 노출, filter rule의 정확성·순서, log delivery 지연·유실, retention·KMS·cross-account 전송, 실제 ingestion 비용을 보증하지 않는다. 운영 전 representative instance에서 기존 file-tail과 journald 경로의 event count·metadata completeness·filter false positive/negative·delivery lag·GB/day·query cost·rollback을 비교해야 한다.",
+      "why_it_matters": "로그 수집 경로가 파일 tail에서 journal API로 바뀌면 구조화 필드와 filtering 위치, 접근 권한, 비용 단위가 함께 달라짐. file export 단계를 없애도 CloudWatch Logs의 volume·retention·query·민감정보 통제는 별도 운영 계약으로 남음.",
+      "engineering_implication": "agent configuration을 versioned IaC로 관리하고 service unit·priority·field match·regex filter별 allow/deny 이유를 테스트해야 함. canary에서 journal cursor 재시작·rotation·burst·agent failure를 주입해 event count, metadata, delivery lag, dropped record, ingestion GB, retention/KMS와 rollback을 release evidence로 남겨야 함.",
+      "korea_implication": "국내 리전·계정의 실제 CloudWatch agent 지원 버전과 journal field에 포함되는 사용자 식별자·IP·명령행·애플리케이션 payload를 점검하고, 개인정보·보안 로그 보존 정책에 맞춘 redaction·KMS·access role을 적용해야 함.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Amazon CloudWatch",
+        "CloudWatch Agent",
+        "journald",
+        "systemd",
+        "Linux",
+        "Observability",
+        "Logging",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-08-29 01:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-cloudwatch-agent-journald/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "CloudWatch agent configuration reference",
+          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-Configuration-File-Details.html"
+        },
+        {
+          "title": "Amazon CloudWatch pricing",
+          "url": "https://aws.amazon.com/cloudwatch/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS What’s New RSS의 exact timestamp `Fri, 28 Aug 2026 16:00:00 GMT`와 canonical announcement를 직접 확인해 KST `2026-08-29 01:00`으로 기록. Amazon CloudWatch agent가 Linux systemd journal(`journald`) entry를 파일 export 없이 CloudWatch Logs로 전송하는 공식 발표임.",
+          "items": [
+            "대상: Amazon Linux 2023처럼 traditional text log를 기본 생성하지 않는 systemd 기반 Linux 환경",
+            "변화: journal을 disk file로 export한 뒤 agent가 tail하던 별도 수집 경로 축소"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "새 수집 경로는 journald가 저장한 systemd unit·priority·process 정보를 유지함. configuration에서 systemd unit, journal priority level, journal field match로 entry를 고르고 publish 전에 regular expression filter를 적용할 수 있음.",
+          "items": [
+            "메타데이터: unit·priority·process 정보 보존으로 service별 탐색과 routing 조건 구성 가능",
+            "필터: unit·priority·field match와 regex filter를 조합해 noise와 log volume 제어",
+            "범위: 모든 AWS Commercial Region 및 AWS GovCloud(US) 지원, CloudWatch Logs 표준 수집 요금 적용"
+          ]
+        },
+        {
+          "heading": "수집 계약·보안 경계",
+          "body": "native journal read는 log field의 민감도와 agent privilege를 없애지 않음. journal에는 command line, user/session, IP, application payload가 섞일 수 있으며, field match 또는 regex가 기대대로 redaction·drop을 수행하는지는 workload별로 검증해야 함.",
+          "items": [
+            "권한: CloudWatch agent service account의 journal access와 CloudWatch Logs write role을 least privilege로 분리",
+            "보호: PII·secret·token 후보 field를 inventory하고 ingest 전 redaction, log group KMS, retention, read RBAC를 확인",
+            "경계: AWS 공지는 filter rule 정확성·log delivery completeness·cross-account path·보존 정책을 자동 보증하지 않음"
+          ]
+        },
+        {
+          "heading": "비용·신뢰성·운영 시사점",
+          "body": "파일 export 제거는 storage I/O와 configuration을 줄일 수 있지만 CloudWatch Logs ingestion·retention·query 비용 또는 burst 시 delivery lag를 자동으로 낮추지 않음. journal cursor·agent restart·host reboot·high-volume service를 포함한 canary가 필요함.",
+          "items": [
+            "측정: service/unit별 event count·metadata completeness·filter drop·delivery lag·dropped record·ingestion GB/day·query cost 기록",
+            "장애 훈련: agent restart·journal rotation·disk pressure·network interruption·burst traffic 뒤 cursor continuity와 duplicate/missing event 확인",
+            "팀 액션: 기존 file-tail과 native journald 경로를 병행 비교한 뒤 filter·retention·KMS·rollback owner를 IaC change record로 고정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-394",
-      "rank": 1,
+      "rank": 2,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -258,7 +336,7 @@
     },
     {
       "id": "news-392",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -326,7 +404,7 @@
     },
     {
       "id": "news-393",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -398,8 +476,90 @@
       ]
     },
     {
+      "id": "news-396",
+      "title_ko": "Cloudflare 1.1.1.1 DNS cache 최적화: 2,500억 entry에서 100 TB 절감과 lookup latency 19% 감소",
+      "title_original": "How we saved 100 terabytes of memory by optimizing 1.1.1.1’s DNS cache",
+      "summary": "- 결과: Cloudflare Big Pineapple DNS cache의 entry당 memory footprint를 **953 B→420 B(-56%)**로 낮춰 fleet working set 약 100 TB 절감\n- 성능: cache insert throughput 625,000→893,000 entries/s(+43%), lookup latency 828→670 ns(-19%)라는 production/benchmark 결과 공개\n- 설계: immutable entry의 `Vec`/`String`을 boxed slice/string으로 전환, section list 통합·offset 사용, owner 생략, record data의 packed wire-format 저장 적용\n- 조건: 결과는 1.1.1.1·Gateway DNS·DNS Firewall 등을 제공하는 Big Pineapple의 traffic mix·allocator·cache policy·rollout 조건에 묶인 값\n- 팀 액션: 대규모 cache는 per-entry allocation·padding·capacity·pointer locality를 p99 resident memory와 hit rate·tail latency·eviction·upstream load로 함께 계측 필요",
+      "detail": "Cloudflare는 2026년 8월 27일 1.1.1.1, Gateway DNS, DNS Firewall 등의 Big Pineapple DNS platform에서 2,500억 개가 넘는 cache entry를 저장하는 환경의 메모리 최적화 결과를 공개했다. 다섯 가지 layout 변경으로 entry당 net footprint를 953 bytes에서 420 bytes로 56% 줄였고, fleet working set은 약 100 TB 감소했다. insert throughput은 625,000에서 893,000 entries/s로 43% 증가했고 lookup latency는 828 ns에서 670 ns로 19% 낮아졌다. 변경에는 immutable response에서 `Vec`/`String`의 capacity와 over-allocation을 제거하는 boxed slice/string, answer·authority·additional section의 list 통합과 offset, queried domain과 같은 record owner 생략, large enum variant boxing의 locality 비용을 줄이는 packed wire-format record buffer가 포함된다. Cloudflare의 benchmark traffic mix는 A 56%, AAAA 25%, TXT 19%이며 entry당 1~4 records로 production을 근사한 조건이다. 수치는 Cloudflare fleet·jemalloc·DNS response 구성·ECS·cache occupancy에 따른 결과이므로 다른 DNS resolver, CDN cache, application cache에 그대로 환산할 수 없다. 대규모 cache 운영은 allocation size뿐 아니라 p99 resident memory, insert/lookup latency, hit rate, eviction, upstream query volume, CPU cache miss, allocator fragmentation을 rollout 단위로 함께 검증해야 한다.",
+      "why_it_matters": "대규모 cache의 비용은 알고리즘 복잡도만이 아니라 object layout·alignment padding·capacity slack·heap locality가 누적돼 결정됨. immutable data의 표현을 바꾸면 memory와 CPU cache locality를 함께 개선할 수 있지만 serialization·random access·DNSSEC 같은 protocol constraint를 분리해 검증해야 함.",
+      "engineering_implication": "hot cache의 profile에는 allocation count/size, resident memory percentile, cache hit/eviction, CPU cache miss, insert rate, lookup p95/p99를 함께 포함해야 함. layout 변경은 production traffic distribution과 allocator 상태에서 shadow/canary로 검증하고, response correctness·TTL·DNSSEC·ECS variant·rollback을 release gate로 유지해야 함.",
+      "korea_implication": "국내 DNS·CDN·API gateway·in-memory cache 운영팀은 fleet 평균만으로 capacity를 산정하지 말고, 트래픽·record mix·ECS·regional peak와 p99 resident memory를 기준으로 memory headroom·upstream query·장애 시 eviction을 점검해야 함.",
+      "category": "Infra",
+      "tags": [
+        "Cloudflare",
+        "1.1.1.1",
+        "DNS",
+        "Cache",
+        "Rust",
+        "Performance",
+        "Memory",
+        "Observability",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-08-28 02:02",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/dns-cache-memory-optimization-1111/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1185AQ3B90700DKB48C2HHM.png",
+      "local_image": "assets/images/news-396.png",
+      "related_links": [
+        {
+          "title": "How Rust and Wasm power Cloudflare's 1.1.1.1",
+          "url": "https://blog.cloudflare.com/rust-wasm-1-1-1-1/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare Blog canonical post와 RSS exact timestamp `Thu, 27 Aug 2026 17:02:35 GMT`를 직접 확인해 KST `2026-08-28 02:02`로 기록. Big Pineapple은 1.1.1.1·Gateway DNS·DNS Firewall·AS112 등 뒤에서 2,500억 개 이상 DNS cache entry를 저장하며, 다섯 가지 in-memory layout 변경 결과를 공개함.",
+          "items": [
+            "결과: entry당 net footprint **953 B→420 B**, per-entry allocation **1.1 KB→461 B**로 축소",
+            "fleet: rollout 안정화 뒤 aggregate working-set memory 약 100 TB 절감, Gen 13 server 130대 RAM 규모"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "response는 cache 저장 뒤 변경되지 않는다는 특성을 이용해 `Vec<T>`·`String`의 capacity field와 excess allocation을 `Box<[T]>`·`Box<str>`로 대체함. answer·authority·additional을 단일 list와 `u16` offset으로 합치고, query domain과 같은 record owner는 read time에 복원하며, record data는 packed wire buffer로 저장함.",
+          "items": [
+            "layout: entry의 8개 Vec/String field 교체로 field당 8 B capacity overhead와 reserve space 축소",
+            "record: A/AAAA 같은 작은 variant의 enum padding 및 large variant의 heap fragmentation·pointer chasing 감소",
+            "protocol: CNAME·NS·MX·SOA처럼 domain name compression이 필요한 record만 parsing하고 다수 record는 encoded bytes 직접 복사"
+          ]
+        },
+        {
+          "heading": "측정 방법과 성능 결과",
+          "body": "benchmark는 A 56%, AAAA 25%, TXT 19%, entry당 1~4 records의 traffic distribution으로 cache를 채우고 custom allocator로 allocation 수와 size를 기록함. production에서는 2026-05-18부터 07-06까지 rollout한 instance의 resident memory percentile을 별도 확인함.",
+          "items": [
+            "처리량: cache insert throughput **625,000→893,000 entries/s(+43%)**",
+            "지연: cache lookup latency **828 ns→670 ns(-19%)**, packed data와 locality 개선 영향",
+            "주의: benchmark input은 production 근사치이며 traffic mix·occupancy·allocator state·cache 외 process memory에 따라 결과 변동"
+          ]
+        },
+        {
+          "heading": "아키텍처·운영 시사점",
+          "body": "memory 절감만을 목표로 record를 wire-format으로 전부 저장하면 DNSSEC DO flag variant와 lookup 시 parsing 비용이 생김. Cloudflare는 structured metadata와 raw record buffer의 중간 지점을 택했으며, random indexing이 어려워지는 trade-off를 record count가 작다는 전제로 수용함.",
+          "items": [
+            "설계: immutable hot path는 capacity slack·alignment·pointer count·data locality를 data model review 항목으로 관리",
+            "관측: p90/p98/p99 resident memory, allocation histogram, cache hit/eviction, insert/lookup latency, upstream query volume 동시 기록",
+            "검증: ECS variant·TTL·DNSSEC·CNAME path·allocator fragmentation·restart warm-up을 shadow traffic과 canary에서 비교"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Cloudflare의 절대 수치를 다른 fleet의 savings로 환산하면 안 되지만, byte 단위의 object-layout 비용이 수천억 cache entry에서 capacity·latency·upstream load를 함께 바꾼다는 재현 가능한 운영 교훈을 제공함.",
+          "items": [
+            "피할 것: average object size 또는 microbenchmark만으로 cache capacity·SLO·hardware refresh 결정을 내리는 방식",
+            "팀 액션: 대표 cache workload에서 immutable object layout 변경 전후의 correctness·p99 memory·CPU cache miss·hit rate·tail latency·rollback을 같은 release evidence로 보존"
+          ]
+        }
+      ],
+      "rank": 5
+    },
+    {
       "id": "news-391",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -537,7 +697,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-389",
@@ -605,7 +765,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-384",
@@ -670,7 +830,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-383",
@@ -734,7 +894,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-386",
@@ -800,7 +960,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-387",
@@ -864,7 +1024,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-385",
@@ -938,7 +1098,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-382",
@@ -1001,7 +1161,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-381",
@@ -1064,11 +1224,11 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-380",
-      "rank": 14,
+      "rank": 16,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -1145,7 +1305,7 @@
     },
     {
       "id": "news-336",
-      "rank": 15,
+      "rank": 17,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -1306,7 +1466,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-378",
@@ -1392,7 +1552,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-376",
@@ -1483,7 +1643,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-375",
@@ -1560,7 +1720,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-372",
@@ -1634,7 +1794,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-373",
@@ -1702,7 +1862,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-374",
@@ -1779,7 +1939,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-371",
@@ -1853,7 +2013,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-370",
@@ -1931,7 +2091,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-366",
@@ -2017,7 +2177,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-364",
@@ -2086,7 +2246,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-365",
@@ -2155,7 +2315,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-368",
@@ -2231,7 +2391,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-361",
@@ -2307,7 +2467,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-363",
@@ -2384,7 +2544,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-360",
@@ -2465,7 +2625,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-362",
@@ -2542,7 +2702,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-367",
@@ -2618,7 +2778,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-357",
@@ -2699,7 +2859,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-359",
@@ -2775,7 +2935,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-358",
@@ -2851,7 +3011,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-355",
@@ -2927,7 +3087,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-354",
@@ -3004,7 +3164,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-356",
@@ -3080,7 +3240,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-353",
@@ -3156,7 +3316,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-369",
@@ -3232,7 +3392,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-351",
@@ -3309,7 +3469,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-350",
@@ -3385,7 +3545,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-349",
@@ -3469,7 +3629,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-348",
@@ -3546,7 +3706,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-377",
@@ -3620,7 +3780,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-347",
@@ -3705,7 +3865,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-346",
@@ -3779,156 +3939,7 @@
           ]
         }
       ],
-      "rank": 48
-    },
-    {
-      "why_it_matters": "AI coding agent의 장시간 세션은 모델 응답 품질과 별개로 클라이언트 상태·네트워크 요청·메모리·작업 재개 경험이 생산성과 운영 비용을 좌우함.",
-      "engineering_implication": "현재 배포 버전과 예정 릴리스를 분리하고, representative repository에서 turn 수별 UI load·renderer memory·request count·task completion·error·retry·p95 latency를 수집한 뒤 feature flag·rollback 기준으로 확대 필요.",
-      "korea_implication": "국내 개발 조직의 IDE·network proxy·endpoint memory 제한·한국어 코드 리뷰 workflow는 기사 테스트 조건에 포함되지 않아 managed cohort에서 별도 재현 필요.",
-      "category": "DevTools",
-      "tags": [
-        "OpenAI",
-        "Codex",
-        "Coding Agent",
-        "Long-running Session",
-        "Observability",
-        "Performance"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 89,
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214016",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214016_217632_3326.jpg",
-      "local_image": "assets/images/news-345.jpg",
-      "related_links": [],
-      "id": "news-345",
-      "title_ko": "OpenAI Codex 장시간 세션 개선 예고: 741턴 테스트에서 로딩 27.6초→1.7초라는 보도",
-      "title_original": "OpenAI Codex long-running session performance update preview",
-      "published_kst": "2026-08-17 17:34",
-      "summary": "- 예고: AI타임스가 OpenAI 개발자 Andrew Ambrosino의 8월 14일 게시물을 인용, Codex 장시간 작업 성능 개선을 이번 주 적용 예정이라고 보도\n- 수치: 기사 기준 **741턴 대화 테스트**에서 로딩 27.6초→1.7초, renderer memory 증가량 약 88% 감소, server-client 요청 약 98% 감소\n- 범위: 수치는 공개된 내부 Slack 메시지 인용과 특정 장시간 테스트의 출시 전 결과이며 version·OS·repo·작업 성공률·SLO·GA 일정은 미확인\n- 팀 액션: release note와 실제 배포 version을 확인한 뒤 long-running task의 load·memory·request·retry·completion·rollback을 feature flag canary로 비교 필요",
-      "detail": "AI타임스는 2026-08-17 17:34 KST에 OpenAI 개발자 Andrew Ambrosino가 공개한 내부 Slack 메시지를 인용해 Codex의 장시간 작업 성능 개선이 이번 주 진행될 예정이라고 보도했다. 기사 범위에서 741턴 장시간 대화 테스트의 로딩 시간은 27.6초에서 1.7초로 줄었고, renderer memory 증가량은 약 88%, server-client 요청 횟수는 약 98% 감소했다. 이는 발표 전 특정 테스트의 수치다. 실제 릴리스 version, 적용 클라이언트·플랜·OS, 741턴의 task 구성, 저장소 크기, 모델·tool·network 조건, task completion, 오류율, p95/p99, memory 절대량, rollout/rollback과 SLA는 직접 확인하지 못했다. 따라서 수치를 일반적인 Codex 속도·비용·안정성 보증으로 확대하지 않는다.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "OpenAI 개발자가 공개한 내부 Slack 메시지를 AI타임스가 인용해 Codex의 장시간 작업 성능 개선 계획을 보도한 상황",
-          "items": [
-            "시점: AI타임스 기사 입력 `2026-08-17 17:34 KST`, 화면상 업데이트 표기 `18:36 KST`",
-            "상태: 기사 표현은 이번 주 예정된 업데이트이며 공개 release note 또는 GA 확인 범위 밖"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에서 제시한 장시간 대화 테스트 수치는 UI·클라이언트 측 병목 감소에 관한 제한된 evidence",
-          "items": [
-            "테스트: 741턴 장시간 대화에서 loading time `27.6초→1.7초`라는 기사 수치",
-            "메모리: renderer memory 증가량 약 `88%` 감소라는 기사 수치",
-            "통신: server-client 요청 횟수 약 `98%` 감소라는 기사 수치"
-          ]
-        },
-        {
-          "heading": "증거 경계",
-          "body": "인용된 내부 메시지와 특정 테스트 결과는 production availability·개별 저장소 성능·업무 완료율을 증명하지 않는 범위",
-          "items": [
-            "미확인: 적용 version·client/OS·plan·rollout cohort·GA 일정·rollback 조건",
-            "미확인: repository 규모·task definition·model·context·tool·network·cache·memory 절대값",
-            "피할 것: preload 개선 수치를 code correctness·agent autonomy·SLO·비용 절감 보증으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "아키텍처·운영 영향",
-          "body": "장시간 agent 세션은 UI와 renderer만이 아니라 context growth·tool trace·file diff·network retry·checkpoint 복구가 결합된 운영 경로",
-          "items": [
-            "계측: turn 수별 UI load·renderer memory·request count·tool latency·retry·task completion을 correlation ID로 연결",
-            "통제: client update와 model/prompt/tool policy 변경을 하나의 deployment로 묶지 않고 change record 분리"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "출시 전 benchmark headline보다 실제 조직의 long-running coding workflow에서 성능 회귀와 실패 복구를 확인해야 하는 변경",
-          "items": [
-            "검증: managed cohort에서 대표 repo·test·refactor 작업의 p50/p95·memory peak·completion·human correction 비교",
-            "운영: feature flag·memory threshold·error budget·version pin·rollback owner를 release gate에 기록",
-            "피할 것: 요청 수 감소만으로 egress·telemetry·data handling 또는 사용자 생산성 개선을 단정하는 배포"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-344",
-      "rank": 50,
-      "title_ko": "DeepSeek-V4 Flash 하네스 비교 보도: 동일 모델도 tool orchestration에 따라 완료율·성공비용·지연이 달라짐",
-      "title_original": "DeepSeek-V4 Flash agent harness benchmark",
-      "summary": "- 검증: AI타임스가 보도한 Composio 평가는 Gmail·GitHub·Slack·Google Sheets를 쓰는 **30개 다단계 업무**를 Claude Code·Codex·OpenCode·Oh My Pi 하네스에서 총 240회 실행\n- 품질: 과제 완료율은 하네스별 46.7~56.7%, 모든 환경에서 완료된 과제는 30개 중 6개라는 보도 수치\n- 비용·지연: 성공 1회당 평균 비용은 Oh My Pi 0.073달러·Claude Code 0.195달러, 평균 수행 시간은 Claude Code 122.7초·Oh My Pi 272.4초라는 보도 수치\n- 증거 경계: Composio 원 실험, task 정의·계정·prompt·model revision·tool 권한·재시도 정책·통계 방법은 직접 확인하지 않아 일반 성능·SLO·ROI 보증으로 확대 불가\n- 팀 액션: 모델 선정과 별도로 harness별 task success·tool failure·retry·token·성공비용·p95 latency·approval/egress를 동일 workload에서 canary 측정 필요",
-      "detail": "AI타임스는 2026-08-17 10:17 KST에 Composio가 DeepSeek-V4 Flash를 Claude Code·Codex·OpenCode·Oh My Pi 네 가지 agent harness에서 비교한 결과를 보도했다. Gmail·GitHub·Slack·Google Sheets를 쓰는 30개 다단계 업무를 총 240회 실행한 기사 설명 기준, 완료율은 하네스에 따라 46.7~56.7%로 벌어졌고 모든 하네스에서 완료된 과제는 6개뿐이었다. 성공 1회당 평균 실행비용은 Oh My Pi 0.073달러, Claude Code 0.195달러로 제시됐으며 평균 실행 시간은 Claude Code 122.7초, Oh My Pi 272.4초로 보도됐다. 이는 AI타임스가 소개한 Composio 실험 결과 범위다. 직접 확인하지 못한 원 실험의 task 세부, 계정·권한, prompt/model revision, tool schema, retry·timeout, 비용 산식, 표본 변동, 재현 artefact는 조직별 성능·SLO·ROI 증거가 아님.",
-      "why_it_matters": "agent 도입 비용과 신뢰성은 model API 선택만으로 결정되지 않음. tool orchestration, context 전달, retry, approval, timeout이 바뀌면 같은 모델에서도 업무 완료율·성공당 비용·응답 시간이 동시에 변할 수 있음.",
-      "engineering_implication": "대표 업무·고정 model revision·동일 tool permission으로 harness A/B canary를 구성하고, task success·partial failure·retry·token·성공비용·p95 latency·human intervention·egress/approval event를 correlation ID로 함께 비교 필요.",
-      "korea_implication": "국내 업무 도구와 한국어 prompt를 포함한 실제 tenant·identity·data residency 조건은 이번 보도에서 검증되지 않음. 도입 전 사내 SaaS connector·권한 위임·감사 로그·비용 청구 조건을 별도 재현 필요.",
-      "category": "DevTools",
-      "tags": [
-        "DeepSeek",
-        "Agent Harness",
-        "Tool Orchestration",
-        "Benchmark",
-        "FinOps",
-        "AI Agent"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-08-17 10:17",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214019",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214019_217636_114.png",
-      "local_image": "assets/images/news-344.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 Composio의 DeepSeek-V4 Flash agent harness 비교 결과를 2026-08-17 10:17 KST에 보도. 같은 모델을 네 개 실행 환경에서 실제 업무 도구 연동 과제로 평가했다는 기사 범위의 정보.",
-          "items": [
-            "대상: Claude Code·Codex·OpenCode·Oh My Pi 네 가지 agent harness",
-            "범위: Gmail·GitHub·Slack·Google Sheets를 활용하는 30개 다단계 업무, 총 240회 workflow 실행이라는 기사 설명"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "보도 수치상 하네스별 과제 완료율은 46.7~56.7%였고, 모든 환경에서 예외 없이 성공한 과제는 30개 중 6개. 동일 모델이라도 orchestration 구현에 따라 성공률 분포가 달라진 결과.",
-          "items": [
-            "완료율: Oh My Pi 환경 56.7%, OpenCode 환경 46.7%라는 기사 수치",
-            "과제: Oh My Pi에서 30개 중 17개, OpenCode에서 14개 완료라는 기사 수치",
-            "공통 성공: 네 환경 모두에서 완수된 업무는 6개라는 기사 수치"
-          ]
-        },
-        {
-          "heading": "비용·지연 trade-off",
-          "body": "성공 1회당 비용과 평균 실행 시간도 같은 방향으로 움직이지 않았다는 보도. 최고 완료율 환경이 최단 지연 환경과 일치하지 않아 단일 benchmark 점수로 선택하기 어려운 조건.",
-          "items": [
-            "비용: 성공 1회당 Oh My Pi 평균 0.073달러, Claude Code 평균 0.195달러라는 기사 수치",
-            "지연: Claude Code 평균 122.7초, Oh My Pi 평균 272.4초라는 기사 수치",
-            "비교: 비용·완료율·응답시간은 같은 단일 최적화 지표로 환산할 수 없는 운영 변수"
-          ]
-        },
-        {
-          "heading": "증거 경계",
-          "body": "직접 확인한 것은 AI타임스 기사 본문과 기사에 인용된 Composio 평가 설명. 원 실험 artefact와 재현 조건은 이번 확인 범위 밖이므로 일반 성능 또는 조직별 ROI 보증으로 해석할 수 없음.",
-          "items": [
-            "미확인: 원 task definition·prompt·model revision·account·connector permission·tool schema·retry/timeout·sampling·통계 방법",
-            "미확인: 데이터 처리·secret 접근·egress·SLA·요금 청구 방식·한국어 업무 품질",
-            "분리: 240회 실행 결과는 다른 workload·권한·provider·harness version의 결과를 대체하지 않음"
-          ]
-        },
-        {
-          "heading": "왜 중요한가와 시사점",
-          "body": "agent 시스템의 변경 단위는 model ID 하나가 아니라 harness·tool·prompt/context·retry·approval·network policy의 조합. 도입 비교는 task 성공률만이 아니라 실패 경로와 통제 비용까지 포함해야 함.",
-          "items": [
-            "측정: 대표 업무별 task success·partial completion·tool error·retry·token·성공당 비용·p95 latency·human correction 수집",
-            "통제: tool permission·approval·secret redaction·network egress·audit retention을 harness별 동일 조건으로 고정",
-            "피할 것: 공개 benchmark의 평균 완료율 또는 성공비용 하나만으로 production harness와 권한 범위를 결정하는 배포"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }
