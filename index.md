@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-agentcore-memory-fine-grained-access-control-2026-08-29]] — AgentCore Memory Gateway·JWT·Cedar 기반 tenant memory 접근 제어와 claim·namespace·policy 검증 경계.
 - [[raw/articles/aws-cloudwatch-agent-journald-2026-08-29]] — CloudWatch agent의 native journald 수집과 structured metadata·filter·권한·비용 검증 경계.
 - [[raw/articles/cloudflare-1111-dns-cache-memory-optimization-2026-08-28]] — 1.1.1.1 DNS cache 2,500억 entry의 memory layout·100 TB 절감·latency 검증 경계.
 - [[raw/articles/aws-redshift-streaming-kds-10mib-2026-08-28]] — Redshift streaming ingestion의 KDS 10 MiB record 지원과 payload·throughput·지연·비용 검증 경계.
