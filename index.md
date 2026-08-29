@@ -317,6 +317,7 @@
 
 - [[raw/articles/aws-capacity-reservation-resource-groups-ec2-2026-08-26]] — EC2 Capacity Reservation Resource Group의 Capacity Blocks·interruptible 예약 통합과 fallback·FinOps 검증 경계.
 - [[raw/articles/aws-lambda-microvms-privatelink-2026-08-26]] — Lambda MicroVMs PrivateLink의 VPC endpoint·DNS·authorization·audit·비용 검증 경계.
+- [[raw/articles/anthropic-model-hardware-standard-research-preview-2026-08-29]] — Model Hardware Standard 연구 프리뷰의 MCP·driver·physical device control과 safety·authorization 검증 경계.
 
 - [[raw/articles/kubernetes-v1-37-garhwal-2026-08-26]] — Kubernetes v1.37 Garhwal의 feature graduation·cgroup v1/ipvs 수명주기와 upgrade 검증 경계.
 - [[raw/articles/kubernetes-v1-37-metrics-api-stable-2026-08-28]] — `metrics.k8s.io/v1` Stable 승격의 API client·HPA·metrics pipeline 검증 경계.
