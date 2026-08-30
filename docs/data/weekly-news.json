@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-08-30 22:14",
+  "last_updated_kst": "2026-08-31 02:22",
   "audience": "developers and engineers",
   "executive_summary": [
     "앤트로픽 Model Hardware Standard(MHS) 연구 프리뷰가 MCP·CLI·API와 표준 driver로 연구·제조 장비를 agent control plane에 연결하는 경로를 제시. `read`·`write` 공통화는 integration을 줄일 수 있지만 device identity·command allowlist·parameter bound·human approval·interlock·emergency stop·state/command audit를 장비별 canary에서 분리 검증 필요.",
@@ -14,175 +14,165 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Amazon Bedrock AgentCore Memory FGAC: agent memory 권한을 JWT claim·Cedar 정책의 검증 가능한 data plane으로 분리",
-      "summary": "핵심: Amazon Bedrock AgentCore Memory가 AgentCore Gateway의 OAuth JWT 인증과 Cedar policy로 user·tenant별 memory isolation을 적용. connector가 12개 Memory operation을 policy action/request attribute로 노출하지만, tenant claim·namespace mapping·token lifecycle·application 권한 검증은 팀의 책임으로 남음.",
-      "details": "AWS 공식 What’s New 원문과 RSS 발행 시각을 재검증해, AgentCore Memory의 FGAC를 application filter 대체가 아닌 identity·namespace·operation별 authorization contract로 분석한 Deep Dive",
-      "why_it_matters": "agent memory는 대화·선호·업무 문맥을 장기 보관할 수 있어 read 경로만이 아니라 write·search·delete와 namespace traversal까지 tenant boundary가 필요함. Gateway enforcement은 중앙 policy point를 제공하지만 잘못된 claim 또는 policy는 더 넓은 data exposure로 이어질 수 있음.",
+      "title": "Anthropic Model Hardware Standard 연구 프리뷰: agent tool contract를 물리 장비 control plane으로 확장할 때 필요한 안전 경계",
+      "summary": "핵심: Anthropic이 프로그래밍 가능한 연구·제조 장비를 `read`·`write` driver와 MCP·CLI·code API로 연결하는 Model Hardware Standard(MHS) 연구 프리뷰를 공개. 표준화가 integration을 줄일 수 있지만, physical `write`는 command authorization·parameter bound·human approval·hardware interlock·emergency stop을 별도 control로 증명해야 함.",
+      "details": "Anthropic 공식 원문의 Aug 27, 2026 발표와 MHS의 driver·device reference·MCP/CLI/code execution 모델을 검증해, 연구·제조 장비를 agent control plane에 연결할 때의 OT 안전·권한·관측성·단계적 도입 계약으로 재구성한 Deep Dive",
+      "why_it_matters": "agent tool call이 actuator까지 도달하면 오류·prompt injection·stale sensor·권한 오설정의 비용이 데이터 오류를 넘어 설비 손상·안전·품질 문제로 확대될 수 있음. MHS의 표준 interface는 device integration을 단순화하지만 권한과 fail-safe를 표준이 자동으로 해결하지는 않음.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/08/agentcorememory-fine-grained-access-control/"
+        "https://www.anthropic.com/news/model-hardware-standard-research-preview"
       ],
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-30 01:52",
+      "image_url": "https://cdn.sanity.io/images/4zrzovbb/website/5008271abbababe59f4fbb01998697f7dd0b5b60-1280x720.jpg",
+      "refreshed_kst": "2026-08-31 02:22",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**FGAC는 agent memory 앞에 cryptographic caller identity와 Cedar decision point를 추가하는 기능이며, tenant isolation의 정답을 자동 생성하는 기능이 아님**. gateway를 통과하는 요청의 claim·namespace·operation·policy version을 하나의 audit contract로 묶고 cross-tenant denial을 배포 조건으로 삼아야 함.",
+          "body": "**MHS는 장비 driver와 agent protocol을 표준화하는 연구 프리뷰이며, 물리 장비의 안전한 자율 제어를 보증하는 runtime이 아님**. `write` command를 모델 tool permission으로만 처리하지 말고 device identity·parameter limit·interlock·operator approval·stop path를 독립된 enforcement point로 설계해야 함.",
           "items": [
-            "결정: application query filter와 Gateway policy를 동시에 제거하지 말고 deny 결과를 병행 비교할 운영 과제",
-            "범위: user actor data·claim-derived namespace·caller별 Memory operation 제한을 infrastructure layer에서 적용 가능"
+            "결정: read telemetry와 physical write를 같은 tool permission tier로 묶지 않을 운영 원칙",
+            "출발점: programmable interface가 있는 장비와 제한된 scientific research·advanced manufacturing partner 대상 연구 프리뷰"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS What’s New canonical announcement와 RSS `Fri, 28 Aug 2026 20:00:00 GMT`를 직접 재확인해 발행 시각을 KST `2026-08-29 05:00`으로 사용함. 원문은 AgentCore Gateway에 OAuth JWT 인증을 구성하고 Cedar policy를 붙여 authenticated caller identity에 따라 Memory 접근을 제한하는 경로를 설명함.",
+          "body": "Anthropic Newsroom의 `Aug 27, 2026` 발표와 canonical source를 직접 확인. MHS는 microscope·liquid handler·robot arm 같은 복수 장비를 병렬로 다루고, drug-discovery experiment 또는 quantum-computer laser calibration 같은 작업을 지원하는 shared specification으로 설명됨.",
           "items": [
-            "사실: 각 user가 자신의 actor data만 접근하도록 제한하는 정책 패턴 제공",
-            "사실: user token claim에서 유도한 namespace의 memory record만 대상으로 제한 가능",
-            "사실: managed Memory connector가 Gateway target과 Memory data plane을 연결",
-            "사실: **12개 Memory operation**을 Cedar action과 policy condition용 request attribute로 노출"
+            "사실: Anthropic과 HHMI Janelia Research Campus 협업에서 development 시작",
+            "사실: 장비별 bespoke integration에 수주~수개월이 걸리던 작업을 시간 또는 분 단위로 줄이는 목표 제시",
+            "사실: science·robotics·electronics·manufacturing partner와 safety evaluation·best practice를 만들고 open source 이전 research preview 운영"
+          ]
+        },
+        {
+          "heading": "driver·device contract 관점",
+          "body": "MHS driver는 OS와 hardware device 사이를 번역하고 `read`와 `write` primitive로 command를 표현함. device가 측정할 수 있는 항목, 조정 가능한 parameter, enforced safety limit을 reference file로 제공해 agent가 처음 보는 장비도 operation context를 갖도록 하는 구조임. 자연어 tag는 편의 기능이지 safety policy의 authoritative source가 아님.",
+          "items": [
+            "구성: device discovery·characteristics·measurement·adjustment·safety-limit metadata를 versioned asset으로 관리",
+            "통제: driver version·firmware revision·calibration state·allowed range가 change record 없이 달라지지 않도록 서명·review 적용",
+            "피할 것: manual 또는 agent가 생성한 natural-language tag를 physical limit의 유일한 source of truth로 신뢰하는 구현"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent memory authorization은 prompt instruction이나 retrieval filter만으로 완성되지 않음. tool orchestration, session identity, long-term memory, administrative API가 서로 다른 caller·namespace·operation semantics를 가지므로 authorization decision을 data plane 앞에서 일관되게 실행할 지점이 필요함. FGAC는 그 지점을 제공하지만 policy input이 되는 identity binding의 정확성은 별도 설계 문제임.",
+          "body": "MHS는 agent가 매 step을 추론하지 않아도 driver command를 code file로 묶어 deterministic procedure를 실행하게 할 수 있음. 이는 latency를 줄이는 대신 generated procedure가 긴 시간 actuator를 제어할 수 있음을 뜻함. model reasoning, orchestration service, driver, PLC/robot controller, sensor feedback의 trust boundary와 failure owner를 각각 분리해야 함.",
           "items": [
-            "분리: authentication, claim normalization, tenant/actor/namespace binding, authorization, audit를 독립 control로 운영",
-            "경계: AWS 공지는 application authorization·business entitlement·cross-tenant migration correctness를 자동 보증하지 않음"
+            "분리: model planning·command compilation·device authorization·physical execution·safety shutdown을 서로 다른 control로 운영",
+            "검증: stale observation·wrong-device discovery·duplicate command·network partition·driver timeout·agent retry를 end-to-end fault injection으로 재현"
           ]
         },
         {
-          "heading": "identity·namespace 관점",
-          "body": "JWT의 `iss`·`aud`·`sub`·tenant claim·expiration은 gateway가 신뢰하는 identity contract여야 함. display name이나 mutable email을 namespace key로 쓰면 계정 병합·재가입·조직 이동에서 data boundary가 흔들릴 수 있음. immutable tenant ID와 actor ID를 canonical mapping으로 정하고 claim 누락·중복·forgery를 explicit deny로 처리해야 함.",
+          "heading": "안전·보안 관점",
+          "body": "원문은 안전 evaluation과 best practice를 partner와 개발한다고 밝히지만, user identity, command approval, emergency stop, network segmentation의 구체적 보증은 제시하지 않음. 특히 MCP tool description이나 sensor text가 untrusted input이 될 수 있으므로 prompt injection이 command selection·parameter mutation으로 이어지지 않게 해야 함.",
           "items": [
-            "설계: immutable tenant/actor identifier, namespace derivation rule, claim schema와 owner를 versioned specification으로 기록",
-            "검증: 정상 tenant·다른 tenant·missing/forged claim·expired/replayed token별 namespace escape attempt 실행",
-            "피할 것: client-supplied namespace 또는 prompt parameter를 authorization principal처럼 신뢰하는 구현"
+            "권한: device별 read·configuration write·motion·laser·fluid actuation·firmware operation을 allowlist와 risk tier로 분리",
+            "안전: parameter bound·rate limit·two-person approval·hardware interlock·emergency stop을 model path 밖에서 강제",
+            "감사: actor·agent/model version·driver·command·parameter·pre/post sensor state·approval·alarm·result를 동일 trace에 보존"
           ]
         },
         {
-          "heading": "Cedar policy·operation 관점",
-          "body": "12개 action을 하나의 broad allow로 묶으면 read isolation이 있어도 write·delete·search·administrative operation이 과권한이 될 수 있음. policy는 principal·action·resource·context를 action별로 검토하고 default-deny를 출발점으로 둬야 함. policy rollout 자체도 data access 변경이므로 reviewer, test fixture, rollback과 decision log가 필요함.",
+          "heading": "운영·FinOps·품질 관점",
+          "body": "표준화로 integration 공수는 줄 수 있으나 production cost는 sensor ingestion, command audit retention, simulator/digital twin, on-call·safety review, calibration failure와 downtime까지 포함해야 함. 자율 실험의 성공률만 보면 위험을 놓치므로 aborted command, interlock activation, override rate, false sensor reading, recovery time을 SLO로 같이 관리해야 함.",
           "items": [
-            "통제: action별 allowlist와 resource/namespace condition을 분리, wildcard grant를 예외 승인 대상으로 관리",
-            "검증: policy version별 allow·deny matrix, deny spike, evaluation error, connector failure와 rollback result 보존"
-          ]
-        },
-        {
-          "heading": "보안·개인정보·감사 관점",
-          "body": "memory에는 사용자 요청, 개인 선호, 업무 데이터의 파생 문맥이 쌓일 수 있음. authorization log가 caller·namespace·operation·decision을 남기지 않으면 incident 때 cross-tenant read 또는 deletion의 범위를 재구성하기 어려움. 로그 자체에 token 또는 원문 memory를 과도하게 남기지 않는 data minimization도 동시에 필요함.",
-          "items": [
-            "관측: request ID·caller pseudonymous ID·tenant·namespace·action·policy version·decision·latency를 trace로 연결",
-            "통제: token·memory payload redaction, retention·deletion·legal hold, read RBAC와 export 경로를 별도 검토",
-            "한국 조직 점검: 개인정보 처리·고객사 분리·감사 보존 기준과 claim field·memory retention 계약 정렬"
+            "측정: command success뿐 아니라 unsafe-command denial·override·interlock·device downtime·recovery latency를 release metric으로 설정",
+            "비용: lab/plant throughput 증가 주장과 별도로 validation fixture·shadow simulation·audit storage·operator review 비용을 workload unit에 귀속"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "첫 단계는 기존 memory path와 ACL을 inventory하고 tenant/actor/namespace canonical mapping을 합의하는 작업임. 둘째 단계는 read-only 또는 low-risk tenant에서 application filter와 Gateway decision을 shadow 비교하는 작업임. 마지막 단계는 action별 policy와 incident rollback을 배포 change record에 결합하는 작업임.",
+          "body": "첫 단계는 장비 capability·hazard·operator·network zone·current interlock을 inventory하는 작업임. 다음은 read-only discovery와 digital twin에서 driver output·command plan·telemetry completeness를 검증하는 작업임. supervised write를 거친 뒤에만 low-risk batch로 확대하고, autonomy 단계마다 rollback과 stop drill evidence를 release gate에 묶어야 함.",
           "items": [
-            "1단계: Memory operation별 caller·resource·namespace·data classification·current application ACL inventory",
-            "2단계: 12개 action의 allow/deny·claim mismatch·token expiry·gateway outage를 staging canary로 재현",
-            "3단계: policy reviewer·rollout owner·deny alert·rollback SLA·audit retention을 release gate로 고정"
+            "1단계: device identity·driver/firmware·allowed command·parameter range·safety owner·emergency procedure inventory",
+            "2단계: simulator에서 stale sensor·out-of-range input·wrong target·denied approval·network loss·retry storm 실행",
+            "3단계: supervised write canary의 approval latency·interlock event·manual override·rollback result를 안전 승인 조건으로 고정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**agent memory의 경계는 “모델이 올바르게 필터링할 것”이 아니라 “인증된 principal이 허용된 namespace의 허용된 operation만 수행했음”으로 증명해야 함**. 다음 배포 전 cross-tenant denial과 policy rollback trace를 실제 tenant fixture로 남기는 일이 우선임.",
+          "body": "**물리 장비 agent의 신뢰 기준은 “모델이 명령을 이해했음”이 아니라 “권한 있는 actor가 안전 범위 안의 장비에 승인된 command를 실행했고, 독립 interlock이 실패를 멈췄음”이라는 실행 증적임**. 첫 production integration 전 emergency-stop·wrong-device·stale-sensor drill을 실제 장비 또는 동등 simulator에서 통과시켜야 함.",
           "items": [
-            "팀 액션: application ACL 제거 전 Gateway policy decision과 application result의 shadow comparison 증적 확보",
-            "팀 액션: namespace mapping 변경을 schema migration과 같은 위험도로 취급해 approval·rollback·data access review 적용"
+            "팀 액션: MHS driver onboarding을 일반 MCP plugin 설치가 아닌 OT/robotics change-management 대상으로 분류",
+            "팀 액션: command authorization test와 hardware stop test를 한 release evidence bundle로 보존"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Kubernetes Pod Certificates·Cluster Trust Bundles GA: projected volume rotation을 실제 mTLS identity 계약으로 완성",
-      "summary": "핵심: Kubernetes v1.37의 Pod Certificates·Cluster Trust Bundles가 projected volume으로 X.509 credential과 trust anchor를 전달. kubelet이 key·PodCertificateRequest·refresh를 처리하지만 core signer는 없고 application reload도 자동이 아니므로 signer authorization·key custody·rotation·trust rollover를 별도 release gate로 검증해야 함.",
-      "details": "Kubernetes 공식 feature post와 Atom 발행 시각을 재검증해, Pod Certificates·Cluster Trust Bundles GA를 service account JWT와 구분되는 workload mTLS identity path 및 signer·application 운영 계약으로 분석한 Deep Dive",
-      "why_it_matters": "workload mTLS의 실패는 authentication outage 또는 unintended trust expansion으로 이어질 수 있음. API GA는 issuer·subject/SAN·key handling·reload·managed Kubernetes support를 정하지 않으므로 인증서 파일이 mount됐다는 사실만으로 서비스 identity가 안전하다고 결론낼 수 없음.",
+      "title": "AWS EC2 C8gn Paris 출시: Graviton4·600 Gbps 네트워크 SKU를 packet path·placement·비용 SLO로 검증",
+      "summary": "핵심: AWS가 Europe (Paris) Region에서 Graviton4 기반 EC2 C8gn을 제공하며 C7gn 대비 최대 30% compute performance와 network-optimized instance 중 최대 600 Gbps bandwidth를 발표. SKU 수치만으로 workload 성능을 결론내리지 말고 ENA/driver·packet size·PPS·flow distribution·placement·CPU affinity·cross-AZ cost·failure behavior를 traffic replay로 검증해야 함.",
+      "details": "AWS 공식 What’s New와 RSS 발행 시각을 재검증해, Paris Region의 C8gn availability를 network-intensive workload의 instance selection, packet-path observability, capacity·FinOps·rollout contract 관점으로 분석한 Deep Dive",
+      "why_it_matters": "고대역폭 network SKU는 virtual appliance, analytics, CPU-based inference처럼 network와 CPU가 함께 병목이 되는 workload의 scaling 방법을 바꿀 수 있음. 다만 advertised bandwidth는 instance type·traffic pattern·placement·OS tuning·peer capability·quota 조건을 벗어난 application throughput이나 p99를 보장하지 않음.",
       "sources": [
-        "https://kubernetes.io/blog/2026/08/28/kubernetes-v1-37-pod-certificates-and-cluster-trust-bundles/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-ec2-c8gn-europe-paris/"
       ],
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-08-30 01:52",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-08-31 02:22",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "**Pod Certificates와 Cluster Trust Bundles의 GA는 Kubernetes-native X.509 delivery·rotation API의 안정화이며, signer 신뢰·application reload·mTLS availability를 자동 보증하는 완성형 PKI가 아님**. credential issuance부터 handshake까지의 실패 경로를 동일 release evidence로 확인해야 함.",
+          "body": "**C8gn Paris availability는 600 Gbps class networking을 사용할 선택지를 늘리지만, application throughput·tail latency·packet loss·cost가 그 수치만큼 개선된다는 보증은 아님**. instance migration은 CPU benchmark가 아니라 packet path, placement, AZ topology, failure recovery를 포함한 workload SLO change로 승인해야 함.",
           "items": [
-            "결정: service account JWT, mesh/SPIFFE, external PKI와 새 projected-volume path의 책임 경계를 먼저 정리",
-            "범위: pod가 private key·certificate chain·trust anchor를 filesystem에서 읽는 workload mTLS 기반 제공"
+            "결정: advertised bandwidth를 capacity plan의 입력값으로 사용하되 SLO 또는 committed throughput으로 전환하지 않을 원칙",
+            "범위: AWS Europe (Paris) Region에서의 C8gn availability 발표"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes 공식 feature post와 Atom entry `Fri, 28 Aug 2026 10:30:00 -0800`를 직접 재확인해 KST `2026-08-29 03:30`으로 정렬함. pod schedule 뒤 kubelet은 `podCertificate`와 `clusterTrustBundle` projected volume source를 찾아 key를 만들고 signer에게 `PodCertificateRequest`를 생성함.",
+          "body": "AWS What’s New canonical announcement와 RSS timestamp `Fri, 28 Aug 2026 22:00:00 GMT`를 직접 확인해 KST `2026-08-29 07:00`으로 기록. AWS는 latest-generation Graviton4 processor 기반 C8gn이 Graviton3 기반 C7gn 대비 최대 30% compute performance를 제공하고 sixth-generation Nitro Card로 network-optimized EC2 중 최대 600 Gbps bandwidth를 제공한다고 설명함.",
           "items": [
-            "발급: signer controller가 issue 여부를 결정해 `status.certificateChain`과 `status.beginRefreshAt` 반환",
-            "배포: kubelet이 key·chain을 container filesystem에 기록하고 refresh 시점 이후 재발급 시도",
-            "신뢰: signer name·label selector와 일치하는 ClusterTrustBundle을 모아 stable reorder한 trust file 제공",
-            "제약: Kubernetes core Pod Certificate signer는 아직 제공되지 않아 external signer 필요"
+            "사실: 대상 Region은 AWS Europe (Paris)",
+            "사실: network virtual appliance·data analytics·CPU-based artificial intelligence 같은 network-intensive workload를 예시로 제시",
+            "증거 경계: 원문은 instance별 delivered bandwidth, packet rate, latency, quota, price, application benchmark를 보증하지 않음"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "service account JWT는 bearer credential이므로 복사본을 가진 상대가 asserted identity를 재사용할 수 있음. X.509 proof-of-possession은 private key를 가진 workload가 TLS handshake에서 identity를 증명하는 다른 경로를 제공함. 그러나 proof-of-possession의 강도는 signer가 어떤 Pod·service account·SAN을 발급하는지와 private key가 node·container boundary에서 어떻게 보호되는지에 좌우됨.",
+          "body": "high-bandwidth instance의 effective performance는 NIC link speed 하나가 아니라 flow entropy, ENA queue/interrupt distribution, CPU core locality, encryption·overlay overhead, peer bandwidth, storage or application backpressure의 최소값으로 결정됨. Graviton4 migration도 ISA·compiler/runtime·native dependency·container image의 ARM64 compatibility와 함께 검증해야 함.",
           "items": [
-            "분리: API lifecycle GA, issuer authorization, credential delivery, application TLS behavior를 독립 검증 항목으로 관리",
-            "경계: upstream 원문은 third-party signer의 subject/SAN policy·key custody·availability·managed service support를 보증하지 않음"
+            "분해: CPU compute·network Gb/s·PPS·connection setup·packet drop·application queue delay를 별도 metric으로 수집",
+            "검증: ARM64 image·native extension·eBPF/agent·crypto library·network appliance dataplane을 representative traffic으로 compatibility 확인"
           ]
         },
         {
-          "heading": "signer·authorization 관점",
-          "body": "signer controller는 `PodCertificateRequest`를 받아 issuance를 결정하는 권한 중심점임. signer가 namespace·service account·Pod UID와 certificate subject/SAN을 엄격히 bind하지 않으면 한 workload가 다른 서비스의 identity를 요구할 위험이 생김. issuer key는 장기 root 또는 intermediate authority가 될 수 있으므로 RBAC만이 아니라 HSM/KMS, rotation, audit, rate limit을 함께 설계해야 함.",
+          "heading": "packet path·placement 관점",
+          "body": "600 Gbps class workload는 traffic source와 destination의 placement·AZ·subnet·security appliance chain이 병목 또는 비용을 만들 수 있음. EC2 instance만 바꾸고 NAT, Transit Gateway, load balancer, peer instance, storage endpoint가 기존 한계에 남으면 throughput은 상승하지 않을 수 있음. path별 flow log와 host telemetry를 같이 봐야 함.",
           "items": [
-            "통제: signer별 permitted namespace·service account·Pod binding·DNS/SPIFFE subject·maximum lifetime 명시",
-            "검증: unauthorized request·subject escalation·signer outage·key rotation·issuance burst의 deny/latency/audit trace 확인"
+            "설계: client→load balancer→appliance→service→storage의 hop·AZ·encryption·policy chain을 packet path map으로 기록",
+            "측정: throughput·PPS·retransmit·drop·NIC queue imbalance·CPU steal/softirq·p95/p99 latency·cross-AZ byte를 동일 trace로 연결",
+            "피할 것: single-stream benchmark 하나로 multi-flow production capacity를 추정하는 판단"
           ]
         },
         {
-          "heading": "rotation·애플리케이션 운영 관점",
-          "body": "kubelet은 `beginRefreshAt` 이후 credential을 갱신하고 trust bundle 변경도 file로 반영함. 그러나 application은 inotify 또는 polling으로 file update를 감지하고 TLS context·connection pool을 안전하게 reload해야 함. key와 chain을 separate file로 읽는 runtime은 rotation 중 mixed generation을 읽을 수 있어 bundle format과 library behavior를 실제 workload로 시험해야 함.",
+          "heading": "성능·SRE 관점",
+          "body": "network-intensive workload는 scale-out 뒤에도 hot shard, uneven flow hash, connection table exhaustion, retry amplification에서 tail failure가 발생할 수 있음. canary는 평균 Gb/s보다 saturation 직전의 error rate와 recovery behavior를 봐야 하며, host replacement 또는 AZ impairment에서 traffic drain과 connection continuity도 측정해야 함.",
           "items": [
-            "검증: inotify/poll reload, new connection handshake, existing connection draining, expired credential의 fail-closed behavior 확인",
-            "관측: issuance/renewal latency·file update·certificate expiry·TLS handshake error·reconnect·signer error를 같은 trace에 연결",
-            "피할 것: projected volume mount 성공만으로 rotation 또는 application-level reload 성공을 승인하는 판단"
+            "부하: realistic packet size·protocol mix·TLS·concurrency·burst pattern으로 baseline C7gn과 C8gn을 비교",
+            "장애: ENI attach·instance recycle·upstream loss·peer saturation·flow hotspot에서 drain time·retry·error budget 소비 확인",
+            "경보: packet drop·retransmit·softirq saturation·connection table·p99·cross-AZ cost anomaly를 rollout guardrail로 설정"
           ]
         },
         {
-          "heading": "trust bundle·multi-tenant 관점",
-          "body": "ClusterTrustBundle은 signer name과 label selector에 맞는 trust anchor를 선택해 전달함. trust anchor 추가는 새로운 issuer를 허용하고 제거는 기존 certificate를 즉시 끊을 수 있으므로, label change와 bundle rollout은 network policy 변경만큼 주의해야 함. shared cluster에서는 trust bundle read·selection의 namespace/tenant 영향도 검토 대상임.",
+          "heading": "FinOps·보안 관점",
+          "body": "higher network headroom은 instance count 또는 bottleneck retry를 줄일 가능성이 있지만, pricing, Savings Plans coverage, data transfer, cross-AZ traffic, observability ingestion, ARM64 migration engineering cost를 함께 계산해야 함. Network appliance workload는 packet payload와 metadata가 민감할 수 있어 capture·debug tool·access role·retention도 throughput tuning과 분리해 관리해야 함.",
           "items": [
-            "설계: issuer별 trust domain·bundle label·rollover window·old/new overlap·rollback owner를 문서화",
-            "훈련: missing bundle·wrong label·anchor removal·expired intermediate·cross-tenant trust expansion을 failure injection으로 재현"
-          ]
-        },
-        {
-          "heading": "SRE·보안·비용 관점",
-          "body": "core signer가 향후 제공될 경우 최대 lifetime 24시간, 기타 signer는 최대 91일이라는 원문의 한계는 renewal cadence와 signer availability budget에 직접 연결됨. 짧은 lifetime은 credential theft exposure를 줄일 수 있지만 signer 또는 control-plane fault가 넓은 authentication outage로 확대될 수 있음. SLO는 certificate expiry 이전 renewal, handshake success, trust convergence로 정의해야 함.",
-          "items": [
-            "측정: signer availability·p95 renewal latency·expiry-near count·handshake failure·trust convergence·rollback duration 기록",
-            "통제: certificate subject·issuer·serial·requester와 private key material 미포함 audit log를 incident timeline으로 보존"
+            "비용: delivered request 또는 processed GB당 instance·transfer·retry·logging·migration cost를 unit economics로 비교",
+            "보안: packet capture·flow log·debug shell의 data exposure와 access scope·retention·redaction을 change review에 포함"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "첫 단계는 현재 workload identity와 TLS reload capability의 inventory임. 둘째 단계는 low-risk service에서 signer policy·short lifetime·trust rollover를 canary로 실행하는 작업임. 셋째 단계는 managed Kubernetes compatibility와 incident rollback evidence를 충족한 서비스만 확대하는 작업임.",
+          "body": "첫 단계는 Paris Region에서 실제 capacity·quota·AMI·ARM64 dependency·peer limit을 확인하는 작업임. 둘째 단계는 isolated canary에서 traffic replay와 failure injection을 수행하는 작업임. 마지막 단계는 connection drain, rollback AMI/ASG path, cost threshold를 포함한 staged rollout으로 확대하는 작업임.",
           "items": [
-            "1단계: JWT·mesh·SPIFFE·external PKI·TLS library·certificate path·service dependency inventory",
-            "2단계: denied issuance·signer outage·expired chain·trust change·node restart·reload failure를 staging에서 재현",
-            "3단계: subject/SAN policy·key custody·alert threshold·on-call owner·rollback 절차를 identity release record에 고정"
+            "1단계: workload packet profile·flow count·PPS·CPU profile·AZ topology·ARM64 dependency·quota inventory",
+            "2단계: baseline 대비 throughput·p99·drop·retry·CPU·processed-GB cost와 saturation behavior 비교",
+            "3단계: capacity shortfall·performance regression·cost anomaly별 rollback owner·drain procedure·customer impact threshold를 release record에 고정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "**Kubernetes가 certificate file을 갱신해도 application이 새 credential으로 handshake하고 상대가 올바른 trust anchor만 수용했다는 증거가 있어야 mTLS identity가 완성됨**. 다음 cluster upgrade 전 representative service의 renewal·trust rollover·rollback trace를 확보해야 함.",
+          "body": "**C8gn의 600 Gbps는 network path 전체가 그 수준으로 동작할 때만 application value가 되는 hardware envelope임**. Paris migration 전 multi-flow traffic replay, packet-path telemetry, AZ failure·rollback drill을 통과한 workload만 단계적으로 확장해야 함.",
           "items": [
-            "팀 액션: signer authorization test와 application TLS reload test를 하나의 end-to-end CI or staging gate로 연결",
-            "팀 액션: trust anchor 변경을 일반 config reload가 아닌 인증 경계 변경으로 분류해 change approval 적용"
+            "팀 액션: instance benchmark와 network architecture review를 하나의 capacity decision으로 결합",
+            "팀 액션: average bandwidth 대신 p99 latency·drop·retransmit·processed-GB cost·drain time을 go/no-go metric으로 채택"
           ]
         }
       ]

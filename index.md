@@ -326,6 +326,9 @@
 - [[raw/articles/kubernetes-v1-37-metrics-api-stable-2026-08-28]] — `metrics.k8s.io/v1` Stable 승격의 API client·HPA·metrics pipeline 검증 경계.
 - [[raw/articles/kubernetes-v1-37-pod-certificates-cluster-trust-bundles-2026-08-29]] — Pod Certificates·Cluster Trust Bundles GA의 signer·X.509 rotation·workload mTLS identity 검증 경계.
 
+- [[raw/articles/anthropic-model-hardware-standard-research-preview-2026-08-28]] — Anthropic MHS 공식 연구 프리뷰의 device driver·MCP·물리 장비 control safety 경계.
+- [[raw/articles/aws-ec2-c8gn-paris-2026-08-29]] — EC2 C8gn Paris 출시의 Graviton4·600 Gbps networking과 packet-path·FinOps 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
