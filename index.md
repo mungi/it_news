@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-08-29 | Total pages: 317
+> Last updated: 2026-08-31 | Total pages: 318
 
 ## Entities
 
@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-codex-usage-efficiency-2026-08-30]] — Codex·ChatGPT Work 사용량 reset과 context·background task·retry token 효율화 보도, quota·trace 검증 경계.
 - [[raw/articles/aws-agentcore-memory-fine-grained-access-control-2026-08-29]] — AgentCore Memory Gateway·JWT·Cedar 기반 tenant memory 접근 제어와 claim·namespace·policy 검증 경계.
 - [[raw/articles/aws-cloudwatch-agent-journald-2026-08-29]] — CloudWatch agent의 native journald 수집과 structured metadata·filter·권한·비용 검증 경계.
 - [[raw/articles/cloudflare-1111-dns-cache-memory-optimization-2026-08-28]] — 1.1.1.1 DNS cache 2,500억 entry의 memory layout·100 TB 절감·latency 검증 경계.
