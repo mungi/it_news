@@ -321,6 +321,7 @@
 - [[raw/articles/anthropic-model-hardware-standard-research-preview-2026-08-29]] — Model Hardware Standard 연구 프리뷰의 MCP·driver·physical device control과 safety·authorization 검증 경계.
 - [[raw/articles/aitimes-openai-cursor-model-supply-termination-2026-08-30]] — Cursor에 대한 OpenAI 모델 공급 종료 보도와 multi-provider coding-agent routing·계약 변경 대응 경계.
 - [[raw/articles/aitimes-spacex-gas-turbine-datacenter-power-2026-08-31]] — SpaceX 가스 터빈 부품 자체 생산 보도와 AI 데이터센터 전력·계통·commissioning 공급망 검증 경계.
+- [[raw/articles/cloudflare-adaptive-intelligence-bot-detection-2026-08-31]] — Adaptive Intelligence의 지속 재학습 Bot Score·shadow rollout·false-positive rollback 검증 경계.
 - [[raw/articles/aitimes-claude-code-weekly-limit-2026-08-30]] — Claude Code 주간 quota의 표준 대비 25% 조정과 현 프로모션 대비 17% 감소 보도, developer capacity·fallback 검증 경계.
 - [[raw/articles/tencent-hy4-preview-open-source-2026-08-28]] — Tencent Hy4 preview 오픈소스 공개의 770B/49B MoE·100만 token 문맥·내부 평가·추론 처리량 주장과 production 검증 경계.
 
