@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-01 23:06",
+  "last_updated_kst": "2026-09-02 03:12",
   "audience": "developers and engineers",
   "executive_summary": [
     "정부 2027 AI 예산안 보도는 Vera Rubin급 GPU 1만장과 독자 AI 모델 GPU 확충 3조8,500억원을 포함. GPU 장수는 usable capacity가 아니므로 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution을 사업별 gate로 검증 필요.",
@@ -14,184 +14,182 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare Adaptive Intelligence: 지속 재학습 bot detection을 보안 변경·오탐 rollback control plane으로 운영",
-      "summary": "한 줄 결론: Cloudflare Adaptive Intelligence는 Bot Score 모델을 live traffic으로 지속 재학습하고 shadow 비교 뒤 점진 반영하는 bot detection engine임. 자동 갱신은 rule 편의 기능이 아니라 login·checkout·account recovery의 차단 결정과 정상 사용자 전환을 동시에 바꾸므로 cohort별 security·conversion guardrail과 즉시 rollback 증적이 있어야 함.",
-      "details": "Cloudflare는 2026년 8월 31일 Adaptive Intelligence를 공개했다. 공식 원문은 Bot Score 뒤의 탐지 엔진이 JA4 TLS fingerprint, request structure, challenge outcome, session behavior, network reputation, Turnstile 및 Precursor telemetry를 결합하고 live traffic에서 지속 재학습한다고 설명한다. 새 model weight는 즉시 production에 넣지 않고 current model과 shadow mode에서 같은 traffic을 score해 score distribution·challenge solve rate·customer feedback을 비교하며, genuine visitor의 점수가 더 나빠지는 candidate는 반영하지 않는다는 범위를 제시한다. Enterprise 고객은 Bot Management에서 `Auto Update Machine Learning`을 활성화해야 자동 적용받는다. 후속으로 언급된 disposable rule 생성과 traffic pattern mining은 출시 완료 기능과 구분해야 한다. Cloudflare 네트워크의 제품 설명은 개별 서비스의 fraud 감소율, false-positive ceiling, 탐지 지연, 지역·plan별 지원, conversion 영향을 보증하지 않는다. 운영팀은 auto-update enablement를 security change로 등록하고 login·checkout·account recovery를 device·region·network·accessibility cohort로 분리해 human success, challenge solve, false-positive appeal, credential-stuffing success, support volume, rollback time을 함께 측정해야 한다.",
-      "why_it_matters": "고정 rule에서 지속 모델 갱신으로 이동하면 공격자의 bypass 학습 비용을 높일 수 있지만, detector drift와 segment bias도 production decision에 유입될 수 있음. 특히 저속·분산 proxy 공격은 rate limit 하나로 식별하기 어려워 session·challenge·network signal을 함께 보되, 정상 사용자 마찰을 별도 SLO로 관리해야 함.",
+      "title": "Kubernetes v1.37 Storage Version Migration: CRD·암호화 key rotation을 대량 write change로 운영",
+      "summary": "한 줄 결론: v1.37의 Storage Version Migration은 기존 object를 기본 storage version으로 재기록하는 built-in control-plane 기능임. `Succeeded=True`만으로 이전 CRD API 또는 old encryption key를 폐기하지 말고 `.status.storedVersions`·object sampling·backup/restore·etcd 부하를 같은 release gate로 검증해야 함.",
+      "details": "Kubernetes 공식 블로그는 Storage Version Migration(SVM)이 v1.37에서 GA가 됐으며 `storagemigration.k8s.io/v1` API와 `StorageVersionMigrator` controller가 기본 활성화된다고 발표했다. resource는 특정 storage version schema로 저장되므로 새 storage version을 지정해도 기존 object는 자동으로 바뀌지 않는다. 이는 CRD에서 이전 version을 제거하거나 encryption-at-rest 설정·key rotation 뒤 기존 object를 새 key로 다시 쓰려는 운영에서 stale data를 남길 수 있다. `StorageVersionMigration` object를 만들면 controller가 해당 API의 기존 resource를 default storage version으로 rewrite하고 status의 `Succeeded=True` condition을 보고한다. CRD migration 뒤 `.status.storedVersions`에 이전 version이 남으면 migration 중 CRD 변경 가능성이 있어 재실행이 필요하다. 이 기능은 수동 get/replace script와 out-of-tree migrator 의존을 줄이지만, object 수별 completion time, apiserver·etcd write amplification, managed Kubernetes 지원, admission webhook 영향, backup/restore, encryption provider와 old key retirement를 보증하지 않는다. 운영팀은 SVM을 schema housekeeping이 아니라 control-plane write workload로 등록하고 canary namespace부터 QPS·latency·fsync·retry·backup RTO를 계측해야 한다.",
+      "why_it_matters": "CRD lifecycle과 encryption rotation은 API compatibility와 data-at-rest 보안의 공통 경로임. 기존 object가 이전 schema 또는 key에 남으면 API removal·key 폐기·restore 시점에 오류 또는 규정 준수 공백이 생길 수 있음.",
       "sources": [
-        "https://blog.cloudflare.com/introducing-adaptive-intelligence/"
+        "https://kubernetes.io/blog/2026/08/31/kubernetes-v1-37-storage-version-migration-ga/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M15GS69WEYGDMY3B1NHZGYZX.01M15GS72XAM4E7AESJXBQCCNR.png",
-      "refreshed_kst": "2026-09-01 06:49",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-09-02 03:12",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "지속 재학습 Bot Score는 새로운 model release가 사용자 traffic에 적용되는 보안 control-plane 변경임. 자동화를 더 잘 막는지와 정상 고객을 더 많이 막지 않는지를 같은 rollout gate에서 판정해야 함.",
+          "body": "SVM은 CRD·encryption migration 뒤 남은 object를 기본 storage version으로 rewrite하는 Kubernetes control-plane 기능임. 완료 condition은 출발점이며 API 제거·old key 폐기는 독립 검증 뒤 승인할 대상임.",
           "items": [
-            "변화: fixed rule·고정 model 중심 대응에서 live traffic 기반 model update로 이동",
-            "판정: attack block·challenge solve·human conversion·false-positive appeal·rollback time을 동시 SLO로 운영"
+            "변화: `storagemigration.k8s.io/v1`과 `StorageVersionMigrator`가 v1.37에서 GA·default-enabled 전환",
+            "판정: `Succeeded=True`·`.status.storedVersions`·sampled object·backup/restore proof를 하나의 release gate로 결합"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare 공식 원문은 Adaptive Intelligence를 Bot Score의 새 detection engine으로 설명하며, 공격자가 residential proxy·새 fingerprint·낮은 request rate로 static rule을 우회하는 비용 구조를 배경으로 제시함.",
+          "body": "공식 원문은 Kubernetes resource가 storage version schema로 저장되며, 새 write의 version 변경만으로 기존 object가 rewrite되지 않는 구조를 설명함. SVM은 declarative object로 해당 API의 existing resource rewrite를 요청하는 범위임.",
           "items": [
-            "신호: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile·Precursor telemetry 결합",
-            "학습: live traffic으로 자동화 악용 확률을 지속 재학습하는 첫 제공 범위",
-            "적용: 새 weight는 current model과 shadow mode 비교 후 점진 rollout",
-            "제공: Enterprise는 `Auto Update Machine Learning` enablement가 필요"
+            "CRD: 이전 `v1alpha1` object가 남으면 `.status.storedVersions`에서 해당 version 제거 또는 serving 중단 전 rewrite 필요",
+            "암호화: encryption-at-rest 설정 또는 key rotation 뒤 기존 etcd object는 API server 재기록 전 이전 key·상태에 남을 가능성",
+            "실행: `StorageVersionMigration` 생성 뒤 controller가 기본 storage version으로 rewrite하고 status condition 보고"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 엔진의 변경 단위는 model score 하나가 아니라 score→action→challenge→session outcome으로 이어지는 feedback loop임. model이 새 signal 조합을 학습해도 product action, rate-limit, identity risk engine, support process가 분리돼 있으면 실제 차단 품질을 설명할 수 없음.",
+          "body": "이 작업의 위험 단위는 YAML 한 건이 아니라 cluster-wide write rate와 storage lifecycle임. API server, etcd, admission webhook, audit, backup, controller retry가 동시에 영향을 받을 수 있어 migration ID를 모든 telemetry의 join key로 삼아야 함.",
           "items": [
-            "연결: score revision·action policy·challenge type·session outcome·account event를 correlation ID로 연결",
-            "분리: 탐지 모델의 precision/recall과 login completion·checkout conversion·account recovery success를 별도 지표로 관리",
-            "경계: Cloudflare 제품 설명을 모든 origin·API·mobile client의 동일한 탐지 성능 보증으로 확대하지 않음"
+            "분리: schema cleanup·encryption key rotation·application rollout·provider maintenance를 하나의 변경 창에 겹치지 않도록 일정화",
+            "연결: migration ID·API group/resource·object count·controller condition·request latency·etcd metric·backup job을 같은 trace로 보존",
+            "경계: built-in controller 제공이 managed service 지원·완료 시간·application compatibility 보증을 뜻하지 않음"
           ]
         },
         {
-          "heading": "모델 변경·SRE 관점",
-          "body": "shadow 비교는 안전장치지만 rollout 이후 traffic distribution과 공격자 적응이 바뀌면 offline 또는 global aggregate 결과가 재현되지 않을 수 있음. model revision과 policy revision을 독립적으로 versioning하고 canary·pause·revert 조건을 사전에 고정해야 함.",
+          "heading": "아키텍처·data lifecycle 관점",
+          "body": "storage version은 API compatibility contract이고 encryption key는 at-rest custody contract임. 둘 모두 object rewrite가 실제로 끝났다는 증거 없이는 old surface를 제거할 수 없음.",
           "items": [
-            "관측: score distribution shift·challenge solve·human success·support ticket·credential-stuffing signal을 cohort별 수집",
-            "경보: human conversion 또는 solve rate 저하, deny spike, account-takeover signal 증가를 stop condition으로 설정",
-            "복구: auto-update pause·previous model/policy restore·cache/config propagation 확인·incident owner를 runbook에 기록"
+            "inventory: CRD version·storedVersions·object count·owner·conversion webhook·encryption provider·key ID·backup location 식별",
+            "검증: representative namespace와 resource에서 stored payload·read/write·conversion·restore path sampling",
+            "순서: canary rewrite → status·sampling·restore 확인 → old API serving 중단 또는 old key retirement 승인"
           ]
         },
         {
-          "heading": "보안·privacy·거버넌스 관점",
-          "body": "fingerprint·session·network·challenge telemetry는 bot defense에 유용하지만 data minimization, retention, access, regional processing을 별도 검토해야 함. adaptive decision이 account restriction으로 이어질 경우 appeal와 human escalation도 control의 일부임.",
+          "heading": "SRE·성능 관점",
+          "body": "대량 rewrite는 control-plane write amplification을 일으킬 수 있음. 평균값만으로 운영 판단을 하면 etcd disk tail, API priority/fairness, webhook saturation, controller retry를 놓칠 수 있음.",
           "items": [
-            "inventory: signal source·retention·access principal·export path·region·purpose를 privacy review에 등록",
-            "통제: high-impact deny·account recovery·payment action에 explainable event와 escalation owner를 연결",
-            "경계: 공식 글은 customer별 retention·privacy contract·false-positive ceiling·fraud 감소율을 보증하지 않음"
+            "관측: apiserver QPS·request p95/p99·etcd disk/fsync·DB size·compaction·controller error·admission latency 수집",
+            "제한: concurrency·namespace scope·maintenance window·concurrent deployment를 canary 결과에 맞춰 제한",
+            "복구: migration pause·rollback 가능 범위·backup restore owner·provider support escalation을 runbook에 기록"
           ]
         },
         {
-          "heading": "FinOps·사업 지표 관점",
-          "body": "bot block을 늘리는 것만으로 성공을 판단하면 정상 사용자 손실과 challenge 비용을 숨길 수 있음. rollout 평가는 attack cost뿐 아니라 completed login·order·recovery당 방어 비용과 support load까지 묶어야 함.",
+          "heading": "보안·거버넌스·FinOps 관점",
+          "body": "old key의 논리적 폐기는 re-encryption 완료와 같지 않음. audit evidence에는 어떤 resource가 언제 어떤 version으로 재기록됐는지와 restore 검증이 포함돼야 함.",
           "items": [
-            "측정: attack request·challenge·edge action·origin offload·human conversion·support contact를 flow별 연결",
-            "비교: current model과 candidate model의 blocked abuse·false-positive·completion·rollback 시간을 같은 cohort에서 대조",
-            "피할 것: global bot-score 개선을 매출·fraud·고객 경험의 자동 개선으로 해석하는 판단"
+            "보안: key retirement 승인 전 encryption provider 상태·object sampling·backup encryption·restore evidence 확인",
+            "거버넌스: CRD owner·platform owner·security reviewer·backup owner의 승인 책임과 exception 기록",
+            "비용: etcd I/O·snapshot·backup storage·support window·engineering labor를 migration change cost로 추적"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "먼저 기존 Bot Management, WAF custom rule, challenge policy, identity risk signal의 precedence를 문서화한 뒤 낮은 위험 flow에서 canary를 시작해야 함. production 확대는 rollback 실증과 cohort별 guardrail 충족 뒤에만 진행할 대상임.",
+          "body": "낮은 위험 CRD와 제한된 namespace에서 baseline을 만든 뒤 확대해야 함. 기존 script를 바로 제거하지 말고 built-in controller 결과와 object·restore 검증을 병행하는 순서가 안전함.",
           "items": [
-            "체크: plan·dashboard enablement·custom rule·challenge policy·API/mobile flow·privacy retention inventory",
-            "체크: login·checkout·account recovery별 정상 사용자·attack simulation에서 security·conversion·support·rollback baseline 측정",
-            "체크: model/policy revision, change owner, pause/revert 권한, 고객 공지·appeal workflow를 change record에 고정",
-            "팀 액션: 30일 내 auto-update enablement 전후의 cohort dashboard와 rollback game day 증적 확보"
+            "체크: CRD `.status.storedVersions`, object count, conversion webhook, encryption/key inventory, managed-provider support 확인",
+            "체크: canary에서 QPS·latency·etcd fsync·webhook error·controller condition·backup duration before/after 비교",
+            "체크: sample read/write·old API client 영향·backup restore·old key access failure를 change evidence로 보관",
+            "팀 액션: `Succeeded=True`만으로 API/version 또는 key retirement를 자동화하지 않는 approval gate 등록"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "적응형 탐지는 공격자 회피 비용을 높일 수 있으나 자동화된 model update가 곧 무위험 보안을 뜻하지는 않음. 정상 사용자 영향과 incident rollback을 측정하지 못하면 security tuning이 product outage가 될 수 있음.",
+          "body": "SVM은 오래된 data representation을 정리하는 유용한 control-plane 기능이지만, 완료 signal 하나가 data lifecycle 완료 증명은 아님. rewrite의 부하와 복구 증거를 함께 갖춘 뒤에만 파괴적 cleanup을 실행해야 함.",
           "items": [
-            "볼 것: cohort별 human success와 attack success를 동시에 낮추지 않는지 확인",
-            "피할 것: 자동 갱신 toggle을 approval·telemetry·rollback 없는 단순 설정 변경으로 처리",
-            "팀 액션: score·action·challenge·business outcome·rollback을 하나의 운영 trace로 고정"
+            "볼 것: `.status.storedVersions`와 restore proof가 migration condition과 일치하는지 확인",
+            "피할 것: GA·default enablement를 zero-risk schema cleanup으로 처리",
+            "팀 액션: migration ID 기준 telemetry·approval·rollback·retention evidence를 release record로 고정"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Amazon Bedrock AgentCore Memory FGAC: JWT claim·Cedar policy를 tenant memory authorization 증적으로 운영",
-      "summary": "한 줄 결론: AgentCore Memory FGAC는 OAuth JWT 인증 Gateway와 Cedar policy로 caller별 actor data·claim-derived namespace·Memory operation을 제어하는 공식 기능임. 이를 application ACL의 자동 대체로 보지 말고 issuer·audience·claim mapping·default-deny·12개 action·cross-tenant denial과 rollback을 request trace로 입증해야 함.",
-      "details": "AWS는 2026년 8월 29일 Amazon Bedrock AgentCore Memory의 fine-grained access control(FGAC)을 발표했다. 공식 공지는 OAuth JWT 인증 AgentCore Gateway에 Cedar policy를 연결해 authenticated caller identity로 Memory 접근을 제한하고, user가 자신의 actor data만 읽도록 제한하거나 token claim에서 유도한 namespace의 record만 대상으로 삼고 caller별 Memory operation을 allow 또는 deny할 수 있다고 설명한다. managed AgentCore Memory connector는 Gateway target과 Memory data plane을 연결하며 12개 Memory operation을 Cedar action과 request attribute로 노출한다. 이는 application code에 흩어진 tenant filter 일부를 infrastructure layer에서 일관되게 집행할 경로지만, JWT issuer·audience·key rotation, claim normalization, tenant/actor/namespace mapping, policy authoring, default-deny, token revocation, application authorization, data migration, audit retention·latency·가격은 자동 보증 범위가 아니다. staging에서 정상 user·다른 tenant·expired 또는 replayed token·missing/forged claim·gateway/connector failure별 allow/deny matrix를 실행하고 policy decision·Memory request·application trace를 연결한 뒤에만 application-side filter 변경을 승인해야 한다.",
-      "why_it_matters": "agent memory에는 사용자별 대화·선호·업무 문맥이 누적될 수 있어 prompt 또는 query filter만으로 tenant isolation을 보장하기 어려움. identity-bound gateway와 Cedar policy는 data plane 앞의 authorization을 중앙화할 수 있지만, claim과 namespace 설계 오류는 정확히 실행된 policy에서도 cross-tenant exposure를 만들 수 있음.",
+      "title": "Cloudflare Big Pineapple DNS cache: Rust memory layout 최적화를 capacity·tail-latency 증적으로 운영",
+      "summary": "한 줄 결론: Cloudflare는 Big Pineapple DNS cache의 immutable entry layout을 바꿔 entry당 footprint를 953 B에서 420 B로 낮추고 fleet 약 100 TB memory 절감을 공개함. 이 수치를 다른 fleet의 절감률로 환산하지 말고 allocation·RSS·hit/eviction·p99·upstream load를 traffic mix별 canary로 검증해야 함.",
+      "details": "Cloudflare 공식 원문은 Big Pineapple이 1.1.1.1, Gateway DNS, DNS Firewall, AS112 등에서 2,500억 개 이상 DNS cache entry를 저장한다고 설명한다. entry 하나의 byte 낭비도 fleet에서는 250 GB 이상이 되므로 Rust-level layout을 다섯 단계로 최적화했다. immutable cache entry에서 `Vec<T>`와 `String`을 `Box<[T]>`와 `Box<str>`로 바꾸고, record section을 list와 offset으로 합치며, query domain과 같은 owner 생략 및 record의 packed wire-format 저장을 사용했다. Cloudflare가 공개한 benchmark는 A 56%, AAAA 25%, TXT 19%, entry당 1~4 record traffic mix이며, custom allocator와 production instance resident memory를 함께 봤다. 결과는 net footprint 953 B→420 B, per-entry allocation 1.1 KB→461 B, insert 625,000→893,000 entries/s, lookup latency 828→670 ns, fleet 약 100 TB 절감이다. 단, traffic mix, ECS, DNSSEC, cache occupancy, allocator state, cache 밖 process memory가 다르면 동일한 결과가 되지 않는다. DNS operator는 object layout 변경을 micro-optimization으로 축소하지 말고 correctness·TTL·eviction·latency·origin shielding과 capacity release를 연결한 production change로 다뤄야 한다.",
+      "why_it_matters": "대규모 cache에서는 pointer·capacity field·allocation fragmentation이 hardware footprint와 tail latency를 함께 바꿀 수 있음. immutable representation을 명시하면 memory를 줄이면서 locality와 insert path를 개선할 수 있으나 DNS correctness와 cache behavior 검증이 전제임.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/08/agentcorememory-fine-grained-access-control/"
+        "https://blog.cloudflare.com/dns-cache-memory-optimization-1111/"
       ],
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-09-01 06:49",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1185AQ3B90700DKB48C2HHM.png",
+      "refreshed_kst": "2026-09-02 03:12",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "FGAC는 Memory 앞단의 identity-aware authorization 경로를 제공하지만, tenant isolation의 완성은 claim semantics와 namespace mapping·policy review·runtime evidence에 달려 있음.",
+          "body": "Big Pineapple의 결과는 immutable DNS cache entry에서 allocator·pointer·capacity overhead를 줄인 사례임. 2,500억 entry 규모의 절대 수치는 Cloudflare workload에 묶여 있으므로 자체 traffic·cache policy·memory profile로 재현 여부를 판단해야 함.",
           "items": [
-            "변화: OAuth JWT 인증 Gateway와 Cedar policy를 Memory data plane 앞에 결합",
-            "판정: default-deny와 cross-tenant denial이 12개 action에서 재현되는지 trace로 확인"
+            "변화: entry layout 다섯 변경으로 net footprint **953 B→420 B** 공개",
+            "판정: RSS만 보지 말고 hit/eviction·lookup p99·insert throughput·upstream load·correctness를 함께 gate화"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS What’s New는 AgentCore Memory가 AgentCore Gateway의 fine-grained access control을 지원한다고 발표함. 공식 설명의 범위는 authenticated caller identity를 기준으로 Memory resource와 operation을 정책으로 제한하는 기능임.",
+          "body": "공식 원문은 Big Pineapple이 1.1.1.1·Gateway DNS·DNS Firewall·AS112와 기타 DNS service 뒤에서 2,500억 개 이상의 entry를 저장한다고 설명함. single-byte waste가 fleet에서 250 GB를 넘는 규모라는 배경임.",
           "items": [
-            "범위: user가 자신의 actor data만 읽도록 제한하는 policy 예시",
-            "범위: JWT token claim에서 유도한 namespace의 memory record 접근 제어",
-            "범위: caller별 Memory operation allow 또는 deny",
-            "구현: managed Memory connector가 Gateway target과 Memory data plane을 연결하고 12개 action/request attribute를 노출"
+            "결과: fleet working-set memory 약 **100 TB** 절감, Gen 13 server 약 130대 RAM 상당이라는 Cloudflare 계산",
+            "성능: insert throughput 625,000→893,000 entries/s, lookup latency 828 ns→670 ns라는 공개 benchmark",
+            "방법: custom allocator·synthetic traffic·production instance resident memory를 함께 사용한 범위"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent memory authorization은 retrieval 품질 문제가 아니라 identity, policy, storage namespace, tool execution을 잇는 control-plane 문제임. application code의 filter와 gateway policy가 다른 identifier를 쓰면 두 계층이 모두 존재해도 정책 빈틈이 생길 수 있음.",
+          "body": "이 사례의 본질은 cache value가 write 뒤 immutable이라는 domain fact를 representation에 반영한 점임. mutation이 없는 객체에 growable container semantics를 유지하면 pointer와 capacity, over-allocation이 모든 entry에 반복됨.",
           "items": [
-            "정규화: immutable tenant·actor·namespace identifier와 claim source를 canonical contract로 정의",
-            "분리: user read, agent write, search, delete, administrative action을 독립 permission으로 설계",
-            "경계: Gateway enforcement을 application entitlement·business authorization·data migration correctness의 자동 보증으로 해석하지 않음"
+            "모델: read-mostly·immutable value·high cardinality cache에서 fixed representation 후보 식별",
+            "연결: language-level layout·allocator behavior·CPU locality·server capacity·fleet capex/energy를 한 capacity model로 결합",
+            "경계: Rust `Box` 전환 자체가 모든 cache·GC runtime·network workload에서 같은 성능을 보장하지 않음"
           ]
         },
         {
-          "heading": "identity·Cedar policy 관점",
-          "body": "JWT 검증 성공은 claim이 의도한 business principal을 뜻한다는 보증이 아님. issuer·audience·subject·tenant claim·expiration·key rotation과 token exchange 경로를 policy input으로 inventory하고, missing·ambiguous claim은 fail-closed로 처리해야 함.",
+          "heading": "데이터 구조·correctness 관점",
+          "body": "Cloudflare는 `Vec<T>`·`String`을 fixed `Box<[T]>`·`Box<str>`로 바꾸고 answer·authority·additional section을 list와 offset으로 통합했다. query domain과 동일한 owner 제거, packed wire-format record 저장도 포함됨.",
           "items": [
-            "검증: issuer·audience·signature·expiry·key rotation·clock skew와 claim normalization matrix",
-            "정책: action별 least privilege·resource constraint·default-deny·reviewer·policy version을 기록",
-            "시험: valid user·other tenant·expired/replayed token·missing/forged claim·scope downgrade의 allow/deny matrix 실행"
+            "조건: cached response는 저장 뒤 변경하지 않는다는 invariant가 layout 최적화의 전제",
+            "검증: TTL·hit counter·answer/authority/additional section·extended error·DNSSEC·ECS variant의 decode parity 확인",
+            "피할 것: memory reduction을 위해 serialization·alignment·lifetime contract를 문서화하지 않는 변경"
           ]
         },
         {
-          "heading": "memory namespace·data lifecycle 관점",
-          "body": "namespace는 logical tenant boundary일 뿐 retention·deletion·backup·restore·migration·embedding/retrieval data path를 자동 분리하지 않음. Memory record의 lifecycle과 policy decision evidence가 함께 보존돼야 deletion·incident 대응 범위를 판단할 수 있음.",
+          "heading": "성능·SRE 관점",
+          "body": "공개 benchmark는 A 56%, AAAA 25%, TXT 19%, entry당 1~4 record이며 TXT size 64~224 B를 사용함. 실제 service에서는 cache occupancy, ECS, response composition, allocator state와 cache 밖 memory가 결과를 바꿀 수 있음.",
           "items": [
-            "inventory: actor data·namespace·record type·retention·deletion·backup/restore·migration owner 식별",
-            "관측: caller·policy version·decision·Memory action·namespace·request ID·application trace를 연결",
-            "경계: AWS 공지는 cross-tenant migration, backup isolation, audit retention, latency, price를 보증하지 않음"
+            "관측: RSS·allocation count/bytes·fragmentation·insert rate·lookup p50/p95/p99·CPU·GC/allocator stall을 cache shard별 수집",
+            "cache: hit ratio·eviction age·negative cache·upstream query rate·timeout을 traffic cohort와 연결",
+            "rollout: production instance resident memory를 canary·regional cohort·full fleet 순으로 비교"
           ]
         },
         {
-          "heading": "SRE·failure recovery 관점",
-          "body": "authorization plane이 gateway와 connector를 경유하면 policy error, token validation failure, connector degradation이 Memory availability와 agent behavior를 함께 바꿀 수 있음. fail-open 금지와 degraded-mode UX·fallback·rollback을 사전 정의해야 함.",
+          "heading": "capacity·FinOps 관점",
+          "body": "100 TB 절감은 hardware purchase·power·rack capacity 여유와 연결될 수 있으나, reuse 가능한 headroom은 HA reserve·peak traffic·failure domain·growth forecast를 제외한 뒤 판단해야 함.",
           "items": [
-            "경보: deny spike·policy evaluation error·JWT validation failure·gateway latency·connector failure를 action별로 구분",
-            "복구: dry-run/staging comparison·previous policy restore·break-glass 권한·incident owner와 audit trail 유지",
-            "피할 것: gateway availability를 Memory request success 또는 cross-tenant safety의 완전한 보증으로 해석하는 판단"
+            "측정: server당 usable memory·headroom·peak occupancy·N+1 reserve·Watt·cooling·cost per DNS query를 baseline화",
+            "비교: memory 절감과 latency·origin offload·error/support cost를 같은 traffic window에서 대조",
+            "경계: Cloudflare fleet 절감치를 자체 node count·RAM price·energy 비용으로 선형 환산하지 않음"
           ]
         },
         {
-          "heading": "비용·거버넌스 관점",
-          "body": "centralized authorization은 policy 운영과 audit 비용을 줄일 가능성이 있으나 gateway hop·logging·retention·failure investigation 비용도 함께 발생함. adoption 판단은 feature enablement가 아니라 completed request당 security·latency·operational cost로 해야 함.",
+          "heading": "보안·운영 거버넌스 관점",
+          "body": "DNS cache representation 변경은 parsing·serialization·bounds checking·corruption blast radius와 이어짐. rollout 증거에는 crash-free 결과뿐 아니라 answer integrity와 fallback behavior가 포함돼야 함.",
           "items": [
-            "측정: authorization latency·deny/retry·connector error·log volume·investigation time을 request class별 수집",
-            "거버넌스: policy author·reviewer·approval·deployment·rollback 권한을 application owner와 분리",
-            "경계: 공식 발표만으로 compliance, residency, encryption/key custody, support SLA를 확정하지 않음"
+            "통제: fuzz/property test·wire-format parser review·memory safety telemetry·rollback artifact digest 유지",
+            "검증: poisoned response·malformed record·ECS isolation·DNSSEC validation·negative answer·eviction storm scenario 실행",
+            "복구: previous layout binary·cache flush/warmup impact·upstream capacity·incident owner를 runbook에 기록"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "기존 application filter를 제거하기 전에 identity contract와 policy evidence를 병행해 비교해야 함. 작은 tenant set에서 read-only action부터 시작하고 write·delete·agent tool action은 별도 승인으로 확대하는 순서가 안전함.",
+          "body": "먼저 cache object lifecycle과 traffic distribution을 측정하고, immutable field부터 representation 변경 후보로 좁혀야 함. benchmark와 production canary의 input을 분리해 기록하면 절감 수치보다 재현 가능한 운영 결정이 남음.",
           "items": [
-            "체크: IdP claim schema·tenant/actor/namespace mapping·12 action inventory·default-deny baseline 작성",
-            "체크: staging에서 normal/cross-tenant/expired/replayed/missing claim과 gateway failure drill 수행",
-            "체크: policy decision·Memory request·application trace·audit export의 correlation과 retention 확인",
-            "팀 액션: 30일 내 cross-tenant denial evidence와 previous-policy rollback game day를 release gate로 등록"
+            "체크: object size·allocation profile·mutation invariant·record distribution·ECS/DNSSEC coverage inventory",
+            "체크: correctness parity·TTL/eviction·hit ratio·lookup p99·insert rate·RSS·upstream query canary 비교",
+            "체크: feature flag·binary digest·rollback·cache warmup·capacity reserve·cost attribution record",
+            "팀 액션: memory-byte 절감만이 아니라 origin shielding과 tail-latency guardrail을 capacity approval 기준으로 등록"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Memory authorization은 모델 prompt가 아니라 cryptographic identity와 resource policy로 집행해야 함. 다만 policy가 올바르려면 claim과 namespace가 같은 principal을 가리킨다는 운영 증거가 필요함.",
+          "body": "대규모 cache의 memory 최적화는 작은 자료구조 선택이 fleet capacity와 latency를 바꾸는 운영 변경임. immutable contract, realistic workload, production resident-memory evidence가 함께 있을 때만 hardware 절감 판단이 가능함.",
           "items": [
-            "볼 것: claim-to-namespace mapping과 action별 default-deny 증적",
-            "피할 것: Gateway 추가만으로 application authorization과 lifecycle risk가 사라진다는 판단",
-            "팀 액션: policy decision부터 application response까지 하나의 audit trace로 재현"
+            "볼 것: workload별 entry distribution과 cache 외 process memory를 포함한 RSS evidence",
+            "피할 것: synthetic average만으로 DNS correctness·tail latency·upstream load를 추정",
+            "팀 액션: allocation·cache behavior·network outcome을 하나의 canary dashboard와 rollback gate로 고정"
           ]
         }
       ]
