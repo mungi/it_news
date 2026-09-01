@@ -328,6 +328,7 @@
 - [[raw/articles/kubernetes-v1-37-garhwal-2026-08-26]] — Kubernetes v1.37 Garhwal의 feature graduation·cgroup v1/ipvs 수명주기와 upgrade 검증 경계.
 - [[raw/articles/kubernetes-v1-37-metrics-api-stable-2026-08-28]] — `metrics.k8s.io/v1` Stable 승격의 API client·HPA·metrics pipeline 검증 경계.
 - [[raw/articles/kubernetes-v1-37-pod-certificates-cluster-trust-bundles-2026-08-29]] — Pod Certificates·Cluster Trust Bundles GA의 signer·X.509 rotation·workload mTLS identity 검증 경계.
+- [[raw/articles/kubernetes-v1-37-storage-version-migration-2026-09-01]] — Storage Version Migration GA·기본 활성화의 CRD schema·encryption rewrite와 etcd/API control-plane 검증 경계.
 - [[raw/articles/aitimes-envharness-agent-learning-2026-08-31]] — EnvHarness wrapper·원본 verifier 보존·fresh rollout 기반 agent benchmark 연구와 재현·권한 검증 경계.
 
 - [[raw/articles/anthropic-model-hardware-standard-research-preview-2026-08-28]] — Anthropic MHS 공식 연구 프리뷰의 device driver·MCP·물리 장비 control safety 경계.
