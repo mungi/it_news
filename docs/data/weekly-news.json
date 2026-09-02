@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-02 07:25",
+  "last_updated_kst": "2026-09-02 15:22",
   "audience": "developers and engineers",
   "executive_summary": [
     "정부 2027 AI 예산안 보도는 Vera Rubin급 GPU 1만장과 독자 AI 모델 GPU 확충 3조8,500억원을 포함. GPU 장수는 usable capacity가 아니므로 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution을 사업별 gate로 검증 필요.",
@@ -197,6 +197,82 @@
   ],
   "items": [
     {
+      "id": "news-410",
+      "title_ko": "Kubernetes v1.37 etcd RangeStream beta: 대형 list read를 chunk stream·etcd v3.7 호환성으로 운영",
+      "title_original": "Kubernetes v1.37: etcd RangeStream Cuts Memory Use on Large List Reads",
+      "summary": "- beta: Kubernetes v1.37에서 `EtcdRangeStream` feature gate가 beta·기본 활성화되며, etcd v3.7 이상과 조합 시 대형 collection read를 `RangeStream` chunk로 처리\n- 경로: watch cache 초기화와 cache miss list read에서 API server·etcd가 전체 page를 동시에 보관하던 unary `Range` 대신 chunk를 decode·release하며 peak memory 예측성을 개선\n- 호환성: startup capability 확인과 runtime `Unimplemented` fallback으로 older etcd에서는 기존 paginated `Range` path 유지; 비활성화는 `--feature-gates=EtcdRangeStream=false`\n- 팀 액션: `listStream` metric·apiserver/etcd RSS·list p95/p99·OOM·watch-cache 재초기화·etcd v3.7 rollout과 restore/rollback을 같은 upgrade gate로 검증 필요",
+      "detail": "Kubernetes 공식 블로그는 2026년 9월 2일 03:30 KST에 etcd RangeStream이 Kubernetes v1.37에서 beta로 승격됐다고 발표했다. etcd v3.7의 `RangeStream` RPC는 기존 `RangeRequest`와 같은 결과 집합을 반환하지만 전체 response를 먼저 조립하지 않고 value 크기에 맞춰 조정되는 chunk로 stream한다. API server는 watch cache 초기화 및 cache에서 처리할 수 없는 list request에서 chunk를 도착 즉시 decode하고 다음 chunk 전 memory를 해제한다. 기존 paginated read는 key 수 기준 page여서 큰 Pod 등 object가 섞이면 page byte 크기와 concurrent read의 peak memory가 예측하기 어렵고, etcd unary `Range`와 API server decode가 같은 payload를 동시에 보관할 수 있었다. `EtcdRangeStream`은 v1.37에서 beta·기본 활성화지만 etcd v3.7 이상에서만 사용된다. API server는 startup에서 지원 여부를 판단하고 runtime `Unimplemented` 응답에서는 기존 paginated `Range`로 fallback한다. 공식 원문은 memory footprint가 작아지고 peak usage가 예측 가능해진다는 설계를 설명하지만 cluster별 절감량·latency·managed Kubernetes 지원·etcd upgrade 절차를 수치로 보증하지 않는다. 대형 resource collection 조직은 feature gate만 확인하지 말고 `etcd_request_duration_seconds_count{operation=\"listStream\"}`, API server/etcd RSS, list latency, watch-cache 재초기화, OOM, etcd version·rollback을 canary로 검증해야 한다.",
+      "why_it_matters": "대규모 Pod·CRD collection의 list와 watch-cache 재초기화는 control plane memory spike·OOM 위험과 연결됨. `RangeStream`은 response representation을 바꾸는 control-plane data path이므로 etcd 버전 호환성과 fallback evidence 없이 capacity 절감으로 가정할 수 없음.",
+      "engineering_implication": "v1.37 upgrade 전에 etcd v3.7 support·managed provider 지원 범위·feature gate policy를 inventory하고, `listStream` count와 conventional list path를 분리 관측해야 함. 대형 object·concurrent list·watch cache restart canary에서 apiserver/etcd RSS·GC·list p95/p99·OOM·error·recovery를 기준선과 비교하고, gate disable·etcd rollback·control-plane incident owner를 runbook에 고정 필요.",
+      "korea_implication": "국내 managed Kubernetes 사용 조직은 upstream beta·default-on 상태만으로 provider control plane과 etcd v3.7 적용 여부를 추정할 수 없음. provider release note·support case·maintenance window를 확인하고, 대형 CRD와 multi-tenant list workload에서 직접 metric 증적을 남길 필요.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "etcd",
+        "Control Plane",
+        "Watch Cache",
+        "Performance",
+        "Memory",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-02 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/01/kubernetes-v1-37-etcd-range-stream/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "KEP-5966: etcd RangeStream",
+          "url": "https://kep.k8s.io/5966"
+        },
+        {
+          "title": "etcd RangeStream API guide",
+          "url": "https://etcd.io/docs/v3.7/learning/api/#rangestream"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes 공식 canonical page의 `article:published_time` `2026-09-01T10:30:00-08:00`를 KST `2026-09-02 03:30`으로 변환해 기록. `EtcdRangeStream`은 v1.37에서 beta·default-on이며 etcd v3.7의 streaming read를 API server path에 연결하는 범위임.",
+          "items": [
+            "대상: watch cache 초기화와 cache miss list request에서 etcd 전체 collection read 경로 변경",
+            "전제: Kubernetes v1.37 이상과 etcd v3.7 이상 조합에서 `RangeStream` 사용"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기존 unary `Range`는 page를 전부 조립한 뒤 전송하고 API server가 decode하는 동안 같은 payload가 양쪽 memory에 존재할 수 있음. key count 기반 pagination은 object byte size를 모르므로 큰 object와 concurrent read에서 peak memory가 불규칙해질 수 있음.",
+          "items": [
+            "변화: `RangeStream`은 같은 `RangeRequest`·결과 집합을 value 크기에 맞춰 조정된 chunk로 반환",
+            "처리: API server가 chunk를 도착 즉시 decode·release해 전체 collection을 동시에 보관하지 않는 경로",
+            "효과 범위: 공식 원문은 API server·etcd memory 감소와 peak usage 예측성 개선을 설명하며 cluster별 절감량은 미공개"
+          ]
+        },
+        {
+          "heading": "호환성·관측 포인트",
+          "body": "API server는 startup에서 etcd capability를 확인하고 runtime call이 `Unimplemented`를 반환하면 기존 paginated `Range` path로 fallback함. default enablement가 실제 streaming 사용 증거는 아니므로 metric으로 확인해야 함.",
+          "items": [
+            "확인: `etcd_request_duration_seconds_count{operation=\"listStream\"}`의 non-zero count로 `RangeStream` 사용 여부 판별",
+            "fallback: older etcd 또는 지원 불가 응답에서는 paginated `Range` 유지",
+            "제어: 비활성화 필요 시 `--feature-gates=EtcdRangeStream=false` 적용"
+          ]
+        },
+        {
+          "heading": "운영 시사점",
+          "body": "이 변경은 application API contract보다 control-plane read representation에 가깝지만, 대형 list·watch-cache restart·etcd upgrade와 겹치면 OOM·latency·recovery 위험을 만들 수 있음. feature gate와 etcd upgrade를 독립된 canary 단계로 관리해야 함.",
+          "items": [
+            "관측: apiserver·etcd RSS, GC, list p50/p95/p99, concurrent read, watch-cache reinitialization, OOM·error를 resource type별 수집",
+            "검증: large Pod·CRD object와 concurrent list replay에서 baseline 대비 memory·latency·fallback path 비교",
+            "팀 액션: etcd v3.7 compatibility, gate disable, rollback owner, managed-provider support를 upgrade approval gate로 등록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-409",
       "title_ko": "Cloudflare Cache Transcoding prototype: Zstandard·Pingora로 cache capacity와 backbone byte를 CPU trade-off로 검증",
       "title_original": "How we could save petabytes of cache storage with Zstandard and Pingora",
@@ -263,11 +339,11 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-408",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -335,7 +411,7 @@
     },
     {
       "id": "news-407",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -402,7 +478,7 @@
     },
     {
       "id": "news-405",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -538,7 +614,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-404",
@@ -609,7 +685,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-402",
@@ -677,7 +753,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-403",
@@ -747,7 +823,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-400",
@@ -816,7 +892,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-399",
@@ -885,7 +961,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-397",
@@ -962,7 +1038,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-398",
@@ -1041,7 +1117,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-395",
@@ -1119,7 +1195,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-401",
@@ -1193,11 +1269,11 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-394",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -1273,7 +1349,7 @@
     },
     {
       "id": "news-392",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -1341,7 +1417,7 @@
     },
     {
       "id": "news-393",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -1492,11 +1568,11 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-391",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -1634,7 +1710,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-389",
@@ -1702,7 +1778,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-384",
@@ -1767,7 +1843,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-383",
@@ -1831,7 +1907,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-386",
@@ -1897,7 +1973,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-387",
@@ -1961,7 +2037,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-385",
@@ -2035,7 +2111,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-382",
@@ -2098,7 +2174,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-381",
@@ -2161,11 +2237,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-380",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -2242,7 +2318,7 @@
     },
     {
       "id": "news-336",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -2403,7 +2479,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-378",
@@ -2489,7 +2565,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-376",
@@ -2580,7 +2656,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-375",
@@ -2657,7 +2733,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-372",
@@ -2731,7 +2807,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-373",
@@ -2799,7 +2875,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-374",
@@ -2876,7 +2952,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-371",
@@ -2950,7 +3026,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-370",
@@ -3028,7 +3104,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-366",
@@ -3114,7 +3190,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-364",
@@ -3183,7 +3259,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-365",
@@ -3252,7 +3328,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-368",
@@ -3328,7 +3404,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-361",
@@ -3404,7 +3480,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-363",
@@ -3481,7 +3557,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-360",
@@ -3562,7 +3638,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-362",
@@ -3639,7 +3715,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-367",
@@ -3715,7 +3791,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-357",
@@ -3793,82 +3869,6 @@
             "검증: 동일 workload에서 live fetch와 in-AWS index의 citation·freshness·quality·latency·cost·injection resistance 비교",
             "통제: 민감 query는 deny-by-default mode와 narrow IAM grant, policy revision, approval path 적용",
             "팀 액션: 30일 내 대표 search workflow에 mode별 canary·audit query·rollback drill 등록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-359",
-      "title_ko": "Cloudflare Workers 원격 Spectre 재평가: shared-process tenant isolation에 DyPrIs·V8 Sandbox·in-process 방어 추가",
-      "title_original": "A revisit of remote Spectre attacks on Cloudflare Workers",
-      "summary": "- 연구: Cloudflare가 production Workers에서 Dynamic Process Isolation(DyPrIs) 구현 한계를 확인하고 remote Spectre proof-of-concept으로 최대 **12 bit/s·99% accuracy** leakage를 시연\n- 구조: V8 isolate별 JavaScript heap은 분리하지만 다수 tenant가 같은 OS process를 공유하는 runtime에서 arbitrary read는 cross-tenant leakage 경계\n- 조치: DyPrIs 개선, V8 Sandbox 통합, in-process isolation 적용을 공개\n- 상태: 발표 시점 production mitigation 완료 및 최근 3년 active exploitation indicator 미발견이라는 Cloudflare 범위\n- 팀 액션: shared-process runtime의 V8 patch·isolation escalation·timer/shared-memory policy·secret scope·anomaly telemetry를 workload별 release gate로 검증 필요",
-      "detail": "Cloudflare는 2026년 8월 19일 production Workers 환경에서 remote Spectre 공격을 재평가한 결과를 공개했다. 연구진은 Dynamic Process Isolation(DyPrIs)의 구현 한계를 찾아 production workload에서 최대 12 bit/s, 99% accuracy로 memory leakage를 시연했다고 밝혔다. Workers는 V8 isolate와 separate JavaScript heap을 사용하지만 다수 tenant가 같은 operating-system process를 공유한다. Cloudflare는 이런 shared-process 구조에서 arbitrary read가 cross-tenant leakage로 이어질 수 있다고 설명했다. 대응으로 DyPrIs 개선, V8 Sandbox 통합, in-process isolation을 적용했으며 공개된 공격은 production system에서 이미 완화됐고 최근 3년 active exploitation indicator는 찾지 못했다고 밝혔다. 이 내용은 Cloudflare Workers Runtime의 발표 범위이며, 다른 V8 isolate·serverless runtime의 동일 취약성 또는 방어 효과를 보증하지 않는다.",
-      "why_it_matters": "서버리스 multi-tenancy는 언어 런타임 격리만으로 끝나지 않으며, CPU microarchitecture·process boundary·script classification·patch pipeline·incident telemetry를 함께 설계해야 하는 infrastructure security 문제임.",
-      "engineering_implication": "untrusted code runtime은 V8/engine patch level, process isolation escalation, timer·shared-memory 제한, secret scope, egress, cross-tenant anomaly signal을 inventory화해야 함. vendor mitigation을 적용 사실로만 기록하고 runtime version·workload topology·policy·incident detection evidence를 tenant별 acceptance gate와 rollback drill로 확인 필요.",
-      "korea_implication": "국내 서버리스·edge·multi-tenant PaaS도 해외 벤더의 mitigation 발표를 자체 isolation 보증으로 해석하지 말고, shared process 여부·runtime revision·tenant boundary·비밀정보 접근·monitoring export를 서비스 계약과 운영 evidence에서 확인해야 함.",
-      "category": "Security",
-      "tags": [
-        "Cloudflare",
-        "Workers",
-        "Spectre",
-        "Serverless",
-        "V8",
-        "Tenant Isolation"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-08-20 01:00",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/revisiting-spectre-attacks-on-workers/",
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 production Workers에서 remote Spectre attack을 재평가하고 mitigation 변경을 공개",
-          "items": [
-            "발행: Cloudflare RSS `2026-08-19 16:00:28 UTC`, KST `2026-08-20 01:00`",
-            "결과: DyPrIs 구현 한계를 확인하고 최대 `12 bit/s`, `99% accuracy` leakage proof-of-concept 시연",
-            "상태: 발표 시점 production mitigation 완료와 최근 3년 active exploitation indicator 미발견"
-          ]
-        },
-        {
-          "heading": "공유 runtime 구조",
-          "body": "Workers는 V8 isolate별 JavaScript heap을 분리하면서 다수 tenant가 한 OS process를 공유해 startup latency와 density를 확보하는 설계",
-          "items": [
-            "경계: Worker process 내 arbitrary read가 cross-tenant leakage로 이어질 수 있는 구조",
-            "원리: speculative execution이 cache 같은 microarchitectural state에 남긴 흔적으로 out-of-bounds memory bit를 추론",
-            "조건: remote attacker는 shared hardware activity·interrupt·context switch·coarse timer 같은 production obstacle을 통과 필요"
-          ]
-        },
-        {
-          "heading": "방어 변경",
-          "body": "Cloudflare는 기존 Dynamic Process Isolation을 보완하고 V8 Sandbox와 in-process isolation을 결합했다고 발표",
-          "items": [
-            "기존: CPU-only execution timer freeze, multithreading/shared memory 제한, suspicious script detection·memory shuffle·process isolation 설명",
-            "변경: DyPrIs 개선, V8 Sandbox 통합, in-process isolation 추가",
-            "경계: 본문은 Cloudflare Workers Runtime의 mitigation이며 타 serverless/V8 runtime의 동일 보증 자료가 아님"
-          ]
-        },
-        {
-          "heading": "운영·공급망 관점",
-          "body": "multi-tenant runtime의 isolation은 engine patch와 process boundary뿐 아니라 secret·network·script policy·incident signal의 결합 control",
-          "items": [
-            "inventory: runtime engine revision·shared-process topology·isolation escalation·timer/shared-memory policy·secret scope 식별",
-            "관측: anomalous script, process migration, egress, credential access, cross-tenant error signal을 incident timeline으로 연결",
-            "피할 것: 연구 disclosure 또는 vendor mitigation을 active compromise·모든 tenant protection의 증거로 치환하는 판단"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "untrusted code의 고밀도 실행은 성능 최적화와 isolation strength를 같은 release gate에서 검증할 필요",
-          "items": [
-            "검증: runtime update 전후 tenant isolation·latency·density·secret access·egress·rollback 조건을 representative workload로 비교",
-            "통제: high-risk script의 escalation process, narrow credential, egress allowlist, patch deployment evidence 적용",
-            "팀 액션: shared runtime 사용 서비스를 대상으로 engine patch·tenant boundary·incident telemetry·rollback owner inventory 완료"
           ]
         }
       ],
