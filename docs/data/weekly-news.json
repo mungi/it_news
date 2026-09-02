@@ -2,14 +2,14 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-02 15:22",
+  "last_updated_kst": "2026-09-02 23:30",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Anthropic Fable 5.1·Mythos 5.1 보도는 일반/제한 access와 vendor benchmark·cache-read 가격 인하를 함께 제시. 원문·계약·harness 조건 없이 점수·비용을 production SLO로 전환하지 말고 task success·tool failure·TTFT/p95·cache/token 비용·safety intervention·fallback을 workload별 canary로 비교 필요.",
     "정부 2027 AI 예산안 보도는 Vera Rubin급 GPU 1만장과 독자 AI 모델 GPU 확충 3조8,500억원을 포함. GPU 장수는 usable capacity가 아니므로 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution을 사업별 gate로 검증 필요.",
     "Cloudflare Adaptive Intelligence가 Bot Score의 지속 재학습·shadow 비교·점진 rollout을 공개. `Auto Update Machine Learning`은 security control 변경이므로 login·checkout·account recovery별 bot block뿐 아니라 human success·challenge solve·false-positive appeal·rollback time을 cohort별로 함께 검증 필요.",
     "Amazon CloudWatch agent가 Linux `journald`를 직접 읽어 CloudWatch Logs로 전송: file export 없이 systemd unit·priority·process metadata와 field/regex filter를 활용할 수 있음. journal 권한·민감 field redaction·cursor restart·delivery lag·GB/day·retention/KMS는 file-tail 경로와 canary 비교 필요.",
-    "Cloudflare Big Pineapple DNS cache는 immutable entry layout 최적화로 per-entry footprint를 953 B에서 420 B로 낮추고 fleet working set 약 100 TB를 절감. 2,500억 entry 규모의 결과이므로 타 환경에 수치를 환산하지 말고 allocation·p99 memory·hit/eviction·tail latency·upstream load를 함께 검증 필요.",
-    "Kubernetes v1.37 Storage Version Migration이 GA·기본 활성화: CRD의 이전 storage schema와 encryption-at-rest·key rotation 뒤 stale object를 `StorageVersionMigration`으로 rewrite할 수 있음. `Succeeded=True`만으로 API version·old key를 폐기하지 말고 `.status.storedVersions`·object sampling·backup/restore·API QPS·etcd latency를 canary release gate로 확인 필요."
+    "Cloudflare Big Pineapple DNS cache는 immutable entry layout 최적화로 per-entry footprint를 953 B에서 420 B로 낮추고 fleet working set 약 100 TB를 절감. 2,500억 entry 규모의 결과이므로 타 환경에 수치를 환산하지 말고 allocation·p99 memory·hit/eviction·tail latency·upstream load를 함께 검증 필요."
   ],
   "deep_dives": [
     {
@@ -197,6 +197,74 @@
   ],
   "items": [
     {
+      "id": "news-411",
+      "title_ko": "앤트로픽 Fable 5.1·Mythos 5.1 보도: 장기 agent 작업·cache-read 가격을 benchmark·access control로 분리 검증",
+      "title_original": "Anthropic releases Claude Fable 5.1 and Claude Mythos 5.1 (reported)",
+      "summary": "- 보도: 인공지능신문은 Anthropic이 Fable 5.1을 일반·기업용으로, Mythos 5.1을 사이버보안·생명과학의 검증된 기관에 제한 제공한다고 보도\n- 성능·비용 주장: 기사 인용 기준 Terminal-Bench-Science 52.6%, Terminal-Bench 4.0에서 Fable 55.8%·Mythos 60.9%, cache read 가격 75% 인하와 agentic 작업 최대 45% 비용 감소를 제시\n- 경계: benchmark task·harness·model configuration·지역·quota·SLA·가격 적용 조건·보안 검증 프로그램과 EFS 계약은 원문 공지·계약을 별도 확인하기 전 확정 불가\n- 팀 액션: 모델 전환 전 task cohort별 성공률·tool error·TTFT/p95·token/cache-read 비용·safety intervention·권한 거부·fallback을 동일 trace로 비교하고 고위험 연구 access를 별도 approval gate로 운영 필요",
+      "detail": "인공지능신문은 2026년 9월 2일 11:35 KST에 Anthropic이 Fable 5.1과 Mythos 5.1을 발표했다고 보도했다. 기사 기준 Fable 5.1은 일반 이용자와 기업에 제공되고, 같은 기반 모델에 더 높은 안전장치를 적용한 Mythos 5.1은 사이버보안·생명과학의 검증된 기관에 제한 제공된다. 기사에는 Terminal-Bench-Science 0.1에서 Fable 5.1 52.6%, Terminal-Bench 4.0에서 Fable 5.1 55.8%·Mythos 5.1 60.9%, GDPval-AA v2 1,853점, OSWorld 2.0 partial 77.9%·strict 41.7%, CursorBench 3.2.0 73.4%라는 Anthropic 공개 수치가 인용됐다. cache read는 100만 token당 0.25달러로 75% 인하됐고, 기사상 일반 작업 비용은 Fable 5 대비 약 25%, context·tool 사용량이 많은 agentic 작업은 최대 45% 절감될 수 있다는 주장도 포함됐다. 그러나 이는 직접 읽은 인공지능신문의 timestamped secondary report와 그 안의 vendor-reported 수치 범위다. 직접 검증한 Anthropic 원문 URL, benchmark harness·seed·tool permission·모델 버전, 실제 지역·요금제·quota·availability·SLA, safety access 심사와 Enterprise Frontier Safeguards(EFS)의 저장·retention·encryption·key custody·contract는 이 기사만으로 확정할 수 없다. 조직은 성능·가격 발표를 즉시 production routing 근거로 쓰지 말고 workload별 task success·tool validity·retry·TTFT/p95·token/cache-read·GPU/endpoint 비용·safety intervention·human approval·fallback recovery를 canary에서 비교해야 한다.",
+      "why_it_matters": "장기 실행 coding·research agent의 모델 선택은 benchmark 점수뿐 아니라 tool permission, safety access, context cache, retry와 fallback의 운영 비용을 함께 바꿈. 일반 제공과 검증기관 제한 제공의 경계를 무시하면 권한·데이터·감사 설계가 모델 routing 뒤늦게 따라가는 위험이 생김.",
+      "engineering_implication": "Fable 5.1·Mythos 5.1 또는 대체 모델을 도입하기 전 benchmark와 production workload를 분리하고, task 성공률·tool-call failure·TTFT/p95·context/cache-read·token 비용·safety block·approval delay·fallback recovery를 job ID로 연결해야 함. 고위험 cyber·bio workload는 계정·workspace·tool·data egress·human approval·audit retention을 일반 coding cohort와 분리한 access control로 운영 필요.",
+      "korea_implication": "국내 기업·연구기관은 보도상의 일반 제공·검증기관 제한 제공을 국내 리전·계약·요금제·데이터 처리 조건으로 추정할 수 없음. 공급자 계약, 개인정보·연구데이터 반출 경로, 로그 보존, 접근 심사와 사고 대응 책임을 직접 확인한 뒤 업무군별 rollout을 승인할 필요.",
+      "category": "AI",
+      "tags": [
+        "Anthropic",
+        "Foundation Model",
+        "Agent",
+        "Coding",
+        "Benchmark",
+        "Model Routing",
+        "FinOps",
+        "AI Safety"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-09-02 11:35",
+      "source_name": "인공지능신문",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41716",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202609/41716_62779_3456_v150.jpg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "인공지능신문 canonical page의 `article:published_time` `2026-09-02T11:35:22+09:00`와 Open Graph image를 직접 확인해 KST `2026-09-02 11:35`로 기록. 본 카드는 Anthropic 원문을 직접 읽지 못한 timestamped secondary report 범위임.",
+          "items": [
+            "제공: 기사상 Fable 5.1은 일반 이용자·기업 대상, Mythos 5.1은 cyber·bio 고위험 연구의 검증된 기관 제한 대상",
+            "경계: vendor original announcement·access policy·지역·plan·계약 조건을 secondary report만으로 확정하지 않음"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사는 두 모델이 동일 기반 모델에 서로 다른 safeguard 수준을 적용한다고 설명하며, 장기 agent 작업·과학 연구·코딩을 중심으로 vendor benchmark와 사례를 제시함.",
+          "items": [
+            "벤치마크: Terminal-Bench-Science 0.1 Fable 5.1 **52.6%**, Terminal-Bench 4.0 Fable 55.8%·Mythos 60.9%라는 기사 인용 수치",
+            "업무: GDPval-AA v2 1,853점, OSWorld 2.0 partial 77.9%·strict 41.7%, CursorBench 3.2.0 73.4%라는 reported scope",
+            "안전: Mythos 5.1의 cyber·bio 제한 access와 일반 모델의 safety guardrail 적용 차이를 기사 범위로 기록"
+          ]
+        },
+        {
+          "heading": "비용·성능 검증 경계",
+          "body": "기사상 cache read 가격은 100만 token당 0.25달러로 75% 인하됐고 Fable 5 대비 일반 작업 약 25%, 고도 agentic 작업 최대 45% 비용 감소가 언급됨. 이 수치는 input mix·cache hit·tool loop·retry·region·contract가 없는 vendor-reported 범위임.",
+          "items": [
+            "비용: input/output token, cache-read, tool call, retry, queue, fallback을 task·tenant·model route별로 분리 귀속",
+            "성능: benchmark harness·seed·prompt·tool permission·context length·judge와 production success·latency·SLO를 같은 결과로 취급하지 않음",
+            "검증: representative coding·research workflow에서 task success·tool validity·TTFT/p95·completion·cost를 before/after canary로 비교"
+          ]
+        },
+        {
+          "heading": "접근 통제·운영 시사점",
+          "body": "제한 제공 모델의 access decision은 모델 성능이 아니라 identity·workspace·tool·data path·human approval·audit 문제임. 기사에 언급된 EFS의 storage·retention·encryption·key custody·SLA는 직접 계약·공식 문서 확인 전 보증 범위가 아님.",
+          "items": [
+            "통제: 고위험 workload용 계정·project·tool allowlist·network egress·secret scope·human approval을 일반 agent와 분리",
+            "관측: safety intervention·denial·override·tool call·data export·fallback을 request/job ID로 보존",
+            "팀 액션: model route 확대 전 access approval·rollback·incident owner·audit retention을 release gate로 등록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-410",
       "title_ko": "Kubernetes v1.37 etcd RangeStream beta: 대형 list read를 chunk stream·etcd v3.7 호환성으로 운영",
       "title_original": "Kubernetes v1.37: etcd RangeStream Cuts Memory Use on Large List Reads",
@@ -270,7 +338,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-409",
@@ -339,11 +407,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-408",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -411,7 +479,7 @@
     },
     {
       "id": "news-407",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -478,7 +546,7 @@
     },
     {
       "id": "news-405",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -614,7 +682,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-404",
@@ -685,7 +753,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-402",
@@ -753,7 +821,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-403",
@@ -823,7 +891,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-400",
@@ -892,7 +960,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-399",
@@ -961,7 +1029,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-397",
@@ -1038,7 +1106,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-398",
@@ -1117,7 +1185,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-395",
@@ -1195,7 +1263,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-401",
@@ -1269,11 +1337,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-394",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -1349,7 +1417,7 @@
     },
     {
       "id": "news-392",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -1417,7 +1485,7 @@
     },
     {
       "id": "news-393",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -1568,11 +1636,11 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-391",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -1710,7 +1778,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-389",
@@ -1778,7 +1846,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-384",
@@ -1843,7 +1911,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-383",
@@ -1907,7 +1975,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-386",
@@ -1973,7 +2041,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-387",
@@ -2037,7 +2105,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-385",
@@ -2111,7 +2179,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-382",
@@ -2174,7 +2242,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-381",
@@ -2237,11 +2305,11 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-380",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -2318,7 +2386,7 @@
     },
     {
       "id": "news-336",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -2479,7 +2547,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-378",
@@ -2565,7 +2633,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-376",
@@ -2656,7 +2724,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-375",
@@ -2733,7 +2801,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-372",
@@ -2807,7 +2875,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-373",
@@ -2875,7 +2943,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-374",
@@ -2952,7 +3020,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-371",
@@ -3026,7 +3094,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-370",
@@ -3104,7 +3172,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-366",
@@ -3190,7 +3258,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-364",
@@ -3259,7 +3327,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-365",
@@ -3328,7 +3396,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-368",
@@ -3404,7 +3472,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-361",
@@ -3480,7 +3548,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-363",
@@ -3557,7 +3625,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-360",
@@ -3638,7 +3706,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-362",
@@ -3715,7 +3783,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-367",
@@ -3788,87 +3856,6 @@
             "복구: trusted lockfile·registry provenance에서 clean rebuild하고 artifact digest·signature·SBOM을 재발행",
             "회전: build-time secret·registry token·cloud credential의 접근 기록을 검토하고 노출 가능 범위에서 rotation",
             "팀 액션: build script egress default-deny 또는 allowlist, immutable cache key, provenance attestation과 emergency cache purge runbook 점검"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-357",
-      "title_ko": "Amazon Bedrock Web Search 외부 웹 접근: IAM·request parameter로 retrieval egress를 분리",
-      "title_original": "Launching External Web Access for Web Search on Amazon Bedrock",
-      "summary": "- 변경: AWS가 Bedrock Web Search에 public web live fetch를 위한 `external_web_access` 제어를 추가\n- 권한: request identity에 `bedrock-websearch:ExternalWebAccess` IAM permission을 부여하고 parameter 기본값 `true`를 유지해야 외부 접근 가능\n- 경계: 민감 데이터 처리에서 `external_web_access: false`를 설정하면 Amazon의 AWS 내 web index·knowledge graph만 사용하고 request data가 AWS boundary를 나가지 않는다는 AWS 설명\n- 제공: 외부 접근은 US East (N. Virginia)·US East (Ohio)·US West (Oregon)에서 제공\n- 팀 액션: query 분류별 external access policy·IAM least privilege·domain filter·citation·egress decision을 audit하고 live fetch와 in-AWS index의 quality·freshness·latency·cost를 canary 비교 필요",
-      "detail": "AWS는 2026년 8월 19일 Web Search on Amazon Bedrock의 외부 웹 접근 기능을 발표했다. `bedrock-websearch:ExternalWebAccess` IAM permission을 request identity에 부여하고 `external_web_access` parameter를 기본값 `true`로 두면 최신 문서·가격처럼 freshness가 필요한 use case에서 public web content를 live fetch할 수 있다. 민감 데이터는 `external_web_access: false`로 설정해 Amazon의 AWS 내 web index와 knowledge graph 결과만 사용하고 request data가 AWS boundary를 나가지 않게 할 수 있다고 AWS는 설명했다. 외부 접근 제공 리전은 US East (N. Virginia), US East (Ohio), US West (Oregon)이다. AgentCore Web Search의 domain·published-date filtering과 Europe·Asia Pacific 확장은 별도 AWS 공지로 확인했다. 한국 리전, index coverage·freshness SLA, provider/subprocessor, retention, citation quality, quota와 가격은 이번 공지에서 확인하지 못했다.",
-      "why_it_matters": "검색 grounding의 freshness 선택은 model parameter가 아니라 request data의 external egress, IAM 권한, citation provenance, latency·cost를 바꾸는 retrieval control plane 변경임.",
-      "engineering_implication": "data classification마다 `external_web_access` 기본값과 override 권한을 분리하고, request별 IAM principal·mode·domain filter·citation·egress decision을 correlation ID에 연결해야 함. public web과 in-AWS index를 동일 workload로 canary 비교한 뒤 quality·freshness·latency·cost·prompt injection stop condition과 rollback policy를 승인 필요.",
-      "korea_implication": "국내 리전 제공·국외 이전·위탁 처리·보존·지원 범위는 공지에 없으므로, AWS boundary 표현을 국내 데이터 처리 요건 충족으로 해석하지 말고 account·region·subprocessor·log export·contract evidence를 별도 검증 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Amazon Bedrock",
-        "Web Search",
-        "Grounding",
-        "IAM",
-        "Data Egress"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-20 08:00",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-web-access-web-search/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "AgentCore Web Search domain/date filtering 및 리전 확장",
-          "url": "https://aws.amazon.com/about-aws/whats-new/2026/08/web-search-amazon-bedrock/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Amazon Bedrock Web Search가 public web을 live fetch하는 external access mode를 추가한 AWS 공식 공지",
-          "items": [
-            "발행: AWS RSS `2026-08-19 23:00 UTC`, KST `2026-08-20 08:00`",
-            "대상: 최신 문서·가격·점수처럼 최신성이 필요한 Web Search use case",
-            "권한: request identity에 `bedrock-websearch:ExternalWebAccess` IAM permission 필요"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "retrieval 결과의 외부 접근 여부를 IAM permission과 request parameter로 분리하는 제품 범위",
-          "items": [
-            "외부 모드: `external_web_access` 기본값 `true`를 유지하면 public web content live fetch",
-            "내부 모드: `external_web_access: false`면 Amazon의 in-AWS web index와 knowledge graph 결과만 사용",
-            "경계: false 설정에서 request data가 AWS boundary를 나가지 않는다는 AWS 설명"
-          ]
-        },
-        {
-          "heading": "아키텍처·보안 경계",
-          "body": "검색 grounding의 freshness 선택은 prompt와 retrieval query가 어느 boundary로 가는지를 결정하는 control plane 정책",
-          "items": [
-            "분리: data classification별 external mode 허용, IAM principal, domain allowlist와 override owner 관리",
-            "기록: request마다 mode·identity·domain filter·citation·egress decision을 correlation ID로 보존",
-            "피할 것: AWS boundary 표현만으로 국내 규제·subprocessor·retention·support 요건을 충족한다고 판단"
-          ]
-        },
-        {
-          "heading": "제공 범위와 증거 경계",
-          "body": "공식 공지는 제공 리전과 접근 control을 설명하며 retrieval 품질·SLA·가격의 보증 자료는 아님",
-          "items": [
-            "리전: US East (N. Virginia)·US East (Ohio)·US West (Oregon) 제공",
-            "관련: AgentCore Web Search의 domain·published-date filtering과 Europe·Asia Pacific 확장은 별도 공지",
-            "미확인: 한국 리전·index coverage·freshness SLA·quota·pricing·retention·citation quality"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "외부 web grounding은 enabled/disabled 옵션이 아니라 data egress와 evidence provenance를 포함한 release 대상",
-          "items": [
-            "검증: 동일 workload에서 live fetch와 in-AWS index의 citation·freshness·quality·latency·cost·injection resistance 비교",
-            "통제: 민감 query는 deny-by-default mode와 narrow IAM grant, policy revision, approval path 적용",
-            "팀 액션: 30일 내 대표 search workflow에 mode별 canary·audit query·rollback drill 등록"
           ]
         }
       ],
