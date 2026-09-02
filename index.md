@@ -331,6 +331,7 @@
 - [[raw/articles/kubernetes-v1-37-storage-version-migration-2026-09-01]] — Storage Version Migration GA·기본 활성화의 CRD schema·encryption rewrite와 etcd/API control-plane 검증 경계.
 - [[raw/articles/kubernetes-v1-37-etcd-range-stream-2026-09-02]] — etcd v3.7 RangeStream beta·default-on의 대형 list read memory·fallback·control-plane 검증 경계.
 - [[raw/articles/aitimeskr-anthropic-fable-mythos-51-2026-09-02]] — Fable 5.1·Mythos 5.1 보도의 benchmark·cache-read 가격·제한 access와 production 검증 경계.
+- [[raw/articles/aitimes-openai-astra-cyber-safeguards-2026-09-02]] — Astra의 Critical cyber capability 보도와 runtime isolation·승인·중단 증거 경계.
 - [[raw/articles/aitimes-envharness-agent-learning-2026-08-31]] — EnvHarness wrapper·원본 verifier 보존·fresh rollout 기반 agent benchmark 연구와 재현·권한 검증 경계.
 - [[raw/articles/aitimes-korea-2027-ai-budget-gpu-2026-09-01]] — 2027 AI 예산안 보도의 Vera Rubin급 GPU 1만장·GPU 확충 예산과 allocation·전력·데이터 control plane 검증 경계.
 
