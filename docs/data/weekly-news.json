@@ -2,10 +2,10 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-03 03:36",
+  "last_updated_kst": "2026-09-03 07:39",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Anthropic Fable 5.1·Mythos 5.1 보도는 일반/제한 access와 vendor benchmark·cache-read 가격 인하를 함께 제시. 원문·계약·harness 조건 없이 점수·비용을 production SLO로 전환하지 말고 task success·tool failure·TTFT/p95·cache/token 비용·safety intervention·fallback을 workload별 canary로 비교 필요.",
+    "Amazon Bedrock Web Search가 AWS GovCloud (US-West)로 확장돼 supported OpenAI GPT model의 web grounding·citation을 server-side tool로 제공. IAM allow/deny·Region policy는 authorization 입력일 뿐이므로 public source data class·citation retention·tool invocation·p95·cost·prompt injection을 request trace와 canary로 검증 필요.",
     "정부 2027 AI 예산안 보도는 Vera Rubin급 GPU 1만장과 독자 AI 모델 GPU 확충 3조8,500억원을 포함. GPU 장수는 usable capacity가 아니므로 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution을 사업별 gate로 검증 필요.",
     "Cloudflare Adaptive Intelligence가 Bot Score의 지속 재학습·shadow 비교·점진 rollout을 공개. `Auto Update Machine Learning`은 security control 변경이므로 login·checkout·account recovery별 bot block뿐 아니라 human success·challenge solve·false-positive appeal·rollback time을 cohort별로 함께 검증 필요.",
     "Amazon CloudWatch agent가 Linux `journald`를 직접 읽어 CloudWatch Logs로 전송: file export 없이 systemd unit·priority·process metadata와 field/regex filter를 활용할 수 있음. journal 권한·민감 field redaction·cursor restart·delivery lag·GB/day·retention/KMS는 file-tail 경로와 canary 비교 필요.",
@@ -189,6 +189,84 @@
   ],
   "items": [
     {
+      "id": "news-412",
+      "title_ko": "Amazon Bedrock Web Search, AWS GovCloud (US-West) 제공: grounded response를 IAM·citation·query policy로 검증",
+      "title_original": "Web Search on Amazon Bedrock is now available in AWS GovCloud (US-West)",
+      "summary": "- 제공: Amazon Bedrock의 built-in server-side `web_search` tool이 **AWS GovCloud (US-West)** 에서 지원되며, supported OpenAI GPT model의 최신 web grounding과 citation 반환을 AWS 공식 공지 범위로 제공\n- 호출: OpenAI Responses API 호환 `tools` array에 `web_search`를 넣고, AWS가 web index·cache·crawler·tool-call loop를 관리하는 경로\n- 통제: IAM으로 account·organization allow/deny와 Region 제한이 가능하고 request data를 기본적으로 AWS boundary 안에 둔다는 AWS 설명\n- 팀 액션: GovCloud 지원을 web source·citation·prompt/response의 compliance 보증으로 확대하지 말고 tool invocation·citation coverage·p95·cost·prompt injection·denial을 data class별 canary로 검증 필요",
+      "detail": "AWS는 2026년 9월 3일 02:52 KST(RSS `Wed, 02 Sep 2026 17:52:00 GMT`)에 Amazon Bedrock의 Web Search built-in server-side tool을 AWS GovCloud (US-West)에서 제공한다고 공지했다. 이 tool은 supported OpenAI GPT model이 최신 web 정보가 필요한 경우 web grounding을 수행하고, 응답에 사용 source citation을 포함하는 범위다. 애플리케이션은 OpenAI Responses API 호환 요청의 `tools` array에 `web_search` type을 넣으며, 자체 search index·crawler·tool-call loop를 운영하지 않는다. AWS는 Amazon이 관리하는 web index와 cache에서 결과를 제공하고, 기본값으로 request data를 AWS boundary 안에 둔다고 설명한다. IAM으로 account 또는 organization 단위 allow/deny와 Region 제한도 가능하다. launch model은 GPT-5.4, GPT-5.6 Terra, GPT-5.6 Luna이며 제공 리전은 GovCloud (US-West), US East (N. Virginia), US East (Ohio), US West (Oregon)이다. 하지만 공지는 web index의 freshness·coverage, citation completeness·correctness, model별 tool-selection, latency·quota·가격, logging·retention·audit export 및 public source의 데이터 등급을 보증하지 않는다. GovCloud 지원을 한국 리전 또는 일반 상용 리전의 data residency·compliance 보증으로 해석할 수 없다. 도입 조직은 query data class·external web access 목적·citation retention·human approval을 request trace에 연결하고, grounded answer correctness·citation coverage·tool invocation/denial·p95 latency·request/token/tool cost·prompt-injection rejection을 representative workload에서 비교해야 한다.",
+      "why_it_matters": "agent가 외부 web을 읽는 순간 모델 호출은 data boundary·source provenance·citation retention·tool authorization 문제를 함께 갖게 됨. AWS-managed search와 IAM control은 운영 surface를 줄일 수 있지만, public source 신뢰도와 application-side approval을 대체하지 않음.",
+      "engineering_implication": "Bedrock Web Search 사용 전 account·organization SCP, IAM action, model access, Region policy, application query allowlist와 citation/log retention을 하나의 policy matrix로 점검해야 함. canary에서는 answer correctness·citation URL/domain coverage·tool selection/denial·p95·error·token/tool 비용·prompt injection probe를 request ID로 연결하고, data class별 allowlist·human review·kill switch 기준을 정해야 함.",
+      "korea_implication": "AWS GovCloud (US-West) 제공은 한국 리전 지원이나 국내 개인정보·공공 데이터 처리 적합성을 의미하지 않음. 국내 조직은 실제 Bedrock 리전, cross-region path, contract·DPA, external web source 접근, 로그·citation 보존과 data egress를 별도 확인해야 함.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "Web Search",
+        "Grounding",
+        "GovCloud",
+        "IAM",
+        "AI Governance",
+        "Cloud Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-09-03 02:52",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-bedrock-web-aws-govcloud/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon Bedrock Web Search technical blog",
+          "url": "https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-web-search-openai-gpt-models/"
+        },
+        {
+          "title": "Amazon Bedrock pricing",
+          "url": "https://aws.amazon.com/bedrock/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS canonical announcement의 embedded `postDateTime` `2026-09-02T17:52:00Z`와 RSS timestamp를 KST `2026-09-03 02:52`로 변환해 기록. Amazon Bedrock built-in server-side Web Search가 AWS GovCloud (US-West)로 확장된 공식 제공 범위임.",
+          "items": [
+            "대상: compliance-sensitive government·public-sector workload에서 current web grounding을 쓰는 경로",
+            "제공: launch 시 GPT-5.4·GPT-5.6 Terra·GPT-5.6 Luna 지원 범위",
+            "리전: GovCloud (US-West)와 US East Virginia·Ohio, US West Oregon이라는 AWS 공지 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Web Search는 OpenAI Responses API 호환 request의 `tools` array에 `web_search` type을 넣는 server-side tool임. 최신 정보가 필요하다고 모델이 판단하면 AWS가 운영하는 web index·cache에서 결과를 가져오고, 응답에는 사용 source citation을 포함한다는 설명임.",
+          "items": [
+            "호출: 애플리케이션이 search index·crawler·직접 tool-call loop를 별도 운영하지 않는 관리형 경로",
+            "추적: citation이 model claim의 web origin을 확인하는 입력으로 반환되는 범위",
+            "경계: citation 존재가 claim correctness·source quality·complete coverage를 자동 보증하지 않음"
+          ]
+        },
+        {
+          "heading": "데이터 경계·IAM 통제",
+          "body": "AWS는 request data를 기본값으로 AWS boundary 안에 두며 IAM을 이용해 account 또는 organization 단위 allow/deny와 Region 제한을 할 수 있다고 설명함. 이는 tool authorization control이며 public web source·prompt·response·citation URL의 조직별 data policy를 대신하지 않음.",
+          "items": [
+            "정책: account·organization SCP, IAM permission, model access, Region policy와 application query allowlist를 결합",
+            "분류: prompt·retrieved source·citation·answer·log를 각각 data class와 retention owner에 연결",
+            "경계: GovCloud 제공을 일반 상용 리전·한국 리전·국내 residency 또는 contract 보증으로 해석하지 않음"
+          ]
+        },
+        {
+          "heading": "운영 시사점",
+          "body": "managed search 도입은 external data access를 application 내부 tool loop에서 provider-side service로 옮기는 변경임. correctness·latency·비용·injection·audit의 acceptance 기준이 없으면 tool enablement 자체가 uncontrolled web egress와 provenance gap을 만들 수 있음.",
+          "items": [
+            "측정: grounded answer correctness·citation domain/coverage·tool selection·denial·p95·error·request/token/tool cost를 request ID별 수집",
+            "검증: malicious page·indirect prompt injection·citation mismatch·stale result·tool timeout을 representative workflow에서 replay",
+            "팀 액션: data class별 external web allowlist·human approval·citation retention·kill switch와 rollback owner를 canary gate로 등록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-411",
       "title_ko": "앤트로픽 Fable 5.1·Mythos 5.1 보도: 장기 agent 작업·cache-read 가격을 benchmark·access control로 분리 검증",
       "title_original": "Anthropic releases Claude Fable 5.1 and Claude Mythos 5.1 (reported)",
@@ -254,7 +332,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-410",
@@ -330,7 +408,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-409",
@@ -399,11 +477,11 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-408",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -471,7 +549,7 @@
     },
     {
       "id": "news-407",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -538,7 +616,7 @@
     },
     {
       "id": "news-405",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -674,7 +752,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-404",
@@ -745,7 +823,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-402",
@@ -813,7 +891,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-403",
@@ -883,7 +961,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-400",
@@ -952,7 +1030,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-399",
@@ -1021,7 +1099,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-397",
@@ -1098,7 +1176,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-398",
@@ -1177,7 +1255,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-395",
@@ -1255,7 +1333,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-401",
@@ -1329,11 +1407,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-394",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -1409,7 +1487,7 @@
     },
     {
       "id": "news-392",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -1477,7 +1555,7 @@
     },
     {
       "id": "news-393",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -1628,11 +1706,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-391",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -1770,7 +1848,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-389",
@@ -1838,7 +1916,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-384",
@@ -1903,7 +1981,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-383",
@@ -1967,7 +2045,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-386",
@@ -2033,7 +2111,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-387",
@@ -2097,7 +2175,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-385",
@@ -2171,7 +2249,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-382",
@@ -2234,7 +2312,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-381",
@@ -2297,11 +2375,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-380",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -2378,7 +2456,7 @@
     },
     {
       "id": "news-336",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -2539,7 +2617,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-378",
@@ -2625,7 +2703,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-376",
@@ -2716,7 +2794,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-375",
@@ -2793,7 +2871,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-372",
@@ -2867,7 +2945,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-373",
@@ -2935,7 +3013,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-374",
@@ -3012,7 +3090,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-371",
@@ -3086,7 +3164,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-370",
@@ -3164,7 +3242,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-366",
@@ -3250,7 +3328,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-364",
@@ -3319,7 +3397,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-365",
@@ -3388,7 +3466,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-368",
@@ -3464,7 +3542,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-361",
@@ -3540,7 +3618,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-363",
@@ -3617,7 +3695,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-360",
@@ -3698,7 +3776,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-362",
@@ -3772,82 +3850,6 @@
             "측정: canary에서 p95/p99 latency·RSS·CPU·cold start·crash·CI minute·install/build time 수집",
             "통제: audit fix의 lockfile diff·license·transitive dependency·rollback을 code review에 포함",
             "팀 액션: low-risk workload에서 dual-run 또는 shadow CI 후 acceptance/rollback 기준 확정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-367",
-      "title_ko": "Rust arrayref 공급망 공격: 악성 build script·삭제 crate를 Cargo cache와 lockfile 범위로 조사",
-      "title_original": "Supply chain attack on arrayref",
-      "summary": "- 사고: Rust Security Response Team이 `proc-macro1`의 **악성 build script**가 payload를 내려받는 사실을 검증\n- 영향: `arrayref@0.3.10` 재배포가 악성 crate를 의존했고, `internment@0.8.7`·`append-only-vec@0.1.9`도 같은 작성자 계정 영향 범위\n- 노출: arrayref 악성 버전은 86분, internment 90분, append-only-vec 107분 crates.io에 공개된 상태\n- 조치: Rust 팀이 악성 release를 삭제하고 yanked version을 복구했으며 작성자 계정을 precaution으로 잠금\n- 팀 액션: Cargo lockfile·registry cache·CI cache·빌드 artifact를 version/hash 기준으로 조사하고 credential·egress·rebuild 증적을 incident record로 보존 필요",
-      "detail": "Rust Security Response Team은 2026년 8월 20일 `proc-macro1` crate에 악성 payload를 다운로드하는 build script가 있음을 확인했다. `arrayref`의 새 `0.3.10` 버전이 이 crate에 의존하도록 재배포됐고, 같은 작성자 계정의 `internment`와 `append-only-vec`도 영향 범위로 확인됐다. Rust 팀은 악성 release를 삭제하고 악성으로 yanked 된 정상 version을 복구했으며 계정을 잠갔다. 공식 공지는 `arrayref@0.3.10`이 86분, `internment@0.8.7`이 90분, `append-only-vec@0.1.9`가 107분 공개됐다고 적는다. `proc-macro1`, `proc-macro-en`, `aovine`, `arone`, `aronenao`, `tinymember`는 모든 version을 확인 대상으로 제시했다. 삭제·yank 조치는 이미 내려받은 Cargo registry cache, CI dependency cache, 빌드 artifact, credentials 또는 실행 흔적의 무해성을 보증하지 않으므로, dependency graph와 build provenance를 기준으로 범위를 정해야 한다.",
-      "why_it_matters": "Rust build dependency는 compile 단계에 실행될 수 있어 package update 하나가 developer workstation·CI runner·release artifact의 execution boundary를 바꿀 수 있음. registry에서 삭제된 version이라도 기존 cache·lockfile·artifact에는 남을 수 있음.",
-      "engineering_implication": "조직은 `Cargo.lock`, `~/.cargo/registry/cache`, shared CI cache, SBOM·artifact digest를 악성 package/version 목록과 대조하고, 발견 시 cache 격리·credential rotation·runner forensic·clean rebuild·downstream deploy reconciliation을 수행해야 함. build script network egress와 registry provenance를 CI control로 기록 필요.",
-      "korea_implication": "국내 Rust 사용 조직도 crates.io 삭제 상태를 과거 CI·개발 PC·내부 artifact 저장소의 안전 보증으로 해석하지 말고, mirror·proxy·cache·runner별 package provenance와 credential 노출 범위를 별도 점검 필요.",
-      "category": "Security",
-      "tags": [
-        "Rust",
-        "Cargo",
-        "crates.io",
-        "Supply Chain",
-        "Build Script",
-        "CI/CD",
-        "Malware"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-08-20 09:00",
-      "source_name": "Rust Blog",
-      "source_url": "https://blog.rust-lang.org/2026/08/20/supply-chain-attack-on-arrayref/",
-      "image_url": "https://www.rust-lang.org/static/images/rust-social-wide.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "GeekNews GN⁺ — arrayref 공급망 공격 한국어 요약",
-          "url": "https://news.hada.io/topic?id=32711"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Rust 공식 security-response 공지가 `proc-macro1` crate의 build script가 악성 payload를 내려받는 사실을 검증했다고 발표. Rust Blog RSS `2026-08-20T00:00:00Z`를 KST `2026-08-20 09:00`으로 환산. 본문은 최초 report 접수 시각을 `07:15 UTC`로 별도 표기.",
-          "items": [
-            "발견: Rust Security Response Team이 malicious `proc-macro1` build script를 확인",
-            "연결: 재배포된 `arrayref@0.3.10`이 해당 crate에 의존하도록 변경된 상태",
-            "영향: 같은 작성자 계정의 `internment`·`append-only-vec`도 같은 방식으로 처리 대상"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "공식 공지는 악성 package 삭제와 정상 version 복구를 설명하고, 구체적인 version·공개 시간을 incident scoping 근거로 제공.",
-          "items": [
-            "삭제: `proc-macro1`·`proc-macro-en`·`aovine`·`arone`·`aronenao`·`tinymember` 모든 version을 확인 대상으로 제시",
-            "시간: `arrayref@0.3.10`은 86분, `internment@0.8.7`은 90분, `append-only-vec@0.1.9`는 107분 공개",
-            "복구: Rust 팀이 악성 version을 삭제하고 maliciously-yanked version을 unyank 처리",
-            "계정: arrayref 작성자의 악의는 확인하지 않았으며 computer 또는 credential compromise 가능성을 언급하고 account 잠금"
-          ]
-        },
-        {
-          "heading": "빌드·CI 영향 범위",
-          "body": "Rust crate의 build script는 dependency resolution과 build에서 실행될 수 있으므로 registry의 현재 삭제 상태와 과거 execution 기록은 분리해 조사할 대상.",
-          "items": [
-            "대조: `Cargo.lock`·dependency graph·vendor directory·SBOM에서 package name·version·checksum·build ID 확인",
-            "대조: developer `~/.cargo/registry/cache`, shared CI cache, remote builder, artifact repository의 archive와 digest 확인",
-            "관측: build script process·DNS/HTTP egress·downloaded file·child process·runner identity를 같은 job trace로 확보",
-            "피할 것: crates.io 삭제 또는 yanked 표시를 cache·artifact·credential·endpoint의 무해성 보증으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "대응·시사점",
-          "body": "공식 check command는 local Cargo cache에서 영향 archive를 찾는 출발점이며, 발견 여부에 따라 package provenance·credential·artifact·deployment을 연결한 incident workflow 필요.",
-          "items": [
-            "격리: 영향 archive 또는 build record 발견 시 runner·cache·artifact promotion 경로를 우선 분리",
-            "복구: trusted lockfile·registry provenance에서 clean rebuild하고 artifact digest·signature·SBOM을 재발행",
-            "회전: build-time secret·registry token·cloud credential의 접근 기록을 검토하고 노출 가능 범위에서 rotation",
-            "팀 액션: build script egress default-deny 또는 allowlist, immutable cache key, provenance attestation과 emergency cache purge runbook 점검"
           ]
         }
       ],

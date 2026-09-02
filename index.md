@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-02 | Total pages: 320
+> Last updated: 2026-09-03 | Total pages: 321
 
 ## Entities
 
@@ -339,6 +339,7 @@
 - [[raw/articles/aws-ec2-c8gn-paris-2026-08-29]] — EC2 C8gn Paris 출시의 Graviton4·600 Gbps networking과 packet-path·FinOps 검증 경계.
 
 - [[raw/articles/cloudflare-cache-transcoding-zstd-pingora-2026-09-01]] — Cloudflare Cache Transcoding prototype의 Zstandard·Pingora cache representation, CPU·storage·backbone byte canary 검증 경계.
+- [[raw/articles/aws-bedrock-web-search-govcloud-2026-09-03]] — Bedrock Web Search의 AWS GovCloud (US-West) 확장, IAM·citation·external-web tool policy 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
