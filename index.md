@@ -342,6 +342,7 @@
 - [[raw/articles/aws-bedrock-web-search-govcloud-2026-09-03]] — Bedrock Web Search의 AWS GovCloud (US-West) 확장, IAM·citation·external-web tool policy 검증 경계.
 
 - [[raw/articles/aitimeskr-google-gemini-38-flash-cyber-2026-09-03]] — Gemini 3.8 Flash·Flash Cyber 보도: 장기 agent loop·cyber 제한 access·benchmark·비용의 운영 검증 경계.
+- [[raw/articles/aitimes-naver-cloud-cybersecurity-foundation-model-2026-09-03]] — 네이버클라우드 컨소시엄의 정부 사이버보안 특화 AI 모델 사업자 선정, GPU·데이터·폐쇄망 실증의 운영 검증 경계.
 - [[raw/articles/aitimes-meta-muse-spark-13-2026-09-03]] — Muse Spark 1.3 보도: coding·agent benchmark·제한 preview·비용·approval 검증 경계.
 
 ## Static Website
