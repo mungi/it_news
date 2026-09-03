@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-04 | Total pages: 323
+> Last updated: 2026-09-04 | Total pages: 324
 
 ## Entities
 
@@ -176,7 +176,7 @@
 - [[raw/articles/upstage-solar-open-2-2026-07-23]] — Solar Open 2의 250B-A15B MoE·1M context와 공식 H200 4/8장 배포 baseline·양자화 artifact 경계.
 - [[raw/articles/aws-nlb-listener-rules-dual-stack-2026-07-23]] — AWS NLB listener rule의 dual-stack IPv4·IPv6 target routing과 원본 client IP 보존 운영 경계.
 - [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
-- `raw/articles/` — 195건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 196건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.
@@ -347,6 +347,7 @@
 - [[raw/articles/aitimes-meta-muse-spark-13-2026-09-03]] — Muse Spark 1.3 보도: coding·agent benchmark·제한 preview·비용·approval 검증 경계.
 - [[raw/articles/kubernetes-v1-37-dra-updates-2026-09-04]] — Kubernetes DRA Extended Resource GA·device lifecycle·topology·migration 검증 경계.
 - [[raw/articles/aws-amazon-linux-2027-public-preview-2026-09-04]] — Amazon Linux 2027 public preview의 kernel·SELinux·crypto·Neuron driver·image rollback 검증 경계.
+- [[raw/articles/cloudflare-managed-defense-daybreak-vulnerability-remediation-2026-09-04]] — Cloudflare Managed Defense의 context-aware 취약점 탐지·Daybreak 모델 patch 제안·고객 승인·WAF mitigation 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.

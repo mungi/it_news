@@ -2,14 +2,14 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-04 04:03",
+  "last_updated_kst": "2026-09-04 08:12",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고, Daybreak 모델의 patch/WAF mitigation 제안은 customer review 전 자동 검증하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
     "Kubernetes v1.37 DRA Extended Resource가 GA가 되어 기존 `example.com/gpu` 요청을 DRA allocation과 연결 가능. API 호환성만으로 device lifecycle 검증이 끝나지 않으므로 inventory·prepare·topology·taint eviction·rollback을 pool별 trace로 확인 필요.",
     "Amazon Linux 2027 preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC와 Neuron driver 지원을 묶은 OS baseline 변경. AMI·base image·host agent·container·accelerator driver를 분리한 node-pool canary와 rollback evidence 필요.",
     "Google Gemini 3.8 Flash·Flash Cyber 보도는 장기 agent loop의 effort·반복 tool call과 cyber 제한 access를 함께 제시. API 가격·benchmark·patch 수치는 provider-reported 범위이므로 task success·tool retry·TTFT/p95·token 비용·patch validity·approval·rollback을 같은 trace에서 canary로 검증 필요.",
-    "Cloudflare Adaptive Intelligence가 Bot Score의 지속 재학습·shadow 비교·점진 rollout을 공개. `Auto Update Machine Learning`은 security control 변경이므로 login·checkout·account recovery별 bot block뿐 아니라 human success·challenge solve·false-positive appeal·rollback time을 cohort별로 함께 검증 필요.",
-    "Amazon CloudWatch agent가 Linux `journald`를 직접 읽어 CloudWatch Logs로 전송: file export 없이 systemd unit·priority·process metadata와 field/regex filter를 활용 가능. journal 권한·민감 field redaction·cursor restart·delivery lag·GB/day·retention/KMS는 file-tail 경로와 canary 비교 필요."
+    "Cloudflare Adaptive Intelligence가 Bot Score의 지속 재학습·shadow 비교·점진 rollout을 공개. `Auto Update Machine Learning`은 security control 변경이므로 login·checkout·account recovery별 bot block뿐 아니라 human success·challenge solve·false-positive appeal·rollback time을 cohort별로 함께 검증 필요."
   ],
   "deep_dives": [
     {
@@ -187,6 +187,80 @@
   ],
   "items": [
     {
+      "id": "news-419",
+      "title_ko": "Cloudflare Managed Defense 취약점 탐지·완화 early access: production context·자동 검증·고객 승인으로 patch 경로 분리",
+      "title_original": "Introducing context-aware vulnerability discovery and remediation with Cloudflare Managed Defense and OpenAI Daybreak models",
+      "summary": "- 공개: Cloudflare가 `Managed Defense` 내 invitation-only `Vulnerability Discovery and Remediation` early access를 발표\n- 우선순위: Web Assets·WAF의 활성 route·traffic·security event·기존 rule 정보를 code finding과 결합해 production exposure 기준으로 분류\n- remediation: 고객이 승인한 codebase에 OpenAI Daybreak 모델을 사용해 reconnaissance·hunting·validation을 수행하고, 제안 patch·WAF mitigation은 자동 검증 뒤 고객 review에 제출\n- 팀 액션: scanner finding 수가 아니라 deployed route·attack signal·control coverage·patch validation·approval·rollback trace를 취약점 release gate로 연결 필요",
+      "detail": "Cloudflare는 2026년 9월 4일 06:03 KST에 Managed Defense의 invitation-only early access 기능인 Vulnerability Discovery and Remediation을 발표했다. 고객이 접근을 승인한 codebase를 대상으로 OpenAI Daybreak Defense Network의 Daybreak 모델(GPT-5.6 Cyber 포함)을 reconnaissance·hunting·validation에 사용하고, 취약점 발견 뒤 제안 code patch와 mitigation을 자동 점검한 뒤 고객 검토에 제공하는 흐름이다. Cloudflare는 Web Assets와 WAF에서 active route, traffic volume, 최근 security event, 적용 중인 WAF rule을 가져와 source finding의 실제 노출·우선순위를 판단하며 Workers와 proxied application을 대상으로 설명한다. 제안 patch와 custom WAF mitigation은 고객이 구현 여부를 결정하며 자동 적용을 선언하지 않는다. early access와 vendor-managed analysis이므로 지원 범위·데이터 처리·source-code retention·모델 호출 경로·patch accuracy·false negative·SLA는 공지에서 보증하지 않는다. 도입 시 code access 최소화, production telemetry 분류, finding-to-route evidence, test/sandbox validation, human approval, WAF rule expiry, patch rollback과 incident audit을 한 change-control trace로 운영해야 한다.",
+      "why_it_matters": "취약점 우선순위는 CVSS나 scanner finding 수만으로 결정되지 않음. deployed route·traffic·공격 activity·기존 edge control을 결합하면 실제 노출을 기준으로 remediation queue를 정렬할 수 있지만 source code와 production telemetry를 외부 분석 경로에 함께 제공하는 data boundary가 생김.",
+      "engineering_implication": "early access pilot은 read-only asset·limited repository에서 시작하고 route evidence·WAF action·test result·reviewer·deployment·rollback을 finding ID로 연결해야 함. code access scope, secret redaction, model/vendor retention, WAF custom rule의 TTL·false-positive·kill switch를 approval 이전의 필수 control로 고정 필요.",
+      "korea_implication": "국내 조직은 invitation-only 제공을 국내 리전 처리·망분리 적합성·소스 코드 국외 이전·금융/공공 규제 충족으로 해석할 수 없음. Cloudflare와 OpenAI 각각의 data path·retention·subprocessor·support·incident notification 조건을 계약과 보안 검토에서 확인해야 함.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "Managed Defense",
+        "OpenAI Daybreak",
+        "GPT-5.6 Cyber",
+        "WAF",
+        "Vulnerability Management",
+        "Application Security",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-09-04 06:03",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/vulnerability-discovery-remediation/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1M93F7AEJ7GBHA2V4NNP3XK.01M1M93G208121NF47SS8DRCZ6.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Cloudflare Managed Defense",
+          "url": "https://www.cloudflare.com/managed-defense/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare 공식 블로그의 `article:published_time` `2026-09-03T21:03:02.023Z`를 KST `2026-09-04 06:03`으로 기록. `Vulnerability Discovery and Remediation`은 Cloudflare Managed Defense에 포함된 invitation-only early access 기능임.",
+          "items": [
+            "대상: Cloudflare Workers와 proxied application의 고객 승인 codebase 범위",
+            "모델: OpenAI Daybreak Defense Network의 Daybreak 모델과 `GPT-5.6 Cyber`를 reconnaissance·hunting·validation에 사용하는 공식 설명",
+            "경계: early access는 일반 제공·SLA·국내 처리·자동 remediation 보증이 아님"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Cloudflare는 code finding에 Web Assets·WAF의 production context를 결합함. active route, traffic volume, recent security event, existing WAF rule을 함께 확인해 단순 코드 취약점이 실제로 노출된 경로인지와 기존 protection 유무를 판단하는 구조임.",
+          "items": [
+            "우선순위: live route·traffic·attack signal·existing control을 finding evidence로 결합",
+            "분석: hot path의 deployed source code에 더 엄격한 security profiling 적용이라는 공식 범위",
+            "완화: custom WAF mitigation과 code patch를 제안하고 자동 check 뒤 customer review에 제출"
+          ]
+        },
+        {
+          "heading": "권한·검증·운영 경계",
+          "body": "서비스가 customer-authorized codebase와 production security telemetry를 함께 다루므로 scanner 교체가 아니라 cross-system access change로 취급해야 함. 고객이 patch와 mitigation의 구현 여부를 결정하는 흐름이므로 approval과 independent test가 release control임.",
+          "items": [
+            "권한: repository·branch·secret·deployment credential을 read-only·least privilege·time-bound scope로 분리",
+            "검증: proposed patch를 representative test·SAST/DAST·dependency scan·staging traffic에서 재현하고 finding evidence와 연결",
+            "복구: custom WAF rule의 action·scope·TTL·owner·false-positive signal·kill switch를 deployment record에 고정"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI-assisted vulnerability workflow의 효과는 발견 건수가 아니라 실제 노출 remediation lead time과 안전한 변경률로 판단해야 함. production context를 쓴 prioritization은 useful signal이지만 telemetry quality와 vendor data boundary가 흐리면 잘못된 우선순위와 과도한 code access가 동시에 생길 수 있음.",
+          "items": [
+            "측정: exposed finding backlog·time-to-triage·validated patch rate·WAF false positive·rollback time·reopened vulnerability",
+            "통제: data classification·redaction·retention·subprocessor·audit export를 code onboarding 전에 확인",
+            "팀 액션: 한 application cohort에서 human approval과 rollback drill을 포함한 finding-to-fix trace를 만든 뒤 확대"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-417",
       "title_ko": "Kubernetes v1.37 DRA 업데이트: extended resource GA·device taint·NUMA attribute를 device lifecycle으로 운영",
       "title_original": "Kubernetes v1.37: DRA Updates",
@@ -251,7 +325,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-418",
@@ -327,7 +401,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-415",
@@ -396,7 +470,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-413",
@@ -465,7 +539,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-414",
@@ -534,7 +608,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-416",
@@ -612,7 +686,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-412",
@@ -690,7 +764,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-411",
@@ -758,7 +832,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-410",
@@ -834,7 +908,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-409",
@@ -903,11 +977,11 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-408",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -975,7 +1049,7 @@
     },
     {
       "id": "news-407",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1042,7 +1116,7 @@
     },
     {
       "id": "news-405",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1178,7 +1252,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-404",
@@ -1249,7 +1323,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-402",
@@ -1317,7 +1391,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-403",
@@ -1387,7 +1461,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-400",
@@ -1456,7 +1530,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-399",
@@ -1525,7 +1599,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-397",
@@ -1602,7 +1676,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-398",
@@ -1681,7 +1755,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-395",
@@ -1759,7 +1833,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-401",
@@ -1833,11 +1907,11 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-394",
-      "rank": 24,
+      "rank": 25,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -1913,7 +1987,7 @@
     },
     {
       "id": "news-392",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -1981,7 +2055,7 @@
     },
     {
       "id": "news-393",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2132,11 +2206,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-391",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2274,7 +2348,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-389",
@@ -2342,7 +2416,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-384",
@@ -2407,7 +2481,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-383",
@@ -2471,7 +2545,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-386",
@@ -2537,7 +2611,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-387",
@@ -2601,7 +2675,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-385",
@@ -2675,7 +2749,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-382",
@@ -2738,7 +2812,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-381",
@@ -2801,11 +2875,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-380",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -2882,7 +2956,7 @@
     },
     {
       "id": "news-336",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3043,7 +3117,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-378",
@@ -3129,7 +3203,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-376",
@@ -3220,7 +3294,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-375",
@@ -3297,7 +3371,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-372",
@@ -3371,7 +3445,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-373",
@@ -3439,7 +3513,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-374",
@@ -3516,7 +3590,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-371",
@@ -3590,7 +3664,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-370",
@@ -3668,7 +3742,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-366",
@@ -3751,75 +3825,6 @@
             "체크: missed event·queued run·cancelled run·partial artifact·duplicate deploy를 query하는 reconciliation job 준비",
             "체크: vendor status alert·on-call owner·manual release authority·break-glass credential·audit trail 점검",
             "팀 액션: 30일 내 GitHub outage game day에서 retry storm·webhook loss·queue backlog·rollback RTO 측정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-364",
-      "title_ko": "EC2 P6-B300 서울 리전 제공: 8× Blackwell Ultra·6.4 Tbps EFA를 AI capacity·네트워크 검증으로 분리",
-      "title_original": "Amazon EC2 P6-B300 instances are now available in the Asia Pacific (Seoul) Region",
-      "summary": "- 변경: AWS가 서울 리전에 `p6-b300.48xlarge` 제공을 시작\n- 구성: **NVIDIA Blackwell Ultra GPU 8개**, 2.1 TB GPU HBM, 6.4 Tbps EFA, 300 Gbps 전용 ENA, 4 TB system memory라는 공식 사양\n- 비교: AWS는 P6-B200 대비 network bandwidth 2배·GPU memory와 FP4 TFLOPS 1.5배를 제시\n- 경계: 해당 수치는 instance hardware 사양·AWS 비교이며 quota·가격·capacity 확보·EFA topology·실측 training/inference SLO는 별도 확인 대상\n- 팀 액션: 서울 리전 quota·placement·EFA fabric·AMI/driver·framework·collective·J/token과 failure recovery를 대표 workload로 PoC 필요",
-      "detail": "AWS는 2026년 8월 21일 03:31 KST에 서울 리전에서 EC2 P6-B300 `p6-b300.48xlarge` 제공을 시작했다. 공식 공지는 인스턴스당 NVIDIA Blackwell Ultra GPU 8개, 2.1 TB high-bandwidth GPU memory, 6.4 Tbps EFA networking, 300 Gbps dedicated ENA throughput, 4 TB system memory를 명시한다. AWS는 P6-B200 대비 network bandwidth 2배, GPU memory와 FP4 sparse 미사용 기준 TFLOPS 1.5배라고 설명하며 대형 foundation model과 LLM의 학습·배포 용도를 제시했다. 다만 이 공지는 instance 가용성과 하드웨어 사양만 제공한다. 서울 리전의 account quota·on-demand/spot capacity·가격·placement group·EFA congestion·driver/framework 호환성·실제 model throughput·전력과 데이터 전송 비용은 확인하지 못했다.",
-      "why_it_matters": "서울 리전에서 Blackwell Ultra와 EFA를 조합할 수 있게 되면서 국내 데이터 경계 안에서 대규모 분산 학습·추론 PoC를 설계할 선택지가 생김. 다만 instance 사양은 cluster capacity·collective 효율·service SLO의 보증이 아님.",
-      "engineering_implication": "계획 단계에서 service quota·availability zone·placement/EFA topology·AMI와 CUDA/NCCL revision·storage feed·network telemetry를 함께 고정해야 함. P6-B200 또는 현 GPU fleet과 model/precision/context·batch·concurrency를 맞춰 TTFT·TPOT·tokens/s·GPU utilization·EFA retransmit·J/token·recovery 시간을 비교 필요.",
-      "korea_implication": "서울 리전 제공은 국내 데이터 처리 요건이나 안정적 용량 확보의 보증이 아님. 계약·quota·support·데이터 전송·DR 리전과 capacity reservation 가능 여부를 한국 workload 기준으로 별도 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "AWS",
-        "EC2",
-        "P6-B300",
-        "NVIDIA Blackwell",
-        "EFA",
-        "AI Infrastructure",
-        "Korea"
-      ],
-      "region": "Korea",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-08-21 03:31",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-ec2-p6-b300/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS 공식 What’s New가 서울 리전의 `p6-b300.48xlarge` 제공 시작을 발표. RSS 발행 시각 `2026-08-20 18:31 UTC`를 KST `2026-08-21 03:31`로 환산.",
-          "items": [
-            "제공: Asia Pacific (Seoul)에서 P6-B300 instance 사용 가능",
-            "형태: 이번 공지의 명시 SKU는 `p6-b300.48xlarge`",
-            "범위: Oregon·GovCloud US-East·N. Virginia와 서울 리전을 제공 리전으로 열거"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "공식 공지가 제시한 instance-level accelerator·memory·fabric 사양. cluster 구성·service benchmark는 공지 범위 밖.",
-          "items": [
-            "가속기: NVIDIA Blackwell Ultra GPU 8개 탑재",
-            "메모리: 2.1 TB high-bandwidth GPU memory와 4 TB system memory",
-            "네트워크: 6.4 Tbps EFA networking과 300 Gbps dedicated ENA throughput",
-            "비교: P6-B200 대비 network bandwidth 2배, GPU memory·FP4 sparse 미사용 TFLOPS 1.5배라는 AWS 수치"
-          ]
-        },
-        {
-          "heading": "분산 학습·추론 경계",
-          "body": "EFA bandwidth와 GPU memory는 model parallelism·collective·checkpoint·input pipeline의 한 요소일 뿐 end-to-end throughput을 단독으로 결정하지 않음.",
-          "items": [
-            "검증: model revision·precision·sequence length·batch·concurrency를 고정한 TTFT·TPOT·tokens/s 비교 필요",
-            "검증: NCCL collective·EFA retransmit·network tail latency·GPU utilization·host memory·storage feed를 함께 수집",
-            "피할 것: instance bandwidth 사양을 multi-node scaling efficiency 또는 production capacity 보증으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "용량·비용·운영 시사점",
-          "body": "공식 공지는 서울 리전 SKU 제공을 확인하지만 account quota·실시간 capacity·가격·EFA placement·driver/framework matrix·SLA를 명시하지 않음.",
-          "items": [
-            "확인: service quota·capacity reservation·AZ/placement group·EFA enablement와 launch template 조건",
-            "확인: AMI·CUDA/NCCL·framework·container digest·storage/network policy의 compatibility matrix",
-            "팀 액션: 기존 GPU baseline과 같은 workload에서 cost per token·GPU utilization·EFA 오류·checkpoint/restart·rollback을 PoC acceptance로 기록"
           ]
         }
       ],
