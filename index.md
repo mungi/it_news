@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-03 | Total pages: 321
+> Last updated: 2026-09-04 | Total pages: 323
 
 ## Entities
 
@@ -345,6 +345,8 @@
 - [[raw/articles/aitimeskr-google-gemini-38-flash-cyber-2026-09-03]] — Gemini 3.8 Flash·Flash Cyber 보도: 장기 agent loop·cyber 제한 access·benchmark·비용의 운영 검증 경계.
 - [[raw/articles/aitimes-naver-cloud-cybersecurity-foundation-model-2026-09-03]] — 네이버클라우드 컨소시엄의 정부 사이버보안 특화 AI 모델 사업자 선정, GPU·데이터·폐쇄망 실증의 운영 검증 경계.
 - [[raw/articles/aitimes-meta-muse-spark-13-2026-09-03]] — Muse Spark 1.3 보도: coding·agent benchmark·제한 preview·비용·approval 검증 경계.
+- [[raw/articles/kubernetes-v1-37-dra-updates-2026-09-04]] — Kubernetes DRA Extended Resource GA·device lifecycle·topology·migration 검증 경계.
+- [[raw/articles/aws-amazon-linux-2027-public-preview-2026-09-04]] — Amazon Linux 2027 public preview의 kernel·SELinux·crypto·Neuron driver·image rollback 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
