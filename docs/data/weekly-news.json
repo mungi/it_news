@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-03 15:52",
+  "last_updated_kst": "2026-09-03 19:58",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google Gemini 3.8 Flash·Flash Cyber 보도는 장기 agent loop의 effort·반복 tool call과 cyber 제한 access를 함께 제시. API 가격·benchmark·patch 수치는 provider-reported 범위이므로 task success·tool retry·TTFT/p95·token 비용·patch validity·approval·rollback을 같은 trace에서 canary로 검증 필요.",
@@ -396,6 +396,84 @@
       "rank": 3
     },
     {
+      "id": "news-416",
+      "title_ko": "Kubernetes v1.37 HPA scale-to-zero beta: 외부 지표·상태 조건으로 0 replica와 재기동 운영",
+      "title_original": "Kubernetes v1.37: Scale Workloads to Zero with HorizontalPodAutoscaler",
+      "summary": "- 제공: Kubernetes v1.37에서 `HPAScaleToZero`가 **beta·default-on**이 되어 object·external metric 기반 HPA가 `minReplicas: 0` workload를 다시 기동 가능한 공식 범위\n- 동작: CPU·memory만으로는 0 Pod 상태에서 scale-up 신호가 없으므로 queue length 같은 독립 지표와 External Metrics API adapter 필요\n- 상태·복구: `ScaledToZero=True`로 HPA가 내린 0 상태와 수동 pause를 구분하며 metric 조회 실패는 `ScalingActive=False`로 노출\n- 팀 액션: queue consumer부터 canary로 wake-up latency·backlog age·metric freshness/error·Pod scheduling·SLO·비용을 함께 측정하고 version-skew·rollback 절차를 release gate로 고정 필요",
+      "detail": "Kubernetes 공식 블로그는 v1.37에서 HPA의 workload scale-to-zero 지원이 beta·default-on이 됐다고 발표했다. object 또는 external metric을 사용하는 HPA는 `minReplicas: 0`으로 queue consumer·batch processor 같은 workload를 0까지 줄이고 metric 변화 때 다시 scale-up할 수 있다. CPU·memory resource metric은 실행 중인 Pod에서만 나오므로 0 replica 상태에서는 재기동 신호가 없으며, queue length처럼 worker와 독립적인 object·external metric이 필요하다. 공식 예시는 Prometheus Adapter가 `queue_consumer_lag`를 External Metrics API로 제공하고 0~10 replica, task 30개당 1 replica로 queue worker를 조절한다. HPA가 1 이상에서 0으로 낮춘 경우 `ScaledToZero=True` condition을 남겨 이후 reconciliation에서도 metric을 평가하지만, 운영자가 수동으로 Deployment를 0으로 설정한 상태는 기존처럼 pause로 취급한다. adapter가 metric을 반환하지 못하면 `ScalingActive=False`와 `FailedGetExternalMetric` reason이 나온다. v1.37에서는 `HPAScaleToZero`가 kube-apiserver·kube-controller-manager에서 default-on이나 version-skew 중에는 두 component 지원 상태를 확인해야 한다. 기능을 끄거나 구버전으로 rollback하기 전에는 대상 HPA를 `minReplicas: 1` 이상으로 바꾸고 0인 workload를 먼저 올려야 한다. resource metric만 가진 HPA의 `minReplicas: 0`은 API server가 거부한다. 공식 설명의 idle CPU·GPU 절감 효과를 workload SLO로 확대하지 말고 queue durability·metric adapter·cold start·scheduler capacity·request buffering을 먼저 검증해야 한다.",
+      "why_it_matters": "scale-to-zero는 단순 replica 하향이 아니라 metric control plane·queue durability·cold-start SLO·수동 pause semantics를 바꾸는 운영 변경임. idle GPU·CPU 비용 절감은 가능하지만 metric 장애나 control-plane version skew가 발생하면 backlog와 서비스 복구 시간이 커질 수 있음.",
+      "engineering_implication": "queue consumer·batch workload부터 external metric freshness, adapter availability, `ScaledToZero`/`ScalingActive` condition, backlog age, wake-up p95, scheduler delay, Pod readiness, 비용을 같은 dashboard에서 canary 비교해야 함. HTTP request-driven workload는 0 Pod 동안 Service가 요청을 buffer하지 않으므로 durable queue 또는 별도 buffering layer와 rollback runbook을 준비할 필요.",
+      "korea_implication": "국내 managed Kubernetes 사용 조직도 v1.37 제공 시점·control-plane component version·feature gate 노출·external metrics adapter 지원을 서비스별 문서와 cluster에서 확인해야 함. release note의 beta·default-on을 즉시 운영 표준 또는 managed service 보증으로 해석하지 않아야 함.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "HPA",
+        "Autoscaling",
+        "External Metrics",
+        "Prometheus",
+        "Queue",
+        "FinOps",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-09-03 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/02/kubernetes-v1-37-hpa-scale-to-zero-beta/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Kubernetes documentation: Horizontal Pod Autoscaling",
+          "url": "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+        },
+        {
+          "title": "KEP-2021: HPA supports scaling to and from zero pods",
+          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-autoscaling/2021-hpa-scale-to-zero"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes 공식 블로그와 RSS 발행 시각을 확인해 KST `2026-09-03 03:30`으로 기록. v1.37에서 HPA scale-to-zero API 지원이 beta·default-on이 된 공식 발표 범위임.",
+          "items": [
+            "제공: object 또는 external metric을 쓰는 HPA가 workload를 **0 replica**까지 낮추고 지표 변화 시 재기동 가능한 변경",
+            "대상: queue consumer·batch processor처럼 작업이 durable queue에서 대기할 수 있는 workload",
+            "경계: workload별 비용 절감·cold-start·managed Kubernetes 제공·SLO는 공식 공지가 보증하지 않는 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "CPU·memory resource metric은 실행 중 Pod가 있어야 생성되므로 replica가 0이면 scale-up 신호가 없음. queue length 같은 object·external metric은 worker와 독립적으로 존재해 0 replica에서도 HPA가 평가 가능함.",
+          "items": [
+            "지표: Prometheus Adapter 같은 metrics adapter가 External Metrics API로 queue metric을 노출하는 구성",
+            "설정: 예시 HPA는 `minReplicas: 0`, `maxReplicas: 10`, queued task 30개당 worker 1개라는 공식 sample",
+            "제약: CPU·memory 같은 resource metric만 포함한 HPA의 `minReplicas: 0`은 API server가 거부"
+          ]
+        },
+        {
+          "heading": "0 상태·장애·업그레이드 경계",
+          "body": "HPA가 내린 0과 수동 pause를 구분하지 않으면 controller가 의도하지 않은 workload를 재기동할 수 있음. HPA는 자동 scale-down 때 `ScaledToZero=True`를 기록하며, metric retrieval 실패는 `ScalingActive=False` reason으로 드러남.",
+          "items": [
+            "상태: 수동으로 Deployment를 0으로 설정한 경우 기존 pause semantics 유지",
+            "장애: external metric이 조회되지 않으면 `FailedGetExternalMetric` 같은 reason과 capacity recovery 지연 위험",
+            "업그레이드: version-skew 중 kube-apiserver·kube-controller-manager 모두 기능 enable·지원 확인 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "0 replica 도입의 승인 기준은 `minReplicas` 값이 아니라 backlog·metric·scheduler·readiness가 합쳐진 recovery SLO임. HTTP Service는 ready Pod가 없을 때 요청을 buffer하지 않으므로 request-driven traffic에 그대로 적용하면 connection 실패를 만들 수 있음.",
+          "items": [
+            "측정: backlog age·metric freshness/error·wake-up p95·scheduling·readiness·`ScaledToZero` condition·idle 비용을 workload별 수집",
+            "검증: durable queue consumer부터 canary하고 adapter outage·sudden burst·manual pause·version rollback을 replay",
+            "팀 액션: gate disable·downgrade 전 `minReplicas: 1` 전환과 0 workload scale-up을 포함한 rollback runbook 등록"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-412",
       "title_ko": "Amazon Bedrock Web Search, AWS GovCloud (US-West) 제공: grounded response를 IAM·citation·query policy로 검증",
       "title_original": "Web Search on Amazon Bedrock is now available in AWS GovCloud (US-West)",
@@ -471,7 +549,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-411",
@@ -539,7 +617,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-410",
@@ -615,7 +693,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-409",
@@ -684,11 +762,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-408",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -756,7 +834,7 @@
     },
     {
       "id": "news-407",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -823,7 +901,7 @@
     },
     {
       "id": "news-405",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -959,7 +1037,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-404",
@@ -1030,7 +1108,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-402",
@@ -1098,7 +1176,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-403",
@@ -1168,7 +1246,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-400",
@@ -1237,7 +1315,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-399",
@@ -1306,7 +1384,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-397",
@@ -1383,7 +1461,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-398",
@@ -1462,7 +1540,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-395",
@@ -1540,7 +1618,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-401",
@@ -1614,11 +1692,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-394",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -1694,7 +1772,7 @@
     },
     {
       "id": "news-392",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -1762,7 +1840,7 @@
     },
     {
       "id": "news-393",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -1913,11 +1991,11 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-391",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2055,7 +2133,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-389",
@@ -2123,7 +2201,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-384",
@@ -2188,7 +2266,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-383",
@@ -2252,7 +2330,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-386",
@@ -2318,7 +2396,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-387",
@@ -2382,7 +2460,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-385",
@@ -2456,7 +2534,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-382",
@@ -2519,7 +2597,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-381",
@@ -2582,11 +2660,11 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-380",
-      "rank": 35,
+      "rank": 36,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -2663,7 +2741,7 @@
     },
     {
       "id": "news-336",
-      "rank": 36,
+      "rank": 37,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -2824,7 +2902,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-378",
@@ -2910,7 +2988,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-376",
@@ -3001,7 +3079,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-375",
@@ -3078,7 +3156,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-372",
@@ -3152,7 +3230,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-373",
@@ -3220,7 +3298,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-374",
@@ -3297,7 +3375,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-371",
@@ -3371,7 +3449,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-370",
@@ -3449,7 +3527,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-366",
@@ -3535,7 +3613,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-364",
@@ -3604,7 +3682,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-365",
@@ -3673,7 +3751,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-368",
@@ -3746,82 +3824,6 @@
             "확인: 도입 전 dashboard·API 문서·contract에서 resource별 scope와 audit·revocation evidence 확인",
             "체크: token storage·TTL·rotation·break-glass·offboarding과 API-side authorization을 별도 control로 검증",
             "팀 액션: 30일 내 agent 또는 MCP client 하나에서 least-privilege scope matrix와 partial-grant integration test 완료"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-361",
-      "title_ko": "Claude Cowork 웹·모바일 베타: 계정 저장 세션과 Google Workspace connector를 별도 통제",
-      "title_original": "Claude Cowork expands to web and mobile with Google Workspace integrations",
-      "summary": "- 변경: AI타임스 보도 기준 Anthropic이 유료 플랜용 `Claude Cowork` 웹·모바일 베타와 Chrome 사이드 패널을 공개\n- 실행: cloud 기반 Cowork 작업은 사용자 PC가 아닌 Anthropic 서버에서 수행돼 노트북을 닫아도 계속되고, 예약 작업도 기기 전원 없이 실행된다는 기사 범위\n- 연결: Gmail·Google Drive·Google Calendar 연동을 제공하며, 계정에 저장된 Cowork 세션·파일을 데스크톱·웹·모바일에서 이어서 사용\n- 경계: Google OAuth scope·connector별 read/write 권한·파일 보존·서버 실행 위치·egress·암호화·human review·audit export·SLA는 기사에서 미확인\n- 팀 액션: connector scope·작업 실행 주체·session/file retention·background schedule·알림·kill switch를 workload별 data-flow와 승인 정책으로 검증 필요",
-      "detail": "AI타임스는 2026년 8월 20일 Anthropic이 Claude Cowork의 웹·모바일 베타를 유료 플랜에 출시하고 Google Workspace 연동을 강화했다고 보도했다. 기사에 따르면 기존 데스크톱 중심 Cowork를 웹, 모바일 앱, Chrome 브라우저 사이드 패널에서도 사용할 수 있으며, Cowork 세션과 파일은 사용자 Claude 계정에 저장돼 기기 간 작업을 이어갈 수 있다. cloud 기반 Cowork에서는 작업이 사용자 PC가 아니라 Anthropic 서버에서 실행돼 노트북을 닫거나 사용하지 않아도 계속될 수 있고, 예약 작업도 기기가 켜져 있지 않아도 실행될 수 있다고 설명한다. Gmail, Google Drive, Google Calendar를 업무 서비스 연동 대상으로 제시했다. 다만 연결 방식의 OAuth scope, connector별 데이터 권한, Gmail/Drive/Calendar에서 실제 수행하는 읽기·쓰기·외부전송 행위, 파일·세션·작업 로그의 보존 위치와 기간, 서버 실행 리전, 암호화·키 관리, prompt injection 방어, human review, audit export, 장애·지원 SLA는 이번 기사에서 확인하지 못했다.",
-      "why_it_matters": "기기 내 보조 기능이 계정 저장 세션·원격 background execution·업무 SaaS connector를 결합하면, AI 도구의 권한 경계가 단말에서 identity·cloud runtime·workspace data plane으로 이동함.",
-      "engineering_implication": "Cowork를 승인하기 전 connector별 OAuth scope와 read/write/export 가능 행위, session·file·scheduled-job의 저장·실행·알림 경로를 request/job ID로 연결해야 함. 제한된 read-only tenant에서 connector data minimization·approval·kill switch·token revoke·audit export·rollback을 canary로 확인 필요.",
-      "korea_implication": "국내 조직은 웹·모바일 제공과 계정 저장을 국내 데이터 처리·망분리·개인정보 요건 충족으로 해석하지 말고, 계약 주체·리전·subprocessor·지원 접근·보존·로그 export를 별도 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "Anthropic",
-        "Claude Cowork",
-        "Agent",
-        "Google Workspace",
-        "SaaS Security",
-        "Data Egress"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-20 18:04",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214171",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214171_217827_562.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Anthropic의 Claude Cowork 웹·모바일 베타와 Google Workspace 연동 강화를 다룬 AI타임스 보도",
-          "items": [
-            "발행: AI타임스 `2026-08-20 18:04`, article:published_time `2026-08-20T18:04:49+09:00` 확인",
-            "대상: 유료 플랜에서 데스크톱·웹·모바일 앱·Chrome 사이드 패널을 연결하는 Cowork 기능",
-            "연동: Gmail·Google Drive·Google Calendar를 업무 서비스 활용 대상으로 제시"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기기 간 지속성 및 remote background execution이 기사에서 직접 설명된 제품 범위",
-          "items": [
-            "세션: Cowork 세션과 파일을 사용자 Claude 계정에 저장해 기기 변경 뒤 작업 지속",
-            "실행: cloud 기반 Cowork 작업을 사용자 PC가 아닌 Anthropic 서버에서 수행한다는 기사 설명",
-            "예약: 노트북 종료 또는 미사용 상태에서도 작업 지속과 scheduled task 실행을 설명"
-          ]
-        },
-        {
-          "heading": "identity·connector 경계",
-          "body": "계정 저장 agent와 Workspace connector의 위험은 모델 응답보다 delegated identity와 데이터 흐름에서 발생",
-          "items": [
-            "분리: Claude account·Google identity·connector token·session/file store·remote worker·notification channel을 독립 asset으로 inventory",
-            "통제: connector별 최소 OAuth scope, read/write/export action, approval owner, token expiry와 revoke path 정의",
-            "기록: job ID에 initiating identity·connector·scope·source object·tool action·result destination·alert를 연결"
-          ]
-        },
-        {
-          "heading": "원격 실행·보존 운영",
-          "body": "background execution은 단말을 벗어난 실행 주체와 시간 경계를 만들므로 schedule·retention·incident response를 함께 검증할 대상",
-          "items": [
-            "검증: 작업이 어느 runtime·region에서 실행되는지, file/session/job log가 어디에 얼마나 보존되는지 contract·admin evidence로 확인",
-            "검증: device offline·network loss·token expiry·connector error·duplicate scheduled run·notification failure의 stop·retry·rollback 동작 시험",
-            "피할 것: 웹·모바일 접근 또는 계정 저장을 zero egress·단말 격리·감사 가능성의 보증으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "증거 경계와 시사점",
-          "body": "직접 확인한 자료는 AI타임스 기사이며 Anthropic 공식 제품 문서, API·admin control과 보안·운영 세부는 이번 실행에서 확인하지 못한 범위",
-          "items": [
-            "미확인: Google OAuth scope·connector별 권한·write/export 행동·server region·encryption·key custody·retention·human review·audit export·SLA",
-            "팀 액션: read-only low-sensitivity Workspace tenant에서 data-flow, approval, revoke, kill switch, audit retrieval을 포함한 canary 실행",
-            "팀 액션: production 확대 전 scheduled job owner·notification recipient·incident handoff·connector offboarding·evidence retention을 runbook에 등록"
           ]
         }
       ],

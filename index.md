@@ -330,6 +330,7 @@
 - [[raw/articles/kubernetes-v1-37-pod-certificates-cluster-trust-bundles-2026-08-29]] — Pod Certificates·Cluster Trust Bundles GA의 signer·X.509 rotation·workload mTLS identity 검증 경계.
 - [[raw/articles/kubernetes-v1-37-storage-version-migration-2026-09-01]] — Storage Version Migration GA·기본 활성화의 CRD schema·encryption rewrite와 etcd/API control-plane 검증 경계.
 - [[raw/articles/kubernetes-v1-37-etcd-range-stream-2026-09-02]] — etcd v3.7 RangeStream beta·default-on의 대형 list read memory·fallback·control-plane 검증 경계.
+- [[raw/articles/kubernetes-v1-37-hpa-scale-to-zero-2026-09-03]] — HPA scale-to-zero beta·default-on의 external metric·`ScaledToZero` 상태·version-skew·rollback 검증 경계.
 - [[raw/articles/aitimeskr-anthropic-fable-mythos-51-2026-09-02]] — Fable 5.1·Mythos 5.1 보도의 benchmark·cache-read 가격·제한 access와 production 검증 경계.
 - [[raw/articles/aitimes-openai-astra-cyber-safeguards-2026-09-02]] — Astra의 Critical cyber capability 보도와 runtime isolation·승인·중단 증거 경계.
 - [[raw/articles/aitimes-envharness-agent-learning-2026-08-31]] — EnvHarness wrapper·원본 verifier 보존·fresh rollout 기반 agent benchmark 연구와 재현·권한 검증 경계.
