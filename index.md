@@ -341,6 +341,9 @@
 - [[raw/articles/cloudflare-cache-transcoding-zstd-pingora-2026-09-01]] — Cloudflare Cache Transcoding prototype의 Zstandard·Pingora cache representation, CPU·storage·backbone byte canary 검증 경계.
 - [[raw/articles/aws-bedrock-web-search-govcloud-2026-09-03]] — Bedrock Web Search의 AWS GovCloud (US-West) 확장, IAM·citation·external-web tool policy 검증 경계.
 
+- [[raw/articles/aitimeskr-google-gemini-38-flash-cyber-2026-09-03]] — Gemini 3.8 Flash·Flash Cyber 보도: 장기 agent loop·cyber 제한 access·benchmark·비용의 운영 검증 경계.
+- [[raw/articles/aitimes-meta-muse-spark-13-2026-09-03]] — Muse Spark 1.3 보도: coding·agent benchmark·제한 preview·비용·approval 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
