@@ -2,14 +2,14 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-05 00:28",
+  "last_updated_kst": "2026-09-05 08:38",
   "audience": "developers and engineers",
   "executive_summary": [
+    "AWS MCP Server의 Lambda serverless diagnostic capability는 coding agent가 Lambda와 API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions의 오류·구성·변경·latency를 같은 조사 흐름에 연결하는 기능. read-only IAM·resource allowlist·CloudTrail·human approval을 먼저 분리해야 함.",
     "OpenAI GPT-6 Astra 공개 보도는 전문 agent·computer use·cyber benchmark와 API 단가를 함께 제시하지만, 이번 실행에서 OpenAI 원문은 Cloudflare challenge로 본문 검증이 불가. provider-reported score·가격·access plan을 task success·tool retry·p95·approval·rollback canary로 분리 필요.",
     "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고 Daybreak 모델의 patch/WAF mitigation 제안을 고객 review에 제출하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
     "CERN의 Debian 13 전환 계획은 2,200대 이상 산업 제어·embedded fleet의 CPU ISA·package build·field I/O·safety recovery를 함께 다루는 migration 사례. data-center fleet과 control fleet을 분리하고 representative rack에서 boot·I/O·alarm·rollback을 비교 필요.",
-    "Kubernetes v1.37 DRA Extended Resource가 GA가 되어 기존 `example.com/gpu` 요청을 DRA allocation과 연결 가능. API 호환성만으로 device lifecycle 검증이 끝나지 않으므로 inventory·prepare·topology·taint eviction·rollback을 pool별 trace로 확인 필요.",
-    "Amazon Linux 2027 preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC와 Neuron driver 지원을 묶은 OS baseline 변경. AMI·base image·host agent·container·accelerator driver를 분리한 node-pool canary와 rollback evidence 필요."
+    "Kubernetes v1.37 DRA Extended Resource가 GA가 되어 기존 `example.com/gpu` 요청을 DRA allocation과 연결 가능. API 호환성만으로 device lifecycle 검증이 끝나지 않으므로 inventory·prepare·topology·taint eviction·rollback을 pool별 trace로 확인 필요."
   ],
   "deep_dives": [
     {
@@ -191,6 +191,81 @@
   ],
   "items": [
     {
+      "id": "news-422",
+      "title_ko": "AWS MCP Server, Lambda serverless 진단 추가: agent 관측 권한을 7일 baseline·변경 trace로 분리",
+      "title_original": "AWS MCP Server adds a serverless capability for AWS Lambda functions",
+      "summary": "- 추가: AWS MCP Server가 Claude Code·Kiro 등 coding agent의 Lambda 및 연결 리소스 진단 capability 제공\n- 범위: Lambda·API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions의 구성·오류·변경·latency를 같은 조사 흐름에서 확인\n- 분석: **7일 baseline** 대비 error signal 변화, recurring error, 최근 변경 timeline, 연결 리소스 latency를 공식 기능으로 제시\n- 경계: MCP Server 실행 위치는 US East (N. Virginia)·Europe (Frankfurt)이며 prompt·telemetry·로그의 보존·data path·cross-account 권한은 별도 확인 대상\n- 팀 액션: read-only·short-lived role로 시작하고 source·환경변수·payload·log 접근, CloudTrail, baseline anomaly, runbook·rollback을 incident trace로 분리 검증 필요",
+      "detail": "AWS는 2026년 9월 5일 01:31 KST에 AWS MCP Server의 Lambda serverless diagnostic capability를 공지했다. Agent Toolkit for AWS 또는 standalone AWS MCP Server를 통해 Claude Code·Kiro 같은 coding agent가 실행 중인 Lambda와 API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions 연결 리소스를 함께 조사할 수 있다. 공지는 7일 baseline 대비 오류 신호 변화, 반복 오류, 배포 구성, 최근 변경 timeline, 연결 리소스 latency 분석을 기능 범위로 든다. MCP Server 자체는 US East (N. Virginia)와 Europe (Frankfurt)에서 실행되고, 대상 AWS 서비스 접근은 모든 commercial Region에서 가능하다고 안내한다. 추가 비용 없는 capability라는 발표이지만, 실제 IAM action·cross-account 권한·CloudTrail 범위·prompt 및 telemetry 보존·data residency·진단 정확도·latency·token 절감·SLA는 공지만으로 확정할 수 없다. agent에게 incident 원인 판정을 맡기기보다 read-only 조사와 least privilege를 먼저 적용하고, CloudWatch metric·trace·deployment event·human runbook·rollback evidence를 분리해 운영해야 한다.",
+      "why_it_matters": "agent가 Lambda와 연결 리소스의 신호를 한 호출 흐름에서 조합하면 조사 왕복을 줄일 수 있지만, 동시에 observability data·구성·변경 이력의 접근 경계가 넓어짐. 진단 권한을 remediation 권한으로 확장하면 prompt injection·잘못된 상관관계·과도한 데이터 노출이 incident 범위를 키울 수 있음.",
+      "engineering_implication": "Lambda diagnostic MCP는 read-only role·account/region/resource tag allowlist·short session·CloudTrail·request correlation부터 설정 필요. source·환경변수·secret·payload·log의 노출 여부와 7일 baseline의 데이터 품질을 확인하고, agent conclusion은 CloudWatch metric·X-Ray/OTel trace·deployment event·runbook으로 재검증한 뒤에만 변경 승인에 연결 필요.",
+      "korea_implication": "AWS MCP Server 실행 위치가 미국 동부·프랑크푸르트라는 공지 범위를 서울 리전 처리 또는 국내 data residency 보증으로 확대할 수 없음. 국내 규제·망분리 workload는 cross-region control plane·로그 및 prompt 전송·감사 export·계약 조건을 적용 전 별도 검증 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "MCP",
+        "AWS MCP Server",
+        "AWS Lambda",
+        "Serverless",
+        "Agent",
+        "Observability",
+        "IAM",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-09-05 01:31",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/aws-mcp-server-serverless/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "AWS MCP Server User Guide",
+          "url": "https://docs.aws.amazon.com/mcp/latest/userguide/what-is-mcp.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS 공식 What’s New가 AWS MCP Server의 Lambda serverless diagnostic capability를 공지. AWS RSS `Fri, 04 Sep 2026 16:31:00 GMT`를 KST `2026-09-05 01:31`로 환산.",
+          "items": [
+            "대상: Claude Code·Kiro 등 coding agent가 실행 중인 Lambda와 연결 리소스를 조사하는 공식 범위",
+            "연결: API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions를 Lambda 조사 흐름에 포함",
+            "제공: Agent Toolkit for AWS 또는 standalone AWS MCP Server 설치 경로"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공지는 agent가 한 호출에서 error signal·구성·변경·latency를 종합하도록 설계된 capability를 설명. 반복적인 다수 API 호출을 orchestration하는 경우보다 token 소비를 줄일 수 있다는 AWS 설명도 포함.",
+          "items": [
+            "baseline: 최근 **7일** error signal과 비교해 변경 지점을 식별하는 기능",
+            "추적: recurring error·deployed configuration·recent change timeline을 조사 근거로 수집",
+            "성능: 연결 리소스의 latency를 분석 범위에 포함하되 실제 진단 정확도·latency 절감 수치는 공지에 부재"
+          ]
+        },
+        {
+          "heading": "권한·데이터 경계",
+          "body": "진단에 필요한 Lambda 구성, 로그, event, resource metadata는 보안·개인정보·운영 데이터가 섞일 수 있음. 관측 권한과 source·환경변수·secret·payload 조회, remediation 실행을 같은 role에 묶지 않아야 함.",
+          "items": [
+            "권한: read-only IAM role, resource tag·account·region allowlist, short-lived session으로 시작",
+            "분리: diagnostic MCP tool·secret retrieval·configuration write·deployment action을 별도 role과 approval으로 관리",
+            "감사: MCP request·assumed role·resource scope·tool response·human decision을 CloudTrail 및 incident ID에 연결"
+          ]
+        },
+        {
+          "heading": "운영·SRE 시사점",
+          "body": "7일 baseline은 계절성·배포 주기·traffic shift·sampling 영향에 따라 오탐을 만들 수 있음. agent의 요약을 root cause 확정으로 취급하지 말고 service metric·distributed trace·deployment event·runbook을 교차 검증해야 함.",
+          "items": [
+            "검증: CloudWatch error·throttle·duration·concurrency와 API Gateway/EventBridge/SQS 지연을 같은 request correlation으로 비교",
+            "측정: triage lead time·false positive·manual API call 감소·token usage·tool failure·rollback time을 pilot 지표로 설정",
+            "팀 액션: 한 account·한 Lambda cohort에서 read-only canary를 수행하고 source/log access와 change approval은 제외한 뒤 확대"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-421",
       "title_ko": "CERN 산업용 가속기 제어 시스템, Debian 13으로 전환: 구형 x86·패키지 공급망·제어망 검증을 분리",
       "title_original": "CERN Transitioning Industrial Computers To Debian After Being A Longtime RHEL Institution",
@@ -267,7 +342,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-419",
@@ -341,7 +416,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -415,7 +490,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-417",
@@ -482,7 +557,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-418",
@@ -558,7 +633,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-415",
@@ -627,7 +702,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-413",
@@ -696,7 +771,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-414",
@@ -765,7 +840,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-416",
@@ -843,7 +918,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-412",
@@ -921,7 +996,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-411",
@@ -989,7 +1064,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-410",
@@ -1065,7 +1140,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-409",
@@ -1134,11 +1209,11 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-408",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1206,7 +1281,7 @@
     },
     {
       "id": "news-407",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1273,7 +1348,7 @@
     },
     {
       "id": "news-405",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1409,7 +1484,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-404",
@@ -1480,7 +1555,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-402",
@@ -1548,7 +1623,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-403",
@@ -1618,7 +1693,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-400",
@@ -1687,7 +1762,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-399",
@@ -1756,7 +1831,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-397",
@@ -1833,7 +1908,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-398",
@@ -1912,7 +1987,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-395",
@@ -1990,7 +2065,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-401",
@@ -2064,11 +2139,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-394",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2144,7 +2219,7 @@
     },
     {
       "id": "news-392",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2212,7 +2287,7 @@
     },
     {
       "id": "news-393",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2363,11 +2438,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-391",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2505,7 +2580,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-389",
@@ -2573,7 +2648,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-384",
@@ -2638,7 +2713,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-383",
@@ -2702,7 +2777,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-386",
@@ -2768,7 +2843,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-387",
@@ -2832,7 +2907,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-385",
@@ -2906,7 +2981,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-382",
@@ -2969,7 +3044,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-381",
@@ -3032,11 +3107,11 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-380",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -3113,7 +3188,7 @@
     },
     {
       "id": "news-336",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3274,7 +3349,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-378",
@@ -3360,7 +3435,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-376",
@@ -3451,7 +3526,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-375",
@@ -3528,7 +3603,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-372",
@@ -3602,7 +3677,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-373",
@@ -3670,7 +3745,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-374",
@@ -3744,80 +3819,6 @@
             "검증: staging에서 Search·Agent·Training request별 served `robots.txt`, edge action, origin log, cache behavior 대조",
             "검증: custom rule·WAF·Bot Management·origin file의 precedence와 bot identifier update 시 영향 확인",
             "팀 액션: zone별 policy owner·예외 목록·rollback 절차·crawl/referral metric baseline을 change record에 고정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-371",
-      "title_ko": "Amazon Bedrock GPT-5.6 Sol 가격 인하: 입·출력 token mix와 프로모션 종료를 agent FinOps gate로 고정",
-      "title_original": "Amazon Bedrock announces reduced pricing for OpenAI GPT-5.6 Sol",
-      "summary": "- 가격: Amazon Bedrock의 GPT-5.6 Sol을 **입력 1백만 token당 4달러·출력 20달러**로 인하\n- 폭: AWS 공지 기준 기존 Sol 대비 입력 20%·출력 33.3% 인하, Terra·Luna 조정 뒤 Sol 적용\n- 기간: promotional pricing은 최소 **2026-11-21**까지라는 공식 범위\n- 적용: autonomous coding agent·multi-step analysis·advanced research workflow를 AWS가 사용 사례로 제시\n- 팀 액션: prompt/output mix·retry·cache·tool-call·model quality·region을 trace별로 연결하고 종료 전 rate card·budget alert·fallback·model pinning을 production gate로 검증 필요",
-      "detail": "AWS는 2026년 8월 22일 05:11 KST에 Amazon Bedrock의 OpenAI GPT-5.6 Sol 가격을 입력 1백만 token당 4달러, 출력 1백만 token당 20달러로 낮춘다고 공지했다. AWS 발표 기준 기존 Sol 가격보다 입력은 20%, 출력은 33.3% 낮으며 프로모션 가격은 최소 2026년 11월 21일까지 적용된다. 공지는 Terra·Luna 가격 인하 뒤 Sol에도 조정이 적용된다고 설명하며 autonomous coding agent, 복수 단계 분석, 고급 연구 workflow를 활용 사례로 든다. 다만 이 발표는 Bedrock list price와 기간 범위다. 계정별 청구, prompt/output 비율, cache·batch·provisioned throughput, retry·tool call, network·guardrail·observability 비용과 region availability, 품질·지연·성공률은 별도 workload 증거가 필요하다.",
-      "why_it_matters": "출력 token 비중이 큰 coding·analysis agent는 동일 모델이라도 input/output mix와 retry·tool loop에 따라 단가 변화가 달라짐. 한시 가격을 routing·budget·SLO 변경으로 반영하지 않으면 프로모션 종료 시 task 비용과 fallback 정책이 함께 흔들릴 수 있음.",
-      "engineering_implication": "request trace에 model·region·input/output token·cache·tool call·retry·latency·quality outcome·completed-task cost를 연결해야 함. representative workload에서 Terra·Luna·Sol을 비교하고 2026-11-21 이전 rate card expiry alert, budget ceiling, model pinning, fallback/rollback owner를 release gate에 기록 필요.",
-      "korea_implication": "AWS는 최신 GPT-5.6 Sol의 리전 가용성을 AWS Regions 페이지에서 확인하도록 안내함. 국내 workload는 서울 리전 제공 여부, cross-region data path·latency·egress·계약 조건을 price change와 별도로 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "AWS",
-        "Amazon Bedrock",
-        "OpenAI",
-        "GPT-5.6 Sol",
-        "Agent",
-        "FinOps",
-        "Model Routing"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-08-22 05:11",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/bedrock-openai-gpt-56-sol-reduced-pricing/",
-      "image_url": "assets/images/fallback-ai.svg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Amazon Bedrock documentation",
-          "url": "https://docs.aws.amazon.com/bedrock/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS 공식 What’s New가 Amazon Bedrock의 OpenAI GPT-5.6 Sol promotional 가격 인하를 공지. RSS 발행 `Fri, 21 Aug 2026 20:11:00 GMT`를 KST `2026-08-22 05:11`로 환산.",
-          "items": [
-            "가격: 입력 **1백만 token당 4달러**, 출력 **1백만 token당 20달러** 공개",
-            "기간: promotional pricing 최소 `2026-11-21`까지 적용이라는 AWS 범위",
-            "순서: Terra·Luna 가격 조정 뒤 Sol에도 인하 적용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "AWS 공지는 기존 Sol 가격과의 상대 변화와 활용 대상만 명시. region별 최신 제공 여부는 AWS Regions 페이지, 가격 세부 내용은 Bedrock documentation에서 확인하도록 안내.",
-          "items": [
-            "인하: 기존 Sol 대비 입력 20%·출력 33.3% 인하라는 AWS 수치",
-            "활용: autonomous coding agent·multi-step analysis·advanced research workflow 제시",
-            "경계: 공지 본문에 account별 bill·regional price table·capacity·SLA 수치 부재"
-          ]
-        },
-        {
-          "heading": "agent 비용 모델 관점",
-          "body": "모델 표준 단가만으로 completed-task cost를 판정할 수 없음. agent workload는 prompt/output token mix, context growth, cache hit, retry, tool-call 횟수, concurrency와 실패 재실행이 함께 비용을 결정.",
-          "items": [
-            "측정: request ID별 input/output token·cache·tool call·retry·latency·quality outcome 수집",
-            "비교: 동일 prompt set·tool policy·concurrency에서 Sol과 Terra·Luna의 task completion cost 대조",
-            "피할 것: output 가격 인하를 모든 agent workload의 동일 절감률로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "운영·FinOps 시사점",
-          "body": "최소 2026년 11월 21일까지라는 프로모션 기간은 가격 변경 event이자 종료 대응 deadline. production adoption은 rate card, budget, routing, fallback과 rollout evidence를 함께 고정해야 함.",
-          "items": [
-            "통제: pricing expiry alert·monthly budget ceiling·per-task cost guardrail과 owner 지정",
-            "통제: model pinning·fallback order·quality threshold·rollback 조건을 routing policy version에 기록",
-            "검증: cache·batch·provisioned throughput·network·guardrail·observability 비용을 포함한 invoice reconciliation 수행",
-            "팀 액션: 30일 내 대표 coding·analysis workload에서 cost, quality, latency, retry, fallback evidence를 release gate로 등록"
           ]
         }
       ],
