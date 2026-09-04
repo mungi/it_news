@@ -2,14 +2,14 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-04 08:12",
+  "last_updated_kst": "2026-09-04 12:14",
   "audience": "developers and engineers",
   "executive_summary": [
+    "OpenAI GPT-6 Astra 공개 보도는 전문 agent·computer use·cyber benchmark와 API 단가를 함께 제시하지만, 이번 실행에서 OpenAI 원문은 Cloudflare challenge로 본문 검증이 불가. provider-reported score·가격·access plan을 task success·tool retry·p95·approval·rollback canary로 분리 필요.",
     "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고, Daybreak 모델의 patch/WAF mitigation 제안은 customer review 전 자동 검증하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
     "Kubernetes v1.37 DRA Extended Resource가 GA가 되어 기존 `example.com/gpu` 요청을 DRA allocation과 연결 가능. API 호환성만으로 device lifecycle 검증이 끝나지 않으므로 inventory·prepare·topology·taint eviction·rollback을 pool별 trace로 확인 필요.",
     "Amazon Linux 2027 preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC와 Neuron driver 지원을 묶은 OS baseline 변경. AMI·base image·host agent·container·accelerator driver를 분리한 node-pool canary와 rollback evidence 필요.",
-    "Google Gemini 3.8 Flash·Flash Cyber 보도는 장기 agent loop의 effort·반복 tool call과 cyber 제한 access를 함께 제시. API 가격·benchmark·patch 수치는 provider-reported 범위이므로 task success·tool retry·TTFT/p95·token 비용·patch validity·approval·rollback을 같은 trace에서 canary로 검증 필요.",
-    "Cloudflare Adaptive Intelligence가 Bot Score의 지속 재학습·shadow 비교·점진 rollout을 공개. `Auto Update Machine Learning`은 security control 변경이므로 login·checkout·account recovery별 bot block뿐 아니라 human success·challenge solve·false-positive appeal·rollback time을 cohort별로 함께 검증 필요."
+    "Google Gemini 3.8 Flash·Flash Cyber 보도는 장기 agent loop의 effort·반복 tool call과 cyber 제한 access를 함께 제시. API 가격·benchmark·patch 수치는 provider-reported 범위이므로 task success·tool retry·TTFT/p95·token 비용·patch validity·approval·rollback을 같은 trace에서 canary로 검증 필요."
   ],
   "deep_dives": [
     {
@@ -261,6 +261,80 @@
       "rank": 1
     },
     {
+      "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
+      "title_original": "OpenAI unveils GPT-6 Astra",
+      "summary": "- 공개: AI타임스가 OpenAI의 `GPT-6 Astra` 출시와 일부 기업 우선 공개를 보도\n- 성능: FrontierMath Tier 4 97.6%, ARC-AGI-3 98.6%, ExploitBench 100%, Terminal-Bench 4.0 57.9% 등은 기사에 인용된 provider·benchmark 수치\n- 비용·접근: 입력/출력 100만 token당 $10/$50, Fast mode 최대 2.5배 속도, ChatGPT·API·Bedrock 순차 제공 계획은 기사 범위\n- 팀 액션: production 승격 전 task success·tool retry·TTFT/p95·token cost·approval·safety intervention·rollback을 동일 trace에서 workload별 검증 필요",
+      "detail": "AI타임스는 OpenAI가 GPT-6 Astra를 공개하고 컴퓨터 제어, 브라우징, 소프트웨어 엔지니어링, 사이버 보안, 과학 연구에 적용한다고 보도했다. 기사에는 FrontierMath Tier 4 97.6%, ARC-AGI-3 98.6%, ExploitBench 100%, Agents’ Last Exam 59.3%, OSWorld 2.0 작업 시간 약 47% 단축, GPQA Diamond 96.0%, Terminal-Bench 4.0 57.9%가 인용됐다. Context Retrieval 메모리, Fast mode와 입력/출력 100만 token당 $10/$50 가격, 일부 기업 우선 공개 및 ChatGPT·API·AWS Bedrock 순차 제공도 보도 범위다. 다만 OpenAI 원문은 이번 실행에서 Cloudflare challenge로 본문을 직접 읽지 못했고, model card·API endpoint·region·quota·contract·SLA·benchmark harness·seed·prompt·tool permission·independent reproduction은 확인하지 못했다. 따라서 성능·가격·zero-day 발견·Daybreak 안전장치·제공 일정은 기사 또는 provider-reported 주장으로 한정한다. 도입 조직은 privileged tool을 분리한 canary에서 완료율, retry/timeout, TTFT·p95, cache 포함 token 비용, approval 거부율, safety intervention, audit completeness와 rollback 시간을 함께 비교해야 한다.",
+      "why_it_matters": "전문 agent 모델은 benchmark 점수보다 tool 권한, 장시간 session memory, context·cache 비용, human approval과 incident 복구가 실제 위험과 비용을 결정함. cyber capability가 포함된 모델은 access tier와 tool egress boundary를 별도 control plane으로 다뤄야 함.",
+      "engineering_implication": "모델 교체는 feature flag·read-only tool·budget cap·short-lived credential을 가진 workload cohort부터 시작해야 함. benchmark 비교표와 별개로 task 성공률, tool retry, p95, token·cache 비용, unsafe action 차단, reviewer override, trace export, provider 장애 fallback을 release gate로 기록 필요.",
+      "korea_implication": "국내 제공 리전, 데이터 처리·보존, 가격·quota, Bedrock availability, 보안 기능과 support 계약은 이번에 직접 검증하지 못함. 공공·금융 및 폐쇄망 조직은 source code·prompt·tool trace의 국외 이전과 retention을 계약·보안 검토에서 확인해야 함.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "GPT-6 Astra",
+        "Agent",
+        "Coding",
+        "Cybersecurity",
+        "Benchmark",
+        "FinOps",
+        "Model Governance"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-09-04 05:36",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214821",
+      "image_url": "https://cdn.aitimes.com/news/photo/202609/214821_218550_2412.jpeg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "OpenAI GPT-6 Astra 공식 발표 (이번 실행에서 Cloudflare challenge로 본문 미확인)",
+          "url": "https://openai.com/index/gpt-6-astra/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스의 `article:published_time` `2026-09-04T05:36:23+09:00`를 KST `2026-09-04 05:36`으로 기록. 기사는 OpenAI가 GPT-6 Astra를 공개하고 일부 기업부터 제공한다고 보도함. 직접 접근한 OpenAI 공식 URL은 Cloudflare challenge로 본문 검증이 불가했으므로, 이 항목의 사실과 시각은 읽을 수 있었던 timestamped secondary report 경계임.",
+          "items": [
+            "출시: 컴퓨터 제어·브라우징·software engineering·cybersecurity·과학 연구를 대상으로 한 차세대 flagship model이라는 기사 설명",
+            "접근: 일부 기업 우선 공개 뒤 ChatGPT Plus·Pro·Business·Enterprise, API, AWS Bedrock 순차 제공 계획이라는 보도 범위",
+            "경계: provider 공식 model card·API schema·지원 리전·quota·SLA·contract·retention은 이번 실행에서 직접 확인하지 못함"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사는 GPT-6 Astra의 FrontierMath Tier 4 97.6%, ARC-AGI-3 98.6%, ExploitBench 100%, Agents’ Last Exam 59.3%, GPQA Diamond 96.0%, Terminal-Bench 4.0 57.9%를 인용함. OSWorld 2.0 작업 시간 약 47% 단축, Context Retrieval 메모리, Fast mode 최대 2.5배 속도와 입력/출력 100만 token당 $10/$50도 기사에 제시됨.",
+          "items": [
+            "성능: 수학·추론·agent·computer use·coding·cyber benchmark 수치는 기사 및 provider-reported 평가 범위",
+            "메모리: 장시간 개발 작업에서 session 간 검색 가능한 Context Retrieval을 도입했다는 기사 설명",
+            "가격: token 단가와 Fast mode 수치는 context length·cache·retry·concurrency·billing 조건이 미확인인 비용 신호"
+          ]
+        },
+        {
+          "heading": "검증·권한·안전 경계",
+          "body": "기사의 zero-day 발견, Daybreak 기반 안전장치, 원격 monitoring 강화와 cyber 연구 제한은 정책·운영 artifact가 없으면 production control 보증이 아님. benchmark harness, seed, prompt, evaluator, tool permission, environment와 independent reproduction이 공개되지 않은 상태에서는 점수를 특정 조직의 task 성공률이나 자동 실행 승인 근거로 바꿀 수 없음.",
+          "items": [
+            "검증: representative repository·browser·terminal task에서 task success, retry, timeout, human rework와 p95를 baseline model과 비교",
+            "권한: browser·shell·cloud credential·production write tool을 read-only와 short-lived credential lane으로 분리",
+            "안전: unsafe action 차단·approval request·safety intervention·audit trace·incident escalation을 tool call ID로 보관"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "GPT-6 Astra 같은 전문 agent 모델은 높은 단일 benchmark보다 model routing, context budget, tool boundary, approval queue, fallback과 rollback의 결합 운영이 더 중요함. 특히 cyber capability와 long-running computer use가 함께 언급된 모델은 sandbox·egress·secret·data classification을 가격·성능 평가보다 먼저 검토해야 함.",
+          "items": [
+            "측정: completed task당 token·cache 비용, TTFT·p95, tool failure, reviewer override, blocked action, rollback time",
+            "운영: feature flag와 concurrency·spend cap을 둔 cohort canary 후 trace completeness와 SLO를 만족한 workflow만 확대",
+            "팀 액션: provider 장애·quota 변경·unsafe output 발생 시 baseline model 전환과 credential revoke를 포함한 runbook 등록"
+          ]
+        }
+      ],
+      "id": "news-420",
+      "rank": 2
+    },
+    {
       "id": "news-417",
       "title_ko": "Kubernetes v1.37 DRA 업데이트: extended resource GA·device taint·NUMA attribute를 device lifecycle으로 운영",
       "title_original": "Kubernetes v1.37: DRA Updates",
@@ -325,7 +399,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-418",
@@ -401,7 +475,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-415",
@@ -470,7 +544,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-413",
@@ -539,7 +613,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-414",
@@ -608,7 +682,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-416",
@@ -686,7 +760,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-412",
@@ -764,7 +838,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-411",
@@ -832,7 +906,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-410",
@@ -908,7 +982,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-409",
@@ -977,11 +1051,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-408",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1049,7 +1123,7 @@
     },
     {
       "id": "news-407",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1116,7 +1190,7 @@
     },
     {
       "id": "news-405",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1252,7 +1326,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-404",
@@ -1323,7 +1397,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-402",
@@ -1391,7 +1465,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-403",
@@ -1461,7 +1535,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-400",
@@ -1530,7 +1604,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-399",
@@ -1599,7 +1673,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-397",
@@ -1676,7 +1750,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-398",
@@ -1755,7 +1829,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-395",
@@ -1833,7 +1907,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-401",
@@ -1907,11 +1981,11 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-394",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -1987,7 +2061,7 @@
     },
     {
       "id": "news-392",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2055,7 +2129,7 @@
     },
     {
       "id": "news-393",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2206,11 +2280,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-391",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2348,7 +2422,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-389",
@@ -2416,7 +2490,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-384",
@@ -2481,7 +2555,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-383",
@@ -2545,7 +2619,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-386",
@@ -2611,7 +2685,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-387",
@@ -2675,7 +2749,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-385",
@@ -2749,7 +2823,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-382",
@@ -2812,7 +2886,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-381",
@@ -2875,11 +2949,11 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-380",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -2956,7 +3030,7 @@
     },
     {
       "id": "news-336",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3117,7 +3191,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-378",
@@ -3203,7 +3277,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-376",
@@ -3294,7 +3368,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-375",
@@ -3371,7 +3445,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-372",
@@ -3445,7 +3519,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-373",
@@ -3513,7 +3587,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-374",
@@ -3590,7 +3664,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-371",
@@ -3664,7 +3738,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-370",
@@ -3739,92 +3813,6 @@
             "측정: batch throughput·streaming end-to-end latency·Python UDF CPU/memory·failure recovery time 비교",
             "통제: canary job·data-quality assertion·checkpoint backup·catalog snapshot·rollback owner를 release gate에 연결",
             "팀 액션: 30일 내 대표 batch와 streaming job에서 Glue 5.x 대비 cost, latency, correctness, rollback evidence 기록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-366",
-      "title_ko": "GitHub 8월 17일 장애 사후 분석: Central US 용량 포화·retry budget을 CI/CD 복구 항목으로 분리",
-      "title_original": "The August 17 outage, and the work ahead",
-      "summary": "- 장애: GitHub가 8월 17일 **7시간 47분** 장애로 github.com·인증·Actions·API·PR·Issues·Copilot 영향을 공식 공개\n- 원인: Central US의 critical infrastructure component가 traffic peak에 scale하지 못해 capacity pressure와 인증 실패가 확산했다는 사후 분석\n- 복구: traffic reroute·affected infrastructure 격리·단계 복구 뒤 Copilot client-side retry loop를 완화해 안전한 traffic 복원을 진행\n- 규모: 월간 commit이 4월 14억에서 29억으로 증가했으며 Azure가 platform load 약 58%·Git operation 절반을 처리한다는 GitHub 수치\n- 팀 액션: workflow·webhook·artifact·deployment의 idempotency, retry budget, queue age, manual replay·rollback runbook을 GitHub 장애 시나리오로 시험 필요",
-      "detail": "GitHub는 2026년 8월 21일 03:36 KST에 8월 17일 장애가 7시간 47분 지속됐으며 github.com, authentication, GitHub Actions, APIs, pull requests, issues, Copilot에 영향을 줬다고 밝혔다. 공식 사후 분석은 새 traffic peak에서 Central US data center의 critical infrastructure component가 scale하지 못했고 capacity pressure가 인증 실패와 다수 서비스 장애로 번졌다고 설명한다. 복구 과정에서는 traffic reroute, affected infrastructure 격리, 단계별 서비스 복원 후 Copilot service의 error가 유발한 client-side retry loop를 완화해야 했다. GitHub는 두 8월 장애가 code 또는 configuration change가 아니라 capacity failure였다고 적었으며, 4월 이후 월간 commit이 14억에서 29억으로 늘었다고 밝혔다. 300만 CPU core, 120 PB high-speed storage, network capacity 추가와 Azure migration으로 platform load 약 58%, Git operation 절반을 Azure에서 처리한다고 제시했다. 다만 GitHub의 수치는 플랫폼 전체 범위이며 조직별 workflow 누락, artifact publish, deployment, webhook replay, Copilot client impact, recovery RTO는 각 조직의 event/run/log 증거로 별도 대조해야 한다.",
-      "why_it_matters": "GitHub 장애는 source control만이 아니라 인증, CI/CD, webhook, artifact, PR approval, Copilot workflow가 함께 멈출 수 있는 developer control-plane incident임. vendor capacity 확장 계획과 조직의 build/deploy continuity는 별도 control로 검증해야 함.",
-      "engineering_implication": "GitHub dependency를 가진 서비스는 retry cap·budget·exponential backoff·queue-age alert·idempotency key·duplicate deploy guard·manual replay 기준을 runbook에 고정해야 함. status page와 API telemetry를 내부 release/deployment evidence와 연결해 누락 workflow·artifact·approval를 장애 뒤 재조정 필요.",
-      "korea_implication": "한국 시간 업무·배포 창에서도 글로벌 GitHub control-plane 장애가 CI/CD와 협업을 동시에 중단시킬 수 있음. GitHub Enterprise Cloud 사용 여부와 무관하게 mirror, break-glass release, vendor-status alert, critical deployment 승인 경로를 조직별로 점검 필요.",
-      "category": "DevTools",
-      "tags": [
-        "GitHub",
-        "Outage",
-        "CI/CD",
-        "GitHub Actions",
-        "Reliability",
-        "SRE",
-        "Copilot"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-08-21 03:36",
-      "source_name": "GitHub Blog",
-      "source_url": "https://github.blog/news-insights/company-news/the-august-17-outage-and-the-work-ahead/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-logo-left.png",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "GitHub Status — August 17 outage root cause analysis",
-          "url": "https://www.githubstatus.com/incidents/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitHub 공식 사후 분석이 8월 17일 global platform outage의 지속 시간·영향 서비스·복구 과정을 공개. 발행 시각은 `article:published_time` `2026-08-20T18:36:11+00:00`, KST `2026-08-21 03:36` 확인.",
-          "items": [
-            "영향: github.com·authentication·GitHub Actions·API·pull request·issue·Copilot 서비스 중단 또는 오류",
-            "지속: 공식 발표 기준 장애 시간 **7시간 47분**",
-            "비교: 8월 6일 Actions 장애에 이어 같은 달 두 번째 significant incident라는 GitHub 설명"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "GitHub는 새 traffic peak에서 Central US data center의 critical infrastructure component가 scale하지 못했고, capacity pressure가 인증 실패와 복수 서비스 장애로 확산했다고 설명. code 또는 configuration change가 원인이 아니었다는 발표 범위.",
-          "items": [
-            "원인: critical component의 scale failure와 capacity pressure라는 official RCA 범위",
-            "복구: traffic reroute·affected infrastructure isolation·staged restoration 수행",
-            "추가 요인: 일부 Copilot service error가 client-side retry loop를 유발해 복구 traffic을 증가시킨 상태",
-            "조치: retry behavior 완화 뒤 traffic을 안전하게 복원했다는 GitHub 설명"
-          ]
-        },
-        {
-          "heading": "용량·아키텍처 관점",
-          "body": "GitHub는 4월 이후 monthly commit이 14억에서 29억으로 증가했다고 제시하고, capacity·efficiency·architectural bottleneck 제거를 reliability priority로 설명. Azure migration과 storage/compute 확장은 vendor platform의 변화이며 조직 workload availability 보증은 별도.",
-          "items": [
-            "확장: 300만 CPU core·120 PB high-speed storage와 network capacity 추가라는 GitHub 수치",
-            "이전: Azure가 platform load 약 58%, Git operation 약 절반을 처리한다는 발표",
-            "계획: reader 수에 선형 확장하는 read architecture를 largest monorepo부터 gradual rollout 예정",
-            "경계: platform aggregate 수치를 조직별 Actions queue·API quota·Git latency·Copilot availability SLA로 환산 불가"
-          ]
-        },
-        {
-          "heading": "CI/CD·SRE 시사점",
-          "body": "Git provider incident는 retry storm과 stale queue, missed webhook, duplicate deployment, artifact publication 불일치를 동시에 만들 수 있음. GitHub의 retry limit·retry budget·variable timeout 강화 계획은 client와 pipeline의 bounded retry 설계를 대체하지 않음.",
-          "items": [
-            "통제: API·webhook·runner client의 retry cap·budget·jitter·deadline과 circuit breaker 정의",
-            "관측: queue age·workflow start/completion·webhook delivery·artifact publish·deployment state를 release ID로 연결",
-            "복구: manual rerun 전 idempotency key·environment lock·migration state·external side effect 확인",
-            "피할 것: GitHub service restored 상태를 모든 queued job·webhook·artifact·approval의 정상 완료 증거로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "운영 체크리스트",
-          "body": "장애 후 확인은 GitHub status만으로 끝나지 않음. source control, build, security scan, publish, deploy, approval, rollback의 own telemetry를 bounded reconciliation 대상으로 운영 필요.",
-          "items": [
-            "체크: critical repository·workflow·webhook·artifact registry·deployment target dependency map 작성",
-            "체크: missed event·queued run·cancelled run·partial artifact·duplicate deploy를 query하는 reconciliation job 준비",
-            "체크: vendor status alert·on-call owner·manual release authority·break-glass credential·audit trail 점검",
-            "팀 액션: 30일 내 GitHub outage game day에서 retry storm·webhook loss·queue backlog·rollback RTO 측정"
           ]
         }
       ],

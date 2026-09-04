@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-04 | Total pages: 324
+> Last updated: 2026-09-04 | Total pages: 325
 
 ## Entities
 
@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-gpt-6-astra-2026-09-04]] — GPT-6 Astra 공개 보도: 전문 agent·cyber access·가격을 benchmark·권한·운영 trace로 분리 검증.
 - [[raw/articles/aitimes-openai-codex-usage-efficiency-2026-08-30]] — Codex·ChatGPT Work 사용량 reset과 context·background task·retry token 효율화 보도, quota·trace 검증 경계.
 - [[raw/articles/aws-agentcore-memory-fine-grained-access-control-2026-08-29]] — AgentCore Memory Gateway·JWT·Cedar 기반 tenant memory 접근 제어와 claim·namespace·policy 검증 경계.
 - [[raw/articles/aws-cloudwatch-agent-journald-2026-08-29]] — CloudWatch agent의 native journald 수집과 structured metadata·filter·권한·비용 검증 경계.
