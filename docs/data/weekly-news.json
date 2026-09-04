@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-04 12:14",
+  "last_updated_kst": "2026-09-04 16:20",
   "audience": "developers and engineers",
   "executive_summary": [
     "OpenAI GPT-6 Astra 공개 보도는 전문 agent·computer use·cyber benchmark와 API 단가를 함께 제시하지만, 이번 실행에서 OpenAI 원문은 Cloudflare challenge로 본문 검증이 불가. provider-reported score·가격·access plan을 task success·tool retry·p95·approval·rollback canary로 분리 필요.",
@@ -187,6 +187,85 @@
   ],
   "items": [
     {
+      "id": "news-421",
+      "title_ko": "CERN 산업용 가속기 제어 시스템, Debian 13으로 전환: 구형 x86·패키지 공급망·제어망 검증을 분리",
+      "title_original": "CERN Transitioning Industrial Computers To Debian After Being A Longtime RHEL Institution",
+      "summary": "- 전환: CERN이 가속기 제어용 산업 컴퓨터·임베디드 시스템 **2,200대 이상**을 2026년 말까지 Debian 13으로 이전할 계획\n- 배경: CentOS Stream의 기본 `-march=x86-64-v2`가 구형 x86 장비의 강제 노후화를 유발한다는 판단이 RHEL 계열 이탈 요인\n- 범위: 데이터센터와 실험 컴퓨팅은 RHEL/AlmaLinux를 유지하며, 산업 제어 시스템만 별도 migration lane으로 운영\n- 팀 액션: OS 교체를 package build·driver·I/O·network isolation·rollback·safety interlock까지 포함한 control-system change로 검증 필요",
+      "detail": "CERN의 MiniDebConf 발표와 이를 인용한 GeekNews·Phoronix 보도에 따르면, CERN은 가속기 제어용 산업 컴퓨터와 임베디드 시스템 2,200대 이상을 2026년 말까지 Debian 13으로 전환할 계획이다. CERN은 과거 Scientific Linux를 약 10년 운영한 뒤 2015년 CentOS로 이전했고, CentOS Stream도 검토했으나 기본 `-march=x86-64-v2` 컴파일러 정책이 구형 하드웨어의 계속 운용을 어렵게 만든다는 판단을 전환 배경으로 들었다. 대상은 산업용 accelerator-control 시스템이며 데이터센터와 실험용 컴퓨팅 환경은 RHEL/AlmaLinux를 유지한다. 발표에서 언급된 Debian 온보딩 과제는 자동 package build·publish 표준 도구의 공백과 동일 package의 복수 version 지원 제약이다. 보도와 발표 범위는 특정 CERN 시스템의 계획·이행 중 과제이며, 완전한 hardware inventory, driver certification, safety certification, service interruption, 보안 통제와 일정 준수는 별도 검증이 필요하다. 제어망 OS migration은 distro 선택만으로 승인하지 말고 image·repository·kernel module·fieldbus/PCI I/O·time synchronization·access control·operator console·rollback을 분리한 representative rack canary로 증명해야 한다.",
+      "why_it_matters": "지원 종료·컴파일러 baseline 변화는 OT·연구 장비의 교체 주기와 맞지 않을 수 있음. 범용 IT fleet과 산업 제어 fleet을 같은 OS lifecycle로 강제하면 hardware compatibility·안전성·패키지 재현성·복구 절차가 동시에 흔들릴 수 있음.",
+      "engineering_implication": "구형 장비 migration은 CPU ISA·kernel module·PCI/VME/serial I/O·real-time/timing·package repository·SBOM·offline update·operator access를 inventory로 고정해야 함. 한 control cell에서 Debian 13과 현행 image의 boot·I/O·latency·alarm·failover·rollback을 비교하고, production control plane과 data-center fleet의 support policy를 분리 필요.",
+      "korea_implication": "국내 제조·연구·공공 OT 환경도 RHEL 계열 lifecycle을 폐쇄망 장비의 사용연한과 동일시할 수 없음. 배포판 전환 전 vendor driver·국산 장비 지원·망분리 update mirror·안전 인증·비상 복구 절차를 site별 증적으로 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "CERN",
+        "Debian",
+        "RHEL",
+        "CentOS",
+        "Linux",
+        "OT",
+        "Industrial Control",
+        "Package Supply Chain",
+        "Legacy Hardware"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-09-04 16:01",
+      "source_name": "GeekNews GN⁺",
+      "source_url": "https://news.hada.io/topic?id=33217",
+      "image_url": "https://www.phoronix.net/image.php?id=2026&image=cern_debian_1",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Phoronix 원문",
+          "url": "https://www.phoronix.com/news/CERN-Goes-Debian-Leaving-RHEL"
+        },
+        {
+          "title": "MiniDebConf CERN accelerator control 발표 영상",
+          "url": "https://gemmei.ftp.acc.umu.se/pub/debian-meetings/2026/MiniDebConf-Winterthur/ch2026-53-controlling-cerns-accelerators-with-debian.av1.webm"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GeekNews GN⁺는 2026년 9월 4일 16:01 KST에 CERN의 산업용 가속기 제어 컴퓨터 전환을 정리함. 연결된 Phoronix 보도는 MiniDebConf Winterthur 발표를 근거로, 2026년 말까지 2,200대 이상 산업용 컴퓨터·임베디드 시스템을 Debian 13으로 옮기는 계획을 설명함.",
+          "items": [
+            "대상: LHC 데이터센터 전체가 아닌 accelerator-control 산업 시스템과 임베디드 장비 범위",
+            "일정: 2026년 말까지 2,200대 이상 Debian 13 배포 계획",
+            "유지: 데이터센터와 실험용 컴퓨팅은 RHEL/AlmaLinux 지속 운영 범위"
+          ]
+        },
+        {
+          "heading": "전환 배경과 기술 제약",
+          "body": "CERN은 RHEL 파생 Scientific Linux를 약 10년 사용한 뒤 2015년 CentOS로 이전했고, 다시 약 10년 뒤 일부 시스템을 Debian으로 옮기는 경로를 공개함. CentOS Stream도 검토했지만 기본 `-march=x86-64-v2`가 구형 hardware에 강제 노후화를 만든다는 판단을 핵심 배경으로 제시함.",
+          "items": [
+            "호환성: x86-64-v2 baseline이 구형 CPU fleet의 실행 가능 범위를 바꾸는 조건",
+            "선택: RHEL 계열 친화 경로보다 기존 field hardware의 계속 운용을 우선한 판단",
+            "경계: 보도는 각 driver·PCI/VME/serial I/O·real-time workload의 개별 인증 결과를 제공하지 않음"
+          ]
+        },
+        {
+          "heading": "패키지·공급망·운영 과제",
+          "body": "발표에서 언급된 Debian 온보딩의 과제는 package 자동 build·publish 표준 도구의 공백과 같은 package의 여러 version을 지원하지 않는 도구 제약임. 제어망은 일반 서버보다 update cadence와 artifact reproducibility의 영향이 크므로 package 선택을 image·repository·signing·rollback 단위로 묶어야 함.",
+          "items": [
+            "빌드: source·compiler·dependency·repository snapshot을 포함한 reproducible package pipeline 필요",
+            "배포: control cell별 staged repository와 signed artifact·SBOM·CVE exception 기록 필요",
+            "복구: package downgrade·kernel/module rollback·offline mirror 복원 시간을 change evidence로 측정"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이 사례는 장기 운용 장비에서 배포판 지원 정책과 hardware 수명·제어 안전성의 충돌을 분리해야 한다는 운영 신호임. distro migration의 성공 조건은 새 image boot가 아니라 field I/O·timing·alarm·operator workflow와 원상복구가 기존 SLO 및 안전 조건을 충족하는지임.",
+          "items": [
+            "검증: representative rack에서 boot·device discovery·I/O latency·time sync·alarm·failover·rollback을 현행 image와 비교",
+            "통제: production control network와 build/update network의 credential·repository·egress를 분리",
+            "팀 액션: hardware ISA·driver·firmware·package·owner·recovery runbook inventory를 만든 뒤 cell별 canary 확대"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-419",
       "title_ko": "Cloudflare Managed Defense 취약점 탐지·완화 early access: production context·자동 검증·고객 승인으로 patch 경로 분리",
       "title_original": "Introducing context-aware vulnerability discovery and remediation with Cloudflare Managed Defense and OpenAI Daybreak models",
@@ -258,7 +337,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -332,7 +411,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-417",
@@ -399,7 +478,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-418",
@@ -475,7 +554,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-415",
@@ -544,7 +623,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-413",
@@ -613,7 +692,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-414",
@@ -682,7 +761,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-416",
@@ -760,7 +839,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-412",
@@ -838,7 +917,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-411",
@@ -906,7 +985,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-410",
@@ -982,7 +1061,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-409",
@@ -1051,11 +1130,11 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-408",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1123,7 +1202,7 @@
     },
     {
       "id": "news-407",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1190,7 +1269,7 @@
     },
     {
       "id": "news-405",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1326,7 +1405,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-404",
@@ -1397,7 +1476,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-402",
@@ -1465,7 +1544,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-403",
@@ -1535,7 +1614,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-400",
@@ -1604,7 +1683,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-399",
@@ -1673,7 +1752,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-397",
@@ -1750,7 +1829,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-398",
@@ -1829,7 +1908,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-395",
@@ -1907,7 +1986,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-401",
@@ -1981,11 +2060,11 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-394",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2061,7 +2140,7 @@
     },
     {
       "id": "news-392",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2129,7 +2208,7 @@
     },
     {
       "id": "news-393",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2280,11 +2359,11 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-391",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2422,7 +2501,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-389",
@@ -2490,7 +2569,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-384",
@@ -2555,7 +2634,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-383",
@@ -2619,7 +2698,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-386",
@@ -2685,7 +2764,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-387",
@@ -2749,7 +2828,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-385",
@@ -2823,7 +2902,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-382",
@@ -2886,7 +2965,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-381",
@@ -2949,11 +3028,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-380",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -3030,7 +3109,7 @@
     },
     {
       "id": "news-336",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3191,7 +3270,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-378",
@@ -3277,7 +3356,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-376",
@@ -3368,7 +3447,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-375",
@@ -3445,7 +3524,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-372",
@@ -3519,7 +3598,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-373",
@@ -3587,7 +3666,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-374",
@@ -3664,7 +3743,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-371",
@@ -3735,84 +3814,6 @@
             "통제: model pinning·fallback order·quality threshold·rollback 조건을 routing policy version에 기록",
             "검증: cache·batch·provisioned throughput·network·guardrail·observability 비용을 포함한 invoice reconciliation 수행",
             "팀 액션: 30일 내 대표 coding·analysis workload에서 cost, quality, latency, retry, fallback evidence를 release gate로 등록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-370",
-      "title_ko": "AWS Glue 6.0 정식 출시: 30% 가격 인하·Iceberg v3를 ETL 호환성 변경으로 분리",
-      "title_original": "AWS Glue 6.0 delivers 30% price reduction and Iceberg v3 support",
-      "summary": "- 출시: AWS Glue 6.0 GA와 **30% 가격 인하**를 AWS가 공식 공지\n- runtime: Apache Spark 4.1·Python 3.13·Scala 2.13 및 Apache Iceberg v3, 최신 Apache Hudi·Delta Lake 지원 추가\n- table: Iceberg v3의 `VARIANT` automatic shredding·deletion vector·spatial type·`UNKNOWN`/`DEFAULT` schema evolution 제공\n- pipeline: Spark Declarative Pipelines·sub-second latency 목표 Real-Time Mode·Arrow-native Python UDF를 신규 생산성·성능 기능으로 제시\n- 팀 액션: version upgrade 전 UDF·connector·catalog·schema evolution·streaming checkpoint를 representative data와 rollback path로 검증하고 DPU/utilization 포함 job-level 비용을 재측정 필요",
-      "detail": "AWS는 2026년 8월 22일 01:42 KST에 AWS Glue 6.0의 정식 출시와 30% 가격 인하를 발표했다. 공식 공지는 Apache Spark 4.1, Python 3.13, Scala 2.13 runtime, Apache Iceberg v3 full support, 최신 Apache Hudi와 Delta Lake 지원을 함께 명시한다. Iceberg v3에서는 semi-structured data read를 위한 VARIANT type 및 automatic shredding, row-level update용 deletion vector, geometry·geography type, UNKNOWN type·DEFAULT column value 기반 schema evolution을 제시했다. Spark Declarative Pipelines, Real-Time Mode streaming, Arrow-native Python UDF도 추가 범위다. 제공 범위는 AWS Commercial·AWS GovCloud (US)·AWS China 리전이며 console 또는 SageMaker Unified Studio version 선택, Spark Upgrade Agent migration을 안내한다. 다만 30%는 version-level 가격 인하 공지이며 account별 DPU 사용량·autoscaling·worker type·data scan/storage/network 비용, workload latency·throughput·compatibility를 보증하지 않는다.",
-      "why_it_matters": "Glue runtime·table format·language version이 함께 바뀌면 단순 단가 변경이 아니라 ETL·streaming·lakehouse의 schema, checkpoint, connector, UDF, catalog 호환성과 rollback을 포함한 production change가 됨.",
-      "engineering_implication": "대표 batch·streaming job에서 Spark/Python/Scala dependency, Iceberg/Hudi/Delta table behavior, UDF correctness, checkpoint restore, schema evolution을 canary로 검증해야 함. DPU-hour뿐 아니라 retry·data scan·storage·network를 포함한 job-level unit cost와 latency·failure recovery를 이전 version baseline과 비교 필요.",
-      "korea_implication": "공식 제공 범위는 Commercial·GovCloud US·China 리전이며 서울 리전의 가격표·feature availability·quota·support 조건은 공지에서 개별 확인되지 않음. 국내 데이터 lake workload는 region별 price와 table/catalog·network 경계를 계약·PoC로 대조 필요.",
-      "category": "Data",
-      "tags": [
-        "AWS",
-        "AWS Glue",
-        "Apache Iceberg",
-        "Apache Spark",
-        "ETL",
-        "Lakehouse",
-        "FinOps",
-        "Streaming"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-08-22 01:42",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-glue-6-0-price-reduction-iceberg-v3",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "AWS Glue documentation",
-          "url": "https://docs.aws.amazon.com/glue/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS 공식 What’s New가 Glue 6.0 general availability와 version-level **30% 가격 인하**를 공지. RSS 발행 시각 `Fri, 21 Aug 2026 16:42:00 GMT`를 KST `2026-08-22 01:42`로 환산.",
-          "items": [
-            "출시: AWS Glue 6.0 GA와 30% price reduction 공개",
-            "제공: AWS Commercial·AWS GovCloud (US)·AWS China 리전 제공 범위",
-            "시작: Glue console 또는 SageMaker Unified Studio의 version 선택, Spark Upgrade Agent migration 경로 안내"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "이번 버전은 비용 변경과 runtime·table format 기능을 함께 포함. Apache Iceberg v3, 최신 Apache Hudi·Delta Lake, Apache Spark 4.1·Python 3.13·Scala 2.13이 AWS 공지의 명시 범위.",
-          "items": [
-            "runtime: Apache Spark 4.1·Python 3.13·Scala 2.13 업데이트",
-            "table: Apache Iceberg v3 full support와 최신 Apache Hudi·Delta Lake 지원",
-            "data type: `VARIANT`와 automatic shredding으로 semi-structured data read 최적화 기능",
-            "update: row-level update용 deletion vector, spatial processing용 geometry·geography type 제공",
-            "schema: `UNKNOWN` type·`DEFAULT` column value 기반 flexible schema evolution 기능"
-          ]
-        },
-        {
-          "heading": "ETL·streaming 호환성 관점",
-          "body": "Spark·Python·Scala와 table format을 동시에 바꾸면 job source가 통과해도 UDF, connector, catalog, schema evolution, streaming checkpoint와 restore가 production data에서 다르게 동작할 수 있음. 공지는 workload별 compatibility나 automatic rollback을 보증하지 않음.",
-          "items": [
-            "검증: UDF·dependency·connector·catalog·table property와 Spark 4.1/Python 3.13/Scala 2.13 matrix 확인",
-            "검증: schema add·rename·default·nested semi-structured payload와 deletion/update workload의 correctness 측정",
-            "검증: streaming checkpoint resume·late data·backfill·retry·restore를 이전 runtime baseline과 비교",
-            "피할 것: Iceberg v3 지원을 모든 existing table·engine·consumer의 무중단 migration 보증으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "비용·성능·운영 시사점",
-          "body": "AWS의 30% 가격 인하는 version-level 공지이며 실제 절감은 DPU-hour, worker type, autoscaling, job duration, retry, data scan, storage, network와 workload profile에 좌우됨. Real-Time Mode와 Arrow-native Python UDF의 sub-second latency·성능은 원문이 기능 목표로 제시한 범위.",
-          "items": [
-            "측정: workload별 DPU-hour·utilization·queue·duration·retry·data scan·storage·network를 포함한 unit cost 산정",
-            "측정: batch throughput·streaming end-to-end latency·Python UDF CPU/memory·failure recovery time 비교",
-            "통제: canary job·data-quality assertion·checkpoint backup·catalog snapshot·rollback owner를 release gate에 연결",
-            "팀 액션: 30일 내 대표 batch와 streaming job에서 Glue 5.x 대비 cost, latency, correctness, rollback evidence 기록"
           ]
         }
       ],
