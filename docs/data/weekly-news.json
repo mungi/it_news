@@ -2,184 +2,188 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-04 16:20",
+  "last_updated_kst": "2026-09-05 00:28",
   "audience": "developers and engineers",
   "executive_summary": [
     "OpenAI GPT-6 Astra 공개 보도는 전문 agent·computer use·cyber benchmark와 API 단가를 함께 제시하지만, 이번 실행에서 OpenAI 원문은 Cloudflare challenge로 본문 검증이 불가. provider-reported score·가격·access plan을 task success·tool retry·p95·approval·rollback canary로 분리 필요.",
-    "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고, Daybreak 모델의 patch/WAF mitigation 제안은 customer review 전 자동 검증하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
+    "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고 Daybreak 모델의 patch/WAF mitigation 제안을 고객 review에 제출하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
+    "CERN의 Debian 13 전환 계획은 2,200대 이상 산업 제어·embedded fleet의 CPU ISA·package build·field I/O·safety recovery를 함께 다루는 migration 사례. data-center fleet과 control fleet을 분리하고 representative rack에서 boot·I/O·alarm·rollback을 비교 필요.",
     "Kubernetes v1.37 DRA Extended Resource가 GA가 되어 기존 `example.com/gpu` 요청을 DRA allocation과 연결 가능. API 호환성만으로 device lifecycle 검증이 끝나지 않으므로 inventory·prepare·topology·taint eviction·rollback을 pool별 trace로 확인 필요.",
-    "Amazon Linux 2027 preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC와 Neuron driver 지원을 묶은 OS baseline 변경. AMI·base image·host agent·container·accelerator driver를 분리한 node-pool canary와 rollback evidence 필요.",
-    "Google Gemini 3.8 Flash·Flash Cyber 보도는 장기 agent loop의 effort·반복 tool call과 cyber 제한 access를 함께 제시. API 가격·benchmark·patch 수치는 provider-reported 범위이므로 task success·tool retry·TTFT/p95·token 비용·patch validity·approval·rollback을 같은 trace에서 canary로 검증 필요."
+    "Amazon Linux 2027 preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC와 Neuron driver 지원을 묶은 OS baseline 변경. AMI·base image·host agent·container·accelerator driver를 분리한 node-pool canary와 rollback evidence 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Kubernetes v1.37 DRA 업데이트: extended resource 호환을 device lifecycle·topology·운영 trace로 전환",
-      "summary": "한 줄 결론: DRA Extended Resource GA는 기존 `example.com/gpu` 요청을 DRA allocation으로 연결하는 migration 경로임. Pod spec 호환만으로 driver·scheduler·device 상태·정비·tenant isolation이 검증된 것은 아니므로 allocation부터 recovery까지 같은 trace로 canary해야 함.",
-      "details": "Kubernetes 공식 발표는 DRA Extended Resource 지원 GA, ResourceClaim 상태의 device 정보, device taint/toleration Stable, 표준 NUMA attribute와 여러 Beta/Alpha 기능을 설명한다. 기존 extended resource API 기반 workload를 별도 ResourceClaim 없이 DRA driver로 매칭할 수 있어 migration 비용은 낮아지지만, device plugin과 DRA driver의 inventory 중복, prepare/unprepare 실패, taint eviction, topology mismatch, feature gate와 managed service 지원은 별도로 검증해야 한다. accelerator와 NIC pool은 allocation success, queue time, prepare p95, topology match, eviction recovery, idle reservation, chargeback을 workload ID에 연결해 한 pool부터 전환할 대상이다.",
-      "why_it_matters": "GPU·NIC·특수 device의 Kubernetes 배정은 scheduler·driver·node lifecycle이 만나는 control plane임. API 호환성만으로 tenant isolation, driver 안정성, capacity accounting, maintenance recovery가 자동 확보되지 않음.",
+      "title": "Cloudflare Managed Defense: production context를 patch·WAF 변경 승인 trace에 연결",
+      "summary": "한 줄 결론: Cloudflare의 invitation-only early access는 code finding에 active route·traffic·security event·기존 WAF rule을 결합하고 Daybreak 모델의 patch·mitigation 제안을 고객 검토로 넘기는 흐름임. 자동 remediation으로 해석하지 말고 repository·telemetry·검증·승인·WAF TTL·rollback을 finding ID 하나의 trace로 운영해야 함.",
+      "details": "Cloudflare 공식 발표는 Managed Defense의 Vulnerability Discovery and Remediation early access가 고객 승인 codebase에서 OpenAI Daybreak Defense Network 모델을 reconnaissance·hunting·validation에 쓰고, Web Assets와 WAF의 production context로 finding을 우선순위화한다고 설명한다. 제안 patch와 custom WAF mitigation은 자동 점검 뒤 고객 review에 제출되며 고객이 구현 여부를 결정한다. 이 기능은 source code와 production telemetry를 같은 분석 흐름에 넣으므로, scanner 도입이 아니라 cross-system access와 change-control 설계 문제다. 지원 범위·데이터 보존·모델 호출 경로·정확도·SLA는 공지의 보증 범위가 아니며, read-only scope·secret redaction·staging validation·human approval·rule expiry·kill switch·rollback을 각각 증거로 남겨야 한다.",
+      "why_it_matters": "취약점 우선순위는 CVSS나 finding 수만으로 정해지지 않음. 실제 route·traffic·공격 신호·기존 edge control을 결합하면 remediation queue의 품질은 높일 수 있지만, code와 telemetry의 접근·보존·검증 경계도 동시에 넓어짐.",
       "sources": [
-        "https://kubernetes.io/blog/2026/09/03/kubernetes-v1-37-dra-updates/"
+        "https://blog.cloudflare.com/vulnerability-discovery-remediation/"
       ],
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-09-04 04:03",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1M93F7AEJ7GBHA2V4NNP3XK.01M1M93G208121NF47SS8DRCZ6.png",
+      "local_image": "",
+      "refreshed_kst": "2026-09-05 00:28",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Kubernetes v1.37의 DRA 변경은 GPU·NIC·가속기 배정 경로를 기존 extended resource API와 연결하고 device 상태·정비·topology 정보를 scheduler와 workload에 노출하는 변화임. DRA driver 교체를 단순 plugin 배포로 보지 말고 `DeviceClass`·ResourceClaim·feature gate·driver lifecycle·workload scheduling을 함께 검증해야 함.",
+          "body": "Managed Defense의 새 흐름은 source finding을 production route·traffic·security event·WAF rule과 결합해 우선순위화하고, Daybreak 기반 patch·mitigation 제안을 고객 검토로 보내는 early access 기능임. patch 생성 자체보다 access scope와 검증·승인·복구가 release gate가 되어야 함.",
           "items": [
-            "변화: `example.com/gpu` 같은 기존 extended resource 요청을 DRA driver가 별도 device plugin 없이 처리 가능한 GA 범위",
-            "판정: 기존 Pod spec 호환성은 확보되지만 device inventory·claim·driver 오류·node maintenance의 운영 증거는 별도 검증 대상"
+            "변화: code finding과 deployed route·traffic·existing control을 같은 finding evidence로 결합",
+            "판정: 자동 적용 발표가 아니며 patch와 custom WAF mitigation의 구현 결정은 고객 통제 범위"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes 공식 블로그는 v1.37에서 DRA Extended Resource 지원이 GA가 됐고, `DeviceClass`에 extended resource 이름을 설정하면 Pod가 ResourceClaim 없이 DRA device와 매칭될 수 있다고 설명함. device taint/toleration은 Stable, `ResourceClaim.status.devices`와 네트워크 interface·MAC·IP 상태 보고, 표준 `resource.kubernetes.io/numaNode`도 이번 릴리스 범위임.",
+          "body": "Cloudflare 공식 글은 invitation-only `Vulnerability Discovery and Remediation`을 Managed Defense 기능으로 설명함. customer-authorized codebase에 OpenAI Daybreak Defense Network의 Daybreak 모델과 `GPT-5.6 Cyber`를 reconnaissance·hunting·validation에 사용하며, Workers와 proxied application을 대상 범위로 언급함.",
           "items": [
-            "호환: v1.35 Alpha·v1.36 Beta를 거친 extended resource 경로의 Stable 전환",
-            "상태: DRA driver가 ResourceClaim status에 per-device 정보를 보고하는 공식 범위",
-            "정비: `DeviceTaintRule`로 driver 재설정 없이 장애·정비 device를 새 Pod 배정에서 제외 가능한 Stable 기능"
+            "대상: 고객이 승인한 codebase와 Cloudflare Web Assets·WAF context 범위",
+            "우선순위: active route·traffic volume·recent security event·existing WAF rule을 finding 판단에 결합",
+            "완화: proposed code patch와 custom WAF mitigation을 자동 점검 뒤 customer review로 제출"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "가속기 운영의 병목은 scheduler가 device 수량만 보는 구간과 driver가 실제 준비·격리·topology를 수행하는 구간 사이의 불일치에서 발생함. extended resource 호환은 migration 비용을 낮추지만, 기존 device plugin과 DRA driver를 병렬 운영하면 inventory source·health signal·allocation ownership이 중복될 수 있음.",
+          "body": "이 기능의 차별점은 모델이 취약점을 찾는 일보다 finding을 실제 production exposure와 연결하는 control-plane에 있음. 반대로 repository source와 edge telemetry가 한 분석 경로에 들어가므로 SAST 서비스 추가가 아니라 identity·data classification·vendor boundary 변경으로 검토해야 함.",
           "items": [
-            "분리: capacity discovery·scheduler match·node prepare·workload runtime·deallocate를 별도 trace로 연결",
-            "검증: 같은 GPU/NIC가 device plugin과 DRA에 중복 등록되지 않는지 inventory reconciliation 확인"
+            "분리: code access·telemetry access·patch proposal·deployment permission을 서로 다른 권한으로 설계",
+            "증거: finding ID마다 source location·deployed route·attack signal·existing control·review decision을 연결",
+            "경계: 공지는 patch accuracy·false-negative·retention·model invocation path·SLA를 보증하지 않음"
           ]
         },
         {
-          "heading": "아키텍처·스케줄링 관점",
-          "body": "표준 NUMA attribute와 Derived Attributes Alpha는 GPU/TPU·NIC·CPU locality를 scheduler 조건으로 표현할 기반을 넓힘. Derived Attributes는 CEL로 vendor마다 다른 attribute naming을 매핑하지만, manifest 표현 오류가 의도하지 않은 device pairing을 만들 수 있어 admission validation과 representative topology test가 필요함.",
+          "heading": "아키텍처·데이터 경계 관점",
+          "body": "route와 traffic signal은 finding의 실제 노출을 판단하는 데 유용하지만, proxy configuration·sampling·asset inventory가 틀리면 잘못된 우선순위가 생김. repository 전체를 넘기기보다 service·branch·path·time window를 최소화하고 secret과 customer data의 redaction 결과를 검증 가능한 artifact로 남겨야 함.",
           "items": [
-            "배치: `resource.kubernetes.io/numaNode` 기준으로 accelerator·NIC locality를 비교하는 공통 naming",
-            "경계: Derived Attributes·Compatibility Groups는 feature gate가 필요한 Alpha이며 production 기본값 아님",
-            "성능: PreQueueingHint Alpha의 unschedulable Pod 재검사는 초기 benchmark의 약 2배 throughput이라는 공식 설명 범위"
+            "설계: read-only repository token, short-lived credential, branch/path allowlist와 secret scanning을 별도 gate로 적용",
+            "검증: finding-to-route mapping과 WAF coverage를 staging asset 및 production inventory에서 교차 확인",
+            "보존: source·prompt·telemetry·patch artifact의 retention·export·deletion 조건을 계약과 운영 정책에서 확인"
           ]
         },
         {
-          "heading": "운영·SRE 관점",
-          "body": "DRA device taint는 node cordon과 달리 특정 device만 정비 대상으로 만들 수 있음. 이미 device를 쓰는 Pod는 ResourceClaim tolerance가 없으면 자동 eviction될 수 있으므로, driver upgrade·firmware 교체·MIG profile 변경 전에 workload PDB, checkpoint, drain 순서를 함께 설계해야 함.",
+          "heading": "보안·변경관리 관점",
+          "body": "제안 patch와 WAF mitigation은 모두 production behavior를 바꾸는 변경임. patch test 통과가 edge rule의 false positive나 bypass를 대신 검증하지 않으며, WAF rule이 남아 있으면 application fix 후에도 운영 비용과 원인 분석이 왜곡될 수 있음.",
           "items": [
-            "관측: ResourceClaim condition·device status·scheduler event·prepare/unprepare latency·eviction을 workload ID로 수집",
-            "복구: taint 적용 뒤 claim release·device health 회복·driver rollback·Pod reschedule을 포함한 drill 필요",
-            "SLO: allocation success·queue time·prepare error·topology mismatch·eviction recovery를 accelerator pool별 측정"
+            "승인: code owner와 security owner가 patch·rule의 scope·risk·expiry를 별도로 승인",
+            "통제: custom WAF rule에 action·hostname/path·TTL·owner·kill switch·rollback 조건 기록",
+            "감사: proposal·test result·reviewer·deploy·rollback·reopened finding을 immutable change trace로 보관"
           ]
         },
         {
-          "heading": "비용·보안·거버넌스 관점",
-          "body": "DRA는 가속기·네트워크 device를 Kubernetes API object로 다루므로 capacity chargeback과 access control의 기준점이 될 수 있음. 그러나 DRA 자체가 tenant isolation, device memory wipe, driver CVE 대응, GPU partition 간 data boundary를 보증하지 않으므로 node/driver 수준 통제를 대체하지 않음.",
+          "heading": "SRE·FinOps 관점",
+          "body": "효과 평가는 발견 건수나 모델 호출 수가 아니라 exposed finding backlog, time-to-triage, validated patch rate, rule false-positive, rollback time으로 해야 함. hot path profiling은 traffic-heavy service에서 분석량·log volume·review queue를 키울 수 있어 event sampling과 spend limit도 포함해야 함.",
           "items": [
-            "비용: ResourceClaim·namespace·workload별 allocated time, idle reservation, failed prepare 비용 귀속",
-            "통제: DeviceClass·ResourceClaim 생성 권한, vendor driver image provenance, node access·telemetry retention 분리",
-            "감사: device allocation·taint·tolerance·eviction·release event를 immutable audit trail로 보관"
+            "측정: exposed finding backlog·triage lead time·validated patch rate·WAF false positive·reopen rate",
+            "운영: model analysis quota·telemetry sampling·review queue·vendor outage fallback을 service별로 설정",
+            "비용: repository ingestion·telemetry retention·test execution·human review 시간을 finding 단위로 귀속"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "첫 단계는 대표 GPU 또는 NIC pool 하나에서 현재 device plugin allocation과 DRA allocation의 scheduling·prepare·recovery trace를 비교하는 일임. 기존 workload를 한 번에 바꾸지 않고 compatibility route, feature gate, driver image, inventory source를 명시한 canary로 확대해야 함.",
+          "body": "첫 pilot은 secrets가 적고 deployment path가 분명한 application cohort에서 시작해야 함. read-only analysis부터 proposal, staging validation, human-approved WAF rule, code deployment 순서로 좁게 확대하고 각 단계의 실패·복귀 조건을 사전에 기록해야 함.",
           "items": [
-            "체크: Kubernetes 버전·DRA feature gate·driver compatibility·DeviceClass schema·managed service 지원 상태 확인",
-            "체크: device plugin/DRA 중복 inventory, ResourceClaim RBAC, taint eviction, node drain, driver crash 복구 시험",
-            "체크: topology-aware placement·prepare p95·allocation failure·idle reservation·chargeback metric을 baseline과 비교",
-            "팀 액션: feature gate disable과 legacy plugin 복귀 조건을 포함한 rollback runbook 등록"
+            "체크리스트: repository·branch·secret·telemetry·vendor retention·subprocessor·audit export의 data boundary 확인",
+            "체크리스트: finding-to-route evidence, unit/integration/DAST 결과, WAF TTL·kill switch·rollback drill 확인",
+            "체크리스트: patch deployment와 WAF mitigation을 분리 승인하고 expiration owner를 지정",
+            "팀 액션: one-service canary에서 approved remediation lead time과 false-positive·rollback 지표를 baseline과 비교"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "DRA Extended Resource GA는 기존 `nvidia.com/gpu`류 Pod spec을 유지한 채 allocation backend를 전환할 기회를 제공함. 그러나 호환 가능한 요청 형식이 device lifecycle·격리·비용·복구가 검증됐다는 뜻은 아니며, driver와 scheduler의 실제 event trace가 release gate가 되어야 함.",
+          "body": "production context를 이용한 취약점 우선순위화는 scanner finding을 더 적은 queue로 바꿀 수 있으나, 그 효용은 모델의 발견률이 아니라 안전한 access와 검증 가능한 변경 과정으로 결정됨. customer review가 있는 early access라는 범위를 유지하고 자동 remediation처럼 운영하지 않아야 함.",
           "items": [
-            "볼 것: allocation success·prepare error·topology match·eviction recovery·idle reservation의 동시 개선 여부",
-            "피할 것: extended resource 호환을 DRA migration 완료 또는 tenant isolation 보증으로 해석",
-            "팀 액션: 한 device pool·한 workload cohort에서 trace와 rollback 증거를 만든 뒤 namespace별 확대"
+            "볼 것: deployed exposure를 가진 finding의 remediation lead time과 validated patch rate",
+            "피할 것: invitation-only early access를 source-code retention·SLA·자동 patch 보증으로 해석",
+            "팀 액션: finding ID 하나로 access·evidence·test·approval·WAF TTL·deployment·rollback을 추적"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Amazon Linux 2027 public preview: kernel·SELinux·crypto·accelerator driver를 image pipeline과 rollback으로 검증",
-      "summary": "한 줄 결론: AL2027 preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC, 최신 toolchain과 Neuron driver 지원을 묶은 OS baseline 변경임. preview AMI를 production replacement로 승격하지 말고 host·container·policy·driver·rollback evidence를 계층별 canary로 검증해야 함.",
-      "details": "AWS 공식 공지는 AL2027 public preview가 AL2023 baseline 위에서 kernel 7.1+, SELinux enforcing default, AWS-LC, 최신 toolchain/runtime, AWS Neuron driver 지원을 제공하며 commercial Region AMI와 ECR Public base image를 제공한다고 밝힌다. OS baseline 변경은 application dependency뿐 아니라 boot, systemd, security/observability agent, container runtime, CNI/CSI, package repo와 crypto interoperability까지 영향을 준다. SELinux AVC, node readiness, kernel/driver warning, image build, application SLO, rollback p95를 AL2023 baseline과 비교하고, preview credential/data lane을 production과 분리한 pool부터 확대할 대상이다.",
-      "why_it_matters": "Linux base image·kernel·SELinux·crypto 변경은 모든 workload와 fleet bootstrap에 전파됨. public preview 제공은 GA support, ABI compatibility, managed-service support 또는 성능 개선 보증이 아님.",
+      "title": "CERN Debian 13 전환: 산업 제어 fleet의 CPU ISA·패키지·I/O·rollback을 분리 검증",
+      "summary": "한 줄 결론: CERN의 2,200대 이상 산업용 가속기 제어 컴퓨터 Debian 13 전환 계획은 배포판 선택보다 장수 hardware·package pipeline·field I/O·safety recovery를 함께 다루는 OT migration 사례임. data-center fleet과 control fleet의 lifecycle을 분리하고 representative control cell에서 현행 image 대비 증거를 만들어야 함.",
+      "details": "Phoronix가 MiniDebConf 발표를 인용한 보도에 따르면 CERN은 2026년 말까지 가속기 제어용 산업 컴퓨터와 embedded system 2,200대 이상을 Debian 13으로 옮길 계획이다. RHEL 계열과 CentOS 운용 뒤 CentOS Stream의 `-march=x86-64-v2` 기본 컴파일러 정책이 구형 hardware의 계속 운용을 어렵게 하는 요인으로 언급됐으며, data center와 experimental computing은 RHEL/AlmaLinux를 유지한다. 이행 과제에는 자동 package build·publish 도구와 동일 package 복수 version 지원 제약이 포함된다. 계획·발표는 driver certification, safety case, service interruption, schedule 준수를 보증하지 않는다. OT migration은 CPU ISA·kernel module·PCI/VME/serial I/O·timing·offline repository·alarm·operator console·rollback을 하나의 rack canary에서 비교해야 한다.",
+      "why_it_matters": "지원 정책과 compiler baseline은 OT·연구 장비의 물리적 수명과 맞지 않을 수 있음. 일반 서버 fleet의 OS lifecycle을 제어 시스템에 그대로 적용하면 hardware compatibility, package reproducibility, 안전·복구 절차를 동시에 훼손할 수 있음.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/09/announcing-amazon-linux-2027/"
+        "https://www.phoronix.com/news/CERN-Goes-Debian-Leaving-RHEL",
+        "https://gemmei.ftp.acc.umu.se/pub/debian-meetings/2026/MiniDebConf-Winterthur/ch2026-53-controlling-cerns-accelerators-with-debian.av1.webm",
+        "https://news.hada.io/topic?id=33217"
       ],
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "refreshed_kst": "2026-09-04 04:03",
+      "image_url": "https://www.phoronix.net/image.php?id=2026&image=cern_debian_1",
+      "local_image": "",
+      "refreshed_kst": "2026-09-05 00:28",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Amazon Linux 2027 public preview는 kernel 7.1+, SELinux enforcing 기본값, AWS-LC, 최신 toolchain과 AWS Neuron driver 지원을 제시한 OS baseline 변경임. preview AMI를 production image replacement로 승격하지 말고 boot·package·container·SELinux·driver·rollback evidence를 갖춘 계층별 canary로 다뤄야 함.",
+          "body": "CERN의 Debian 13 전환 계획은 industrial accelerator-control fleet에서 OS support policy와 legacy hardware 수명·제어 안전성을 분리하는 migration 사례임. distro 선택을 image boot 성공으로 승인하지 말고 CPU ISA부터 field I/O와 rollback까지 control cell 단위의 증거로 검증해야 함.",
           "items": [
-            "변화: AL2023 baseline 위의 AL2027 preview AMI와 ECR Public Gallery base image 제공",
-            "판정: kernel·MAC policy·crypto·runtime 변화가 동시에 들어오므로 application test만으로 승격 판단 불가"
+            "범위: 2026년 말까지 산업 컴퓨터·embedded system **2,200대 이상**을 Debian 13으로 전환할 계획",
+            "분리: data center와 experimental computing은 RHEL/AlmaLinux를 유지하는 발표 범위"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS 공식 공지는 AL2027이 cloud-native workload용 다음 Amazon Linux 버전이며 AL2023 baseline 위에서 kernel 7.1+, SELinux enforcing default, AWS-LC와 최신 toolchain/language runtime을 제공한다고 설명함. AI/ML에는 AWS Neuron driver 지원을 언급하며, preview AMI는 commercial AWS Regions의 x86-64·ARM variant와 ECR Public Gallery container base image로 제공됨.",
+          "body": "Phoronix 보도는 MiniDebConf 발표를 인용해 CERN이 Scientific Linux를 약 10년, 2015년 이후 CentOS를 약 10년 운영한 뒤 일부 산업 시스템을 Debian으로 이전한다고 전함. CentOS Stream의 기본 `-march=x86-64-v2`가 구형 hardware에 강제 노후화를 만든다는 판단과 package build·publish tooling의 공백이 배경·과제로 제시됨.",
           "items": [
-            "제공: web·database·container microservice·AI/ML·대규모 infrastructure를 겨냥한 public preview 범위",
-            "배포: commercial Region AMI와 public ECR base image라는 공식 범위",
-            "경계: GA 일정·장기 지원·모든 package ABI·third-party agent/driver 호환·성능 수치는 공지에서 보증하지 않음"
+            "배경: x86-64-v2 compiler baseline이 구형 CPU fleet의 실행 가능 범위를 바꾸는 조건",
+            "과제: automated package build·publish의 표준 도구 공백과 동일 package 복수 version 지원 제약",
+            "경계: 보도와 발표는 전환 계획이며 개별 driver·safety certification·서비스 중단 결과의 보증이 아님"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "OS major baseline은 application dependency보다 먼저 node bootstrap, kernel module, cgroup, security agent, observability daemon, container runtime, repository mirror를 흔듦. SELinux enforcing 기본값은 deny log를 통해 잘못된 file label·socket·volume mount·sidecar 권한을 드러낼 수 있어 disabled 전환보다 policy와 image labeling을 수정하는 migration이 필요함.",
+          "body": "연구·OT fleet의 OS migration은 control loop와 device protocol이 살아 있는 상태에서 수행되므로 일반 VM image refresh와 위험 모델이 다름. package dependency가 맞아도 kernel module, PCI/VME/serial I/O, timing daemon, interlock, operator console 중 한 계층만 달라져도 field behavior가 달라질 수 있음.",
           "items": [
-            "분리: AMI boot·host agent·container image·application·accelerator driver를 다른 compatibility layer로 관리",
-            "관측: SELinux AVC, kernel warning, package transaction, startup failure, node readiness를 release evidence로 수집"
+            "분리: hardware ISA·firmware·kernel module·I/O driver·time sync·application·operator workflow를 별도 compatibility layer로 관리",
+            "검증: 현재 image와 Debian 13 image의 boot·device discovery·I/O latency·alarm·failover를 같은 rack에서 비교",
+            "경계: distribution support가 real-time behavior 또는 field safety를 자동 보증하지 않음"
           ]
         },
         {
-          "heading": "아키텍처·플랫폼 관점",
-          "body": "AMI와 base image를 함께 바꾸면 EC2 host와 container user space의 ABI·CA bundle·crypto provider·compiler/runtime 차이가 겹칠 수 있음. immutable AMI pipeline, signed package/image, SBOM diff, launch template versioning을 통해 image artifact와 deployment target을 분리해야 rollback이 가능함.",
+          "heading": "아키텍처·패키지 공급망 관점",
+          "body": "패키지 build와 publish tooling의 공백은 update artifact의 재현성과 복구 속도를 직접 좌우함. control network에서는 최신 version보다 source·compiler·dependency·repository snapshot을 재구성할 수 있는지가 중요하며, build network와 현장 update path를 분리해야 malicious 또는 잘못된 artifact의 확산을 줄일 수 있음.",
           "items": [
-            "설계: AL2027 golden AMI와 AL2023 baseline을 별도 launch template·node group·autoscaling pool로 유지",
-            "검증: systemd unit·EKS/ecs node bootstrap·CNI/CSI·observability/security daemon과 application container의 startup matrix 작성",
-            "복구: image digest·AMI ID·kernel version·policy module을 deployment record에 고정하고 이전 pool drain 경로 확보"
+            "설계: source·compiler·dependency·repository snapshot을 포함한 reproducible package pipeline 구축",
+            "통제: signed artifact·SBOM·CVE exception·approval을 control cell별 staged repository에 연결",
+            "복구: downgrade·kernel/module rollback·offline mirror restore 시간을 change evidence로 측정"
           ]
         },
         {
-          "heading": "보안·공급망 관점",
-          "body": "SELinux enforcing과 AWS-LC는 security posture 개선 후보지만 application allow rule·FIPS/crypto dependency·TLS interoperability를 자동 보증하지 않음. preview package repository와 base image를 CI에 넣기 전 provenance, signature, CVE feed, image scanning, exception expiry를 production lane과 분리해야 함.",
+          "heading": "운영·안전 관점",
+          "body": "제어망의 성공 조건은 host가 올라오는 일이 아니라 alarm, interlock, timing, operator workflow, failover가 현행 안전 조건 안에서 동작하는지임. maintenance window마다 production control network, build/update network, telemetry export의 권한과 egress를 나누고, service owner와 safety owner가 별도 승인해야 함.",
           "items": [
-            "통제: permissive 또는 disabled를 영구 workaround로 두지 않고 AVC 근거 기반 policy correction 적용",
-            "공급망: AMI·RPM·container base image SBOM과 signature·scanner 결과를 AL2023 baseline과 diff",
-            "검증: mTLS·database client·language native module·security agent의 crypto/permission failure를 synthetic transaction으로 시험"
+            "관측: boot failure·driver attach·I/O timeout·clock drift·alarm delivery·operator action·rollback time 수집",
+            "통제: control plane credential·repository mirror·remote access·telemetry egress를 network zone별로 분리",
+            "복구: failed update 뒤 previous image·package set·configuration·device state로 돌아가는 drill 수행"
           ]
         },
         {
-          "heading": "성능·FinOps·운영 관점",
-          "body": "kernel과 toolchain 변화는 CPU scheduling, network driver, storage path, image size, startup time을 바꿀 수 있으며 Neuron driver 지원은 accelerator node lifecycle에도 영향을 줌. 비용 평가는 on-demand price가 아니라 pod density, boot-to-ready p95, image pull, failure retry, accelerator utilization과 incident 대응 시간을 함께 봐야 함.",
+          "heading": "비용·수명주기 관점",
+          "body": "구형 hardware를 계속 쓰는 선택은 CAPEX 지연만이 아니라 spare part, operator expertise, custom package maintenance, security patch exception 비용을 수반함. 반대로 일괄 hardware refresh는 field recertification과 downtime risk를 키울 수 있어 asset age와 migration complexity를 control cell별로 비교해야 함.",
           "items": [
-            "측정: boot-to-Ready·node join·container start·p95 request·CPU/memory·image pull·package update failure 수집",
-            "가속기: Neuron driver version·compiler/runtime·device plugin·workload image matrix와 utilization·error rate 비교",
-            "비용: preview 검증용 fleet의 compute·storage·egress·build cache·engineer review 비용을 tag별 귀속"
+            "측정: hardware replacement avoided cost, package maintenance effort, incident recovery time, spare inventory를 cell별 귀속",
+            "판정: CPU ISA 제약을 security patch·vendor support·safety risk와 함께 lifecycle score로 평가",
+            "경계: 2,200대 전환 계획을 actual cost saving·schedule adherence·hardware certification 완료로 확대하지 않음"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "production fleet 변경보다 CI image build와 non-critical worker pool에서 시작해야 함. stage별 exit criterion을 정하고 failed boot, SELinux denial, agent crash, driver mismatch, application regression을 각각 rollback trigger로 정의해야 함.",
+          "body": "한 번에 fleet을 바꾸지 말고 representative rack과 non-critical control cell에서 package·driver·I/O·rollback의 acceptance evidence를 만든 뒤 확대해야 함. old image와 new image를 병렬 유지하고 failed boot, timing regression, alarm error, driver mismatch를 promotion stop 조건으로 정의할 대상임.",
           "items": [
-            "체크: AMI ID·architecture·Region·package repository·kernel·SELinux mode·base image digest inventory 작성",
-            "체크: boot·patch·reboot·autoscaling replacement·node drain·container restart·restore drill 실행",
-            "체크: AVC·kernel·driver·CNI/CSI·security/observability agent·application SLO와 rollback time 측정",
-            "팀 액션: preview workload와 credential·data를 production lane에서 분리하고 GA 문서 확인 뒤 promotion"
+            "체크리스트: CPU ISA·firmware·kernel module·PCI/VME/serial I/O·time source·owner inventory 작성",
+            "체크리스트: package provenance·offline update·SBOM·CVE exception·operator access·network segmentation 확인",
+            "체크리스트: boot·I/O latency·alarm·failover·restore·rollback p95를 현행 image baseline과 비교",
+            "팀 액션: control cell별 safety owner·platform owner·rollback authority를 지정하고 stage gate 운영"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AL2027은 최신 Linux baseline을 미리 검증할 기회이며, public preview라는 범위가 release maturity와 support commitment의 경계임. SELinux·kernel·crypto·accelerator driver를 하나의 OS upgrade change set으로 승인하고, deny log와 rollback trace가 갖춰진 pool만 확대해야 함.",
+          "body": "CERN 사례의 의의는 RHEL 계열을 Debian으로 바꾼 사실 자체가 아니라, 서로 다른 fleet에 서로 다른 support lifecycle을 적용한 데 있음. industrial control workload의 release gate는 package version이 아니라 field behavior와 안전한 원상복구의 증거여야 함.",
           "items": [
-            "볼 것: enforcing mode에서의 AVC volume·node readiness·application SLO·driver error·rollback p95",
-            "피할 것: commercial Region preview 제공을 모든 managed service·third-party agent의 지원 보증으로 해석",
-            "팀 액션: image pipeline·node pool·policy exception·SLO·rollback owner를 묶은 migration checklist 운영"
+            "볼 것: x86-64-v2 제약이 실제 asset inventory와 replacement plan에 미치는 범위",
+            "피할 것: Linux distribution migration을 data-center standard image rollout과 동일한 작업으로 취급",
+            "팀 액션: representative control rack에서 I/O·timing·alarm·rollback trace를 만든 뒤 cell별 확대"
           ]
         }
       ]

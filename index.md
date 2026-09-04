@@ -350,6 +350,7 @@
 - [[raw/articles/aws-amazon-linux-2027-public-preview-2026-09-04]] — Amazon Linux 2027 public preview의 kernel·SELinux·crypto·Neuron driver·image rollback 검증 경계.
 - [[raw/articles/cloudflare-managed-defense-daybreak-vulnerability-remediation-2026-09-04]] — Cloudflare Managed Defense의 context-aware 취약점 탐지·Daybreak 모델 patch 제안·고객 승인·WAF mitigation 운영 경계.
 - [[raw/articles/cern-debian-industrial-control-migration-2026-09-04]] — CERN 산업용 가속기 제어 시스템의 Debian 13 전환, 구형 x86·패키지 공급망·제어망 migration 검증 경계.
+- [[raw/articles/phoronix-cern-debian-industrial-control-migration-2026-09-02]] — CERN 산업용 가속기 제어 시스템 Debian 13 전환의 Phoronix 원문, CPU ISA·패키지·현장 I/O 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
