@@ -2,11 +2,11 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-05 12:43",
+  "last_updated_kst": "2026-09-05 16:48",
   "audience": "developers and engineers",
   "executive_summary": [
     "Kubernetes v1.37의 Rootless mode Beta는 kubelet·runtime·CNI·kube-proxy를 host non-root user namespace에서 실행하는 defense-in-depth 기능. 기본 gate 활성화가 기존 node를 자동 전환하지 않으며, kernel 취약점·CNI/CSI 호환성·privileged workload는 별도 canary와 scheduling policy로 검증 필요.",
-    "AWS MCP Server의 Lambda serverless diagnostic capability는 coding agent가 Lambda와 API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions의 오류·구성·변경·latency를 같은 조사 흐름에 연결하는 기능. read-only IAM·resource allowlist·CloudTrail·human approval을 먼저 분리해야 함.",
+    "Amazon ECS의 Early Success Criteria는 target revision의 healthy percent를 배포 success signal로 쓰고 남은 scale-out을 일반 service scaling으로 분리하는 기능. GPU·제약 capacity workload에서는 CI/CD 대기를 줄일 수 있지만 partial success를 SLO 보증으로 취급하지 말고 capacity backlog·source drain·error budget·rollback을 release ID별로 검증 필요.",
     "OpenAI GPT-6 Astra 공개 보도는 전문 agent·computer use·cyber benchmark와 API 단가를 함께 제시하지만, 이번 실행에서 OpenAI 원문은 Cloudflare challenge로 본문 검증이 불가. provider-reported score·가격·access plan을 task success·tool retry·p95·approval·rollback canary로 분리 필요.",
     "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고 Daybreak 모델의 patch/WAF mitigation 제안을 고객 review에 제출하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
     "CERN의 Debian 13 전환 계획은 2,200대 이상 산업 제어·embedded fleet의 CPU ISA·package build·field I/O·safety recovery를 함께 다루는 migration 사례. data-center fleet과 control fleet을 분리하고 representative rack에서 boot·I/O·alarm·rollback을 비교 필요."
@@ -269,6 +269,75 @@
       "rank": 1
     },
     {
+      "id": "news-424",
+      "title_ko": "Amazon ECS Early Success Criteria: healthy-percent와 cleanup 모드로 배포 완료·확장을 분리",
+      "title_original": "Amazon ECS introduces Early Success Criteria for service deployments",
+      "summary": "- 추가: ECS rolling deployment가 target service revision의 healthy task 비율을 기준으로 배포 성공 시점을 설정 가능\n- 예시: desired count 100·healthy percent 90%면 90개 task가 healthy일 때 deployment를 성공 처리하고 나머지 scale-out은 일반 service scaling으로 계속\n- 운영: rollback monitoring은 설정한 success criteria 충족까지 적용 가능하며 source revision cleanup은 `BLOCKING`·`DEFERRED` 중 선택\n- 대상: GPU inference처럼 capacity 확보로 task launch가 길어지는 workload에서 CI/CD 대기와 deployment lifecycle을 분리하는 공식 기능\n- 팀 액션: completion 신호를 availability 보증으로 해석하지 말고 healthy percent·capacity backlog·error/SLO·source drain·rollback을 canary deployment별로 함께 검증 필요",
+      "detail": "AWS는 Amazon ECS rolling deployment에 Early Success Criteria를 추가했다. 운영자는 target service revision에서 desired task 중 실행 및 healthy 상태여야 하는 비율을 healthy percent로 설정할 수 있다. 예를 들어 desired count가 100이고 healthy percent가 90%이면 90개 task가 healthy일 때 ECS는 deployment를 성공으로 기록하고, 나머지 task launch는 deployment lifecycle 밖의 일반 service scaling으로 계속한다. 이는 GPU-accelerated inference처럼 특수 또는 제약된 capacity에서 task launch가 길어지는 workload의 downstream CI/CD와 dependent operation을 먼저 풀 수 있는 구조다. rollback monitoring은 configured success criteria가 충족될 때까지 유지할 수 있다. source service revision cleanup은 `BLOCKING`이면 cleanup이 끝난 뒤 성공 처리하고, `DEFERRED`이면 criteria 충족 시 성공 처리한 뒤 source task drain을 비동기로 진행한다. long-lived connection 또는 task scale-in protection이 있는 서비스에 적용할 수 있다. 이 기능은 rolling deployment strategy에서 모든 AWS Commercial 및 AWS GovCloud (US) Region에 제공되며 Console·CLI·SDK·IaC tool로 설정 가능하다. 공지는 partial healthy 상태가 application-level SLO·connection draining·capacity 확보·remaining task launch·rollback 결과를 보증하지 않으므로 healthy threshold를 release 완료 신호로만 쓰고 별도 canary와 error budget gate를 유지해야 한다.",
+      "why_it_matters": "배포 완료 판단을 desired count 100% healthy와 묶으면 constrained capacity에서 CI/CD·후속 변경이 불필요하게 오래 대기할 수 있음. 반대로 partial healthy 시점을 성공으로 기록하면 남은 capacity backlog·connection drain·서비스 error가 deployment control 밖으로 이동하므로 release signal과 service SLO를 분리해야 함.",
+      "engineering_implication": "서비스별로 healthy percent와 `BLOCKING`·`DEFERRED` cleanup을 traffic profile·connection lifetime·capacity reservation·autoscaling policy에 맞춰 canary로 설정 필요. deployment success 시점, remaining-task ready time, source drain, 4xx/5xx·latency·connection error, capacity/provider event, rollback start·complete를 같은 release ID로 수집하고 error-budget breach는 rollout promotion을 중단하는 별도 gate로 유지 필요.",
+      "korea_implication": "AWS Commercial 및 AWS GovCloud (US) 제공 공지를 서울 리전 적용·Fargate/EC2 capacity 보장·국내 규제 workload의 승인 기준으로 확대할 수 없음. 실제 사용 전 서울 리전 서비스·deployment controller·IaC provider·organization policy와 capacity 확보 조건을 계정별로 확인 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon ECS",
+        "Deployment",
+        "CI/CD",
+        "Rolling Deployment",
+        "GPU",
+        "SRE",
+        "Rollback"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-05 02:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-ecs-deployments-early-success/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS What’s New의 `postDateTime` `2026-09-04T17:00:00Z`를 KST `2026-09-05 02:00`으로 기록. Amazon ECS rolling deployment에서 deployment를 성공으로 기록할 healthy task 비율을 운영자가 설정하는 `Early Success Criteria`를 제공함.",
+          "items": [
+            "범위: target service revision의 desired task 중 running·healthy 상태여야 하는 비율을 healthy percent로 설정",
+            "예시: desired count 100·healthy percent 90%면 90개 task healthy 시 deployment success 처리",
+            "분리: 남은 target task launch는 deployment lifecycle 밖의 regular service scaling으로 계속"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Early Success Criteria는 constrained capacity가 task launch를 지연시키는 동안 후속 deployment·CI/CD·dependent operation을 unblock하는 공식 기능임. GPU-accelerated inference workload를 적용 예로 들며 success criteria 도달 뒤의 scale-out과 source revision cleanup 처리 방식을 구분함.",
+          "items": [
+            "보호: deployment rollback monitoring은 configured success criteria 도달 시점까지 적용 가능",
+            "정리: `BLOCKING`은 source revision cleanup 완료 뒤 success 처리",
+            "정리: `DEFERRED`는 criteria 충족 시 success 처리하고 source task drain을 비동기로 진행"
+          ]
+        },
+        {
+          "heading": "운영·배포 경계",
+          "body": "partial healthy 상태의 deployment success는 application availability 또는 remaining task의 capacity 확보 보증이 아님. `DEFERRED` cleanup은 long-lived connection·task scale-in protection이 있는 서비스에서 배포 완료를 기다리지 않게 할 수 있으나, drain 상태와 user-facing error를 release trace에서 분리하면 원인 분석이 어려워짐.",
+          "items": [
+            "검증: configured healthy percent와 실제 ready task·remaining task ready time·capacity backlog를 deployment ID로 연결",
+            "관측: 4xx/5xx·latency·connection error·task stop reason·provider capacity event를 success 이후에도 지속 수집",
+            "경계: AWS 공지는 partial threshold가 SLO·autoscaling·connection draining·rollback 성공을 보증하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이 기능은 release 완료 정의를 service desired count 100%와 분리할 수 있는 control임. production default로 확대하지 말고 workload별 capacity profile과 connection lifetime에 맞춘 healthy threshold·cleanup mode·error-budget stop condition을 canary에서 검증해야 함.",
+          "items": [
+            "측정: deployment complete lead time·remaining task ready p95·source drain time·rollback time·error-budget burn",
+            "통제: healthy percent·cleanup mode·autoscaling·capacity reservation·alarm·manual rollback authority를 IaC change record에 고정",
+            "팀 액션: GPU 또는 constrained-capacity service에서 `BLOCKING`·`DEFERRED`와 100% baseline을 비교한 뒤 workload cohort별 확대"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-422",
       "title_ko": "AWS MCP Server, Lambda serverless 진단 추가: agent 관측 권한을 7일 baseline·변경 trace로 분리",
       "title_original": "AWS MCP Server adds a serverless capability for AWS Lambda functions",
@@ -341,7 +410,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-421",
@@ -420,7 +489,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-419",
@@ -494,7 +563,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -568,7 +637,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-417",
@@ -635,7 +704,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-418",
@@ -711,7 +780,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-415",
@@ -780,7 +849,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-413",
@@ -849,7 +918,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-414",
@@ -918,7 +987,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-416",
@@ -996,7 +1065,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-412",
@@ -1074,7 +1143,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-411",
@@ -1142,7 +1211,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-410",
@@ -1218,7 +1287,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-409",
@@ -1287,11 +1356,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-408",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1359,7 +1428,7 @@
     },
     {
       "id": "news-407",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1426,7 +1495,7 @@
     },
     {
       "id": "news-405",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1562,7 +1631,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-404",
@@ -1633,7 +1702,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-402",
@@ -1701,7 +1770,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-403",
@@ -1771,7 +1840,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-400",
@@ -1840,7 +1909,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-399",
@@ -1909,7 +1978,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-397",
@@ -1986,7 +2055,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-398",
@@ -2065,7 +2134,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-395",
@@ -2143,7 +2212,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-401",
@@ -2217,11 +2286,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-394",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2297,7 +2366,7 @@
     },
     {
       "id": "news-392",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2365,7 +2434,7 @@
     },
     {
       "id": "news-393",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2516,11 +2585,11 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-391",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2658,7 +2727,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-389",
@@ -2726,7 +2795,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-384",
@@ -2791,7 +2860,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-383",
@@ -2855,7 +2924,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-386",
@@ -2921,7 +2990,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-387",
@@ -2985,7 +3054,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-385",
@@ -3059,7 +3128,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-382",
@@ -3122,7 +3191,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-381",
@@ -3185,11 +3254,11 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-380",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -3266,7 +3335,7 @@
     },
     {
       "id": "news-336",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3427,7 +3496,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-378",
@@ -3513,7 +3582,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-376",
@@ -3604,7 +3673,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-375",
@@ -3681,7 +3750,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-372",
@@ -3752,74 +3821,6 @@
             "비용: silicon unit price뿐 아니라 compiler migration·porting·observability·spare·power·cooling·network·failure recovery 비용을 completed-task cost에 포함",
             "리스크: 단일 vendor·fab·package·HBM dependency와 immature compiler/kernel·capacity delivery 지연을 rollback/dual-source 조건으로 관리",
             "팀 액션: 30일 내 현재 GPU/TPU baseline과 비교할 workload matrix, procurement evidence checklist, capacity shortfall fallback owner를 정의"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-373",
-      "title_ko": "DeepSeek-V4-Flash-Vision-Exp 공개 보도: 멀티모달 agent 비용·harness 재현성을 분리 검증",
-      "title_original": "DeepSeek-V4-Flash-Vision-Exp",
-      "summary": "- 공개: AI타임스가 DeepSeek API platform의 실험적 **V4-Flash-Vision-Exp** 출시를 보도\n- 구조: 2,840억 parameter MoE에서 token당 130억 parameter 활성화, 최대 100만 token context와 image·text 단일 요청 처리 범위\n- 비용: image 한 장을 최대 384 token으로 환산하며 off-peak 입력·출력은 100만 token당 각각 0.22달러·0.66달러라는 기사 수치\n- 호환: OpenAI Chat Completions·Anthropic Messages·Responses API, Harness 0.1.1 기본 지원·Files API 재사용 경로를 기사에서 설명\n- 경계: benchmark는 DeepSeek Harness Minimal Mode의 vendor 자체 평가이며 실험 버전·model identifier 변경 가능성, 독립 재현·SLA·region·retention 미확인\n- 팀 액션: image tokenization·cache·tool loop·p95 latency·task success·fallback·data egress를 같은 trace에서 canary 검증 필요",
-      "detail": "AI타임스는 2026년 8월 22일 10:08 KST에 DeepSeek가 API platform에서 실험적 멀티모달 모델 DeepSeek-V4-Flash-Vision-Exp를 출시했다고 보도했다. 기사는 텍스트 중심 V4-Flash에 이미지 이해를 결합했으며, 2,840억 전체 parameter 중 token당 130억 parameter를 활성화하는 MoE와 최대 100만 token context를 설명한다. 자체 DeepSeek Harness Minimal Mode 평가에서 ApexBench pass@1 36.5, Agents’ Last Exam 27.3, ZeroBench 35.0 수치를 제시했지만 독립 재현은 확인되지 않았다. 기사 기준 image는 최대 384 token으로 환산되고 off-peak 가격은 input 0.22달러·output 0.66달러/1M token이며, OpenAI·Anthropic 호환 API와 Files API를 제공한다. 직접 확인한 것은 AI타임스의 secondary report로, DeepSeek 공식 모델 문서·지원 리전·endpoint별 가격·rate limit·data retention·security·SLA·benchmark protocol은 직접 확인하지 못했다.",
-      "why_it_matters": "멀티모달 agent는 screenshot·chart·document image를 OCR→text model로 분리하던 data path를 한 model request로 줄일 수 있으나, image token 비용·tool loop·cache·latency·재현성·data boundary가 함께 바뀜.",
-      "engineering_implication": "새 model을 production route로 고정하지 말고 동일 screenshot/document task에서 image token 수·request cost·TTFT·TPOT·tool-loop 성공률·fallback·rate-limit·egress를 baseline과 비교해야 함. Files API 사용 시 object retention·access URL·tenant isolation·deletion·audit evidence를 별도 확인 필요.",
-      "korea_implication": "국내 API 도입 시 제공 리전·계약 주체·data residency·개인정보·이미지 파일 보존과 삭제, 지원/장애 대응 조건은 기사에서 확인되지 않음. PoC와 계약 문서로 확인 전 규제 적합성이나 국내 서비스 품질을 가정하지 않아야 함.",
-      "category": "AI",
-      "tags": [
-        "DeepSeek",
-        "Multimodal",
-        "Agent",
-        "MoE",
-        "Inference",
-        "API",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 90,
-      "published_kst": "2026-08-22 10:08",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214238",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214238_217908_254.jpg",
-      "local_image": "assets/images/news-373.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 DeepSeek API platform의 `DeepSeek-V4-Flash-Vision-Exp` 출시를 보도. 직접 확인한 `article:published_time` `2026-08-22T10:08:55+09:00`를 KST `2026-08-22 10:08`로 기록.",
-          "items": [
-            "모델: 기존 V4-Flash의 텍스트 처리에 image understanding을 결합한 실험 버전이라는 기사 설명",
-            "구조: 전체 2,840억 parameter 중 token당 130억 parameter 활성화 MoE와 최대 100만 token context",
-            "경계: DeepSeek 공식 model card·API 문서·release note 본문은 이번 실행에서 직접 확인하지 못함"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사는 텍스트·image를 하나의 request에서 처리해 OCR 뒤 text model로 넘기던 분리 path를 줄일 수 있다고 설명. Harness 0.1.1, Files API와 OpenAI·Anthropic 호환 interface도 함께 언급.",
-          "items": [
-            "평가: DeepSeek Harness Minimal Mode 자체 시험에서 ApexBench pass@1 36.5, Agents’ Last Exam 27.3, ZeroBench 35.0이라는 vendor 수치",
-            "호환: OpenAI Chat Completions·Anthropic Messages·Responses API 지원이라는 기사 범위",
-            "파일: Base64·public HTTP(S) URL·Files API file ID의 세 image input 경로와 업로드 파일 재사용 설명"
-          ]
-        },
-        {
-          "heading": "비용·성능 검증 관점",
-          "body": "기사는 image 1장을 최대 384 token으로 변환하고 off-peak input 0.22달러·output 0.66달러/1M token, peak 두 배 가격을 제시. 실제 completed-task cost는 image 크기·tool call·retry·cache·queue와 output length에 따라 달라짐.",
-          "items": [
-            "측정: 동일 screenshot·chart·document task에서 image token·input/output·tool-loop·retry를 trace 단위로 수집",
-            "검증: task success·visual error detection·TTFT·p95 latency·rate-limit·fallback을 기존 OCR+text route와 비교",
-            "피할 것: vendor harness score 또는 token list price를 independent quality·production unit cost·SLO 보증으로 해석하는 판단"
-          ]
-        },
-        {
-          "heading": "운영·보안 시사점",
-          "body": "실험 identifier와 developer feedback에 따른 변경 가능성이 기사에 명시돼 model pinning과 rollback이 필요. 이미지·파일을 API에 넣는 경로는 content safety뿐 아니라 object retention, public URL fetch, tenant boundary와 audit 설계를 요구.",
-          "items": [
-            "통제: model version pinning·canary·quality regression threshold·fallback route·rollback owner를 release gate로 정의",
-            "통제: Files API object의 retention·deletion·access control·audit log와 public URL fetch의 egress policy 확인",
-            "팀 액션: 30일 내 representative visual-agent workload에서 cost·quality·latency·privacy evidence를 포함한 acceptance test 수행"
           ]
         }
       ],
