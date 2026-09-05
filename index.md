@@ -32,6 +32,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-managed-kb-servicenow-3lo-sync-2026-09-05]] — Bedrock Managed Knowledge Base의 ServiceNow connector·3LO setup·자동 sync와 corpus 권한·freshness·삭제·rollback 검증 경계.
 - [[raw/articles/aws-ecs-early-success-criteria-2026-09-05]] — Amazon ECS Early Success Criteria의 healthy percent·source cleanup·rollback monitoring·release/SLO 분리 검증 경계.
 - [[raw/articles/aws-mcp-server-lambda-serverless-diagnostics-2026-09-05]] — AWS MCP Server의 Lambda 진단 capability와 7일 baseline·권한·감사·incident trace 운영 경계.
 - [[raw/articles/aitimes-openai-gpt-6-astra-2026-09-04]] — GPT-6 Astra 공개 보도: 전문 agent·cyber access·가격을 benchmark·권한·운영 trace로 분리 검증.
