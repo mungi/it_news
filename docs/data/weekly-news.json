@@ -2,7 +2,7 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-05 20:54",
+  "last_updated_kst": "2026-09-06 01:02",
   "audience": "developers and engineers",
   "executive_summary": [
     "Kubernetes v1.37의 Rootless mode Beta는 kubelet·runtime·CNI·kube-proxy를 host non-root user namespace에서 실행하는 defense-in-depth 기능. 기본 gate 활성화가 기존 node를 자동 전환하지 않으며, kernel 취약점·CNI/CSI 호환성·privileged workload는 별도 canary와 scheduling policy로 검증 필요.",
@@ -14,176 +14,166 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare Managed Defense: production context를 patch·WAF 변경 승인 trace에 연결",
-      "summary": "한 줄 결론: Cloudflare의 invitation-only early access는 code finding에 active route·traffic·security event·기존 WAF rule을 결합하고 Daybreak 모델의 patch·mitigation 제안을 고객 검토로 넘기는 흐름임. 자동 remediation으로 해석하지 말고 repository·telemetry·검증·승인·WAF TTL·rollback을 finding ID 하나의 trace로 운영해야 함.",
-      "details": "Cloudflare 공식 발표는 Managed Defense의 Vulnerability Discovery and Remediation early access가 고객 승인 codebase에서 OpenAI Daybreak Defense Network 모델을 reconnaissance·hunting·validation에 쓰고, Web Assets와 WAF의 production context로 finding을 우선순위화한다고 설명한다. 제안 patch와 custom WAF mitigation은 자동 점검 뒤 고객 review에 제출되며 고객이 구현 여부를 결정한다. 이 기능은 source code와 production telemetry를 같은 분석 흐름에 넣으므로, scanner 도입이 아니라 cross-system access와 change-control 설계 문제다. 지원 범위·데이터 보존·모델 호출 경로·정확도·SLA는 공지의 보증 범위가 아니며, read-only scope·secret redaction·staging validation·human approval·rule expiry·kill switch·rollback을 각각 증거로 남겨야 한다.",
-      "why_it_matters": "취약점 우선순위는 CVSS나 finding 수만으로 정해지지 않음. 실제 route·traffic·공격 신호·기존 edge control을 결합하면 remediation queue의 품질은 높일 수 있지만, code와 telemetry의 접근·보존·검증 경계도 동시에 넓어짐.",
+      "title": "GitHub HydraFusion: multi-model coding workflow를 권한·비용·rollback trace로 운영",
+      "summary": "한 줄 결론: HydraFusion은 runtime에서 여러 모델의 draft·critique·revision·cascade를 선택하는 Copilot research preview임. GitHub의 offline benchmark 수치를 production autonomy로 확대하지 말고 model leg·workspace·tool·approval·validation·patch apply를 하나의 trace로 운영해야 함.",
+      "details": "GitHub는 HydraFusion을 runtime multi-model orchestration research preview로 공개했다. GitHub가 밝힌 TerminalBench 2.1 offline evaluation의 4.9%p verified quality 향상과 67% estimated cost 절감은 동일 조건의 policy 비교값이다. 실제 도입에서는 provider별 data path·tool permission·workspace sharing·fallback·token billing·availability와 patch validation·rollback을 별도의 control plane으로 검증해야 한다.",
+      "why_it_matters": "모델 라우팅은 coding agent의 품질·비용뿐 아니라 code context, tool 권한, patch 변경 통제와 감사 범위를 함께 바꿈.",
       "sources": [
-        "https://blog.cloudflare.com/vulnerability-discovery-remediation/"
+        "https://github.blog/ai-and-ml/github-copilot/project-hydrafusion-frontier-quality-via-multi-model-orchestration/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1M93F7AEJ7GBHA2V4NNP3XK.01M1M93G208121NF47SS8DRCZ6.png",
+      "image_url": "https://github.blog/wp-content/uploads/2026/09/OptA_UI.jpg",
       "local_image": "",
-      "refreshed_kst": "2026-09-05 00:28",
+      "refreshed_kst": "2026-09-06 01:02",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Managed Defense의 새 흐름은 source finding을 production route·traffic·security event·WAF rule과 결합해 우선순위화하고, Daybreak 기반 patch·mitigation 제안을 고객 검토로 보내는 early access 기능임. patch 생성 자체보다 access scope와 검증·승인·복구가 release gate가 되어야 함.",
+          "body": "HydraFusion은 coding agent의 모델 선택을 runtime orchestration으로 옮기는 research preview임. offline benchmark 성능보다 model leg·workspace·tool·approval·patch apply를 한 release trace로 통제하는 일이 도입 gate가 됨.",
           "items": [
-            "변화: code finding과 deployed route·traffic·existing control을 같은 finding evidence로 결합",
-            "판정: 자동 적용 발표가 아니며 patch와 custom WAF mitigation의 구현 결정은 고객 통제 범위"
+            "변화: direct solve·critique·revision·cascade를 task별로 선택",
+            "판정: model router가 아니라 permission-aware change-control component"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare 공식 글은 invitation-only `Vulnerability Discovery and Remediation`을 Managed Defense 기능으로 설명함. customer-authorized codebase에 OpenAI Daybreak Defense Network의 Daybreak 모델과 `GPT-5.6 Cyber`를 reconnaissance·hunting·validation에 사용하며, Workers와 proxied application을 대상 범위로 언급함.",
+          "body": "GitHub는 모든 Copilot plan의 `/experimental`에서 연구 프리뷰를 제공한다고 설명. runtime이 여러 provider의 모델로 execution plan을 만들며 draft·critique·revision 또는 escalation을 조합함.",
           "items": [
-            "대상: 고객이 승인한 codebase와 Cloudflare Web Assets·WAF context 범위",
-            "우선순위: active route·traffic volume·recent security event·existing WAF rule을 finding 판단에 결합",
-            "완화: proposed code patch와 custom WAF mitigation을 자동 점검 뒤 customer review로 제출"
+            "범위: 사용자에게는 하나의 model selection으로 노출",
+            "구조: solver는 shared workspace, reviewer는 isolated tool-less context",
+            "안전장치: cancel 또는 validation failure면 patch apply 금지"
+          ]
+        },
+        {
+          "heading": "평가와 증거 경계",
+          "body": "GitHub는 TerminalBench 2.1·DeepSWE·CheckpointBench에서 동일 input·tool·execution limit·pricing·grading 조건으로 policy를 비교했다고 설명. TerminalBench 2.1의 최적 configuration은 Opus 5 대비 4.9%p quality 상승·67% estimated cost 절감이라는 provider-reported 결과임.",
+          "items": [
+            "비용: draft·review·retry·fallback을 포함한 workflow total",
+            "경계: offline evaluation은 production repository·quota·availability·latency·SLA 보증 아님"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 기능의 차별점은 모델이 취약점을 찾는 일보다 finding을 실제 production exposure와 연결하는 control-plane에 있음. 반대로 repository source와 edge telemetry가 한 분석 경로에 들어가므로 SAST 서비스 추가가 아니라 identity·data classification·vendor boundary 변경으로 검토해야 함.",
+          "body": "다단계 routing은 좋은 모델을 고르는 문제가 아니라 workflow compiler와 control plane을 운영하는 문제임. model마다 data path, context retention, tool policy, billing unit, failure mode가 다르므로 orchestration policy 자체를 versioned deployment로 다뤄야 함.",
           "items": [
-            "분리: code access·telemetry access·patch proposal·deployment permission을 서로 다른 권한으로 설계",
-            "증거: finding ID마다 source location·deployed route·attack signal·existing control·review decision을 연결",
-            "경계: 공지는 patch accuracy·false-negative·retention·model invocation path·SLA를 보증하지 않음"
+            "분리: task classifier·model binding·tool grant·patch apply·human approval 권한",
+            "증거: task class·selected leg·fallback reason·validation·final diff를 run ID로 연결"
           ]
         },
         {
-          "heading": "아키텍처·데이터 경계 관점",
-          "body": "route와 traffic signal은 finding의 실제 노출을 판단하는 데 유용하지만, proxy configuration·sampling·asset inventory가 틀리면 잘못된 우선순위가 생김. repository 전체를 넘기기보다 service·branch·path·time window를 최소화하고 secret과 customer data의 redaction 결과를 검증 가능한 artifact로 남겨야 함.",
+          "heading": "아키텍처·보안 관점",
+          "body": "shared workspace solver와 tool-less reviewer 분리는 reviewer의 write blast radius를 낮추지만 solver context에 secret 또는 untrusted repository instruction이 들어갈 가능성은 남음. code, issue, test output, tool response를 모두 untrusted input으로 분류해야 함.",
           "items": [
-            "설계: read-only repository token, short-lived credential, branch/path allowlist와 secret scanning을 별도 gate로 적용",
-            "검증: finding-to-route mapping과 WAF coverage를 staging asset 및 production inventory에서 교차 확인",
-            "보존: source·prompt·telemetry·patch artifact의 retention·export·deletion 조건을 계약과 운영 정책에서 확인"
+            "통제: repository/path allowlist·ephemeral workspace·secret redaction·egress policy",
+            "검증: prompt injection test, tool call deny, patch validation failure, credential revoke drill"
           ]
         },
         {
-          "heading": "보안·변경관리 관점",
-          "body": "제안 patch와 WAF mitigation은 모두 production behavior를 바꾸는 변경임. patch test 통과가 edge rule의 false positive나 bypass를 대신 검증하지 않으며, WAF rule이 남아 있으면 application fix 후에도 운영 비용과 원인 분석이 왜곡될 수 있음.",
+          "heading": "FinOps·SRE 관점",
+          "body": "67% estimated cost는 공개된 평가 조건의 비교값일 뿐 실제 token price, cache, retry, provider rate limit, queueing latency는 tenant별로 달라짐. 비용·품질·latency를 aggregate가 아닌 task class와 model leg별로 관측해야 함.",
           "items": [
-            "승인: code owner와 security owner가 patch·rule의 scope·risk·expiry를 별도로 승인",
-            "통제: custom WAF rule에 action·hostname/path·TTL·owner·kill switch·rollback 조건 기록",
-            "감사: proposal·test result·reviewer·deploy·rollback·reopened finding을 immutable change trace로 보관"
-          ]
-        },
-        {
-          "heading": "SRE·FinOps 관점",
-          "body": "효과 평가는 발견 건수나 모델 호출 수가 아니라 exposed finding backlog, time-to-triage, validated patch rate, rule false-positive, rollback time으로 해야 함. hot path profiling은 traffic-heavy service에서 분석량·log volume·review queue를 키울 수 있어 event sampling과 spend limit도 포함해야 함.",
-          "items": [
-            "측정: exposed finding backlog·triage lead time·validated patch rate·WAF false positive·reopen rate",
-            "운영: model analysis quota·telemetry sampling·review queue·vendor outage fallback을 service별로 설정",
-            "비용: repository ingestion·telemetry retention·test execution·human review 시간을 finding 단위로 귀속"
+            "측정: accepted patch rate·p95 elapsed time·leg token/cost·retry·tool failure·revert",
+            "운영: budget ceiling·provider outage fallback·circuit breaker·manual single-model escape hatch"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "첫 pilot은 secrets가 적고 deployment path가 분명한 application cohort에서 시작해야 함. read-only analysis부터 proposal, staging validation, human-approved WAF rule, code deployment 순서로 좁게 확대하고 각 단계의 실패·복귀 조건을 사전에 기록해야 함.",
+          "body": "첫 pilot은 low-risk repository와 read-only 또는 narrowly scoped write permission으로 제한하고, single-model baseline과 같은 task set을 비교해야 함. promotion 전 provider data boundary·model availability·audit export·retention·approval path를 계약과 tenant 설정에서 확인해야 함.",
           "items": [
-            "체크리스트: repository·branch·secret·telemetry·vendor retention·subprocessor·audit export의 data boundary 확인",
-            "체크리스트: finding-to-route evidence, unit/integration/DAST 결과, WAF TTL·kill switch·rollback drill 확인",
-            "체크리스트: patch deployment와 WAF mitigation을 분리 승인하고 expiration owner를 지정",
-            "팀 액션: one-service canary에서 approved remediation lead time과 false-positive·rollback 지표를 baseline과 비교"
+            "체크리스트: routing policy version·model list·tool scope·secret handling·fallback·kill switch",
+            "체크리스트: validation command·code owner approval·patch apply·revert authority·incident trace",
+            "팀 액션: task class별 100건 canary에서 acceptance·p95·cost·revert를 baseline과 비교"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "production context를 이용한 취약점 우선순위화는 scanner finding을 더 적은 queue로 바꿀 수 있으나, 그 효용은 모델의 발견률이 아니라 안전한 access와 검증 가능한 변경 과정으로 결정됨. customer review가 있는 early access라는 범위를 유지하고 자동 remediation처럼 운영하지 않아야 함.",
+          "body": "HydraFusion의 평가 수치는 multi-model workflow를 시험할 근거이지 자동 code change 권한의 근거가 아님. routing의 품질은 최종 답변보다 권한 분리와 재현 가능한 validation·rollback trace로 판정해야 함.",
           "items": [
-            "볼 것: deployed exposure를 가진 finding의 remediation lead time과 validated patch rate",
-            "피할 것: invitation-only early access를 source-code retention·SLA·자동 patch 보증으로 해석",
-            "팀 액션: finding ID 하나로 access·evidence·test·approval·WAF TTL·deployment·rollback을 추적"
+            "볼 것: accepted patch·revert·permission denial·fallback reason·p95",
+            "피할 것: offline benchmark를 production autonomy 또는 비용 보증으로 해석",
+            "팀 액션: model leg부터 final diff까지 one-run audit trail 구축"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "CERN Debian 13 전환: 산업 제어 fleet의 CPU ISA·패키지·I/O·rollback을 분리 검증",
-      "summary": "한 줄 결론: CERN의 2,200대 이상 산업용 가속기 제어 컴퓨터 Debian 13 전환 계획은 배포판 선택보다 장수 hardware·package pipeline·field I/O·safety recovery를 함께 다루는 OT migration 사례임. data-center fleet과 control fleet의 lifecycle을 분리하고 representative control cell에서 현행 image 대비 증거를 만들어야 함.",
-      "details": "Phoronix가 MiniDebConf 발표를 인용한 보도에 따르면 CERN은 2026년 말까지 가속기 제어용 산업 컴퓨터와 embedded system 2,200대 이상을 Debian 13으로 옮길 계획이다. RHEL 계열과 CentOS 운용 뒤 CentOS Stream의 `-march=x86-64-v2` 기본 컴파일러 정책이 구형 hardware의 계속 운용을 어렵게 하는 요인으로 언급됐으며, data center와 experimental computing은 RHEL/AlmaLinux를 유지한다. 이행 과제에는 자동 package build·publish 도구와 동일 package 복수 version 지원 제약이 포함된다. 계획·발표는 driver certification, safety case, service interruption, schedule 준수를 보증하지 않는다. OT migration은 CPU ISA·kernel module·PCI/VME/serial I/O·timing·offline repository·alarm·operator console·rollback을 하나의 rack canary에서 비교해야 한다.",
-      "why_it_matters": "지원 정책과 compiler baseline은 OT·연구 장비의 물리적 수명과 맞지 않을 수 있음. 일반 서버 fleet의 OS lifecycle을 제어 시스템에 그대로 적용하면 hardware compatibility, package reproducibility, 안전·복구 절차를 동시에 훼손할 수 있음.",
+      "title": "Amazon Bedrock Managed Knowledge Base: ServiceNow·3LO·scheduled sync를 corpus governance로 운영",
+      "summary": "한 줄 결론: AWS의 ServiceNow connector·3LO setup·scheduled sync는 RAG ingestion을 단순화하지만 source ACL·삭제·attachment·freshness를 자동 보증하지 않음. sys ID scope·credential·citation·deletion·index rollback을 corpus별 acceptance gate로 운영해야 함.",
+      "details": "AWS는 Bedrock Managed Knowledge Base에 ServiceNow native connector, SharePoint·OneDrive·Confluence user-managed 3LO setup, daily·weekly·monthly automatic sync scheduling을 추가했다. connector 기능은 ETL 구현량을 줄이지만 source authorization·OAuth lifecycle·attachment security·sync lag·deletion propagation·retrieval citation의 책임을 제거하지 않는다. corpus별 evidence와 rollback 절차가 production release gate가 되어야 한다.",
+      "why_it_matters": "enterprise RAG의 정보 노출과 stale answer는 connector scope·ACL·freshness에서 발생하며, managed ingestion이 해당 운영 경계를 더 넓힘.",
       "sources": [
-        "https://www.phoronix.com/news/CERN-Goes-Debian-Leaving-RHEL",
-        "https://gemmei.ftp.acc.umu.se/pub/debian-meetings/2026/MiniDebConf-Winterthur/ch2026-53-controlling-cerns-accelerators-with-debian.av1.webm",
-        "https://news.hada.io/topic?id=33217"
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-bedrock-managed-knowledge-base-servicenow-native-data-source-connector/",
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-bedrock-managed-knowledge-base-user-managed-setup-sharepoint-onedrive-confluence/",
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-bedrock-managed-knowledge-base-automatic-sync-scheduling-data-source-connectors/"
       ],
-      "image_url": "https://www.phoronix.net/image.php?id=2026&image=cern_debian_1",
+      "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "",
-      "refreshed_kst": "2026-09-05 00:28",
+      "refreshed_kst": "2026-09-06 01:02",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "CERN의 Debian 13 전환 계획은 industrial accelerator-control fleet에서 OS support policy와 legacy hardware 수명·제어 안전성을 분리하는 migration 사례임. distro 선택을 image boot 성공으로 승인하지 말고 CPU ISA부터 field I/O와 rollback까지 control cell 단위의 증거로 검증해야 함.",
+          "body": "Bedrock Managed Knowledge Base의 ServiceNow connector·3LO setup·scheduled sync는 enterprise RAG ingestion을 단순화하지만, source 권한·삭제·첨부파일·freshness가 managed retrieval boundary로 이동함. connector enable이 아니라 corpus별 governance evidence가 승인 기준이어야 함.",
           "items": [
-            "범위: 2026년 말까지 산업 컴퓨터·embedded system **2,200대 이상**을 Debian 13으로 전환할 계획",
-            "분리: data center와 experimental computing은 RHEL/AlmaLinux를 유지하는 발표 범위"
+            "변화: ServiceNow native connector와 daily·weekly·monthly sync",
+            "판정: ingestion automation은 ACL·deletion·citation 책임을 제거하지 않음"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Phoronix 보도는 MiniDebConf 발표를 인용해 CERN이 Scientific Linux를 약 10년, 2015년 이후 CentOS를 약 10년 운영한 뒤 일부 산업 시스템을 Debian으로 이전한다고 전함. CentOS Stream의 기본 `-march=x86-64-v2`가 구형 hardware에 강제 노후화를 만든다는 판단과 package build·publish tooling의 공백이 배경·과제로 제시됨.",
+          "body": "AWS는 ServiceNow native data source connector, SharePoint·OneDrive·Confluence의 user-managed 3LO setup, native connector의 automatic sync scheduling을 같은 시점에 발표함.",
           "items": [
-            "배경: x86-64-v2 compiler baseline이 구형 CPU fleet의 실행 가능 범위를 바꾸는 조건",
-            "과제: automated package build·publish의 표준 도구 공백과 동일 package 복수 version 지원 제약",
-            "경계: 보도와 발표는 전환 계획이며 개별 driver·safety certification·서비스 중단 결과의 보증이 아님"
+            "수집: knowledge article·service catalog·file attachment crawl과 metadata extraction·incremental sync",
+            "범위: sys ID inclusion list로 knowledge base·article category·service catalog 제한",
+            "주기: native connector 전체에서 daily·weekly·monthly schedule 설정"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "연구·OT fleet의 OS migration은 control loop와 device protocol이 살아 있는 상태에서 수행되므로 일반 VM image refresh와 위험 모델이 다름. package dependency가 맞아도 kernel module, PCI/VME/serial I/O, timing daemon, interlock, operator console 중 한 계층만 달라져도 field behavior가 달라질 수 있음.",
+          "body": "RAG 품질은 embedding model보다 corpus scope·ACL·freshness·deletion propagation에서 먼저 무너질 수 있음. managed connector는 custom ETL을 줄이지만 SaaS API, OAuth, index lifecycle, retrieval authorization의 실패를 더 조용하게 만들 수 있음.",
           "items": [
-            "분리: hardware ISA·firmware·kernel module·I/O driver·time sync·application·operator workflow를 별도 compatibility layer로 관리",
-            "검증: 현재 image와 Debian 13 image의 boot·device discovery·I/O latency·alarm·failover를 같은 rack에서 비교",
-            "경계: distribution support가 real-time behavior 또는 field safety를 자동 보증하지 않음"
+            "분리: source account·connector config·index write·retrieval query·production approval 권한",
+            "증거: source document count·ACL sample·sync lag·failed crawl·citation을 corpus ID에 연결"
           ]
         },
         {
-          "heading": "아키텍처·패키지 공급망 관점",
-          "body": "패키지 build와 publish tooling의 공백은 update artifact의 재현성과 복구 속도를 직접 좌우함. control network에서는 최신 version보다 source·compiler·dependency·repository snapshot을 재구성할 수 있는지가 중요하며, build network와 현장 update path를 분리해야 malicious 또는 잘못된 artifact의 확산을 줄일 수 있음.",
+          "heading": "데이터·보안 관점",
+          "body": "3LO는 prototype에서 admin credential 준비 부담을 낮추지만 consent scope·token storage·rotation·offboarding을 새 운영 대상으로 만듦. attachment와 metadata는 개인정보·비밀정보·malware가 섞일 수 있어 source classification과 ingestion policy를 함께 적용해야 함.",
           "items": [
-            "설계: source·compiler·dependency·repository snapshot을 포함한 reproducible package pipeline 구축",
-            "통제: signed artifact·SBOM·CVE exception·approval을 control cell별 staged repository에 연결",
-            "복구: downgrade·kernel/module rollback·offline mirror restore 시간을 change evidence로 측정"
+            "통제: sys ID allowlist·read-only scope·OAuth owner·token rotation·audit log",
+            "검증: attachment MIME/parse failure·ACL deny query·secret/PII sampling·deletion propagation"
           ]
         },
         {
-          "heading": "운영·안전 관점",
-          "body": "제어망의 성공 조건은 host가 올라오는 일이 아니라 alarm, interlock, timing, operator workflow, failover가 현행 안전 조건 안에서 동작하는지임. maintenance window마다 production control network, build/update network, telemetry export의 권한과 egress를 나누고, service owner와 safety owner가 별도 승인해야 함.",
+          "heading": "아키텍처·운영 관점",
+          "body": "schedule은 freshness SLA가 아니라 sync attempt schedule임. ServiceNow rate limit, source change volume, crawl retry, embedding backlog, index availability가 end-to-end freshness를 결정하므로 source timestamp와 answer citation을 비교해야 함.",
           "items": [
-            "관측: boot failure·driver attach·I/O timeout·clock drift·alarm delivery·operator action·rollback time 수집",
-            "통제: control plane credential·repository mirror·remote access·telemetry egress를 network zone별로 분리",
-            "복구: failed update 뒤 previous image·package set·configuration·device state로 돌아가는 drill 수행"
+            "측정: sync success·freshness lag·failed crawl·stale answer·citation coverage·denied query",
+            "복구: connector disable·credential revoke·index rollback·corpus reingest runbook"
           ]
         },
         {
-          "heading": "비용·수명주기 관점",
-          "body": "구형 hardware를 계속 쓰는 선택은 CAPEX 지연만이 아니라 spare part, operator expertise, custom package maintenance, security patch exception 비용을 수반함. 반대로 일괄 hardware refresh는 field recertification과 downtime risk를 키울 수 있어 asset age와 migration complexity를 control cell별로 비교해야 함.",
+          "heading": "FinOps·거버넌스 관점",
+          "body": "자동 sync는 manual job을 줄일 수 있지만 crawl·parse·embedding·storage·query 비용과 human review 비용을 corpus별로 남김. data residency·retention·subprocessor·support scope는 공지에 없는 계약 확인 항목임.",
           "items": [
-            "측정: hardware replacement avoided cost, package maintenance effort, incident recovery time, spare inventory를 cell별 귀속",
-            "판정: CPU ISA 제약을 security patch·vendor support·safety risk와 함께 lifecycle score로 평가",
-            "경계: 2,200대 전환 계획을 actual cost saving·schedule adherence·hardware certification 완료로 확대하지 않음"
+            "비용: document delta·attachment size·embedding/index·query·reprocessing을 corpus별 귀속",
+            "경계: ACL preservation·region·residency·SLA를 공지 기능만으로 보증하지 않음"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "한 번에 fleet을 바꾸지 말고 representative rack과 non-critical control cell에서 package·driver·I/O·rollback의 acceptance evidence를 만든 뒤 확대해야 함. old image와 new image를 병렬 유지하고 failed boot, timing regression, alarm error, driver mismatch를 promotion stop 조건으로 정의할 대상임.",
+          "body": "작은 knowledge-base cohort에서 read-only account와 narrow sys ID allowlist로 시작하고, access denial·delete·attachment failure·credential revoke를 포함한 failure drill 뒤 확대해야 함.",
           "items": [
-            "체크리스트: CPU ISA·firmware·kernel module·PCI/VME/serial I/O·time source·owner inventory 작성",
-            "체크리스트: package provenance·offline update·SBOM·CVE exception·operator access·network segmentation 확인",
-            "체크리스트: boot·I/O latency·alarm·failover·restore·rollback p95를 현행 image baseline과 비교",
-            "팀 액션: control cell별 safety owner·platform owner·rollback authority를 지정하고 stage gate 운영"
+            "체크리스트: connector scope·OAuth/2LO owner·ACL mapping·data class·retention·audit export",
+            "체크리스트: sync schedule·lag alert·citation test·deletion propagation·disable/index rollback",
+            "팀 액션: corpus별 acceptance gate와 owner를 change record에 고정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "CERN 사례의 의의는 RHEL 계열을 Debian으로 바꾼 사실 자체가 아니라, 서로 다른 fleet에 서로 다른 support lifecycle을 적용한 데 있음. industrial control workload의 release gate는 package version이 아니라 field behavior와 안전한 원상복구의 증거여야 함.",
+          "body": "native connector는 RAG data plane의 코드량을 줄이지만 authorization과 lifecycle의 증거 책임을 없애지 않음. corpus별 source-to-answer trace가 없는 connector 확대는 stale answer와 overexposure를 함께 키움.",
           "items": [
-            "볼 것: x86-64-v2 제약이 실제 asset inventory와 replacement plan에 미치는 범위",
-            "피할 것: Linux distribution migration을 data-center standard image rollout과 동일한 작업으로 취급",
-            "팀 액션: representative control rack에서 I/O·timing·alarm·rollback trace를 만든 뒤 cell별 확대"
+            "볼 것: source ACL과 retrieval result의 일치·freshness lag·delete success",
+            "피할 것: scheduled sync를 data governance 또는 SLA로 해석",
+            "팀 액션: one corpus canary에서 ACL·citation·delete·rollback evidence 확보"
           ]
         }
       ]
@@ -504,6 +494,82 @@
       "rank": 4
     },
     {
+      "id": "news-426",
+      "title_ko": "GitHub Project HydraFusion 연구 프리뷰: multi-model coding workflow를 품질·비용·권한 trace로 분리",
+      "title_original": "Project HydraFusion: Frontier quality via multi-model orchestration",
+      "summary": "- 공개: GitHub Copilot `/experimental`에서 모델 다중 제공자 orchestration으로 draft·critique·revision·escalation workflow를 선택하는 research preview\n- 평가: TerminalBench 2.1에서 GitHub가 밝힌 최적 configuration은 Claude Opus 5 대비 verified task quality **4.9%p** 향상·추정 workflow cost 67% 절감\n- 구조: solver는 shared workspace·permission-aware agent loop를 쓰고, review는 repository 변경이 없는 isolated tool-less context로 분리\n- 경계: 수치는 GitHub의 controlled offline evaluation·고정 policy·pricing assumption 기준이며 production task 성공률·latency·provider availability·비용 보증이 아님\n- 팀 액션: routing leg별 model·tool·permission·cost·latency·validation·fallback·patch apply 여부를 하나의 run trace로 저장 필요",
+      "detail": "GitHub는 Project HydraFusion을 GitHub Copilot의 research preview로 공개했다. 사용자가 HydraFusion을 하나의 모델처럼 선택하면 runtime이 여러 provider의 모델을 조합해 draft, critique, revise 또는 더 강한 모델로 cascade하는 execution plan을 선택한다. GitHub는 TerminalBench 2.1의 controlled offline evaluation에서 최적 configuration이 Claude Opus 5 baseline보다 verified task quality 4.9 percentage point 높고 추정 workflow cost가 67% 낮았다고 발표했다. 평가는 TerminalBench 2.1·DeepSWE·실제 Copilot session trajectory 기반 CheckpointBench에서 같은 task input, tool, execution limit, pricing assumption, grading condition, missing-result 처리를 적용했다고 설명한다. solver 단계는 shared workspace와 permission-aware loop를 사용하지만 review는 tool-less isolated context로 분리하며, workflow가 취소되거나 validation에 실패하면 patch를 적용하지 않는 fail-safe를 둔다. 이 결과는 research preview의 offline benchmark 수치이므로 실제 repository, quota, model/provider availability, code confidentiality, prompt injection, tool permission, latency 및 청구 비용을 보증하지 않는다. 도입 시 routing policy 자체를 배포물로 관리하고 task success·human accept·retry·p95·model leg cost·tool failure·permission denial·revert를 release ID로 비교해야 한다.",
+      "why_it_matters": "coding agent의 모델 선택이 단일 endpoint 호출에서 다단계 orchestration control plane으로 이동함. 품질·비용 최적화와 함께 workspace 공유, review 격리, permission, fallback, patch 적용 조건이 운영·감사 대상이 됨.",
+      "engineering_implication": "research preview는 read-only 또는 low-risk repository cohort에서 시작하고, workflow definition·model binding·tool scope·secret redaction·network egress·fallback·validation·apply/rollback authority를 분리 필요. baseline 대비 verified acceptance·p95·leg별 token/비용·retry·tool failure·denied action·revert rate를 동일 task class에서 측정 필요.",
+      "korea_implication": "국내 조직은 Copilot plan별 preview 제공, multi-provider data path·model 선택·code/prompt 보존·감사 export·계약 및 망분리 적합성을 공식 문서와 tenant 설정으로 별도 확인 필요.",
+      "category": "DevTools",
+      "tags": [
+        "GitHub Copilot",
+        "Coding Agent",
+        "Model Routing",
+        "Multi-model",
+        "Agent Orchestration",
+        "Benchmark",
+        "FinOps",
+        "Governance"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-09-05 01:04",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/ai-and-ml/github-copilot/project-hydrafusion-frontier-quality-via-multi-model-orchestration/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/09/OptA_UI.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub 공식 블로그의 `article:published_time` `2026-09-04T16:04:14+00:00`를 KST `2026-09-05 01:04`로 기록. Project HydraFusion은 GitHub Copilot에서 runtime multi-model orchestration을 제공하는 research preview임.",
+          "items": [
+            "접근: 모든 GitHub Copilot plan에서 `/experimental` 경로로 사용하는 research preview",
+            "동작: 여러 provider 모델 중 draft·critique·revision·escalation workflow를 task별로 선택"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "HydraFusion은 사용자가 하나의 모델처럼 선택하면 전체 execution plan을 만들고, 필요한 경우에만 추가 model call을 사용해 quality·cost·latency를 균형화하는 구조임.",
+          "items": [
+            "선택: direct solve·cascade·critique 등 가장 단순한 예상 충족 workflow를 선택",
+            "분리: solver는 shared workspace와 permission-aware agent loop 사용",
+            "분리: review는 repository를 바꾸지 않는 isolated tool-less context 사용"
+          ]
+        },
+        {
+          "heading": "평가 범위와 수치",
+          "body": "GitHub는 TerminalBench 2.1·DeepSWE·CheckpointBench에서 고정 HydraFusion policy를 Claude Opus 5와 GPT-5.6 Sol baseline에 비교했다고 설명. TerminalBench 2.1 최적 configuration의 provider-reported 결과는 Opus 5 대비 verified task quality 4.9 percentage point 향상과 estimated cost 67% 절감 범위임.",
+          "items": [
+            "조건: 동일 task input·tool·execution limit·pricing assumption·grading·missing result 처리",
+            "비용: draft·critique·revision·escalation·retry·fallback의 모든 leg를 추정 workflow cost에 포함",
+            "경계: offline benchmark 수치를 production success·latency·quota·provider SLA 보증으로 확대 금지"
+          ]
+        },
+        {
+          "heading": "권한·변경 통제",
+          "body": "모델을 여러 번 호출하는 workflow는 모델 성능보다 workspace·tool·patch apply 권한의 연결 방식이 더 큰 위험을 만들 수 있음. GitHub는 workflow cancel 또는 validation failure 때 patch를 적용하지 않는 fail-safe를 설명함.",
+          "items": [
+            "통제: workflow definition·model binding·fallback·availability를 실행 전 검증",
+            "승인: solver의 write/tool 권한과 reviewer의 read-only isolation을 별도 policy로 관리",
+            "감사: model role·outcome·cost·latency·diagnostic을 run별로 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 평균 benchmark보다 실제 repository의 accepted patch·rollback·secret exposure·provider outage를 포함한 end-to-end 결과로 해야 함.",
+          "items": [
+            "측정: task success·human acceptance·retry·p95·leg별 token/비용·tool failure·revert rate",
+            "팀 액션: low-risk repository canary에서 single-model baseline과 routing policy를 비교"
+          ]
+        }
+      ],
+      "rank": 5
+    },
+    {
       "id": "news-421",
       "title_ko": "CERN 산업용 가속기 제어 시스템, Debian 13으로 전환: 구형 x86·패키지 공급망·제어망 검증을 분리",
       "title_original": "CERN Transitioning Industrial Computers To Debian After Being A Longtime RHEL Institution",
@@ -580,7 +646,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-419",
@@ -654,7 +720,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -728,7 +794,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-417",
@@ -795,7 +861,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-418",
@@ -871,7 +937,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-415",
@@ -940,7 +1006,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-413",
@@ -1009,7 +1075,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-414",
@@ -1078,7 +1144,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-416",
@@ -1156,7 +1222,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-412",
@@ -1234,7 +1300,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-411",
@@ -1302,7 +1368,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-410",
@@ -1378,7 +1444,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-409",
@@ -1447,11 +1513,11 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-408",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1519,7 +1585,7 @@
     },
     {
       "id": "news-407",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1586,7 +1652,7 @@
     },
     {
       "id": "news-405",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1722,7 +1788,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-404",
@@ -1793,7 +1859,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-402",
@@ -1861,7 +1927,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-403",
@@ -1931,7 +1997,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-400",
@@ -2000,7 +2066,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-399",
@@ -2069,7 +2135,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-397",
@@ -2146,7 +2212,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-398",
@@ -2225,7 +2291,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-395",
@@ -2303,7 +2369,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-401",
@@ -2377,11 +2443,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-394",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2457,7 +2523,7 @@
     },
     {
       "id": "news-392",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2525,7 +2591,7 @@
     },
     {
       "id": "news-393",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2676,11 +2742,11 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-391",
-      "rank": 35,
+      "rank": 36,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2818,7 +2884,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-389",
@@ -2886,7 +2952,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-384",
@@ -2951,7 +3017,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-383",
@@ -3015,7 +3081,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-386",
@@ -3081,7 +3147,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-387",
@@ -3145,7 +3211,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-385",
@@ -3219,7 +3285,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-382",
@@ -3282,7 +3348,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-381",
@@ -3345,11 +3411,11 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-380",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -3426,7 +3492,7 @@
     },
     {
       "id": "news-336",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3587,7 +3653,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-378",
@@ -3673,7 +3739,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-376",
@@ -3761,83 +3827,6 @@
             "승인: benchmark score가 아닌 deterministic test·review·artifact provenance·reconciliation 결과를 release 조건으로 사용",
             "점검: 실제 task별 success-per-dollar·p95 completion time·failure recovery·human intervention rate를 baseline과 비교",
             "경계: source는 일반 상용 agent의 안전성·SLA·data retention·권한 모델을 보증하지 않음"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-375",
-      "title_ko": "MCP 새 로드맵: 장시간 agent·workload identity·tool discovery를 다음 명세 우선순위로 설정",
-      "title_original": "The New MCP Roadmap",
-      "summary": "- 공개: MCP Core Maintainers가 다음 specification release와 이후 작업의 **5개 우선영역**을 공식 공개\n- agent: Tasks·`subscriptions/listen`·progress notification을 server-initiated event·mid-flight steering과 함께 specification 성숙 대상으로 제시\n- transport: 2026-07-28 HTTP-native transport 기반을 local server의 Streamable HTTP over stdio까지 확장하는 방향\n- identity: DPoP·Workload Identity Federation·ID-JAG·enterprise-managed authorization·token exchange를 agent delegation 표준화 후보로 제시\n- tool: result contract 정리와 progressive discovery로 대규모 tool catalog의 context 비용·selection 저하 완화 추진\n- 팀 액션: roadmap은 배포 완료 API가 아니므로 구현·지원 SDK·compatibility·migration 일정을 release artifact별로 확인하고 identity·transport abstraction을 canary로 검증 필요",
-      "detail": "MCP 공식 블로그는 2026년 8월 22일 다음 명세 릴리스와 그 이후의 우선순위를 발표했다. 5개 영역은 agentic messaging primitives, HTTP-native transport 통합·강화, agent identity와 enterprise-ready security, improved primitives, SDK developer experience다. 장시간 agent 작업에는 Tasks, `subscriptions/listen`, progress notification과 server-initiated webhook/channel을 함께 다루며, 2026-07-28 release에서 remote server를 HTTP workload로 정렬한 뒤 local server의 Streamable HTTP over stdio까지 transport를 넓히려 한다. 권한 측면에서는 browser에서 사람의 승인을 받는 흐름만으로는 cloud workload agent·sub-agent delegation을 다루기 어렵다고 설명하고 DPoP, Workload Identity Federation, ID-JAG, Enterprise-Managed Authorization, token exchange를 우선 작업으로 제시한다. 다만 roadmap은 방향과 proposal 우선순위이며, 각 항목의 확정 specification, SDK 구현, 상호운용성, migration deadline, production availability를 보증하지 않는다.",
-      "why_it_matters": "MCP server를 API처럼 운영하는 팀은 장시간 실행·비대화형 agent identity·대규모 tool catalog를 각각 request timeout, 장기 API key, 전량 tool prompt로 임시 해결해 왔음. 로드맵은 이 경계를 표준화 후보로 끌어올리지만, 명세 채택 전에는 자체 timeout·idempotency·least privilege·observability control을 유지해야 함.",
-      "engineering_implication": "MCP client/server를 transport와 authorization adapter로 분리하고, task lifecycle·cancellation·progress·webhook replay·tool discovery telemetry를 자체 contract로 기록해야 함. DPoP/WIF/token exchange는 artifact·SDK·IdP·audience·token lifetime evidence가 나온 뒤 workload identity canary에서 검증하고, long-lived API key를 표준 채택 전제 아래 유지하지 않아야 함.",
-      "korea_implication": "국내 조직도 외부 SaaS·cloud workload·사내 agent가 MCP tool에 접근할 때 사용자 OAuth와 workload identity의 책임 경계를 분리해야 함. 데이터 이전·접근권한·감사 요건은 roadmap이 아닌 제공자 계약, 배포 리전, IdP와 endpoint 설정으로 확인 필요.",
-      "category": "DevTools",
-      "tags": [
-        "MCP",
-        "Agent",
-        "Workload Identity",
-        "OAuth",
-        "DPoP",
-        "Developer Tools",
-        "Protocol"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-08-22 18:00",
-      "source_name": "Model Context Protocol Blog",
-      "source_url": "https://blog.modelcontextprotocol.io/posts/mcp-roadmap/",
-      "image_url": "https://blog.modelcontextprotocol.io/og-image.png",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "MCP roadmap",
-          "url": "https://modelcontextprotocol.io/community/roadmap"
-        },
-        {
-          "title": "MCP 2026-07-28 release",
-          "url": "https://blog.modelcontextprotocol.io/posts/2026-07-28-first-mcp-specification-release-under-the-aaif/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "MCP 공식 블로그가 다음 specification release와 그 이후의 방향을 정리한 새 roadmap을 공개. `article:published_time` `2026-08-22T09:00:00+00:00`를 KST `2026-08-22 18:00`으로 변환.",
-          "items": [
-            "범위: Core Maintainers와 maintainers·Working Groups가 향후 수개월 protocol 작업의 우선순위를 정리",
-            "구성: agentic messaging, HTTP-native transport, agent identity/security, primitives, SDK experience의 5개 영역",
-            "경계: roadmap은 priority와 proposal review 방향이며 확정 API·SDK support·release date가 아님"
-          ]
-        },
-        {
-          "heading": "장시간 agent·transport 변화",
-          "body": "원문은 request-response만으로는 장시간 loop, streamed result, 실행 중 steering을 다루기 어렵다고 설명. Tasks, `subscriptions/listen`, progress notification과 server-initiated event의 composition을 검토하고 SEP-2663 Tasks extension의 specification 편입을 목표로 제시.",
-          "items": [
-            "messaging: webhook·channel 기반 server-initiated event로 polling 의존을 줄이는 방향",
-            "transport: 2026-07-28 release의 HTTP-native remote server 모델을 local Streamable HTTP over stdio까지 확장하는 방향",
-            "운영: task state·cancellation·progress ordering·webhook retry·duplicate delivery·timeout은 현재 서비스 contract와 telemetry로 별도 관리 필요"
-          ]
-        },
-        {
-          "heading": "identity·enterprise security 관점",
-          "body": "원문은 cloud workload agent, 부재 사용자 대행, sub-agent의 좁은 권한 위임이 browser-based human approval만으로 처리하기 어렵다고 명시. pasted API key와 장기 token 대신 표준 기반 identity를 목표로 DPoP, Workload Identity Federation, ID-JAG, Enterprise-Managed Authorization, token exchange를 제시.",
-          "items": [
-            "설계: human OAuth, workload identity, delegated sub-agent authority를 principal·audience·scope·expiry 기준으로 분리",
-            "검증: IdP issuer·audience·proof binding·token exchange·revocation·audit event를 request trace와 연결",
-            "피할 것: roadmap 언급만으로 DPoP/WIF 지원, token portability, tenant isolation, compliance 충족을 가정하는 판단"
-          ]
-        },
-        {
-          "heading": "tool discovery·SDK와 시사점",
-          "body": "MCP는 `tools/call` result의 여러 표현이 client에서 모델에 어떻게 전달되는지 server가 알기 어렵다는 문제와, 수백 tool 연결 시 context 비용·tool selection 품질이 악화되는 문제를 다룸. clear result contract와 progressive discovery를 추진하며 SDK ergonomics·spec conformance·문서화도 우선순위에 포함.",
-          "items": [
-            "측정: exposed tool 수·discovery step·context token·selection error·tool denial·completion rate를 task 단위로 수집",
-            "통제: tool catalog를 최소 entry point와 권한별 discovery로 나누고 high-impact tool은 approval·idempotency·audit 적용",
-            "팀 액션: 30일 내 transport adapter·identity adapter·task lifecycle·fallback/replay를 분리한 canary와 compatibility matrix 작성"
           ]
         }
       ],
