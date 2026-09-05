@@ -353,6 +353,8 @@
 - [[raw/articles/cern-debian-industrial-control-migration-2026-09-04]] — CERN 산업용 가속기 제어 시스템의 Debian 13 전환, 구형 x86·패키지 공급망·제어망 migration 검증 경계.
 - [[raw/articles/phoronix-cern-debian-industrial-control-migration-2026-09-02]] — CERN 산업용 가속기 제어 시스템 Debian 13 전환의 Phoronix 원문, CPU ISA·패키지·현장 I/O 검증 경계.
 
+- [[raw/articles/kubernetes-v1-37-rootless-beta-2026-09-05]] — Kubernetes v1.37 Rootless mode Beta의 kubelet·runtime·CNI user namespace와 node security·호환성 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

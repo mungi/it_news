@@ -2,14 +2,14 @@
   "week": "2026-W36",
   "coverage_start_kst": "2026-08-24 17:00",
   "coverage_end_kst": "2026-08-31 13:00",
-  "last_updated_kst": "2026-09-05 08:38",
+  "last_updated_kst": "2026-09-05 12:43",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Kubernetes v1.37의 Rootless mode Beta는 kubelet·runtime·CNI·kube-proxy를 host non-root user namespace에서 실행하는 defense-in-depth 기능. 기본 gate 활성화가 기존 node를 자동 전환하지 않으며, kernel 취약점·CNI/CSI 호환성·privileged workload는 별도 canary와 scheduling policy로 검증 필요.",
     "AWS MCP Server의 Lambda serverless diagnostic capability는 coding agent가 Lambda와 API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions의 오류·구성·변경·latency를 같은 조사 흐름에 연결하는 기능. read-only IAM·resource allowlist·CloudTrail·human approval을 먼저 분리해야 함.",
     "OpenAI GPT-6 Astra 공개 보도는 전문 agent·computer use·cyber benchmark와 API 단가를 함께 제시하지만, 이번 실행에서 OpenAI 원문은 Cloudflare challenge로 본문 검증이 불가. provider-reported score·가격·access plan을 task success·tool retry·p95·approval·rollback canary로 분리 필요.",
     "Cloudflare Managed Defense의 취약점 탐지·완화 early access는 code finding에 active route·traffic·WAF·security event를 결합하고 Daybreak 모델의 patch/WAF mitigation 제안을 고객 review에 제출하는 구조. code access·telemetry·patch validation·approval·rule TTL·rollback을 finding ID별 trace로 운영 필요.",
-    "CERN의 Debian 13 전환 계획은 2,200대 이상 산업 제어·embedded fleet의 CPU ISA·package build·field I/O·safety recovery를 함께 다루는 migration 사례. data-center fleet과 control fleet을 분리하고 representative rack에서 boot·I/O·alarm·rollback을 비교 필요.",
-    "Kubernetes v1.37 DRA Extended Resource가 GA가 되어 기존 `example.com/gpu` 요청을 DRA allocation과 연결 가능. API 호환성만으로 device lifecycle 검증이 끝나지 않으므로 inventory·prepare·topology·taint eviction·rollback을 pool별 trace로 확인 필요."
+    "CERN의 Debian 13 전환 계획은 2,200대 이상 산업 제어·embedded fleet의 CPU ISA·package build·field I/O·safety recovery를 함께 다루는 migration 사례. data-center fleet과 control fleet을 분리하고 representative rack에서 boot·I/O·alarm·rollback을 비교 필요."
   ],
   "deep_dives": [
     {
@@ -191,6 +191,84 @@
   ],
   "items": [
     {
+      "id": "news-423",
+      "title_ko": "Kubernetes v1.37 Rootless mode Beta: node component 권한을 user namespace·호환성 canary로 분리",
+      "title_original": "Kubernetes v1.37: KubeletInUserNamespace (aka Rootless mode) Graduates to Beta",
+      "summary": "- Beta: `KubeletInUserNamespace` feature gate가 기본 활성화됐지만 기존 rootful node를 자동 전환하지는 않음\n- 범위: kubelet·CRI/OCI runtime·CNI plugin·kube-proxy를 Linux user namespace 안의 host non-root user로 실행 가능한 공식 기능\n- 보안: container-breakout이 성공해도 host full root 대신 non-root account 범위로 피해를 제한하는 목표\n- 제약: kernel 취약점에는 효과가 없고 특정 CNI·CSI driver 호환성이 깨질 수 있으므로 node label/taint와 workload canary가 필요\n- 팀 액션: rootless node에서 `runningInUserNamespace`, CNI·CSI·cgroup·network·privileged workload·rollback을 production pool별로 검증 필요",
+      "detail": "Kubernetes 공식 블로그는 v1.37에서 `KubeletInUserNamespace` feature gate를 Beta로 승격하고 기본 활성화했다고 밝혔다. 이 기능을 실제로 사용하면 kubelet, CRI와 OCI runtime, CNI plugin, kube-proxy가 Linux user namespace 안에서 host의 non-root user로 실행된다. 기존 rootful cluster는 gate가 기본 활성화돼도 user namespace로 자동 진입하지 않으므로 동작이 바뀌지 않는다. Kubernetes v1.36에서 GA가 된 Pod user namespace `hostUsers: false`와는 다른 기능이며, 두 기능을 결합해 privileged 없이 Kubernetes-in-Kubernetes를 구성할 수 있다. 공식 글은 CRI-O·runc·kubelet·containerd의 과거 container-breakout 사례를 배경으로 들며, user namespace가 host kernel·boot loader·firmware 변경을 막는다는 범위를 설명한다. kernel 자체 취약점은 완화하지 못하고 seccomp 같은 기존 hardening이 필요하다. 실제 전환에는 특정 CNI·CSI driver 호환성, systemd·kernel module·sysctl 조건, real-root 권한을 요구하는 installer workload를 확인해야 한다. `runningInUserNamespace` node property로 label·taint를 부여해 root privilege가 필요한 workload를 분리하고, node pool canary에서 networking·storage·cgroup·observability·upgrade·rollback을 검증해야 한다.",
+      "why_it_matters": "node component의 host root 권한은 container runtime·kubelet·CNI 경로의 취약점이 host compromise로 이어지는 범위를 키움. rootless mode는 완전한 sandbox가 아니라 피해 계층을 낮추는 control이므로 kernel patch·seccomp·workload scheduling 정책을 대체하지 않음.",
+      "engineering_implication": "새 node pool에서 rootless Docker/Podman/nerdctl 또는 지원 runtime의 user namespace 준비 조건을 먼저 재현하고, `runningInUserNamespace` label·taint로 real-root 의존 workload를 격리 필요. CNI·CSI·GPU/device plugin·cgroup·hostPath·privileged DaemonSet·monitoring agent의 동작, pod networking·volume mount·node upgrade·rollback p95를 rootful baseline과 비교한 뒤 확대 필요.",
+      "korea_implication": "국내 managed Kubernetes와 규제 workload에서 이 Beta 기능의 제공 여부, host OS·runtime 조합, 기술지원 및 incident 책임 경계는 공식 글에 포함되지 않음. self-managed node pool에서 먼저 검증하고 managed service의 feature-gate 정책·support matrix를 별도 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Kubernetes",
+        "Rootless",
+        "KubeletInUserNamespace",
+        "Container Security",
+        "User Namespace",
+        "CNI",
+        "CSI",
+        "Node Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-05 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/04/kubernetes-v1-37-rootless-beta/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Running Kubernetes Node Components as a Non-root User",
+          "url": "https://kubernetes.io/docs/tasks/administer-cluster/kubelet-in-userns/"
+        },
+        {
+          "title": "KEP-2033: Kubelet in User Namespace",
+          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2033-kubelet-in-userns-aka-rootless"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes 공식 블로그의 `article:published_time` `2026-09-04T10:30:00-08:00`를 KST `2026-09-05 03:30`으로 기록. v1.37은 `KubeletInUserNamespace`를 Beta로 승격하고 feature gate를 기본 활성화함.",
+          "items": [
+            "범위: kubelet·CRI/OCI runtime·CNI plugin·kube-proxy를 Linux user namespace의 host non-root user로 실행 가능한 기능",
+            "변화: 기본 활성 gate가 기존 rootful node를 user namespace로 자동 전환하지 않아 현행 cluster behavior 유지",
+            "구분: Pod `hostUsers: false` user namespace와 다른 기능이며 두 기능의 결합 가능"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Linux user namespace는 host non-root UID를 namespace 안의 UID 0으로 매핑해 mount·cgroup·Pod network namespace 설정 등 node component 작업을 수행하게 함. namespace 내부 root 권한은 host 전체 root 권한과 동일하지 않음.",
+          "items": [
+            "보호: CRI-O·runc·kubelet·containerd의 과거 container-breakout 같은 경로에서 host full-root 피해 범위 축소 목적",
+            "한계: kernel 취약점 자체에는 user namespace가 방어가 아니며 seccomp 등 기존 hardening 병행 필요",
+            "상태: `kubectl get nodes -o yaml`의 `runningInUserNamespace` property로 rootless node 식별 가능"
+          ]
+        },
+        {
+          "heading": "호환성·스케줄링 경계",
+          "body": "공식 글은 일부 CNI·CSI driver에서 호환성 문제가 생길 수 있다고 명시. real root privilege를 필요로 하는 CNI installer 등 workload를 rootless node에 배치하지 않도록 scheduler policy를 분리해야 함.",
+          "items": [
+            "격리: `runningInUserNamespace` 기반 node label·taint로 privileged installer와 특수 workload의 placement 분리",
+            "검증: CNI networking·CSI volume mount·cgroup write·hostPath·device plugin·observability agent를 node pool별 확인",
+            "전제: user namespace 생성은 Kubernetes 밖에서 준비하며 rootless Docker·nerdctl·Podman 등 host/runtime 조건 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Rootless mode는 node compromise의 blast radius를 줄이는 defense-in-depth control임. Beta 기본 활성화를 production default adoption으로 해석하지 말고 rootful baseline과 비교 가능한 canary·rollback을 마련해야 함.",
+          "items": [
+            "측정: node bootstrap 성공률·CNI/CSI failure·Pod startup p95·volume/network error·privileged workload rejection·rollback time",
+            "운영: rootless node pool을 별도 만들고 admission·taint·runtime version·kernel/sysctl·alert rule을 change record에 연결",
+            "팀 액션: representative workload에서 network·storage·GPU/device·DaemonSet·upgrade·restore를 검증한 뒤 workload cohort별 확대"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-422",
       "title_ko": "AWS MCP Server, Lambda serverless 진단 추가: agent 관측 권한을 7일 baseline·변경 trace로 분리",
       "title_original": "AWS MCP Server adds a serverless capability for AWS Lambda functions",
@@ -263,7 +341,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-421",
@@ -342,7 +420,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-419",
@@ -416,7 +494,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -490,7 +568,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-417",
@@ -557,7 +635,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-418",
@@ -633,7 +711,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-415",
@@ -702,7 +780,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-413",
@@ -771,7 +849,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-414",
@@ -840,7 +918,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-416",
@@ -918,7 +996,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-412",
@@ -996,7 +1074,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-411",
@@ -1064,7 +1142,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-410",
@@ -1140,7 +1218,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-409",
@@ -1209,11 +1287,11 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-408",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1281,7 +1359,7 @@
     },
     {
       "id": "news-407",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -1348,7 +1426,7 @@
     },
     {
       "id": "news-405",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -1484,7 +1562,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-404",
@@ -1555,7 +1633,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-402",
@@ -1623,7 +1701,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-403",
@@ -1693,7 +1771,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-400",
@@ -1762,7 +1840,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-399",
@@ -1831,7 +1909,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-397",
@@ -1908,7 +1986,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-398",
@@ -1987,7 +2065,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-395",
@@ -2065,7 +2143,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-401",
@@ -2139,11 +2217,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-394",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2219,7 +2297,7 @@
     },
     {
       "id": "news-392",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2287,7 +2365,7 @@
     },
     {
       "id": "news-393",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -2438,11 +2516,11 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-391",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -2580,7 +2658,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-389",
@@ -2648,7 +2726,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-384",
@@ -2713,7 +2791,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-383",
@@ -2777,7 +2855,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-386",
@@ -2843,7 +2921,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-387",
@@ -2907,7 +2985,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-385",
@@ -2981,7 +3059,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-382",
@@ -3044,7 +3122,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-381",
@@ -3107,11 +3185,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-380",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "Amazon EKS 외부 OIDC identity provider 최대 10개 지원: cluster 인증 경계를 provider·RBAC·복구 정책으로 재검증",
       "title_original": "Amazon EKS now supports multiple external OIDC identity providers per cluster",
       "summary": "- 공개: Amazon EKS cluster 하나에 외부 **OIDC identity provider 최대 10개**를 연결하는 기능 제공\n- 구성: 직원·계약자·CI/CD 등 population별 provider와 identity mapping을 cluster에 독립 구성하고 기존 IAM authentication과 병행\n- 사용: Console 또는 `AssociateIdentityProviderConfig` API를 AWS CLI·SDK에서 사용\n- 범위: AWS는 EKS 제공 모든 Region과 추가 비용 없음을 공지\n- 경계: issuer·audience·claim mapping·RBAC binding·token revoke·IdP 장애 failover·audit·compliance·기존 client 호환성은 공지에서 보증하지 않음\n- 팀 액션: test cluster에서 JWT issuer/audience/claim·RBAC·break-glass·revoke·IdP outage·CI credential rotation을 함께 검증 필요",
@@ -3188,7 +3266,7 @@
     },
     {
       "id": "news-336",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "딥시크 주말 API 피크 할증 해제 보도: batch scheduling·token 비용 정책을 다시 계산",
       "title_original": "DeepSeek weekend off-peak API pricing",
       "summary": "- 변경: AI타임스 보도 기준 **베이징 시간 2026-08-23 00:00부터 토·일 API 사용량에 비성수기 요금 단일 적용**\n- 범위: 기존에는 베이징 시간 09:00~12:00·14:00~18:00 피크 구간에 비성수기 대비 2배 요금 적용\n- 비용: `DeepSeek-V4-Pro` output 피크 가격은 100만 token당 최대 27위안·약 4달러라는 기사 수치\n- 운영: 비실시간 batch·평가·test를 주말 route로 분산할 여지는 생기지만 deadline·queue·quality·retry와 함께 비용 비교 필요\n- 공식 확인: DeepSeek API pricing 문서는 V4 Flash·Pro의 피크/비피크 표와 모델별 token 가격을 현재 표시\n- 경계: 직접 읽은 공식 문서에는 주말 단일화의 시행 공지·계정/리전 eligibility·quota·SLA·billing export contract가 없어 해당 변경은 timestamped AI타임스 보도 범위\n- 팀 액션: KST/베이징 시간 bucket·model·input/output/cache token·retry·queue·success를 billing trace에 연결하고 weekend route와 fallback budget을 canary로 검증 필요",
@@ -3349,7 +3427,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-378",
@@ -3435,7 +3513,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-376",
@@ -3526,7 +3604,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-375",
@@ -3603,7 +3681,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-372",
@@ -3677,7 +3755,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-373",
@@ -3742,83 +3820,6 @@
             "통제: model version pinning·canary·quality regression threshold·fallback route·rollback owner를 release gate로 정의",
             "통제: Files API object의 retention·deletion·access control·audit log와 public URL fetch의 egress policy 확인",
             "팀 액션: 30일 내 representative visual-agent workload에서 cost·quality·latency·privacy evidence를 포함한 acceptance test 수행"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-374",
-      "title_ko": "Cloudflare Bot Preference Sync: AI bot 정책과 robots.txt를 동기화",
-      "title_original": "Say it once: introducing Bot Preference Sync",
-      "summary": "- 공개: Cloudflare가 zone의 AI bot 설정을 `robots.txt`에 반영하는 **Bot Preference Sync**를 발표\n- 범위: Search·Agent·Training category 정책을 반영하며 Free~Enterprise 모든 고객 대상, 2026-08-21 발표 기준 다음 주 제공 예정\n- 동작: 기존 `robots.txt` 앞에 Cloudflare 관리 block을 prepend해 기존 `Disallow` directive를 유지하는 구조\n- 정책: Search/Agent는 Allow·광고 페이지 차단·전체 차단, Training은 `Disallow` 시 협력 crawler의 검색 indexing과 training 거부를 분리하는 옵션\n- 경계: `robots.txt`는 협력 crawler의 preference이며 edge enforcement·개별 custom rule·crawler의 실제 준수·검색 순위·콘텐츠 학습 차단을 단독 보증하지 않음\n- 팀 액션: AI crawler policy, custom rule, origin `robots.txt`, edge log, referral·crawl telemetry를 동일 change record로 대조하고 staging에서 precedence와 rollback 검증 필요",
-      "detail": "Cloudflare는 2026년 8월 22일 08:19 KST에 Bot Preference Sync를 발표했다. 이 기능은 Cloudflare zone dashboard에서 설정한 AI bot의 Search·Agent·Training 정책을 `robots.txt`에 반영하며, Free부터 Enterprise까지 모든 고객에게 제공하되 원문 기준 실제 제공은 다음 주로 안내했다. 기존 `robots.txt`가 있으면 Cloudflare가 생성한 block을 파일 앞에 붙이고 기존 `Disallow` directive는 유지한다. Search와 Agent에는 Allow, 광고가 있는 페이지 차단, 전체 차단의 세 option이 있으며, Training의 `Disallow`는 협력 mixed-use crawler가 검색 indexing은 유지하면서 training은 거부하도록 `robots.txt` preference를 게시하는 방식이다. Cloudflare는 BotBase의 verified bot list를 주기적으로 업데이트한다고 설명한다. 다만 원문은 category-wide 정책 동기화 범위이며 individual custom rule을 직접 읽지 않고, crawler 준수·edge block·검색 노출·학습 미사용·기존 policy migration의 완결성을 보증하지 않는다.",
-      "why_it_matters": "AI crawler 정책은 discovery, agent access, model training, 광고 수익, origin 비용을 함께 건드림. 선언용 `robots.txt`와 edge enforcement가 어긋나면 운영자가 게시한 정책과 실제 접근 통제가 달라져 audit·incident 대응 근거가 약해질 수 있음.",
-      "engineering_implication": "Cloudflare policy를 켜기 전에 origin `robots.txt`, WAF/Bot Management/custom rule, CDN cache key·TTL, verified crawler inventory를 export해 precedence를 확인해야 함. staging zone에서 Search·Agent·Training별 request, edge action, served `robots.txt`, referral·crawl log를 함께 검증하고 custom exception이 있는 zone은 sync-off 및 IaC-managed file 경로를 포함한 rollback owner를 정해야 함.",
-      "korea_implication": "국내 콘텐츠·전자상거래 서비스는 AI 검색 유입, 광고 페이지, 저작권·학습 정책, 국내외 crawler의 실제 준수 범위를 별도 측정해야 함. Cloudflare dashboard 정책만으로 국내외 사업자의 data-use 계약 또는 검색 노출을 확정하지 않아야 함.",
-      "category": "Security",
-      "tags": [
-        "Cloudflare",
-        "AI Bots",
-        "robots.txt",
-        "Bot Management",
-        "Web Security",
-        "Content Policy",
-        "Agent"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-22 08:19",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/bot-preference-sync/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M0GECYZVM1ZRHZTQEK9865VJ.png",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Cloudflare Radar — AI bot transparency",
-          "url": "https://radar.cloudflare.com/ai-bots"
-        },
-        {
-          "title": "Cloudflare — AI Crawl Control",
-          "url": "https://www.cloudflare.com/ai-crawl-control/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare 공식 블로그가 `Bot Preference Sync`를 공개. `article:published_time` `2026-08-21T23:19:57.340Z`를 KST `2026-08-22 08:19`로 변환.",
-          "items": [
-            "제공: Free~Enterprise 모든 고객 대상 기능이며 원문 기준 다음 주 제공 예정",
-            "대상: zone dashboard의 AI bot Search·Agent·Training category 정책을 `robots.txt`에 반영",
-            "목적: 선언용 crawler preference와 edge policy가 다른 운영 상태를 줄이는 동기화 기능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기존 `robots.txt`가 있는 zone에서는 Cloudflare 생성 block을 앞에 추가하고 기존 directive를 유지. BotBase의 verified bot 목록을 바탕으로 관리 block의 bot list를 주기적으로 갱신하는 구조.",
-          "items": [
-            "Search·Agent: Allow, 광고 제공 페이지 차단, 전체 차단의 세 option 유지",
-            "Training: `Disallow` 시 training 거부 preference를 `robots.txt`에 기록하는 정책",
-            "검색: transparency 조건을 충족하는 mixed-use crawler는 training 거부 상태에서도 search indexing을 유지할 수 있다는 원문 설명"
-          ]
-        },
-        {
-          "heading": "정책·아키텍처 경계",
-          "body": "`robots.txt`는 crawler가 해석하는 preference이며 enforcement 자체가 아님. 원문도 category-wide sync가 individual custom rule의 복잡한 logic을 직접 읽지 않는다고 명시.",
-          "items": [
-            "분리: published `robots.txt`, Cloudflare edge block, origin access control, contract/data-use assurance를 별도 control로 관리",
-            "예외: 특정 사업자 예외나 세밀한 policy가 있으면 sync를 끄고 custom file과 rule을 운영하는 선택지",
-            "경계: crawler의 준수, 검색 순위, AI 학습 미사용, 기존 설정 migration의 완결성은 발표만으로 확정 불가"
-          ]
-        },
-        {
-          "heading": "운영·보안 시사점",
-          "body": "AI crawler policy 변경은 SEO와 봇 차단 설정을 동시에 바꾸는 production change. policy source와 실제 edge action을 같은 audit trail에 묶어야 함.",
-          "items": [
-            "검증: staging에서 Search·Agent·Training request별 served `robots.txt`, edge action, origin log, cache behavior 대조",
-            "검증: custom rule·WAF·Bot Management·origin file의 precedence와 bot identifier update 시 영향 확인",
-            "팀 액션: zone별 policy owner·예외 목록·rollback 절차·crawl/referral metric baseline을 change record에 고정"
           ]
         }
       ],
