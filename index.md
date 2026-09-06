@@ -33,6 +33,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-ec2-ami-compatible-instance-types-2026-09-05]] — EC2 AMI allowed/unsupported instance type specification, launch hard block·Auto Scaling·golden image compatibility 검증 경계.
 - [[raw/articles/github-hydrafusion-multi-model-orchestration-2026-09-05]] — GitHub Copilot HydraFusion research preview의 multi-model routing·workspace/permission 분리·offline benchmark·변경 통제 경계.
 - [[raw/articles/aws-bedrock-managed-kb-servicenow-3lo-sync-2026-09-05]] — Bedrock Managed Knowledge Base의 ServiceNow connector·3LO setup·자동 sync와 corpus 권한·freshness·삭제·rollback 검증 경계.
 - [[raw/articles/aws-ecs-early-success-criteria-2026-09-05]] — Amazon ECS Early Success Criteria의 healthy percent·source cleanup·rollback monitoring·release/SLO 분리 검증 경계.
