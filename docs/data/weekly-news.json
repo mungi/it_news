@@ -2,7 +2,7 @@
   "week": "2026-W37",
   "coverage_start_kst": "2026-08-31 17:00",
   "coverage_end_kst": "2026-09-07 13:00",
-  "last_updated_kst": "2026-09-07 17:48",
+  "last_updated_kst": "2026-09-08 01:52",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft Project Zenith 공개 보도는 64GB 이상 unified memory·250GB/s 이상 bandwidth를 전제로 local 30B 모델과 사전 구성된 Windows 개발 도구를 제시. hardware 수치를 fleet 성능 보증으로 확대하지 말고 task success·p95·thermal·driver·MXC/EDR/DLP·cloud fallback을 같은 workload canary에서 측정 필요.",
@@ -14,183 +14,336 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Microsoft Project Zenith: local 30B AI 개발 PC를 endpoint·toolchain·cloud fallback control로 검증",
-      "summary": "한 줄 결론: Project Zenith 보도는 64GB 이상 unified memory·250GB/s 이상 bandwidth를 전제로 local 30B 모델과 사전 구성된 Windows 개발 환경을 제시함. PC 사양이나 preinstall 목록을 성능·보안 보증으로 해석하지 말고 workload·thermal·endpoint policy·MXC/WSL·fallback을 하나의 canary evidence로 검증 필요.",
-      "details": "AI타임스는 Microsoft의 Windows 11 기반 Project Zenith를 AI 개발자용 ready-to-code 환경으로 소개했다. 기사에서 첫 적용 대상으로 AMD Ryzen AI Halo를, local 30B 이상 모델 목표의 조건으로 64GB 이상 unified memory와 250GB/s 이상 memory bandwidth를 제시했다. VS Code·GitHub Copilot·PowerToys·CLI·Python·Node.js·WSL 2 Ubuntu·.NET과 MXC·OS-level identity 언급은 초기 설정을 줄이는 범위다. 모델의 실제 context·quantization·concurrency·p95 latency, device SKU, energy/thermal, enterprise support, MXC 경계와 data path는 원문 보도만으로 확정할 수 없으므로 production은 endpoint release와 AI workload release를 함께 통제해야 한다.",
-      "why_it_matters": "local inference를 개발자 endpoint로 옮기면 token 지출과 데이터 경로가 바뀌지만, memory·driver·runtime·WSL/container·EDR/DLP·secret 관리가 개별 개발자 설정이 아닌 fleet 운영 범위가 됨.",
+      "title": "N-central CVE-2026-86218: RMM control plane을 긴급 패치·접근 축소·MSP 고객별 증거로 복구",
+      "summary": "한 줄 결론: N-able은 on-premises N-central의 pre-authenticated RCE 가능 취약점 `CVE-2026-86218`에 대해 `2026.3.1.14`(HF4) 즉시 적용을 요구함. RMM 서버는 다수 고객 endpoint와 관리 권한을 연결하므로 패치 완료만으로 종료하지 말고 console exposure·계정·automation·agent trust·고객별 audit evidence를 분리해 확인 필요.",
+      "details": "N-able 공식 공지는 CVE-2026-86218이 인증 전 N-central server RCE로 이어질 수 있는 critical-CVSS-rated 취약점이며 on-premises deployment가 `2026.3.1.14`로 즉시 업데이트해야 한다고 명시한다. HF4는 HF3 `2026.3.1.13`을 대체하고, 2025.4·2026.1·2026.2·2026.3 및 HF1~HF3에서 직접 upgrade path가 제공된다. hosted NCOD는 이미 patch 적용 상태라고 공지했다. 공식 자료는 production exploitation 확인이 없다고 적지만 unpatched risk는 남아 있다. 따라서 공개 보도의 상충된 exploitation 표현이나 agent 무업데이트 조건을 침해 부재·운영 안전 보증으로 확대하지 않고, RMM console을 privileged control plane으로 다뤄야 한다.",
+      "why_it_matters": "RMM control plane 한 곳의 인증 전 실행은 tenant별 endpoint, remote command, software deployment, credential 및 automation 경계를 한꺼번에 넓힐 수 있음. MSP와 internal IT 모두 patch window·고객 통지·forensic evidence·agent trust를 같은 incident record로 관리해야 함.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=214904"
+        "https://status.n-able.com/2026/09/06/n-central-2026-3-hotfix-4-cve-2026-86218/"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/214904_218651_4811.png",
-      "local_image": "",
-      "refreshed_kst": "2026-09-07 01:27",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-09-08 01:52",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Project Zenith은 AI 개발용 Windows 환경의 초기 setup을 줄이는 구성 제안임. 보도에 제시된 hardware 수치·bundled tool은 특정 업무의 throughput, security boundary, enterprise support를 보장하지 않으므로 PC image·모델 runtime·cloud fallback을 같은 change unit으로 관리해야 함.",
+          "body": "N-central HF4는 on-premises RMM server의 인증 전 원격 코드 실행 가능성에 대한 긴급 security release임. RMM이 관리 대상 endpoint와 자동화 권한을 집중시키는 구조이므로 upgrade 성공 화면만으로 종료하지 말고 external exposure, privileged account, automation history, customer tenant별 evidence를 함께 확인해야 함.",
           "items": [
-            "변화: local 30B 모델 목표와 preconfigured developer environment 제시",
-            "판정: AI PC procurement가 아니라 endpoint·runtime·governance release 운영 과제"
+            "변화: `CVE-2026-86218` 대응 build `2026.3.1.14` 즉시 배포 요구",
+            "판정: patch task가 아니라 privileged MSP control-plane incident/change 운영 과제"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스의 `article:published_time`은 `2026-09-06T16:26:59+09:00`임. 보도는 Windows 11 기반 Project Zenith가 개발 도구와 AI 실행 환경을 사전 구성하며 첫 적용 대상으로 AMD Ryzen AI Halo를 언급한 범위임.",
+          "body": "N-able status post는 September 6 게시, last updated September 5로 표시하며 해당 취약점을 third-party disclosure로 받은 critical-CVSS-rated pre-authenticated RCE 가능성으로 설명함. 공식 post와 release note 모두 production exploitation confirmation은 없다고 명시함.",
           "items": [
-            "하드웨어 전제: **64GB 이상 unified memory**와 초당 250GB 이상 memory bandwidth",
-            "도구: VS Code·GitHub Copilot·PowerToys·WinAppCLI·PowerShell 7·Git·GitHub/Azure CLI 포함 보도",
-            "runtime: Python 3.14+·Node.js 24+·WSL 2 Ubuntu·.NET 10 구성 언급",
-            "환경: long path·파일 확장자·숨김 파일·전체 경로 표시와 command palette 기본 설정"
+            "수정: HF4 build는 `2026.3.1.14`, 직전 HF3 `2026.3.1.13` 대체",
+            "대상: on-premises N-central deployment의 즉시 upgrade 요구",
+            "경로: `2025.4`, `2026.1`, `2026.2`, `2026.3`, HF1~HF3에서 direct upgrade 지원",
+            "예외: hosted NCOD instance는 patch 적용 완료·고객 action 불필요라는 공식 범위",
+            "agent: CVE 보호 자체에는 agent upgrade 불필요라는 공식 범위"
           ]
         },
         {
-          "heading": "증거와 성능 경계",
-          "body": "30B 이상 parameter 모델의 local 실행 목표는 model weight 크기만으로 결정되지 않음. quantization, context length, KV cache, concurrency, prompt/tool payload, memory bandwidth, driver와 runtime version이 TTFT·token/s·p95와 out-of-memory 실패를 함께 좌우함. 기사에는 지원 model matrix, benchmark recipe, device SKU, 전력·발열 수치가 없음.",
+          "heading": "증거와 위협 경계",
+          "body": "공식 자료는 취약점의 exploit chain, IoC, customer impact, lateral movement, credential access 또는 production exploitation을 제공하지 않음. 언론 보도와 외부 incident notice의 상충된 상태 표현을 사실로 합치지 않고, official confirmation과 local telemetry를 분리해 판단해야 함.",
           "items": [
-            "분리: model load 가능 여부와 user workload 완료율·tail latency 판정",
-            "측정: task success·TTFT/p95·RAM·thermal throttling·battery·driver reset",
-            "경계: 64GB·250GB/s를 모든 context·quantization·동시 요청의 capacity 보증으로 해석 금지"
+            "확정: 인증 전 server RCE 가능성·unpatched on-premises risk",
+            "미확인: exploit attempt·tenant impact·endpoint command execution·data exfiltration",
+            "금지: HF4 적용 전후의 공격 여부를 vendor statement 하나로 단정",
+            "증거: console ingress·admin audit·job history·API token·agent command·download log 보존 필요"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "local-first 개발은 모델 호출을 endpoint data plane으로 옮기는 선택임. 프롬프트, repository, terminal output, RAG cache와 artifact가 PC·WSL·container·cloud fallback 중 어디에 남는지 명시해야 함. image build와 runtime update가 분리되면 toolchain drift와 재현 불가한 성능 문제가 누적됨.",
+          "body": "RMM은 단순 SaaS console이 아니라 endpoint inventory, script, remote session, patch/deploy pipeline을 가로지르는 control plane임. server compromise 가능성은 customer endpoint 자동화가 실제로 실행됐다는 뜻은 아니지만, tenant isolation과 downstream trust를 reset할 조사 범위가 됨.",
           "items": [
-            "분리: device baseline·model artifact provenance·runtime pin·workspace data class·fallback policy",
-            "증거: device ID·image version·model hash·driver/runtime·task result를 run ID로 연결",
-            "운영: cloud와 local의 routing 조건·retry·user override를 versioned policy로 관리"
+            "분리: N-central server integrity·console identity·tenant automation·agent endpoint action",
+            "추적: tenant ID·operator·job ID·script hash·target host·start/end time을 같은 trace로 연결",
+            "격리: 신규 mass deployment·remote shell·credential push를 change approval 뒤 재개",
+            "검증: agent policy와 software repository artifact provenance를 baseline과 비교"
           ]
         },
         {
-          "heading": "endpoint·보안 관점",
-          "body": "보도는 agent 실행 경계로 OS-level identity와 Microsoft Execution Containers(MXC)를 언급하지만, host mount·network egress·credential delegation·EDR/DLP 연동·escape resistance의 세부 contract는 확인되지 않음. WSL과 local container는 repository 및 secret 접근 범위를 넓힐 수 있어 identity와 filesystem 권한을 workflow마다 축소해야 함.",
+          "heading": "보안·운영 관점",
+          "body": "외부에서 닿는 management console과 break-glass identity는 patch 이전부터 blast radius를 결정함. 공식 interim mitigation은 제시되지 않았으므로 일반적인 network control을 vendor workaround로 표현하지 않고, 조직의 exposure reduction과 emergency change control로 구분해야 함.",
           "items": [
-            "통제: signed base image·SBOM·patch ring·least-privilege account·secret redaction",
-            "검증: file/process/network/credential access·WSL mount·egress deny·EDR/DLP event 수집",
-            "복구: image rollback·model artifact revoke·device quarantine·cloud-only fallback runbook"
+            "통제: public console ingress를 trusted admin IP·VPN·jump path로 축소",
+            "통제: MFA·privileged account·service account·API token·SSO administrator audit",
+            "검증: new local/admin user·role change·scheduled task·automation policy·integration setting diff",
+            "복구: immutable backup·clean management host·credential rotation·customer communication runbook"
           ]
         },
         {
-          "heading": "FinOps·SRE 관점",
-          "body": "local 실행은 API token bill을 줄일 수 있지만 device depreciation, memory premium, power, support, patching, idle capacity와 cloud fallback을 함께 발생시킴. 동일 업무를 local과 cloud에 배치하는 기준은 평균 token 비용이 아니라 성공률·tail latency·support incident와 총소유비용이어야 함.",
+          "heading": "SRE·FinOps·고객 운영 관점",
+          "body": "긴급 hotfix는 service interruption과 customer endpoint risk를 함께 만든다. patch success rate만 보지 말고 server health, job queue, agent check-in, remote-control availability, failed automation, tenant별 support load를 staged rollout 지표로 삼아야 함.",
           "items": [
-            "비용: device amortization·energy·support·token·fallback retry를 task class별 귀속",
-            "관측: local hit rate·fallback reason·p95·thermal event·revert·help-desk incident",
-            "안전장치: budget guard·capacity ceiling·cloud-only escape hatch·offline update 계획"
+            "측정: upgrade completion·console availability·agent check-in·job failure·rollback·tenant support ticket",
+            "운영: lab/low-risk tenant canary 뒤 maintenance wave·health gate·hold criterion 설정",
+            "비용: emergency labor·customer downtime·rework·incident investigation을 tenant/service별 귀속",
+            "안전장치: failed upgrade의 restore point·out-of-band access·manual endpoint remediation 경로"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "소수 device cohort에서 동일 repository·prompt·context 길이의 local/cloud baseline을 만든 뒤 확대해야 함. model/runtime update와 endpoint security update의 승인 주기를 맞추고, corporate proxy·DLP·certificate·VPN 조건에서도 artifact download와 tool call이 재현되는지 확인해야 함.",
+          "body": "먼저 version과 deployment model, console exposure, customer scope를 inventory로 확정한 뒤 approved backup과 rollback criteria를 준비해야 함. HF4 적용 후에는 RMM server만이 아니라 control plane에서 실행된 action과 연결 identity를 조사하고 customer별 closure evidence를 남겨야 함.",
           "items": [
-            "체크리스트: approved device SKU·memory·driver·BIOS·OS image·runtime/model compatibility",
-            "체크리스트: repository/secret/data classification·MXC/WSL policy·egress·audit retention",
-            "체크리스트: performance baseline·thermal/battery·EDR/DLP·rollback image·cloud fallback",
-            "팀 액션: task class별 100회 canary에서 success·p95·cost·policy denial을 비교"
+            "체크리스트: version·self-hosted/NCOD·public IP·reverse proxy·admin source CIDR",
+            "체크리스트: backup restore test·upgrade path·maintenance window·server health·agent check-in",
+            "체크리스트: admin/API/SSO account·integration secret·job/script history·endpoint command audit",
+            "팀 액션: representative tenant별 patch→health→audit→customer attestation sequence 실행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Project Zenith의 의미는 AI 개발 환경을 PC provisioning으로 묶으려는 시도에 있음. 도입 판정은 30B load demo가 아니라 developer task 완료율, endpoint security evidence, thermal 안정성, cloud fallback과 rollback이 동일 trace에서 검증되는지로 내려야 함.",
+          "body": "HF4의 우선순위는 CVSS 숫자만이 아니라 N-central이 보유한 cross-tenant management authority에 있음. 완료 기준은 build number가 아니라 management exposure 축소, privileged identity review, automation trace 검사, customer별 endpoint 영향 확인과 rollback 가능 상태여야 함.",
           "items": [
-            "볼 것: workload별 success·p95·memory·thermal·fallback·policy denial",
-            "피할 것: bundled tool과 hardware minimum을 production SLO·security certification으로 해석",
-            "팀 액션: endpoint image와 model runtime을 하나의 staged release로 운영"
+            "볼 것: `2026.3.1.14` 적용률·console exposure·admin diff·job anomaly·agent health",
+            "피할 것: agent update 불필요 문구를 server/tenant compromise 부재로 해석",
+            "팀 액션: RMM emergency patch playbook에 tenant evidence와 credential rotation decision gate 추가"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "NVIDIA·CrowdStrike SafeMind: red·blue cyber agent loop를 discovery·approval·rollback trace로 제한",
-      "summary": "한 줄 결론: SafeMind 보도는 Red Tempest·Blue Solano의 attack-path 탐색과 방어 loop, 45일·B200 71개 개발 및 NVIDIA IT digital twin의 6~7회 반복 사례를 제시함. digital twin 결과를 production auto-remediation 근거로 확대하지 말고 discovery·proposal·approval·apply·retest·revert를 finding ID별로 분리 필요.",
-      "details": "AI타임스는 NVIDIA와 CrowdStrike가 cyber security 특화 AI 모델군 SafeMind를 공동 개발했다고 보도했다. 기사 범위에서 Red Tempest는 공격자 행동을 모방해 취약점과 attack path를 찾고, Blue Solano는 보안 설정과 보호 조치를 적용한 후 재탐색하는 harness로 설명된다. Falcon 적용·API 제공 계획, Nemotron fine-tuning, vendor-reported 45일·B200 GPU 71개와 NVIDIA 내부 IT digital twin의 6~7회 loop 결과가 제시됐다. product availability, API permission, data retention, tenant isolation, detection precision, false positive/negative, autonomous remediation scope와 실제 MTTR은 기사만으로 확정할 수 없다. production에서는 model output을 변경 권한으로 직결하지 않고 evidence와 asset owner, IaC/EDR/WAF policy diff, maintenance window, TTL, rollback, retest를 분리해야 한다.",
-      "why_it_matters": "AI-assisted exposure management가 탐지에서 remediation loop로 넓어지면 모델 정확도뿐 아니라 asset graph·권한 분리·change control·rollback·audit evidence가 보안 효과와 피해 범위를 결정함.",
+      "title": "Anthropic 대규모 compute 계약 보도: 계약액을 가동 capacity로 오인하지 않고 전력·공급망·FinOps gate로 검증",
+      "summary": "한 줄 결론: AI타임스는 Anthropic이 최근 1년간 최대 5,170억 달러 규모 cloud/data-center 계약을 확보했다고 보도함. 이는 복수년 계약 보도 범위이므로 실제 가동 GPU, 전력 인도, regional capacity, take-or-pay, utilization과 모델 공급 보증으로 확대하지 말고 capacity commitment를 workload·전력·cash·fallback evidence로 분해 필요.",
+      "details": "AI타임스는 The Information 보도를 인용해 Anthropic의 지난 11개월 최대 5,170억 달러 규모 cloud computing과 data-center 계약을 전했다. 기사에는 AWS 380억 달러, Google 790억 달러, Microsoft 190억 달러, Fluidstack 230억 달러, SpaceX 350억 달러 등 계약과 TeraWulf 401MW, Google TPU 수GW, AMD 2GW 관련 서술이 포함된다. 이는 timestamped secondary report이며 계약의 기간·옵션·취소 조건·가동률·delivered power·GPU SKU·regional availability·actual spend가 독립 확인된 것은 아니다. capacity planning은 headline contract value가 아니라 power delivery, rack/accelerator commissioning, network, model demand, utilization, reserved/spot mix, egress와 cash commitment를 서로 다른 gate로 관리해야 한다.",
+      "why_it_matters": "frontier-model 공급은 GPU purchase만으로 결정되지 않으며 cloud 계약, power interconnect, site build, network, chip diversity, demand forecast와 capital commitment가 동시에 병목이 됨. 소비 조직도 provider capacity headline 대신 quota·region·latency·price·fallback 조건을 계약별로 검증해야 함.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=214905"
+        "https://www.aitimes.com/news/articleView.html?idxno=214933"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/214905_218653_1936.png",
+      "image_url": "https://cdn.aitimes.com/news/photo/202609/214933_218683_5356.jpg",
       "local_image": "",
-      "refreshed_kst": "2026-09-07 01:27",
+      "refreshed_kst": "2026-09-08 01:52",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "SafeMind는 공격 경로 탐색과 방어 조치를 반복하는 cyber AI harness로 소개됨. production은 agent의 탐색 능력보다 finding evidence와 execution permission을 분리하고, 변경을 retest·TTL·rollback까지 추적하는 control plane으로 판정해야 함.",
+          "body": "이 보도는 Anthropic의 대규모 cloud/data-center commitment를 집계한 timestamped secondary report임. 계약 총액이나 MW/GW 언급을 이미 online인 accelerator fleet, guaranteed model capacity, realized revenue 또는 고객 quota로 바꾸지 말고 contract·power·site·hardware·network·demand를 별도 evidence로 검증해야 함.",
           "items": [
-            "변화: red agent attack-path discovery와 blue agent defense action의 closed loop",
-            "판정: autonomous remediation product가 아니라 permission-aware security change workflow"
+            "변화: 최대 **5,170억 달러** 규모 계약 집계 보도",
+            "판정: AI capacity headline이 아니라 multi-year supply-chain·FinOps dependency 지도"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스의 `article:published_time`은 `2026-09-06T11:42:24+09:00`임. 기사는 NVIDIA·CrowdStrike가 Red Tempest와 Blue Solano를 포함한 SafeMind 모델군을 공동 개발하고 CrowdStrike Falcon 적용·API 제공을 목표로 한다고 전함.",
+          "body": "AI타임스의 `article:published_time`은 `2026-09-07T18:12:43+09:00`이며 The Information 인용 보도임. 기사에는 11개월 동안 AWS·Google·Microsoft·Fluidstack·SpaceX 등과의 cloud/data-center 계약, TeraWulf·TPU·AMD capacity 관련 수치가 함께 언급됨.",
           "items": [
-            "구성: Red Tempest가 공격자 행동을 모방해 취약점과 attack path 탐색",
-            "구성: Blue Solano가 분석 뒤 보안 설정과 보호 조치 적용",
-            "학습: CrowdStrike threat intelligence·cyber data로 NVIDIA Nemotron fine-tuning 보도",
-            "개발: vendor-reported **45일·B200 GPU 71개** 사용",
-            "평가: NVIDIA 내부 IT digital twin에서 6~7회 loop 뒤 possible attack path 차단 사례"
+            "보도 수치: AWS `380억 달러`, Google `790억 달러`, Microsoft `190억 달러`, Fluidstack `230억 달러`, SpaceX `350억 달러` 계약 언급",
+            "용량: TeraWulf data center `401MW` 공급 계약 언급",
+            "칩: Google TPU 수GW·AMD AI chip `2GW` 확보 관련 보도",
+            "경계: 계약 조건·term·option·termination·delivered capacity·actual payment는 기사 범위 밖"
           ]
         },
         {
-          "heading": "증거와 평가 경계",
-          "body": "digital twin의 반복 차단 사례는 특정 simulated environment의 결과임. production network의 identity sprawl, legacy system, third-party integration, change freeze, business-critical path, incomplete telemetry와 동일하지 않으며 real incident의 detection coverage나 MTTR을 보증하지 않음.",
+          "heading": "증거와 숫자 해석 경계",
+          "body": "계약 총액은 전력 인도·토지/permit·building commissioning·rack integration·accelerator availability·network readiness·customer demand와 다른 단위임. 기사도 전력망 연결, 인허가, 부품 부족, 지역사회 반발, contract termination 조건을 실제 가동의 변수로 언급함.",
           "items": [
-            "구분: attack-path 발견 수와 validated exposure reduction·business impact",
-            "미확인: evaluation corpus·seed·false positive/negative·customer tenant coverage·SLA",
-            "금지: digital twin finding만으로 firewall·EDR·identity policy의 자동 apply 승인"
+            "구분: announced commitment·contracted capacity·energized MW·installed accelerator·usable cluster·customer delivered quota",
+            "구분: headline spend·committed spend·recognized expense·utilized compute·workload unit cost",
+            "미확인: region별 GPU/TPU SKU·interconnect·utilization·SLA·customer allocation·carbon/energy contract",
+            "금지: GW 또는 dollar figure를 immediate inference throughput·API availability 보증으로 환산"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "red/blue loop는 모델 두 개를 연결하는 문제가 아니라 security control plane을 운영하는 문제임. asset graph 조회, exploitability inference, policy proposal, change application, validation, rollback은 서로 다른 risk tier이며 하나의 agent credential로 합치면 blast radius와 조사 범위가 커짐.",
+          "body": "frontier compute는 chip diversification만으로 해결되지 않음. model architecture와 training/inference profile, fabric topology, storage, checkpoint movement, cooling, power quality, scheduler, host software가 동시에 맞아야 usable capacity가 됨. multi-provider strategy는 resilience를 주지만 API behavior와 observability가 분산되는 비용도 만듦.",
           "items": [
-            "분리: discovery read·asset inventory·policy proposal·change apply·revert authority",
-            "증거: finding ID·asset owner·attack path·policy diff·approval·retest를 immutable trace로 연결",
-            "운영: model/prompt/tool version과 threat data snapshot을 incident replay 가능하게 보존"
+            "분리: training reservation·inference serving·evaluation/safety workload·burst fallback capacity",
+            "추적: provider·region·accelerator SKU·fabric·runtime·model build·workload ID별 capacity evidence",
+            "운영: provider routing policy·quota exhaustion·degradation·data boundary·egress를 versioned control로 관리",
+            "검증: same workload에서 throughput·TTFT/p95·failure·retry·cost·energy telemetry 비교"
           ]
         },
         {
-          "heading": "아키텍처·보안 관점",
-          "body": "agent는 SIEM, EDR, vulnerability scanner, IAM, cloud control plane과 network policy를 넘나들 수 있음. 각 connector의 read/write scope, cross-account role, service account lifecycle, data egress와 tool response의 prompt injection 경계를 별도 policy로 묶어야 함.",
+          "heading": "전력·시설·공급망 관점",
+          "body": "전력 계약과 DC site 발표은 rack가 model job을 실행한다는 증거가 아님. utility interconnect, substation, transformer, liquid cooling, generator, permits, supply lead time, commissioning와 network turn-up이 길고 서로 의존함. site delay는 reserved chip과 customer delivery schedule을 함께 흔들 수 있음.",
           "items": [
-            "통제: read-only discovery default·asset allowlist·ephemeral credential·step-up approval",
-            "검증: malicious telemetry/prompt injection·denied tool call·stale asset graph·credential revoke drill",
-            "보호: policy proposal의 semantic diff·change window·two-person approval·break-glass 기록"
+            "게이트: land/permit·utility interconnect·energized MW·cooling acceptance·rack burn-in·fabric validation",
+            "리스크: power delay·water/cooling constraint·transformer lead time·accelerator allocation·cross-region network bottleneck",
+            "측정: energized-versus-contracted MW·rack-ready ratio·cluster acceptance·job success·fabric incident",
+            "복구: alternate region/provider·smaller batch·checkpoint portability·demand admission control"
           ]
         },
         {
-          "heading": "SRE·운영과 FinOps 관점",
-          "body": "보안 agent loop는 retry, scan coverage, graph traversal, model inference와 human review를 함께 소비함. 비용 절감이나 MTTR 개선은 aggregate dashboard가 아니라 asset tier와 action type별 성공률·review latency·change failure·revert로 측정해야 함.",
+          "heading": "FinOps·거버넌스 관점",
+          "body": "장기 capacity commitment는 demand 예측 오류가 발생하면 under-utilization과 take-or-pay exposure를 만들며, 지나치게 보수적이면 API quota shortage와 product delay를 만든다. bill은 contract value가 아니라 model/workload별 delivered capacity, utilization, retry, cache, egress, support와 fallback을 기준으로 해석해야 함.",
           "items": [
-            "측정: validated path·false positive·approval latency·apply failure·retest success·revert·MTTR",
-            "운영: rate limit·circuit breaker·queue backlog·maintenance window·manual remediation escape hatch",
-            "비용: scan/model/tool 호출·analyst review·rollback impact를 finding class별 귀속"
+            "비용: reserved/committed capacity·on-demand/spot·power pass-through·network/egress·idle·support 분리",
+            "측정: reserved utilization·queue wait·quota denial·fallback share·effective cost per successful task·waste",
+            "통제: capacity approval을 product demand forecast·SLO·budget ceiling·exit/termination clause와 연결",
+            "거버넌스: provider별 retention·residency·subprocessor·audit·incident notification contract 검토"
           ]
         },
         {
           "heading": "도입 로드맵과 개발팀/인프라팀 체크리스트",
-          "body": "첫 단계는 isolated digital twin 또는 non-production segment에서 read-only discovery와 evidence export만 허용하는 방식이어야 함. 이후 approved policy proposal, staged apply, auto-expiry rule, retest까지 한 control path씩 확장하고 production write는 asset owner 승인과 change window에 묶어야 함.",
+          "body": "provider capacity가 큰 조직도 소비 workload의 delivery proof가 없으면 실제 성능과 비용을 알 수 없음. representative workload로 quota, regional availability, identity, data path, observability, fallback을 canary하고, capacity plan을 월별 forecast와 deployment gate에 연결해야 함.",
           "items": [
-            "체크리스트: connector inventory·role scope·data retention·tenant boundary·audit export",
-            "체크리스트: asset criticality·change owner·policy diff·TTL·kill switch·rollback authority",
-            "체크리스트: attack-path replay·false-positive review·retest·incident escalation·forensic retention",
-            "팀 액션: 대표 path마다 discovery→approval→apply→retest→revert drill 수행"
+            "체크리스트: provider/region/SKU quota·lead time·service limit·support escalation·SLA",
+            "체크리스트: workload class·model/runtime pin·data residency·egress·cache/checkpoint portability",
+            "체크리스트: power/site dependency·capacity reservation·utilization·budget·termination/fallback clause",
+            "팀 액션: provider별 100회 workload canary에서 success·p95·queue·effective cost·fallback reason 수집"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "SafeMind의 red/blue loop는 공격 경로를 더 빠르게 찾는 가능성을 제시하지만, production 보안의 품질은 자동 변경 수가 아니라 안전하게 되돌릴 수 있는 validated exposure reduction으로 판단해야 함. finding-to-change trace 없는 automation은 대응 속도와 함께 조사 리스크도 키움.",
+          "body": "AI 인프라 계약 규모는 공급망 방향을 알려 주지만 production capacity의 완료 증거는 아님. 설계와 구매의 기준은 달러·GW headline이 아니라 workload가 필요한 시점에 허용된 data boundary 안에서 안정적으로 수행되는 usable capacity와 되돌릴 수 있는 commitment여야 함.",
           "items": [
-            "볼 것: validated path 감소·approval latency·retest·revert·permission denial",
-            "피할 것: vendor digital twin 결과를 customer production coverage·auto-remediation 보증으로 해석",
-            "팀 액션: 모든 write action에 policy diff·owner approval·TTL·rollback·retest evidence 부착"
+            "볼 것: energized MW·usable accelerator·quota·utilization·queue·effective task cost·fallback",
+            "피할 것: secondary report의 contract value를 guaranteed online capacity 또는 revenue로 해석",
+            "팀 액션: capacity dashboard를 contract→power→rack→cluster→workload delivery evidence로 분해"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-434",
+      "title_ko": "앤트로픽 compute 계약 보도: 5,170억 달러 headline을 전력·가동 capacity·FinOps 증거로 분해",
+      "title_original": "Anthropic secures up to $517 billion in cloud computing and data center deals",
+      "summary": "- 보도: AI타임스가 The Information을 인용해 Anthropic의 최근 11개월 최대 **5,170억 달러** cloud/data-center 계약을 집계\n- 구성: AWS·Google·Microsoft·Fluidstack·SpaceX 계약과 TeraWulf `401MW`, Google TPU 수GW, AMD `2GW` 관련 서술 포함\n- 경계: 계약 기간·옵션·취소·실제 spend·energized MW·installed accelerator·regional quota·SLA는 기사에서 독립 검증되지 않음\n- 변수: 전력망 연결·인허가·부품·지역사회 수용성과 계약 해지 조건이 actual online capacity를 좌우\n- 팀 액션: contract value가 아닌 provider/region/SKU별 quota·power·rack readiness·utilization·queue·effective task cost·fallback을 workload canary로 측정 필요",
+      "detail": "AI타임스는 The Information 보도를 인용해 Anthropic이 지난해 10월 이후 최대 5,170억 달러 규모 cloud computing과 data-center 계약을 확보했다고 전했다. 기사에는 AWS 380억 달러, Google 790억 달러, Microsoft 190억 달러, Fluidstack 230억 달러, SpaceX 350억 달러와 TeraWulf 401MW, Google TPU 수GW, AMD AI chip 2GW 관련 수치가 담겼다. 이는 timestamped secondary report이며 계약의 term·option·termination·actual spend·delivered power·GPU/TPU SKU·installed fleet·region별 availability·SLA를 독립 확인하지 않는다. 기사도 전력망 연결·인허가·부품 부족·지역사회 반발과 termination clause를 가동 변수로 든다. AI capacity planning은 headline 계약액을 usable cluster나 API quota로 환산하지 말고 power, rack, fabric, model runtime, utilization, data boundary, fallback과 task unit economics로 분해해야 한다.",
+      "why_it_matters": "frontier AI 공급은 chip 확보뿐 아니라 power·site·cooling·fabric·provider contract·demand forecast가 같이 결정함. enterprise buyer도 발표 총액이 아닌 workload별 delivered quota와 data/price/SLO 조건을 검증해야 함.",
+      "engineering_implication": "provider·region·accelerator SKU·quota·runtime을 inventory로 관리하고 동일 workload에서 success·TTFT/p95·queue·retry·effective cost·fallback reason을 수집 필요. capacity commitment는 energized MW·rack acceptance·fabric validation·usable cluster·customer delivery의 sequential gate와 budget/termination/egress data를 함께 승인 필요.",
+      "korea_implication": "국내 조직은 글로벌 AI provider capacity 보도를 서울/한국 availability 또는 국내 데이터 처리 보증으로 해석하지 않아야 함. region quota·latency·residency·support·cross-border telemetry·fallback 조건을 계약과 technical canary로 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "AI Infrastructure",
+        "Anthropic",
+        "Cloud Computing",
+        "Data Center",
+        "Capacity Planning",
+        "FinOps",
+        "Power"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-09-07 18:12",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214933",
+      "image_url": "https://cdn.aitimes.com/news/photo/202609/214933_218683_5356.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스의 `article:published_time`은 `2026-09-07T18:12:43+09:00`이며 The Information 인용 보도임. Anthropic의 지난 11개월 cloud/data-center contract 최대치를 `5,170억 달러`로 집계한 범위임.",
+          "items": [
+            "계약: AWS·Google·Microsoft·Fluidstack·SpaceX 관련 금액을 기사에서 열거",
+            "용량: TeraWulf `401MW`, Google TPU 수GW, AMD chip `2GW` 관련 보도",
+            "경계: first-party contract document와 delivered capacity는 직접 확인되지 않은 상태"
+          ]
+        },
+        {
+          "heading": "숫자와 가동 경계",
+          "body": "계약액·MW·GW는 서로 다른 단위이며 energized power, rack-ready accelerator, network fabric, usable cluster, customer quota와 같지 않음. 기사도 interconnect·permit·component·community acceptance와 termination condition을 변수로 언급함.",
+          "items": [
+            "분리: contract value·committed spend·energized MW·installed chip·usable cluster·utilization",
+            "미확인: term·option·termination·SKU·region·SLA·actual payment·customer allocation",
+            "금지: headline 계약을 immediate API throughput 또는 model supply guarantee로 환산"
+          ]
+        },
+        {
+          "heading": "아키텍처·FinOps 관점",
+          "body": "multi-provider capacity는 resilience를 주지만 runtime·quota·data path·billing·observability를 분산시킴. capacity plan은 reservation과 workload delivery를 같은 dashboard에서 연결해야 함.",
+          "items": [
+            "측정: provider/region/SKU별 quota·queue·TTFT/p95·retry·success·effective task cost",
+            "통제: data residency·egress·cache/checkpoint portability·routing/fallback policy version 관리",
+            "비용: reserved utilization·idle·network·support·fallback을 workload class별 귀속"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "실제 capacity의 완료 증거는 dollar/GW headline이 아니라 필요한 시점에 허용된 data boundary 안에서 workload가 수행되는지임. power→rack→fabric→cluster→task delivery의 순서로 acceptance gate를 운영해야 함.",
+          "items": [
+            "체크: energized MW·rack acceptance·fabric validation·quota·utilization·fallback",
+            "리스크: power/site delay·SKU allocation·under-utilization·quota shortage·provider dependency",
+            "팀 액션: provider별 100회 workload canary로 success·p95·queue·cost·fallback reason 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-433",
+      "title_ko": "N-able N-central HF4: 인증 전 RCE 가능 CVE-2026-86218에 self-hosted RMM server 즉시 업데이트 요구",
+      "title_original": "N-central 2026.3 Hotfix 4 – CVE-2026-86218",
+      "summary": "- 수정: N-able이 self-hosted N-central의 인증 전 RCE 가능 `CVE-2026-86218`에 `2026.3.1.14` HF4 즉시 적용 요구\n- 범위: HF4는 HF3 `2026.3.1.13`을 대체하며 `2025.4`·`2026.1`·`2026.2`·`2026.3` 및 HF1~HF3에서 direct upgrade 지원\n- 상태: 공식 공지는 production exploitation confirmation이 없다고 명시하나 unpatched on-premises server risk는 유지\n- 예외: hosted NCOD는 patch 적용 완료, CVE 보호 자체에는 agent update 불필요라는 vendor 범위\n- 팀 액션: console exposure·admin/API/SSO account·job/script history·agent command·tenant별 automation evidence를 patch change와 함께 점검 필요",
+      "detail": "N-able 공식 status post와 release note는 `CVE-2026-86218`이 N-central server에서 인증 전 remote code execution으로 이어질 수 있는 critical-CVSS-rated 취약점이라고 설명한다. self-hosted 고객은 `2026.3.1.14` 즉시 upgrade 대상이며, HF4는 직전 HF3 `2026.3.1.13`을 대체한다. 공식 자료는 third-party disclosure와 production exploitation confirmation 부재를 명시하지만, unpatched system은 risk 상태로 둔다. hosted NCOD instance는 패치가 이미 적용됐다고 공지했고, CVE protection에 agent upgrade는 요구하지 않았다. release note는 direct upgrade path를 제시하지만 RMM server integrity, customer tenant automation, endpoint action, credential exposure, console ingress를 보증하지 않는다. RMM은 endpoint remote command와 deployment를 연결하는 privileged control plane이므로 version update 뒤에도 exposure 축소, identity/job audit, customer별 영향 검증과 rollback evidence가 필요하다.",
+      "why_it_matters": "RMM server의 인증 전 실행 가능성은 endpoint 관리·automation·credential·customer tenant 경계를 한 incident scope로 묶음. patch는 시작 조치이며 management-plane evidence와 customer별 closure가 종료 기준임.",
+      "engineering_implication": "self-hosted N-central을 version·public ingress·reverse proxy·tenant·admin/API/SSO identity 기준으로 inventory하고 approved backup 뒤 HF4 canary 필요. patch 후 server health·agent check-in·job failure·new user/role·script hash·remote command·integration secret을 baseline과 diff하고, mass action 재개는 tenant별 audit evidence 뒤 승인 필요.",
+      "korea_implication": "국내 MSP·기업 IT가 self-hosted N-central로 고객 endpoint를 운영한다면 RMM console public exposure, customer data 처리, 위탁 운영 notification, 계정·automation audit 보존을 같은 emergency change record로 관리 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "RMM",
+        "N-central",
+        "CVE-2026-86218",
+        "Remote Code Execution",
+        "MSP",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-09-07 17:31",
+      "source_name": "N-able Status",
+      "source_url": "https://status.n-able.com/2026/09/06/n-central-2026-3-hotfix-4-cve-2026-86218/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "N-able: 2026.3 HF4 Release Notes",
+          "url": "https://documentation.n-able.com/N-central/Release_Notes/GA/Content/N-central_2026.3_HF4_Release_Notes.htm"
+        },
+        {
+          "title": "The Hacker News: fourth N-central hotfix coverage",
+          "url": "https://thehackernews.com/2026/09/n-able-issues-fourth-n-central-hotfix.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "N-able official status post는 September 6 게시, last updated September 5로 표기. `CVE-2026-86218`이 N-central server에서 pre-authenticated RCE로 이어질 수 있는 critical-CVSS-rated 취약점이라는 범위임.",
+          "items": [
+            "수정: self-hosted deployment의 `2026.3.1.14` HF4 즉시 적용 요구",
+            "상태: third-party responsible disclosure·production exploitation confirmation 부재라는 공식 문구",
+            "예외: hosted NCOD instance는 patch 적용 완료라는 공지 범위"
+          ]
+        },
+        {
+          "heading": "수정 범위와 upgrade 경로",
+          "body": "HF4는 `2026.3.1.13` HF3을 supersede하며 공식 release note에 지원 direct upgrade path가 열거됨. release completion은 application availability와 customer endpoint 정상 동작 보증과 다른 판정임.",
+          "items": [
+            "경로: `2025.4`·`2026.1`·`2026.2`·`2026.3`·HF1~HF3에서 direct upgrade",
+            "agent: CVE protection 자체에는 agent upgrade 불필요라는 vendor 범위",
+            "경계: older version은 intermediate supported build 뒤 HF4로 이동 권고"
+          ]
+        },
+        {
+          "heading": "조사·운영 경계",
+          "body": "공식 공지는 exploit chain·IoC·customer impact를 제공하지 않음. RMM control plane은 remote command와 automation 권한을 보유하므로 patch 전후 evidence를 보존하고 tenant별 action history를 확인해야 함.",
+          "items": [
+            "증거: console ingress·admin/API/SSO account·job/script history·agent command·integration setting 수집",
+            "통제: public console을 trusted IP·VPN·jump path로 제한하고 privileged identity review",
+            "금지: exploitation confirmation 부재를 compromise 부재 또는 customer impact 부재로 해석"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "완료 기준은 build number가 아니라 management exposure·identity·automation trace와 customer endpoint 영향의 검증임. emergency patch는 canary, health gate, rollback, tenant communication을 포함한 control-plane release로 운영해야 함.",
+          "items": [
+            "측정: patch completion·console health·agent check-in·job failure·new admin·automation anomaly",
+            "복구: verified backup·out-of-band access·credential rotation·manual endpoint remediation 경로",
+            "팀 액션: tenant별 patch→health→audit→closure evidence sequence 실행"
+          ]
+        }
+      ],
+      "rank": 2
+    },
     {
       "id": "news-430",
       "title_ko": "MikroTik RouterOS SSH 노출 장비 활성 악용: 패치·관리망 격리·구성 증거 보존 우선",
@@ -276,7 +429,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-428",
@@ -344,7 +497,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-429",
@@ -413,7 +566,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-431",
@@ -491,7 +644,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-425",
@@ -582,7 +735,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-427",
@@ -656,7 +809,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-423",
@@ -734,7 +887,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-424",
@@ -803,7 +956,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-422",
@@ -878,7 +1031,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-426",
@@ -954,7 +1107,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-432",
@@ -1032,7 +1185,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-421",
@@ -1111,7 +1264,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-419",
@@ -1185,7 +1338,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -1259,7 +1412,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-417",
@@ -1326,7 +1479,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-418",
@@ -1402,7 +1555,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-415",
@@ -1471,7 +1624,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-413",
@@ -1540,7 +1693,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-414",
@@ -1609,7 +1762,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-416",
@@ -1687,7 +1840,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-412",
@@ -1765,7 +1918,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-411",
@@ -1833,7 +1986,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-410",
@@ -1909,7 +2062,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-409",
@@ -1978,11 +2131,11 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-408",
-      "rank": 25,
+      "rank": 27,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -2050,7 +2203,7 @@
     },
     {
       "id": "news-407",
-      "rank": 26,
+      "rank": 28,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -2117,7 +2270,7 @@
     },
     {
       "id": "news-405",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -2253,7 +2406,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-404",
@@ -2324,7 +2477,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-402",
@@ -2392,7 +2545,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-403",
@@ -2462,7 +2615,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-400",
@@ -2531,7 +2684,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-399",
@@ -2600,7 +2753,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-397",
@@ -2677,7 +2830,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-398",
@@ -2756,7 +2909,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-395",
@@ -2834,7 +2987,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-401",
@@ -2908,11 +3061,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-394",
-      "rank": 38,
+      "rank": 40,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2988,7 +3141,7 @@
     },
     {
       "id": "news-392",
-      "rank": 39,
+      "rank": 41,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -3056,7 +3209,7 @@
     },
     {
       "id": "news-393",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -3207,11 +3360,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-391",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -3349,7 +3502,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-389",
@@ -3417,7 +3570,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-384",
@@ -3482,7 +3635,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-383",
@@ -3546,7 +3699,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-386",
@@ -3612,7 +3765,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-387",
@@ -3673,143 +3826,6 @@
           "items": [
             "측정: endpoint health·DNS failure·connection error·API denial·VPC Flow Logs·CloudTrail·endpoint/data-processing 비용",
             "팀 액션: isolated VPC canary에서 public egress 차단·TLS·IAM·endpoint failure·rollback을 release gate로 운영"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-385",
-      "title_ko": "AWS Lambda Node.js 26·Python 3.15 public preview: 자동 GA 승격 전 runtime·IaC 호환성을 검증",
-      "title_original": "AWS Lambda introduces managed runtimes in public preview for Node.js 26 and Python 3.15",
-      "summary": "- 공개: AWS Lambda가 **Node.js 26·Python 3.15 managed runtime** public preview 제공\n- 목적: GA 전 breaking change가 가능한 기간에 workload·observability·IaC·deployment framework 호환성 검증\n- 사용: Console 또는 `nodejs26.x`·`python3.15` runtime identifier를 CLI·CloudFormation·SAM·CDK에 지정\n- 전환: preview와 GA가 같은 runtime identifier를 사용해 GA 시 함수가 별도 작업 없이 자동 승격\n- 경계: preview runtime은 Lambda SLA·AWS Technical Support 대상이 아니며 production workload 사용 비권장\n- 팀 액션: dependency·native extension·cold start·handler error·telemetry·rollback을 non-production canary에서 검증 필요",
-      "detail": "AWS는 Node.js 26과 Python 3.15 Lambda managed runtime을 public preview로 제공한다고 2026년 8월 25일 22:00 KST에 공지했다. 기존에는 managed runtime을 바로 GA로 출시해 production function에 영향을 줄 breaking change를 이후 적용하기 어려웠다. preview는 GA 전 workload, third-party observability provider, infrastructure-as-code tool, deployment framework의 호환성 문제를 확인하고 피드백할 기간을 제공한다. Console의 preview runtime 선택 또는 CLI·CloudFormation·SAM·CDK에서 `nodejs26.x`·`python3.15` identifier를 지정해 사용할 수 있다. preview와 향후 GA는 같은 identifier를 사용하므로 GA 시 함수가 자동 승격된다. 다만 preview 기간에는 breaking change가 가능하고 Lambda SLA와 AWS Technical Support plans가 적용되지 않으므로 production deployment 근거로 삼으면 안 된다. 지원 범위는 AWS commercial·GovCloud (US)·China Regions이며 standard Lambda rate가 적용된다.",
-      "why_it_matters": "언어 runtime 업그레이드의 위험을 GA 전 실측할 수 있는 경로가 생김. identifier 자동 승격은 운영 편의를 주지만 preview artifact를 production readiness 또는 GA 호환성 보증으로 해석하면 안 됨.",
-      "engineering_implication": "non-production account에서 runtime별 dependency lockfile·native extension·handler contract·event payload·cold start·memory/duration·error/retry·observability agent·IaC synth/diff를 검증해야 함. GA 전후 deployment artifact와 runtime behavior를 비교하고 rollback 가능한 이전 runtime을 release record에 유지 필요.",
-      "korea_implication": "국내 리전 사용 가능 여부는 공지의 broad regional scope와 별도로 실제 account·region console에서 확인해야 하며, regulated workload는 preview의 SLA·support 제외와 vendor library support window를 change approval에 반영 필요.",
-      "category": "DevTools",
-      "tags": [
-        "AWS",
-        "Lambda",
-        "Node.js",
-        "Python",
-        "Serverless",
-        "Runtime",
-        "IaC"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-08-25 22:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-lambda-node-js-python-public-preview/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "AWS Compute Blog: Introducing public preview runtimes on AWS Lambda",
-          "url": "https://aws.amazon.com/blogs/compute/introducing-public-preview-runtimes-on-aws-lambda-starting-with-node-js-26-and-python-3-15/"
-        },
-        {
-          "title": "AWS Lambda SLA",
-          "url": "https://aws.amazon.com/lambda/sla/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New embedded announcement body와 RSS exact timestamp `2026-08-25T13:00:00Z`를 직접 확인해 KST `2026-08-25 22:00`으로 기록. Lambda가 Node.js 26과 Python 3.15 managed runtime을 public preview로 제공하는 변경임.",
-          "items": [
-            "공개: GA 전 managed runtime을 사용해 workload와 ecosystem compatibility를 시험하는 preview 경로",
-            "전환: preview runtime과 eventual GA runtime이 같은 identifier를 사용해 GA 시 함수 자동 승격"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기존 managed runtime은 곧바로 GA로 출시돼 production function에 영향을 줄 변경을 이후 적용하기 어려웠음. preview에서는 AWS가 breaking change를 적용할 수 있으며 customer·partner·upstream language community가 issue를 보고할 수 있음.",
-          "items": [
-            "지정: Console의 `Node.js 26 (Preview)`·`Python 3.15 (Preview)`, 또는 `nodejs26.x`·`python3.15` runtime identifier",
-            "도구: AWS CLI·CloudFormation·AWS SAM·AWS CDK에서 runtime 구성 가능",
-            "범위: AWS commercial·GovCloud (US)·China Regions, standard Lambda rate 적용이라는 공식 공지"
-          ]
-        },
-        {
-          "heading": "지원·운영 경계",
-          "body": "preview 기간에는 breaking change가 가능하고 Lambda SLA와 AWS Technical Support plans가 적용되지 않음. 자동 GA 승격은 runtime identifier 변경이 없다는 뜻이며 dependency, ABI, handler, extension, deployment artifact의 production compatibility까지 보증하지 않음.",
-          "items": [
-            "제외: production workload, customer-facing SLO, regulated change의 승인 근거로 preview runtime 사용 금지",
-            "검증: native dependency·layer·extension·handler·event source·retry·timeout·memory·cold start·telemetry compatibility 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "runtime upgrade를 GA day migration으로 처리하지 말고 preview canary로 앞당겨야 함. 같은 identifier의 자동 승격은 migration ticket를 줄일 수 있으나, GA 직전과 직후의 artifact·metric·rollback evidence는 별도 유지가 필요함.",
-          "items": [
-            "측정: init duration·invoke duration·error·throttle·retry·extension log·deployment failure·cost를 기존 runtime과 비교",
-            "팀 액션: non-production representative function에서 IaC synth/diff·integration test·observability·rollback runbook을 GA 전 release gate로 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-382",
-      "title_ko": "AWS Lambda full IAM resource-based policy 지원: condition·cross-account invoke를 effective permission으로 검증",
-      "title_original": "AWS Lambda functions now support full IAM resource-based policies",
-      "summary": "- 공개: Lambda resource-based policy에서 multiple principal·action과 **전체 IAM condition key** 지원\n- 예시: source IP·principal tag 조건으로 invoke access 제한 가능\n- 작성: Console JSON editor·AWS CLI·SDK·CloudFormation·AWS SAM에서 정책 갱신 가능\n- 범위: AWS commercial Regions·추가 비용 없음이라는 공식 공지\n- 경계: caller identity policy·SCP·permission boundary·event source와 합친 effective permission, 기존 policy migration, service별 condition support는 별도 검증 대상\n- 팀 액션: allow/deny matrix·IAM simulation·CloudTrail alert·rollback template를 policy-as-code release gate로 운영 필요",
-      "detail": "AWS는 Lambda functions가 full IAM resource-based policies를 지원한다고 2026년 8월 25일 공지했다. 하나의 policy document에서 multiple principal과 action을 정의하고 전체 IAM condition key를 사용할 수 있으며 source IP나 principal tag에 따른 invoke restriction을 예시로 든다. 기존에는 principal별 permission을 개별 추가해야 했고, 이번 기능은 multi-account 또는 multiple resource를 운영하는 platform team의 policy management 범위를 넓힌다. AWS는 Console JSON editor, AWS CLI, SDK, CloudFormation, SAM에서 한 번에 갱신할 수 있고 AWS commercial Regions에서 추가 비용 없이 제공한다고 명시한다. 다만 resource policy는 caller identity policy, SCP, permission boundary, event-source integration과 함께 최종 허용 결과를 만들며 공지는 service별 condition compatibility, migration, cross-account behavior, audit retention을 보증하지 않는다. shared Lambda에는 principal·action·source·condition별 allow/deny test, CloudTrail, IaC diff, rollback을 함께 적용해야 한다.",
-      "why_it_matters": "Lambda invoke 권한을 principal별 statement로 분산하지 않고 조건 기반 policy로 관리할 수 있음. policy 문서가 짧아져도 effective permission과 cross-account blast radius가 자동으로 줄어들지는 않음.",
-      "engineering_implication": "function·alias·principal·action·SourceArn/SourceAccount·condition을 inventory화하고, allowed·denied invocation을 IAM simulation과 integration test로 비교해야 함. staging에서 policy diff, denied invoke alert, rollback template를 검증한 뒤 shared function에 단계 적용 필요.",
-      "korea_implication": "국내 멀티계정 환경은 source IP·principal tag 조건을 망 경계나 조직 분류의 완전한 대체로 보지 말고 계정 간 invoke와 접근기록 보존 정책을 함께 확인해야 함.",
-      "category": "Security",
-      "tags": [
-        "AWS",
-        "Lambda",
-        "IAM",
-        "Serverless",
-        "Cloud Security",
-        "Policy as Code"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-25 11:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-lambda-full-iam-resource-based-policies/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New와 RSS exact timestamp `2026-08-25T02:00:00Z`를 직접 확인해 KST `2026-08-25 11:00`으로 기록. Lambda resource-based policy가 full IAM capabilities를 지원하는 공식 발표임.",
-          "items": [
-            "변경: 하나의 policy document에 multiple principal·action 정의 가능",
-            "변경: 전체 IAM condition key 활용 가능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기존 principal별 permission 추가 방식과 달리 source IP·principal tag 등 condition으로 access를 제한하고, 여러 service invoke 권한을 단일 policy에 둘 수 있음. Console JSON editor·CLI·SDK·CloudFormation·SAM이 작성 경로임.",
-          "items": [
-            "예시: source IP 또는 principal tag 조건의 invoke restriction",
-            "범위: AWS commercial Regions·추가 비용 없음이라는 공식 공지"
-          ]
-        },
-        {
-          "heading": "권한·감사 경계",
-          "body": "effective permission은 resource policy 하나가 아니라 caller identity policy, SCP, permission boundary, event source와 함께 결정됨. 공지는 service별 condition support, migration compatibility, cross-account outcome을 보증하지 않음.",
-          "items": [
-            "검증: allowed/denied principal·wrong action·wrong source·tag mutation authorization matrix",
-            "감사: policy diff·CloudTrail denial·IaC deployment·rollback template 연결"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "statement를 합치는 일은 least privilege 증명이 아님. shared Lambda는 invoke source별 owner·payload trust boundary·retry·DLQ·concurrency와 policy를 함께 inventory화해야 함.",
-          "items": [
-            "측정: denied invoke·throttle·concurrency·DLQ·source별 cost",
-            "팀 액션: 고위험 function에서 IAM simulation과 negative test canary 실행"
           ]
         }
       ],

@@ -33,6 +33,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/n-able-ncentral-cve-2026-86218-hf4-2026-09-07]] — N-central `CVE-2026-86218` HF4의 self-hosted RMM server patch·management-plane evidence·tenant closure 검증 경계.
+- [[raw/articles/aitimes-anthropic-compute-contracts-2026-09-07]] — Anthropic 대규모 compute 계약 보도의 power·usable capacity·FinOps 증거 분해 경계.
 - [[raw/articles/thn-postgresql-cve-2026-6471-logical-decoding-2026-09-05]] — PostgreSQL logical decoding `CVE-2026-6471`의 replication role·output plugin allowlist·CDC/backup 호환성 검증 경계.
 - [[raw/articles/thn-jetbrains-cadence-teamcity-incident-2026-09-06]] — JetBrains Cadence TeamCity 침해의 cloud GPU execution credential·artifact·AWS/repository incident scope와 rotation·audit 대응 경계.
 - [[raw/articles/thn-mikrotik-mikrotrick-routeros-active-exploitation-2026-09-06]] — MikroTik RouterOS `MikroTrick` 활성 악용의 RouterOS patch·management-plane isolation·configuration evidence preservation 대응 경계.
