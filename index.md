@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-06 | Total pages: 326
+> Last updated: 2026-09-07 | Total pages: 327
 
 ## Entities
 
@@ -33,6 +33,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-jetbrains-cadence-teamcity-incident-2026-09-06]] — JetBrains Cadence TeamCity 침해의 cloud GPU execution credential·artifact·AWS/repository incident scope와 rotation·audit 대응 경계.
 - [[raw/articles/thn-mikrotik-mikrotrick-routeros-active-exploitation-2026-09-06]] — MikroTik RouterOS `MikroTrick` 활성 악용의 RouterOS patch·management-plane isolation·configuration evidence preservation 대응 경계.
 - [[raw/articles/aitimes-microsoft-project-zenith-local-ai-pc-2026-09-06]] — Microsoft Project Zenith 공개 보도의 local 30B 모델 PC 조건·사전 구성 개발 도구·endpoint security/운영 검증 경계.
 - [[raw/articles/aitimes-nvidia-crowdstrike-safemind-cyber-ai-2026-09-06]] — NVIDIA·CrowdStrike SafeMind 공개 보도의 red/blue agent loop·digital twin·승인·rollback 검증 경계.
