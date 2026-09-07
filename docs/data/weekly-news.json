@@ -2,14 +2,14 @@
   "week": "2026-W37",
   "coverage_start_kst": "2026-08-31 17:00",
   "coverage_end_kst": "2026-09-07 13:00",
-  "last_updated_kst": "2026-09-07 13:38",
+  "last_updated_kst": "2026-09-07 17:48",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft Project Zenith 공개 보도는 64GB 이상 unified memory·250GB/s 이상 bandwidth를 전제로 local 30B 모델과 사전 구성된 Windows 개발 도구를 제시. hardware 수치를 fleet 성능 보증으로 확대하지 말고 task success·p95·thermal·driver·MXC/EDR/DLP·cloud fallback을 같은 workload canary에서 측정 필요.",
     "NVIDIA·CrowdStrike SafeMind 공개 보도는 Red Tempest·Blue Solano의 attack-path 탐색·방어 loop와 45일·B200 71개 digital-twin 사례를 제시. production remediation은 read-only discovery·human approval·policy diff·rule TTL·retest·rollback을 finding ID별로 분리 필요.",
     "Amazon EC2는 AMI owner가 supported·unsupported instance type을 지정하고 non-permitted launch를 hard block하는 기능을 추가. shared AMI restriction은 launch template·Auto Scaling group의 scale-out·replacement를 실패시킬 수 있어 consumer inventory·canary·launch error·rollback trace 검증 필요.",
     "Amazon Bedrock Managed Knowledge Base는 ServiceNow native connector, SharePoint·OneDrive·Confluence user-managed 3LO setup, native connector의 daily·weekly·monthly sync scheduling을 함께 추가. sys ID scope·OAuth/service-account 권한·ACL·첨부파일·삭제 반영·sync lag·citation·rollback을 corpus별 acceptance gate로 검증 필요.",
-    "JetBrains Cadence 침해는 TeamCity `CVE-2026-63077` 악용 뒤 hosted cloud GPU execution의 backup·AWS IAM·S3·project sync·repository/registry/deployment credential을 하나의 incident scope로 묶어야 함을 확인. 2026-08-08~24 execution과 credential lineage를 기준으로 revoke·reissue·audit·artifact trust reset 필요."
+    "PostgreSQL logical decoding `CVE-2026-6471`은 `REPLICATION` attribute와 `wal_level = logical` 조건에서 output plugin loading이 DB server OS user 권한 코드 실행으로 이어질 수 있는 경로를 수정. 18.6·17.11·16.15·15.19·14.24 patch와 함께 replication role·slot·plugin·CDC/backup/standby dependency, allowlist·reload·WAL lag·rollback을 같은 change record로 검증 필요."
   ],
   "deep_dives": [
     {
@@ -957,6 +957,84 @@
       "rank": 10
     },
     {
+      "id": "news-432",
+      "title_ko": "PostgreSQL logical decoding 12년 결함 수정: replication role의 output plugin 실행 경로 allowlist 전환",
+      "title_original": "PostgreSQL Fixes 12-Year-Old Logical Decoding Flaw Enabling Replication-Role Code Execution",
+      "summary": "- 수정: PostgreSQL logical decoding의 `CVE-2026-6471`이 `REPLICATION` attribute 계정에서 DB server OS user 권한 코드 실행으로 이어질 수 있는 경로를 수정\n- 조건: PostgreSQL 9.4 이후 `wal_level = logical`과 replication credential이 필요한 범위이며, active exploitation은 원문에서 확인되지 않음\n- 대상: 18.6·17.11·16.15·15.19·14.24가 수정 버전이며 기존 logical decoding output plugin loading 경로를 `output_plugin_libraries` allowlist로 제한\n- 호환성: 기본 allowlist는 `pgoutput, test_decoding`이므로 `wal2json`·`decoderbufs` 등 non-default plugin은 update 뒤 명시 등록과 configuration reload 필요\n- 팀 액션: replication role·slot·plugin·CDC/backup/standby dependency를 inventory로 확정하고 canary decode·WAL lag·error·rollback을 함께 검증 필요",
+      "detail": "The Hacker News는 PostgreSQL 18.6 release note와 Cyera 연구를 인용해 `CVE-2026-6471`을 보도했다. PostgreSQL 9.4에서 logical decoding이 도입된 뒤 `REPLICATION` attribute 계정이 output plugin을 지정하는 경로에서 loadable library 제약을 우회할 수 있었고, `wal_level = logical`인 server에서는 database backend process를 통해 OS user 권한 코드 실행으로 이어질 수 있는 범위다. PostgreSQL은 18.6·17.11·16.15·15.19·14.24에서 `output_plugin_libraries` allowlist를 도입했으며 기본값은 `pgoutput, test_decoding`이다. non-default decoder를 운영하면 update 직후 slot·CDC·backup·monitoring workflow가 실패할 수 있으므로, 패치와 plugin inventory·명시 allowlist·reload·consumer lag·WAL retention·rollback을 한 release 단위로 검증해야 한다. 원문은 active exploitation을 확인하지 않으며, 실제 악용은 replication privilege·logical WAL·plugin/file path와 host configuration 조건을 함께 요구한다.",
+      "why_it_matters": "logical decoding은 CDC·backup·standby·monitoring에 널리 연결됨. `REPLICATION` attribute를 저위험 service account로 취급하면 DB privilege와 host execution 경계가 연결될 수 있고, patch는 decoder compatibility·WAL backlog·consumer recovery 위험을 동반함.",
+      "engineering_implication": "모든 PostgreSQL cluster에서 version·`wal_level`·replication role·slot·publication/subscription·output plugin·consumer owner를 inventory로 만들고, 18.6/17.11/16.15/15.19/14.24 또는 distribution fixed package canary 적용 필요. `output_plugin_libraries` allowlist와 reload 뒤 decode success·consumer lag·WAL retention·ERROR log·failover·rollback을 검증하고 unused replication privilege와 unknown slot을 회수 필요.",
+      "korea_implication": "국내 self-managed PostgreSQL·managed service·CDC 기반 데이터 파이프라인은 distribution package와 managed maintenance window가 upstream branch와 다를 수 있음. plugin allowlist와 provider 적용 버전·restart/reload 동작을 production 이전에 별도 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "PostgreSQL",
+        "Security",
+        "Database",
+        "Logical Decoding",
+        "CDC",
+        "Replication",
+        "CVE-2026-6471"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 90,
+      "published_kst": "2026-09-05 00:20",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/postgresql-fixes-12-year-old-logical.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh2Gb4Wd-HSxdrPbdtUFxmldzzEkPEZcW1NkT7tV9-EfTAjDENSExJBWmOey_IJ5UKjszQfCNGkVoBtuxya00rFMrh_lJUAuS66Gr3kvU8GgFjMr7DF-7Ux1rUqwz-aDhum8HkVjxNKQTc6DXHG203CPXwg9sOMcA7nfsq6A81C9cJhb3HUu9GZDIj7FZY/s1600/PostgreSQL.jpg",
+      "local_image": "assets/images/news-432.jpg",
+      "related_links": [
+        {
+          "title": "PostgreSQL 18.6 release notes",
+          "url": "https://www.postgresql.org/docs/release/18.6/"
+        },
+        {
+          "title": "PostgreSQL 18.6 / 17.11 / 16.15 / 15.19 / 14.24 release announcement",
+          "url": "https://www.postgresql.org/about/news/postgresql-186-1711-1615-1519-and-1424-released-3197/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News RSS `Fri, 04 Sep 2026 20:50:19 +0530`를 KST `2026-09-05 00:20`으로 환산. PostgreSQL 공식 18.6 release note는 logical decoding output plugin loading의 security restriction 보완을 기록하며, 이 경로는 `CVE-2026-6471`으로 추적됨.",
+          "items": [
+            "영향: PostgreSQL 9.4에서 logical decoding 도입 뒤 존재한 output plugin loading 경로",
+            "조건: `REPLICATION` attribute 계정과 `wal_level = logical`인 server 구성",
+            "경계: active exploitation은 The Hacker News 보도와 PostgreSQL release note에서 확인되지 않은 상태"
+          ]
+        },
+        {
+          "heading": "수정 범위와 동작 변화",
+          "body": "PostgreSQL은 18.6·17.11·16.15·15.19·14.24에서 `output_plugin_libraries`를 도입해 logical decoding output plugin으로 load할 library를 allowlist로 제한함. default는 `pgoutput, test_decoding`이며 기존의 arbitrary loadable library 선택을 허용하지 않는 방향임.",
+          "items": [
+            "수정: `output_plugin_libraries = 'pgoutput, test_decoding'` 기본값 추가",
+            "호환성: `wal2json`·`decoderbufs` 같은 non-default plugin은 allowlist에 명시 추가 필요",
+            "적용: configuration 변경 뒤 `pg_reload_conf()` 또는 equivalent reload가 필요하며 restart는 항상 요구되지 않는 범위"
+          ]
+        },
+        {
+          "heading": "영향 조건과 운영 위험",
+          "body": "보도상 `REPLICATION` attribute 계정은 backup tool·standby·CDC pipeline·monitoring system에 부여될 수 있음. logical replication path는 database role과 host library loading을 연결하므로 credential scope·slot ownership·plugin path를 함께 점검해야 함.",
+          "items": [
+            "권한: replication role을 일반 read-only service account와 같은 risk tier로 취급하지 않을 필요",
+            "조사: role membership·active/inactive slot·publication/subscription·plugin library·consumer owner를 cluster별 대조",
+            "장애: allowlist 누락 시 decoder load failure·CDC stop·consumer lag·WAL retention 증가 가능성"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "패치는 security release와 data-pipeline change를 동시에 발생시킴. package upgrade 완료만으로 종료하지 말고 replication workload의 정상 decode·failover·WAL backlog·rollback을 evidence로 남겨야 함.",
+          "items": [
+            "우선순위: supported branch fixed package 또는 managed service maintenance version 확인",
+            "검증: staging에서 slot creation·decode·consumer lag·ERROR log·WAL disk·failover를 representative workload로 canary",
+            "통제: unused `REPLICATION` privilege와 unknown slot 회수, non-default plugin allowlist를 infrastructure-as-code로 관리",
+            "팀 액션: security owner와 data platform owner가 같은 change record에서 patch·plugin·consumer rollback 승인"
+          ]
+        }
+      ],
+      "rank": 11
+    },
+    {
       "id": "news-421",
       "title_ko": "CERN 산업용 가속기 제어 시스템, Debian 13으로 전환: 구형 x86·패키지 공급망·제어망 검증을 분리",
       "title_original": "CERN Transitioning Industrial Computers To Debian After Being A Longtime RHEL Institution",
@@ -1033,7 +1111,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-419",
@@ -1107,7 +1185,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -1181,7 +1259,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-417",
@@ -1248,7 +1326,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-418",
@@ -1324,7 +1402,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-415",
@@ -1393,7 +1471,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-413",
@@ -1462,7 +1540,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-414",
@@ -1531,7 +1609,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-416",
@@ -1609,7 +1687,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-412",
@@ -1687,7 +1765,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-411",
@@ -1755,7 +1833,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-410",
@@ -1831,7 +1909,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-409",
@@ -1900,11 +1978,11 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-408",
-      "rank": 24,
+      "rank": 25,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -1972,7 +2050,7 @@
     },
     {
       "id": "news-407",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -2039,7 +2117,7 @@
     },
     {
       "id": "news-405",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -2175,7 +2253,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-404",
@@ -2246,7 +2324,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-402",
@@ -2314,7 +2392,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-403",
@@ -2384,7 +2462,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-400",
@@ -2453,7 +2531,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-399",
@@ -2522,7 +2600,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-397",
@@ -2599,7 +2677,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-398",
@@ -2678,7 +2756,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-395",
@@ -2756,7 +2834,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-401",
@@ -2830,11 +2908,11 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-394",
-      "rank": 37,
+      "rank": 38,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -2910,7 +2988,7 @@
     },
     {
       "id": "news-392",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -2978,7 +3056,7 @@
     },
     {
       "id": "news-393",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -3129,11 +3207,11 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-391",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -3271,7 +3349,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-389",
@@ -3339,7 +3417,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-384",
@@ -3404,7 +3482,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-383",
@@ -3468,7 +3546,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-386",
@@ -3534,7 +3612,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-387",
@@ -3598,7 +3676,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-385",
@@ -3672,7 +3750,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-382",
@@ -3732,69 +3810,6 @@
           "items": [
             "측정: denied invoke·throttle·concurrency·DLQ·source별 cost",
             "팀 액션: 고위험 function에서 IAM simulation과 negative test canary 실행"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-381",
-      "title_ko": "Amazon ECS agent connectivity 자동 감지·복구: drain·replacement를 서비스 SLO로 검증",
-      "title_original": "Amazon ECS now automatically detects and repairs container instances with impaired agent connectivity",
-      "summary": "- 공개: ECS가 모든 compute option에 **`AGENT_CONNECTIVITY` health change event** 제공\n- 원인: EBS volume degradation·host thermal event·network failure가 ECS agent-control plane 연결을 끊는 경우\n- 자동: Fargate·ECS Managed Instances는 task drain·replacement capacity launch·impaired instance deregistration 수행\n- 운영: ECS on EC2는 health event를 자체 instance replacement workflow에 연결 필요\n- 경계: detection threshold·drain timeout·replacement latency·capacity·state consistency는 공식 공지의 보증 범위 아님\n- 팀 액션: agent disconnect·capacity shortage·deployment 동시 발생을 주입해 p95 recovery·duplicate execution·queue age 확인 필요",
-      "detail": "AWS는 Amazon ECS가 agent connectivity를 지속 감시하고 연결 장애가 난 container instance를 감지·복구하는 기능을 2026년 8월 25일 KST 기준으로 공지했다. EBS volume degradation, host thermal event, network connectivity failure가 ECS agent와 control plane 연결을 끊을 수 있으며, 새 `AGENT_CONNECTIVITY` health change event는 Fargate, ECS Managed Instances, ECS on EC2에 제공된다. Fargate와 Managed Instances는 running task를 자동 drain하고 replacement capacity를 launch한 뒤 impaired instance를 deregister한다. ECS on EC2 고객은 event로 instance replacement workflow를 구동해야 한다. 공지는 agent disconnect detection threshold, drain/replacement time, capacity availability, application data consistency, cross-AZ behavior를 보증하지 않는다. 서비스별 graceful shutdown, checkpoint, idempotent retry, connection draining, replacement rate와 traffic recovery를 fault injection으로 검증해야 한다.",
-      "why_it_matters": "ECS agent-control plane 연결 단절은 task process 생존과 무관하게 scheduler visibility와 placement·recovery를 훼손할 수 있음. compute option마다 자동 복구 책임이 달라 operational runbook을 분리해야 함.",
-      "engineering_implication": "`AGENT_CONNECTIVITY` event, desired/running count, drain duration, placement failure, queue age, error budget을 같은 trace에 연결해야 함. Fargate/Managed Instances와 ECS on EC2 각각에서 network partition·capacity shortage·deployment 중 disconnect drill을 실행하고 rollback owner를 지정 필요.",
-      "korea_implication": "국내 리전 ECS 서비스도 managed capacity와 EC2 capacity provider의 replacement 책임을 혼동하지 말고, AZ capacity·connection draining·데이터 재처리 비용을 장애 훈련에서 확인해야 함.",
-      "category": "Infra",
-      "tags": [
-        "AWS",
-        "Amazon ECS",
-        "Containers",
-        "SRE",
-        "Auto Recovery",
-        "Fargate"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-25 07:42",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-ecs-agent-connectivity-health/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New와 RSS exact timestamp를 직접 확인. `2026-08-24T22:42:00Z`는 KST `2026-08-25 07:42`이며, ECS agent-control-plane connectivity impairment에 대한 새 health change event가 대상임.",
-          "items": [
-            "공개: `AGENT_CONNECTIVITY` health change event를 ECS compute option 전체에 제공",
-            "원인 예시: EBS volume degradation·host thermal event·network connectivity failure"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Fargate와 ECS Managed Instances는 impaired instance에서 running task를 drain하고 replacement capacity를 launch한 뒤 instance를 deregister하는 자동 recovery 범위임. ECS on EC2에는 event가 제공되며 customer workflow가 replacement를 구동해야 함.",
-          "items": [
-            "자동: Fargate·Managed Instances의 drain·replacement·deregistration",
-            "운영: ECS on EC2는 event consumer·Auto Scaling/instance replacement workflow 필요"
-          ]
-        },
-        {
-          "heading": "운영·복구 경계",
-          "body": "agent disconnect는 application health, load balancer target health, persistent-state correctness와 동일하지 않음. 공지는 detection threshold, drain timeout, replacement latency, capacity availability를 보증하지 않음.",
-          "items": [
-            "검증: event delivery·drain duration·placement failure·traffic recovery·duplicate execution trace",
-            "훈련: network partition·capacity shortage·deployment 중 disconnect와 manual reconciliation"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "서비스별 stateless/stateful 구분과 graceful shutdown·checkpoint·idempotency 정책이 recovery 결과를 결정함. Fargate/Managed Instances 자동 동작과 EC2 customer workflow의 책임을 같은 dashboard에서 분리해야 함.",
-          "items": [
-            "측정: p95 recovery·queue age·error budget·replacement cost",
-            "팀 액션: representative service에서 impaired-agent drill을 release gate로 운영"
           ]
         }
       ],
