@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-08 | Total pages: 330
+> Last updated: 2026-09-09 | Total pages: 330
 
 ## Entities
 
@@ -34,6 +34,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/google-gtig-adversarial-ai-autonomy-2026-09-08]] — GTIG adversarial AI: 6시간 미만 credential harvesting과 agent·CI/CD·cloud identity 대응 경계.
+- [[raw/articles/checkpoint-chatgpt-shared-clipboard-cross-account-2026-09-08]] — ChatGPT shared-service cross-account data leakage 연구의 connector·sandbox·artifact metadata tenant isolation 경계.
 - [[raw/articles/aitimeskr-qualcomm-aws-custom-silicon-optical-connectivity-2026-09-08]] — Qualcomm·AWS 다세대 custom silicon·1.6Tbps optical connectivity 협력 보도의 compute·fabric capacity 검증 경계.
 - [[raw/articles/cloudflare-automatic-key-exchange-pqc-origin-2026-09-08]] — Cloudflare Automatic Key Exchange: 원본 TLS 1.3 알고리즘 탐지로 PQC handshake retry와 p90 지연 축소.
 - [[raw/articles/thn-freeipa-389ds-anonymous-admin-credential-chain-2026-09-08]] — FreeIPA·389 Directory Server flaw chain: 익명 client의 관리자 Kerberos credential 생성 경로를 기본 ACI·patch 상태로 차단.
