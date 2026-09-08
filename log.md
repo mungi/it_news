@@ -2446,3 +2446,10 @@
 - The Hacker News FreeIPA 보도와 Red Hat CVE pages를 직접 확인. `CVE-2026-76578`·`CVE-2026-76560` chain의 stock FreeIPA 4.13.1 재현·anonymous identity write 조건·preliminary CVSS 9.8/7.5 보도 범위를 수록하고 actual exploitation 미확정 경계를 유지.
 - The Hacker News Magento 보도의 Adobe 인지 active exploitation·`CVE-2026-75650`·CVSS 10.0·`VULN-39341` patch·encryption key rotation·영향 version 범위를 수록. 개별 store 침해 여부와 web shell/token/data impact는 별도 forensic 판단으로 분리.
 - `news-439`·`news-440`·`news-441`을 latest publication KST 기준 추가하고 newest-first 50-item cap의 actual tail `news-391 (2026-08-27 18:05), news-388 (2026-08-26 09:49), news-389 (2026-08-26 09:00)`를 제거 후 rank 1–50 재부여. `weekly/2026-W38.md`, immutable raw capture 3건, `index.md`를 동기화. KST 첫 실행에서 01:52에 전면 재구성된 두 Deep Dive는 same-day policy에 따라 변경하지 않음.
+
+## [2026-09-09] update | Qualcomm·AWS AIDC custom silicon·optical connectivity 협력 보도 추가
+- 확인 시각: 2026-09-09 02:32 KST. GeekNews·GeekNews Plus·AI타임스·인공지능신문 필수 surface와 AWS·CNCF·Kubernetes·GitHub·Cloudflare·The Hacker News·Google AI·OpenAI feed를 실제 probe. GeekNews Plus는 HTTP 404, OpenAI source page는 HTTP 403이었으며 신규 후보 URL·제목·event를 기존 50건과 대조.
+- 인공지능신문 canonical URL·`article:published_time` `2026-09-08T22:32:11+09:00`·Open Graph image·본문을 직접 확인해 KST `2026-09-08 22:32`로 기록. Qualcomm·Amazon의 다세대 AI data center custom silicon과 AI inference·최대 `1.6Tbps`급 optical connectivity 협력, `SerDes`·optical `DSP`, AWS AI infrastructure·Bedrock EDA 활용 계획을 보도 범위로 수록.
+- 증거 경계: timestamped secondary report이므로 primary announcement·SKU·production ramp·regional capacity·delivered power/bandwidth·가격·SLA·실측 benchmark를 독립 확인하지 못함. 발표를 usable cluster capacity로 확대하지 않고 compute·memory·fabric·power·thermal·runtime·workload p95와 task당 비용을 같은 acceptance gate로 검증할 대상으로 한정.
+- `news-442`를 KST `2026-09-08 22:32` 기준 rank 1에 추가하고 newest-first 50-item cap의 actual tail `news-396`(KST `2026-08-28 02:02`)을 제거 후 rank 1–50 재부여. `weekly/2026-W38.md`, immutable raw capture, `index.md`를 동기화. persisted source bytes SHA-256 `f86c0701ce8a532d70aad9ee56f46fc8050fb00eeaeb858b039245c6890cd54a` 확인.
+- KST 첫 실행에서 01:52에 전면 재구성된 Deep Dive 2건은 same-day policy에 따라 timestamp-only 변경하지 않음.
