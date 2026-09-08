@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-08 18:18",
+  "last_updated_kst": "2026-09-08 22:21",
   "audience": "developers and engineers",
   "executive_summary": [
-    "- Rogue ScreenConnect client가 새로 연결된 endpoint로 4단계 VBScript를 전송·실행하는 worm-like activity가 Huntress 분석에서 관측됨. `TransferFiles` 권한 축소와 session audit·ScreenConnect→`wscript.exe`/PowerShell·Temp/AppData artifact 상관 분석을 즉시 수행 필요.",
-    "- PEEP은 Chrome·Edge profile에 sideloaded extension을 자동 활성화하고 Native Messaging host로 OS command까지 연결하는 post-compromise toolkit으로 보도됨. extension allowlist 외에 Secure Preferences·force-install policy·native host·browser child process·plaintext C2 telemetry를 함께 점검 필요.",
-    "- Microsoft 365 임원 표적 vishing은 AitM으로 session token을 탈취한 뒤 residential proxy에서 replay하고 SharePoint·OneDrive·Exchange·Box 대량 수집으로 이어지는 경로를 사용. identity sign-in과 SaaS content access audit를 동일 incident trace로 묶어야 함.",
-    "- N-central HF4는 self-hosted RMM server의 인증 전 RCE 가능 CVE-2026-86218에 `2026.3.1.14` 즉시 update를 요구. RMM control plane은 patch 후에도 console exposure·privileged identity·automation history·tenant별 evidence를 검증 필요.",
-    "- CNCF는 Karmada를 Graduated project로 승격. 중앙 placement·propagation·failover·multi-cluster autoscaling을 제공하는 control plane이므로 multi-cluster 도입은 maturity label과 별개로 federation 권한·정책 충돌·etcd/Prometheus 운영·failover drill을 workload별로 검증 필요."
+    "- Adobe Commerce·Magento `CVE-2026-75650`은 active exploitation이 확인된 CVSS `10.0` RCE 범위. `VULN-39341` hotfix와 encryption key/session rotation, template·webroot·cron·admin/API forensic을 병렬 실행 필요.",
+    "- FreeIPA·389 DS flaw chain은 anonymous client가 administrator Kerberos credential을 만들 수 있는 경로로 보도됨. IdM package/errata뿐 아니라 anonymous LDAP·OTP ACI·principal/keytab/certificate·CA audit를 동일 incident record로 점검 필요.",
+    "- Cloudflare Automatic Key Exchange는 origin capability probing으로 PQC hybrid `X25519MLKEM768`을 우선해 HelloRetryRequest를 약 52%→3.7%, handshake p90을 150ms 이상 줄였다고 발표. origin TLS stack·mTLS·fallback·alert telemetry canary가 필요.",
+    "- Rogue ScreenConnect client가 새 endpoint로 4단계 VBScript를 transfer·execute하는 worm-like activity가 관측됨. `TransferFiles` 권한 축소와 session audit·ScreenConnect→`wscript.exe`/PowerShell·Temp/AppData artifact 상관 분석을 즉시 수행 필요.",
+    "- PEEP은 Chrome·Edge profile에 sideloaded extension을 자동 활성화하고 Native Messaging host로 OS command까지 연결하는 post-compromise toolkit으로 보도됨. extension allowlist 외에 Secure Preferences·force-install policy·native host·browser child process·plaintext C2 telemetry를 함께 점검 필요."
   ],
   "deep_dives": [
     {
@@ -200,6 +200,217 @@
   ],
   "items": [
     {
+      "id": "news-439",
+      "title_ko": "Cloudflare Automatic Key Exchange: 원본 TLS 1.3 알고리즘 탐지로 PQC handshake retry와 p90 지연 축소",
+      "title_original": "Automatic Key Exchange: faster, post-quantum secure origin handshakes for 45 billion daily connections (and counting)",
+      "summary": "- 공개: **Automatic Key Exchange**가 origin의 TLS 1.3 key-agreement 지원을 probe해 첫 연결에서 적합한 알고리즘을 선택\n- 우선순위: origin이 지원하면 post-quantum hybrid `X25519MLKEM768`을 우선 사용\n- 성능: rollout 측정에서 HelloRetryRequest 비율이 약 `52%`에서 `3.7%`로 감소, handshake p90 `150ms 이상` 절감\n- 범위: 수십만 domain에서 별도 설정 없이 post-quantum origin connection이 활성화됐다는 Cloudflare 발표\n- 팀 액션: origin TLS library·certificate/edge proxy·algorithm support·handshake error·p95/p99 latency를 실제 client path에서 baseline과 비교 필요",
+      "detail": "Cloudflare는 Automatic SSL/TLS의 확장인 Automatic Key Exchange를 공개했다. 서비스는 TLS 1.3-capable origin이 지원·선호하는 key-agreement algorithm을 probe하고, origin이 지원할 때 post-quantum hybrid `X25519MLKEM768`을 첫 시도에 우선한다. Cloudflare rollout 측정에서는 origin connection의 HelloRetryRequest가 약 52%에서 3.7%로 줄고 p90 handshake latency가 150ms 이상 감소했다. 이는 Cloudflare origin connection 경로의 측정이며 모든 browser-to-origin 경로·모든 TLS implementation·고객별 certificate/MTLS/legacy client 호환성을 보증하지 않는다. origin crypto capability와 CDN edge policy 변경은 availability와 cryptographic agility를 함께 건드리므로, protocol alert·retry·fallback·MTLS·origin fleet version을 canary와 rollback 기준으로 운영해야 한다.",
+      "why_it_matters": "PQC migration은 certificate 교체만으로 끝나지 않으며 client·edge·origin의 key-agreement negotiation과 fallback이 실제 연결 성능과 decrypt-later 위험 노출을 결정함. 자동 선택은 운영 부담을 줄이지만 origin별 crypto capability inventory와 failure telemetry가 없으면 호환성 문제를 늦게 발견할 수 있음.",
+      "engineering_implication": "origin별 TLS 1.3/library·supported group·MTLS·proxy chain을 inventory화하고 `X25519MLKEM768` negotiation, HelloRetryRequest, TLS alert, handshake p50/p95/p99, origin error rate를 pre/post rollout으로 비교 필요. legacy origin과 non-TLS 1.3 endpoint는 명시적인 fallback·exclusion·rollback ownership을 두고, PQC enablement를 key rotation·certificate lifecycle·incident runbook에 연결 필요.",
+      "korea_implication": "국내 origin과 global CDN을 함께 쓰는 서비스는 국내 리전 origin·WAF/load balancer·mTLS partner endpoint의 TLS stack과 cryptographic policy가 동일하지 않을 수 있음. public edge의 성공률만 보지 말고 region·ISP·origin pool별 handshake telemetry와 rollback path를 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "TLS",
+        "Post-Quantum Cryptography",
+        "Cloudflare",
+        "Origin Security",
+        "Performance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-08 22:10",
+      "source_name": "Cloudflare",
+      "source_url": "https://blog.cloudflare.com/automatic-key-exchange-for-origins/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1PVVA86NJR4N0MTKCH06A9V.01M1PVVAXCHV18R9AZA18HS4AQ.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare는 Automatic SSL/TLS에 Automatic Key Exchange를 추가했다고 발표. TLS 1.3-capable origin을 probe해 key-agreement algorithm 지원과 선호를 학습하고 첫 origin connection에 적용하는 구성임.",
+          "items": [
+            "변화: origin capability를 추측하지 않고 probe 결과로 첫 handshake algorithm 선택",
+            "우선: 지원 origin에서 post-quantum hybrid `X25519MLKEM768`을 우선하는 rollout"
+          ]
+        },
+        {
+          "heading": "측정 결과와 적용 범위",
+          "body": "Cloudflare는 origin connection rollout에서 HelloRetryRequest 비율과 p90 handshake latency 변화를 제시. 수치는 Cloudflare가 관측한 서비스 경로의 결과이므로 모든 TLS endpoint의 성능 보증과 구분 필요.",
+          "items": [
+            "측정: HelloRetryRequest 약 `52%`에서 `3.7%`로 감소라는 Cloudflare 발표",
+            "측정: handshake p90 `150ms 이상` 절감이라는 Cloudflare 발표",
+            "범위: 수십만 domain에서 별도 고객 설정 없이 post-quantum origin connection 활성화 언급"
+          ]
+        },
+        {
+          "heading": "암호·호환성 경계",
+          "body": "post-quantum hybrid handshake는 harvest-now-decrypt-later 위험을 낮추는 migration 단계이나 origin library, intermediary proxy, mTLS, supported group와 TLS alert 처리에 의존함. edge가 성공해도 upstream origin fleet 전체의 crypto posture가 자동 검증되는 것은 아님.",
+          "items": [
+            "분리: edge-to-origin negotiation·browser-to-edge TLS·origin application protocol·mTLS trust chain",
+            "미확인: 개별 origin의 library version·certificate chain·legacy client/proxy compatibility",
+            "리스크: unsupported group·middlebox·origin policy mismatch가 retry·alert·availability degradation으로 연결될 가능성"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "PQC enablement의 완료 기준은 설정 화면이 아니라 origin pool별 handshake 성공률과 fallback이 검증된 상태임. cryptographic agility 변경을 performance·availability change로도 관리할 필요.",
+          "items": [
+            "측정: negotiated group·HelloRetryRequest·TLS alert·handshake p50/p95/p99·origin 5xx",
+            "통제: origin TLS/library inventory·canary pool·legacy exclusion·rollback owner 지정",
+            "팀 액션: representative origin에서 PQC enable/disable 전후 handshake trace와 mTLS·health check를 비교"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-440",
+      "title_ko": "FreeIPA·389 Directory Server flaw chain: 익명 client의 관리자 Kerberos credential 생성 경로를 기본 ACI·patch 상태로 차단",
+      "title_original": "FreeIPA Flaw Chain Lets Anonymous Clients Create Reusable Administrator Credentials",
+      "summary": "- 취약점: **CVE-2026-76578**과 `CVE-2026-76560` 조합이 anonymous client의 attacker-chosen Kerberos identity·administrator credential 생성으로 이어질 수 있음\n- 조건: FreeIPA 기본 OTP self-service ACI와 389 DS의 빈 owner value 처리 결합이 stock configuration에 영향\n- 평가: Red Hat은 CVE-2026-76578을 preliminary CVSS `9.8` Critical로 표기, CVE-2026-76560은 `7.5` 범위\n- 경계: 실제 공격 악용은 advisory·bug report에서 확인되지 않음\n- 팀 액션: FreeIPA/IdM·389 DS version과 errata, anonymous LDAP exposure, OTP ACI·admin group·Kerberos/CA audit를 같은 change record로 확인 필요",
+      "detail": "The Hacker News는 Red Hat과 FreeIPA 자료를 바탕으로 FreeIPA와 389 Directory Server의 결함 조합을 보도했다. FreeIPA의 OTP self-service ACI는 로그인하지 않은 client도 token entry를 관리할 수 있도록 하는데, 389 DS의 owner check가 anonymous client의 빈 이름과 빈 stored owner를 일치시킬 수 있어 attacker-chosen Kerberos identity와 password를 함께 기록하는 경로가 될 수 있다. Red Hat은 CVE-2026-76578을 preliminary CVSS 9.8 Critical로, CVE-2026-76560을 7.5로 표기했다. Red Hat은 stock FreeIPA container image 4.13.1에서 chain을 재현했다고 설명하며, 실제 공격 악용은 공개 자료에서 확인되지 않았다. IdM은 Linux login·Kerberos·CA·HTTP/Dogtag trust를 묶으므로 patch뿐 아니라 anonymous LDAP path, ACI, administrator group/member, service keytab·certificate와 ticket issuance audit를 함께 조사해야 한다.",
+      "why_it_matters": "FreeIPA/IdM은 identity control plane으로서 Linux fleet, Kerberos service, certificate authority를 연결함. anonymous write와 directory authorization의 작은 불일치가 reusable privileged credential로 이어지면 endpoint patch보다 넓은 trust reset과 access review가 필요할 수 있음.",
+      "engineering_implication": "FreeIPA/IdM·389 DS deployed version과 vendor errata를 확인하고 anonymous bind/LDAP ingress·OTP ACI·directory owner rules·admin group/member·최근 principal/password/keytab/certificate 변경을 조사 필요. patch 전후에는 non-production replica에서 identity enrollment, OTP self-service, Kerberos ticket, Dogtag/HTTP service access를 canary하고 replication·backup/restore·rollback을 검증 필요.",
+      "korea_implication": "국내 온프레미스 Linux/연구·제조 환경에서 FreeIPA를 AD 연동 또는 내부 CA와 결합한 경우 IdM 노출이 service credential과 certificate issuance까지 이어질 수 있음. 외부 LDAP 접근 차단 여부와 운영팀의 principal·CA audit 접근권한을 먼저 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Identity",
+        "FreeIPA",
+        "389 Directory Server",
+        "Kerberos",
+        "Linux",
+        "Vulnerability Management"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-08 20:22",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/freeipa-flaw-chain-lets-anonymous.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiSKAVaHcAsULrGXPVkGXRyf94eoG7Kv3X0wwK2lRC64l3Em-S4_H5iE8-poK04yzrAC18tuHqpZyHhJvFTgliu_z8jo4QR78Mi4ghhCA-cUVL4oj2zjoLGiWKmD16oV4i44VfY45DYll0Uij_Exf4U2JMSLJEyH8jZk_xXKq7O_7D73q7vTYCCc4hrTnQ/s1600/freeipa.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Red Hat CVE-2026-76578",
+          "url": "https://access.redhat.com/security/cve/CVE-2026-76578"
+        },
+        {
+          "title": "Red Hat CVE-2026-76560",
+          "url": "https://access.redhat.com/security/cve/CVE-2026-76560"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "보도는 FreeIPA와 389 Directory Server 결함의 조합이 anonymous client에게 attacker-chosen Kerberos identity와 administrator credential을 생성할 수 있는 경로를 준다고 설명. Red Hat은 stock FreeIPA container image `4.13.1`에서 chain을 재현했다고 밝힘.",
+          "items": [
+            "취약점: `CVE-2026-76578` preliminary CVSS `9.8` Critical 표기",
+            "연결: `CVE-2026-76560`의 directory owner check 처리와 FreeIPA OTP ACI 결합",
+            "경계: 실제 공격 악용은 공개 advisory·bug report에서 확인되지 않음"
+          ]
+        },
+        {
+          "heading": "결함 조합의 조건",
+          "body": "FreeIPA의 shipped OTP self-service ACI는 token entry 관리 권한을 제공하는 범위임. 보도에 따르면 389 DS의 owner rule은 client name과 stored value를 plain text로 비교하며 anonymous client의 빈 name이 빈 owner value와 일치할 수 있음.",
+          "items": [
+            "조건: 로그인하지 않은 client와 빈 ownership field가 맞물리는 directory authorization 경로",
+            "결과: token entry와 함께 attacker-chosen Kerberos identity·password를 기록하는 가능성",
+            "범위: Red Hat Directory Server에 같은 rule이 기본 탑재된다는 뜻은 아니며 deployment rule 확인 필요"
+          ]
+        },
+        {
+          "heading": "identity control-plane 영향",
+          "body": "FreeIPA는 principal, group, OTP, keytab, Kerberos ticket, certificate와 Dogtag CA 서비스 경계를 연결함. injected identity가 endpoint login 또는 service trust에 실제로 사용됐는지는 local audit로 별도 판정 필요.",
+          "items": [
+            "조사: administrator group/member·신규 principal·password reset·keytab·certificate issuance·LDAP modify audit",
+            "분리: directory write 성공·Kerberos ticket 발급·HTTP/Dogtag access·host authorization",
+            "보존: LDAP/access log·KDC log·CA audit·replication change·backup snapshot 증거"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "IdM 대응은 CVE version update만으로 종료하지 않고 anonymous exposure와 privileged identity history를 함께 점검하는 incident/change 작업임. 업무 OTP flow는 patch validation에서 실제로 검증할 필요.",
+          "items": [
+            "점검: deployed package/errata·anonymous bind·LDAP ingress·OTP ACI·owner rule·replica state",
+            "검증: patched test replica에서 enrollment·OTP self-service·Kerberos ticket·CA service canary",
+            "팀 액션: suspicious principal·admin membership·keytab/certificate 변경 발견 시 credential rotation과 trust review gate 실행"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-441",
+      "title_ko": "Adobe Commerce·Magento CVE-2026-75650 active exploitation: template injection hotfix와 encryption key rotation·store forensic을 동시 수행",
+      "title_original": "Adobe Patches Magento Zero-Day Exploited to Deploy Rust Backdoor and PHP Web Shell",
+      "summary": "- 긴급: Adobe가 in-the-wild exploitation을 인지한 **CVE-2026-75650**을 Commerce·Magento의 arbitrary code execution으로 수정\n- 심각도: CVSS `10.0`, Magento template system의 PHP code injection으로 transaction reminder email 생성 과정에서 실행 경로 형성\n- 대상: Adobe Commerce/Magento Open Source `2.4.4`~`2.4.9-2026-aug` 및 Commerce B2B 영향 버전 범위\n- 조치: Adobe가 version별 `VULN-39341` patch와 encryption key rotation을 요구\n- 팀 액션: patch 적용 전후 template·email queue·webroot·cron·PHP-FPM·admin/API token·payment/customer secret을 forensic preservation 뒤 조사 필요",
+      "detail": "Adobe가 Adobe Commerce와 Magento Open Source의 CVE-2026-75650에 대한 hotfix를 제공했으며, The Hacker News는 Adobe가 실제 악용을 인지하고 있다고 보도했다. CVSS 10.0으로 소개된 이 결함은 Magento template system의 PHP code injection을 악용해 \"Payment Transaction Failed Reminder\" email을 생성하는 과정에서 arbitrary code execution으로 이어질 수 있다. 보도 범위의 영향 버전은 Adobe Commerce 2.4.4~2.4.9-2026-aug 및 Commerce B2B 1.3.3~1.5.3의 해당 또는 이전 release, Magento Open Source 2.4.6~2.4.9-2026-aug이다. Adobe는 version별 `VULN-39341` patch와 encryption key rotation을 요구했다. patch는 active compromise, web shell, database/admin credential 탈취, payment/customer data access를 자동 제거하지 않으므로 application·host·identity·payment boundary를 함께 조사해야 한다.",
+      "why_it_matters": "e-commerce application RCE는 storefront availability뿐 아니라 admin session, encryption key, customer·payment 관련 data path, extension 공급망과 host persistence를 동시에 노출시킬 수 있음. active exploitation 여부가 확인된 경우 긴급 patch와 incident triage를 분리하지 않아야 함.",
+      "engineering_implication": "Commerce/Magento edition·exact build·B2B module·custom template/extension을 inventory화하고 approved `VULN-39341` patch를 stage 환경에서 적용 필요. webroot·generated/cache·media·cron·PHP-FPM/nginx/apache log·email queue·admin/API/integration token·encryption key use를 보존·검사하고, clean artifact redeploy·key/session rotation·WAF virtual control·payment processor notification gate를 runbook으로 실행 필요.",
+      "korea_implication": "국내 쇼핑몰의 Magento 운영은 외부 PG, CDN/WAF, agency extension, 해외 hosting을 함께 쓰는 경우가 많아 patch ownership과 log custody가 분산될 수 있음. store별 source build·admin account·PG credential·encryption key rotation 책임자를 incident 시작 전에 확정 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Adobe Commerce",
+        "Magento",
+        "E-commerce Security",
+        "Web Security",
+        "RCE",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-09-08 18:13",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/adobe-patches-magento-zero-day.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_xdakttovno7kFgFYIw5XGFGcSZibVvXYB64vih4iZpc4_WY_t7oe1X3igSPGXBa8UTkf4z4xn_GzZ_n7PmuFFvYC8Wsmb04PxYP5z-XHjZZFe_SASihwZNg1dxHXQzz8hBRo-6LhvQmwyo_MA9Kj6hrcci6ouvOX1D4f-0dNvs57M6WneQHC61yZkF_o/s1600/magento.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Adobe는 Commerce와 Magento Open Source의 `CVE-2026-75650`을 수정하는 hotfix를 제공. Adobe가 in-the-wild exploitation을 인지하고 있다는 보도 범위이며 The Hacker News는 CVSS `10.0`으로 소개.",
+          "items": [
+            "대상: Adobe Commerce·Commerce B2B·Magento Open Source 영향 version 범위",
+            "조치: version별 `VULN-39341` patch와 encryption key rotation 요구",
+            "상태: zero-day exploitation은 Adobe 인지 범위이나 개별 store compromise 여부는 별도 조사 대상"
+          ]
+        },
+        {
+          "heading": "취약점과 영향 버전",
+          "body": "보도에 따르면 공격은 Magento template system의 PHP code injection으로 Payment Transaction Failed Reminder email 생성 과정에서 arbitrary code execution을 유도하는 경로임. 정확한 edition·patch level·customization을 inventory로 대조해야 함.",
+          "items": [
+            "Commerce: `2.4.4`~`2.4.9-2026-aug` 및 이전 해당 release 영향 범위",
+            "Commerce B2B: `1.3.3`~`1.5.3-2026-aug` 및 이전 해당 release 영향 범위",
+            "Open Source: `2.4.6`~`2.4.9-2026-aug` 및 이전 해당 release 영향 범위"
+          ]
+        },
+        {
+          "heading": "침해 조사와 복구 경계",
+          "body": "hotfix 적용은 vulnerable code path를 막는 작업이며 already-executed PHP, web shell, cron persistence, admin/API token 또는 encryption material misuse를 자동 정리하지 않음. patch 전에 증거를 보존하고 clean artifact 기준을 정해야 함.",
+          "items": [
+            "보존: web/access/error·PHP-FPM·cron·application·email queue·admin/API audit log",
+            "조사: template·generated/cache·webroot·media·unexpected PHP/Rust binary·outbound connection·admin user/integration diff",
+            "회전: encryption key·admin/API/integration token·session·database/cloud secret을 impact 판정과 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "active exploitation은 emergency change와 incident response를 병렬로 시작해야 하는 신호임. storefront 기능 검증만으로 closure하지 말고 payment·customer data path와 third-party extension 운영 범위를 포함해야 함.",
+          "items": [
+            "검증: staging patch·checkout/order/email workflow·extension compatibility·rollback·WAF mitigation",
+            "측정: patch coverage·web shell hit·new admin/integration·template mutation·outbound anomaly·checkout error",
+            "팀 액션: store별 clean redeploy·key/session rotation·forensic review·PG/법무 notification decision gate 실행"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-437",
       "title_ko": "CNCF Karmada Graduated: multi-cluster placement·failover control plane의 운영 검증 범위 확대",
       "title_original": "Cloud Native Computing Foundation Announces Karmada Graduation",
@@ -265,7 +476,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 4
     },
     {
       "source_name": "The Hacker News",
@@ -332,7 +543,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 5
     },
     {
       "source_name": "The Hacker News",
@@ -399,7 +610,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-438",
@@ -477,7 +688,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-434",
@@ -545,7 +756,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-433",
@@ -622,7 +833,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-430",
@@ -709,7 +920,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-428",
@@ -777,7 +988,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 11
     },
     {
       "id": "news-429",
@@ -846,7 +1057,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 12
     },
     {
       "id": "news-431",
@@ -924,7 +1135,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 13
     },
     {
       "id": "news-425",
@@ -1015,7 +1226,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 14
     },
     {
       "id": "news-427",
@@ -1089,7 +1300,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 15
     },
     {
       "id": "news-423",
@@ -1167,7 +1378,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 16
     },
     {
       "id": "news-424",
@@ -1236,7 +1447,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 17
     },
     {
       "id": "news-422",
@@ -1311,7 +1522,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 18
     },
     {
       "id": "news-426",
@@ -1387,7 +1598,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 19
     },
     {
       "id": "news-432",
@@ -1465,7 +1676,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 20
     },
     {
       "id": "news-421",
@@ -1544,7 +1755,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 21
     },
     {
       "id": "news-419",
@@ -1618,7 +1829,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 22
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -1692,7 +1903,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 20
+      "rank": 23
     },
     {
       "id": "news-417",
@@ -1759,7 +1970,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 24
     },
     {
       "id": "news-418",
@@ -1835,7 +2046,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 25
     },
     {
       "id": "news-415",
@@ -1904,7 +2115,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 26
     },
     {
       "id": "news-413",
@@ -1973,7 +2184,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 27
     },
     {
       "id": "news-414",
@@ -2042,7 +2253,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 28
     },
     {
       "id": "news-416",
@@ -2120,7 +2331,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 29
     },
     {
       "id": "news-412",
@@ -2198,7 +2409,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 30
     },
     {
       "id": "news-411",
@@ -2266,7 +2477,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 31
     },
     {
       "id": "news-410",
@@ -2342,7 +2553,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 32
     },
     {
       "id": "news-409",
@@ -2411,11 +2622,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 33
     },
     {
       "id": "news-408",
-      "rank": 31,
+      "rank": 34,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -2483,7 +2694,7 @@
     },
     {
       "id": "news-407",
-      "rank": 32,
+      "rank": 35,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -2550,7 +2761,7 @@
     },
     {
       "id": "news-405",
-      "rank": 33,
+      "rank": 36,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -2686,7 +2897,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 37
     },
     {
       "id": "news-404",
@@ -2757,7 +2968,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 38
     },
     {
       "id": "news-402",
@@ -2825,7 +3036,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 39
     },
     {
       "id": "news-403",
@@ -2895,7 +3106,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 40
     },
     {
       "id": "news-400",
@@ -2964,7 +3175,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 41
     },
     {
       "id": "news-399",
@@ -3033,7 +3244,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 42
     },
     {
       "id": "news-397",
@@ -3110,7 +3321,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 43
     },
     {
       "id": "news-398",
@@ -3189,7 +3400,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 44
     },
     {
       "id": "news-395",
@@ -3267,7 +3478,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 45
     },
     {
       "id": "news-401",
@@ -3341,11 +3552,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 46
     },
     {
       "id": "news-394",
-      "rank": 44,
+      "rank": 47,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -3421,7 +3632,7 @@
     },
     {
       "id": "news-392",
-      "rank": 45,
+      "rank": 48,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -3489,7 +3700,7 @@
     },
     {
       "id": "news-393",
-      "rank": 46,
+      "rank": 49,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -3637,216 +3848,6 @@
           "items": [
             "피할 것: average object size 또는 microbenchmark만으로 cache capacity·SLO·hardware refresh 결정을 내리는 방식",
             "팀 액션: 대표 cache workload에서 immutable object layout 변경 전후의 correctness·p99 memory·CPU cache miss·hit rate·tail latency·rollback을 같은 release evidence로 보존"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-391",
-      "rank": 48,
-      "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
-      "title_original": "NVIDIA acquires Hugging Face (reported)",
-      "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
-      "detail": "AI타임스는 2026-08-27 18:05 KST에 엔비디아가 허깅페이스를 129억 달러에 인수하기로 합의했다고 보도함. 기사에는 허깅페이스의 모델 저장·공유, 하드웨어 최적화와 cloud 기능을 통해 엔비디아가 GPU뿐 아니라 개발자·모델 배포 플랫폼까지 영향력을 넓힌다는 해석이 포함됨. 엔비디아 또는 허깅페이스의 공식 거래 발표, 계약 조건, 규제 승인, 거래 종료, Hub·Inference·Enterprise API·Spaces의 제품·가격·데이터 정책은 직접 확인하지 못했음. 따라서 인수 완료나 제품 정책 변경으로 단정하지 않고, 외부 모델 허브와 inference control plane의 공급자 집중 리스크를 점검하는 timestamped secondary report로 수록함.",
-      "why_it_matters": "모델 허브는 artifact discovery·dependency resolution·access token·hosted inference·배포 자동화가 교차하는 공급망 표면임. 소유권 변경 보도만으로 기능·SLA·가격·데이터 경로 변경을 판단할 수 없지만, 중앙 플랫폼 의존 조직은 대체 경로와 증거 보존을 사전에 점검할 이유가 생김.",
-      "engineering_implication": "Hub·Inference Endpoint·Spaces·Enterprise 기능을 쓰는 팀은 model revision digest·license·SBOM·download mirror·service account·token scope·egress·billing export·API version과 provider exit procedure를 inventory하고, 공식 계약·migration notice 전 production policy를 변경하지 않아야 함.",
-      "korea_implication": "국내 기업은 해외 모델 허브 의존 workload의 data residency·조달 계약·지원 창구·원화 청구·장애 연락 체계를 별도 확인하고, 인수 보도만으로 compliance 또는 서비스 연속성을 판단하지 않아야 함.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Open Source",
-        "Model Hub",
-        "MLOps",
-        "Supply Chain",
-        "NVIDIA",
-        "Hugging Face"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-08-27 18:05",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214502",
-      "image_url": "https://cdn.aitimes.com/news/photo/202608/214502_218186_5048.jpg",
-      "local_image": "assets/images/news-391.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 엔비디아와 허깅페이스의 인수 합의를 보도한 현재 사건",
-          "items": [
-            "거래 보도: 엔비디아가 허깅페이스 인수에 **129억 달러**를 제시해 합의했다는 기사 서술",
-            "기사 시각: AI타임스 `article:published_time` 2026-08-27T18:05:53+09:00을 KST ordering provenance로 사용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에 기재된 플랫폼 범위와 전략 해석을 보도 범위로 한정",
-          "items": [
-            "플랫폼: 허깅페이스는 모델 검색·저장·공유와 하드웨어별 최적화·cloud 기능을 제공한다는 기사 설명",
-            "해석: 엔비디아가 GPU·모델·개발자·배포 플랫폼을 함께 확보하려는 전략이라는 기사 해석"
-          ]
-        },
-        {
-          "heading": "확인되지 않은 계약·제품 범위",
-          "body": "직접 읽은 timestamped secondary report 밖의 사실은 확정하지 않는 경계",
-          "items": [
-            "미확인: 엔비디아·허깅페이스의 공식 announcement, signing·closing·규제 승인과 법적 거래 조건",
-            "미확인: Hub·Inference Endpoint·Spaces·Enterprise API의 가격·quota·SLA·region·지원 종료 또는 migration 정책",
-            "미확인: model visibility·license·dataset·telemetry·prompt·artifact retention과 고객 data path 변경 여부"
-          ]
-        },
-        {
-          "heading": "공급망·MLOps 관점",
-          "body": "모델 허브는 artifact와 hosted runtime이 만나는 control plane이므로 독립적인 복구 증거 필요",
-          "items": [
-            "artifact: production model의 revision commit·digest·license·dependency·SBOM을 release record로 보존",
-            "identity: organization token·service account·fine-grained scope·secret rotation과 audit log를 workload별로 분리",
-            "resilience: critical model과 container artifact의 mirror·cache·offline restore·provider outage drill을 검증"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "공식 거래·제품 공지가 확인되기 전에는 변화 추정 대신 현재 의존도를 측정하는 운영 과제",
-          "items": [
-            "검토: endpoint p95/p99·error rate·rate limit·egress·월별 token·GPU·storage 비용을 baseline으로 고정",
-            "계약: DPA·data residency·SLA·support escalation·price lock·export right를 실제 계약 문서에서 재확인",
-            "피할 것: 인수 보도만으로 NVIDIA 공식 확인·제품 통합·가격 변경·모델 접근 보장 또는 compliance 충족을 단정"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-388",
-      "title_ko": "OpenAI 자체 추론 ASIC ‘Jalapeño’ 성능 보도: 벤치마크 수치와 실제 fleet economics를 분리",
-      "title_original": "OpenAI releases first performance results for its Jalapeño AI inference chip",
-      "summary": "- 보도: OpenAI가 자체 AI 추론 전용 ASIC **Jalapeño**의 첫 성능 결과를 공개했다는 인공지능신문 보도\n- 측정: GPT-OSS 120B·DeepSeek R1 670B·Kimi K2.5 1T의 InferenceX 기반 자체 평가에서 와트당 AI 작업량 1.5~1.9배, end-to-end latency 1.7~3.6배 개선 주장\n- 구조: 700W급 칩·128 ASIC/rack·최대 16 rack·2,048 ASIC scale-up domain, 4-bit 기준 rack당 1.7 exaflops·HBM4 27.5TB라는 보도 수치\n- 설계: prefill/decode의 연산·메모리 병목과 KV cache·chip-to-chip data movement를 함께 다루는 full-stack inference architecture라는 설명\n- 배치: 2026년 말 자체 infrastructure 배치 계획과 2·3세대 개발 언급은 보도 범위\n- 팀 액션: benchmark 대비를 production TCO로 해석하지 말고 TTFT·TPOT·p95/p99·J/token·token당 비용·utilization·failure recovery를 동일 traffic trace로 검증 필요",
-      "detail": "인공지능신문은 OpenAI가 자체 AI 추론 전용 ASIC ‘Jalapeño’의 첫 성능 결과를 공개했다고 2026년 8월 26일 09:49 KST 보도했다. 보도에 따르면 OpenAI는 InferenceX 기반 자체 평가에서 GPT-OSS 120B, DeepSeek R1 670B, Kimi K2.5 1T를 대상으로 와트당 AI 작업량 1.5~1.9배, end-to-end latency 1.7~3.6배 개선을 제시했으며, 대화형·agentic workload에서는 2.1~4.1배 성능 차이를 주장했다. 또한 칩은 700W급, 실제 시험 workload 지속 소비전력은 550W 이하, 128 ASIC/rack과 최대 16 rack·2,048 ASIC scale-up domain, 4-bit 기준 rack당 1.7 exaflops·HBM4 27.5TB·package당 15.4TB/s memory bandwidth라는 수치를 소개했다. 이 수치와 roadmap은 OpenAI가 공개한 자체 평가를 인용한 보도 범위이며, 비교 대상·workload mix·batch·quantization·model serving stack·rack power/cooling·network congestion·availability·가격·실제 fleet utilization은 독립적으로 검증되지 않았다. 도입 판단은 공개 benchmark가 아니라 대표 traffic의 TTFT/TPOT·p95/p99·request success·J/token·token당 비용·capacity headroom·failure recovery와 GPU fleet 대비 TCO로 해야 한다.",
-      "why_it_matters": "모델 공급자가 accelerator·memory·network·compiler와 serving workload를 함께 설계하려는 움직임은 AI inference의 비용·전력·latency 최적화 단위를 chip 단품에서 fleet 계약으로 옮김. 다만 보고된 수치는 자체 테스트이므로 특정 GPU·ASIC의 일반적 우위나 production SLA 근거가 아님.",
-      "engineering_implication": "벤치마크 재현 계획에 model/version·precision·context length·batch·prompt mix·KV cache policy·network topology·rack power·cooling을 고정하고 TTFT·TPOT·p95/p99·J/token·token당 비용·utilization·error/retry·capacity loss를 같은 trace로 수집해야 함. 공급망 포트폴리오 판단에는 hardware 성능 외에 region·quota·support·observability·compiler/runtime compatibility·rollback을 포함 필요.",
-      "korea_implication": "국내 AI 서비스와 데이터센터 계획은 자체 ASIC 발표 수치를 GPU 대체 가능성으로 바로 환산하지 말고, 실제 제공 시점·리전·전력·냉각·network·지원 계약·국내 data path를 별도 확인해야 함.",
-      "category": "Infra",
-      "tags": [
-        "OpenAI",
-        "AI ASIC",
-        "Inference",
-        "AI Infrastructure",
-        "HBM4",
-        "KV Cache",
-        "Data Center",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-08-26 09:49",
-      "source_name": "인공지능신문",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41603",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202608/41603_62607_4828_v150.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "인공지능신문의 timestamped 기사 기준으로 OpenAI가 자체 AI 추론 전용 ASIC `Jalapeño`의 첫 성능 결과를 공개했다는 보도임. 원문 기사에 직접 연결된 OpenAI 발표 URL은 확인되지 않아, 아래 성능·roadmap 사실은 해당 보도가 OpenAI 공개 내용으로 인용한 범위로 한정함.",
-          "items": [
-            "보도 시각: `2026-08-26 09:49 KST`",
-            "대상: GPT-OSS 120B·DeepSeek R1 670B·Kimi K2.5 1T의 InferenceX 기반 자체 평가"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "보도는 비교 대상 시스템 대비 와트당 AI 작업량 1.5~1.9배, end-to-end latency 1.7~3.6배 개선을 제시. 대화형·agentic workload의 차이는 2.1~4.1배까지 확대됐다고 적시함. 이는 benchmark 조건이 포함된 vendor-reported result이며 범용 production 성능 수치가 아님.",
-          "items": [
-            "전력·성능: Kimi K2.5 1T에서 최대 처리량 기준 와트당 성능 약 1.5배, end-to-end latency 약 3.4배라는 보도 수치",
-            "구성: 700W급 칩, 실제 시험 workload에서 지속 소비전력 550W 이하라는 보도 수치",
-            "확장: 128 ASIC/rack·최대 16 rack·2,048 ASIC scale-up domain이라는 보도 범위"
-          ]
-        },
-        {
-          "heading": "아키텍처·운영 경계",
-          "body": "보도는 prefill의 연산 성격과 decode의 memory bandwidth·data movement 병목을 함께 최적화하고, KV cache를 local에 유지하는 방향을 설명함. 그러나 runtime·compiler·network topology·batching·cache eviction·model precision·failure domain과 실제 serving SLO는 확인된 계약 범위가 아님.",
-          "items": [
-            "설계 가설: prefill/decode 분리와 KV cache locality가 token latency·network traffic을 함께 좌우하는 구조",
-            "미확인 범위: context length·batch·quantization·request mix·network contention에 따른 p95/p99와 throughput 변동",
-            "검증: TTFT·TPOT·J/token·token당 비용·GPU/ASIC utilization·retry·capacity loss를 동일 traffic trace에서 비교 필요"
-          ]
-        },
-        {
-          "heading": "FinOps·도입 시사점",
-          "body": "와트당 benchmark 개선은 rack power, cooling, software license, network, reserved capacity, idle capacity, availability와 결합돼야 completed request당 비용으로 해석 가능함. 2026년 말 자체 infrastructure 배치 계획과 후속 세대 개발 언급은 공급·리전·가격·고객 접근성을 보증하지 않음.",
-          "items": [
-            "비용: token당 비용에 power·cooling·memory·network·idle·retry·operator intervention을 함께 귀속 필요",
-            "운영: region·quota·support·telemetry·rollback·incident owner가 확인되기 전 production dependency 확대 보류",
-            "팀 액션: benchmark 재현 matrix와 representative workload TCO gate를 procurement·architecture review에 고정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-389",
-      "title_ko": "Kubernetes v1.37 Garhwal 정식 출시: cgroup v1·ipvs 제거 일정을 포함해 업그레이드 계약 재점검",
-      "title_original": "Kubernetes v1.37: Garhwal",
-      "summary": "- 공개: Kubernetes **v1.37 Garhwal** 정식 출시\n- 안정화: resilient watchcache initialization·Pod certificates/Cluster Trust Bundles·`metrics.k8s.io` API·SELinuxMount/SELinuxChangePolicy·DRA 기능의 Stable 승격\n- 베타: HPA scale-to-zero·gang scheduling·native histogram·cgroups v2 Memory QoS·Pod-level resource manager·etcd RangeStream 등 기능 확대\n- 변경: `kube-dns` deprecation, `kube-proxy`의 ipvs mode 지원 deprecation, static Pod의 Secret/ConfigMap 참조 불가, cgroup v1 지원 제거 계획을 명시\n- 팀 액션: control plane·node OS·CNI/CSI·autoscaler·metrics adapter·admission policy·StatefulSet·static Pod manifest를 staging upgrade에서 inventory와 rollback 기준으로 검증 필요",
-      "detail": "Kubernetes 프로젝트는 2026년 8월 26일 00:00 UTC에 Kubernetes v1.37 “Garhwal”을 공개했다. 이번 릴리스는 resilient watchcache initialization, Pod certificates와 Cluster Trust Bundles, `metrics.k8s.io` API, SELinuxMount·SELinuxChangePolicy 및 일부 Dynamic Resource Allocation 기능을 Stable로 승격한다. HorizontalPodAutoscaler의 scale-to-zero, manifest 기반 admission control configuration, gang scheduling, native histogram, cgroups v2 기반 Memory QoS, Pod-level resource manager, etcd RangeStream 등은 Beta 또는 Alpha 기능으로 포함된다. 동시에 `kube-dns`와 `kube-proxy` ipvs mode 지원의 deprecation, `kubectl run --filename/-f` deprecation 예정, static Pod가 Secret 또는 ConfigMap을 참조할 수 없게 된 변경, cgroup v1 지원의 향후 제거 계획을 고지했다. 기능의 지원 상태는 distribution·managed service·CNI/CSI·node OS·add-on별 호환성과 동일하지 않으므로, upgrade는 API removal·node configuration·workload manifest·metric/autoscaling·rollback을 묶은 검증 작업으로 진행해야 한다.",
-      "why_it_matters": "Kubernetes minor release는 control plane 기능 추가와 함께 node runtime·network proxy·static workload·autoscaling 계약을 바꾼다. 특히 ipvs와 cgroup v1의 수명주기 변경은 단순 version bump가 아니라 node image·kubelet·monitoring·capacity 정책의 교체 범위를 만들 수 있음.",
-      "engineering_implication": "현재 cluster별 Kubernetes·kubelet·container runtime·Linux cgroup mode·kube-proxy mode·CNI/CSI·metrics adapter·static Pod·admission plugin inventory를 먼저 만들고, representative workload에서 HPA, StatefulSet rollout, watch reconnect, DRA, SELinux volume, rollback을 통과 조건으로 확인해야 함.",
-      "korea_implication": "국내 managed Kubernetes 사용 조직도 제공 시점과 지원 버전·node image·CNI/CSI·addon compatibility가 upstream 발표와 다를 수 있으므로 서비스별 release note와 upgrade window를 별도 확인해야 함.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "Kubernetes v1.37",
-        "Upgrade",
-        "cgroups v2",
-        "kube-proxy",
-        "HPA",
-        "DRA",
-        "Platform Engineering"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-08-26 09:00",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/08/26/kubernetes-v1-37-release/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes 프로젝트 공식 release post와 Atom feed의 exact timestamp `2026-08-26T00:00:00+00:00`를 확인해 KST `2026-08-26 09:00`으로 기록. Kubernetes `v1.37 Garhwal` 정식 릴리스와 feature graduation·deprecation·removal 방향을 공개함.",
-          "items": [
-            "출시: upstream Kubernetes `v1.37` 정식 release 공개",
-            "범위: API·scheduler·autoscaling·storage·node·network proxy·client-go 변경을 함께 포함"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "공식 발표는 resilient watchcache initialization, Pod certificates·Cluster Trust Bundles, `metrics.k8s.io` API, SELinuxMount·SELinuxChangePolicy와 DRA 기능을 Stable로 열거. HPA scale-to-zero, manifest 기반 admission control configuration, gang scheduling, native histogram, cgroups v2 Memory QoS, Pod-level resource managers 등은 Beta 또는 Alpha 범위로 설명함.",
-          "items": [
-            "Stable: watchcache initialization·Pod certificates·Cluster Trust Bundles·`metrics.k8s.io` API·SELinux volume 기능",
-            "스케줄링: gang scheduling·Node storage capacity scoring·in-place Pod resize preemption 관련 기능 확대",
-            "관측: native histogram·cAdvisor-less CRI-full stats·stale controller mitigation 항목 추가"
-          ]
-        },
-        {
-          "heading": "업그레이드·호환성 경계",
-          "body": "이번 release는 `kube-dns` deprecation, `kube-proxy` ipvs mode 지원 deprecation, `kubectl run --filename/-f` deprecation 예정, static Pod의 Secret·ConfigMap 참조 금지, cgroup v1 지원 향후 제거를 명시. upstream feature state가 managed Kubernetes, CNI/CSI, node OS, container runtime, add-on의 지원 계약을 보증하지는 않음.",
-          "items": [
-            "inventory: cluster별 kube-proxy mode·cgroup mode·static Pod manifest·metrics/autoscaler dependency 확인",
-            "호환성: CNI·CSI·ingress·service mesh·security agent·GPU/DRA plugin의 version matrix 확인",
-            "복구: control plane·node pool·workload·data plane을 분리한 rollback path와 backup/restore drill 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "v1.37 도입 승인은 feature 목록이 아니라 실제 production contract로 판단해야 함. representative workload에서 watch reconnect, HPA scale, StatefulSet rollout, static Pod bootstrap, volume mount/SELinux, node replacement를 함께 검증해 API·node·runtime 변화가 SLO와 recovery에 미치는 영향을 측정해야 함.",
-          "items": [
-            "측정: control-plane API latency·watch reconnect·HPA reaction·pod scheduling·node recovery·error budget",
-            "검증: cgroups v2 Memory QoS·ipvs 대체 proxy path·admission config·DRA·SELinux volume 동작",
-            "팀 액션: staging upgrade에서 manifest/API scan과 workload canary를 통과시킨 cluster만 단계 확대"
           ]
         }
       ],

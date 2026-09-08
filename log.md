@@ -2439,3 +2439,10 @@
 - ConnectWise가 당시 file-transfer behavior issue와 `TransferFiles`/legacy `TransferFilesInSession` 비활성화 안내를 게시했다는 Huntress update를 관련 링크로 보존. fixed version·CVE release·active exploitation·단일 actor·전체 피해 범위는 source가 확정하지 않아 현재 상태로 확대하지 않음.
 - `news-438`을 KST `2026-09-07 20:36` 기준 rank 4에 추가하고 newest-first 50-item cap의 actual tail `news-384`(KST `2026-08-26 04:42`)을 제거 후 rank 1–50 재부여. `docs/data/weekly-news.json`·`weekly/2026-W38.md`·immutable raw capture·`index.md`를 동기화. raw-body SHA-256 `579f4a7a233e4c5262c6a9f376d907080a34e58ea8094e7e6ec08c4425072abd` 확인.
 - KST 첫 실행에서 01:52에 이미 두 Deep Dive를 전면 재구성했으므로 same-day policy에 따라 timestamp-only 변경을 하지 않음.
+
+## [2026-09-08] update | Magento active exploitation·FreeIPA IdM flaw chain·Cloudflare PQC origin handshake 추가
+- 확인 시각: 2026-09-08 22:21 KST. GeekNews·GeekNews Plus·AI타임스·인공지능신문 mandatory surface를 직접 probe했고 GeekNews/GN⁺는 HTTP 403, AI 매체는 HTTP 200이었음. AWS·CNCF·GitHub·Kubernetes·Google AI·OpenAI·Cloudflare·The Hacker News·CISA feed를 실제 파싱해 신규 후보를 기존 URL·title·event와 대조.
+- Cloudflare 공식 post의 `article:published_time` `2026-09-08T13:10:00.000Z`·Open Graph image·본문을 직접 확인해 KST `2026-09-08 22:10`으로 기록. Automatic Key Exchange가 TLS 1.3 origin capability를 probe하고 PQC hybrid `X25519MLKEM768`을 우선하며 HelloRetryRequest 약 52%→3.7%, handshake p90 150ms 이상 절감이라는 Cloudflare 발표 범위를 수록.
+- The Hacker News FreeIPA 보도와 Red Hat CVE pages를 직접 확인. `CVE-2026-76578`·`CVE-2026-76560` chain의 stock FreeIPA 4.13.1 재현·anonymous identity write 조건·preliminary CVSS 9.8/7.5 보도 범위를 수록하고 actual exploitation 미확정 경계를 유지.
+- The Hacker News Magento 보도의 Adobe 인지 active exploitation·`CVE-2026-75650`·CVSS 10.0·`VULN-39341` patch·encryption key rotation·영향 version 범위를 수록. 개별 store 침해 여부와 web shell/token/data impact는 별도 forensic 판단으로 분리.
+- `news-439`·`news-440`·`news-441`을 latest publication KST 기준 추가하고 newest-first 50-item cap의 actual tail `news-391 (2026-08-27 18:05), news-388 (2026-08-26 09:49), news-389 (2026-08-26 09:00)`를 제거 후 rank 1–50 재부여. `weekly/2026-W38.md`, immutable raw capture 3건, `index.md`를 동기화. KST 첫 실행에서 01:52에 전면 재구성된 두 Deep Dive는 same-day policy에 따라 변경하지 않음.

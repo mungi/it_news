@@ -34,6 +34,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-automatic-key-exchange-pqc-origin-2026-09-08]] — Cloudflare Automatic Key Exchange: 원본 TLS 1.3 알고리즘 탐지로 PQC handshake retry와 p90 지연 축소.
+- [[raw/articles/thn-freeipa-389ds-anonymous-admin-credential-chain-2026-09-08]] — FreeIPA·389 Directory Server flaw chain: 익명 client의 관리자 Kerberos credential 생성 경로를 기본 ACI·patch 상태로 차단.
+- [[raw/articles/thn-adobe-magento-cve-2026-75650-active-exploitation-2026-09-08]] — Adobe Commerce·Magento CVE-2026-75650 active exploitation: template injection hotfix와 encryption key rotation·store forensic을 동시 수행.
 - [[raw/articles/thn-rogue-screenconnect-vbscript-worm-like-activity-2026-09-07]] — Rogue ScreenConnect client의 4단계 VBScript 확산과 file-transfer·session audit·endpoint incident 대응 경계.
 - [[raw/articles/cncf-karmada-graduation-2026-09-08]] — Karmada CNCF Graduated 승격의 multi-cluster placement·propagation·failover control-plane 운영 검증 경계.
 - [[raw/articles/thn-peep-chrome-edge-native-messaging-backdoor-2026-09-08]] — PEEP Chrome·Edge post-compromise backdoor의 Secure Preferences 위조·Native Messaging host·browser-to-OS telemetry 대응 경계.
