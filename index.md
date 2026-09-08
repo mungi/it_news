@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-08 | Total pages: 328
+> Last updated: 2026-09-08 | Total pages: 330
 
 ## Entities
 
@@ -34,6 +34,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-peep-chrome-edge-native-messaging-backdoor-2026-09-08]] — PEEP Chrome·Edge post-compromise backdoor의 Secure Preferences 위조·Native Messaging host·browser-to-OS telemetry 대응 경계.
+- [[raw/articles/thn-microsoft-365-help-desk-vishing-token-replay-2026-09-08]] — Microsoft 365 fake IT-call·AitM token replay·SharePoint 대량 수집의 identity/SaaS audit 대응 경계.
 - [[raw/articles/n-able-ncentral-cve-2026-86218-hf4-2026-09-07]] — N-central `CVE-2026-86218` HF4의 self-hosted RMM server patch·management-plane evidence·tenant closure 검증 경계.
 - [[raw/articles/aitimes-anthropic-compute-contracts-2026-09-07]] — Anthropic 대규모 compute 계약 보도의 power·usable capacity·FinOps 증거 분해 경계.
 - [[raw/articles/thn-postgresql-cve-2026-6471-logical-decoding-2026-09-05]] — PostgreSQL logical decoding `CVE-2026-6471`의 replication role·output plugin allowlist·CDC/backup 호환성 검증 경계.

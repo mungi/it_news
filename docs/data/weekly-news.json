@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-08 06:02",
+  "last_updated_kst": "2026-09-08 10:08",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Microsoft Project Zenith 공개 보도는 64GB 이상 unified memory·250GB/s 이상 bandwidth를 전제로 local 30B 모델과 사전 구성된 Windows 개발 도구를 제시. hardware 수치를 fleet 성능 보증으로 확대하지 말고 task success·p95·thermal·driver·MXC/EDR/DLP·cloud fallback을 같은 workload canary에서 측정 필요.",
-    "NVIDIA·CrowdStrike SafeMind 공개 보도는 Red Tempest·Blue Solano의 attack-path 탐색·방어 loop와 45일·B200 71개 digital-twin 사례를 제시. production remediation은 read-only discovery·human approval·policy diff·rule TTL·retest·rollback을 finding ID별로 분리 필요.",
-    "Amazon EC2는 AMI owner가 supported·unsupported instance type을 지정하고 non-permitted launch를 hard block하는 기능을 추가. shared AMI restriction은 launch template·Auto Scaling group의 scale-out·replacement를 실패시킬 수 있어 consumer inventory·canary·launch error·rollback trace 검증 필요.",
-    "Amazon Bedrock Managed Knowledge Base는 ServiceNow native connector, SharePoint·OneDrive·Confluence user-managed 3LO setup, native connector의 daily·weekly·monthly sync scheduling을 함께 추가. sys ID scope·OAuth/service-account 권한·ACL·첨부파일·삭제 반영·sync lag·citation·rollback을 corpus별 acceptance gate로 검증 필요.",
-    "2026-W38 커버리지 창은 9월 7일 17:00 KST부터 9월 14일 13:00 KST까지임. 새 창의 source-page 검증을 진행하는 동안 직전 창의 50개 카드를 임시 보존하며, 현재 창에 속하는 N-central HF4와 Anthropic compute 계약 보도부터 후속 후보를 최신 발행 시각 순으로 교체·추가함."
+    "- PEEP은 Chrome·Edge profile에 sideloaded extension을 자동 활성화하고 Native Messaging host로 OS command까지 연결하는 post-compromise toolkit으로 보도됨. extension allowlist 외에 Secure Preferences·force-install policy·native host·browser child process·plaintext C2 telemetry를 함께 점검 필요.",
+    "- Microsoft 365 임원 표적 vishing은 AitM으로 session token을 탈취한 뒤 residential proxy에서 replay하고 SharePoint·OneDrive·Exchange·Box 대량 수집으로 이어지는 경로를 사용. identity sign-in과 SaaS content access audit를 동일 incident trace로 묶어야 함.",
+    "- N-central HF4는 self-hosted RMM server의 인증 전 RCE 가능 CVE-2026-86218에 `2026.3.1.14` 즉시 update를 요구. RMM control plane은 patch 후에도 console exposure·privileged identity·automation history·tenant별 evidence를 검증 필요.",
+    "- Amazon Bedrock Managed Knowledge Base는 ServiceNow connector, SharePoint·OneDrive·Confluence 3LO setup, native connector sync scheduling을 추가. OAuth·ACL·attachment·deletion·sync lag·citation·rollback을 corpus별 gate로 운영 필요.",
+    "- 2026-W38 커버리지 창은 9월 7일 17:00 KST부터 9월 14일 13:00 KST까지임. 신규 항목은 source-page 검증 후 발행 시각 최신순으로 반영하며 전체 목록은 50건 상한을 유지."
   ],
   "deep_dives": [
     {
@@ -200,6 +200,140 @@
   ],
   "items": [
     {
+      "source_name": "The Hacker News",
+      "region": "Global",
+      "related_links": [],
+      "local_image": "",
+      "id": "news-435",
+      "title_ko": "PEEP Chrome·Edge post-compromise backdoor: 확장 프로그램 무결성 위조와 Native Messaging host 실행 경로 점검",
+      "title_original": "PEEP Turns Chrome and Edge Into Post-Compromise Backdoors for Host Command Execution",
+      "summary": "- 발견: Chrome·Edge profile에 \"Smart Bookmarks\" 확장으로 위장한 **PEEP** post-compromise toolkit 관측\n- 설치: Secure Preferences integrity 값 위조와 force-install policy·sideloading으로 Web Store 검사·사용자 prompt 우회\n- 실행: Native Messaging `nm_host.exe`가 browser sandbox 밖 host command·file·process/service 탐색 경로 제공\n- 통신: plaintext HTTP C2를 30초마다 polling하며 cookie·history·active-tab metadata·session을 수집\n- 팀 액션: extension policy·Secure Preferences·Native Messaging manifest·PowerShell·browser-to-host child process를 EDR hunt와 allowlist로 점검 필요",
+      "detail": "The Hacker News는 SOCRadar 분석을 인용해 Chromium 기반 PEEP이 이미 확보한 endpoint에 배포되는 post-compromise toolkit이라고 보도했다. \"Smart Bookmarks\" 확장 ID `ejkndncpkdcjcikfhiamcdehdoegilbj`로 위장하고 Chrome·Edge profile의 Secure Preferences integrity 값을 조작해 sideloaded extension을 자동 활성화한다. 30초마다 plaintext HTTP C2를 polling해 browsing history·active tab·cookie·session을 수집하며, `nm_host.exe` Native Messaging bridge로 shell command 실행·file 관리·process/service 탐색을 수행한다. 초기 침투 벡터와 피해 범위·운영 주체는 확인되지 않았고, `/health`의 34 agent·10 active session·507 data record는 실제 감염 수와 구분되지 않는다. browser process 신뢰만으로 extension과 native host 실행을 허용하지 말고 policy·manifest·file path·child process·network telemetry를 같이 검증해야 한다.",
+      "why_it_matters": "브라우저 확장과 Native Messaging은 signed browser process 안의 telemetry처럼 보이면서 endpoint command execution까지 연결할 수 있음. extension allowlist만으로 host bridge·preference tampering·sideloading을 막는다는 보장은 없음.",
+      "engineering_implication": "Chrome·Edge enterprise extension policy와 Native Messaging host manifest를 inventory로 만들고 `Secure Preferences` 변경·`ExtensionInstallForcelist`·HKCU extension registration·PowerShell sideloading·browser child process·plaintext C2를 correlation rule로 운영 필요. browser profile reset·cookie/session revoke·endpoint isolation·credential rotation 조건을 incident runbook에 추가 필요.",
+      "korea_implication": "국내 Windows endpoint fleet도 Chrome·Edge 정책을 GPO/MDM으로 분리 관리하고, local administrator·developer mode·extension installation 권한과 EDR telemetry 보존 범위를 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Browser Security",
+        "Chrome",
+        "Microsoft Edge",
+        "Native Messaging",
+        "Endpoint Detection",
+        "Malware"
+      ],
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-09-08 03:12",
+      "source_url": "https://thehackernews.com/2026/09/peep-turns-chrome-and-edge-into-post.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhA3-5bNylOMc_s8MAT2ibQnV33cnJXadwKPRXjYgAL0GcZWOXuwtM-s5HS4ryVu5ewnhfAqBtOiuSseLcUSyDIfxf5XKF6mAwrpyG-v3Y-siqjJY8I5zVEMXwfkKPwBNAqaO2sQFI-q2oA4MWiagZFUlknIPKADDfvOo8s2Ifsa_xBAojg1rD5ZGUErC85/s1600/chrome-malware.jpg",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 SOCRadar 분석을 인용해 PEEP을 Chromium 기반 post-compromise toolkit으로 보도. 초기 침투 기능은 없으며 이미 확보한 endpoint에 배포되는 범위임.",
+          "items": [
+            "위장: \"Smart Bookmarks\" extension ID `ejkndncpkdcjcikfhiamcdehdoegilbj` 사용",
+            "대상: Chrome·Edge profile에 설치되며 운영 주체·피해 조직·initial access는 미확인"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "installer는 Chromium Secure Preferences integrity 값을 위조해 Web Store 검사와 사용자 prompt를 우회하는 것으로 설명됨. extension은 C2와 30초 간격으로 plaintext HTTP 통신을 수행함.",
+          "items": [
+            "수집: browsing history·active tab metadata·session cookie·public IP·locale·time zone 전송 경로",
+            "지속성: sideloading·enterprise force-install policy·ScriptCache fallback·preference integrity manipulation 언급",
+            "경계: `/health`의 34 agent·10 active session·507 record는 실제 감염·검증된 deployment와 구분 불가"
+          ]
+        },
+        {
+          "heading": "browser-to-host 실행 경계",
+          "body": "Native Messaging Host `nm_host.exe`는 browser extension이 OS command·file management·process/service discovery를 호출하도록 연결하는 경로임. browser sandbox와 signed process 신뢰가 host action 안전성을 보증하지 않음.",
+          "items": [
+            "실행: shell command·file 관리·process/service 탐색을 user context에서 수행하는 것으로 보도",
+            "파일: `install_silent.ps1`·`patch_secure_prefs.ps1`·`force_enable.ps1` 및 Linux 대상 Python script 언급",
+            "탐지: Native Messaging manifest·browser child process·PowerShell·HKCU extension registration을 동일 endpoint timeline으로 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "extension 설치 상태만이 아니라 preference·policy·native host·network egress가 함께 정상인지가 승인 기준임. session theft 가능성이 있으므로 browser remediation은 identity response와 결합 필요.",
+          "items": [
+            "체크: extension allowlist·`ExtensionInstallForcelist`·developer mode·Secure Preferences hash·native host path",
+            "대응: affected profile reset·cookie/session revoke·credential rotation·endpoint isolation·forensic preservation",
+            "팀 액션: browser→`nm_host.exe` child process와 plaintext HTTP 30초 beacon을 EDR·proxy detection rule로 canary 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "source_name": "The Hacker News",
+      "region": "Global",
+      "related_links": [],
+      "local_image": "",
+      "id": "news-436",
+      "title_ko": "Microsoft 365 임원 표적 fake IT-call: AitM token replay·SharePoint 대량 수집을 identity telemetry로 차단",
+      "title_original": "Fake IT Calls Target Executives in Microsoft 365 Data Theft and Extortion Attacks",
+      "summary": "- 공격: PREY-0058로 추적되는 위협 cluster가 IT/help desk 사칭 전화 뒤 Microsoft 365 authentication URL로 유도\n- 탈취: operator-controlled **AitM** login flow에서 credential·MFA approval을 받아 authenticated session token 확보\n- 재사용: victim과 같은 지역·ASN처럼 보이는 residential proxy에서 token replay 후 SharePoint·Entra ID discovery 수행\n- 유출: SharePoint·OneDrive·Exchange·Box를 대량 수집한 뒤 extortion demand로 연결\n- 팀 액션: phishing-resistant MFA·Conditional Access와 residential proxy replay·SharePoint search/bulk access·mailbox harvesting 탐지를 결합 필요",
+      "detail": "The Hacker News는 Arctic Wolf 분석을 인용해 PREY-0058이 director·vice president 등 임원을 중심으로 IT/help desk vishing과 adversary-in-the-middle(AitM) token theft를 사용하는 것으로 보도했다. 공격자는 authentication-themed lure domain으로 유도해 credential과 MFA approval을 수집하고, victim과 같은 지역·ASN으로 보이는 NodeMaven 같은 residential proxy에서 session token을 replay한다. 초기 sign-in 뒤 My Signins·My Profile·My Apps를 조회하고 SharePoint·Entra ID discovery를 수행한 후 SharePoint·OneDrive·Exchange·Box 데이터를 대량 수집해 extortion으로 연결한다. endpoint malware나 network lateral movement는 관측되지 않은 범위이며 PREY-0058·UNC6671·Cinder·Pink 사이의 동일 actor identity는 확정되지 않았다. identity·SaaS audit log에서 token replay와 content discovery를 조기에 연결하는 통제가 필요하다.",
+      "why_it_matters": "MFA approval이 있어도 AitM으로 session token을 탈취하면 SaaS data plane에 접근할 수 있음. endpoint malware가 없는 공격은 EDR 중심 탐지에서 누락될 수 있어 Entra·SharePoint·mail audit telemetry가 중요함.",
+      "engineering_implication": "Conditional Access와 phishing-resistant MFA를 적용하고, executive account의 unfamiliar residential proxy sign-in·token replay·My Apps enumeration·SharePoint wildcard search·bulk download·mailbox access를 user/session/IP/ASN 기준으로 상관 분석 필요. critical SaaS data scope와 emergency token revoke 절차를 검증 필요.",
+      "korea_implication": "국내 조직도 임원·관리자 계정의 해외/국내 residential proxy 예외 정책, help desk 본인 확인 절차, Entra ID·M365·Box 등 SaaS audit log 보존과 IR 접근 권한을 사전 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Microsoft 365",
+        "Entra ID",
+        "Phishing",
+        "Identity Security",
+        "SaaS",
+        "SharePoint"
+      ],
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-08 00:51",
+      "source_url": "https://thehackernews.com/2026/09/microsoft-365-attackers-use-help-desk.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjg-Zo4zgxCrVcz6-00WV2qAPHSD-av2Ed5hgRmR-2vUzkr9jVeph0NNb6gGsQfwSkFyuRfRcSsaISSpfysl_Xx5F48IM7HdBpO4F3CaVuLhk1v0a4vcH5xK_bxX6BxIjkfAjhDaNGcLG7_R9IcTjVGlFcW7y1ZV64imACHi9528LOjH1Flhk-cy9LFgrMv/s1600/phish-ms.jpg",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Arctic Wolf 분석을 인용해 PREY-0058이 IT/help desk 전화 사칭과 AitM token theft로 Microsoft 365·SaaS data theft와 extortion을 수행한다고 보도. 임원급 계정이 주요 표적 범위임.",
+          "items": [
+            "유도: `<victim organization>.<lure domain>` 형태 authentication-themed URL 사용",
+            "표적: director·vice president 등 executive staff 중심이라는 보도 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "operator-controlled AitM Microsoft 365 login flow는 credential과 MFA approval을 받아 authenticated session token을 확보하는 경로로 설명됨. captured token은 residential proxy에서 replay됨.",
+          "items": [
+            "proxy: NodeMaven 등 victim과 같은 geographical location·ASN으로 보이는 infrastructure 언급",
+            "초기 조회: `My Signins`·`My Profile`·`My Apps`로 account·available application discovery",
+            "경계: PREY-0058·UNC6671·Cinder·Pink의 단일 actor identity는 기사에서 확정하지 않음"
+          ]
+        },
+        {
+          "heading": "SaaS data plane 탐지",
+          "body": "보도된 공격은 endpoint malware deployment나 network-based lateral movement 없이 SaaS audit surface에서 discovery·collection을 수행함. identity와 content access event를 분리하지 않고 incident timeline으로 연결할 필요.",
+          "items": [
+            "SharePoint: `SearchQueryPerformed`의 `contentclass:STS_Site`·`contentclass:STS_Web`·`indexdocid` wildcard pagination 언급",
+            "유출: SharePoint·OneDrive·Exchange·Box 대량 수집 뒤 extortion demand 연결",
+            "탐지: unfamiliar residential proxy token replay·SharePoint discovery/bulk access·mailbox harvesting·new lure domain correlation"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "MFA가 token replay를 자동 차단하지 않으므로 phishing-resistant authentication과 Conditional Access, 최소 data scope, session revoke playbook을 같이 운영해야 함. help desk workflow도 identity control plane의 일부임.",
+          "items": [
+            "통제: phishing-resistant MFA·Conditional Access·executive account data least privilege·help desk call-back verification",
+            "대응: session/token revoke·credential reset·SaaS search/export scope 조사·legal/IR evidence preservation",
+            "팀 액션: proxy ASN·device/session·MFA method·SharePoint search/download volume을 1시간 correlation window로 canary 검증"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-434",
       "title_ko": "앤트로픽 compute 계약 보도: 5,170억 달러 headline을 전력·가동 capacity·FinOps 증거로 분해",
       "title_original": "Anthropic secures up to $517 billion in cloud computing and data center deals",
@@ -265,7 +399,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-433",
@@ -342,7 +476,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-430",
@@ -429,7 +563,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-428",
@@ -497,7 +631,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-429",
@@ -566,7 +700,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-431",
@@ -644,7 +778,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-425",
@@ -735,7 +869,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-427",
@@ -809,7 +943,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-423",
@@ -887,7 +1021,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-424",
@@ -956,7 +1090,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-422",
@@ -1031,7 +1165,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-426",
@@ -1107,7 +1241,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-432",
@@ -1185,7 +1319,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-421",
@@ -1264,7 +1398,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-419",
@@ -1338,7 +1472,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -1412,7 +1546,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-417",
@@ -1479,7 +1613,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-418",
@@ -1555,7 +1689,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-415",
@@ -1624,7 +1758,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-413",
@@ -1693,7 +1827,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-414",
@@ -1762,7 +1896,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-416",
@@ -1840,7 +1974,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-412",
@@ -1918,7 +2052,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-411",
@@ -1986,7 +2120,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-410",
@@ -2062,7 +2196,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-409",
@@ -2131,11 +2265,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-408",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -2203,7 +2337,7 @@
     },
     {
       "id": "news-407",
-      "rank": 28,
+      "rank": 30,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -2270,7 +2404,7 @@
     },
     {
       "id": "news-405",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -2406,7 +2540,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-404",
@@ -2477,7 +2611,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-402",
@@ -2545,7 +2679,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-403",
@@ -2615,7 +2749,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-400",
@@ -2684,7 +2818,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-399",
@@ -2753,7 +2887,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-397",
@@ -2830,7 +2964,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-398",
@@ -2909,7 +3043,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-395",
@@ -2987,7 +3121,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-401",
@@ -3061,11 +3195,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-394",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -3141,7 +3275,7 @@
     },
     {
       "id": "news-392",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -3209,7 +3343,7 @@
     },
     {
       "id": "news-393",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -3360,11 +3494,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-391",
-      "rank": 44,
+      "rank": 46,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -3502,7 +3636,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-389",
@@ -3570,7 +3704,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-384",
@@ -3635,7 +3769,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-383",
@@ -3696,136 +3830,6 @@
           "items": [
             "측정: job startup p50/p95·GPU utilization·retry·interruption recovery·completed-job cost",
             "팀 액션: canary 결과와 quota·capacity evidence를 통과 조건으로 삼고 rollback-ready IaC로 단계 확대"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-386",
-      "title_ko": "EC2 Capacity Reservation Resource Groups 확장: ML Capacity Blocks·interruptible 예약을 묶되 fallback 비용을 정책화",
-      "title_original": "Capacity Reservation Resource Groups now support Amazon EC2 Capacity Blocks and interruptible Capacity Reservations",
-      "summary": "- 공개: Capacity Reservation Resource Group에 **ML Capacity Blocks·interruptible Capacity Reservations** 추가 가능\n- 변경: 기존 On-Demand Capacity Reservation 전용 group에서 예약 portfolio를 단일 launch target으로 확장\n- 자동화: EC2 Fleet·EC2 Auto Scaling group에서 reservation type 우선순위와 예약 소진 시 On-Demand fallback 설정 가능\n- 범위: 관련 예약 유형 지원 Region, GovCloud·China 제외, group 기능 추가 요금 없음이라는 공식 공지\n- 경계: instance/GPU capacity·quota·AZ placement·fallback 비용·deadline은 별도 보증 대상 아님\n- 팀 액션: reservation hit/miss·fallback hours·On-Demand premium·queue/deadline을 workload별 guardrail로 운영 필요",
-      "detail": "AWS는 Capacity Reservation Resource Groups가 Amazon EC2 Capacity Blocks for ML과 interruptible Capacity Reservations를 지원한다고 2026년 8월 26일 03:00 KST에 공지했다. 이전에는 group에 On-Demand Capacity Reservations만 넣을 수 있었으나, 이제 서로 다른 예약 유형을 하나의 group에 추가하고 launch request에서 이를 target으로 지정할 수 있다. EC2 Fleet와 EC2 Auto Scaling group에서는 예약 유형별 우선순위를 지정하고 group 내 예약이 소진됐을 때 EC2 On-Demand capacity로 자동 fallback을 설정할 수 있다. AWS는 관련 Capacity Blocks와 interruptible ODCR이 지원되는 Region에서 제공하며 GovCloud와 China Region은 제외, 기능 자체에 추가 요금은 없다고 명시한다. 다만 특정 instance/GPU SKU, quota, AZ placement, Fleet fulfillment, fallback capacity, workload deadline, 실제 On-Demand 비용은 공지의 보증 범위가 아니다. reservation utilization과 fallback reason·hours·premium을 queue age·completed workload 비용과 함께 검증해야 한다.",
-      "why_it_matters": "ML·batch·inference fleet의 예약 capacity 유형을 하나의 launch target으로 다룰 수 있음. 그러나 자동 fallback은 capacity plan의 성공이 아니라 비용과 placement를 바꾸는 policy decision임.",
-      "engineering_implication": "reservation type·AZ·instance family·workload owner·priority·fallback spend ceiling을 inventory화해야 함. staging Fleet/Auto Scaling에서 reservation exhaustion·partial capacity·quota limit을 주입하고 reservation hit·fallback·queue age·deadline·On-Demand premium을 trace로 비교 필요.",
-      "korea_implication": "국내 리전 사용 가능성은 group 기능 공지와 별개로 필요한 Capacity Block·interruptible 예약·instance family의 실제 account·AZ availability를 확인해야 함.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Amazon EC2",
-        "Capacity Reservation",
-        "Capacity Blocks",
-        "Auto Scaling",
-        "EC2 Fleet",
-        "FinOps",
-        "ML Infrastructure"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-08-26 03:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/capacity-reservation-resource-groups-ec2",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New와 RSS exact timestamp `2026-08-25T18:00:00Z`를 직접 확인해 KST `2026-08-26 03:00`으로 변환. Capacity Reservation Resource Group이 ML Capacity Blocks와 interruptible Capacity Reservations를 포함하도록 확장된 공식 발표임.",
-          "items": [
-            "변경: 기존 On-Demand Capacity Reservation 전용 group에 다른 reservation type 추가 가능",
-            "목적: 예약 capacity portfolio 전체를 하나의 launch target으로 사용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "group을 만들고 원하는 Capacity Reservation을 추가한 뒤 launch request에서 group을 target으로 지정하는 흐름임. EC2 Fleet와 EC2 Auto Scaling group은 reservation type 우선순위와 예약 소진 시 EC2 On-Demand capacity 자동 fallback을 지정할 수 있음.",
-          "items": [
-            "지원: On-Demand Capacity Reservation·interruptible Capacity Reservation·Capacity Blocks for ML",
-            "범위: 관련 예약 유형 지원 Region, AWS GovCloud·China Region 제외라는 공식 범위",
-            "비용: group 기능 자체에 추가 요금 없음이라는 공식 공지"
-          ]
-        },
-        {
-          "heading": "용량·운영 경계",
-          "body": "reservation group은 특정 instance family·GPU SKU·AZ·quota·Fleet fulfillment를 보증하지 않음. On-Demand fallback도 workload deadline, topology, image compatibility, 실제 fallback capacity를 보장하는 기능이 아님.",
-          "items": [
-            "검증: reservation hit/miss·instance type/AZ eligibility·quota·pending launch·fallback reason 확인",
-            "훈련: reservation exhaustion·partial capacity·interruptible loss·Auto Scaling surge에서 queue age·deadline 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "예약 유형 통합은 availability policy와 cost policy를 함께 바꿈. fallback을 기본값으로 두기보다 workload별 최대 spend·owner approval·manual disable과 성공 job당 비용을 정의해야 함.",
-          "items": [
-            "측정: reservation utilization·unused capacity·fallback hours·On-Demand premium·completed workload당 비용",
-            "팀 액션: staging Fleet에서 priority와 fallback을 재현하고 budget alert·rollback template를 release gate로 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-387",
-      "title_ko": "AWS Lambda MicroVMs의 PrivateLink 지원: private endpoint 도입 전 API·HTTP 경로·DNS·비용 경계를 검증",
-      "title_original": "AWS Lambda MicroVMs now supports AWS PrivateLink",
-      "summary": "- 공개: AWS Lambda MicroVMs가 **AWS PrivateLink** 지원\n- 연결: VPC resource가 public internet을 거치지 않고 MicroVM API와 각 MicroVM HTTP endpoint에 private connectivity 사용 가능\n- 생성: Console·AWS CLI·CloudFormation·SDK로 PrivateLink VPC Endpoint 구성\n- 범위: Lambda MicroVMs 제공 Region이라는 공식 공지\n- 경계: endpoint policy·DNS·security group·cross-VPC reachability·API authorization·PrivateLink 요금·MicroVM lifecycle/SLO는 별도 검증 대상\n- 팀 액션: private DNS·endpoint policy·route·TLS·failure mode·per-endpoint 비용을 isolated VPC에서 canary 검증 필요",
-      "detail": "AWS는 AWS Lambda MicroVMs가 AWS PrivateLink를 지원한다고 2026년 8월 26일 01:34 KST에 공지했다. VPC resource는 public internet을 노출하지 않고 Lambda MicroVMs에 private connectivity를 사용할 수 있으며, MicroVM image 생성·MicroVM launch 같은 MicroVM API와 각 MicroVM의 HTTP endpoint에 연결할 수 있다. PrivateLink VPC Endpoint는 AWS Management Console, AWS CLI, AWS CloudFormation, AWS SDK로 생성한다. AWS는 Lambda MicroVMs 제공 Region에서 지원한다고 명시한다. 공지는 endpoint policy, private DNS, security group, subnet/route, cross-VPC·hybrid reachability, API authorization, TLS, PrivateLink pricing, endpoint 장애와 MicroVM lifecycle·availability SLO를 보증하지 않는다. regulated workload는 representative VPC에서 allow/deny path, DNS resolution, endpoint health, audit log와 per-endpoint·data-processing 비용을 검증해야 한다.",
-      "why_it_matters": "MicroVM control API와 workload HTTP endpoint를 VPC private path로 연결할 수 있는 선택지다. private transport가 API least privilege나 MicroVM workload isolation을 자동으로 제공하지는 않음.",
-      "engineering_implication": "endpoint service name·private DNS·subnet·security group·NACL·IAM/API authorization·TLS·CloudTrail/VPC Flow Logs·endpoint cost를 하나의 change set으로 검토해야 함. public path 차단과 endpoint failure·DNS fallback을 canary로 검증 필요.",
-      "korea_implication": "국내 리전에서는 Lambda MicroVMs와 해당 PrivateLink endpoint의 실제 제공 여부, account quota, network architecture와 data residency 요구사항을 console·service documentation으로 확인해야 함.",
-      "category": "Security",
-      "tags": [
-        "AWS",
-        "Lambda MicroVMs",
-        "AWS PrivateLink",
-        "VPC",
-        "Network Security",
-        "Private Connectivity",
-        "Serverless"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-08-26 01:34",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/lambda-microvms-supports-privatelink",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New와 RSS exact timestamp `2026-08-25T16:34:00Z`를 직접 확인해 KST `2026-08-26 01:34`으로 변환. Lambda MicroVMs가 AWS PrivateLink로 VPC 내부 private connectivity를 제공하는 공식 발표임.",
-          "items": [
-            "연결: public internet 노출 없이 VPC resource에서 Lambda MicroVMs 연결 가능",
-            "대상: MicroVM image 생성·launch API와 각 MicroVM HTTP endpoint"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "PrivateLink VPC Endpoint는 AWS Management Console, AWS CLI, AWS CloudFormation, AWS SDK로 생성 가능. AWS는 Lambda MicroVMs가 제공되는 모든 Region에서 지원한다고 공지함.",
-          "items": [
-            "구성: VPC Endpoint를 생성해 MicroVM API와 HTTP endpoint에 private path 구성",
-            "적용: 금융·의료·공공 등 network isolation 요구 workload를 공식 사용 사례로 제시"
-          ]
-        },
-        {
-          "heading": "네트워크·보안 경계",
-          "body": "PrivateLink는 transport path를 private하게 만들지만 API authorization, endpoint policy, DNS, security group, subnet route, TLS, workload-level authorization을 자동으로 설계하지 않음. 공지는 cross-VPC·hybrid reachability와 endpoint failure behavior를 보증하지 않음.",
-          "items": [
-            "검증: private DNS resolution·endpoint policy allow/deny·security group·NACL·API identity 확인",
-            "훈련: endpoint unavailable·DNS misconfiguration·public path 차단에서 control API와 workload HTTP recovery 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "regulated workload의 private connectivity는 endpoint 생성 완료가 아니라 allowed path와 audit evidence가 재현되는지로 승인해야 함. endpoint 수와 data processing은 비용 변수이므로 network isolation과 FinOps를 함께 검토해야 함.",
-          "items": [
-            "측정: endpoint health·DNS failure·connection error·API denial·VPC Flow Logs·CloudTrail·endpoint/data-processing 비용",
-            "팀 액션: isolated VPC canary에서 public egress 차단·TLS·IAM·endpoint failure·rollback을 release gate로 운영"
           ]
         }
       ],
