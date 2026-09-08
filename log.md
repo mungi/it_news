@@ -2432,3 +2432,10 @@
 - 증거 경계: graduation과 프로젝트 지표를 managed Kubernetes·CNI/CSI/GPU driver·regional capacity·support SLA·개별 workload failover 성공 보증으로 확대하지 않음. placement constraint·member-cluster RBAC/secret·policy conflict·propagation lag·etcd recovery·network partition·failover/failback을 representative workload drill로 검증할 대상으로 한정.
 - `news-437`을 KST `2026-09-08 11:06` 기준 rank 1에 추가하고 50-item newest-first cap의 actual tail `news-383`(KST `2026-08-26 04:36`)을 제거 후 rank 1–50 재부여. `weekly/2026-W38.md`, immutable raw capture, `index.md`를 동기화. raw-body SHA-256 `f92e92cd9e695244c390ac562e7bf16569cae64c237e4bc34fc3153f974bfd2b` 확인.
 - KST 첫 실행에서 01:52에 이미 N-central HF4·Anthropic compute 계약 보도 Deep Dive를 전면 재구성했으므로 same-day policy에 따라 timestamp-only 변경을 하지 않음.
+
+## [2026-09-08] update | Rogue ScreenConnect client의 4단계 VBScript 확산 추가
+- 확인 시각: 2026-09-08 18:18 KST. GeekNews·GeekNews Plus·AI타임스·인공지능신문 mandatory surface를 직접 probe했으며 GeekNews/GN⁺는 HTTP 403, 두 AI 매체는 HTTP 200이었음. AWS·GitHub·Kubernetes·CNCF·Google AI·The Hacker News RSS를 실제 파싱하고 기존 URL·title·event와 대조.
+- The Hacker News RSS `Mon, 07 Sep 2026 17:06:39 +0530`와 본문·Open Graph image를 직접 확인해 KST `2026-09-07 20:36`으로 기록. Huntress primary analysis도 HTTP 200으로 재검증해 rogue ScreenConnect client의 `wscript.exe`→`1.vbs`~`4.vbs`, 새 endpoint transfer·execute의 worm-like behavior, Quick Assist·phishing MSI·가짜 Geek Squad form 유입 사례, `WindowsServiceHost.vbs` Run Key와 `Process: Guest` audit indicator를 수록.
+- ConnectWise가 당시 file-transfer behavior issue와 `TransferFiles`/legacy `TransferFilesInSession` 비활성화 안내를 게시했다는 Huntress update를 관련 링크로 보존. fixed version·CVE release·active exploitation·단일 actor·전체 피해 범위는 source가 확정하지 않아 현재 상태로 확대하지 않음.
+- `news-438`을 KST `2026-09-07 20:36` 기준 rank 4에 추가하고 newest-first 50-item cap의 actual tail `news-384`(KST `2026-08-26 04:42`)을 제거 후 rank 1–50 재부여. `docs/data/weekly-news.json`·`weekly/2026-W38.md`·immutable raw capture·`index.md`를 동기화. raw-body SHA-256 `579f4a7a233e4c5262c6a9f376d907080a34e58ea8094e7e6ec08c4425072abd` 확인.
+- KST 첫 실행에서 01:52에 이미 두 Deep Dive를 전면 재구성했으므로 same-day policy에 따라 timestamp-only 변경을 하지 않음.

@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-rogue-screenconnect-vbscript-worm-like-activity-2026-09-07]] — Rogue ScreenConnect client의 4단계 VBScript 확산과 file-transfer·session audit·endpoint incident 대응 경계.
 - [[raw/articles/cncf-karmada-graduation-2026-09-08]] — Karmada CNCF Graduated 승격의 multi-cluster placement·propagation·failover control-plane 운영 검증 경계.
 - [[raw/articles/thn-peep-chrome-edge-native-messaging-backdoor-2026-09-08]] — PEEP Chrome·Edge post-compromise backdoor의 Secure Preferences 위조·Native Messaging host·browser-to-OS telemetry 대응 경계.
 - [[raw/articles/thn-microsoft-365-help-desk-vishing-token-replay-2026-09-08]] — Microsoft 365 fake IT-call·AitM token replay·SharePoint 대량 수집의 identity/SaaS audit 대응 경계.

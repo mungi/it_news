@@ -2,13 +2,13 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-08 14:10",
+  "last_updated_kst": "2026-09-08 18:18",
   "audience": "developers and engineers",
   "executive_summary": [
+    "- Rogue ScreenConnect client가 새로 연결된 endpoint로 4단계 VBScript를 전송·실행하는 worm-like activity가 Huntress 분석에서 관측됨. `TransferFiles` 권한 축소와 session audit·ScreenConnect→`wscript.exe`/PowerShell·Temp/AppData artifact 상관 분석을 즉시 수행 필요.",
     "- PEEP은 Chrome·Edge profile에 sideloaded extension을 자동 활성화하고 Native Messaging host로 OS command까지 연결하는 post-compromise toolkit으로 보도됨. extension allowlist 외에 Secure Preferences·force-install policy·native host·browser child process·plaintext C2 telemetry를 함께 점검 필요.",
     "- Microsoft 365 임원 표적 vishing은 AitM으로 session token을 탈취한 뒤 residential proxy에서 replay하고 SharePoint·OneDrive·Exchange·Box 대량 수집으로 이어지는 경로를 사용. identity sign-in과 SaaS content access audit를 동일 incident trace로 묶어야 함.",
     "- N-central HF4는 self-hosted RMM server의 인증 전 RCE 가능 CVE-2026-86218에 `2026.3.1.14` 즉시 update를 요구. RMM control plane은 patch 후에도 console exposure·privileged identity·automation history·tenant별 evidence를 검증 필요.",
-    "- Amazon Bedrock Managed Knowledge Base는 ServiceNow connector, SharePoint·OneDrive·Confluence 3LO setup, native connector sync scheduling을 추가. OAuth·ACL·attachment·deletion·sync lag·citation·rollback을 corpus별 gate로 운영 필요.",
     "- CNCF는 Karmada를 Graduated project로 승격. 중앙 placement·propagation·failover·multi-cluster autoscaling을 제공하는 control plane이므로 multi-cluster 도입은 maturity label과 별개로 federation 권한·정책 충돌·etcd/Prometheus 운영·failover drill을 workload별로 검증 필요."
   ],
   "deep_dives": [
@@ -402,6 +402,84 @@
       "rank": 3
     },
     {
+      "id": "news-438",
+      "title_ko": "Rogue ScreenConnect client의 4단계 VBScript 확산: RMM 세션 file transfer·child process·audit log를 즉시 조사",
+      "title_original": "Rogue ScreenConnect Clients Spread Four-Stage VBScript Chain to Newly Connected Hosts",
+      "summary": "- 관측: 서로 다른 조직의 rogue **ScreenConnect** client가 `wscript.exe`로 `1.vbs`~`4.vbs`를 반복 실행하는 activity 확인\n- 확산: 변조된 client가 새로 연결된 ScreenConnect endpoint로 네 VBScript를 자동 전송·실행하는 worm-like chain이라는 Huntress 분석\n- 초기 접근: Quick Assist 기술지원 사기·phishing MSI·가짜 Geek Squad 환불 form 등 서로 다른 social-engineering 경로 관측\n- 임시 조치: ConnectWise advisory는 cloud·on-premise session의 file-transfer behavior 이슈를 공지하고 `TransferFiles`/legacy `TransferFilesInSession` 비활성화 안내\n- 팀 액션: `Process: Guest`의 `RunFiles`/`RanFiles`, ScreenConnect→`wscript.exe`·PowerShell child process, user Run Key·Temp/AppData artifact와 remote session을 같은 incident trace로 조사 필요",
+      "detail": "The Hacker News는 Huntress 분석을 인용해 여러 조직의 rogue ScreenConnect client가 네 단계 VBScript chain을 실행하고, 변조된 client가 새로 연결된 endpoint로 이를 전송·실행하는 worm-like activity를 보도했다. Huntress는 `1.vbs`~`4.vbs`가 host resource·보안 제품·기존 ScreenConnect를 확인한 뒤 Dropbox payload를 처리하고, `runner.ps1`로 암호화 payload를 풀어 후속 PowerShell을 실행하는 흐름을 설명한다. 관측된 초기 접근은 Quick Assist 사칭, phishing MSI, 가짜 Geek Squad 환불 form으로 서로 다르며, campaign의 단일 운영자·피해 규모·모든 payload 결과는 확정되지 않았다. Huntress는 `Process: Guest`가 실행한 `RunFiles`/`RanFiles` audit entry를 즉시 의심해야 한다고 권고했다. ConnectWise는 9월 3일 cloud·on-premise Support/Access session의 file transfer behavior 이슈를 인정하고 CVE·fix를 주중 제공할 예정이라며 권한 비활성화를 임시 조치로 제시했다.",
+      "why_it_matters": "RMM client는 원격 세션·file transfer·script 실행을 endpoint 사이에 연결함. 인증된 원격 지원 도구의 child process와 session artifact를 분리해 보면 확산 경로·payload·operator identity를 놓칠 수 있음.",
+      "engineering_implication": "ScreenConnect cloud/on-premise instance, access role, `TransferFiles`·legacy `TransferFilesInSession`, session owner와 guest action을 inventory화하고 권한 축소 전후 support workflow를 canary 필요. `ScreenConnect.WindowsClient.exe`→`wscript.exe`/PowerShell, `%TEMP%\\1.vbs`~`4.vbs`·`value.txt`·`map.txt`·`out.enc`, `WindowsServiceHost.vbs` Run Key, remote endpoint transfer를 EDR·audit correlation rule로 운영 필요.",
+      "korea_implication": "국내 MSP와 기업 헬프데스크도 외부 원격지원 세션의 file-transfer 권한을 기본 지원 기능으로 취급하지 말고 고객·협력사 tenant별 승인, audit 보존, emergency disable과 대체 지원 절차를 점검 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "RMM",
+        "ScreenConnect",
+        "ConnectWise",
+        "Endpoint Detection",
+        "Remote Access",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-09-07 20:36",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/rogue-screenconnect-clients-spread-four.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWA_nxvqJuKkqq0ab1I-XR1YtpsM6BadhHDNOIheZmBflLWaQ018JFJsAUBVuyWWTYI4pyT8OQNXhui8Annde3SnOIScH9B0ohMq-OzXLjvPeAXQnz4mAUdEMS_07i7gLaWqPVpHaPvyLJdZQKUTs2MLGhjB9UZ0A83CGcSeDCJFKn7hNjiyf6dbzbHogp/s1600/screen.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Huntress — Rogue ScreenConnect Installations Across Unrelated Hosts Suggest Worm-Like Activity",
+          "url": "https://www.huntress.com/blog/rogue-screenconnect-installations"
+        },
+        {
+          "title": "ConnectWise Trust Center advisories",
+          "url": "https://www.connectwise.com/company/trust/advisories"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Huntress의 9월 3일 분석을 인용해 서로 무관한 조직에서 rogue ScreenConnect client가 `wscript.exe`를 반복 실행해 네 VBScript를 수행한 activity를 보도. Huntress는 변조된 client가 새로 연결된 ScreenConnect endpoint로 같은 scripts를 자동 transfer·execute하는 worm-like behavior를 확인함.",
+          "items": [
+            "관측: `ScreenConnect.WindowsClient.exe`가 `wscript.exe` child process를 생성하고 `1.vbs`~`4.vbs` 실행",
+            "초기 접근: Quick Assist tech-support scam·phishing-delivered MSI·fake Geek Squad refund form의 서로 다른 유입 경로",
+            "지속성: user AppData의 `WindowsServiceHost.vbs`를 가리키는 `WindowsServiceHost` User Run Key 관측"
+          ]
+        },
+        {
+          "heading": "4단계 script와 payload 흐름",
+          "body": "Huntress 분석에서 첫 script는 host resource·보안 제품·기존 ScreenConnect를 검사해 state 값을 `%TEMP%\\value.txt`에 기록함. 후속 scripts는 Dropbox URL의 내용을 처리해 payload를 선택하고, 마지막 단계가 PowerShell로 암호화 archive와 후속 script를 실행하는 흐름임.",
+          "items": [
+            "`1.vbs`: RAM·ScreenConnect·보안 제품을 열거하고 state value 기록",
+            "`2.vbs`·`3.vbs`: Dropbox content와 state value를 사용해 `%TEMP%\\map.txt`·`out.enc` 생성",
+            "`4.vbs`: `runner.ps1`로 `out.enc`를 처리하고 `PyTorchFix.ps1` 등 후속 PowerShell 실행 경로",
+            "경계: Dropbox URL은 9월 2일 기준 offline이며 전체 payload 내용·모든 victim 결과는 확인 불가"
+          ]
+        },
+        {
+          "heading": "ConnectWise 공지와 즉시 통제",
+          "body": "Huntress post의 9월 3일 업데이트는 ConnectWise가 Support·Access session의 file-transfer behavior 이슈를 확인했으며 cloud와 on-premise deployment가 범위라고 공지한 사실을 인용함. CVE·official fix는 주중 제공 예정이라는 당시 공지 범위이므로, 현 시점 fixed version 또는 exploitation status를 이 source만으로 단정하지 않음.",
+          "items": [
+            "임시 통제: `TransferFiles`, legacy version의 `TransferFilesInSession` permission 비활성화 검토",
+            "범위: session별 file transfer 권한·role·tenant·technician/guest action을 change record로 보존",
+            "운영: 권한 축소 뒤 원격지원 workflow·대체 file-delivery path·support SLA를 canary로 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "RMM abuse 대응은 executable hash 하나를 차단하는 작업이 아니라 session authorization, file transfer, child process, persistence, C2와 newly connected endpoint를 연결하는 control-plane 조사임. remote support가 필요한 조직은 emergency disable 뒤에도 session log와 endpoint evidence를 보존해야 함.",
+          "items": [
+            "탐지: `Process: Guest`의 `RunFiles`/`RanFiles`, ScreenConnect→`wscript.exe`/PowerShell, Temp·AppData artifact correlation",
+            "대응: affected endpoint isolation·remote session revoke·RMM credential/API token review·persistence artifact 제거 전 forensic preservation",
+            "팀 액션: representative ScreenConnect tenant에서 file-transfer disable·audit export·EDR rule·support rollback을 drill로 검증"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-434",
       "title_ko": "앤트로픽 compute 계약 보도: 5,170억 달러 headline을 전력·가동 capacity·FinOps 증거로 분해",
       "title_original": "Anthropic secures up to $517 billion in cloud computing and data center deals",
@@ -467,7 +545,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-433",
@@ -544,7 +622,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-430",
@@ -631,7 +709,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-428",
@@ -699,7 +777,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-429",
@@ -768,7 +846,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-431",
@@ -846,7 +924,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-425",
@@ -937,7 +1015,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-427",
@@ -1011,7 +1089,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-423",
@@ -1089,7 +1167,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-424",
@@ -1158,7 +1236,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-422",
@@ -1233,7 +1311,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-426",
@@ -1309,7 +1387,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-432",
@@ -1387,7 +1465,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-421",
@@ -1466,7 +1544,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-419",
@@ -1540,7 +1618,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
@@ -1614,7 +1692,7 @@
         }
       ],
       "id": "news-420",
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-417",
@@ -1681,7 +1759,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-418",
@@ -1757,7 +1835,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-415",
@@ -1826,7 +1904,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-413",
@@ -1895,7 +1973,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-414",
@@ -1964,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-416",
@@ -2042,7 +2120,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-412",
@@ -2120,7 +2198,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-411",
@@ -2188,7 +2266,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-410",
@@ -2264,7 +2342,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-409",
@@ -2333,11 +2411,11 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-408",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -2405,7 +2483,7 @@
     },
     {
       "id": "news-407",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -2472,7 +2550,7 @@
     },
     {
       "id": "news-405",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -2608,7 +2686,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-404",
@@ -2679,7 +2757,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-402",
@@ -2747,7 +2825,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-403",
@@ -2817,7 +2895,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-400",
@@ -2886,7 +2964,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-399",
@@ -2955,7 +3033,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-397",
@@ -3032,7 +3110,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-398",
@@ -3111,7 +3189,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-395",
@@ -3189,7 +3267,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-401",
@@ -3263,11 +3341,11 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-394",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Amazon Redshift streaming ingestion의 Kinesis Data Streams 10 MiB record 지원: split 제거 전 payload·throughput·지연 검증",
       "title_original": "Amazon Redshift streaming can now ingest 10MiB records from Amazon Kinesis Data Streams",
       "summary": "- 공개: Amazon Redshift streaming ingestion이 Amazon Kinesis Data Streams(KDS)의 최대 **10 MiB record**를 직접 수신하도록 확대\n- 변화: 기존 1 MiB 제한의 10배이며 KDS의 확장된 최대 record size와 일치, 대형 payload split 없이 적재 가능\n- 범위: Amazon Redshift가 제공되는 모든 commercial AWS Region에서 사용 가능\n- 경계: schema/serialization·producer retry·KDS shard throughput·streaming materialized view latency·malformed record·Redshift capacity·비용·delivery SLO는 공지의 보증 범위 아님\n- 팀 액션: 1~10 MiB 대표 payload에서 throughput·retry·ingest lag·parse error·queue/compute·completed-record 비용을 기존 split pipeline과 비교 필요",
@@ -3343,7 +3421,7 @@
     },
     {
       "id": "news-392",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "Amazon Redshift의 AWS Agent Toolkit 통합: MCP 실행 권한과 SQL·migration skill을 production change control로 분리",
       "title_original": "Amazon Redshift integrates with Agent Toolkit for AWS for AI-assisted data warehouse management",
       "summary": "- 공개: Amazon Redshift가 **Agent Toolkit for AWS**와 통합돼 Claude Code·Kiro·Cursor 같은 AI agent에서 warehouse·data lake의 build·query·troubleshoot·migration 작업 지원\n- 구성: 인증된 AWS API 실행을 제공하는 AWS MCP server와 SQL·metadata discovery·data loading·materialized view·data type·migration 절차를 담은 Redshift skills 결합\n- 범위: provisioned cluster와 Serverless workgroup에서 기존 인프라 변경 없이 사용 가능하며, Redshift와 AWS MCP Server 제공 모든 리전에서 추가 비용 없이 제공\n- 경계: agent별 실제 AWS IAM 권한, SQL 실행 승인·read/write 분리, query cost·workload isolation·migration correctness·audit retention은 공지의 보증 범위 아님\n- 팀 액션: least-privilege role·read-only discovery·write approval·query guardrail·CloudTrail 및 Redshift audit log·rollback을 포함한 canary 검증 필요",
@@ -3411,7 +3489,7 @@
     },
     {
       "id": "news-393",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "AWS Elastic Disaster Recovery Recovery Plans: 다중 서버 복구 순서·승인·비중단 drill을 실행 계약으로 고정",
       "title_original": "AWS Elastic Disaster Recovery introduces Recovery Plans for orchestrated application recovery",
       "summary": "- 공개: AWS DRS가 **Recovery Plans**를 추가해 database·application tier·supporting service로 구성된 다중 서버 애플리케이션의 recovery·drill launch를 순서대로 실행\n- 구성: 서버를 sequential step으로 묶고 step별 wait time을 설정하며, 단일 action·비중단 drill mode·human approval step·실시간 progress monitoring 지원\n- 범위: AWS DRS 제공 모든 리전에서 standard DRS usage 외 추가 기능 요금 없이 제공\n- 경계: dependency discovery·database consistency·DNS/load balancer·secret/network cutover·RTO/RPO·timeout/rollback·account/Region failure는 공지의 보증 범위 아님\n- 팀 액션: dependency graph·runbook·approval owner·step별 timeout·rollback·RTO/RPO evidence를 포함한 non-disruptive drill을 release gate로 검증 필요",
@@ -3562,11 +3640,11 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-391",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "엔비디아의 허깅페이스 인수 보도: 오픈소스 모델 허브의 공급망·배포 통제 변화를 계약 확인 전 분리",
       "title_original": "NVIDIA acquires Hugging Face (reported)",
       "summary": "- 보도: AI타임스가 엔비디아와 허깅페이스의 **129억 달러 인수 합의**를 보도하며 모델 허브·개발자 플랫폼·AI cloud 결합 전략으로 설명\n- 범위: 모델 검색·저장·공유·배포와 하드웨어 최적화·cloud 기능은 기사 서술 범위로 유지\n- 미확인: 양사의 공식 거래 발표, closing 조건, 제품·API·요금·데이터 정책은 이번 실행에서 직접 확인하지 못함\n- 팀 액션: model artifact provenance·access token·inference endpoint·billing export·exit plan inventory 필요",
@@ -3704,7 +3782,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-389",
@@ -3769,71 +3847,6 @@
             "측정: control-plane API latency·watch reconnect·HPA reaction·pod scheduling·node recovery·error budget",
             "검증: cgroups v2 Memory QoS·ipvs 대체 proxy path·admission config·DRA·SELinux volume 동작",
             "팀 액션: staging upgrade에서 manifest/API scan과 workload canary를 통과시킨 cluster만 단계 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-384",
-      "title_ko": "AWS IoT Core InfluxDB rule action: 시계열 telemetry를 custom pipeline 없이 직접 적재하되 batching·인증·운영 경계를 검증",
-      "title_original": "AWS IoT Core now supports native InfluxDB routing for time-series data",
-      "summary": "- 공개: AWS IoT Core가 IoT device의 time-series data를 **InfluxDB rule action**으로 직접 라우팅 지원\n- 변환: device data를 InfluxDB line protocol로 자동 변환해 Amazon Timestream managed 또는 self-hosted InfluxDB cluster에 기록\n- batching: device-side pre-batched payload와 IoT rules engine의 server-side aggregation 두 방식 제공\n- 범위: Amazon Timestream for InfluxDB 제공 AWS Global Region에서 사용 가능이라는 공식 공지\n- 경계: destination connectivity·authentication lifecycle·write durability·ordering·backpressure·retention·self-hosted cluster SLO는 공식 공지의 보증 범위 아님\n- 팀 액션: schema·tag cardinality·batch size·flush/retry·dead-letter·credential rotation·ingest lag·cost per retained point를 staging telemetry로 검증 필요",
-      "detail": "AWS는 AWS IoT Core가 IoT device의 time-series data를 InfluxDB rule action으로 직접 라우팅한다고 2026년 8월 26일 04:42 KST에 공지했다. 새 rule action은 device-side custom code 또는 intermediate cloud service 없이 device data를 InfluxDB line protocol로 자동 변환해 Amazon Timestream managed 또는 self-hosted InfluxDB cluster에 기록한다. device가 미리 묶어 보내는 device-side batching과 IoT rules engine이 개별 message를 집계하는 server-side batching을 제공하며, 과학기기 telemetry 수천 건을 millisecond granularity로 적재하는 예시를 제시한다. 시작 절차는 IoT Core 연결 뒤 destination database, authentication, batching parameter를 지정하는 방식이며 Amazon Timestream for InfluxDB 제공 Global Region이 공식 범위다. 공지는 destination network path, authentication secret rotation, write acknowledgement·retry·ordering·duplicate handling, schema/tag cardinality, retention, backpressure, self-hosted cluster capacity·SLO, 실제 비용을 보증하지 않는다. 대표 device payload로 ingest lag, write error, retry, batch flush, storage cost와 dashboard query 결과를 검증해야 한다.",
-      "why_it_matters": "IoT telemetry에서 protocol conversion과 intermediate pipeline을 줄일 수 있는 managed routing 선택지다. 직접 적재 경로가 생겨도 data model, credential, retry, retention, destination cluster의 운영 책임이 사라지는 것은 아님.",
-      "engineering_implication": "device-side와 server-side batching을 동일 payload로 비교하고 points/sec·batch flush latency·ingest lag·write error·retry·duplicate·tag cardinality·storage/query cost를 수집해야 함. destination authentication·network egress·dead-letter·retention·schema migration·rollback을 IaC와 runbook에 고정 필요.",
-      "korea_implication": "국내 IoT·제조 telemetry는 실제 사용 가능 리전, device-to-cloud 네트워크 경로, destination data residency, 운영 지원과 비용을 account·service 문서에서 별도 확인해야 함.",
-      "category": "Data",
-      "tags": [
-        "AWS",
-        "AWS IoT Core",
-        "InfluxDB",
-        "Time-series",
-        "Telemetry",
-        "Timestream",
-        "IoT"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-08-26 04:42",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/aws-iot-core-influxdb/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New와 RSS exact timestamp `2026-08-25T19:42:00Z`를 직접 확인해 KST `2026-08-26 04:42`으로 기록. AWS IoT Core가 time-series device data를 InfluxDB database로 직접 보내는 InfluxDB rule action을 추가한 공식 발표임.",
-          "items": [
-            "공개: custom device-side code 또는 intermediate cloud service 없이 IoT telemetry routing 가능",
-            "변환: device data를 InfluxDB line protocol로 자동 변환해 destination database에 기록"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "destination은 Amazon Timestream managed InfluxDB 또는 self-hosted InfluxDB cluster이며, device-side batching과 IoT rules engine의 server-side batching을 선택할 수 있음. 시작 시 destination database, authentication, batching parameter를 rule action에 지정하는 흐름임.",
-          "items": [
-            "device-side: device가 pre-batched payload를 AWS IoT Core로 전송",
-            "server-side: rules engine이 individual message를 집계한 뒤 InfluxDB write 실행",
-            "범위: Amazon Timestream for InfluxDB 제공 AWS Global Region이라는 공식 범위"
-          ]
-        },
-        {
-          "heading": "데이터·운영 경계",
-          "body": "direct routing은 destination write의 실제 내구성·순서·중복 처리·backpressure를 자동 증명하지 않음. 공지는 self-hosted cluster의 network path, capacity, authentication secret lifecycle, schema/tag cardinality, retention, failure recovery를 보증하지 않음.",
-          "items": [
-            "검증: timestamp precision·measurement/tag schema·high-cardinality·out-of-order message·duplicate write 처리",
-            "복구: destination outage·credential expiry·batch flush failure·retry storm에서 ingest lag·dead-letter·replay 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "pipeline 단순화는 운영 단순화의 충분조건이 아님. device-side와 server-side batching은 payload size, network cost, rules processing, destination write rate, query freshness를 함께 바꾸므로 workload별 실측 비교가 필요.",
-          "items": [
-            "측정: points/sec·batch size·flush latency·ingest lag·write error·retry·storage/query cost·retained-point cost",
-            "팀 액션: representative telemetry를 staging에 replay하고 authentication rotation·destination failover·retention·rollback evidence를 release gate로 운영"
           ]
         }
       ],
