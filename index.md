@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-09 | Total pages: 332
+> Last updated: 2026-09-10 | Total pages: 332
 
 ## Entities
 
@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-infostealer-ai-session-token-replay-2026-09-10]] — infostealer 로그의 AI session token·API key 재생, MFA 이후 identity·endpoint·SaaS·cloud credential lifecycle 대응 경계.
 - [[raw/articles/thn-deepseek-harness-cve-2026-82533-sandbox-escape-2026-09-09]] — DeepSeek Harness `CVE-2026-82533` local control interface의 agent sandbox·approval bypass와 version·loopback·session 권한 검증 경계.
 - [[raw/articles/thn-chrome-v8-cve-2026-87491-active-exploitation-2026-09-09]] — Chrome V8 `CVE-2026-87491` active exploitation 보도와 browser fleet fixed-version·restart·Chromium 파생 browser patch 추적 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-6-astra-ga-2026-09-09]] — AWS 공식 GPT-6 Astra Bedrock GA의 model access·context·ChatGPT Work/Codex·plugin 권한 검증 경계.
