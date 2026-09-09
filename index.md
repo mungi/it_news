@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-openai-gpt-6-astra-ga-2026-09-09]] — AWS 공식 GPT-6 Astra Bedrock GA의 model access·context·ChatGPT Work/Codex·plugin 권한 검증 경계.
 - [[raw/articles/google-gtig-adversarial-ai-autonomy-2026-09-08]] — GTIG adversarial AI: 6시간 미만 credential harvesting과 agent·CI/CD·cloud identity 대응 경계.
 - [[raw/articles/checkpoint-chatgpt-shared-clipboard-cross-account-2026-09-08]] — ChatGPT shared-service cross-account data leakage 연구의 connector·sandbox·artifact metadata tenant isolation 경계.
 - [[raw/articles/aitimeskr-qualcomm-aws-custom-silicon-optical-connectivity-2026-09-08]] — Qualcomm·AWS 다세대 custom silicon·1.6Tbps optical connectivity 협력 보도의 compute·fabric capacity 검증 경계.

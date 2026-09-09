@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-09 06:34",
+  "last_updated_kst": "2026-09-09 10:40",
   "audience": "developers and engineers",
   "executive_summary": [
+    "- AWS는 OpenAI `GPT-6 Astra`의 Amazon Bedrock GA를 발표. 지원 Bedrock API 직접 호출과 ChatGPT Work·Codex 연결 범위는 IAM·model access·quota·plugin·tool trace를 함께 검증하는 deployment change임.",
     "- Adobe Commerce·Magento `CVE-2026-75650`은 active exploitation이 확인된 CVSS `10.0` RCE 범위. `VULN-39341` hotfix와 encryption key/session rotation, template·webroot·cron·admin/API forensic을 병렬 실행 필요.",
     "- FreeIPA·389 DS flaw chain은 anonymous client가 administrator Kerberos credential을 만들 수 있는 경로로 보도됨. IdM package/errata뿐 아니라 anonymous LDAP·OTP ACI·principal/keytab/certificate·CA audit를 동일 incident record로 점검 필요.",
     "- Cloudflare Automatic Key Exchange는 origin capability probing으로 PQC hybrid `X25519MLKEM768`을 우선해 HelloRetryRequest를 약 52%→3.7%, handshake p90을 150ms 이상 줄였다고 발표. origin TLS stack·mTLS·fallback·alert telemetry canary가 필요.",
-    "- Rogue ScreenConnect client가 새 endpoint로 4단계 VBScript를 transfer·execute하는 worm-like activity가 관측됨. `TransferFiles` 권한 축소와 session audit·ScreenConnect→`wscript.exe`/PowerShell·Temp/AppData artifact 상관 분석을 즉시 수행 필요.",
-    "- PEEP은 Chrome·Edge profile에 sideloaded extension을 자동 활성화하고 Native Messaging host로 OS command까지 연결하는 post-compromise toolkit으로 보도됨. extension allowlist 외에 Secure Preferences·force-install policy·native host·browser child process·plaintext C2 telemetry를 함께 점검 필요."
+    "- Rogue ScreenConnect client가 새 endpoint로 4단계 VBScript를 transfer·execute하는 worm-like activity가 관측됨. `TransferFiles` 권한 축소와 session audit·ScreenConnect→`wscript.exe`/PowerShell·Temp/AppData artifact 상관 분석을 즉시 수행 필요."
   ],
   "deep_dives": [
     {
@@ -200,6 +200,84 @@
   ],
   "items": [
     {
+      "id": "news-420",
+      "title_ko": "OpenAI GPT-6 Astra, Amazon Bedrock에서 정식 제공: 100만 input token·ChatGPT Work/Codex 연결을 IAM·quota·tool trace로 검증",
+      "title_original": "OpenAI GPT-6 Astra is now generally available on Amazon Bedrock",
+      "summary": "- GA: AWS가 `GPT-6 Astra`의 Amazon Bedrock 정식 제공을 공식 발표\n- 사용 경로: 지원 Bedrock API 직접 호출 또는 ChatGPT Work·Codex의 Bedrock 모델 연결 가능\n- 기능 범위: 최대 **100만 input token** context와 조직 voice·template·standard에 맞춘 output 생성이라는 AWS 발표\n- 확장: ChatGPT Work용 enterprise plugin이 common business application 전반의 browser-use capability를 확장한다는 범위\n- 팀 액션: model access·리전·quota·IAM·plugin scope·audit을 확인하고 read-only cohort에서 task 성공률·p95·context 비용·approval·rollback을 검증 필요",
+      "detail": "AWS는 OpenAI GPT-6 Astra가 Amazon Bedrock에서 GA가 됐다고 발표했다. 지원 Bedrock API로 모델을 직접 호출하거나 ChatGPT Work·Codex를 Bedrock의 모델에 연결할 수 있으며, AWS는 autonomous agent, 대규모 문서 분석, 복잡한 software issue 조사와 경쟁하는 입력 간 판단이 필요한 application을 사용 사례로 제시한다. 공식 announcement는 최대 100만 input token context와 조직 voice·template·standard에 맞춘 output 생성을 언급하고, ChatGPT Work enterprise plugin이 common business application에서 browser-use capability를 확장한다고 설명한다. 지원 리전, model identifier·API parameter, pricing, quota, latency·throughput SLO, data retention·residency, plugin별 권한·action approval은 이번 announcement에서 확인하지 못했다. 기존 AI타임스의 공개·benchmark·가격 보도는 관련 링크로 보존하되, 이번 카드의 source와 발행 시각은 직접 확인한 AWS GA announcement로 갱신한다.",
+      "why_it_matters": "모델 GA와 Bedrock 연결은 API endpoint 교체가 아니라 AWS IAM·model access·quota·CloudTrail/audit와 ChatGPT Work/Codex tool·plugin 권한이 결합되는 deployment change임. 100만 token context와 browser-use 연결은 문서·tool input 범위와 실패 시 비용·복구 범위를 함께 키울 수 있음.",
+      "engineering_implication": "Bedrock model access와 target region·quota를 먼저 확인하고, ChatGPT Work/Codex 연결은 read-only tool·short-lived credential·destination allowlist·spend cap을 가진 cohort부터 적용 필요. model invocation·tool call·plugin action·approval·denial·context/token 비용·fallback·revoke를 같은 trace로 수집하고, production write action은 별도 approval gate로 유지 필요.",
+      "korea_implication": "한국 리전 제공 여부, cross-region inference, 데이터 처리·보존, 가격·quota, support 조건은 이번 announcement에서 확인하지 못함. 국내 공공·금융·기업 환경은 source code·prompt·connector data·browser action의 국외 처리와 audit retention을 계약·보안 검토에서 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "GPT-6 Astra",
+        "AWS",
+        "Amazon Bedrock",
+        "Agent",
+        "ChatGPT Work",
+        "Codex",
+        "Model Governance"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-09-09 07:49",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-astra-on-amazon-bedrock/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "AI타임스 GPT-6 Astra 공개·benchmark·가격 보도",
+          "url": "https://www.aitimes.com/news/articleView.html?idxno=214821"
+        },
+        {
+          "title": "Amazon Bedrock model access documentation",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS What’s New RSS의 `Tue, 08 Sep 2026 22:49:00 GMT`와 canonical announcement 본문을 직접 확인해 KST `2026-09-09 07:49`로 기록. OpenAI GPT-6 Astra의 Amazon Bedrock GA 공식 발표임.",
+          "items": [
+            "호출: 지원 Amazon Bedrock API로 GPT-6 Astra 직접 호출 가능",
+            "연결: ChatGPT Work·Codex를 Amazon Bedrock의 모델에 연결 가능한 공식 범위",
+            "경계: announcement는 model identifier·지원 리전·quota·가격·SLA를 명시하지 않음"
+          ]
+        },
+        {
+          "heading": "AWS가 제시한 기능과 사용 범위",
+          "body": "AWS는 최대 100만 input token context window와 조직 voice·template·standard에 맞춘 output 생성을 언급함. autonomous agent, 대규모 문서 collection 분석, 복잡한 software issue 조사, 여러 입력 간 판단이 필요한 application이 예시 범위임.",
+          "items": [
+            "context: 최대 **100만 input token**이라는 AWS 발표 범위",
+            "workflow: agent·document analysis·software investigation·judgment application 예시",
+            "확장: ChatGPT Work enterprise plugin이 common business application에서 browser-use capability를 확장한다는 설명"
+          ]
+        },
+        {
+          "heading": "권한·데이터·운영 경계",
+          "body": "Bedrock model access와 ChatGPT Work/Codex·plugin 연결은 별도 identity와 data path를 가질 수 있음. 긴 context와 browser-use를 실제 production authority로 해석하기 전 IAM policy, connector scope, tool destination, action approval, audit와 revoke propagation을 tenant별로 확인해야 함.",
+          "items": [
+            "확인: model access·target region·quota·service role·CloudTrail/audit·retention 설정",
+            "분리: read-only lookup과 browser·repository·cloud production write action의 approval lane",
+            "경계: data residency·plugin별 permission·action confirmation·throughput/latency 보증은 원문 미확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "GA 여부가 deployment acceptance의 완료 기준은 아님. 모델 invocation과 tool·plugin action, context/token 비용, human approval·denial, fallback과 credential revoke가 하나의 trace에서 확인돼야 agent workload를 확장할 수 있음.",
+          "items": [
+            "측정: task success·TTFT/p95·context/token 비용·tool retry·approval rate·denied action·rollback time",
+            "통제: feature flag·concurrency/spend cap·short-lived credential·destination allowlist·write approval 적용",
+            "팀 액션: representative workflow의 read-only canary와 provider/quota failure fallback을 release gate로 고정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-444",
       "title_ko": "ChatGPT cross-account sandbox channel 연구: connected app read와 internal artifact metadata를 데이터 경계·승인 정책으로 재검토",
       "title_original": "The Shared Clipboard Inside the Sandbox: Cross-Account Data Leakage in ChatGPT",
@@ -274,7 +352,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-443",
@@ -347,7 +425,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-442",
@@ -415,7 +493,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-439",
@@ -481,7 +559,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-440",
@@ -558,7 +636,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-441",
@@ -626,7 +704,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-437",
@@ -694,7 +772,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "source_name": "The Hacker News",
@@ -761,7 +839,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "source_name": "The Hacker News",
@@ -828,7 +906,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-438",
@@ -906,7 +984,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-434",
@@ -974,7 +1052,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-433",
@@ -1051,7 +1129,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-430",
@@ -1138,7 +1216,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-428",
@@ -1206,7 +1284,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-429",
@@ -1275,7 +1353,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-431",
@@ -1353,7 +1431,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-425",
@@ -1444,7 +1522,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-427",
@@ -1518,7 +1596,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-423",
@@ -1596,7 +1674,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-424",
@@ -1665,7 +1743,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-422",
@@ -1740,7 +1818,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-426",
@@ -1816,7 +1894,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-432",
@@ -1894,7 +1972,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-421",
@@ -1973,7 +2051,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-419",
@@ -2047,80 +2125,6 @@
           ]
         }
       ],
-      "rank": 25
-    },
-    {
-      "title_ko": "OpenAI GPT-6 Astra 공개 보도: 전문 agent 성능·cyber access·가격을 benchmark·권한·운영 trace로 분리",
-      "title_original": "OpenAI unveils GPT-6 Astra",
-      "summary": "- 공개: AI타임스가 OpenAI의 `GPT-6 Astra` 출시와 일부 기업 우선 공개를 보도\n- 성능: FrontierMath Tier 4 97.6%, ARC-AGI-3 98.6%, ExploitBench 100%, Terminal-Bench 4.0 57.9% 등은 기사에 인용된 provider·benchmark 수치\n- 비용·접근: 입력/출력 100만 token당 $10/$50, Fast mode 최대 2.5배 속도, ChatGPT·API·Bedrock 순차 제공 계획은 기사 범위\n- 팀 액션: production 승격 전 task success·tool retry·TTFT/p95·token cost·approval·safety intervention·rollback을 동일 trace에서 workload별 검증 필요",
-      "detail": "AI타임스는 OpenAI가 GPT-6 Astra를 공개하고 컴퓨터 제어, 브라우징, 소프트웨어 엔지니어링, 사이버 보안, 과학 연구에 적용한다고 보도했다. 기사에는 FrontierMath Tier 4 97.6%, ARC-AGI-3 98.6%, ExploitBench 100%, Agents’ Last Exam 59.3%, OSWorld 2.0 작업 시간 약 47% 단축, GPQA Diamond 96.0%, Terminal-Bench 4.0 57.9%가 인용됐다. Context Retrieval 메모리, Fast mode와 입력/출력 100만 token당 $10/$50 가격, 일부 기업 우선 공개 및 ChatGPT·API·AWS Bedrock 순차 제공도 보도 범위다. 다만 OpenAI 원문은 이번 실행에서 Cloudflare challenge로 본문을 직접 읽지 못했고, model card·API endpoint·region·quota·contract·SLA·benchmark harness·seed·prompt·tool permission·independent reproduction은 확인하지 못했다. 따라서 성능·가격·zero-day 발견·Daybreak 안전장치·제공 일정은 기사 또는 provider-reported 주장으로 한정한다. 도입 조직은 privileged tool을 분리한 canary에서 완료율, retry/timeout, TTFT·p95, cache 포함 token 비용, approval 거부율, safety intervention, audit completeness와 rollback 시간을 함께 비교해야 한다.",
-      "why_it_matters": "전문 agent 모델은 benchmark 점수보다 tool 권한, 장시간 session memory, context·cache 비용, human approval과 incident 복구가 실제 위험과 비용을 결정함. cyber capability가 포함된 모델은 access tier와 tool egress boundary를 별도 control plane으로 다뤄야 함.",
-      "engineering_implication": "모델 교체는 feature flag·read-only tool·budget cap·short-lived credential을 가진 workload cohort부터 시작해야 함. benchmark 비교표와 별개로 task 성공률, tool retry, p95, token·cache 비용, unsafe action 차단, reviewer override, trace export, provider 장애 fallback을 release gate로 기록 필요.",
-      "korea_implication": "국내 제공 리전, 데이터 처리·보존, 가격·quota, Bedrock availability, 보안 기능과 support 계약은 이번에 직접 검증하지 못함. 공공·금융 및 폐쇄망 조직은 source code·prompt·tool trace의 국외 이전과 retention을 계약·보안 검토에서 확인해야 함.",
-      "category": "AI",
-      "tags": [
-        "OpenAI",
-        "GPT-6 Astra",
-        "Agent",
-        "Coding",
-        "Cybersecurity",
-        "Benchmark",
-        "FinOps",
-        "Model Governance"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-09-04 05:36",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214821",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/214821_218550_2412.jpeg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "OpenAI GPT-6 Astra 공식 발표 (이번 실행에서 Cloudflare challenge로 본문 미확인)",
-          "url": "https://openai.com/index/gpt-6-astra/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스의 `article:published_time` `2026-09-04T05:36:23+09:00`를 KST `2026-09-04 05:36`으로 기록. 기사는 OpenAI가 GPT-6 Astra를 공개하고 일부 기업부터 제공한다고 보도함. 직접 접근한 OpenAI 공식 URL은 Cloudflare challenge로 본문 검증이 불가했으므로, 이 항목의 사실과 시각은 읽을 수 있었던 timestamped secondary report 경계임.",
-          "items": [
-            "출시: 컴퓨터 제어·브라우징·software engineering·cybersecurity·과학 연구를 대상으로 한 차세대 flagship model이라는 기사 설명",
-            "접근: 일부 기업 우선 공개 뒤 ChatGPT Plus·Pro·Business·Enterprise, API, AWS Bedrock 순차 제공 계획이라는 보도 범위",
-            "경계: provider 공식 model card·API schema·지원 리전·quota·SLA·contract·retention은 이번 실행에서 직접 확인하지 못함"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사는 GPT-6 Astra의 FrontierMath Tier 4 97.6%, ARC-AGI-3 98.6%, ExploitBench 100%, Agents’ Last Exam 59.3%, GPQA Diamond 96.0%, Terminal-Bench 4.0 57.9%를 인용함. OSWorld 2.0 작업 시간 약 47% 단축, Context Retrieval 메모리, Fast mode 최대 2.5배 속도와 입력/출력 100만 token당 $10/$50도 기사에 제시됨.",
-          "items": [
-            "성능: 수학·추론·agent·computer use·coding·cyber benchmark 수치는 기사 및 provider-reported 평가 범위",
-            "메모리: 장시간 개발 작업에서 session 간 검색 가능한 Context Retrieval을 도입했다는 기사 설명",
-            "가격: token 단가와 Fast mode 수치는 context length·cache·retry·concurrency·billing 조건이 미확인인 비용 신호"
-          ]
-        },
-        {
-          "heading": "검증·권한·안전 경계",
-          "body": "기사의 zero-day 발견, Daybreak 기반 안전장치, 원격 monitoring 강화와 cyber 연구 제한은 정책·운영 artifact가 없으면 production control 보증이 아님. benchmark harness, seed, prompt, evaluator, tool permission, environment와 independent reproduction이 공개되지 않은 상태에서는 점수를 특정 조직의 task 성공률이나 자동 실행 승인 근거로 바꿀 수 없음.",
-          "items": [
-            "검증: representative repository·browser·terminal task에서 task success, retry, timeout, human rework와 p95를 baseline model과 비교",
-            "권한: browser·shell·cloud credential·production write tool을 read-only와 short-lived credential lane으로 분리",
-            "안전: unsafe action 차단·approval request·safety intervention·audit trace·incident escalation을 tool call ID로 보관"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "GPT-6 Astra 같은 전문 agent 모델은 높은 단일 benchmark보다 model routing, context budget, tool boundary, approval queue, fallback과 rollback의 결합 운영이 더 중요함. 특히 cyber capability와 long-running computer use가 함께 언급된 모델은 sandbox·egress·secret·data classification을 가격·성능 평가보다 먼저 검토해야 함.",
-          "items": [
-            "측정: completed task당 token·cache 비용, TTFT·p95, tool failure, reviewer override, blocked action, rollback time",
-            "운영: feature flag와 concurrency·spend cap을 둔 cohort canary 후 trace completeness와 SLO를 만족한 workflow만 확대",
-            "팀 액션: provider 장애·quota 변경·unsafe output 발생 시 baseline model 전환과 credential revoke를 포함한 runbook 등록"
-          ]
-        }
-      ],
-      "id": "news-420",
       "rank": 26
     },
     {
