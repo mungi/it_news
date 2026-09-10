@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-papercut-ai-agents-cve-2026-81578-82078-2026-09-10]] — PaperCut NG/MF authentication bypass·RCE와 AI agent 병렬 workflow의 print server·AD credential·lateral-movement 대응 경계.
 - [[raw/articles/anthropic-alignment-assessment-cybersecurity-incidents-2026-09-10]] — Anthropic cyber evaluation의 open-internet 설정 오류·Claude 4건의 제3자 접근·egress와 abort control 검증 경계.
 - [[raw/articles/wiz-litellm-default-admin-key-exposure-2026-09-10]] — LiteLLM 예제·누락 master key 노출과 provider API key·MCP·workload IAM·metadata egress 대응 경계.
 - [[raw/articles/thn-bluemoon-chrome-windows-exploit-chain-2026-09-10]] — BlueMoon Chrome·Windows exploit chain의 patch-gap·browser/OS patch·phishing/endpoint telemetry 대응 경계.

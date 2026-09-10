@@ -2518,3 +2518,10 @@
 - The Hacker News RSS `Thu, 10 Sep 2026 12:42:55 +0530`·본문·Open Graph image, Wiz Research canonical URL 및 LiteLLM 문서를 직접 확인. 2월 Shodan scan의 LiteLLM 3,074개 중 294개 `sk-1234` 수용·191개 master key 미설정, provider key·prompt/MCP·workload IAM·metadata egress test 경로와 real-world exploitation 미확정 경계를 수록.
 - `news-452`(KST 16:12)·`news-451`(KST 16:04)을 최신순 rank 1·2에 추가하고 50-item cap의 actual tail `news-403`(KST 2026-08-30 09:56)·`news-400`(KST 2026-08-30 08:37)을 제거 후 rank 1–50 재부여. weekly archive·raw capture 2건·`index.md`를 동기화. raw-body SHA-256 Anthropic `c10179e0b095ddac5429de4ba3d545cbee697a3af2cf74a9a2ec59c2216d338f`, LiteLLM `76118d31e2f0ee61f9b8cfa0c8a398a3788604b7fc3465957504914f0a7f8fed` 확인.
 - 당일 03:03 KST에 전면 재구성한 Deep Dive 2건은 same-day policy에 따라 timestamp-only 변경을 하지 않음.
+
+## [2026-09-10] update | PaperCut NG/MF AI agent 병렬 침해 활동 추가
+- 확인 시각: 2026-09-10 23:33 KST. GeekNews·GeekNews Plus·AI타임스·인공지능신문 mandatory surface를 직접 probe했고 GeekNews/GN⁺는 HTTP 403, 두 AI 매체는 HTTP 200 HTML 응답이었음. AWS·Cloudflare·CNCF·Kubernetes·GitHub·Google AI·OpenAI·The Hacker News feed를 실제 파싱하고 신규 URL·title·event를 기존 50건과 대조.
+- The Hacker News RSS `Thu, 10 Sep 2026 17:11:53 +0530`·본문·Open Graph image 및 Blackpoint Cyber·GreyNoise primary analysis URL을 직접 확인해 KST `2026-09-10 20:41`로 기록. `CVE-2026-81578` authentication bypass와 `CVE-2026-82078` RCE 연쇄, 48개국 395개 식별 조직의 440개 이상 PaperCut NG/MF instance 침해 관측, AI agent·공개 도구 병렬 workflow 및 registry hive·Java payload·discovery 활동 범위를 수록.
+- 전체 피해·최종 목적·개별 victim의 incident scope·AI 자율 실행 범위는 공개 자료 미확정으로 유지. PaperCut을 print fleet 단일 문제가 아닌 AD/service credential/management-plane incident로 분류해 fixed build·restart·credential rotation·Java/process·registry hive·LDAP/Kerberos·SMB/RPC timeline 점검을 제시.
+- `news-453`을 KST `2026-09-10 20:41` 기준 rank 1에 추가하고 newest-first 50-item cap의 actual tail `news-402`(KST `2026-08-30 10:33`)를 제거 후 rank 1–50 재부여. `docs/data/weekly-news.json`·`weekly/2026-W38.md`·immutable raw capture·`index.md`를 동기화. persisted source bytes SHA-256 `2bc3e1ff20715f882ee600efa24877484710f3ee7e04952c49691107492cd4a2` 확인.
+- 당일 03:03 KST에 전면 재구성한 Deep Dive 2건은 same-day policy에 따라 timestamp-only 변경을 하지 않음.
