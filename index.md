@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-10 | Total pages: 332
+> Last updated: 2026-09-10 | Total pages: 333
 
 ## Entities
 
@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/kubernetes-v1-37-node-lifecycle-conditions-2026-09-10]] — Kubernetes v1.37 Node lifecycle conditions의 drain·maintenance·graceful shutdown 공통 상태·writer ownership·controller-consumer 검증 경계.
 - [[raw/articles/aitimeskr-panmnesia-meta-cxl-one-chip-datacenter-2026-09-09]] — 파네시아·메타 CXL scale-up fabric 연구 보도의 960개 accelerator coherence-domain·latency·production evidence 경계.
 - [[raw/articles/thn-infostealer-ai-session-token-replay-2026-09-10]] — infostealer 로그의 AI session token·API key 재생, MFA 이후 identity·endpoint·SaaS·cloud credential lifecycle 대응 경계.
 - [[raw/articles/thn-deepseek-harness-cve-2026-82533-sandbox-escape-2026-09-09]] — DeepSeek Harness `CVE-2026-82533` local control interface의 agent sandbox·approval bypass와 version·loopback·session 권한 검증 경계.

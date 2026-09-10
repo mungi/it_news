@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-10 07:11",
+  "last_updated_kst": "2026-09-10 11:13",
   "audience": "developers and engineers",
   "executive_summary": [
     "Okta 분석을 인용한 보도는 7GB infostealer dump에서 AI 서비스 관련 JWT·JWE·API key가 남아 있고, 공개 당일 unexpired JWT·JWE **1,843개**가 확인됐다고 설명. MFA 준수율만으로 종결하지 말고 browser profile·device trust·session revoke·API/OAuth rotation·connector/cloud action audit를 같은 credential incident로 운영 필요.",
     "N-able N-central `CVE-2026-86218`은 CISA KEV 등록과 vendor의 active-exploitation 언급으로 self-hosted RMM patch 우선순위가 상승. `2026.3.1.14` HF4 적용과 console ingress·admin/API/SSO·job/script·agent command·tenant별 forensic을 병렬 실행 필요.",
     "FreeIPA·389 DS flaw chain은 anonymous client가 administrator Kerberos credential을 만들 수 있는 경로로 보도됨. IdM package/errata뿐 아니라 anonymous LDAP·OTP ACI·principal/keytab/certificate·CA audit를 동일 incident record로 점검 필요.",
     "Cloudflare Automatic Key Exchange는 origin capability probing으로 PQC hybrid `X25519MLKEM768`을 우선해 HelloRetryRequest를 약 52%→3.7%, handshake p90을 150ms 이상 줄였다고 발표. origin TLS stack·mTLS·fallback·alert telemetry canary가 필요.",
-    "파네시아·메타 CXL scale-up fabric 연구는 CPU당 가속기 2개→16개, 최대 **960개** coherence domain reference를 제시. 연구 수치를 deployed capacity로 바꾸지 말고 collective p99·CXL error/recovery·firmware/runtime compatibility·power·task당 비용 canary로 검증 필요."
+    "Kubernetes v1.37은 `DrainInProgress`·`Drained`·`MaintenancePlanned`·`MaintenanceInProgress`·`GracefulNodeShutdownInProgress` 공통 Node signal을 도입. Alpha gate는 v1.37에서 core controller 동작을 바꾸지 않으므로, condition writer·reason taxonomy·drain 완료 기준·consumer alert를 canary에서 기존 cordon/drain/taint와 함께 검증 필요."
   ],
   "deep_dives": [
     {
@@ -189,6 +189,83 @@
   ],
   "items": [
     {
+      "id": "news-449",
+      "title_ko": "Kubernetes v1.37 Node Lifecycle Conditions: drain·maintenance·graceful shutdown 상태를 공통 Node signal로 게시",
+      "title_original": "Kubernetes v1.37: Introducing Node Lifecycle Conditions",
+      "summary": "- 변화: v1.37이 `DrainInProgress`·`Drained`·`MaintenancePlanned`·`MaintenanceInProgress`·`GracefulNodeShutdownInProgress` 5개 well-known Node condition을 도입\n- 상태: 각 condition은 `True`·`False`·`Unknown`, 안정적인 machine-readable `reason`, 사람용 `message`로 lifecycle 상태 게시\n- 범위: Alpha `NodeLifecycleConditions` feature gate는 default-disabled이며 v1.37에서 core component가 condition을 읽거나 setting 권한을 제한하지 않는 no-op 성격\n- 운영: cordon·drain·taint·workload-specific control은 기존 방식으로 계속 수행하고, condition은 dashboard·alert·automation의 공통 상태 채널로 사용\n- 팀 액션: condition writer 소유권·reason vocabulary·drain 완료 기준을 정하고 DaemonSet·Job·storage·autoscaler가 같은 lifecycle evidence를 쓰도록 canary 검증 필요",
+      "detail": "Kubernetes Blog는 v1.37에 Node가 drain, 유지보수, graceful shutdown 중임을 Kubernetes-owned signal로 표현하는 5개 well-known Node condition을 도입한다고 발표했다. `DrainInProgress`, `Drained`, `MaintenancePlanned`, `MaintenanceInProgress`, `GracefulNodeShutdownInProgress`는 상태의 현재 관측 여부를 `True`·`False`·`Unknown`으로, 원인을 stable `reason`으로, 세부를 `message`로 전달한다. v1.37의 `NodeLifecycleConditions` feature gate는 Alpha·default-disabled이고 현재 core component가 condition을 읽거나 writer 권한을 제한하지 않는 no-op이므로, enable만으로 scheduling·eviction·rollout 동작이 바뀌지 않는다. 관리자는 기존 `kubectl cordon`, `kubectl drain`, taint, workload control로 lifecycle 작업을 수행하고, authorized controller가 condition을 설정·해제해야 한다. 발표는 Node Ready, taint, terminating Pod 같은 간접 signal만으로는 planned maintenance와 unexpected failure를 구분하기 어렵고, DaemonSet rollout·Job completion·storage operator가 충돌할 수 있는 문제를 제시한다. 조직은 이 condition을 자동 drain의 대체 수단으로 오해하지 말고, maintenance window와 drain criteria, writer ownership, alert·dashboard·automation consumption을 별도 운영 계약으로 정의해야 한다.",
+      "why_it_matters": "Node lifecycle signal이 없으면 scheduler, autoscaler, workload controller, storage operator, external maintenance system이 readiness·taint·Pod state를 서로 다르게 해석할 수 있음. v1.37은 상태 표현의 공통 contract를 제공하지만 controller behavior와 enforcement는 후속 작업 대상이므로 운영 자동화의 직접 트리거로 쓰기 전 검증 필요.",
+      "engineering_implication": "Node lifecycle condition writer를 maintenance controller·drain automation 중 하나로 지정하고, `reason` 값·drain completion 기준·condition clear 규칙을 runbook으로 고정 필요. canary cluster에서 planned maintenance·graceful shutdown·unexpected NotReady를 구분해 dashboard·alert·DaemonSet rollout·Job·storage workflow의 false action과 propagation lag를 측정하고, 기존 cordon/drain/taint 절차는 유지 필요.",
+      "korea_implication": "국내 managed Kubernetes와 온프레미스 cluster 모두 upstream Alpha signal의 지원 여부·control-plane exposure·provider maintenance integration은 별도 확인 대상. 야간 maintenance와 DR drill에서 tenant별 node lifecycle evidence와 workload availability 영향 기록을 우선 확보 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Kubernetes",
+        "Node Lifecycle",
+        "DevOps",
+        "SRE",
+        "Maintenance",
+        "Drain"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-10 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/09/kubernetes-v1-37-node-lifecycle-conditions/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "KEP-5683: Node Lifecycle Conditions",
+          "url": "https://kep.k8s.io/5683/"
+        },
+        {
+          "title": "Kubernetes Node Lifecycle Working Group",
+          "url": "https://github.com/kubernetes/community/tree/master/wg-node-lifecycle"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes v1.37은 Node가 drain, 유지보수, graceful shutdown 중인 상태를 공통으로 게시하는 well-known `NodeConditionType` 5개를 예약함. Kubernetes Blog의 `article:published_time` `2026-09-09T10:30:00-08:00`을 KST `2026-09-10 03:30`으로 변환해 기록함.",
+          "items": [
+            "추가: **`DrainInProgress`·`Drained`·`MaintenancePlanned`·`MaintenanceInProgress`·`GracefulNodeShutdownInProgress`** 5개 lifecycle signal",
+            "표현: active state는 `True`, inactive state는 `False`, 판정 불가는 `Unknown`으로 게시",
+            "메타데이터: 자동화용 stable `reason`과 운영자용 `message`를 함께 기록"
+          ]
+        },
+        {
+          "heading": "v1.37 동작 범위",
+          "body": "`NodeLifecycleConditions` feature gate는 Alpha이며 default-disabled임. v1.37에서는 gate가 condition writer를 제한하지 않고 core component가 condition을 소비하지도 않아, gate enable만으로 scheduling·eviction·rollout 동작이 변하지 않음.",
+          "items": [
+            "writer: 관리자 또는 관리자 승인을 받은 maintenance controller가 condition 설정·해제 대상",
+            "유지: `kubectl cordon`, `kubectl drain`, taint, workload별 control은 기존 절차로 계속 수행",
+            "경계: condition은 status signal이며 drain·eviction·maintenance를 실행하는 command 또는 lock이 아님"
+          ]
+        },
+        {
+          "heading": "왜 공통 상태가 필요한가",
+          "body": "Node readiness, taint, terminating Pod, provider label은 각각 유용하지만 planned maintenance, unexpected failure, graceful shutdown을 같은 의미로 설명하지 않음. 서로 다른 controller가 간접 signal을 재구성하면 독립적으로 정상인 판단도 충돌 가능.",
+          "items": [
+            "예시: DaemonSet controller가 graceful shutdown으로 종료한 Pod를 replacement 처리할 수 있는 경계",
+            "예시: Job controller가 제거 중인 Node의 terminal Pod phase를 기다려 completion이 지연될 수 있는 경계",
+            "예시: storage operator가 drain 시작 뒤에야 maintenance를 인지해 volume 작업이 뒤늦게 충돌하는 리스크"
+          ]
+        },
+        {
+          "heading": "시사점과 도입 점검",
+          "body": "공통 condition은 dashboard·alert·lifecycle automation이 같은 상태 evidence를 읽게 하는 기반임. writer가 여럿이면 conflicting write가 생길 수 있으므로 owner·reason vocabulary·transition·clear policy와 consumer behavior를 먼저 정의해야 함.",
+          "items": [
+            "점검: planned maintenance, active drain, drained, graceful shutdown, unexpected NotReady의 reason·message taxonomy",
+            "검증: Node별 condition propagation lag, stale condition, duplicate writer, alert false-positive, rollout availability 영향",
+            "팀 액션: canary node pool에서 cordon·drain·taint 절차와 condition dashboard를 병행하고 rollback·clear owner를 runbook에 명시"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-447",
       "title_ko": "Okta 분석: infostealer 로그의 AI 세션 토큰·API key 재생으로 MFA 우회 가능한 계정 접근 경로",
       "title_original": "Infostealer Logs Expose Replayable AI Tokens That Can Bypass MFA",
@@ -250,7 +327,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-446",
@@ -327,7 +404,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-445",
@@ -404,7 +481,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-433",
@@ -489,7 +566,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-448",
@@ -553,7 +630,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-420",
@@ -631,7 +708,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-444",
@@ -708,7 +785,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-443",
@@ -781,7 +858,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-442",
@@ -849,7 +926,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-439",
@@ -915,7 +992,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-440",
@@ -992,7 +1069,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-441",
@@ -1060,7 +1137,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-437",
@@ -1128,7 +1205,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "source_name": "The Hacker News",
@@ -1195,7 +1272,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "source_name": "The Hacker News",
@@ -1262,7 +1339,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-438",
@@ -1340,7 +1417,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-434",
@@ -1408,7 +1485,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-430",
@@ -1495,7 +1572,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-428",
@@ -1563,7 +1640,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-429",
@@ -1632,7 +1709,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-431",
@@ -1710,7 +1787,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-425",
@@ -1801,7 +1878,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-427",
@@ -1875,7 +1952,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-423",
@@ -1953,7 +2030,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-424",
@@ -2022,7 +2099,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-422",
@@ -2097,7 +2174,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-426",
@@ -2173,7 +2250,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-432",
@@ -2251,7 +2328,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-421",
@@ -2330,7 +2407,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-419",
@@ -2404,7 +2481,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-417",
@@ -2471,7 +2548,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-418",
@@ -2547,7 +2624,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-415",
@@ -2616,7 +2693,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-413",
@@ -2685,7 +2762,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-414",
@@ -2754,7 +2831,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-416",
@@ -2832,7 +2909,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-412",
@@ -2910,7 +2987,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-411",
@@ -2978,7 +3055,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-410",
@@ -3054,7 +3131,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-409",
@@ -3123,11 +3200,11 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-408",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -3195,7 +3272,7 @@
     },
     {
       "id": "news-407",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -3262,7 +3339,7 @@
     },
     {
       "id": "news-405",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -3398,7 +3475,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-404",
@@ -3469,7 +3546,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-402",
@@ -3537,7 +3614,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-403",
@@ -3607,7 +3684,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-400",
@@ -3676,7 +3753,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-399",
@@ -3742,83 +3819,6 @@
             "검증: stale sensor·network partition·wrong-device discovery·out-of-range parameter·agent retry·operator denial·emergency stop을 canary에서 재현",
             "관측: actor·device·driver version·command·parameter·pre/post state·approval·alarm·rollback을 동일 trace로 보존",
             "팀 액션: MHS driver 추가를 일반 plugin 설치가 아닌 OT/robotics control-plane change로 분류해 security·safety·operations sign-off 적용"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-397",
-      "title_ko": "Amazon Bedrock AgentCore Memory 세분화 접근 제어: Gateway·JWT·Cedar로 tenant memory 경계를 인프라 계층에서 적용",
-      "title_original": "Amazon Bedrock AgentCore Memory now supports fine-grained access control",
-      "summary": "- 공개: Amazon Bedrock AgentCore Memory가 AgentCore Gateway 기반 **fine-grained access control(FGAC)** 지원\n- 구성: OAuth JWT 인증 Gateway에 Cedar policy를 연결해 caller identity·token claim 기반으로 Memory 접근을 제한\n- 범위: user별 actor data, token claim에서 유도한 namespace record, caller별 Memory operation allow/deny를 정책으로 제어\n- 구현: managed Memory connector가 Gateway target과 Memory data plane을 연결하고 **12개 Memory operation**을 Cedar action과 request attribute로 노출\n- 팀 액션: application ACL을 즉시 제거하지 말고 token claim·namespace mapping·Cedar default-deny·12개 action·cross-tenant denial·audit trace를 canary로 검증 필요",
-      "detail": "AWS는 2026년 8월 29일 05:00 KST에 Amazon Bedrock AgentCore Memory의 fine-grained access control(FGAC)을 발표했다. Memory resource 앞에 OAuth JWT 인증 AgentCore Gateway를 두고 Cedar policy를 붙여 인증된 caller identity로 접근을 제한하는 기능이다. 공식 설명상 user가 자신의 actor data만 읽도록 제한하고, token claim에서 유도한 namespace의 memory record만 대상으로 삼으며, caller별로 Memory operation을 허용 또는 거부할 수 있다. AgentCore Memory connector는 Gateway target과 Memory data plane을 연결하는 managed gateway connector이며 12개 Memory operation을 Cedar action과 policy condition에 쓸 request attribute로 노출한다. 이는 application code에 흩어진 tenant filter와 authorization 조건 일부를 infrastructure layer로 옮길 수 있다는 범위다. AWS 공지는 JWT issuer·audience·claim normalization, tenant/actor/namespace mapping의 정확성, policy authoring 오류, default-deny, token rotation·revocation, upstream application authorization, cross-tenant data migration, audit retention·latency·가격을 자동 보증하지 않는다. production 적용 전 representative tenant와 malicious token/claim mismatch를 포함한 canary에서 allow/deny decision, namespace escape, 12개 action coverage, gateway failure, policy rollback, trace correlation을 검증해야 한다.",
-      "why_it_matters": "agent memory에는 사용자별 대화·선호·업무 문맥이 장기간 누적될 수 있어 tenant filtering을 prompt나 application query에만 맡기면 cross-tenant exposure가 발생할 수 있음. Gateway의 cryptographic identity와 Cedar policy를 쓰면 memory data plane 앞에서 authorization decision을 중앙화할 수 있으나 identity claim과 namespace 설계의 오류는 그대로 권한 오류가 됨.",
-      "engineering_implication": "JWT issuer·audience·expiration·key rotation과 immutable user/tenant/actor identifier를 inventory하고, claim-to-namespace mapping·Cedar default-deny·action별 allowlist를 versioned policy로 관리해야 함. staging에서 정상 user, 다른 tenant, expired/replayed token, missing/forged claim, gateway or connector failure를 실행해 policy decision·Memory request·application trace를 같은 audit evidence로 보존 필요.",
-      "korea_implication": "국내 개인정보·금융·공공 workload는 tenant boundary가 조직·고객·업무 구분과 일치하는지, JWT claim에 포함되는 식별자와 memory retention·삭제·접근 로그가 내부 개인정보 처리·감사 정책에 맞는지 별도 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "AWS",
-        "Amazon Bedrock AgentCore",
-        "Agent Memory",
-        "Cedar",
-        "OAuth",
-        "JWT",
-        "Authorization",
-        "Multi-tenancy",
-        "AI Agent Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-08-29 05:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/08/agentcorememory-fine-grained-access-control/",
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Fine-grained access control for Memory — Amazon Bedrock AgentCore Developer Guide",
-          "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory-gateway-fgac.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New RSS의 exact timestamp `Fri, 28 Aug 2026 20:00:00 GMT`와 canonical announcement를 직접 확인해 KST `2026-08-29 05:00`으로 기록. Amazon Bedrock AgentCore Memory가 AgentCore Gateway를 통한 fine-grained access control(FGAC)을 지원하는 공식 발표임.",
-          "items": [
-            "대상: user·tenant별로 분리해야 하는 AgentCore Memory data access",
-            "접근: OAuth JWT 인증을 구성한 AgentCore Gateway 앞단에서 authorization decision 적용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "FGAC는 authenticated caller identity를 기준으로 Cedar policy를 적용함. 공식 예시는 user가 자기 actor data만 보도록 제한하고, user token claim에서 유도한 namespace의 memory record만 접근하게 하며, caller별 특정 Memory operation을 allow 또는 deny하는 방식임.",
-          "items": [
-            "정책: Memory resource 앞의 Gateway에 Cedar policy를 연결해 caller identity·request attribute 조건 적용",
-            "범위: tenant별 record isolation, actor data restriction, operation별 allow/deny 구성 가능",
-            "구현: managed AgentCore Memory connector가 Gateway target과 Memory data plane을 연결",
-            "노출: **12개 Memory operation**을 Cedar action과 request attribute로 제공"
-          ]
-        },
-        {
-          "heading": "권한 모델·데이터 경계",
-          "body": "Gateway enforcement은 application code의 모든 authorization bug를 자동 제거하지 않음. token claim과 tenant·actor·namespace mapping이 잘못되면 Cedar policy가 정확히 실행돼도 다른 data boundary를 허용할 수 있음. Memory read뿐 아니라 write·delete·search·administrative action의 policy coverage를 분리해 확인해야 함.",
-          "items": [
-            "identity: issuer·audience·subject·tenant claim·expiration·key rotation을 identity provider 계약으로 검증",
-            "mapping: claim-to-tenant·actor·namespace mapping을 canonical identifier와 immutable test fixture로 검증",
-            "policy: action별 least privilege와 default-deny를 기준으로 policy version·reviewer·rollback owner 기록",
-            "경계: AWS 공지는 token validation 설정, claim semantics, application authorization 또는 cross-tenant migration correctness를 자동 보증하지 않음"
-          ]
-        },
-        {
-          "heading": "운영·보안 시사점",
-          "body": "Memory access path는 agent tool call·Gateway authorization·connector·Memory data plane·application response로 이어짐. production canary에서는 성공률만 보지 말고 allow/deny decision, policy evaluation error, namespace mismatch, token failure, gateway latency, connector failure와 audit correlation을 함께 기록해야 함.",
-          "items": [
-            "검증: 정상 user·다른 tenant·expired token·replayed token·missing/forged claim별 12개 action allow/deny matrix 실행",
-            "관측: caller identity·policy version·decision·Memory action·namespace·request ID·application trace를 같은 audit timeline으로 연결",
-            "복구: policy rollout 전 dry-run 또는 staging comparison, deny spike alert, previous policy rollback과 incident owner 고정",
-            "팀 액션: application-side filter 제거 전에 cross-tenant denial evidence와 retention·deletion·access-log contract를 security review gate에 등록"
           ]
         }
       ],
