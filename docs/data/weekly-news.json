@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-10 11:13",
+  "last_updated_kst": "2026-09-10 15:19",
   "audience": "developers and engineers",
   "executive_summary": [
     "Okta 분석을 인용한 보도는 7GB infostealer dump에서 AI 서비스 관련 JWT·JWE·API key가 남아 있고, 공개 당일 unexpired JWT·JWE **1,843개**가 확인됐다고 설명. MFA 준수율만으로 종결하지 말고 browser profile·device trust·session revoke·API/OAuth rotation·connector/cloud action audit를 같은 credential incident로 운영 필요.",
     "N-able N-central `CVE-2026-86218`은 CISA KEV 등록과 vendor의 active-exploitation 언급으로 self-hosted RMM patch 우선순위가 상승. `2026.3.1.14` HF4 적용과 console ingress·admin/API/SSO·job/script·agent command·tenant별 forensic을 병렬 실행 필요.",
     "FreeIPA·389 DS flaw chain은 anonymous client가 administrator Kerberos credential을 만들 수 있는 경로로 보도됨. IdM package/errata뿐 아니라 anonymous LDAP·OTP ACI·principal/keytab/certificate·CA audit를 동일 incident record로 점검 필요.",
     "Cloudflare Automatic Key Exchange는 origin capability probing으로 PQC hybrid `X25519MLKEM768`을 우선해 HelloRetryRequest를 약 52%→3.7%, handshake p90을 150ms 이상 줄였다고 발표. origin TLS stack·mTLS·fallback·alert telemetry canary가 필요.",
-    "Kubernetes v1.37은 `DrainInProgress`·`Drained`·`MaintenancePlanned`·`MaintenanceInProgress`·`GracefulNodeShutdownInProgress` 공통 Node signal을 도입. Alpha gate는 v1.37에서 core controller 동작을 바꾸지 않으므로, condition writer·reason taxonomy·drain 완료 기준·consumer alert를 canary에서 기존 cordon/drain/taint와 함께 검증 필요."
+    "Proofpoint는 BlueMoon exploit kit을 사용한 **4개** espionage cluster를 확인. `CVE-2026-85046` V8 type confusion·V8 sandbox escape·구형 Windows `CVE-2026-85880` ALPC LPE가 이어지는 경로이므로 Chrome/Chromium fixed build·restart와 Windows patch, phishing·renderer/broker·ALPC·payload telemetry를 같은 emergency change와 hunt timeline으로 관리 필요."
   ],
   "deep_dives": [
     {
@@ -266,6 +266,80 @@
       "rank": 1
     },
     {
+      "id": "news-450",
+      "title_ko": "Proofpoint BlueMoon: 4개 espionage cluster가 Chrome·Windows 3단계 exploit chain을 수일 내 재사용",
+      "title_original": "Once in a BlueMoon: Multiple State-Aligned Threat Actors Rapidly Adopt Novel Exploit Chain Using Chrome and Windows Zero-Days",
+      "summary": "- 관측: Proofpoint가 **4개** espionage-motivated threat actor가 BlueMoon exploit kit으로 Chrome·Windows 취약점 연쇄를 사용한 활동 확인\n- 초기 사용: China-aligned TA412이 8월 28일 처음 관측됐고, 수일 안에 다수의 China nexus 의심 cluster가 채택한 범위\n- 연쇄: Chromium V8 type confusion `CVE-2026-85046`·CVE 미배정 V8 sandbox escape·Windows ALPC LPE `CVE-2026-85880`의 3단계 경로\n- patch gap: 두 V8 결함은 upstream Chromium 공개 수정 뒤 stable Chrome·Chromium 기반 browser 반영 전 악용된 patch-gap zero-day라는 Proofpoint 분석\n- 팀 액션: Chrome/Chromium fixed build·Windows September patch·browser restart·phishing URL·renderer→broker/ALPC·curl child process를 동일 incident runbook으로 점검 필요",
+      "detail": "Proofpoint는 BlueMoon이라는 신규 exploit kit을 사용한 4개 espionage-motivated threat actor 활동을 확인했다고 발표했다. 첫 관측은 2026년 8월 28일 TA412(JungleBamboo·Violet Typhoon·APT31·TIDE CASTLE)이며, 수일 안에 다른 cluster가 채택했다는 분석이다. 공격은 spearphishing URL에서 Chromium V8 type confusion `CVE-2026-85046`, CVE가 배정되지 않은 V8 sandbox escape, 구형 Windows build의 ALPC local privilege escalation `CVE-2026-85880`을 연쇄해 renderer process 탈출과 추가 payload 실행을 노린다. Proofpoint는 두 V8 결함이 public upstream Chromium source에는 수정돼 있었지만 당시 latest stable Chrome·Chromium browser에는 아직 전파되지 않은 patch-gap zero-day였다고 설명한다. observed chain은 최신 stable Chrome/Chromium 기반 browser와 구형 Windows build를 함께 요구하므로 target pool과 성공 확률에 제약이 있다. 공개 자료는 모든 Chrome zero-day, 모든 Chromium browser, 모든 Windows endpoint의 침해나 AI-assisted 개발을 확정하지 않는다. 조직은 browser patch 완료를 설치 기록이 아니라 fixed version 실행과 restart로, endpoint hunt를 phishing·renderer/broker·ALPC·download 실행 telemetry의 시간 순서로 판정해야 한다.",
+      "why_it_matters": "Browser renderer exploit와 sandbox escape, Windows LPE가 결합하면 phishing URL 한 번으로 user-level browser context에서 host-level payload execution까지 이어질 수 있음. public source patch와 stable channel 배포 사이의 gap은 managed browser·VDI·고정 이미지·Chromium 파생 browser의 patch verification을 긴급 운영 항목으로 만듦.",
+      "engineering_implication": "Chrome·Edge 등 Chromium fleet의 fixed build·last relaunch·Windows build·patch exception을 교차 inventory화하고, force-restart와 rollback window를 emergency change에 포함 필요. secure web gateway·DNS·EDR에서 spearphishing URL, renderer crash/abnormal child process, ALPC privilege elevation, browser broker injection, `curl` download 실행을 하나의 timeline으로 상관하고, older Windows build는 우선 격리·patch 완료까지 risk acceptance를 제한 필요.",
+      "korea_implication": "국내 managed browser·VDI·망분리 workstation은 browser auto-update 여부만으로 종료하지 말고 Windows monthly patch와 browser restart 증빙을 함께 수집 필요. 협력사·제조·공공 endpoint의 고정 이미지와 Chromium 파생 browser는 별도 fixed-build 확인 대상.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Threat Intelligence",
+        "Chrome",
+        "Chromium",
+        "Windows",
+        "CVE-2026-85046",
+        "CVE-2026-85880",
+        "Patch Management"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-09-10 01:34",
+      "source_name": "The Hacker News / Proofpoint",
+      "source_url": "https://thehackernews.com/2026/09/four-spy-groups-used-same-chrome-and.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhxouoVfK0MjZpruL0J1chmWnC7avUov1fOLbgX-XyFGrTcXeOh08tVntBjzJ7wBMmOB3P-PpxMr6E868Wpsaky-b-Nrf1LajzoQFfmjnkI1KHQzGXrCcVnC57nF2ndYZHCLx5WA3dENCWmCbZlSAb5TC-p8DXCGWxWB7I3iRIsdMMk6SS6IV03722lZIS4/s1700-nu-rw-lo-l85-e365/spy.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Proofpoint: Once in a BlueMoon",
+          "url": "https://www.proofpoint.com/us/blog/threat-insight/once-bluemoon-multiple-state-aligned-threat-actors-rapidly-adopt-novel-exploit"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News RSS `Wed, 09 Sep 2026 22:04:05 +0530`와 기사 본문·Open Graph image를 직접 확인해 KST `2026-09-10 01:34`로 기록함. Proofpoint는 BlueMoon exploit kit을 사용한 4개 espionage-motivated cluster를 확인했다고 발표함.",
+          "items": [
+            "관측: **4개** cluster의 Chrome·Windows exploit chain 사용 확인",
+            "초기 활동: TA412의 2026년 8월 28일 사용과 수일 내 후속 cluster 채택 범위",
+            "경계: BlueMoon의 유통 경로·모든 사용자·모든 endpoint 피해는 공개 자료 미확정"
+          ]
+        },
+        {
+          "heading": "공격 연쇄와 패치 경계",
+          "body": "Proofpoint가 제시한 연쇄는 Chromium V8 type confusion `CVE-2026-85046`, CVE 미배정 V8 sandbox escape, Windows ALPC LPE `CVE-2026-85880`으로 구성됨. 두 V8 결함은 upstream 공개 source의 fix가 stable Chrome·Chromium 기반 browser에 전파되기 전 악용된 patch-gap zero-day라는 설명임.",
+          "items": [
+            "browser: `CVE-2026-85046` V8 type confusion과 V8 sandbox escape 결합",
+            "host: 구형 Windows build의 `CVE-2026-85880` ALPC local privilege escalation 사용 범위",
+            "조건: 최신 stable Chromium browser와 구형 Windows build의 조합으로 viable target이 제한되는 범위"
+          ]
+        },
+        {
+          "heading": "관측된 delivery·실행 경로",
+          "body": "Proofpoint는 spearphishing lure가 actor-controlled URL로 유도하고 browser exploit 뒤 renderer privilege를 높여 actor-specified command를 실행하는 경로를 설명함. 기본 configuration의 remote executable download와 실행은 high-signal endpoint telemetry를 남길 수 있는 범위임.",
+          "items": [
+            "유입: spearphishing URL과 campaign별 landing page·redirect 조건",
+            "실행: reflectively loaded DLL의 host fingerprint와 renderer process 권한 상승 경로",
+            "탐지: browser broker injection·비정상 child process·`curl` download·new executable 실행 상관 분석"
+          ]
+        },
+        {
+          "heading": "시사점과 대응 우선순위",
+          "body": "browser patch는 package install event가 아니라 fixed version 실행·browser restart·Windows build update·예외 closure까지 확인해야 함. browser fleet과 OS patch fleet이 다른 owner이면 patch gap이 남으므로 동일 emergency change와 endpoint hunt timeline으로 묶을 필요.",
+          "items": [
+            "점검: Chrome·Edge·기타 Chromium browser fixed build, last relaunch, VDI/golden image, Windows build",
+            "차단: phishing URL·web proxy/DNS policy, risky attachment·link protection, emergency browser restart window",
+            "팀 액션: browser renderer→broker→ALPC→payload telemetry를 detection rule과 incident drill에 추가"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-447",
       "title_ko": "Okta 분석: infostealer 로그의 AI 세션 토큰·API key 재생으로 MFA 우회 가능한 계정 접근 경로",
       "title_original": "Infostealer Logs Expose Replayable AI Tokens That Can Bypass MFA",
@@ -327,7 +401,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-446",
@@ -404,7 +478,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-445",
@@ -481,7 +555,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-433",
@@ -566,7 +640,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-448",
@@ -630,7 +704,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-420",
@@ -708,7 +782,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-444",
@@ -785,7 +859,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-443",
@@ -858,7 +932,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-442",
@@ -926,7 +1000,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-439",
@@ -992,7 +1066,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-440",
@@ -1069,7 +1143,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-441",
@@ -1137,7 +1211,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-437",
@@ -1205,7 +1279,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "source_name": "The Hacker News",
@@ -1272,7 +1346,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "source_name": "The Hacker News",
@@ -1339,7 +1413,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-438",
@@ -1417,7 +1491,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-434",
@@ -1485,7 +1559,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-430",
@@ -1572,7 +1646,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-428",
@@ -1640,7 +1714,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-429",
@@ -1709,7 +1783,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-431",
@@ -1787,7 +1861,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-425",
@@ -1878,7 +1952,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-427",
@@ -1952,7 +2026,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-423",
@@ -2030,7 +2104,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-424",
@@ -2099,7 +2173,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-422",
@@ -2174,7 +2248,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-426",
@@ -2250,7 +2324,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-432",
@@ -2328,7 +2402,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-421",
@@ -2407,7 +2481,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-419",
@@ -2481,7 +2555,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-417",
@@ -2548,7 +2622,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-418",
@@ -2624,7 +2698,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-415",
@@ -2693,7 +2767,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-413",
@@ -2762,7 +2836,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-414",
@@ -2831,7 +2905,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-416",
@@ -2909,7 +2983,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-412",
@@ -2987,7 +3061,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-411",
@@ -3055,7 +3129,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-410",
@@ -3131,7 +3205,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-409",
@@ -3200,11 +3274,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-408",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -3272,7 +3346,7 @@
     },
     {
       "id": "news-407",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -3339,7 +3413,7 @@
     },
     {
       "id": "news-405",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
       "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
       "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
@@ -3475,7 +3549,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-404",
@@ -3546,7 +3620,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-402",
@@ -3614,7 +3688,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-403",
@@ -3684,7 +3758,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-400",
@@ -3750,75 +3824,6 @@
             "inventory: provider·model ID·region·quota·context/tool schema·data retention·billing account·fallback order 기록",
             "관측: route 선택·request ID·provider error·rate-limit·latency·token usage·task outcome을 같은 trace로 연결",
             "팀 액션: fallback activation threshold·rollback owner·customer communication·security/procurement review를 routing release gate로 고정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-399",
-      "title_ko": "앤트로픽 Model Hardware Standard 연구 프리뷰: MCP·CLI·API로 연구·제조 장비를 agent 제어 경로에 연결",
-      "title_original": "Anthropic previews Model Hardware Standard (MHS)",
-      "summary": "- 공개: 앤트로픽이 연구실·첨단 제조 장비를 AI agent가 표준 방식으로 발견·제어하도록 하는 **Model Hardware Standard(MHS)** 연구 프리뷰 공개\n- 인터페이스: 장비별 driver가 `read`·`write` 명령과 장비 특성·안전 제한을 제공하고, MCP·CLI·API를 통해 다중 장비 오케스트레이션 지원\n- 범위: 과학 연구소·첨단 제조 파트너에 제한 제공하며, AWS Strands Robots·두산로보틱스·Hugging Face LeRobot 등 참여 사실을 발표 범위로 확인\n- 제약: API가 없는 장비는 현재 적용 대상이 아니며, 물리 환경의 공간 추론·안전 검증은 연구 프리뷰 이후 과제로 명시\n- 팀 액션: production control plane으로 연결하기 전 device identity·command allowlist·human approval·interlock·network segmentation·telemetry·fail-safe를 장비별 canary에서 검증 필요",
-      "detail": "인공지능신문은 2026년 8월 29일 20:23 KST, 앤트로픽이 AI agent가 과학 연구실과 첨단 제조 현장의 장비를 표준 방식으로 연결·제어하도록 설계한 Model Hardware Standard(MHS) 연구 프리뷰를 공개했다고 보도했다. 보도에 따르면 MHS driver는 서로 다른 제조사의 장비를 공통 `read`·`write` 명령으로 다루고, 장비가 측정·조정할 수 있는 항목 및 안전 제한을 참조 정보로 제공한다. agent는 MCP, CLI, API로 장비를 찾고 명령을 실행하며, 장시간 또는 실시간 추론보다 빠른 작업은 driver 명령을 코드로 연결해 결정론적 실행 경로로 전환할 수 있다. 초기 범위는 과학 연구소와 첨단 제조업체의 제한적 프리뷰이며, AWS Strands Robots, Automata, Danaher, 두산로보틱스, Hugging Face LeRobot, Raspberry Pi 등의 참여·검토 사례가 언급됐다. 이는 digital agent의 tool contract를 물리 장비까지 확장하는 시도지만, 장비 API 부재, 물리적 추론 한계, 현장 안전성·오용 방지, actuator fail-safe, 인증·권한·감사·네트워크 분리·규제 준수는 자동 보증 범위가 아니다. 도입 전에는 low-risk read-only telemetry부터 시작해 command class별 승인과 interlock, emergency stop, command replay 및 failure rollback 증적을 확보해야 한다.",
-      "why_it_matters": "MCP 기반 tool call이 실제 actuator로 이어지면 prompt injection·권한 오설정·잘못된 상태 인식의 영향이 데이터 노출을 넘어 장비 손상·품질·안전 사고로 확대될 수 있음. 표준 driver는 통합 비용을 줄일 수 있지만, 공통 인터페이스가 광범위한 device capability 노출로 바뀌지 않도록 command와 물리 경계를 분리해야 함.",
-      "engineering_implication": "장비별 `read`·`write` capability, 위험도, allowable range, identity, operator owner, interlock과 emergency-stop path를 inventory해야 함. read-only discovery → simulation/digital twin → supervised write → 제한된 autonomous batch 순으로 rollout하고, command intent·actor·device state·approval·result·alarm·rollback을 동일 trace로 보존 필요.",
-      "korea_implication": "국내 연구·제조 현장은 산업안전·설비 변경관리·망분리·협력사 원격접속 기준에 MHS driver와 agent credential을 맞춰야 함. 로봇·레이저·액체 처리처럼 인명·설비 위험이 있는 장비는 software policy만으로 승인하지 말고 현장 interlock과 책임자 승인 경로를 별도 검증 필요.",
-      "category": "AI",
-      "tags": [
-        "Anthropic",
-        "Model Hardware Standard",
-        "MHS",
-        "MCP",
-        "Physical AI",
-        "Robotics",
-        "Industrial Automation",
-        "AI Agent Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-29 20:23",
-      "source_name": "인공지능신문",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41657",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202608/41657_62692_237_v150.jpg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "인공지능신문 article metadata의 `2026-08-29T20:23:26+09:00`와 본문을 직접 확인해 KST `2026-08-29 20:23`으로 기록. 앤트로픽이 AI agent가 연구실·첨단 제조 장비를 표준 방식으로 연결·제어하도록 설계한 Model Hardware Standard(MHS) 연구 프리뷰를 공개했다는 보도임.",
-          "items": [
-            "대상: 과학 연구소와 첨단 제조업체의 장비 integration 및 agent-assisted operation",
-            "상태: 초기 파트너 대상 제한적 연구 프리뷰, 안전성 평가와 활용 가이드라인을 거친 뒤 open source 공개 계획 언급"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "MHS는 제조사·장비마다 다른 interface를 표준 driver로 감싸고, agent가 장비 discovery·control에 쓸 공통 contract를 제공하는 구상임. 보도는 온도 읽기·설정처럼 `read`·`write` 명령을 예시로 들며, 장비 특성·제한 조건을 참조 파일에 담는 방식을 설명함.",
-          "items": [
-            "driver: 장비의 측정 가능 항목·조정 가능 항목·안전 제한을 표준 형식으로 노출",
-            "연결: MCP·CLI·API를 통해 여러 장비를 하나의 code environment에서 orchestration 가능",
-            "실행: 장시간 작업 또는 저지연 작업은 driver command를 code로 연결해 deterministic procedure로 전환 가능",
-            "참여: AWS Strands Robots, Automata, Danaher, 두산로보틱스, Hugging Face LeRobot, Raspberry Pi 등의 지원·검토 사례 언급"
-          ]
-        },
-        {
-          "heading": "권한·안전 경계",
-          "body": "physical device의 `write`는 database mutation보다 실패 비용이 클 수 있음. standardized driver가 있어도 agent identity, tool authorization, command parameter bound, operator approval, hardware interlock, network path가 각각 독립 통제여야 함.",
-          "items": [
-            "분리: read telemetry, configuration write, motion·laser·fluid actuation, firmware/update command를 다른 permission tier로 운영",
-            "통제: device identity·command allowlist·parameter range·rate limit·two-person approval·emergency stop을 command path에 결합",
-            "경계: 보도는 장비 API 부재·물리 환경 추론 한계와 추가 안전 검증 필요성을 명시, production safety guarantee 미제시"
-          ]
-        },
-        {
-          "heading": "운영·도입 시사점",
-          "body": "agent가 observation에서 action으로 이동하면 audit log는 prompt와 tool result만으로 부족함. command 전후의 device state·sensor value·operator approval·interlock event·actual result를 결합해야 incident 또는 품질 이상을 재현할 수 있음.",
-          "items": [
-            "단계: read-only discovery와 inventory → simulator/digital twin → supervised write → low-risk batch 순으로 rollout",
-            "검증: stale sensor·network partition·wrong-device discovery·out-of-range parameter·agent retry·operator denial·emergency stop을 canary에서 재현",
-            "관측: actor·device·driver version·command·parameter·pre/post state·approval·alarm·rollback을 동일 trace로 보존",
-            "팀 액션: MHS driver 추가를 일반 plugin 설치가 아닌 OT/robotics control-plane change로 분류해 security·safety·operations sign-off 적용"
           ]
         }
       ],
