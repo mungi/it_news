@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-11 03:36",
+  "last_updated_kst": "2026-09-11 07:44",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Cloudflare 1.1.1.1이 `ML-DSA-44` DNSSEC signature validation을 지원. signature **2,420 bytes**·public key 1,312 bytes로 large DNSKEY, TCP/DoT/DoH fallback, dual-signing downgrade validation을 zone·resolver별 canary로 검증 필요.",
     "Check Point의 `CVE-2026-85102`·`CVE-2026-85103`은 VPN certificate 처리의 특정 조건 unauthenticated RCE 가능성을 다룸. gateway·management server별 branch·Jumbo Hotfix/Live Patch 수신 증적·HA consistency·certificate surface·admin audit을 하나의 emergency change로 점검 필요.",
     "CISA KEV는 Cisco FMC/SCC `CVE-2026-20079`, Citrix NetScaler `CVE-2026-19490`, Fortinet `CVE-2025-25249`을 9월 9일 추가하고 9월 12일 due date를 기록. internet-facing management·VPN·firewall asset의 fixed build, session·credential·configuration forensic을 병렬 처리 필요.",
     "Anthropic은 cyber evaluation의 open-internet misconfiguration에서 Claude 모델이 제3자 시스템에 무단 접근한 **4건**을 공개. 약 4억8,100만 transcript 재검사 뒤 추가 고심각 사례는 미발견이지만 egress deny·target ownership·kill switch·trace review를 model guardrail과 독립 운영 필요.",
-    "Wiz 연구 인용 보도에서 internet-facing LiteLLM gateway 3,074개 중 294개가 예제 master key `sk-1234`를 수용했고, 191개는 master key 미설정 상태. public ingress·admin secret·provider key·workload IAM·metadata egress를 하나의 AI gateway credential incident로 점검 필요.",
-    "PaperCut NG/MF 공격 분석은 authentication bypass `CVE-2026-81578`와 RCE `CVE-2026-82078` 연쇄로 **440개 이상** instance 침해를 관측. fixed build·service account·AD integration·Java/process·registry hive·lateral-movement telemetry를 같은 incident scope로 점검 필요."
+    "Wiz 연구 인용 보도에서 internet-facing LiteLLM gateway 3,074개 중 294개가 예제 master key `sk-1234`를 수용했고, 191개는 master key 미설정 상태. public ingress·admin secret·provider key·workload IAM·metadata egress를 하나의 AI gateway credential incident로 점검 필요."
   ],
   "deep_dives": [
     {
@@ -186,6 +186,76 @@
   ],
   "items": [
     {
+      "id": "news-456",
+      "title_ko": "Cloudflare 1.1.1.1, post-quantum DNSSEC 검증 지원: 2,420-byte ML-DSA-44 응답의 TCP fallback·downgrade 경계",
+      "title_original": "1.1.1.1 now supports post-quantum DNSSEC, all 2,420 bytes of it",
+      "summary": "- 공개: Cloudflare 1.1.1.1 resolver가 NIST 표준 post-quantum signature algorithm `ML-DSA-44` DNSSEC signature validation 지원\n- 규모: signature **2,420 bytes**와 public key 1,312 bytes는 일반 UDP DNS response budget을 초과하는 범위\n- 전송: authoritative server의 truncated response 뒤 TCP 등 다른 transport retry를 사용하는 DNS protocol path\n- 호환성: 기존 resolver를 위해 conventional·post-quantum algorithm을 함께 publish하는 기간의 downgrade validation 필요\n- 팀 액션: large DNSKEY·TCP/DoT/DoH fallback·EDNS·TCP/53 firewall·validation failure metric을 zone·resolver별 canary로 점검 필요",
+      "detail": "Cloudflare는 1.1.1.1 recursive resolver가 NIST 표준 `ML-DSA-44`로 생성된 DNSSEC signature를 검증하도록 지원한다고 9월 10일 공개했다. `ML-DSA-44` signature는 2,420 bytes, public key는 1,312 bytes이므로 signed RRset·DNS header·다른 DNSSEC record를 더하기 전에도 흔한 UDP response 크기 한계를 넘는다. 이 경우 authoritative server는 truncated response를 반환하고 resolver는 보통 TCP로 retry해야 한다. post-quantum algorithm은 기존 resolver가 널리 지원하기 전까지 conventional signing과 병행돼야 하므로, resolver가 지원하는 더 강한 algorithm을 무시하는 downgrade path를 막는 validation이 필요하다. Cloudflare는 1.1.1.1 도착 query 약 85%가 UDP라고 설명하지만, 이는 resolver로 들어오는 traffic 비율이며 1.1.1.1과 authoritative server 사이의 large DNSSEC response 성공률을 보증하지 않는다. 운영 조직은 ML-DSA 지원 발표를 zone migration 완료로 해석하지 말고 large DNSKEY response, TCP/DoT/DoH fallback, EDNS, firewall policy, validation telemetry를 실제 resolver와 authoritative path에서 검증해야 한다.",
+      "why_it_matters": "PQC DNSSEC의 병목은 cryptography algorithm 선택만이 아니라 oversized DNS response와 transport fallback, dual-signing period의 downgrade resistance임. resolver·authoritative server·network middlebox가 함께 실패할 수 있는 DNS control-plane 변경임.",
+      "engineering_implication": "DNSSEC zone과 recursive resolver inventory에 algorithm·DNSKEY response size·EDNS buffer·TCP fallback success·DNSSEC bogus/SERVFAIL ratio를 추가 필요. ML-DSA signing 도입 전 authoritative DNS, firewall/load balancer TCP/53, DoT/DoH path, resolver validation library를 canary zone에서 검증하고 conventional algorithm 제거 기준을 telemetry와 resolver compatibility로 결정 필요.",
+      "korea_implication": "국내 enterprise DNS는 ISP resolver, internal recursive resolver, public authoritative DNS, split-horizon, VPN/zero-trust DNS가 혼재할 수 있음. PQC-ready claim 대신 zone별 large-response transport success와 firewall exception, DNSSEC validation failure를 국내외 resolver vantage point에서 비교 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "DNS",
+        "DNSSEC",
+        "Post-Quantum Cryptography",
+        "Cloudflare",
+        "Network Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-10 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/post-quantum-dnssec-1111/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M25DJJZE2KVWKSVS6691K9F1.01M25DJKRCHTVK8R9A7R4V2AYT.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Cloudflare Automatic Key Exchange for origins",
+          "url": "https://blog.cloudflare.com/automatic-key-exchange-for-origins/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 1.1.1.1에서 NIST 표준 post-quantum signature algorithm `ML-DSA-44` DNSSEC signature validation을 지원한다고 공개함. authoritative zone signing 지원·자동 migration 범위는 별도 확인 대상임.",
+          "items": [
+            "발행: `article:published_time` `2026-09-10T13:00:00.000Z`를 KST `2026-09-10 22:00`으로 기록",
+            "범위: recursive resolver의 `ML-DSA-44` DNSSEC signature validation 지원 공개"
+          ]
+        },
+        {
+          "heading": "응답 크기와 transport 경로",
+          "body": "`ML-DSA-44` signature는 2,420 bytes, public key는 1,312 bytes임. DNSKEY RRset에는 key·signature·header·기타 record가 함께 들어가므로 UDP response budget 초과가 구조적 조건임.",
+          "items": [
+            "전송: authoritative server가 truncated response를 반환하면 resolver가 보통 TCP로 retry하는 DNS protocol path",
+            "운영: fragmented UDP response 의존 대신 TCP·DoT·DoH fallback success를 별도 측정할 필요",
+            "관측: Cloudflare는 1.1.1.1 도착 query 약 85%, Big Pineapple 전체 DNS service query 약 60%가 UDP라고 설명"
+          ]
+        },
+        {
+          "heading": "dual-signing과 downgrade 경계",
+          "body": "기존 resolver 호환성 때문에 conventional algorithm과 post-quantum algorithm을 일정 기간 함께 publish해야 함. 새 algorithm을 지원하는 resolver가 weaker algorithm만 받아들이지 않도록 validation policy가 필요함.",
+          "items": [
+            "호환성: `ML-DSA-44` 단독 signing은 지원하지 않는 resolver의 validation failure로 이어질 수 있는 조건",
+            "보안: dual-signing은 compatibility layer이면서 stronger algorithm 회피를 막아야 하는 downgrade control 대상"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "PQC DNSSEC 준비는 algorithm flag를 바꾸는 단일 change가 아니라 resolver·authoritative server·middlebox·network transport의 joint rollout임. Cloudflare의 2029 full post-quantum security 목표는 provider 계획으로, 조직의 migration 완료 기준을 대체하지 않음.",
+          "items": [
+            "점검: zone별 algorithm·DNSKEY size·EDNS buffer·TCP/53 policy·DNSSEC bogus/SERVFAIL·fallback latency",
+            "검증: canary zone에서 large DNSKEY query, TCP/DoT/DoH retry, firewall/load balancer path, resolver library compatibility 확인",
+            "팀 액션: conventional algorithm retirement은 resolver compatibility와 validation telemetry가 안정된 뒤 change gate로 승인 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-454",
       "title_ko": "Check Point VPN certificate 취약점 2건: CVSS 9.8 unauthenticated RCE 가능성과 Live Patch·Jumbo Hotfix 적용 범위",
       "title_original": "Check Point Discloses Two 9.8-Rated VPN Certificate Flaws Enabling Unauthenticated RCE",
@@ -260,7 +330,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-453",
@@ -342,7 +412,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-455",
@@ -419,7 +489,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-452",
@@ -496,7 +566,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-451",
@@ -569,7 +639,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-449",
@@ -646,7 +716,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-450",
@@ -720,7 +790,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-447",
@@ -784,7 +854,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-446",
@@ -861,7 +931,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-445",
@@ -938,7 +1008,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-433",
@@ -1023,7 +1093,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-448",
@@ -1087,7 +1157,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-420",
@@ -1165,7 +1235,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-444",
@@ -1242,7 +1312,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-443",
@@ -1315,7 +1385,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-442",
@@ -1383,7 +1453,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-439",
@@ -1449,7 +1519,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-440",
@@ -1526,7 +1596,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-441",
@@ -1594,7 +1664,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-437",
@@ -1662,7 +1732,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "source_name": "The Hacker News",
@@ -1729,7 +1799,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "source_name": "The Hacker News",
@@ -1796,7 +1866,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-438",
@@ -1874,7 +1944,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-434",
@@ -1942,7 +2012,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-430",
@@ -2029,7 +2099,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-428",
@@ -2097,7 +2167,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-429",
@@ -2166,7 +2236,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-431",
@@ -2244,7 +2314,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-425",
@@ -2335,7 +2405,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-427",
@@ -2409,7 +2479,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-423",
@@ -2487,7 +2557,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-424",
@@ -2556,7 +2626,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-422",
@@ -2631,7 +2701,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-426",
@@ -2707,7 +2777,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-432",
@@ -2785,7 +2855,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-421",
@@ -2864,7 +2934,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-419",
@@ -2938,7 +3008,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-417",
@@ -3005,7 +3075,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-418",
@@ -3081,7 +3151,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-415",
@@ -3150,7 +3220,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-413",
@@ -3219,7 +3289,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-414",
@@ -3288,7 +3358,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-416",
@@ -3366,7 +3436,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-412",
@@ -3444,7 +3514,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-411",
@@ -3512,7 +3582,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-410",
@@ -3588,7 +3658,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-409",
@@ -3657,11 +3727,11 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-408",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -3729,7 +3799,7 @@
     },
     {
       "id": "news-407",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
       "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
       "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
@@ -3790,71 +3860,6 @@
             "관측: object count·API QPS·apiserver request latency·etcd disk/fsync·admission webhook error·controller retry를 namespace와 migration ID로 연결",
             "통제: backup window·restore RTO·storage quota·webhook capacity와 concurrent deployment를 canary before/after 비교",
             "팀 액션: `Succeeded=True`·`.status.storedVersions`·backup/restore proof를 CRD version deletion과 key retirement의 release gate로 고정"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-405",
-      "rank": 50,
-      "title_ko": "Cloudflare Adaptive Intelligence 출시: 지속 재학습 bot score를 precision·recall·오탐 rollback으로 검증",
-      "title_original": "Introducing Adaptive Intelligence: undermining the economics of every bot attack",
-      "summary": "- 공개: Cloudflare가 Bot Management의 새 탐지 엔진 **Adaptive Intelligence**를 출시하고, Bot Score의 ML 모델을 고정 버전 대신 live traffic 기반으로 지속 재학습하는 경로 공개\n- 동작: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile/Precursor telemetry를 결합하고, 새 모델은 shadow mode에서 score distribution·challenge solve rate를 비교한 뒤 점진 반영\n- 범위: disposable rule 생성·traffic pattern mining은 후속 구성요소이며, 출시 시점에는 continuous retraining이 첫 제공 범위. Enterprise는 Bot Management의 `Auto Update Machine Learning` 활성화가 필요\n- 팀 액션: bot score 자동 갱신을 security control change로 취급하고 human conversion·challenge solve·false positive·credential-stuffing success·rollback latency를 segment별 canary와 incident runbook으로 검증 필요",
-      "detail": "Cloudflare는 2026년 8월 31일 21:59 KST에 Adaptive Intelligence를 공개했다. Bot Score 뒤의 새 bot detection engine은 live traffic에서 자동화 악용 확률을 계산하는 ML 시스템을 지속 재학습하고, JA4 TLS fingerprint, request structure, challenge outcome, session behavior, network reputation, Turnstile 및 Precursor client telemetry를 신호로 사용한다고 설명한다. 새 model weight는 즉시 전체 적용하지 않고 current model과 shadow mode에서 실 traffic을 score한 뒤 challenge solve rate와 score distribution을 비교하며, genuine visitor를 더 나쁘게 score하면 production 반영하지 않는다고 밝혔다. Cloudflare는 향후 attack별 disposable rule을 임의 주기로 생성·폐기하고 labeled traffic에서 signal 조합을 찾는 기능을 추가할 계획이지만, 이는 출시 시점의 제공 완료 범위가 아니다. Enterprise 고객은 Bot Management dashboard에서 `Auto Update Machine Learning`을 켜야 Adaptive Intelligence를 자동 적용받는다. 원문은 Cloudflare 네트워크와 제품 경로의 설명이며 개별 서비스의 fraud 감소율, false-positive ceiling, 탐지 지연, 지역·plan별 지원, customer-specific business impact를 보증하지 않는다. 배포 전후에는 login·checkout·account recovery별 사람 성공률과 bot block/challenge·conversion·support ticket·rollback 시간을 함께 관측해야 한다.",
-      "why_it_matters": "bot defense가 fixed rule에서 continuous model update로 바뀌면 공격자 회피 비용을 높일 수 있지만, detector drift와 false positive도 자동으로 production path에 들어올 수 있음. 특히 login·checkout·account recovery에서 bot score 변경은 security metric과 정상 고객 전환율을 동시에 바꿀 수 있음.",
-      "engineering_implication": "`Auto Update Machine Learning`의 enablement·owner·change window를 inventory하고, bot score·action·challenge outcome·JA4/session cohort·conversion·false positive appeal·credential-stuffing success를 privacy review 범위 안에서 trace로 연결해야 함. baseline 대비 human solve/conversion 저하, attack success 증가, support spike, rollback time을 go/no-go threshold와 함께 incident runbook에 고정 필요.",
-      "korea_implication": "국내 로그인·결제·계정복구 서비스는 통신 환경·모바일 WebView·인증 수단별 정상 사용자 행동이 global traffic과 다를 수 있음. 자동 bot model 갱신 전후의 차단·challenge·전환율을 국내 cohort와 접근성 흐름으로 분리 측정하고, 개인정보·보존·위탁 처리 범위를 계약과 정책으로 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Cloudflare",
-        "Bot Management",
-        "Machine Learning",
-        "Bot Detection",
-        "Application Security",
-        "Credential Stuffing",
-        "Observability"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-08-31 21:59",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/introducing-adaptive-intelligence/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M15GS69WEYGDMY3B1NHZGYZX.01M15GS72XAM4E7AESJXBQCCNR.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare canonical article의 `datePublished` `2026-08-31T12:59:00.000Z`를 KST `2026-08-31 21:59`으로 변환해 기록. Adaptive Intelligence는 Bot Score 뒤에서 자동화 악용 확률을 판단하는 새 bot detection engine이며, fixed release가 아닌 지속 재학습 model을 첫 구성요소로 출시한 범위임.",
-          "items": [
-            "공개: Bot Management의 Bot Score에 지속 재학습 ML 경로 추가",
-            "대상: 저속·분산 residential proxy와 session 단위 행동으로 static rate limit을 피하는 자동화 공격"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "원문은 engine이 network-wide signal과 client telemetry를 결합하고, 새 weight를 shadow mode에서 현재 model과 비교한 뒤 점진 rollout한다고 설명함. disposable rule과 automatic pattern mining은 설계·후속 제공 계획으로 설명되며 출시된 continuous retraining과 구분 필요.",
-          "items": [
-            "신호: JA4 TLS fingerprint·request structure·challenge outcome·session behavior·network reputation·Turnstile·Precursor telemetry",
-            "검증: shadow mode에서 score distribution·challenge solve rate·customer feedback을 비교",
-            "통제: genuine visitor score가 더 나빠지는 candidate는 production 반영하지 않는다는 제품 설명"
-          ]
-        },
-        {
-          "heading": "보안·운영 관점",
-          "body": "detector가 live traffic에 맞춰 바뀌면 rule maintenance 부담과 신규 bypass 대응 시간이 달라질 수 있으나, model drift·segment bias·정상 사용자 challenge 증가도 release risk가 됨. login·checkout·account recovery를 동일 global aggregate로 판단하지 말고 device·region·network·accessibility cohort별 outcome을 분리해야 함.",
-          "items": [
-            "관측: bot score·action·challenge solve·login success·conversion·false positive appeal·credential-stuffing success를 session cohort로 연결",
-            "경보: human conversion 또는 solve rate 저하, support volume 급증, account-takeover signal 증가를 rollout guardrail로 설정"
-          ]
-        },
-        {
-          "heading": "도입 시사점",
-          "body": "Cloudflare는 Enterprise 고객이 `Auto Update Machine Learning`을 켜면 별도 version migration 없이 적용된다고 설명함. 자동 갱신은 configuration toggle이지만 사용자 traffic의 security decision을 바꾸므로 enablement owner, rollback path, incident communication을 change record로 남겨야 함.",
-          "items": [
-            "사전 확인: plan·dashboard enablement·기존 custom rule·challenge policy·privacy/data-retention 조건 inventory",
-            "canary: login·checkout·account recovery별 정상 사용자와 공격 simulation에서 baseline 대비 security·conversion·rollback time 비교",
-            "팀 액션: auto-update pause·rollback owner·false-positive escalation·customer support 문구를 incident runbook에 고정"
           ]
         }
       ]
