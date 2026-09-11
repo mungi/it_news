@@ -2,7 +2,7 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-11 07:44",
+  "last_updated_kst": "2026-09-11 15:52",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare 1.1.1.1이 `ML-DSA-44` DNSSEC signature validation을 지원. signature **2,420 bytes**·public key 1,312 bytes로 large DNSKEY, TCP/DoT/DoH fallback, dual-signing downgrade validation을 zone·resolver별 canary로 검증 필요.",
@@ -186,6 +186,83 @@
   ],
   "items": [
     {
+      "id": "news-457",
+      "title_ko": "Kubernetes v1.37 in-place Pod resize scheduler preemption Alpha: Deferred resize를 동일 node의 priority·PDB로 해소",
+      "title_original": "Kubernetes v1.37: Scheduler Preemption for In-Place Pod Resize (Alpha)",
+      "summary": "- 공개: Kubernetes v1.37이 `InPlacePodVerticalScalingSchedulerPreemption` feature gate 뒤 in-place Pod resize scheduler preemption을 Alpha로 추가\n- 조건: node allocatable headroom 부족으로 Kubelet이 `Deferred`로 표시한 resize 요청을 scheduler가 active evaluation 대상으로 추적\n- 범위: 현재 배치된 **동일 node**에서 lower-priority victim Pod를 graceful eviction해 higher-priority Pod의 CPU·memory resize를 재시도하는 경로\n- 제약: v1.37 이상 control plane·worker node와 `kube-apiserver`·`kube-scheduler`·`kubelet` 전체의 gate enable이 필요한 Alpha 기능\n- 팀 액션: VPA/수동 resize의 `Deferred`·preemption·PDB block·eviction·resize completion·SLO 영향을 isolated canary node pool에서 측정 필요",
+      "detail": "Kubernetes v1.37은 running container의 CPU·memory allocation을 restart 없이 바꾸는 in-place Pod resize에서 node headroom 부족 시 Kubelet이 `Deferred`로 남기던 문제에 scheduler preemption을 Alpha로 추가했다. `InPlacePodVerticalScalingSchedulerPreemption` gate를 켜면 scheduler는 이미 `spec.nodeName`이 설정된 `Deferred` Pod도 추적하고, 해당 Pod가 있는 node에서 lower-priority Pod를 graceful eviction해 capacity를 확보할 수 있다. 일반 placement preemption과 달리 다른 node를 탐색하지 않고 current node에 한정된다. Kubelet은 local eviction을 직접 수행하지 않고 scheduler가 priority, PodDisruptionBudget(PDB), graceful termination policy를 고려해 결정한다. 기능 사용에는 Kubernetes v1.37 이상 control plane과 모든 worker node, `kube-apiserver`·`kube-scheduler`·`kubelet`의 gate enable이 필요하다. Alpha 기능이므로 cluster-wide enable을 resource shortage의 자동 해법으로 간주하지 말고, critical workload resize가 lower-priority workload의 eviction·PDB·capacity SLO에 주는 영향을 canary에서 검증해야 한다.",
+      "why_it_matters": "in-place resize는 restart 없이 resource request를 바꿀 수 있지만 headroom이 없으면 critical Pod가 `Deferred`에 멈출 수 있음. 이 기능은 resource sizing 경로에 priority와 voluntary disruption budget을 직접 연결하므로 autoscaling·SLO·tenant fairness의 운영 정책 변경임.",
+      "engineering_implication": "VPA 또는 controller가 만드는 in-place resize에 `Deferred` duration·preemption attempt·victim eviction·PDB denial·termination latency·resize success·node allocatable headroom을 같은 dashboard와 alert에 연결 필요. enable 전 priority class, PDB, eviction budget, stateful workload disruption, cluster autoscaler interaction과 rollback을 canary node pool에서 검증하고 Alpha gate의 version-skew를 release change record에 기록 필요.",
+      "korea_implication": "국내 multi-tenant Kubernetes 환경은 batch·CI·data workload와 customer-facing service가 같은 node pool을 공유할 수 있음. resize request의 priority 설정이 예기치 않은 eviction으로 이어지지 않도록 tenant별 PDB·priority class·maintenance window와 notification 경로를 사전 합의 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Kubernetes",
+        "Scheduler",
+        "In-Place Pod Resize",
+        "Preemption",
+        "VPA",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-11 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/10/kubernetes-v1-37-scheduler-preemption-for-in-place-pod-resize-alpha/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Kubernetes in-place Pod resize documentation",
+          "url": "https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/"
+        },
+        {
+          "title": "Kubernetes Vertical Pod Autoscaling documentation",
+          "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes v1.37이 in-place Pod resize의 resource 부족 상태를 scheduler가 처리하는 preemption 경로를 Alpha로 추가함. 기존 resize GA와 별개로 `InPlacePodVerticalScalingSchedulerPreemption` feature gate를 명시적으로 켜야 하는 범위임.",
+          "items": [
+            "배경: running container의 CPU·memory allocation은 in-place resize로 restart 없이 변경 가능한 범위",
+            "문제: node allocatable headroom 부족 시 Kubelet이 resize request를 `Deferred`로 표시하고 resource가 자연 해제될 때까지 대기하는 경로",
+            "변화: scheduler가 `Deferred` condition의 running Pod를 지속 추적해 preemption evaluation에 포함"
+          ]
+        },
+        {
+          "heading": "preemption 동작 범위",
+          "body": "scheduler는 fully utilized node에서 higher-priority Pod의 pending resize를 위해 eligible lower-priority victim Pod를 찾고 graceful eviction을 시작함. 일반 placement preemption처럼 cluster 전체 node를 재배치 후보로 찾지 않는 local scope임.",
+          "items": [
+            "범위: victim selection과 eviction은 resize 대상 Pod가 이미 배치된 동일 node에 한정",
+            "우선순위: scheduler가 global priority, PodDisruptionBudget(PDB), graceful termination policy를 고려하는 경로",
+            "분리: Kubelet admission handler는 local preemption·local eviction을 직접 수행하지 않고 scheduler에 결정을 위임"
+          ]
+        },
+        {
+          "heading": "도입 조건과 제약",
+          "body": "기능 사용에는 v1.37 이상 control plane과 모든 worker node, `kube-apiserver`·`kube-scheduler`·`kubelet` 전체에서 gate enable이 필요함. Alpha feature는 API·behavior·support policy 변경 가능성을 가진 release-preview 범위임.",
+          "items": [
+            "조건: node별 feature-gate configuration과 component version skew를 함께 확인 필요",
+            "경계: preemption은 node 부족 자체를 제거하지 않으며 capacity planning·cluster autoscaler·quota 정책을 대체하지 않음",
+            "경계: PDB 또는 higher-priority competing resize가 victim eviction과 completion time을 바꿀 수 있는 운영 변수"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "critical workload의 restart 없는 scale-up을 위한 control이지만 lower-priority workload의 interruption 비용을 동반함. production enable 전 resize request를 만드는 VPA/controller와 priority·PDB·SLO contract를 같은 change unit으로 검증해야 함.",
+          "items": [
+            "관측: `Deferred` duration·preemption attempt·victim eviction·PDB denial·termination latency·resize completion·node headroom",
+            "검증: isolated canary node pool에서 high-priority resize, PDB-protected victim, stateful workload, rollback과 alert noise를 재현",
+            "팀 액션: priority class·PDB·eviction budget·tenant notification·Alpha gate rollback을 platform runbook에 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-456",
       "title_ko": "Cloudflare 1.1.1.1, post-quantum DNSSEC 검증 지원: 2,420-byte ML-DSA-44 응답의 TCP fallback·downgrade 경계",
       "title_original": "1.1.1.1 now supports post-quantum DNSSEC, all 2,420 bytes of it",
@@ -253,7 +330,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-454",
@@ -330,7 +407,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-453",
@@ -412,7 +489,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-455",
@@ -489,7 +566,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-452",
@@ -566,7 +643,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-451",
@@ -639,7 +716,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-449",
@@ -716,7 +793,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-450",
@@ -790,7 +867,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-447",
@@ -854,7 +931,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-446",
@@ -931,7 +1008,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-445",
@@ -1008,7 +1085,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-433",
@@ -1093,7 +1170,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-448",
@@ -1157,7 +1234,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-420",
@@ -1235,7 +1312,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-444",
@@ -1312,7 +1389,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-443",
@@ -1385,7 +1462,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-442",
@@ -1453,7 +1530,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-439",
@@ -1519,7 +1596,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-440",
@@ -1596,7 +1673,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-441",
@@ -1664,7 +1741,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-437",
@@ -1732,7 +1809,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "source_name": "The Hacker News",
@@ -1799,7 +1876,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "source_name": "The Hacker News",
@@ -1866,7 +1943,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-438",
@@ -1944,7 +2021,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-434",
@@ -2012,7 +2089,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-430",
@@ -2099,7 +2176,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-428",
@@ -2167,7 +2244,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-429",
@@ -2236,7 +2313,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-431",
@@ -2314,7 +2391,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-425",
@@ -2405,7 +2482,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-427",
@@ -2479,7 +2556,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-423",
@@ -2557,7 +2634,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-424",
@@ -2626,7 +2703,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-422",
@@ -2701,7 +2778,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-426",
@@ -2777,7 +2854,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-432",
@@ -2855,7 +2932,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-421",
@@ -2934,7 +3011,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-419",
@@ -3008,7 +3085,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-417",
@@ -3075,7 +3152,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-418",
@@ -3151,7 +3228,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-415",
@@ -3220,7 +3297,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-413",
@@ -3289,7 +3366,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-414",
@@ -3358,7 +3435,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-416",
@@ -3436,7 +3513,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-412",
@@ -3514,7 +3591,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-411",
@@ -3582,7 +3659,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-410",
@@ -3658,7 +3735,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-409",
@@ -3727,11 +3804,11 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-408",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "정부 2027 AI 예산안 보도: Vera Rubin급 GPU 1만장·GPU 확충 3조8,500억원을 allocation·전력·데이터 control plane으로 검증",
       "title_original": "Korea government 2027 AI budget proposal: 10,000 Vera Rubin-class GPUs (reported)",
       "summary": "- 예산안: AI타임스가 2027년 과기정통부 AI 예산안 **9조4,000억원**과 프론티어급 AI 개발용 Vera Rubin급 GPU 1만장 투입 계획을 보도\n- 구성: 독자 AI 모델 GPU 확충 예산은 올해 2조841억원에서 내년 3조8,500억원으로, 데이터 경쟁력 강화 지원은 300억원에서 8,000억원으로 편성; 고품질 학습 데이터 1조 토큰 구축 목표 포함\n- 범위: AIDC·피지컬 AI·차세대 반도체 메가프로젝트 7,956억원, 최상위 AI 모델·기술 5조5,937억원, AX 1조8,611억원, AI 포용사회 1조1,707억원이라는 예산안 기준 보도\n- 팀 액션: GPU 장수를 usable AI capacity로 환산하지 말고 allocation·GPU-hour·queue·utilization·storage/network·전력/냉각·data governance·cost attribution·tenant isolation을 사업별 acceptance gate로 분리 필요",
@@ -3793,73 +3870,6 @@
             "통제: quota·priority·reservation·preemption·fair-share와 tenant identity·network/storage/secret boundary를 workload class별 정책으로 고정",
             "검증: data provenance·retention·egress·model artifact ownership·audit export와 project별 cost attribution을 onboarding gate로 설정",
             "팀 액션: procurement 발표가 아닌 delivered GPU-hour·p95 queue·utilization·job success·PUE와 tenant isolation 증적을 capacity release 기준으로 채택"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-407",
-      "rank": 50,
-      "title_ko": "Kubernetes v1.37 Storage Version Migration 기본 활성화: CRD·암호화 key 교체를 declarative rewrite·etcd 부하 gate로 운영",
-      "title_original": "Kubernetes v1.37: Storage Version Migration Enabled by Default",
-      "summary": "- GA: Kubernetes v1.37에서 내장 `storagemigration.k8s.io/v1` API와 control-plane `StorageVersionMigrator` controller가 기본 활성화\n- 대상: CRD storage version 교체 뒤 남은 이전 schema object와 encryption-at-rest·key rotation 뒤 재기록되지 않은 object를 declarative `StorageVersionMigration`으로 기본 storage version에 rewrite\n- 확인: controller status의 `Succeeded=True`으로 migration 완료를 확인하고, CRD `.status.storedVersions`가 이전 version을 유지하면 migration 중 CRD 변경 가능성이 있으므로 재실행 필요\n- 팀 액션: API QPS·etcd latency·write amplification·controller error·backup/restore 영향을 canary namespace에서 측정하고, 이전 CRD API serving 중단·old encryption key 폐기를 완료 신호 뒤로 분리 필요",
-      "detail": "Kubernetes는 2026년 9월 1일 03:30 KST에 Storage Version Migration(SVM)이 v1.37에서 GA가 됐고 내장 `storagemigration.k8s.io/v1` API와 `StorageVersionMigrator` control-plane controller가 기본 활성화된다고 발표했다. Kubernetes resource는 특정 storage version schema로 저장되므로 새 storage version을 지정해도 기존 object는 이전 schema로 남는다. CRD가 `v1alpha1`을 폐기하거나 encryption at rest·encryption key를 교체할 때 모든 object가 API server를 통해 재기록되기 전에는 이전 schema 또는 old key 상태가 유지될 수 있다. `StorageVersionMigration` object를 만들면 controller가 해당 API의 existing resource를 default storage version으로 자동 재기록하고 `Succeeded=True` condition으로 완료를 보고한다. CRD migration 성공 뒤 `.status.storedVersions`가 최신 version만 가리키지 않으면 migration 도중 CRD가 변경된 경우이므로 이전 API version 제거 전에 migration을 다시 실행해야 한다. 공식 발표는 built-in declarative 기능의 GA·기본 활성화 범위이며, object 수별 완료 시간, API server·etcd 부하, managed Kubernetes 지원, backup/restore, encryption provider와 old key retirement는 보증하지 않는다. 대량 cluster에서는 migration을 version cleanup 작업이 아니라 write workload change로 보고 canary와 관측·rollback 경계를 먼저 설정해야 한다.",
-      "why_it_matters": "CRD API 폐기와 encryption key rotation은 schema·data-at-rest 보안 작업이지만 기존 object가 재기록되지 않으면 이전 version 또는 key에 남을 수 있음. built-in controller는 수동 script와 out-of-tree migrator 의존을 줄이지만, 대량 rewrite가 API server·etcd·admission webhook·backup 경로에 부하를 추가할 수 있음.",
-      "engineering_implication": "`StorageVersionMigration`을 CRD upgrade·encryption rotation change record에 연결하고, object count·API QPS·apiserver request latency·etcd disk/fsync·admission webhook error·controller condition·backup duration을 before/after 비교해야 함. `Succeeded=True`과 `.status.storedVersions`·restore test를 함께 확인하기 전에는 이전 CRD version serving 중단 또는 old encryption key 폐기를 승인하지 말아야 함.",
-      "korea_implication": "국내 managed Kubernetes 사용 조직도 upstream 기본 활성화만으로 provider별 control-plane 지원·quota·maintenance window가 확정되는 것은 아님. regulated workload의 CRD version 폐기·key rotation은 provider support 문서와 backup/restore 증적을 별도 change approval에 연결할 필요.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "CRD",
-        "etcd",
-        "Storage Version Migration",
-        "Encryption at Rest",
-        "DevOps",
-        "Control Plane"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-09-01 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/08/31/kubernetes-v1-37-storage-version-migration-ga/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes 공식 블로그와 RSS `Mon, 31 Aug 2026 10:30:00 -0800`를 확인해 KST `2026-09-01 03:30`으로 기록. v1.37에서 Storage Version Migration이 GA가 됐고 built-in API·control-plane controller가 기본 활성화된 범위임.",
-          "items": [
-            "GA: `storagemigration.k8s.io/v1` API와 `StorageVersionMigrator` controller의 stable·default-enabled 전환",
-            "변화: 수동 `kubectl get`·`kubectl replace` script 또는 out-of-tree migrator 의존을 control-plane declarative workflow로 축소"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Kubernetes object는 특정 storage version schema로 저장됨. 새 write의 storage version을 바꿔도 기존 object가 자동 변환되지는 않아 CRD version cleanup과 encryption key rotation에 stale object 문제가 남는 구조임.",
-          "items": [
-            "CRD: 이전 `v1alpha1` object가 남으면 `.status.storedVersions`에서 해당 version 제거 또는 serving 중단 전 전체 rewrite 필요",
-            "암호화: encryption at rest 설정·key rotation 뒤 기존 object는 API server를 통한 재기록 전까지 unencrypted 또는 이전 key 상태 가능성",
-            "실행: declarative `StorageVersionMigration` object 생성 뒤 controller가 해당 API의 existing resource를 default storage version으로 자동 rewrite"
-          ]
-        },
-        {
-          "heading": "완료 검증과 변경 순서",
-          "body": "controller는 migration progress를 status에 반영하며 성공 시 `Succeeded=True` condition을 설정함. 이 condition 하나만으로 CRD cleanup을 승인하지 말고 storage-version status와 restore result를 함께 확인해야 함.",
-          "items": [
-            "확인: `Succeeded=True` condition으로 controller 관점의 migration completion 확인",
-            "재시도: 성공 뒤 `.status.storedVersions`가 이전 version을 남기면 migration 중 CRD 변경 가능성이 있으므로 이전 API 폐기 전 재실행",
-            "순서: canary migration → status·object sampling·restore 확인 → old API serving 중단 또는 old encryption key retirement 승인"
-          ]
-        },
-        {
-          "heading": "운영 시사점",
-          "body": "대량 resource rewrite는 schema housekeeping이 아니라 control-plane write workload임. 공식 원문은 object 수별 duration, API server·etcd 영향, managed Kubernetes 지원, backup/restore 및 encryption provider behavior를 보증하지 않음.",
-          "items": [
-            "관측: object count·API QPS·apiserver request latency·etcd disk/fsync·admission webhook error·controller retry를 namespace와 migration ID로 연결",
-            "통제: backup window·restore RTO·storage quota·webhook capacity와 concurrent deployment를 canary before/after 비교",
-            "팀 액션: `Succeeded=True`·`.status.storedVersions`·backup/restore proof를 CRD version deletion과 key retirement의 release gate로 고정"
           ]
         }
       ]

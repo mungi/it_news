@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/kubernetes-v1-37-scheduler-preemption-inplace-pod-resize-2026-09-11]] — Kubernetes v1.37 in-place Pod resize scheduler preemption Alpha의 `Deferred` 상태·동일 node victim eviction·PDB·priority canary 검증 경계.
 - [[raw/articles/cloudflare-1111-post-quantum-dnssec-2026-09-10]] — Cloudflare 1.1.1.1의 ML-DSA-44 DNSSEC 검증과 large DNSKEY·TCP fallback·dual-signing downgrade 검증 경계.
 - [[raw/articles/thn-checkpoint-vpn-certificate-cve-2026-85102-85103-2026-09-10]] — Check Point VPN certificate 처리 CVE-2026-85102·CVE-2026-85103의 Live Patch·Jumbo Hotfix·HA·management-plane 검증 경계.
 - [[raw/articles/cisa-kev-cisco-citrix-fortinet-2026-09-09]] — CISA KEV Cisco FMC/SCC·Citrix NetScaler·Fortinet 3건의 edge asset patch·forensic triage 경계.
