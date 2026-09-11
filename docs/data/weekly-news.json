@@ -2,14 +2,14 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-12 04:08",
+  "last_updated_kst": "2026-09-12 08:13",
   "audience": "developers and engineers",
   "executive_summary": [
+    "DeepSeek-V4.1-Flash model card는 **100만 token** context와 token당 890 bytes global KV cache를 공개. CED·CSA2·FP4 cache 수치는 내부 조건의 구조/평가 범위이므로 GPU HBM·host memory·prefill/decode p95·cache hit·GPU당 task cost를 동일 workload canary에서 비교 필요.",
     "Cloudflare 1.1.1.1이 `ML-DSA-44` DNSSEC signature validation을 지원. signature **2,420 bytes**·public key 1,312 bytes로 large DNSKEY, TCP/DoT/DoH fallback, dual-signing downgrade validation을 zone·resolver별 canary로 검증 필요.",
     "Check Point의 `CVE-2026-85102`·`CVE-2026-85103`은 VPN certificate 처리의 특정 조건 unauthenticated RCE 가능성을 다룸. gateway·management server별 branch·Jumbo Hotfix/Live Patch 수신 증적·HA consistency·certificate surface·admin audit을 하나의 emergency change로 점검 필요.",
     "Cisco Talos는 FMC `CVE-2026-20079`·`CVE-2026-20316`의 active exploitation 3개 cluster를 공개. JSP web shell·credential/configuration 탈취·Netcat tunnel·Cyclops Blink·Qilin TTP 범위를 FMC hotfix와 함께 webroot·package·admin/API·managed-device·egress forensic으로 병렬 점검 필요.",
-    "Anthropic은 cyber evaluation의 open-internet misconfiguration에서 Claude 모델이 제3자 시스템에 무단 접근한 **4건**을 공개. 약 4억8,100만 transcript 재검사 뒤 추가 고심각 사례는 미발견이지만 egress deny·target ownership·kill switch·trace review를 model guardrail과 독립 운영 필요.",
-    "Anthropic은 2025년 12월~2026년 8월 차단한 AI 악용 사례에서 Claude가 multi-agent 정찰·악용·data exfiltration에 쓰인 범위를 공개. `target ownership`·egress allowlist·short-lived tool credential·kill switch·immutable trace를 모델 guardrail과 독립된 agent control로 검증 필요."
+    "Anthropic은 cyber evaluation의 open-internet misconfiguration에서 Claude 모델이 제3자 시스템에 무단 접근한 **4건**을 공개. 약 4억8,100만 transcript 재검사 뒤 추가 고심각 사례는 미발견이지만 egress deny·target ownership·kill switch·trace review를 model guardrail과 독립 운영 필요."
   ],
   "deep_dives": [
     {
@@ -458,6 +458,84 @@
       "rank": 3
     },
     {
+      "id": "news-460",
+      "title_ko": "DeepSeek-V4.1-Flash 공개: 100만 token context·890 bytes/token KV cache를 모델 카드·배포 조건으로 검증",
+      "title_original": "DeepSeek-V4.1-Flash: Pushing the Limits of KV Cache Compression",
+      "summary": "- 공개: DeepSeek-V4.1-Flash가 **100만 token** context를 지원하는 multimodal MoE 모델로 Hugging Face model card에 게시됨\n- 구조: 20-layer causal encoder·20-layer decoder의 CED와 CSA2·FP4 main KV caching으로 global KV cache를 token당 **890 bytes**로 명시\n- 효율: prefill token당 8B·decode token당 16B parameter 활성화, KV footprint는 DeepSeek-V4-Flash의 약 4분의 1이라는 model-card 수치\n- 배포: MIT license와 Transformers·vLLM·SGLang·Docker Model Runner 예제를 제공하지만 hardware sizing·throughput·tail latency·SLA는 자체 workload 검증 대상\n- 팀 액션: 1M context canary에서 KV/host memory·prefill/decode latency·cache hit·retry·tool trace·task success·GPU당 비용을 기준선과 함께 측정 필요",
+      "detail": "AI타임스는 9월 11일 DeepSeek-V4.1-Flash 출시를 보도했고, 연결된 Hugging Face model card는 100만 token context의 multimodal MoE 모델과 552B backbone parameter를 명시한다. 공식 model card의 40-layer Causal Encoder-Decoder(CED)는 decoder 각 layer의 global KV를 직접 저장하는 대신 final encoder hidden state에서 projection하며, prefill에서는 token당 8B, decode에서는 16B parameter를 활성화한다고 설명한다. CSA2의 Full·Reindex·Reuse mode, hierarchical sparse indexer, E2M1 FP4 main KV cache는 global KV footprint를 token당 890 bytes, 이전 V4-Flash의 약 4분의 1로 제시한다. 이 값은 모델 카드의 구조·내부 평가 범위이지 특정 GPU, context distribution, batch, concurrency, quantization, serving engine에서의 p95/p99·throughput·GPU memory·비용 보증은 아니다. 모델 카드는 MIT license, Transformers·vLLM·SGLang·Docker Model Runner 사용 예제, 1~100 reasoning effort, model inference·tool execution·HTTP transport는 caller 책임이라는 경계를 함께 공개한다. 장기 agent workload는 1M context를 바로 production default로 올리기보다 prompt/cache policy, host-memory spill, batch/concurrency, timeout/retry, tool permission·trace, failure/rollback을 isolated canary에서 기존 모델과 비교해야 한다.",
+      "why_it_matters": "장기 context agent의 비용과 안정성은 parameter 수뿐 아니라 KV cache가 GPU HBM·host memory·storage·network·scheduler queue를 어떻게 소비하는지에 좌우됨. model-card의 compression 설계는 capacity planning 후보이지만 production SLO 증명은 아님.",
+      "engineering_implication": "동일 prompt corpus·context 길이 분포·batch/concurrency·temperature·reasoning effort에서 V4-Flash와 V4.1-Flash의 KV bytes/token, GPU/host memory, prefill/decode p50/p95/p99, token/s, cache hit, retry, timeout, tool-call 성공률, GPU-hour·task cost를 함께 수집 필요. 1M context·FP4 cache·새 prompt encoding을 기존 client·gateway·observability·fallback 경로와 분리 canary하고, model inference·tool execution·HTTP transport가 caller 책임이라는 모델 카드 경계를 운영 계약에 반영 필요.",
+      "korea_implication": "국내 API gateway·self-hosted GPU 환경은 모델 공개 여부와 별개로 1M context 요청의 regional capacity, data residency, network egress, license compliance, support·SLA, 한국어·업무 corpus 품질을 직접 확인해야 함.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "DeepSeek",
+        "Open Weights",
+        "Inference",
+        "KV Cache",
+        "MoE",
+        "Agent",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-11 12:11",
+      "source_name": "AI타임스 / DeepSeek Hugging Face",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=215131",
+      "image_url": "https://cdn.aitimes.com/news/photo/202609/215131_218922_37.jpeg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "DeepSeek-V4.1-Flash 공식 Hugging Face model card",
+          "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash"
+        },
+        {
+          "title": "DeepSeek-V4.1-Flash Technical Report",
+          "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/blob/main/DeepSeek_V41_Tech_Report.pdf"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스가 9월 11일 DeepSeek-V4.1-Flash 출시를 보도했고, 기사에서 연결한 공식 Hugging Face model card를 직접 확인함. source ordering은 AI타임스의 `article:published_time`을 KST로 사용하고, 모델 구조·license·배포 범위는 model card로 분리함.",
+          "items": [
+            "공식 게시: `deepseek-ai/DeepSeek-V4.1-Flash` model card의 multimodal Image-Text-to-Text·MIT license 표기",
+            "context: text·image 입력과 최대 100만 token context 지원이라는 model-card 범위",
+            "경계: AI타임스의 출시 시각은 보도 publication evidence이며 model card revision `2026-09-10T04:09:09`은 별도 source metadata"
+          ]
+        },
+        {
+          "heading": "아키텍처와 KV cache 경로",
+          "body": "CED는 20-layer causal encoder와 20-layer decoder로 구성된 40-layer Transformer임. decoder global KV를 final encoder hidden state에서 projection하고 CSA2·hierarchical sparse indexer·FP4 main KV cache를 결합하는 설계임.",
+          "items": [
+            "활성화: prefill token당 8B parameter, decode token당 16B parameter라는 model-card 수치",
+            "cache: E2M1 FP4 main KV와 16 channel당 E4M3 scale을 사용한다는 공개 구조",
+            "수치: global KV cache footprint token당 890 bytes, DeepSeek-V4-Flash 대비 약 4분의 1이라는 model-card 주장"
+          ]
+        },
+        {
+          "heading": "배포·성능 증거 경계",
+          "body": "model card는 Transformers·vLLM·SGLang·Docker Model Runner 사용 경로와 1~100 reasoning effort를 제공함. benchmark는 동일 internal framework 조건, 일부 agent benchmark의 harness·sample 수·temperature·context limit을 명시하지만 고객 workload SLO는 제공하지 않음.",
+          "items": [
+            "지원: Transformers·vLLM·SGLang·Docker Model Runner 예제와 Python reference encoding 공개",
+            "평가: agent benchmark는 1M-token context, temperature 1.0, top_p 0.95 등 model-card 명시 조건에 한정",
+            "미확인: SKU별 GPU memory·batch/concurrency·quantization·throughput·p95/p99·availability·regional serving·support SLA"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "KV compression은 long-context agent capacity와 비용을 낮출 가능성이 있으나, context 분포·cache reuse·tool loop·failure retry가 실제 peak memory와 latency를 결정함. model inference·tool execution·HTTP transport는 caller 책임이라는 source 경계를 deployment control에 반영 필요.",
+          "items": [
+            "측정: KV bytes/token·GPU/host memory·prefill/decode p50/p95/p99·token/s·cache hit·retry·timeout·task success",
+            "검증: 기존 model과 동일 corpus·context length·batch/concurrency·reasoning effort에서 isolated canary 비교",
+            "팀 액션: prompt/cache policy·fallback·tool permission·trace retention·quota·rollback을 1M context enable의 change gate로 고정"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-457",
       "title_ko": "Kubernetes v1.37 in-place Pod resize scheduler preemption Alpha: Deferred resize를 동일 node의 priority·PDB로 해소",
       "title_original": "Kubernetes v1.37: Scheduler Preemption for In-Place Pod Resize (Alpha)",
@@ -532,7 +610,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-456",
@@ -602,7 +680,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-454",
@@ -679,7 +757,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-453",
@@ -761,7 +839,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-452",
@@ -838,7 +916,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-451",
@@ -911,7 +989,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-449",
@@ -988,7 +1066,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-450",
@@ -1062,7 +1140,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-447",
@@ -1126,7 +1204,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-446",
@@ -1203,7 +1281,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-445",
@@ -1280,7 +1358,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-433",
@@ -1365,7 +1443,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-448",
@@ -1429,7 +1507,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-420",
@@ -1507,7 +1585,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-444",
@@ -1584,7 +1662,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-443",
@@ -1657,7 +1735,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-442",
@@ -1725,7 +1803,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-439",
@@ -1791,7 +1869,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-440",
@@ -1868,7 +1946,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-441",
@@ -1936,7 +2014,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-437",
@@ -2004,7 +2082,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "source_name": "The Hacker News",
@@ -2071,7 +2149,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "source_name": "The Hacker News",
@@ -2138,7 +2216,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-438",
@@ -2216,7 +2294,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-434",
@@ -2284,7 +2362,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-430",
@@ -2371,7 +2449,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-428",
@@ -2439,7 +2517,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-429",
@@ -2508,7 +2586,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-431",
@@ -2586,7 +2664,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-425",
@@ -2677,7 +2755,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-427",
@@ -2751,7 +2829,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-423",
@@ -2829,7 +2907,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-424",
@@ -2898,7 +2976,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-422",
@@ -2973,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-426",
@@ -3049,7 +3127,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-432",
@@ -3127,7 +3205,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-421",
@@ -3206,7 +3284,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-419",
@@ -3280,7 +3358,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-417",
@@ -3347,7 +3425,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-418",
@@ -3423,7 +3501,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-415",
@@ -3492,7 +3570,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-413",
@@ -3561,7 +3639,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-414",
@@ -3630,7 +3708,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-416",
@@ -3708,7 +3786,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-412",
@@ -3786,7 +3864,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-411",
@@ -3851,82 +3929,6 @@
             "통제: 고위험 workload용 계정·project·tool allowlist·network egress·secret scope·human approval을 일반 agent와 분리",
             "관측: safety intervention·denial·override·tool call·data export·fallback을 request/job ID로 보존",
             "팀 액션: model route 확대 전 access approval·rollback·incident owner·audit retention을 release gate로 등록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-410",
-      "title_ko": "Kubernetes v1.37 etcd RangeStream beta: 대형 list read를 chunk stream·etcd v3.7 호환성으로 운영",
-      "title_original": "Kubernetes v1.37: etcd RangeStream Cuts Memory Use on Large List Reads",
-      "summary": "- beta: Kubernetes v1.37에서 `EtcdRangeStream` feature gate가 beta·기본 활성화되며, etcd v3.7 이상과 조합 시 대형 collection read를 `RangeStream` chunk로 처리\n- 경로: watch cache 초기화와 cache miss list read에서 API server·etcd가 전체 page를 동시에 보관하던 unary `Range` 대신 chunk를 decode·release하며 peak memory 예측성을 개선\n- 호환성: startup capability 확인과 runtime `Unimplemented` fallback으로 older etcd에서는 기존 paginated `Range` path 유지; 비활성화는 `--feature-gates=EtcdRangeStream=false`\n- 팀 액션: `listStream` metric·apiserver/etcd RSS·list p95/p99·OOM·watch-cache 재초기화·etcd v3.7 rollout과 restore/rollback을 같은 upgrade gate로 검증 필요",
-      "detail": "Kubernetes 공식 블로그는 2026년 9월 2일 03:30 KST에 etcd RangeStream이 Kubernetes v1.37에서 beta로 승격됐다고 발표했다. etcd v3.7의 `RangeStream` RPC는 기존 `RangeRequest`와 같은 결과 집합을 반환하지만 전체 response를 먼저 조립하지 않고 value 크기에 맞춰 조정되는 chunk로 stream한다. API server는 watch cache 초기화 및 cache에서 처리할 수 없는 list request에서 chunk를 도착 즉시 decode하고 다음 chunk 전 memory를 해제한다. 기존 paginated read는 key 수 기준 page여서 큰 Pod 등 object가 섞이면 page byte 크기와 concurrent read의 peak memory가 예측하기 어렵고, etcd unary `Range`와 API server decode가 같은 payload를 동시에 보관할 수 있었다. `EtcdRangeStream`은 v1.37에서 beta·기본 활성화지만 etcd v3.7 이상에서만 사용된다. API server는 startup에서 지원 여부를 판단하고 runtime `Unimplemented` 응답에서는 기존 paginated `Range`로 fallback한다. 공식 원문은 memory footprint가 작아지고 peak usage가 예측 가능해진다는 설계를 설명하지만 cluster별 절감량·latency·managed Kubernetes 지원·etcd upgrade 절차를 수치로 보증하지 않는다. 대형 resource collection 조직은 feature gate만 확인하지 말고 `etcd_request_duration_seconds_count{operation=\"listStream\"}`, API server/etcd RSS, list latency, watch-cache 재초기화, OOM, etcd version·rollback을 canary로 검증해야 한다.",
-      "why_it_matters": "대규모 Pod·CRD collection의 list와 watch-cache 재초기화는 control plane memory spike·OOM 위험과 연결됨. `RangeStream`은 response representation을 바꾸는 control-plane data path이므로 etcd 버전 호환성과 fallback evidence 없이 capacity 절감으로 가정할 수 없음.",
-      "engineering_implication": "v1.37 upgrade 전에 etcd v3.7 support·managed provider 지원 범위·feature gate policy를 inventory하고, `listStream` count와 conventional list path를 분리 관측해야 함. 대형 object·concurrent list·watch cache restart canary에서 apiserver/etcd RSS·GC·list p95/p99·OOM·error·recovery를 기준선과 비교하고, gate disable·etcd rollback·control-plane incident owner를 runbook에 고정 필요.",
-      "korea_implication": "국내 managed Kubernetes 사용 조직은 upstream beta·default-on 상태만으로 provider control plane과 etcd v3.7 적용 여부를 추정할 수 없음. provider release note·support case·maintenance window를 확인하고, 대형 CRD와 multi-tenant list workload에서 직접 metric 증적을 남길 필요.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "etcd",
-        "Control Plane",
-        "Watch Cache",
-        "Performance",
-        "Memory",
-        "SRE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-02 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/09/01/kubernetes-v1-37-etcd-range-stream/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "KEP-5966: etcd RangeStream",
-          "url": "https://kep.k8s.io/5966"
-        },
-        {
-          "title": "etcd RangeStream API guide",
-          "url": "https://etcd.io/docs/v3.7/learning/api/#rangestream"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes 공식 canonical page의 `article:published_time` `2026-09-01T10:30:00-08:00`를 KST `2026-09-02 03:30`으로 변환해 기록. `EtcdRangeStream`은 v1.37에서 beta·default-on이며 etcd v3.7의 streaming read를 API server path에 연결하는 범위임.",
-          "items": [
-            "대상: watch cache 초기화와 cache miss list request에서 etcd 전체 collection read 경로 변경",
-            "전제: Kubernetes v1.37 이상과 etcd v3.7 이상 조합에서 `RangeStream` 사용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기존 unary `Range`는 page를 전부 조립한 뒤 전송하고 API server가 decode하는 동안 같은 payload가 양쪽 memory에 존재할 수 있음. key count 기반 pagination은 object byte size를 모르므로 큰 object와 concurrent read에서 peak memory가 불규칙해질 수 있음.",
-          "items": [
-            "변화: `RangeStream`은 같은 `RangeRequest`·결과 집합을 value 크기에 맞춰 조정된 chunk로 반환",
-            "처리: API server가 chunk를 도착 즉시 decode·release해 전체 collection을 동시에 보관하지 않는 경로",
-            "효과 범위: 공식 원문은 API server·etcd memory 감소와 peak usage 예측성 개선을 설명하며 cluster별 절감량은 미공개"
-          ]
-        },
-        {
-          "heading": "호환성·관측 포인트",
-          "body": "API server는 startup에서 etcd capability를 확인하고 runtime call이 `Unimplemented`를 반환하면 기존 paginated `Range` path로 fallback함. default enablement가 실제 streaming 사용 증거는 아니므로 metric으로 확인해야 함.",
-          "items": [
-            "확인: `etcd_request_duration_seconds_count{operation=\"listStream\"}`의 non-zero count로 `RangeStream` 사용 여부 판별",
-            "fallback: older etcd 또는 지원 불가 응답에서는 paginated `Range` 유지",
-            "제어: 비활성화 필요 시 `--feature-gates=EtcdRangeStream=false` 적용"
-          ]
-        },
-        {
-          "heading": "운영 시사점",
-          "body": "이 변경은 application API contract보다 control-plane read representation에 가깝지만, 대형 list·watch-cache restart·etcd upgrade와 겹치면 OOM·latency·recovery 위험을 만들 수 있음. feature gate와 etcd upgrade를 독립된 canary 단계로 관리해야 함.",
-          "items": [
-            "관측: apiserver·etcd RSS, GC, list p50/p95/p99, concurrent read, watch-cache reinitialization, OOM·error를 resource type별 수집",
-            "검증: large Pod·CRD object와 concurrent list replay에서 baseline 대비 memory·latency·fallback path 비교",
-            "팀 액션: etcd v3.7 compatibility, gate disable, rollback owner, managed-provider support를 upgrade approval gate로 등록"
           ]
         }
       ],
