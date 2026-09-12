@@ -400,6 +400,8 @@
 
 - [[raw/articles/kubernetes-v1-37-rootless-beta-2026-09-05]] — Kubernetes v1.37 Rootless mode Beta의 kubelet·runtime·CNI user namespace와 node security·호환성 검증 경계.
 
+- [[raw/articles/cisa-kev-artifactory-screenconnect-routeros-2026-09-13]] — CISA KEV의 Artifactory·ScreenConnect·RouterOS 5건, patch due date·control-plane forensic 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
