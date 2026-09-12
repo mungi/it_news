@@ -2,7 +2,7 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-12 08:13",
+  "last_updated_kst": "2026-09-12 12:19",
   "audience": "developers and engineers",
   "executive_summary": [
     "DeepSeek-V4.1-Flash model card는 **100만 token** context와 token당 890 bytes global KV cache를 공개. CED·CSA2·FP4 cache 수치는 내부 조건의 구조/평가 범위이므로 GPU HBM·host memory·prefill/decode p95·cache hit·GPU당 task cost를 동일 workload canary에서 비교 필요.",
@@ -192,6 +192,83 @@
   ],
   "items": [
     {
+      "id": "news-461",
+      "title_ko": "GitLab repository commits API 경로 탐색 CVSS 10: 무인증 파일 읽기 probe에 self-managed 즉시 patch·secret triage",
+      "title_original": "GitLab CVSS 10 File-Read Flaw Draws In-the-Wild Probes After Disclosure",
+      "summary": "- 공개: GitLab CE/EE repository commits API의 `CVE-2026-85706`은 improper path confinement·missing authentication enforcement 조건에서 무인증 arbitrary file read 가능 범위\n- 영향: 18.7 이상 `19.1.8` 미만, 19.2 `19.2.6` 미만, 19.3 `19.3.2` 미만 self-managed CE/EE 대상이며 GitLab.com·GitLab Dedicated는 patched/no-action 범위\n- 관측: 공개 뒤 2026-09-11 06:00 UTC부터 in-the-wild probe가 관측됐다는 watchTowr 인용이며 public project 최소 1개가 exploit 조건이라는 보도 범위\n- 병행 조치: 같은 patch는 Duo Chat 접근 EE의 `CVE-2026-87719` insecure deserialization·Advanced Search configuration/credential exposure도 수정\n- 팀 액션: upgrade 전후 `/api/v4/projects/{id}/repository/commits/` POST의 `file.Path`, public project·external ingress, GitLab config/log·runner/CI variable secret rotation 범위를 incident timeline으로 대조 필요",
+      "detail": "GitLab은 9월 10일 CE/EE 19.3.2·19.2.6·19.1.8 critical patch를 배포했다. 공식 release note에 따르면 `CVE-2026-85706`은 repository commits API의 path confinement와 authentication enforcement 결함 때문에 특정 조건에서 unauthenticated user가 GitLab server의 arbitrary file을 읽을 수 있는 CVSS 10.0 취약점이다. 영향 범위는 18.7 이상 19.1.8 미만, 19.2 계열 19.2.6 미만, 19.3 계열 19.3.2 미만의 self-managed CE/EE다. GitLab.com은 patched version을 운용하고 GitLab Dedicated는 조치 대상이 아니라고 명시한다. The Hacker News는 watchTowr 관측을 인용해 9월 11일 06:00 UTC부터 public disclosure 직후 probe가 있었고, public project 하나가 exploit 조건이라고 보도했다. probe가 곧 침해 성공이나 모든 배포판의 노출을 뜻하지는 않는다. 같은 patch는 Duo Chat 접근을 가진 authenticated EE 사용자가 specially crafted GraphQL subscription argument로 Advanced Search instance configuration과 sensitive credential을 얻을 수 있는 `CVE-2026-87719`(CVSS 9.9)도 고친다. GitLab은 package type과 무관하게 affected installation을 최신 patch로 즉시 upgrade하도록 권고했다. self-managed GitLab은 source·CI/CD variable·runner token·integration secret의 control plane이므로 patch receipt만 확인하지 말고 public project/API ingress, request log, GitLab configuration/log file read 가능성, credential reuse scope를 함께 조사해야 한다.",
+      "why_it_matters": "GitLab repository commits API는 source code와 CI/CD control plane에 인접함. arbitrary file read가 configuration·log·secret material로 이어질 수 있어 public project 노출과 runner·integration credential rotation을 patch change와 분리할 수 없음.",
+      "engineering_implication": "self-managed GitLab version·deployment type·internet ingress·public project 존재를 우선 inventory화하고 fixed release 적용을 emergency change로 추적 필요. access log의 commits API POST와 `file.Path`, config/log access, runner registration token·PAT·deploy key·CI variable의 reuse를 같은 incident timeline에서 대조하고 evidence에 따라 rotation 범위를 확정 필요.",
+      "korea_implication": "국내 조직의 on-premises·private cloud GitLab이 외부 협력 repository와 내부 CI runner를 함께 운영하면 public project 한 건의 노출 조건이 build credential·artifact path와 연결될 수 있음. 운영 대행·계열사 instance를 포함한 version/ingress/secret owner matrix로 patch와 조사 책임을 고정 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "GitLab",
+        "CI/CD",
+        "DevSecOps",
+        "Active Exploitation",
+        "Patch Management",
+        "Secrets"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-09-12 01:30",
+      "source_name": "GitLab / The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/gitlab-cvss-10-file-read-flaw-draws-in.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEioFH6aWhF9NgRW1O3yFExc7paTA9akN5-3IUQF8mvEiSTaFJjKvm6YQzFX6MP2uimYplHe1MJXz6eZtPtnxaLy25jJBhU6KuhsWFpIlnqhbn6OI6QTcfp6Olp1-VDUEF4KEYFF7hQDBdmgtxibsg9MkvbcOJIlR8Of2Flyw2m9zYfXC6gUm-TV8XA6vU43/s1600/gitlab-wild.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "GitLab Critical Patch Release: 19.3.2, 19.2.6, 19.1.8",
+          "url": "https://docs.gitlab.com/releases/patches/patch-release-gitlab-19-3-2-released/"
+        },
+        {
+          "title": "GitLab release notes",
+          "url": "https://docs.gitlab.com/releases/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitLab이 2026-09-10 self-managed CE/EE용 critical patch 19.3.2·19.2.6·19.1.8을 배포함. `CVE-2026-85706`은 repository commits API의 path traversal로 특정 조건에서 무인증 arbitrary file read가 가능한 CVSS 10.0 결함임.",
+          "items": [
+            "영향 release: 18.7 이상 `19.1.8` 미만·19.2 `19.2.6` 미만·19.3 `19.3.2` 미만 CE/EE 범위",
+            "배포 경계: GitLab.com은 patched version 운용, GitLab Dedicated는 no-action으로 명시된 범위",
+            "원인: repository commits API의 improper path confinement와 missing authentication enforcement 조합"
+          ]
+        },
+        {
+          "heading": "공개 뒤 관측과 영향 경계",
+          "body": "The Hacker News는 watchTowr 관측을 인용해 2026-09-11 06:00 UTC부터 in-the-wild probe가 확인됐다고 보도함. 공개된 probe는 각 instance의 침해 성공·secret 유출·공격자 attribution을 확정하는 증거가 아님.",
+          "items": [
+            "조건: public project 최소 1개가 exploit requirement라는 watchTowr 인용 범위",
+            "가능 영향: GitLab server의 log·configuration file 접근을 통해 credential·secret·sensitive information 획득 가능성",
+            "우선 telemetry: `/api/v4/projects/{id}/repository/commits/` POST와 `file.Path` parameter를 log hunt 대상으로 대조"
+          ]
+        },
+        {
+          "heading": "동일 patch의 보안 범위",
+          "body": "공식 release note는 같은 fixed release에서 `CVE-2026-87719`도 remediation했다고 명시함. 이는 Duo Chat 접근 권한을 가진 authenticated EE 사용자가 crafted GraphQL subscription argument로 serialization을 우회해 Advanced Search configuration과 sensitive credential을 얻을 수 있는 CVSS 9.9 범위임.",
+          "items": [
+            "`CVE-2026-87719`: EE 18.3 이상 `19.1.8` 미만·19.2 `19.2.6` 미만·19.3 `19.3.2` 미만 영향 범위",
+            "경계: 두 CVE의 precondition·authentication requirement·affected edition이 다르므로 하나의 exposure assumption으로 합치지 않는 분류",
+            "패치 방식: GitLab은 deployment type 구분 없이 affected installation의 latest patch upgrade 권고"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "GitLab은 source·CI/CD variable·runner·integration credential이 만나는 control plane임. fixed build 적용 뒤에도 public API request·config/log exposure·reused secret을 조사하지 않으면 post-patch closure가 불완전할 수 있음.",
+          "items": [
+            "점검: version·deployment type·internet ingress·public project·reverse proxy/WAF log·fixed build receipt",
+            "조사: commits API request·`file.Path`·configuration/log read·unknown token·runner/CI job/integration activity의 시간 상관",
+            "팀 액션: PAT·deploy key·runner registration token·CI variable·integration secret을 evidence 기반 rotation queue로 분리하고 patch/forensic closure 기준 고정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-459",
       "title_ko": "Anthropic 9월 위협정보 보고서: Claude가 다중 에이전트 정찰·악용·유출에 사용된 사례와 방어 통제",
       "title_original": "Countering misuse of AI: September 2026",
@@ -262,7 +339,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-458",
@@ -373,7 +450,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-455",
@@ -455,7 +532,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-460",
@@ -533,7 +610,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-457",
@@ -610,7 +687,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-456",
@@ -680,7 +757,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-454",
@@ -757,7 +834,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-453",
@@ -839,7 +916,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-452",
@@ -916,7 +993,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-451",
@@ -989,7 +1066,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-449",
@@ -1066,7 +1143,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-450",
@@ -1140,7 +1217,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-447",
@@ -1204,7 +1281,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-446",
@@ -1281,7 +1358,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-445",
@@ -1358,7 +1435,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-433",
@@ -1443,7 +1520,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-448",
@@ -1507,7 +1584,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-420",
@@ -1585,7 +1662,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-444",
@@ -1662,7 +1739,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-443",
@@ -1735,7 +1812,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-442",
@@ -1803,7 +1880,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-439",
@@ -1869,7 +1946,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-440",
@@ -1946,7 +2023,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-441",
@@ -2014,7 +2091,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-437",
@@ -2082,7 +2159,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "source_name": "The Hacker News",
@@ -2149,7 +2226,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "source_name": "The Hacker News",
@@ -2216,7 +2293,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-438",
@@ -2294,7 +2371,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-434",
@@ -2362,7 +2439,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-430",
@@ -2449,7 +2526,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-428",
@@ -2517,7 +2594,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-429",
@@ -2586,7 +2663,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-431",
@@ -2664,7 +2741,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-425",
@@ -2755,7 +2832,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-427",
@@ -2829,7 +2906,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-423",
@@ -2907,7 +2984,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-424",
@@ -2976,7 +3053,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-422",
@@ -3051,7 +3128,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-426",
@@ -3127,7 +3204,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-432",
@@ -3205,7 +3282,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-421",
@@ -3284,7 +3361,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-419",
@@ -3358,7 +3435,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-417",
@@ -3425,7 +3502,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-418",
@@ -3501,7 +3578,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-415",
@@ -3570,7 +3647,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-413",
@@ -3639,7 +3716,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-414",
@@ -3708,7 +3785,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-416",
@@ -3786,7 +3863,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-412",
@@ -3861,74 +3938,6 @@
             "측정: grounded answer correctness·citation domain/coverage·tool selection·denial·p95·error·request/token/tool cost를 request ID별 수집",
             "검증: malicious page·indirect prompt injection·citation mismatch·stale result·tool timeout을 representative workflow에서 replay",
             "팀 액션: data class별 external web allowlist·human approval·citation retention·kill switch와 rollback owner를 canary gate로 등록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-411",
-      "title_ko": "앤트로픽 Fable 5.1·Mythos 5.1 보도: 장기 agent 작업·cache-read 가격을 benchmark·access control로 분리 검증",
-      "title_original": "Anthropic releases Claude Fable 5.1 and Claude Mythos 5.1 (reported)",
-      "summary": "- 보도: 인공지능신문은 Anthropic이 Fable 5.1을 일반·기업용으로, Mythos 5.1을 사이버보안·생명과학의 검증된 기관에 제한 제공한다고 보도\n- 성능·비용 주장: 기사 인용 기준 Terminal-Bench-Science 52.6%, Terminal-Bench 4.0에서 Fable 55.8%·Mythos 60.9%, cache read 가격 75% 인하와 agentic 작업 최대 45% 비용 감소를 제시\n- 경계: benchmark task·harness·model configuration·지역·quota·SLA·가격 적용 조건·보안 검증 프로그램과 EFS 계약은 원문 공지·계약을 별도 확인하기 전 확정 불가\n- 팀 액션: 모델 전환 전 task cohort별 성공률·tool error·TTFT/p95·token/cache-read 비용·safety intervention·권한 거부·fallback을 동일 trace로 비교하고 고위험 연구 access를 별도 approval gate로 운영 필요",
-      "detail": "인공지능신문은 2026년 9월 2일 11:35 KST에 Anthropic이 Fable 5.1과 Mythos 5.1을 발표했다고 보도했다. 기사 기준 Fable 5.1은 일반 이용자와 기업에 제공되고, 같은 기반 모델에 더 높은 안전장치를 적용한 Mythos 5.1은 사이버보안·생명과학의 검증된 기관에 제한 제공된다. 기사에는 Terminal-Bench-Science 0.1에서 Fable 5.1 52.6%, Terminal-Bench 4.0에서 Fable 5.1 55.8%·Mythos 5.1 60.9%, GDPval-AA v2 1,853점, OSWorld 2.0 partial 77.9%·strict 41.7%, CursorBench 3.2.0 73.4%라는 Anthropic 공개 수치가 인용됐다. cache read는 100만 token당 0.25달러로 75% 인하됐고, 기사상 일반 작업 비용은 Fable 5 대비 약 25%, context·tool 사용량이 많은 agentic 작업은 최대 45% 절감될 수 있다는 주장도 포함됐다. 그러나 이는 직접 읽은 인공지능신문의 timestamped secondary report와 그 안의 vendor-reported 수치 범위다. 직접 검증한 Anthropic 원문 URL, benchmark harness·seed·tool permission·모델 버전, 실제 지역·요금제·quota·availability·SLA, safety access 심사와 Enterprise Frontier Safeguards(EFS)의 저장·retention·encryption·key custody·contract는 이 기사만으로 확정할 수 없다. 조직은 성능·가격 발표를 즉시 production routing 근거로 쓰지 말고 workload별 task success·tool validity·retry·TTFT/p95·token/cache-read·GPU/endpoint 비용·safety intervention·human approval·fallback recovery를 canary에서 비교해야 한다.",
-      "why_it_matters": "장기 실행 coding·research agent의 모델 선택은 benchmark 점수뿐 아니라 tool permission, safety access, context cache, retry와 fallback의 운영 비용을 함께 바꿈. 일반 제공과 검증기관 제한 제공의 경계를 무시하면 권한·데이터·감사 설계가 모델 routing 뒤늦게 따라가는 위험이 생김.",
-      "engineering_implication": "Fable 5.1·Mythos 5.1 또는 대체 모델을 도입하기 전 benchmark와 production workload를 분리하고, task 성공률·tool-call failure·TTFT/p95·context/cache-read·token 비용·safety block·approval delay·fallback recovery를 job ID로 연결해야 함. 고위험 cyber·bio workload는 계정·workspace·tool·data egress·human approval·audit retention을 일반 coding cohort와 분리한 access control로 운영 필요.",
-      "korea_implication": "국내 기업·연구기관은 보도상의 일반 제공·검증기관 제한 제공을 국내 리전·계약·요금제·데이터 처리 조건으로 추정할 수 없음. 공급자 계약, 개인정보·연구데이터 반출 경로, 로그 보존, 접근 심사와 사고 대응 책임을 직접 확인한 뒤 업무군별 rollout을 승인할 필요.",
-      "category": "AI",
-      "tags": [
-        "Anthropic",
-        "Foundation Model",
-        "Agent",
-        "Coding",
-        "Benchmark",
-        "Model Routing",
-        "FinOps",
-        "AI Safety"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-09-02 11:35",
-      "source_name": "인공지능신문",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41716",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202609/41716_62779_3456_v150.jpg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "인공지능신문 canonical page의 `article:published_time` `2026-09-02T11:35:22+09:00`와 Open Graph image를 직접 확인해 KST `2026-09-02 11:35`로 기록. 본 카드는 Anthropic 원문을 직접 읽지 못한 timestamped secondary report 범위임.",
-          "items": [
-            "제공: 기사상 Fable 5.1은 일반 이용자·기업 대상, Mythos 5.1은 cyber·bio 고위험 연구의 검증된 기관 제한 대상",
-            "경계: vendor original announcement·access policy·지역·plan·계약 조건을 secondary report만으로 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사는 두 모델이 동일 기반 모델에 서로 다른 safeguard 수준을 적용한다고 설명하며, 장기 agent 작업·과학 연구·코딩을 중심으로 vendor benchmark와 사례를 제시함.",
-          "items": [
-            "벤치마크: Terminal-Bench-Science 0.1 Fable 5.1 **52.6%**, Terminal-Bench 4.0 Fable 55.8%·Mythos 60.9%라는 기사 인용 수치",
-            "업무: GDPval-AA v2 1,853점, OSWorld 2.0 partial 77.9%·strict 41.7%, CursorBench 3.2.0 73.4%라는 reported scope",
-            "안전: Mythos 5.1의 cyber·bio 제한 access와 일반 모델의 safety guardrail 적용 차이를 기사 범위로 기록"
-          ]
-        },
-        {
-          "heading": "비용·성능 검증 경계",
-          "body": "기사상 cache read 가격은 100만 token당 0.25달러로 75% 인하됐고 Fable 5 대비 일반 작업 약 25%, 고도 agentic 작업 최대 45% 비용 감소가 언급됨. 이 수치는 input mix·cache hit·tool loop·retry·region·contract가 없는 vendor-reported 범위임.",
-          "items": [
-            "비용: input/output token, cache-read, tool call, retry, queue, fallback을 task·tenant·model route별로 분리 귀속",
-            "성능: benchmark harness·seed·prompt·tool permission·context length·judge와 production success·latency·SLO를 같은 결과로 취급하지 않음",
-            "검증: representative coding·research workflow에서 task success·tool validity·TTFT/p95·completion·cost를 before/after canary로 비교"
-          ]
-        },
-        {
-          "heading": "접근 통제·운영 시사점",
-          "body": "제한 제공 모델의 access decision은 모델 성능이 아니라 identity·workspace·tool·data path·human approval·audit 문제임. 기사에 언급된 EFS의 storage·retention·encryption·key custody·SLA는 직접 계약·공식 문서 확인 전 보증 범위가 아님.",
-          "items": [
-            "통제: 고위험 workload용 계정·project·tool allowlist·network egress·secret scope·human approval을 일반 agent와 분리",
-            "관측: safety intervention·denial·override·tool call·data export·fallback을 request/job ID로 보존",
-            "팀 액션: model route 확대 전 access approval·rollback·incident owner·audit retention을 release gate로 등록"
           ]
         }
       ],

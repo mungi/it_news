@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-12 | Total pages: 338
+> Last updated: 2026-09-12 | Total pages: 339
 
 ## Entities
 
@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/gitlab-cve-2026-85706-critical-patch-active-probes-2026-09-12]] — GitLab repository commits API `CVE-2026-85706` 무인증 파일 읽기, critical patch·probe·CI/CD secret forensic 경계.
 - [[raw/articles/aitimes-deepseek-v41-flash-kv-cache-2026-09-11]] — DeepSeek-V4.1-Flash의 1M context·CED·CSA2·890 bytes/token KV cache와 self-hosted/API canary 검증 경계.
 - [[raw/articles/anthropic-september-2026-threat-intelligence-report-2026-09-11]] — Anthropic 9월 위협정보 보고서의 다중 agent 정찰·악용·유출 사례와 target ownership·egress·tool credential 통제 경계.
 - [[raw/articles/cloudflare-casb-automatic-remediation-policies-2026-09-11]] — Cloudflare CASB automatic policy의 SaaS finding remediation·Queue/Worker/Workflow·write 권한·audit/rollback 검증 경계.
