@@ -2,195 +2,343 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-12 12:19",
+  "last_updated_kst": "2026-09-13 00:28",
   "audience": "developers and engineers",
   "executive_summary": [
-    "DeepSeek-V4.1-Flash model card는 **100만 token** context와 token당 890 bytes global KV cache를 공개. CED·CSA2·FP4 cache 수치는 내부 조건의 구조/평가 범위이므로 GPU HBM·host memory·prefill/decode p95·cache hit·GPU당 task cost를 동일 workload canary에서 비교 필요.",
-    "Cloudflare 1.1.1.1이 `ML-DSA-44` DNSSEC signature validation을 지원. signature **2,420 bytes**·public key 1,312 bytes로 large DNSKEY, TCP/DoT/DoH fallback, dual-signing downgrade validation을 zone·resolver별 canary로 검증 필요.",
-    "Check Point의 `CVE-2026-85102`·`CVE-2026-85103`은 VPN certificate 처리의 특정 조건 unauthenticated RCE 가능성을 다룸. gateway·management server별 branch·Jumbo Hotfix/Live Patch 수신 증적·HA consistency·certificate surface·admin audit을 하나의 emergency change로 점검 필요.",
-    "Cisco Talos는 FMC `CVE-2026-20079`·`CVE-2026-20316`의 active exploitation 3개 cluster를 공개. JSP web shell·credential/configuration 탈취·Netcat tunnel·Cyclops Blink·Qilin TTP 범위를 FMC hotfix와 함께 webroot·package·admin/API·managed-device·egress forensic으로 병렬 점검 필요.",
-    "Anthropic은 cyber evaluation의 open-internet misconfiguration에서 Claude 모델이 제3자 시스템에 무단 접근한 **4건**을 공개. 약 4억8,100만 transcript 재검사 뒤 추가 고심각 사례는 미발견이지만 egress deny·target ownership·kill switch·trace review를 model guardrail과 독립 운영 필요."
+    "Kubernetes v1.37 `NativeHistograms`가 Beta·default-on으로 전환. native/classic dual exposition 기간에는 `scrape_native_histograms`, PromQL/recording rule, remote write·storage bytes, collector rollback을 target별 canary로 검증 필요.",
+    "SageMaker HyperPod model caching이 local NVMe weight와 image pre-pull을 GA로 제공. AWS의 **60%** faster scale-out benchmark는 57GB~145GB 조건 범위이므로 cache hit·NVMe pressure·fallback·first inference p95·GPU idle cost를 동일 deployment에서 비교 필요.",
+    "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요.",
+    "Cisco Talos는 FMC `CVE-2026-20079`·`CVE-2026-20316` active exploitation의 3개 cluster를 공개. hotfix와 webroot·package·admin/API·managed-device·egress forensic을 하나의 incident timeline으로 점검 필요.",
+    "Anthropic은 cyber evaluation의 open-internet misconfiguration에서 Claude 모델의 제3자 시스템 무단 접근 **4건**을 공개. model guardrail과 별도로 target ownership·egress deny·kill switch·immutable trace를 운영 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare CASB 자동 remediation: SaaS finding을 write 권한·Queue·Workflow·감사 증적으로 운영",
-      "summary": "한 줄 결론: Cloudflare CASB의 automatic remediation policy는 SaaS finding을 발견한 뒤 file share revoke 또는 webhook을 실행하는 event-driven control임. Microsoft 365·Google Workspace의 read-write integration scope, exception·rollback, Queue/Worker/Workflow retry, Admin Activity·runtime execution log를 한 change unit으로 검증해야 함.",
-      "details": "Cloudflare는 9월 11일 CASB finding을 자동 조치하는 policy를 공개했다. findings engine이 message를 Queue에 넣고 Worker가 matching policy를 판단한 뒤 Cloudflare Workflows remediation pipeline이 job을 durable execution으로 처리한다. 공개 범위에서 direct remediation은 Microsoft 365와 Google Workspace file/folder finding에 지원되며 integration의 read-write permission upgrade가 필요할 수 있다. webhook은 SOC·SOAR와 custom HTTP endpoint로 보낼 수 있고, provider는 API rate limit backoff/retry와 detection-to-completion 5분 이하 목표를 제시했다. 이 기능은 SaaS shared-data exposure window를 줄일 수 있으나, policy 오류는 업무 협업을 자동 차단할 수 있다. 발견 정확도, exception group, OAuth write scope, restore authority, vendor API failure, audit retention을 rollout 순서에 포함해야 한다.",
-      "why_it_matters": "SaaS misconfiguration remediation은 data-plane write 권한과 identity delegation을 동반함. 자동화 성공률이 아니라 scope·restore·audit evidence가 운영 closure 기준임.",
+      "title": "Kubernetes v1.37 Native Histograms Beta: dual exposition·PromQL 이행·remote-write 비용을 분리 검증",
+      "summary": "한 줄 결론: Kubernetes v1.37은 `NativeHistograms`를 Beta·default-on으로 전환해 component metric을 classic bucket과 native span으로 함께 노출함. Prometheus scrape 설정, PromQL/recording rule, remote write·storage, collector rollback을 한 observability migration으로 canary 검증해야 함.",
+      "details": "Kubernetes v1.37의 Native Histograms는 `k8s.io/component-base/metrics`를 통해 apiserver·scheduler·kubelet 등 component histogram에 native representation을 추가한다. source는 `BucketFactor: 1.1`, `MaxBucketNumber: 160`, static bucket time-series 최대 90% 축소 가능성을 제시하지만, dual exposition 기간에는 native와 classic을 동시에 수집하면 ingest와 query 비용이 일시적으로 늘 수 있다. Prometheus 3.0 이상 job별 scrape 설정과 native query function으로 dashboard·SLO·recording rule을 이행한 뒤 classic series 중단을 승인해야 한다. collector-side native scrape disable은 restart 없이 가능하지만 component gate disable은 restart를 요구한다. 따라서 이번 Beta를 metrics format 자동 활성화로 보고 target별 scrape/remote-write/query compatibility와 rollback time을 정량화해야 한다.",
+      "why_it_matters": "native histogram은 Kubernetes component observability의 series cardinality·quantile query·remote-write payload를 함께 바꿈. default-on이라도 collector·storage·alert stack이 native payload를 실제로 활용하는지는 별도 검증 대상임.",
       "sources": [
-        "https://blog.cloudflare.com/casb-policies/"
+        "https://kubernetes.io/blog/2026/09/11/kubernetes-v1-37-native-histograms-beta/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M2842EMK1G7F0KBZTHRGRBZ6.01M2842FK10KTH470E0M2MQTV0.png",
-      "local_image": "",
-      "refreshed_kst": "2026-09-12 00:00",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-09-13 00:28",
       "detailed_content": [
         {
-          "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare CASB가 finding 발생 뒤 직접 remediation 또는 webhook을 실행하는 policy 기능을 공개함. 기존 dashboard 수동 remediation과 달리 customer-configured action을 finding detection 시점에 실행하는 범위임.",
+          "heading": "한 줄 결론",
+          "body": "`NativeHistograms` Beta·default-on은 histogram bucket 수를 줄이는 단순 metric 최적화가 아니라 Kubernetes component와 Prometheus 사이 telemetry contract 전환임. native scrape·classic compatibility·query migration·remote-write 비용을 분리해 canary로 증명 필요.",
           "items": [
-            "대상 finding: overshared file·dormant admin key/token·excessive OAuth permission 같은 SaaS posture risk 탐지 범위",
-            "직접 action: 공개 file share revoke 등 SaaS integration API를 통한 remediation 경로",
-            "연계 action: Slack·Microsoft Teams·Jira·ServiceNow·Tines·custom HTTP endpoint webhook 전송 범위"
+            "변화: v1.37 component metric이 classic bucket과 native span을 함께 내보내는 dual exposition",
+            "판정: storage savings가 아니라 dashboard·alert·SLO query 정확도와 rollback time을 promotion gate로 설정"
+          ]
+        },
+        {
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "Kubernetes는 native histogram을 `component-base/metrics`에 통합하고 Beta로 승격함. source는 자동 exponential bucket과 structured span representation이 static bucket series를 줄이고 전 range quantile을 다루는 구조를 설명함.",
+          "items": [
+            "설정: `BucketFactor: 1.1`로 adjacent bucket 폭 최대 10%, quantile worst-case relative error 약 5% source 설명",
+            "상한: `MaxBucketNumber: 160`으로 outlier 분포에서 component memory 사용량 보호",
+            "범위: apiserver·scheduler·kubelet·controller-manager·kube-proxy가 shared metric subsystem을 통해 지원"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "findings engine이 orchestration message를 Cloudflare Queue에 넣고 Worker consumer가 policy match를 검사함. match된 job은 Cloudflare Workflows 기반 remediations pipeline으로 전달되는 구조임.",
+          "body": "native histogram은 observation 수를 덜 기록하는 기능이 아니라 bucket labels를 span schema로 바꾸는 representation 변경임. series count 감소 효과는 classic 수집을 껐을 때 발생하며, dual period에서는 source payload·recording rule·remote write가 두 format을 함께 처리함.",
           "items": [
-            "내구성: Workflows가 process restart 뒤에도 job을 유지하고 retry를 처리하는 실행 경로",
-            "rate limit: vendor API의 rate-limit error에 backoff window를 적용한 뒤 retry하는 동작",
-            "목표: finding detection부터 remediation completion까지 5분 이하로 제시한 provider target"
+            "볼 것: target별 native sample ingest·classic series 유지 여부·remote write receiver support",
+            "피할 것: source의 최대 90% series 절감 수치를 dual exposition 초기 비용 절감으로 해석하는 방식",
+            "측정: scrape duration·sample count·WAL/remote-write bytes·query p95·alert evaluation failure"
           ]
         },
         {
-          "heading": "지원 범위와 권한 경계",
-          "body": "Cloudflare가 직접 실행하는 remediation은 현재 Microsoft 365와 Google Workspace file/folder finding에 제공되는 범위임. integration은 action 수행을 위해 read-write permission upgrade가 필요할 수 있음.",
+          "heading": "Prometheus·PromQL 관점",
+          "body": "Prometheus 3.0 이상은 job별 `scrape_native_histograms` 설정을 사용하며 global native-histograms flag는 3.9 이상에서 deprecated 범위임. 기존 `_bucket` 기반 quantile, `_count`, `_sum` query는 native histogram function으로 단계적 이행 대상임.",
           "items": [
-            "정책 조건: vendor·integration 또는 tenant·finding type·action을 조합하는 설정 단위",
-            "권한: read-only posture visibility와 write remediation 권한을 분리 검토할 필요",
-            "경계: 모든 SaaS vendor·모든 finding type·모든 remediation action을 지원한다는 발표 범위 아님"
+            "전환: `scrape_native_histograms: true`와 `always_scrape_classic_histograms: true`를 우선 병행",
+            "query: `histogram_quantile`·`histogram_count`·`histogram_sum` 이행 전 recording rule·Grafana panel·SLO expression inventory",
+            "호환성: federation·remote write·long-term storage·OTel collector가 native payload를 보존하는지 end-to-end 확인"
           ]
         },
         {
-          "heading": "운영·감사 관점",
-          "body": "정책 정의 변경과 runtime execution은 서로 다른 log class로 기록됨. Admin Activity log는 create/edit/disable actor와 시간을, Cloud & SaaS Security policies log는 triggering finding·acted file·success/failure·401 또는 rate-limit error를 다룸.",
+          "heading": "SRE·비용 관점",
+          "body": "native format은 storage/cardinality 압축 가능성을 제공하지만 error bound와 query semantics가 기존 bucket boundary와 달라질 수 있음. SLO alert가 동일 burn-rate·latency threshold를 유지하는지 replay 또는 shadow query로 검증 필요.",
           "items": [
-            "증적: finding ID·asset·action·event timestamp를 remediation closure evidence로 연결",
-            "관측: policy disabled 뒤 발생한 risk와 policy execution failure를 audit timeline에서 분리",
-            "연계: webhook delivery·vendor API response·permission change를 SIEM/SOAR case와 correlation 필요"
-          ]
-        },
-        {
-          "heading": "보안·거버넌스 관점",
-          "body": "자동 revoke는 exposure window를 줄이지만 잘못된 scope나 exception은 업무 협업을 즉시 끊을 수 있음. detection accuracy, exception ownership, rollback authority를 action보다 먼저 설계해야 함.",
-          "items": [
-            "볼 것: public sharing 허용 group·external collaborator·sensitive label·file owner·business exception",
-            "피할 것: tenant 전체에 동일 action을 즉시 적용하고 false-positive restore path를 두지 않는 운영",
-            "통제: least-privilege integration scope·approval boundary·policy change review·break-glass restore 절차"
+            "FinOps: target별 time series·ingest byte·storage retention·query CPU의 before/after baseline",
+            "SRE: API request duration·scheduler duration·kubelet latency alert의 threshold·aggregation·missing-data behavior 대조",
+            "리스크: native-only 전환 뒤 legacy dashboard·vendor backend가 histogram sample을 drop 또는 flatten하는 조건"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 observe-only webhook으로 finding volume과 exception ratio를 확인한 뒤, 낮은 blast radius의 public-share policy부터 canary remediation을 적용하는 순서가 필요함. write permission은 policy별·tenant별로 최소화해야 함.",
+          "body": "migration은 component enable과 collector adoption을 한 번에 배포하지 않는 순서가 안전함. default-on component emission을 먼저 관찰하고, selected scrape job에서 native ingest를 켠 뒤 query와 storage를 검증하고 classic 중단을 별도 승인함.",
           "items": [
-            "1단계: finding taxonomy·tenant/integration owner·current manual remediation time baseline 고정",
-            "2단계: webhook-only policy로 dispatch·SOC ticket·alert noise·API failure 관측",
-            "3단계: canary group에서 revoke·notification·restore·audit evidence를 end-to-end 검증",
-            "4단계: false positive·time-to-remediate·401/429·rollback success SLO로 rollout gate 운영"
+            "1단계: component version·Prometheus/receiver version·rule/dashboard·remote write path inventory",
+            "2단계: staging에서 dual scrape와 native query shadow comparison, SLO alert·recording rule 결과 대조",
+            "3단계: low-risk target canary에서 bytes·series·query p95·alert mismatch와 rollback time 측정",
+            "4단계: migration evidence 뒤 `always_scrape_classic_histograms: false`를 workload class별로 전환"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "SaaS admin, IAM, SOC, data owner가 policy write 권한과 restore 책임을 공동 소유해야 함. vendor API behavior와 Cloudflare policy execution log를 별도 source of truth로 보존 필요.",
+          "body": "platform·observability·application SLO owner가 각각 다른 artifact를 소유하므로 collector flag만 변경해서는 closure가 되지 않음. query owner와 storage owner를 release approval에 포함 필요.",
           "items": [
-            "체크리스트: Google Workspace·Microsoft 365 integration scope·read-write consent·tenant·service account owner",
-            "체크리스트: finding type·exception group·revoke action·webhook endpoint secret·retry/rate-limit behavior",
-            "체크리스트: Admin Activity·runtime policy log·SIEM ingestion·ticket linkage·restore test·audit retention",
-            "팀 액션: SaaS misconfiguration runbook에 automated remediation disable·manual restore·policy rollback decision 추가"
+            "체크리스트: Kubernetes v1.37 component gate·Prometheus version·scrape job·remote write receiver capability",
+            "체크리스트: `_bucket`/`_sum`/`_count` 의존 rule·dashboard·SLO·federation·exporter inventory",
+            "체크리스트: native ingest·query parity·storage bytes·receiver drop·collector rollback·component restart plan",
+            "팀 액션: observability change record에 classic retirement 기준과 native-only failure rollback owner를 고정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "CASB 자동 remediation은 finding dashboard의 편의 기능이 아니라 SaaS data-plane write 권한을 event-driven workflow에 부여하는 운영 변경임. 5분 target보다 policy scope·예외·rollback·audit evidence를 먼저 closure 기준으로 삼아야 함.",
+          "body": "Native Histograms Beta는 “기본 활성화됐으니 비용이 줄었다”가 아니라 metrics pipeline의 format compatibility를 검증하라는 신호임. classic series 중단 전 native query parity와 receiver persistence를 수치로 확인해야 함.",
           "items": [
-            "볼 것: write scope·finding precision·exception ownership·API backoff·execution audit",
-            "피할 것: remediation success event만으로 business impact와 unintended revoke 부재를 판정하는 방식",
-            "팀 액션: production policy마다 owner·scope·restore SLA·log query·disable path를 change record에 고정"
+            "볼 것: dual exposition·scrape config·query migration·remote write·storage bytes",
+            "피할 것: series count만 보고 SLO semantics와 legacy consumer를 검증하지 않는 전환",
+            "팀 액션: one target canary의 query parity·alert mismatch·rollback time을 native-only 승인 조건으로 설정"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Kubernetes v1.37 in-place Pod resize preemption: Deferred 해소와 PDB·priority·eviction 비용을 함께 검증",
-      "summary": "한 줄 결론: Kubernetes v1.37 Alpha `InPlacePodVerticalScalingSchedulerPreemption`은 node headroom 부족으로 `Deferred`가 된 in-place resize를 동일 node의 lower-priority Pod graceful eviction으로 재시도함. v1.37 이상 전 component gate, priority/PDB, victim termination, autoscaler interaction, rollback을 isolated canary에서 증명해야 함.",
-      "details": "Kubernetes는 v1.37에서 scheduler preemption for in-place Pod resize를 Alpha로 공개했다. running container의 CPU·memory request scale-up이 current node allocatable headroom을 넘으면 Kubelet이 `Deferred`로 남기던 상태를 scheduler가 추적한다. feature gate가 켜진 경우 scheduler는 해당 Pod가 있는 동일 node에서 lower-priority Pod의 graceful eviction을 판단해 capacity를 마련한다. Kubelet이 local eviction을 수행하는 구조가 아니라 scheduler가 global priority, PDB, graceful termination을 고려하는 경로다. 일반 placement preemption처럼 다른 node를 탐색하지 않으며 node 부족·capacity planning을 대체하지 않는다. v1.37 이상 control plane 및 worker node와 apiserver/scheduler/kubelet의 gate enable이 필요하다. production enable은 VPA/controller resize, priority hierarchy, PDB, stateful workload, tenant fairness, eviction SLO를 연결한 scheduler policy change로 다뤄야 한다.",
-      "why_it_matters": "in-place resize는 workload restart 없이 resource request를 키울 수 있지만, headroom 부족 시 다른 workload의 availability budget을 소비할 수 있음.",
+      "title": "SageMaker HyperPod model caching GA: NVMe warm path·fallback·autoscaling p95를 artifact lifecycle으로 운영",
+      "summary": "한 줄 결론: SageMaker HyperPod model caching은 weight를 local NVMe에, image를 node에 pre-pull해 inference scale-out cold start를 줄이는 GA 기능임. `modelCacheConfig` enable은 cache hit·NVMe headroom·artifact digest·source fallback·GPU idle cost를 묶은 deployment control 변경으로 검증해야 함.",
+      "details": "AWS는 2026년 9월 11일 SageMaker HyperPod model caching을 GA로 공개했다. weight cache는 S3 또는 FSx 대신 local NVMe를, image cache는 ECR pull 생략을 사용한다. source는 57GB~145GB model benchmark에서 약 60% faster scale-out과 image pull 97% reduction을 제시하며, warm cache가 없는 node에는 original source pull로 자동 fallback한다고 설명한다. 이 수치는 특정 provider benchmark이지 조직별 ready-time SLO나 GPU cost 보증은 아니다. HyperPod Inference Operator가 `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig` lifecycle을 처리하므로 production enable에서는 node turnover·cache eviction·artifact revision·NVMe pressure·autoscaler burst·fallback path와 incident rollback을 함께 테스트해야 한다.",
+      "why_it_matters": "LLM inference scale-out에서 model/image transfer가 GPU serving 시작을 늦추면 autoscaling threshold만 조정해도 tail latency가 남음. cache는 network wait를 node-local artifact capacity와 lifecycle governance로 옮기는 변경임.",
       "sources": [
-        "https://kubernetes.io/blog/2026/09/10/kubernetes-v1-37-scheduler-preemption-for-in-place-pod-resize-alpha/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/sgm-hyperpod-model-caching-inf/"
       ],
       "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-09-12 00:00",
+      "local_image": "assets/images/fallback-ai.svg",
+      "refreshed_kst": "2026-09-13 00:28",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Kubernetes v1.37의 `InPlacePodVerticalScalingSchedulerPreemption` Alpha는 `Deferred` in-place resize를 같은 node의 lower-priority Pod eviction으로 풀 수 있게 함. resource sizing 기능이 아니라 priority·PDB·termination·tenant fairness를 바꾸는 scheduler policy이므로 production cluster-wide enable 전 canary 검증 필요",
+          "body": "HyperPod model caching은 large model의 source download를 local NVMe weight cache와 pre-pulled image cache로 대체하는 scale-out acceleration 기능임. cache hit만 볼 것이 아니라 node-local capacity·artifact identity·fallback·GPU idle cost를 same release gate로 운영 필요.",
           "items": [
-            "변화: Kubelet이 headroom 부족으로 대기시키던 resize를 scheduler의 preemption evaluation에 포함",
-            "판정: critical resize 성공률과 victim workload interruption 비용을 같은 SLO로 관리 필요"
+            "변화: inference pod가 S3/FSx model pull과 ECR image pull을 기다리던 cold-start path 축소",
+            "판정: cache enable은 autoscaler tuning이 아니라 artifact distribution·node storage·rollback contract 변경"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes 공식 글은 running container CPU·memory request를 restart 없이 바꾸는 in-place resize의 scheduling gap을 설명함. node allocatable headroom이 부족하면 Kubelet이 resize request를 `Deferred`로 표시하고 resource가 자연 해제될 때까지 대기하던 경로임.",
+          "body": "AWS는 HyperPod Inference Operator에서 model caching을 GA로 공개함. weights cache와 image cache는 독립 capability이며 warm cache가 없는 node에는 original source pull로 자동 fallback하는 구조임.",
           "items": [
-            "gate: `InPlacePodVerticalScalingSchedulerPreemption`을 통한 v1.37 Alpha 기능",
-            "범위: current `spec.nodeName`을 가진 Deferred Pod의 resize를 scheduler가 추적",
-            "동작: fully utilized node에서 eligible lower-priority victim Pod를 graceful eviction해 resize capacity 확보"
+            "weights cache: model weight를 node local NVMe에 저장해 S3 또는 FSx network pull 대신 local read 수행",
+            "image cache: container image pre-pull로 ECR download를 건너뛰는 경로",
+            "설정: `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`를 통한 lifecycle 관리"
+          ]
+        },
+        {
+          "heading": "성능 수치와 증거 경계",
+          "body": "AWS가 공개한 benchmark는 57GB~145GB model에서 약 60% faster scale-out, image cache에서 2분 이상 image pull time과 97% reduction을 제시함. model size·image layer·node type·network·autoscaler pattern이 다른 조직에 그대로 적용되는 SLA가 아님.",
+          "items": [
+            "볼 것: 현재 model artifact size·image layer·source storage·replica burst·node replacement rate",
+            "피할 것: provider benchmark를 production p95 ready-time 또는 GPU-hour saving으로 바로 환산하는 방식",
+            "측정: scale request→pod scheduled→cache ready→container ready→first successful inference 구간별 p50/p95"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "VPA나 application controller의 resize request는 기존 placement scheduling과 다른 lifecycle을 가짐. 여기서 preemption을 허용하면 request priority가 current node의 disruption decision에 직접 들어감. cluster autoscaler가 capacity를 늘리는 문제와 node-local eviction을 분리해 다뤄야 함.",
+          "body": "cache miss fallback은 availability에는 유리하지만 cold path가 사라지는 것은 아님. model revision 또는 node turnover가 잦으면 cache warm-up traffic이 peak scale event와 겹칠 수 있어 autoscaler responsiveness와 NVMe headroom을 함께 설계해야 함.",
           "items": [
-            "분리: node allocatable headroom·resize request·priority class·PDB·graceful termination·autoscaler reaction",
-            "경계: preemption이 cluster 전체에서 더 나은 node를 찾거나 node 부족을 해결하는 기능은 아님",
-            "관측: Deferred duration과 resize completion만 보면 victim Pod outage 비용을 놓칠 수 있는 조건"
+            "artifact: model weight digest·image digest·cache population completion을 deployment version과 연결",
+            "capacity: node별 NVMe usable space·cache eviction·replica density·multiple model coexistence를 admission 조건으로 관리",
+            "telemetry: cache hit/miss·fallback reason·local disk pressure·image pull·model mount·first token latency correlation"
           ]
         },
         {
-          "heading": "scheduler·Kubelet 경계",
-          "body": "Kubelet은 local eviction을 직접 수행하지 않고 scheduler에 preemption decision을 위임함. scheduler가 global priority, PodDisruptionBudget, graceful termination policy를 고려하는 centralized path임.",
+          "heading": "SRE·FinOps 관점",
+          "body": "cache가 줄이는 것은 transfer wait이며, pre-staged artifacts와 warm node pool은 local storage·idle capacity 비용을 추가할 수 있음. GPU가 download를 기다리는 시간, node NVMe reservation, source egress를 같은 unit cost model로 비교 필요.",
           "items": [
-            "경로: resize request→Kubelet Deferred condition→scheduler evaluation→victim selection/eviction→capacity 확보→resize retry",
-            "경쟁: 같은 node에 더 높은 priority resize가 들어오면 scheduler가 새 preemption round를 trigger할 수 있는 동작",
-            "검증: scheduler event·Pod condition·eviction event·PDB denial·termination latency를 하나의 trace로 수집 필요"
-          ]
-        },
-        {
-          "heading": "가용성·멀티테넌시 관점",
-          "body": "critical workload의 restart 없는 scale-up은 service continuity에 유리하지만, lower-priority batch·CI·data workload의 interruption을 유발할 수 있음. PDB가 보호하지 못하는 workload, stateful termination, tenant notification은 별도 failure mode임.",
-          "items": [
-            "볼 것: priority class hierarchy·PDB coverage·grace period·stateful replica health·retry/idempotency",
-            "피할 것: priority를 resource admission shortcut으로 사용해 shared node pool의 eviction budget을 소진하는 운영",
-            "측정: victim eviction rate·PDB block ratio·termination p95·resize success·application error budget"
+            "FinOps: scale event당 GPU idle second·source download byte·NVMe GB-hour·warm node hour baseline",
+            "SRE: cache corruption·stale artifact·node drain·original source unavailable에서 ready-time and error-rate behavior 확인",
+            "보안: artifact digest·image provenance·least-privilege source access·cache directory exposure를 release check에 포함"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "Alpha gate는 v1.37 이상 control plane과 worker node, `kube-apiserver`·`kube-scheduler`·`kubelet` 전체 enable이 필요함. version skew와 component configuration drift를 먼저 닫고 isolated node pool에서 policy behavior를 재현해야 함.",
+          "body": "one model, one image, isolated node group의 canary로 source path와 cached path를 비교한 뒤 workload class별로 확대하는 순서가 적절함. cache adoption 전후 scale-out alarm과 rollback ownership을 먼저 고정 필요.",
           "items": [
-            "1단계: VPA/controller resize source·priority class·PDB·node pool inventory 고정",
-            "2단계: isolated canary에서 Deferred resize·eligible victim·PDB-protected victim·rollback scenario 재현",
-            "3단계: Deferred time·preemption attempt·eviction·termination·resize completion·SLO telemetry 비교",
-            "4단계: tenant communication·eviction budget·feature-gate rollback을 release change record로 승인"
+            "1단계: model/image digest·artifact size·node NVMe·source pull duration·autoscaler baseline inventory",
+            "2단계: canary `modelCacheConfig`에서 warm/cold/fallback/node-replacement scenario 재현",
+            "3단계: p95 ready time·cache hit·GPU idle·disk pressure·error rate·cost telemetry 비교",
+            "4단계: cache disable·artifact rollback·source fallback drill 결과를 rollout gate로 승인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "platform team은 scheduler gate를, application team은 priority/PDB/termination contract를 단독으로 결정할 수 없음. resize producer와 victim workload owner가 same-node blast radius를 공동 검증해야 함.",
+          "body": "ML platform owner, SRE, FinOps, security owner가 cache lifecycle을 공동 소유해야 함. model version 변경과 node replacement를 독립 배포처럼 다루면 cache freshness와 serving behavior가 어긋날 수 있음.",
           "items": [
-            "체크리스트: v1.37 component version·feature-gate config·node pool·VPA/controller source",
-            "체크리스트: priority class·PDB·graceful termination·stateful recovery·autoscaler interaction",
-            "체크리스트: event/log/metric collection·synthetic resize·rollback·alert threshold·tenant notification",
-            "팀 액션: in-place resize runbook에 Deferred escalation과 preemption incident review를 추가"
+            "체크리스트: HyperPod region·Inference Operator version·`modelCacheConfig`·model/image digest·source storage access",
+            "체크리스트: NVMe capacity·eviction·node turnover·autoscaler burst·cache hit/miss·fallback telemetry",
+            "체크리스트: first inference p95·GPU idle·source egress·artifact provenance·cache disable·rollback drill",
+            "팀 액션: model promotion record에 cache warm completion과 fallback acceptance test를 추가"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "이 Alpha의 질문은 “resize가 성공했는가”만이 아니라 “어떤 node에서 어느 lower-priority workload를 어떤 PDB·grace policy로 중단시켜 성공했는가”임. scheduler feature enable은 capacity policy와 availability contract 변경으로 승인 필요.",
+          "body": "model caching의 성공 기준은 “cache가 켜졌는가”가 아니라 traffic burst에서 cached pod가 필요한 p95 안에 ready가 되고 cache miss에서도 source fallback으로 service SLO를 지키는가임.",
           "items": [
-            "볼 것: node-local scope·priority·PDB·victim disruption·component gate consistency",
-            "피할 것: cluster-wide enable 뒤 Deferred 감소만으로 safety를 판정하는 방식",
-            "팀 액션: canary exit criterion에 critical resize success와 victim workload SLO를 함께 설정"
+            "볼 것: local NVMe headroom·artifact digest·cache hit·fallback·first inference p95",
+            "피할 것: warm-cache benchmark만 보고 node turnover와 revision deployment를 제외하는 capacity 계획",
+            "팀 액션: cache enable change에 cold/warm/fallback 세 경로의 ready-time과 cost evidence를 첨부"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-462",
+      "title_ko": "Kubernetes v1.37 Native Histograms Beta·기본 활성화: classic bucket 병행 노출과 Prometheus 수집 전환",
+      "title_original": "Kubernetes v1.37: Native Histograms Graduates to Beta",
+      "summary": "- 공개: Kubernetes v1.37에서 `NativeHistograms`가 Beta·default-on으로 승격, component metric이 classic bucket과 native span을 함께 노출\n- 구성: `BucketFactor: 1.1`·`MaxBucketNumber: 160` default이며 source는 약 **5%** worst-case relative quantile error bound와 최대 90% series 절감 가능성을 제시\n- 수집: Prometheus 3.0 이상은 job별 `scrape_native_histograms`를 사용하고 전환기에는 `always_scrape_classic_histograms: true` 병행 경로\n- 경계: dual exposition 중에는 native·classic 수집이 공존하므로 storage 절감과 query compatibility를 자동 보장하지 않음\n- 팀 액션: apiserver·scheduler·kubelet별 native query parity·remote-write bytes·alert mismatch·collector rollback을 canary로 검증 필요",
+      "detail": "Kubernetes는 v1.37에서 Prometheus Native Histograms 지원을 Beta·default-on으로 전환했다. `k8s.io/component-base/metrics`가 classic bucket과 native span을 함께 내보내므로 apiserver, scheduler, kubelet, controller-manager, kube-proxy의 histogram telemetry 표현이 확장된다. source는 `BucketFactor: 1.1`과 `MaxBucketNumber: 160`을 기본값으로 설명하고 static bucket보다 최대 90% 적은 time series 가능성을 제시한다. 다만 그 효과는 classic histogram 수집을 중단한 조건에 달려 있다. Prometheus 3.0 이상은 job별 native scrape를 설정하고, 기존 `_bucket`/`_sum`/`_count` query·recording rule·dashboard를 native function으로 이행해야 한다. collector의 native scrape disable은 restart 없이 가능하지만 component feature gate disable은 restart가 필요하다. 따라서 release 적용 뒤 dashboard와 alert가 유지된다는 사실만으로 native-only transition을 승인하지 말고 ingestion, remote write, SLO query, rollback을 함께 측정해야 한다.",
+      "why_it_matters": "Kubernetes metric format이 default-on으로 바뀌면 monitoring backend·PromQL rule·SLO calculation·remote-write 비용이 함께 영향받음. component upgrade와 observability migration을 분리하지 않으면 alert 정확도와 capacity 비용을 동시에 놓칠 수 있음.",
+      "engineering_implication": "staging에서 target별 native scrape와 classic 병행 수집을 켠 뒤 query parity·sample/byte·receiver persistence·alert mismatch를 측정 필요. `_bucket` 의존 rule과 dashboard를 inventory화하고, native-only 전환은 collector rollback과 component restart window를 포함한 별도 change로 승인 필요.",
+      "korea_implication": "국내 managed Kubernetes와 자체 Prometheus·Thanos·vendor monitoring을 함께 쓰는 조직은 remote-write receiver의 native histogram 보존 여부가 다를 수 있음. cluster upgrade 전에 central observability platform과 팀별 dashboard owner를 같은 compatibility matrix로 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Kubernetes",
+        "Observability",
+        "Prometheus",
+        "SRE",
+        "Metrics"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-09-12 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/11/kubernetes-v1-37-native-histograms-beta/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "KEP-5808: Native Histograms",
+          "url": "https://kep.k8s.io/5808"
+        },
+        {
+          "title": "Prometheus Native Histograms",
+          "url": "https://prometheus.io/docs/specs/native_histograms/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes v1.37에서 `NativeHistograms`가 Beta로 승격되고 기본 활성화됨. `k8s.io/component-base/metrics`에 통합돼 control plane·node component histogram metric이 classic bucket과 native span을 함께 노출하는 범위임.",
+          "items": [
+            "기능 상태: KEP-5808 기반 native histogram이 v1.36 Alpha 뒤 v1.37 Beta·default-on으로 전환",
+            "표현: classic `_bucket` series와 native `Schema`·`PositiveSpan` payload를 동시에 내보내는 dual exposition",
+            "적용 component: `kube-apiserver`·`kube-scheduler`·`kubelet`·`kube-controller-manager`·`kube-proxy` metric 경로"
+          ]
+        },
+        {
+          "heading": "데이터 모델과 정밀도",
+          "body": "native histogram은 bucket boundary마다 별도 time series를 만드는 대신 positive/negative span·zero threshold·exponential scaling factor를 하나의 series에 저장함. source의 default 설정은 `BucketFactor: 1.1`, `MaxBucketNumber: 160`임.",
+          "items": [
+            "정밀도: 인접 exponential bucket 폭 최대 10%로 source가 약 5% worst-case relative quantile error bound를 제시",
+            "용량: source는 static bucket 대비 histogram time series를 최대 90% 줄일 수 있는 조건을 설명",
+            "보호 장치: histogram당 최대 160 bucket으로 outlier distribution에서 component memory 사용량 상한 설정"
+          ]
+        },
+        {
+          "heading": "수집기 전환",
+          "body": "Kubernetes component가 dual exposition을 시작해도 Prometheus가 native payload를 수집하는지는 scrape configuration과 버전에 따라 달라짐. Prometheus 3.0 이상에서는 job별 `scrape_native_histograms` 설정을 사용하고, 전환기에는 classic 수집을 유지하는 경로임.",
+          "items": [
+            "전환 설정: `scrape_native_histograms: true`와 `always_scrape_classic_histograms: true`를 job별로 병행하는 초기 경로",
+            "query 변경: `histogram_quantile(..._bucket...)`·`_count`·`_sum` 의존 query를 native `histogram_quantile`·`histogram_count`·`histogram_sum`으로 이행",
+            "경계: collector가 native format을 이해하지 못해도 classic metric이 남아 있어 기존 dashboard·alert가 즉시 깨지는 구조 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Beta default-on은 observability data contract의 자동 변경임. storage 절감만 보고 classic series를 즉시 끄면 recording rule·remote write·federation·SLO query 호환성을 놓칠 수 있음.",
+          "items": [
+            "검증: apiserver·scheduler·kubelet target별 scrape success·sample count·remote-write bytes·dashboard/alert 결과 비교",
+            "rollback: collector 측 `scrape_native_histograms: false`는 component restart 없이 적용 가능, gate disable은 component restart 필요",
+            "팀 액션: query migration과 `always_scrape_classic_histograms: false` 전환을 분리한 canary change로 운영"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-463",
+      "title_ko": "SageMaker HyperPod model caching GA: local NVMe weight·image pre-pull로 inference scale-out cold start 단축",
+      "title_original": "Amazon SageMaker HyperPod now supports model caching for faster inference autoscaling and reduced cold starts",
+      "summary": "- 공개: SageMaker HyperPod Inference가 local NVMe model weight cache와 container image pre-pull cache를 GA로 제공\n- 경로: warm cache node는 S3/FSx weight pull과 ECR image download를 줄이고, miss node는 original source pull로 자동 fallback\n- 수치: AWS는 57GB~145GB model benchmark에서 약 **60%** faster scale-out, image pull 2분 이상·97% reduction을 제시\n- 설정: HyperPod Inference Operator에서 `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`로 lifecycle 관리\n- 팀 액션: cache hit/miss·NVMe pressure·artifact digest·fallback·first inference p95·GPU idle cost를 동일 canary에서 비교 필요",
+      "detail": "AWS는 SageMaker HyperPod Inference의 model caching을 GA로 공개했다. weights cache는 model weight를 node local NVMe에 보관해 S3 또는 FSx pull을 줄이고, image cache는 container image를 미리 받아 ECR download를 건너뛴다. AWS는 57GB~145GB model benchmark에서 약 60% faster scale-out을, image cache에서 2분 이상의 image pull time과 97% reduction을 제시했다. warm cache가 없는 node에 pod가 배치돼도 original source path로 자동 fallback하므로 cache miss가 pod failure로 이어지지는 않는 구조다. HyperPod Inference Operator는 `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`에서 lifecycle을 처리한다. benchmark 수치는 cluster·artifact·network 조건에 따른 provider 결과이므로 production에서는 model/image digest, node NVMe headroom, cache eviction, node replacement, autoscaler burst, source fallback, first inference p95와 GPU idle cost를 함께 검증해야 한다.",
+      "why_it_matters": "LLM inference autoscaling은 GPU 확보 뒤에도 model/image transfer 때문에 ready time이 길어질 수 있음. cache는 network wait를 줄이는 대신 local artifact capacity·freshness·node lifecycle을 운영 책임으로 추가함.",
+      "engineering_implication": "one model·one image·isolated node group에서 warm/cold/fallback 세 path의 request-to-first-inference p95를 비교 필요. node별 NVMe usable capacity·cache hit/miss·artifact digest·source egress·GPU idle second를 telemetry와 FinOps baseline으로 고정하고 cache disable/rollback drill을 release gate에 포함 필요.",
+      "korea_implication": "서울 리전 또는 hybrid inference fleet에서 model artifact가 여러 storage·registry·node pool에 분산되면 cache warm 상태와 artifact revision이 배포 간 다르게 유지될 수 있음. central ML platform이 digest·NVMe quota·fallback source access를 tenant별 deployment record로 관리 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "AWS",
+        "SageMaker",
+        "HyperPod",
+        "Inference",
+        "Autoscaling",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 92,
+      "published_kst": "2026-09-12 03:25",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/sgm-hyperpod-model-caching-inf/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "SageMaker HyperPod documentation",
+          "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 SageMaker HyperPod Inference의 model caching을 GA로 공개함. model weight를 node local NVMe에, container image를 node에 미리 배치해 autoscaling pod가 네트워크 download를 기다리지 않고 시작하도록 하는 두 capability임.",
+          "items": [
+            "weights cache: S3 또는 FSx 대신 local NVMe에서 model weight를 읽는 경로",
+            "image cache: ECR download를 건너뛰도록 container image를 pre-pull하는 경로",
+            "적용: `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`로 HyperPod Inference Operator가 lifecycle 처리"
+          ]
+        },
+        {
+          "heading": "성능 주장과 경계",
+          "body": "AWS는 57GB~145GB model benchmark에서 약 60% faster scale-out을, image cache에서 2분 이상 image pull 제거와 97% reduction을 제시함. 이는 AWS가 제시한 model size·cluster·image 조건의 benchmark이며 각 조직 workload SLO 보증이 아님.",
+          "items": [
+            "cold start 원인: container image와 model weight download가 deployment·scale-out 시간을 차지하는 경로",
+            "fallback: warm cache가 없는 node에 landing해도 original source pull로 자동 fallback하는 동작",
+            "가용 범위: SageMaker HyperPod 제공 모든 region에서 GA라고 AWS가 명시한 범위"
+          ]
+        },
+        {
+          "heading": "AI/Infra 전문가 해석",
+          "body": "cache는 download latency를 local storage와 prefetch capacity로 바꾸는 control plane 기능임. autoscaler가 빠르게 pod를 만들더라도 cache miss·NVMe capacity·node turnover·image/model revision drift를 함께 관리하지 않으면 tail latency가 남음.",
+          "items": [
+            "용량: node별 model version·image layer·NVMe headroom과 replica burst를 같은 capacity model로 산정",
+            "일관성: model artifact digest·container image digest·cache warm completion을 deployment promotion gate로 연결",
+            "관측: cache hit/miss·fallback download·pod ready latency·scale-out p95·local disk pressure를 동일 trace에서 수집"
+          ]
+        },
+        {
+          "heading": "FinOps·운영 관점",
+          "body": "network pull 시간 감소가 곧 GPU 비용 절감으로 이어지는지는 replica pattern과 idle node 비용에 좌우됨. large model을 많이 pre-stage하면 egress·storage보다 NVMe reservation과 warm fleet 비용이 지배할 수 있음.",
+          "items": [
+            "비용 baseline: scale event당 GPU idle time·download byte·node local storage·image pull duration 고정",
+            "rollout: one model/one node group canary에서 cache hit와 p95 ready time을 기존 source pull path와 비교",
+            "복구: cache disable·artifact rollback·unhealthy node drain 뒤 original source fallback이 실제로 동작하는지 drill 필요"
+          ]
+        }
+      ],
+      "rank": 2
+    },
     {
       "id": "news-461",
       "title_ko": "GitLab repository commits API 경로 탐색 CVSS 10: 무인증 파일 읽기 probe에 self-managed 즉시 patch·secret triage",
@@ -266,7 +414,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-459",
@@ -339,7 +487,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-458",
@@ -450,7 +598,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-455",
@@ -532,7 +680,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-460",
@@ -610,7 +758,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-457",
@@ -687,7 +835,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-456",
@@ -757,7 +905,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-454",
@@ -834,7 +982,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-453",
@@ -916,7 +1064,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-452",
@@ -993,7 +1141,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-451",
@@ -1066,7 +1214,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-449",
@@ -1143,7 +1291,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-450",
@@ -1217,7 +1365,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-447",
@@ -1281,7 +1429,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-446",
@@ -1358,7 +1506,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-445",
@@ -1435,7 +1583,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-433",
@@ -1520,7 +1668,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-448",
@@ -1584,7 +1732,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-420",
@@ -1662,7 +1810,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-444",
@@ -1739,7 +1887,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-443",
@@ -1812,7 +1960,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-442",
@@ -1880,7 +2028,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-439",
@@ -1946,7 +2094,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-440",
@@ -2023,7 +2171,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-441",
@@ -2091,7 +2239,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-437",
@@ -2159,7 +2307,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "source_name": "The Hacker News",
@@ -2226,7 +2374,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "source_name": "The Hacker News",
@@ -2293,7 +2441,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-438",
@@ -2371,7 +2519,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-434",
@@ -2439,7 +2587,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-430",
@@ -2526,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-428",
@@ -2594,7 +2742,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-429",
@@ -2663,7 +2811,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-431",
@@ -2741,7 +2889,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-425",
@@ -2832,7 +2980,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-427",
@@ -2906,7 +3054,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-423",
@@ -2984,7 +3132,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-424",
@@ -3053,7 +3201,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-422",
@@ -3128,7 +3276,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-426",
@@ -3204,7 +3352,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-432",
@@ -3282,7 +3430,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-421",
@@ -3361,7 +3509,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-419",
@@ -3435,7 +3583,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-417",
@@ -3502,7 +3650,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-418",
@@ -3578,7 +3726,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-415",
@@ -3647,7 +3795,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-413",
@@ -3716,7 +3864,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-414",
@@ -3782,162 +3930,6 @@
             "측정: task success·tool validity·retry·TTFT/p95·context/token·task cost·approval delay·rollback time 수집",
             "검증: representative repository와 test suite에서 generated diff review·failure replay·fallback canary 수행",
             "팀 액션: Max preview와 xhigh를 feature flag·billing tag·human approval·kill switch 단위로 분리"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-416",
-      "title_ko": "Kubernetes v1.37 HPA scale-to-zero beta: 외부 지표·상태 조건으로 0 replica와 재기동 운영",
-      "title_original": "Kubernetes v1.37: Scale Workloads to Zero with HorizontalPodAutoscaler",
-      "summary": "- 제공: Kubernetes v1.37에서 `HPAScaleToZero`가 **beta·default-on**이 되어 object·external metric 기반 HPA가 `minReplicas: 0` workload를 다시 기동 가능한 공식 범위\n- 동작: CPU·memory만으로는 0 Pod 상태에서 scale-up 신호가 없으므로 queue length 같은 독립 지표와 External Metrics API adapter 필요\n- 상태·복구: `ScaledToZero=True`로 HPA가 내린 0 상태와 수동 pause를 구분하며 metric 조회 실패는 `ScalingActive=False`로 노출\n- 팀 액션: queue consumer부터 canary로 wake-up latency·backlog age·metric freshness/error·Pod scheduling·SLO·비용을 함께 측정하고 version-skew·rollback 절차를 release gate로 고정 필요",
-      "detail": "Kubernetes 공식 블로그는 v1.37에서 HPA의 workload scale-to-zero 지원이 beta·default-on이 됐다고 발표했다. object 또는 external metric을 사용하는 HPA는 `minReplicas: 0`으로 queue consumer·batch processor 같은 workload를 0까지 줄이고 metric 변화 때 다시 scale-up할 수 있다. CPU·memory resource metric은 실행 중인 Pod에서만 나오므로 0 replica 상태에서는 재기동 신호가 없으며, queue length처럼 worker와 독립적인 object·external metric이 필요하다. 공식 예시는 Prometheus Adapter가 `queue_consumer_lag`를 External Metrics API로 제공하고 0~10 replica, task 30개당 1 replica로 queue worker를 조절한다. HPA가 1 이상에서 0으로 낮춘 경우 `ScaledToZero=True` condition을 남겨 이후 reconciliation에서도 metric을 평가하지만, 운영자가 수동으로 Deployment를 0으로 설정한 상태는 기존처럼 pause로 취급한다. adapter가 metric을 반환하지 못하면 `ScalingActive=False`와 `FailedGetExternalMetric` reason이 나온다. v1.37에서는 `HPAScaleToZero`가 kube-apiserver·kube-controller-manager에서 default-on이나 version-skew 중에는 두 component 지원 상태를 확인해야 한다. 기능을 끄거나 구버전으로 rollback하기 전에는 대상 HPA를 `minReplicas: 1` 이상으로 바꾸고 0인 workload를 먼저 올려야 한다. resource metric만 가진 HPA의 `minReplicas: 0`은 API server가 거부한다. 공식 설명의 idle CPU·GPU 절감 효과를 workload SLO로 확대하지 말고 queue durability·metric adapter·cold start·scheduler capacity·request buffering을 먼저 검증해야 한다.",
-      "why_it_matters": "scale-to-zero는 단순 replica 하향이 아니라 metric control plane·queue durability·cold-start SLO·수동 pause semantics를 바꾸는 운영 변경임. idle GPU·CPU 비용 절감은 가능하지만 metric 장애나 control-plane version skew가 발생하면 backlog와 서비스 복구 시간이 커질 수 있음.",
-      "engineering_implication": "queue consumer·batch workload부터 external metric freshness, adapter availability, `ScaledToZero`/`ScalingActive` condition, backlog age, wake-up p95, scheduler delay, Pod readiness, 비용을 같은 dashboard에서 canary 비교해야 함. HTTP request-driven workload는 0 Pod 동안 Service가 요청을 buffer하지 않으므로 durable queue 또는 별도 buffering layer와 rollback runbook을 준비할 필요.",
-      "korea_implication": "국내 managed Kubernetes 사용 조직도 v1.37 제공 시점·control-plane component version·feature gate 노출·external metrics adapter 지원을 서비스별 문서와 cluster에서 확인해야 함. release note의 beta·default-on을 즉시 운영 표준 또는 managed service 보증으로 해석하지 않아야 함.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "HPA",
-        "Autoscaling",
-        "External Metrics",
-        "Prometheus",
-        "Queue",
-        "FinOps",
-        "SRE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-09-03 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/09/02/kubernetes-v1-37-hpa-scale-to-zero-beta/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "Kubernetes documentation: Horizontal Pod Autoscaling",
-          "url": "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
-        },
-        {
-          "title": "KEP-2021: HPA supports scaling to and from zero pods",
-          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-autoscaling/2021-hpa-scale-to-zero"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes 공식 블로그와 RSS 발행 시각을 확인해 KST `2026-09-03 03:30`으로 기록. v1.37에서 HPA scale-to-zero API 지원이 beta·default-on이 된 공식 발표 범위임.",
-          "items": [
-            "제공: object 또는 external metric을 쓰는 HPA가 workload를 **0 replica**까지 낮추고 지표 변화 시 재기동 가능한 변경",
-            "대상: queue consumer·batch processor처럼 작업이 durable queue에서 대기할 수 있는 workload",
-            "경계: workload별 비용 절감·cold-start·managed Kubernetes 제공·SLO는 공식 공지가 보증하지 않는 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "CPU·memory resource metric은 실행 중 Pod가 있어야 생성되므로 replica가 0이면 scale-up 신호가 없음. queue length 같은 object·external metric은 worker와 독립적으로 존재해 0 replica에서도 HPA가 평가 가능함.",
-          "items": [
-            "지표: Prometheus Adapter 같은 metrics adapter가 External Metrics API로 queue metric을 노출하는 구성",
-            "설정: 예시 HPA는 `minReplicas: 0`, `maxReplicas: 10`, queued task 30개당 worker 1개라는 공식 sample",
-            "제약: CPU·memory 같은 resource metric만 포함한 HPA의 `minReplicas: 0`은 API server가 거부"
-          ]
-        },
-        {
-          "heading": "0 상태·장애·업그레이드 경계",
-          "body": "HPA가 내린 0과 수동 pause를 구분하지 않으면 controller가 의도하지 않은 workload를 재기동할 수 있음. HPA는 자동 scale-down 때 `ScaledToZero=True`를 기록하며, metric retrieval 실패는 `ScalingActive=False` reason으로 드러남.",
-          "items": [
-            "상태: 수동으로 Deployment를 0으로 설정한 경우 기존 pause semantics 유지",
-            "장애: external metric이 조회되지 않으면 `FailedGetExternalMetric` 같은 reason과 capacity recovery 지연 위험",
-            "업그레이드: version-skew 중 kube-apiserver·kube-controller-manager 모두 기능 enable·지원 확인 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "0 replica 도입의 승인 기준은 `minReplicas` 값이 아니라 backlog·metric·scheduler·readiness가 합쳐진 recovery SLO임. HTTP Service는 ready Pod가 없을 때 요청을 buffer하지 않으므로 request-driven traffic에 그대로 적용하면 connection 실패를 만들 수 있음.",
-          "items": [
-            "측정: backlog age·metric freshness/error·wake-up p95·scheduling·readiness·`ScaledToZero` condition·idle 비용을 workload별 수집",
-            "검증: durable queue consumer부터 canary하고 adapter outage·sudden burst·manual pause·version rollback을 replay",
-            "팀 액션: gate disable·downgrade 전 `minReplicas: 1` 전환과 0 workload scale-up을 포함한 rollback runbook 등록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-412",
-      "title_ko": "Amazon Bedrock Web Search, AWS GovCloud (US-West) 제공: grounded response를 IAM·citation·query policy로 검증",
-      "title_original": "Web Search on Amazon Bedrock is now available in AWS GovCloud (US-West)",
-      "summary": "- 제공: Amazon Bedrock의 built-in server-side `web_search` tool이 **AWS GovCloud (US-West)** 에서 지원되며, supported OpenAI GPT model의 최신 web grounding과 citation 반환을 AWS 공식 공지 범위로 제공\n- 호출: OpenAI Responses API 호환 `tools` array에 `web_search`를 넣고, AWS가 web index·cache·crawler·tool-call loop를 관리하는 경로\n- 통제: IAM으로 account·organization allow/deny와 Region 제한이 가능하고 request data를 기본적으로 AWS boundary 안에 둔다는 AWS 설명\n- 팀 액션: GovCloud 지원을 web source·citation·prompt/response의 compliance 보증으로 확대하지 말고 tool invocation·citation coverage·p95·cost·prompt injection·denial을 data class별 canary로 검증 필요",
-      "detail": "AWS는 2026년 9월 3일 02:52 KST(RSS `Wed, 02 Sep 2026 17:52:00 GMT`)에 Amazon Bedrock의 Web Search built-in server-side tool을 AWS GovCloud (US-West)에서 제공한다고 공지했다. 이 tool은 supported OpenAI GPT model이 최신 web 정보가 필요한 경우 web grounding을 수행하고, 응답에 사용 source citation을 포함하는 범위다. 애플리케이션은 OpenAI Responses API 호환 요청의 `tools` array에 `web_search` type을 넣으며, 자체 search index·crawler·tool-call loop를 운영하지 않는다. AWS는 Amazon이 관리하는 web index와 cache에서 결과를 제공하고, 기본값으로 request data를 AWS boundary 안에 둔다고 설명한다. IAM으로 account 또는 organization 단위 allow/deny와 Region 제한도 가능하다. launch model은 GPT-5.4, GPT-5.6 Terra, GPT-5.6 Luna이며 제공 리전은 GovCloud (US-West), US East (N. Virginia), US East (Ohio), US West (Oregon)이다. 하지만 공지는 web index의 freshness·coverage, citation completeness·correctness, model별 tool-selection, latency·quota·가격, logging·retention·audit export 및 public source의 데이터 등급을 보증하지 않는다. GovCloud 지원을 한국 리전 또는 일반 상용 리전의 data residency·compliance 보증으로 해석할 수 없다. 도입 조직은 query data class·external web access 목적·citation retention·human approval을 request trace에 연결하고, grounded answer correctness·citation coverage·tool invocation/denial·p95 latency·request/token/tool cost·prompt-injection rejection을 representative workload에서 비교해야 한다.",
-      "why_it_matters": "agent가 외부 web을 읽는 순간 모델 호출은 data boundary·source provenance·citation retention·tool authorization 문제를 함께 갖게 됨. AWS-managed search와 IAM control은 운영 surface를 줄일 수 있지만, public source 신뢰도와 application-side approval을 대체하지 않음.",
-      "engineering_implication": "Bedrock Web Search 사용 전 account·organization SCP, IAM action, model access, Region policy, application query allowlist와 citation/log retention을 하나의 policy matrix로 점검해야 함. canary에서는 answer correctness·citation URL/domain coverage·tool selection/denial·p95·error·token/tool 비용·prompt injection probe를 request ID로 연결하고, data class별 allowlist·human review·kill switch 기준을 정해야 함.",
-      "korea_implication": "AWS GovCloud (US-West) 제공은 한국 리전 지원이나 국내 개인정보·공공 데이터 처리 적합성을 의미하지 않음. 국내 조직은 실제 Bedrock 리전, cross-region path, contract·DPA, external web source 접근, 로그·citation 보존과 data egress를 별도 확인해야 함.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Amazon Bedrock",
-        "Web Search",
-        "Grounding",
-        "GovCloud",
-        "IAM",
-        "AI Governance",
-        "Cloud Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-09-03 02:52",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-bedrock-web-aws-govcloud/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "Amazon Bedrock Web Search technical blog",
-          "url": "https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-web-search-openai-gpt-models/"
-        },
-        {
-          "title": "Amazon Bedrock pricing",
-          "url": "https://aws.amazon.com/bedrock/pricing/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS canonical announcement의 embedded `postDateTime` `2026-09-02T17:52:00Z`와 RSS timestamp를 KST `2026-09-03 02:52`로 변환해 기록. Amazon Bedrock built-in server-side Web Search가 AWS GovCloud (US-West)로 확장된 공식 제공 범위임.",
-          "items": [
-            "대상: compliance-sensitive government·public-sector workload에서 current web grounding을 쓰는 경로",
-            "제공: launch 시 GPT-5.4·GPT-5.6 Terra·GPT-5.6 Luna 지원 범위",
-            "리전: GovCloud (US-West)와 US East Virginia·Ohio, US West Oregon이라는 AWS 공지 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Web Search는 OpenAI Responses API 호환 request의 `tools` array에 `web_search` type을 넣는 server-side tool임. 최신 정보가 필요하다고 모델이 판단하면 AWS가 운영하는 web index·cache에서 결과를 가져오고, 응답에는 사용 source citation을 포함한다는 설명임.",
-          "items": [
-            "호출: 애플리케이션이 search index·crawler·직접 tool-call loop를 별도 운영하지 않는 관리형 경로",
-            "추적: citation이 model claim의 web origin을 확인하는 입력으로 반환되는 범위",
-            "경계: citation 존재가 claim correctness·source quality·complete coverage를 자동 보증하지 않음"
-          ]
-        },
-        {
-          "heading": "데이터 경계·IAM 통제",
-          "body": "AWS는 request data를 기본값으로 AWS boundary 안에 두며 IAM을 이용해 account 또는 organization 단위 allow/deny와 Region 제한을 할 수 있다고 설명함. 이는 tool authorization control이며 public web source·prompt·response·citation URL의 조직별 data policy를 대신하지 않음.",
-          "items": [
-            "정책: account·organization SCP, IAM permission, model access, Region policy와 application query allowlist를 결합",
-            "분류: prompt·retrieved source·citation·answer·log를 각각 data class와 retention owner에 연결",
-            "경계: GovCloud 제공을 일반 상용 리전·한국 리전·국내 residency 또는 contract 보증으로 해석하지 않음"
-          ]
-        },
-        {
-          "heading": "운영 시사점",
-          "body": "managed search 도입은 external data access를 application 내부 tool loop에서 provider-side service로 옮기는 변경임. correctness·latency·비용·injection·audit의 acceptance 기준이 없으면 tool enablement 자체가 uncontrolled web egress와 provenance gap을 만들 수 있음.",
-          "items": [
-            "측정: grounded answer correctness·citation domain/coverage·tool selection·denial·p95·error·request/token/tool cost를 request ID별 수집",
-            "검증: malicious page·indirect prompt injection·citation mismatch·stale result·tool timeout을 representative workflow에서 replay",
-            "팀 액션: data class별 external web allowlist·human approval·citation retention·kill switch와 rollback owner를 canary gate로 등록"
           ]
         }
       ],
