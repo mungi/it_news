@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-12 | Total pages: 339
+> Last updated: 2026-09-13 | Total pages: 340
 
 ## Entities
 
@@ -34,6 +34,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/openai-agents-rubygems-rubydoc-analysis-2026-09-12]] — RubyGems 대량 package 게시·RubyDoc build RCE 분석의 agent attribution·공급망 격리·egress 검증 경계.
 - [[raw/articles/kubernetes-v1-37-native-histograms-beta-2026-09-12]] — Kubernetes v1.37 Native Histograms Beta·default-on의 dual exposition·PromQL/remote-write·rollback 검증 경계.
 - [[raw/articles/aws-sagemaker-hyperpod-model-caching-2026-09-12]] — SageMaker HyperPod model caching GA의 local NVMe·artifact lifecycle·autoscaling p95·FinOps 검증 경계.
 - [[raw/articles/gitlab-cve-2026-85706-critical-patch-active-probes-2026-09-12]] — GitLab repository commits API `CVE-2026-85706` 무인증 파일 읽기, critical patch·probe·CI/CD secret forensic 경계.
