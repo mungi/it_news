@@ -2601,3 +2601,10 @@
 - GeekNews RSS, AI타임스·인공지능신문 RSS, AWS·Kubernetes·Cloudflare·GitHub·The Hacker News feed를 직접 probe. GeekNews Plus는 HTTP 403이었음.
 - 신규 후보는 GeekNews Real-SWE·Shopify agent native migration, AI타임스 Oracle/SpaceX AI 데이터센터 보도, AWS MediaLive·Lambda·Bedrock update를 포함해 기존 50건 URL·제목·event와 대조. Real-SWE/Shopify 원문은 source surface HTTP 403으로 본문 검증 불가, Oracle/SpaceX 보도는 source-linked primary filing·contract 조건을 독립 확인하지 못했으며 AWS 후보는 현재 50건을 교체할 만큼의 기술·운영 영향 근거가 부족해 추가하지 않음.
 - KST 첫 실행에 00:28 전면 재구성한 Deep Dive 2건은 same-day policy에 따라 timestamp-only 변경을 하지 않음. `docs/data/weekly-news.json`과 `weekly/2026-W38.md`의 실제 최종 업데이트 시각만 동기화.
+
+## [2026-09-13] update | CNCF Kubernetes 재해복구 재현 failure scenario 가이드 추가
+- 확인 시각: 2026-09-13 16:48 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스·인공지능신문은 HTTP 200 HTML로 필수 surface를 직접 probe. AWS·Kubernetes·CNCF·GitHub·The Hacker News·Google AI·Google Security·Docker feed를 실제 파싱하고 URL·제목·event를 기존 50건과 대조.
+- CNCF canonical article의 JSON-LD `datePublished` `2026-09-10T11:37:00+00:00`, Open Graph image, full body를 직접 확인해 KST `2026-09-10 20:37`로 기록. 두 cluster·external S3-compatible store·GitOps·PostgreSQL lab에서 backup byte, declared/stored state, multi-volume consistency 세 failure scenario를 다룸.
+- Velero data mover `47,989,888 bytes`·4개 row restore, production 종료~validated data 4분/재연 2분 미만, 5초 차이 individual snapshot의 25개 orphan payment, Kubernetes v1.36 GA `VolumeGroupSnapshot`의 CSI group RPC·application quiesce 경계를 source 범위로 수록. lab 측정값을 조직별 RTO/RPO·driver support·SLA로 확대하지 않음.
+- `news-466`을 KST `2026-09-10 20:37` 기준 newest-first rank 14에 추가하고 50-item cap의 actual tail `news-418`(KST `2026-09-04 02:00`)을 제거 후 rank 1–50 재부여. raw capture·weekly archive·index를 동기화. canonical source bytes SHA-256 `2e84adb9f11a5edbf7fbe50dc2e6b257a160a15c9fdca0ab0e9b59b8baa21ced` 보존.
+- Deep Dive 2건은 KST 당일 00:28에 전면 재구성됐으므로 same-day 정책에 따라 timestamp-only 변경을 하지 않음.

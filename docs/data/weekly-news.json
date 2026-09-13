@@ -2,7 +2,7 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-13 12:47",
+  "last_updated_kst": "2026-09-13 16:48",
   "audience": "developers and engineers",
   "executive_summary": [
     "Kubernetes v1.37 `NativeHistograms`가 Beta·default-on으로 전환. native/classic dual exposition 기간에는 `scrape_native_histograms`, PromQL/recording rule, remote write·storage bytes, collector rollback을 target별 canary로 검증 필요.",
@@ -1229,6 +1229,97 @@
       "rank": 13
     },
     {
+      "id": "news-466",
+      "title_ko": "CNCF Kubernetes 재해복구 가이드: backup 완료·GitOps 동기화·다중 PVC snapshot을 복구 증거로 분리 검증",
+      "title_original": "Kubernetes disaster recovery: Guidance from three reproducible failure scenarios",
+      "summary": "- 결론: `Completed` backup과 GitOps `Synced`·Pod `Ready` 상태는 stateful application 복구 증거가 아니며, clean recovery target에서 데이터·traffic path까지 검증 필요\n- 실험: Velero data mover가 **47,989,888 bytes** volume data 이동을 기록하고 namespace 삭제 뒤 동일 4개 row 복구; production 종료~검증 데이터까지 실험에서는 4분, rehearsal에서는 2분 미만\n- 일관성: PVC 두 개를 5초 간격 snapshot하면 `25`개 payment가 order 없이 복구될 수 있으며, Kubernetes v1.36 GA `VolumeGroupSnapshot`은 coordinated crash-consistent point를 제공\n- 팀 액션: cluster·declared state·stored state·traffic/identity를 서로 다른 recovery layer로 inventory하고 clean target restore·data invariant·cutover·failback까지 RTO/RPO drill로 측정 필요",
+      "detail": "CNCF Ambassadors의 재현 가능한 lab 가이드는 Kubernetes stateful application의 백업 보유와 실제 복구 가능성을 구분하기 위해 세 가지 failure scenario를 제시한다. 첫째, backup 완료 상태만으로는 volume byte가 외부 store로 이동했는지, application-consistent data가 복원되는지 알 수 없다. 둘째, GitOps는 manifest라는 declared state만 재구성하므로 recovery cluster에서 StatefulSet·Service·PVC가 Ready여도 새 빈 volume 위의 database가 될 수 있다. 셋째, 다중 PVC를 개별 snapshot하면 각 snapshot이 ReadyToUse여도 서로 다른 시점이 섞여 application invariant가 깨질 수 있다. source lab은 Velero data mover, 두 cluster, external S3-compatible store, GitOps controller와 PostgreSQL known data를 사용해 clean target에서 restore data를 검증한다. `VolumeGroupSnapshot`은 coordinated crash-consistent recovery point를 위한 API지만 CSI driver별 지원·feature gate/CRD enable과 application quiesce는 별도 조건이다. 따라서 DR 승인 기준은 backup job 성공이 아니라 cluster·manifest·volume data·traffic/DNS·identity를 복구한 clean environment에서 data invariant와 user path를 검증하고 detection·decision·cutover·failback을 포함한 실제 RTO/RPO를 기록하는 방식이어야 한다.",
+      "why_it_matters": "Kubernetes stateful workload의 복구 실패는 backup tool, GitOps, storage, traffic, identity가 각각 정상이어도 layer 사이의 handoff에서 발생함. green dashboard나 backup 완료 지표는 RTO/RPO와 data integrity를 대신하지 못함.",
+      "engineering_implication": "각 application에 대해 recovery target 생성 책임, Git manifest 복원 순서, PVC/CSI storage mapping, data invariant query, DNS·load balancer·certificate·identity cutover, failback owner를 하나의 drill runbook으로 고정해야 함. quarterly rehearsal에서 backup byte evidence·restore p95·invariant failure·traffic cutover·rollback 시간을 수집하고, multi-volume workload는 CSI `VolumeGroupSnapshot` 지원과 application quiesce를 별도 release gate로 관리 필요.",
+      "korea_implication": "국내 multi-AZ·secondary Region 또는 온프레미스 DR 환경도 managed Kubernetes 생성, storage class와 KMS key, private DNS·load balancer·certificate, 망분리 identity 경로가 recovery target에서 실제로 재구성되는지 확인해야 함. 백업 저장 위치와 복구 권한은 데이터 반출·보존·접근통제 정책과 함께 drill evidence로 보관 필요.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "Disaster Recovery",
+        "Backup",
+        "GitOps",
+        "Velero",
+        "CSI",
+        "VolumeGroupSnapshot",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-10 20:37",
+      "source_name": "CNCF Blog",
+      "source_url": "https://www.cncf.io/blog/2026/09/10/kubernetes-disaster-recovery-guidance-from-three-reproducible-failure-scenarios/",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Kubernetes-disaster-recovery-scaled.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "재현 가능한 Kubernetes DR lab",
+          "url": "https://github.com/saiyam1814/kubecon-japan-dr-demo"
+        },
+        {
+          "title": "Kubernetes v1.36 VolumeGroupSnapshot GA",
+          "url": "https://kubernetes.io/blog/2026/05/08/kubernetes-v1-36-volume-group-snapshot-ga/"
+        },
+        {
+          "title": "Velero backup hooks",
+          "url": "https://velero.io/docs/v1.18/backup-hooks/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CNCF Ambassadors가 laptop에서 재현 가능한 두 Kubernetes cluster·external S3-compatible backup store·GitOps controller·PostgreSQL lab으로 stateful application DR의 세 failure scenario를 공개함. source의 목표는 backup 보유와 validated recovery의 차이를 검증하는 방법 제시임.",
+          "items": [
+            "범위: Kubernetes 위 stateful application의 backup byte·declared/stored state 분리·multi-volume consistency 검증",
+            "구성: production cluster·사전 준비된 recovery cluster·공유 object store·Git repository와 GitOps controller의 네 recovery 구성요소",
+            "경계: underlying cloud/datacenter infrastructure 자체 복구·compliance framework·product comparison은 source 범위 밖"
+          ]
+        },
+        {
+          "heading": "backup 완료와 복구 증거의 차이",
+          "body": "Kubernetes backup은 resource definition과 persistent volume data라는 별도 artifact를 다룸. source lab은 Velero data mover가 external store로 `47,989,888 bytes`를 이동한 기록 뒤 namespace와 PVC를 삭제하고 동일 4개 row 복원을 확인함.",
+          "items": [
+            "검증: backup `Completed` 상태 외에 volume byte 이동량·restore 후 expected data·user path를 함께 확인",
+            "일관성: database는 flush 또는 quiesce hook이 필요한 경우 backup tool의 volume protection만으로 application-consistent state 보장 불가",
+            "경계: backup tool은 이미 존재하는 cluster에 resource를 복원하며 cluster·node·network·load balancer·DNS 생성 책임은 IaC 또는 Cluster API 영역"
+          ]
+        },
+        {
+          "heading": "GitOps와 stored state 분리",
+          "body": "production 종료 뒤 recovery cluster에서 GitOps sync가 성공해 StatefulSet·Service·Pod가 Ready여도 Git에는 manifest만 있으므로 PVC는 새 빈 volume으로 provision될 수 있음. source lab은 `attendees` relation이 없는 빈 database를 이 경로로 재현함.",
+          "items": [
+            "복구 순서: GitOps가 만든 빈 application 제거 후 backup store에서 application과 volume을 함께 restore",
+            "측정: source lab의 production 종료부터 validated data까지 4분, rehearsal rerun은 2분 미만이라는 scripted slice 기록",
+            "RTO 경계: production RTO는 detection·decision·traffic cutover·failback을 포함하므로 lab duration을 service SLA로 환산하지 않음"
+          ]
+        },
+        {
+          "heading": "다중 PVC 일관성과 CSI 조건",
+          "body": "source lab은 두 PVC를 5초 차이로 individual snapshot해 각각 ReadyToUse인데도 25개 payment가 대응 order 없이 복구되는 결과를 제시함. Kubernetes v1.36 GA `VolumeGroupSnapshot`은 label-selected PVC를 coordinated crash-consistent point로 요청하는 API임.",
+          "items": [
+            "리스크: individual snapshot 성공이 multi-volume application invariant의 성공을 뜻하지 않는 조건",
+            "지원: ordinary `VolumeSnapshot` 지원이 CSI group RPC 지원을 보장하지 않으며 driver별 capability 확인 필요",
+            "경계: group snapshot은 cross-volume timing skew를 줄이지만 database flush·quiesce가 필요한 application-consistency를 대체하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "DR test는 Pod 삭제 후 reconciliation을 보는 작업이 아니라 never-run clean target에 complete application을 복원하고 expected data와 user path를 검증하는 exercise임. backup·GitOps·storage·cluster·traffic·identity 사이 contract와 owner를 drill 결과로 연결해야 함.",
+          "items": [
+            "측정: backup byte·restore p50/p95·data invariant·application ready·DNS/TLS/identity cutover·failback time",
+            "체크: recovery cluster IaC·storage class/KMS mapping·CSI group snapshot support·backup hook·GitOps ordering·external dependency inventory",
+            "팀 액션: backup success dashboard와 별도로 clean-target restore rehearsal 결과와 unresolved dependency를 RTO/RPO approval evidence로 운영"
+          ]
+        }
+      ],
+      "rank": 14
+    },
+    {
       "id": "news-452",
       "title_ko": "Wiz: 인터넷 노출 LiteLLM gateway 3,074개 중 294개가 예제 admin key `sk-1234` 수용",
       "title_original": "Nearly 1 in 10 Exposed LiteLLM Gateways Accepted the Example \"sk-1234\" Admin Key",
@@ -1303,7 +1394,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-451",
@@ -1376,7 +1467,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-449",
@@ -1453,7 +1544,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-450",
@@ -1527,7 +1618,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-447",
@@ -1591,7 +1682,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-446",
@@ -1668,7 +1759,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-445",
@@ -1745,7 +1836,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-433",
@@ -1830,7 +1921,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-448",
@@ -1894,7 +1985,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-420",
@@ -1972,7 +2063,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-444",
@@ -2049,7 +2140,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-443",
@@ -2122,7 +2213,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-442",
@@ -2190,7 +2281,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-439",
@@ -2256,7 +2347,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-440",
@@ -2333,7 +2424,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-441",
@@ -2401,7 +2492,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-437",
@@ -2469,7 +2560,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "source_name": "The Hacker News",
@@ -2536,7 +2627,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "source_name": "The Hacker News",
@@ -2603,7 +2694,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-438",
@@ -2681,7 +2772,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-434",
@@ -2749,7 +2840,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-430",
@@ -2836,7 +2927,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-428",
@@ -2904,7 +2995,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-429",
@@ -2973,7 +3064,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-431",
@@ -3051,7 +3142,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-425",
@@ -3142,7 +3233,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-427",
@@ -3216,7 +3307,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-423",
@@ -3294,7 +3385,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-424",
@@ -3363,7 +3454,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-422",
@@ -3438,7 +3529,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-426",
@@ -3514,7 +3605,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-432",
@@ -3592,7 +3683,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-421",
@@ -3671,7 +3762,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-419",
@@ -3745,7 +3836,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-417",
@@ -3812,7 +3903,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-418",
@@ -3885,75 +3976,6 @@
           "items": [
             "측정: boot·node join·image pull·container start·p95·CPU/memory·driver error·rollback time",
             "팀 액션: AMI ID·base image digest·kernel·policy module·owner를 deployment record에 고정하고 pool별 canary 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-415",
-      "title_ko": "네이버클라우드 컨소시엄, 정부 사이버보안 특화 AI 모델 사업자 선정: GPU·데이터·폐쇄망 실증을 공급·통제로 검증",
-      "title_original": "Naver Cloud selected for Korea's cybersecurity-specialized AI foundation model project (reported)",
-      "summary": "- 선정: 네이버클라우드 컨소시엄이 정부의 사이버보안 특화 AI 파운데이션 모델 개발 사업자로 선정됐으며, **33개 산·학·연·공공기관**이 참여하는 기사 보도 범위\n- 자원·일정: 9월부터 10개월간 B200 256장 지원, 5개월 중간평가 후 잔여 지원 결정; 네이버 B200 4,000장·LG H200 256장 선제 투입은 기사 인용 계획\n- 모델·데이터: 하이퍼클로바X·엑사원을 바탕으로 700B급 MoE, 약 830TB 실데이터, 공격·방어 2개 모델 병렬 개발과 국제 공인 benchmark 2종 검증 계획\n- 팀 액션: 계획·보도 수치를 가용 GPU·모델 성능·폐쇄망 적합성으로 확대하지 말고 GPU-hour·queue·데이터 provenance·권한·egress·평가 재현성·현장 PoC·incident response를 단계별 gate로 검증 필요",
-      "detail": "AI타임스는 2026년 9월 3일 12:06 KST에 네이버클라우드 컨소시엄이 정부의 ‘특화 인공지능 파운데이션 모델 개발(사이버 보안 분야)’ 사업자로 최종 선정됐다고 보도했다. 기사상 컨소시엄은 33개 산·학·연·공공기관과 함께 국내 보안 환경에 최적화한 AI 모델을 구축하고 국가 핵심시설·주요 산업 현장에서 검증·고도화할 계획이다. 9월부터 10개월 동안 B200 256장을 지원받고 5개월 뒤 중간평가로 잔여 5개월 지원 여부가 정해진다. 기사에는 네이버클라우드 B200 4,000장과 LG H200 256장을 추가 투입해 하이퍼클로바X·엑사원을 토대로 700B급 MoE 모델, 공격·방어 역량을 나눈 2개 독자 모델, 국제 공인 benchmark 2종, 약 830TB 고품질 실데이터, 7대 산업 현장·폐쇄망 실증, 상업 활용 가능한 오픈소스 공개를 계획한다는 내용이 담겼다. 다만 이는 timestamped secondary report와 사업 계획 범위이며, 정부 협약 원문·예산·GPU 실제 인도·가동률, 모델 아키텍처·license·benchmark protocol, 830TB 데이터의 법적 근거·반출·정제·보존, 폐쇄망 배포 보안성·성능·상용 공개 조건은 직접 확인하지 못했다. 보안 모델은 GPU 수나 파라미터 수보다 훈련·평가 데이터의 provenance와 access segregation, tool·network egress, 현장 detection/false-positive, 사고 대응 증거로 도입 결정을 내려야 한다.",
-      "why_it_matters": "국가 핵심시설 데이터와 cyber 모델을 결합하면 학습 규모뿐 아니라 데이터 경계·사용 목적·평가·배포 권한이 동시에 바뀜. 대규모 GPU와 모델 계획은 capacity signal이지만 실제 방어 성능·폐쇄망 운용·안전한 공개 범위를 보증하지 않음.",
-      "engineering_implication": "사업·연계 PoC를 검토하는 팀은 GPU inventory와 scheduler quota, 데이터 lineage·retention·tenant isolation, training/evaluation environment, benchmark harness·seed, tool permission·egress, 현장 alert precision·MTTR을 별도 evidence로 관리해야 함. 폐쇄망 배포는 artifact signing·SBOM·offline patch·model update·key rotation·forensic log와 rollback drill을 release gate로 고정 필요.",
-      "korea_implication": "국내 전력·금융·통신·반도체·방산 등 7대 분야 실증 계획은 산업별 규제·망분리·데이터 반출·사고 신고 조건을 하나의 모델 제공 범위로 통합하지 말아야 함. 실제 참여기관·데이터 권리·GPU 배정·폐쇄망 운영·오픈소스 license는 협약·기술 문서와 현장 PoC에서 확인 필요.",
-      "category": "Korea",
-      "tags": [
-        "Naver Cloud",
-        "Cybersecurity",
-        "Foundation Model",
-        "MoE",
-        "GPU",
-        "B200",
-        "Sovereign AI",
-        "AI Governance"
-      ],
-      "region": "Korea",
-      "importance": "must-know",
-      "score": 90,
-      "published_kst": "2026-09-03 12:06",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214787",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/214787_218514_394.png",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스 canonical page의 `article:published_time` `2026-09-03T12:06:01+09:00`와 Open Graph image를 직접 확인해 KST `2026-09-03 12:06`으로 기록. 정부 사이버보안 특화 AI 파운데이션 모델 사업자 선정에 관한 timestamped secondary report 범위임.",
-          "items": [
-            "선정: 네이버클라우드 컨소시엄이 해당 사업의 최종 사업자로 선정된 보도",
-            "구성: **33개 산·학·연·공공기관**이 국내 보안 환경용 모델과 현장 검증에 참여하는 기사 범위",
-            "경계: 정부 협약 원문·예산·실제 GPU 배정·계약·보안 요구사항은 기사만으로 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사상 9월부터 10개월간 B200 256장을 지원하며 5개월 중간평가로 잔여 지원 여부를 결정함. 네이버클라우드 B200 4,000장과 LG H200 256장의 선제 투입, 700B급 MoE, 공격·방어 2개 모델 병렬 개발, 국제 공인 benchmark 2종은 개발·검증 계획임.",
-          "items": [
-            "일정: B200 256장 10개월 지원과 5개월 중간평가라는 계획",
-            "모델: 하이퍼클로바X·엑사원 기반 700B급 MoE와 공격·방어 모델 분리 구상",
-            "평가: 국제 공인 benchmark 2종 사용 계획은 harness·seed·data split·재현 artifact 확인 필요"
-          ]
-        },
-        {
-          "heading": "데이터·현장 실증 경계",
-          "body": "기사에는 약 830TB 고품질 실데이터와 위협정보 수집·라벨링·표준화·검증 계획, 7대 주요 분야 현장 실증, 외부망 접근이 제한된 폐쇄망 운용과 상업 활용 가능한 오픈소스 공개 구상이 포함됨. 데이터 권리와 분류, 반출·보존, 공급망과 공개 범위는 별도 control plane이 필요함.",
-          "items": [
-            "데이터: 830TB 규모·출처·정제 계획을 model quality나 적법한 사용 권한으로 자동 해석하지 않음",
-            "실증: 전력·금융·과학기술·통신·반도체·방산·항공우주 환경의 attack surface와 acceptance criteria를 분리",
-            "공개: 오픈소스 계획은 license·weights/artifact·SBOM·export control·vulnerability response 확인 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "보안 특화 모델의 운영 리스크는 모델 규모보다 sensitive data·tool·network·human response가 만나는 execution path에서 발생함. 계획 단계에서 GPU·데이터·모델·폐쇄망을 하나의 성공 지표로 합치면 과도한 권한과 검증 공백이 생길 수 있음.",
-          "items": [
-            "측정: GPU-hour·queue·utilization·training/evaluation cost·benchmark reproducibility·detection precision·false-positive·MTTR을 cohort별 수집",
-            "통제: dataset provenance·PII/secret scanning·access approval·isolated evaluation·tool/egress default deny·audit retention 적용",
-            "팀 액션: 현장 deployment 전 signed artifact·offline update·key rotation·rollback·incident handoff drill을 release gate로 등록"
           ]
         }
       ],
