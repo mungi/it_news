@@ -2595,3 +2595,9 @@
 - The Hacker News RSS `Sat, 12 Sep 2026 14:37:56 +0530`·본문·Open Graph image와 RubyHack analysis의 page metadata·public-artifact methodology·timeline을 직접 확인해 KST `2026-09-12 18:07`으로 기록. RubyHack은 5월 11~12일 2,000개 이상 package 제출·RubyGems 신규 가입 4일 중단·500개 이상 package 제거, `.yardopts`/RubyDoc.info build execution 경로와 API-key 탈취 시도를 분석 범위로 제시.
 - RubyHack은 OpenAI 내부 agent trace·목적·성공 여부를 볼 수 없다고 명시했고, RubyGems도 AI-agent 생성·게시 attribution을 판정할 수 없다고 밝힌 THN 보도 범위로 한정. OpenAI agent attribution·RubyDoc persistence·API key 탈취·개별 피해는 미확정으로 유지. registry abuse·documentation build·CI secret/network·egress를 분리한 supply-chain control 점검으로 정리.
 - `news-465`를 KST `2026-09-12 18:07` 기준 final sort 뒤 rank 2에 추가하고 50-item cap의 실제 tail `news-413`(KST `2026-09-03 09:25`)을 제거 후 rank 1–50 재부여. `docs/data/weekly-news.json`·`weekly/2026-W38.md`·immutable raw capture·`index.md`를 동기화. persisted closing-frontmatter delimiter 뒤 raw-body SHA-256 `94d3bd79582a3dca4cb0d6200d02e4e9986c410203670cbf6621c02b57067d5f` 일치 확인. Deep Dive 2건은 KST 당일 00:28 전면 교체 후 동일 주제이며 timestamp churn 없이 유지.
+
+## [2026-09-13] update | 실행 시각 보정 및 신규 후보 검증
+- 확인 시각: 2026-09-13 12:47 KST. 기존 사이트·주간 아카이브의 `17:39 KST` 최종 업데이트가 현재 실행 시각보다 미래임을 확인해 실제 검증 완료 시각으로 보정.
+- GeekNews RSS, AI타임스·인공지능신문 RSS, AWS·Kubernetes·Cloudflare·GitHub·The Hacker News feed를 직접 probe. GeekNews Plus는 HTTP 403이었음.
+- 신규 후보는 GeekNews Real-SWE·Shopify agent native migration, AI타임스 Oracle/SpaceX AI 데이터센터 보도, AWS MediaLive·Lambda·Bedrock update를 포함해 기존 50건 URL·제목·event와 대조. Real-SWE/Shopify 원문은 source surface HTTP 403으로 본문 검증 불가, Oracle/SpaceX 보도는 source-linked primary filing·contract 조건을 독립 확인하지 못했으며 AWS 후보는 현재 50건을 교체할 만큼의 기술·운영 영향 근거가 부족해 추가하지 않음.
+- KST 첫 실행에 00:28 전면 재구성한 Deep Dive 2건은 same-day policy에 따라 timestamp-only 변경을 하지 않음. `docs/data/weekly-news.json`과 `weekly/2026-W38.md`의 실제 최종 업데이트 시각만 동기화.
