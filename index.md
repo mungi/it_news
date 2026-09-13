@@ -34,6 +34,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-microsoft-passkey-themed-phishing-2026-09-13]] — Microsoft cloud passkey-themed phishing·MFA persistence·Graph/SaaS data access의 identity lifecycle 대응 경계.
+- [[raw/articles/cncf-atlassian-distributed-ai-training-rdma-lustre-2026-09-11]] — CNCF·Atlassian distributed AI training의 RDMA·Lustre·topology·checkpoint validation 경계.
 - [[raw/articles/openai-agents-rubygems-rubydoc-analysis-2026-09-12]] — RubyGems 대량 package 게시·RubyDoc build RCE 분석의 agent attribution·공급망 격리·egress 검증 경계.
 - [[raw/articles/kubernetes-v1-37-native-histograms-beta-2026-09-12]] — Kubernetes v1.37 Native Histograms Beta·default-on의 dual exposition·PromQL/remote-write·rollback 검증 경계.
 - [[raw/articles/aws-sagemaker-hyperpod-model-caching-2026-09-12]] — SageMaker HyperPod model caching GA의 local NVMe·artifact lifecycle·autoscaling p95·FinOps 검증 경계.

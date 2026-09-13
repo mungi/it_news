@@ -2,194 +2,272 @@
   "week": "2026-W38",
   "coverage_start_kst": "2026-09-07 17:00",
   "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-13 16:48",
+  "last_updated_kst": "2026-09-14 00:55",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Microsoft cloud passkey-themed social engineering 보도는 authentication method 등록·session persistence 뒤 Graph·SharePoint·OneDrive data access로 이어질 수 있는 identity lifecycle을 다룸. high-value identity는 new MFA method·OAuth·SaaS audit·session revoke를 한 timeline으로 조사 필요.",
+    "CNCF에 게시된 Atlassian 사례는 distributed AI training에서 RDMA actual transport·Lustre shared storage·topology·checkpoint recovery를 GPU allocation과 분리하지 말 것을 제시. socket fallback·storage pressure·node loss를 representative workload로 검증 필요.",
     "Kubernetes v1.37 `NativeHistograms`가 Beta·default-on으로 전환. native/classic dual exposition 기간에는 `scrape_native_histograms`, PromQL/recording rule, remote write·storage bytes, collector rollback을 target별 canary로 검증 필요.",
-    "SageMaker HyperPod model caching이 local NVMe weight와 image pre-pull을 GA로 제공. AWS의 **60%** faster scale-out benchmark는 57GB~145GB 조건 범위이므로 cache hit·NVMe pressure·fallback·first inference p95·GPU idle cost를 동일 deployment에서 비교 필요.",
     "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요.",
-    "Cisco Talos는 FMC `CVE-2026-20079`·`CVE-2026-20316` active exploitation의 3개 cluster를 공개. hotfix와 webroot·package·admin/API·managed-device·egress forensic을 하나의 incident timeline으로 점검 필요.",
     "CISA KEV가 Artifactory·ScreenConnect·RouterOS active-exploitation 5건을 추가. RouterOS는 **9월 13일**, ScreenConnect는 9월 14일 due date이므로 edge/RMM/artifact control plane의 fixed build·forensic evidence·credential scope를 병행 점검 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Kubernetes v1.37 Native Histograms Beta: dual exposition·PromQL 이행·remote-write 비용을 분리 검증",
-      "summary": "한 줄 결론: Kubernetes v1.37은 `NativeHistograms`를 Beta·default-on으로 전환해 component metric을 classic bucket과 native span으로 함께 노출함. Prometheus scrape 설정, PromQL/recording rule, remote write·storage, collector rollback을 한 observability migration으로 canary 검증해야 함.",
-      "details": "Kubernetes v1.37의 Native Histograms는 `k8s.io/component-base/metrics`를 통해 apiserver·scheduler·kubelet 등 component histogram에 native representation을 추가한다. source는 `BucketFactor: 1.1`, `MaxBucketNumber: 160`, static bucket time-series 최대 90% 축소 가능성을 제시하지만, dual exposition 기간에는 native와 classic을 동시에 수집하면 ingest와 query 비용이 일시적으로 늘 수 있다. Prometheus 3.0 이상 job별 scrape 설정과 native query function으로 dashboard·SLO·recording rule을 이행한 뒤 classic series 중단을 승인해야 한다. collector-side native scrape disable은 restart 없이 가능하지만 component gate disable은 restart를 요구한다. 따라서 이번 Beta를 metrics format 자동 활성화로 보고 target별 scrape/remote-write/query compatibility와 rollback time을 정량화해야 한다.",
-      "why_it_matters": "native histogram은 Kubernetes component observability의 series cardinality·quantile query·remote-write payload를 함께 바꿈. default-on이라도 collector·storage·alert stack이 native payload를 실제로 활용하는지는 별도 검증 대상임.",
+      "title": "Microsoft cloud identity: passkey-themed social engineering·MFA persistence·data exfiltration을 identity lifecycle으로 차단",
+      "summary": "한 줄 결론: passkey-themed social engineering 보도는 passkey protocol 취약점이 아니라 authentication method enrollment·recovery·session lifecycle이 social engineering과 결합한 identity control-plane 위험을 다룸. high-value identity는 new MFA method·Graph·SharePoint/OneDrive access·session revoke를 한 incident timeline으로 검증해야 함.",
+      "details": "The Hacker News는 Microsoft Security Blog 두 건을 인용해 CEO 사칭 invoice fraud와 passkey-themed social engineering을 다뤘다. 기사 RSS는 KST 2026-09-13 19:11이며, source는 attacker-controlled phone·authenticator·software OTP 등록 뒤 Graph API reconnaissance, SharePoint/OneDrive/Exchange access와 장시간 exfiltration이 이어질 수 있는 범위를 설명한다. 원 Microsoft article은 현 run HTTP 403으로 직접 retrieval하지 못했으므로 모든 상세 행위는 THN이 인용한 Microsoft 설명 범위로 한정한다. passkey deployment 자체의 cryptographic failure나 모든 tenant compromise로 확대할 수 없다. authentication method registration, recovery, privileged/finance identity, session/token revocation, data access telemetry를 공동 control로 운영해야 한다.",
+      "why_it_matters": "passwordless adoption은 enrollment·recovery·help-desk exception과 data-plane audit가 결합된 identity lifecycle 설계를 요구함.",
       "sources": [
-        "https://kubernetes.io/blog/2026/09/11/kubernetes-v1-37-native-histograms-beta/"
+        "https://thehackernews.com/2026/09/attackers-use-passkey-phishing-to.html",
+        "https://www.microsoft.com/en-us/security/blog/2026/09/09/passkey-themed-social-engineering-leads-identity-cloud-compromise/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-09-13 00:28",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiZ2E2hmYwxfZ25xw5iPhCHaSDENcuEyEIaha9e_rIJCf68srth31FtjIiIlnOcEiSQDDuk2Vg-dQdNLfR753ePSoDntP3BS-MGbEH2DS8Ch5ihzhpiDZZm5UIzKCbL1vNJSwSABCYst8oG6Oa-7iBWaSF6WSTEkCJBAi9YEEwAmVEdGYvu-JWZnxwEX9ni/s1600/ms-outlook.jpg",
+      "local_image": "",
+      "refreshed_kst": "2026-09-14 00:55",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "`NativeHistograms` Beta·default-on은 histogram bucket 수를 줄이는 단순 metric 최적화가 아니라 Kubernetes component와 Prometheus 사이 telemetry contract 전환임. native scrape·classic compatibility·query migration·remote-write 비용을 분리해 canary로 증명 필요.",
+          "body": "passkey themed social engineering은 passkey protocol 자체의 취약점이 아니라 enrollment·recovery·MFA method 관리가 피싱과 결합한 identity control-plane 문제임. sign-in 성공, 새 MFA 등록, Graph·SharePoint 접근, session revocation을 같은 incident timeline으로 처리 필요.",
           "items": [
-            "변화: v1.37 component metric이 classic bucket과 native span을 함께 내보내는 dual exposition",
-            "판정: storage savings가 아니라 dashboard·alert·SLO query 정확도와 rollback time을 promotion gate로 설정"
+            "변화: passwordless rollout 뒤에도 authentication method registration과 recovery 경로가 고가치 공격 surface로 유지",
+            "판정: MFA success 로그만으로 종료하지 않고 new method·session·OAuth consent·data access를 함께 조사"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes는 native histogram을 `component-base/metrics`에 통합하고 Beta로 승격함. source는 자동 exponential bucket과 structured span representation이 static bucket series를 줄이고 전 range quantile을 다루는 구조를 설명함.",
+          "body": "The Hacker News는 Microsoft Security Blog 두 건을 인용해 CEO 사칭 invoice fraud와 passkey-themed social engineering을 다룸. 보도 RSS는 2026-09-13 15:41:48 +05:30으로, 카드 ordering time은 reporter RSS-derived KST 19:11임. 연결된 Microsoft primary URL은 현 run에서 HTTP 403으로 직접 본문 재검증이 제한됨.",
           "items": [
-            "설정: `BucketFactor: 1.1`로 adjacent bucket 폭 최대 10%, quantile worst-case relative error 약 5% source 설명",
-            "상한: `MaxBucketNumber: 160`으로 outlier 분포에서 component memory 사용량 보호",
-            "범위: apiserver·scheduler·kubelet·controller-manager·kube-proxy가 shared metric subsystem을 통해 지원"
+            "규모: 2026-08-03~05에 CEO 사칭 ACH invoice fraud 이메일 100만 건 이상 발송이라는 Microsoft 인용 범위",
+            "지속성: 초기 account compromise 뒤 attacker-controlled phone·authenticator app·software OTP 등록으로 MFA persistence를 노린 경로",
+            "범위: Graph API reconnaissance, SharePoint Online·OneDrive for Business·Exchange Online data access는 보도에 인용된 행위 범위"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "native histogram은 observation 수를 덜 기록하는 기능이 아니라 bucket labels를 span schema로 바꾸는 representation 변경임. series count 감소 효과는 classic 수집을 껐을 때 발생하며, dual period에서는 source payload·recording rule·remote write가 두 format을 함께 처리함.",
+          "heading": "AI/Infra 전문가 해석: Identity·passkey",
+          "body": "passkey phishing이라는 표현을 WebAuthn cryptographic failure로 일반화할 수 없음. source가 설명한 위험은 사용자를 social engineering으로 유도한 뒤 계정·authentication method lifecycle을 장악하는 경로임. enrollment proofing, method change notification, recovery, privileged account policy를 분리 검증 필요.",
           "items": [
-            "볼 것: target별 native sample ingest·classic series 유지 여부·remote write receiver support",
-            "피할 것: source의 최대 90% series 절감 수치를 dual exposition 초기 비용 절감으로 해석하는 방식",
-            "측정: scrape duration·sample count·WAL/remote-write bytes·query p95·alert evaluation failure"
+            "볼 것: authentication method add/delete·security info registration·MFA reset·password reset의 actor·device·IP·risk event 상관관계",
+            "피할 것: phishing-resistant MFA를 배포했으므로 help-desk·recovery·new method 등록이 자동으로 안전하다고 보는 판단",
+            "판정: privileged role·service identity·break-glass account는 user population과 별도 enrollment 및 review policy 필요"
           ]
         },
         {
-          "heading": "Prometheus·PromQL 관점",
-          "body": "Prometheus 3.0 이상은 job별 `scrape_native_histograms` 설정을 사용하며 global native-histograms flag는 3.9 이상에서 deprecated 범위임. 기존 `_bucket` 기반 quantile, `_count`, `_sum` query는 native histogram function으로 단계적 이행 대상임.",
+          "heading": "탐지와 조사 관점",
+          "body": "source는 sign-in, reconnaissance, exfiltration에 다른 IP를 써 network indicator 회피를 시도한 범위를 설명함. 따라서 Entra sign-in·audit, Graph activity, SharePoint/OneDrive download, mailbox audit, endpoint token evidence를 identity 중심으로 결합해야 함.",
           "items": [
-            "전환: `scrape_native_histograms: true`와 `always_scrape_classic_histograms: true`를 우선 병행",
-            "query: `histogram_quantile`·`histogram_count`·`histogram_sum` 이행 전 recording rule·Grafana panel·SLO expression inventory",
-            "호환성: federation·remote write·long-term storage·OTel collector가 native payload를 보존하는지 end-to-end 확인"
+            "탐지: unusual authentication-method registration 직후 Graph enumeration·role lookup·high-volume file/mail download correlation",
+            "조사: revoked session·refresh token·registered method·OAuth grant·mailbox forwarding·conditional access result를 사용자별 timeline으로 보존",
+            "경계: 보도는 모든 Microsoft tenant 침해나 passkey credential private-key 탈취를 의미하지 않으며 local telemetry로 판정 필요"
           ]
         },
         {
-          "heading": "SRE·비용 관점",
-          "body": "native format은 storage/cardinality 압축 가능성을 제공하지만 error bound와 query semantics가 기존 bucket boundary와 달라질 수 있음. SLO alert가 동일 burn-rate·latency threshold를 유지하는지 replay 또는 shadow query로 검증 필요.",
+          "heading": "보안·거버넌스 관점",
+          "body": "MFA enrollment와 recovery는 IAM change management로 취급해야 함. business process fraud와 cloud data exfiltration이 한 identity에서 이어질 수 있으므로 finance approval, help desk, IAM, SOC의 ownership handoff를 predefine해야 함.",
           "items": [
-            "FinOps: target별 time series·ingest byte·storage retention·query CPU의 before/after baseline",
-            "SRE: API request duration·scheduler duration·kubelet latency alert의 threshold·aggregation·missing-data behavior 대조",
-            "리스크: native-only 전환 뒤 legacy dashboard·vendor backend가 histogram sample을 drop 또는 flatten하는 조건"
+            "통제: new authentication method 등록과 recovery에 phishing-resistant verification·device compliance·risk-based step-up 적용 검토",
+            "통제: high-value role와 finance mailbox에 method change alert·delayed activation·out-of-band confirmation 적용 검토",
+            "측정: method registration→detection, session revoke→token invalidation, abnormal download→containment의 p95 time"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "migration은 component enable과 collector adoption을 한 번에 배포하지 않는 순서가 안전함. default-on component emission을 먼저 관찰하고, selected scrape job에서 native ingest를 켠 뒤 query와 storage를 검증하고 classic 중단을 별도 승인함.",
+          "body": "정책을 일괄 강화하기보다 high-risk population과 pilot tenant에서 detection·recovery를 먼저 검증하는 순서가 필요함. policy block이 업무 continuity에 주는 영향을 확인하면서 session revocation과 help-desk exception을 drill해야 함.",
           "items": [
-            "1단계: component version·Prometheus/receiver version·rule/dashboard·remote write path inventory",
-            "2단계: staging에서 dual scrape와 native query shadow comparison, SLO alert·recording rule 결과 대조",
-            "3단계: low-risk target canary에서 bytes·series·query p95·alert mismatch와 rollback time 측정",
-            "4단계: migration evidence 뒤 `always_scrape_classic_histograms: false`를 workload class별로 전환"
+            "1단계: authentication method·recovery·privileged role·finance mailbox·conditional access policy inventory",
+            "2단계: test account에서 method add, risk sign-in, Graph query, download, session revoke event end-to-end 확인",
+            "3단계: privileged/finance cohort에 alert·approval·device/risk control canary 적용",
+            "4단계: false positive·help-desk exception·containment time evidence 뒤 tenant-wide rollout"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "platform·observability·application SLO owner가 각각 다른 artifact를 소유하므로 collector flag만 변경해서는 closure가 되지 않음. query owner와 storage owner를 release approval에 포함 필요.",
+          "body": "application team은 OAuth app과 data API audit, IAM team은 authentication lifecycle, SOC는 incident correlation을 각각 소유해야 함. 단일 sign-in dashboard로 closure를 선언하면 method persistence와 downstream data access를 놓칠 수 있음.",
           "items": [
-            "체크리스트: Kubernetes v1.37 component gate·Prometheus version·scrape job·remote write receiver capability",
-            "체크리스트: `_bucket`/`_sum`/`_count` 의존 rule·dashboard·SLO·federation·exporter inventory",
-            "체크리스트: native ingest·query parity·storage bytes·receiver drop·collector rollback·component restart plan",
-            "팀 액션: observability change record에 classic retirement 기준과 native-only failure rollback owner를 고정"
+            "체크리스트: authentication method registration·MFA reset·password reset·OAuth consent·privileged role change audit retention",
+            "체크리스트: Graph API enumeration·SharePoint/OneDrive bulk download·Exchange mailbox access·impossible travel correlation",
+            "체크리스트: session/token revoke runbook·break-glass handling·help-desk identity verification·forensic export",
+            "팀 액션: finance·IAM·SOC 공동으로 MFA persistence tabletop과 user containment SLO를 승인 기준으로 고정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Native Histograms Beta는 “기본 활성화됐으니 비용이 줄었다”가 아니라 metrics pipeline의 format compatibility를 검증하라는 신호임. classic series 중단 전 native query parity와 receiver persistence를 수치로 확인해야 함.",
+          "body": "passkey adoption의 승인 기준은 sign-in success rate만이 아님. authentication method lifecycle과 recovery를 공격자가 바꿨을 때 tenant data access를 얼마나 빨리 탐지·차단·복구하는지가 identity resilience의 실제 측정값임.",
           "items": [
-            "볼 것: dual exposition·scrape config·query migration·remote write·storage bytes",
-            "피할 것: series count만 보고 SLO semantics와 legacy consumer를 검증하지 않는 전환",
-            "팀 액션: one target canary의 query parity·alert mismatch·rollback time을 native-only 승인 조건으로 설정"
+            "볼 것: new MFA method·session persistence·Graph enumeration·bulk download·revocation time",
+            "피할 것: passwordless 배포 뒤 enrollment·recovery·help-desk workflow를 audit 범위 밖으로 두는 운영",
+            "팀 액션: high-value identity의 method change부터 data access containment까지 one timeline으로 canary 검증"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "SageMaker HyperPod model caching GA: NVMe warm path·fallback·autoscaling p95를 artifact lifecycle으로 운영",
-      "summary": "한 줄 결론: SageMaker HyperPod model caching은 weight를 local NVMe에, image를 node에 pre-pull해 inference scale-out cold start를 줄이는 GA 기능임. `modelCacheConfig` enable은 cache hit·NVMe headroom·artifact digest·source fallback·GPU idle cost를 묶은 deployment control 변경으로 검증해야 함.",
-      "details": "AWS는 2026년 9월 11일 SageMaker HyperPod model caching을 GA로 공개했다. weight cache는 S3 또는 FSx 대신 local NVMe를, image cache는 ECR pull 생략을 사용한다. source는 57GB~145GB model benchmark에서 약 60% faster scale-out과 image pull 97% reduction을 제시하며, warm cache가 없는 node에는 original source pull로 자동 fallback한다고 설명한다. 이 수치는 특정 provider benchmark이지 조직별 ready-time SLO나 GPU cost 보증은 아니다. HyperPod Inference Operator가 `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig` lifecycle을 처리하므로 production enable에서는 node turnover·cache eviction·artifact revision·NVMe pressure·autoscaler burst·fallback path와 incident rollback을 함께 테스트해야 한다.",
-      "why_it_matters": "LLM inference scale-out에서 model/image transfer가 GPU serving 시작을 늦추면 autoscaling threshold만 조정해도 tail latency가 남음. cache는 network wait를 node-local artifact capacity와 lifecycle governance로 옮기는 변경임.",
+      "title": "Distributed AI training: RDMA·Lustre·topology·validation을 GPU allocation과 분리하지 않는 platform gate",
+      "summary": "한 줄 결론: CNCF의 Atlassian 사례는 multi-node training에서 GPU provisioning만으로 AI-ready platform이 되지 않음을 설명함. RDMA actual transport, Lustre shared storage, topology placement, checkpoint/recovery, degraded-path validation을 job acceptance gate로 묶어야 함.",
+      "details": "CNCF에 게시된 Atlassian 사례는 tens-of-billions parameter model이 single-node memory 한계를 넘으면서 communication·storage·operational predictability가 동시에 필요해진 조건을 설명한다. RDMA와 Lustre를 각각 inter-node collective와 shared data/checkpoint path로 사용하며, socket path가 current-generation GPU multi-node job을 RDMA 대비 약 절반 속도로 만들 수 있다는 source 경험을 제시한다. device plugin CrashLoopBackOff가 RDMA fabric-capable node에서 지속돼 socket fallback을 숨긴 사례도 포함한다. 이 수치는 vendor-neutral throughput 보증이 아니며 hardware, network, filesystem, workload topology별 benchmark로 재검증해야 한다.",
+      "why_it_matters": "distributed training의 cost·reliability는 accelerator allocation보다 network/storage path correctness와 recovery evidence에 좌우됨.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/09/sgm-hyperpod-model-caching-inf/"
+        "https://www.cncf.io/blog/2026/09/11/building-a-reliable-cloud-native-foundation-for-distributed-ai-training/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-09-13 00:28",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-2.jpg",
+      "local_image": "",
+      "refreshed_kst": "2026-09-14 00:55",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "HyperPod model caching은 large model의 source download를 local NVMe weight cache와 pre-pulled image cache로 대체하는 scale-out acceleration 기능임. cache hit만 볼 것이 아니라 node-local capacity·artifact identity·fallback·GPU idle cost를 same release gate로 운영 필요.",
+          "body": "distributed AI training의 reliability는 GPU 수량이 아니라 RDMA fabric, shared storage, Kubernetes device discovery, topology placement, validation을 하나의 workload contract로 운영하는 문제임. socket fallback과 storage stall을 success 상태만으로 숨기지 않도록 measurable gate 필요.",
           "items": [
-            "변화: inference pod가 S3/FSx model pull과 ECR image pull을 기다리던 cold-start path 축소",
-            "판정: cache enable은 autoscaler tuning이 아니라 artifact distribution·node storage·rollback contract 변경"
+            "변화: multi-node training에서 network·storage·scheduler가 분리된 infrastructure component가 아니라 job correctness 조건으로 결합",
+            "판정: GPU allocation 성공이 아니라 collective throughput·step-time variance·checkpoint completion을 promotion gate로 설정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS는 HyperPod Inference Operator에서 model caching을 GA로 공개함. weights cache와 image cache는 독립 capability이며 warm cache가 없는 node에는 original source pull로 자동 fallback하는 구조임.",
+          "body": "CNCF에 게시된 Atlassian 사례는 tens-of-billions parameter model이 single node의 model·optimizer state·batch size 한계를 넘는 조건을 설명함. source는 RDMA와 Lustre를 distributed training platform의 communication·shared data path로 제시함.",
           "items": [
-            "weights cache: model weight를 node local NVMe에 저장해 S3 또는 FSx network pull 대신 local read 수행",
-            "image cache: container image pre-pull로 ECR download를 건너뛰는 경로",
-            "설정: `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`를 통한 lifecycle 관리"
-          ]
-        },
-        {
-          "heading": "성능 수치와 증거 경계",
-          "body": "AWS가 공개한 benchmark는 57GB~145GB model에서 약 60% faster scale-out, image cache에서 2분 이상 image pull time과 97% reduction을 제시함. model size·image layer·node type·network·autoscaler pattern이 다른 조직에 그대로 적용되는 SLA가 아님.",
-          "items": [
-            "볼 것: 현재 model artifact size·image layer·source storage·replica burst·node replacement rate",
-            "피할 것: provider benchmark를 production p95 ready-time 또는 GPU-hour saving으로 바로 환산하는 방식",
-            "측정: scale request→pod scheduled→cache ready→container ready→first successful inference 구간별 p50/p95"
+            "통신: gradient·model state·collective synchronization에 low-overhead inter-node path 요구",
+            "스토리지: training data, checkpoint, intermediate artifact의 concurrent access가 storage bottleneck 없이 진행돼야 하는 조건",
+            "수치 경계: current-generation GPU에서 socket path가 RDMA 대비 multi-node job을 약 절반 속도로 만들 수 있다는 source 설명은 해당 platform 경험 범위"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "cache miss fallback은 availability에는 유리하지만 cold path가 사라지는 것은 아님. model revision 또는 node turnover가 잦으면 cache warm-up traffic이 peak scale event와 겹칠 수 있어 autoscaler responsiveness와 NVMe headroom을 함께 설계해야 함.",
+          "body": "RDMA enabled node label만으로 data path가 정상이라는 보장은 없음. source는 device plugin이 production fabric-capable node에서 CrashLoopBackOff였고 job이 socket path로 silently fallback한 경험을 설명함. hardware discovery, CNI/device plugin, NCCL/collective telemetry를 함께 검증해야 함.",
           "items": [
-            "artifact: model weight digest·image digest·cache population completion을 deployment version과 연결",
-            "capacity: node별 NVMe usable space·cache eviction·replica density·multiple model coexistence를 admission 조건으로 관리",
-            "telemetry: cache hit/miss·fallback reason·local disk pressure·image pull·model mount·first token latency correlation"
+            "볼 것: RDMA device plugin health·resource advertisement·pod placement·actual collective transport·network error counter",
+            "피할 것: GPU utilization 평균만 보고 straggler·step-time variance·socket fallback을 놓치는 관측 방식",
+            "판정: topology-aware scheduling과 communication health는 training job admission 전 검사 대상"
+          ]
+        },
+        {
+          "heading": "스토리지·checkpoint 관점",
+          "body": "Lustre 같은 parallel shared filesystem은 throughput만이 아니라 concurrent checkpoint consistency와 restart behavior에 영향. source는 shared data access가 long pause와 uneven progress를 만들지 않아야 한다고 설명함. checkpoint byte, duration, retry, restore를 failure drill에 포함 필요.",
+          "items": [
+            "측정: dataloader wait·checkpoint write p95·metadata operation·retry·restart-to-first-step duration",
+            "리스크: network throughput이 정상이어도 shared storage saturation이 worker skew와 GPU idle로 전이되는 조건",
+            "운영: dataset/cache/checkpoint namespace·quota·cleanup·retention을 job lifecycle과 연결"
           ]
         },
         {
           "heading": "SRE·FinOps 관점",
-          "body": "cache가 줄이는 것은 transfer wait이며, pre-staged artifacts와 warm node pool은 local storage·idle capacity 비용을 추가할 수 있음. GPU가 download를 기다리는 시간, node NVMe reservation, source egress를 같은 unit cost model로 비교 필요.",
+          "body": "source의 half-speed 비교는 generic SLA가 아니라 degraded path가 비용과 time-to-result를 크게 바꿀 수 있다는 사례임. GPU-hour, idle time, network/storage capacity, failed-run rework를 same experiment으로 비교해야 함.",
           "items": [
-            "FinOps: scale event당 GPU idle second·source download byte·NVMe GB-hour·warm node hour baseline",
-            "SRE: cache corruption·stale artifact·node drain·original source unavailable에서 ready-time and error-rate behavior 확인",
-            "보안: artifact digest·image provenance·least-privilege source access·cache directory exposure를 release check에 포함"
+            "FinOps: successful run 기준 GPU-hour 외에 queue time·straggler·checkpoint retry·reserved fabric/storage cost baseline",
+            "SRE: job success, step-time p50/p95, all-reduce latency, RDMA retry, filesystem wait, node replacement를 하나의 dashboard로 연결",
+            "경계: 특정 vendor hardware·cloud topology·Lustre deployment 결과를 다른 environment throughput 보증으로 사용 금지"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "one model, one image, isolated node group의 canary로 source path와 cached path를 비교한 뒤 workload class별로 확대하는 순서가 적절함. cache adoption 전후 scale-out alarm과 rollback ownership을 먼저 고정 필요.",
+          "body": "one workload와 small node group에서 known-good topology를 먼저 만들고, fault injection과 scale-out을 거쳐 production class로 확대하는 순서가 안전함. network 또는 storage degradation을 의도적으로 재현하지 않으면 silent fallback을 발견하기 어려움.",
           "items": [
-            "1단계: model/image digest·artifact size·node NVMe·source pull duration·autoscaler baseline inventory",
-            "2단계: canary `modelCacheConfig`에서 warm/cold/fallback/node-replacement scenario 재현",
-            "3단계: p95 ready time·cache hit·GPU idle·disk pressure·error rate·cost telemetry 비교",
-            "4단계: cache disable·artifact rollback·source fallback drill 결과를 rollout gate로 승인"
+            "1단계: model parallelism·batch·dataset·checkpoint·GPU/RDMA/storage topology inventory",
+            "2단계: single-node baseline과 multi-node RDMA path의 collective·step-time·checkpoint metrics 비교",
+            "3단계: device plugin restart·node drain·network degradation·storage pressure에서 fallback/alert/abort behavior drill",
+            "4단계: workload class별 admission check와 rollback path를 evidence 뒤 production policy에 반영"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "ML platform owner, SRE, FinOps, security owner가 cache lifecycle을 공동 소유해야 함. model version 변경과 node replacement를 독립 배포처럼 다루면 cache freshness와 serving behavior가 어긋날 수 있음.",
+          "body": "ML team의 training configuration, platform team의 scheduling, network/storage team의 SLO를 change record에서 합쳐야 함. resource request만 충족해도 hidden degraded path가 남을 수 있으므로 shared acceptance test가 필요.",
           "items": [
-            "체크리스트: HyperPod region·Inference Operator version·`modelCacheConfig`·model/image digest·source storage access",
-            "체크리스트: NVMe capacity·eviction·node turnover·autoscaler burst·cache hit/miss·fallback telemetry",
-            "체크리스트: first inference p95·GPU idle·source egress·artifact provenance·cache disable·rollback drill",
-            "팀 액션: model promotion record에 cache warm completion과 fallback acceptance test를 추가"
+            "체크리스트: GPU/RDMA resource advertisement·device plugin·node label·topology-aware scheduler·collective library version",
+            "체크리스트: shared filesystem mount·throughput·quota·checkpoint consistency·dataset cache·recovery behavior",
+            "체크리스트: step-time variance·all-reduce latency·RDMA counters·filesystem wait·GPU idle·cost telemetry",
+            "팀 액션: distributed-training release gate에 degraded-path fault drill과 rollback owner를 등록"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "model caching의 성공 기준은 “cache가 켜졌는가”가 아니라 traffic burst에서 cached pod가 필요한 p95 안에 ready가 되고 cache miss에서도 source fallback으로 service SLO를 지키는가임.",
+          "body": "AI-ready platform의 기준은 GPU provisioning 완료가 아니라 multi-node job이 expected transport와 storage path에서 재현 가능한 step-time·checkpoint·recovery 성능을 내는지임. degraded network path와 shared-storage contention을 success log 뒤에 숨기지 않는 telemetry가 필요.",
           "items": [
-            "볼 것: local NVMe headroom·artifact digest·cache hit·fallback·first inference p95",
-            "피할 것: warm-cache benchmark만 보고 node turnover와 revision deployment를 제외하는 capacity 계획",
-            "팀 액션: cache enable change에 cold/warm/fallback 세 경로의 ready-time과 cost evidence를 첨부"
+            "볼 것: RDMA actual transport·step-time p95·checkpoint p95·worker skew·recovery duration",
+            "피할 것: device label 또는 job completion만으로 distributed training health를 판단하는 방식",
+            "팀 액션: one representative workload로 socket fallback·storage pressure·node loss를 포함한 acceptance suite 운영"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-467",
+      "title_ko": "Microsoft cloud passkey-themed phishing: MFA method persistence 뒤 Graph·SharePoint·OneDrive data access 조사",
+      "title_original": "Attackers Use Passkey Phishing to Hijack Microsoft Cloud Accounts and Exfiltrate Data",
+      "summary": "- 보도: passkey-themed social engineering 뒤 attacker-controlled phone·authenticator app·software OTP 등록을 통한 MFA persistence 경로\n- ordering: The Hacker News RSS `2026-09-13 15:41:48 +05:30` 기반 **KST 19:11**, linked Microsoft primary는 현 run HTTP 403으로 본문 재검증 제한\n- 행위 범위: Graph API reconnaissance·SharePoint Online·OneDrive for Business·Exchange Online data access·수시간~수일 exfiltration은 Microsoft 인용 보도 범위\n- 경계: passkey protocol cryptographic failure·모든 tenant compromise·개별 victim data theft 확정 근거는 아님\n- 팀 액션: authentication method registration·session/token revoke·Graph/data access audit를 one identity incident timeline으로 결합 필요",
+      "detail": "The Hacker News는 Microsoft Security Blog를 인용해 passkey-themed social engineering으로 Microsoft cloud account를 장악한 뒤 attacker-controlled second factor를 등록해 MFA persistence를 만드는 경로를 보도했다. 기사 RSS `Sun, 13 Sep 2026 15:41:48 +0530`을 reporter-RSS-derived ordering provenance로 사용해 KST 2026-09-13 19:11로 기록했다. 보도에 인용된 Microsoft 설명은 새 phone number, authenticator application, software-based OTP token 등록 뒤 Graph API로 tenant의 users·groups·permissions·resources를 열거하고 SharePoint Online, OneDrive for Business, Exchange Online의 high-volume access와 수시간~수일 exfiltration을 수행할 수 있는 범위를 다룬다. source는 authentication, reconnaissance, exfiltration에 다른 IP를 사용해 network indicator 회피를 시도한 범위도 설명한다. linked Microsoft primary article은 현재 HTTP 403으로 직접 본문 retrieval하지 못했으므로 이 card의 기술 사실은 THN의 Microsoft 인용 범위로 한정한다. passkey protocol 자체의 private-key 탈취, 모든 Microsoft tenant 영향, 특정 조직의 침해 성공을 뜻하지 않는다. identity method lifecycle, recovery, session revocation, data-plane audit를 함께 검증해야 한다.",
+      "why_it_matters": "passwordless authentication 도입 뒤에도 authentication method registration·recovery·MFA reset은 account takeover의 persistence surface가 됨. identity control과 Graph/SaaS data access telemetry를 분리하면 sign-in 이후의 tenant reconnaissance·exfiltration을 놓칠 수 있음.",
+      "engineering_implication": "Entra authentication method add/delete·MFA reset·password reset·OAuth consent와 Graph enumeration·SharePoint/OneDrive bulk download·Exchange mailbox access를 사용자별 timeline으로 상관 분석 필요. privileged·finance identity는 method change alert, out-of-band confirmation, session/token revocation drill, help-desk exception 증적을 release control로 운영 필요.",
+      "korea_implication": "국내 Microsoft 365 tenant에서도 IAM·help-desk·finance·SOC owner가 분리되면 new MFA method와 data access의 investigation handoff가 지연될 수 있음. 고위험 identity별 audit retention·containment owner·session revoke 승인 경로를 하나의 runbook으로 고정 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Microsoft 365",
+        "Passkey",
+        "Identity",
+        "MFA",
+        "Phishing",
+        "Data Exfiltration"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-09-13 19:11",
+      "source_name": "The Hacker News / Microsoft Security Blog",
+      "source_url": "https://thehackernews.com/2026/09/attackers-use-passkey-phishing-to.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiZ2E2hmYwxfZ25xw5iPhCHaSDENcuEyEIaha9e_rIJCf68srth31FtjIiIlnOcEiSQDDuk2Vg-dQdNLfR753ePSoDntP3BS-MGbEH2DS8Ch5ihzhpiDZZm5UIzKCbL1vNJSwSABCYst8oG6Oa-7iBWaSF6WSTEkCJBAi9YEEwAmVEdGYvu-JWZnxwEX9ni/s1600/ms-outlook.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Microsoft Security Blog: Passkey-themed social engineering leads to identity and cloud compromise",
+          "url": "https://www.microsoft.com/en-us/security/blog/2026/09/09/passkey-themed-social-engineering-leads-identity-cloud-compromise/"
+        },
+        {
+          "title": "Microsoft Learn: Authentication methods activity",
+          "url": "https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-methods-activity"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News가 Microsoft Security Blog를 인용해 passkey-themed social engineering 뒤 attacker-controlled second factor 등록을 통한 Microsoft cloud account persistence 경로를 보도함. reporter RSS timestamp는 KST `2026-09-13 19:11`, linked primary는 현 run HTTP 403으로 직접 retrieval 제한.",
+          "items": [
+            "MFA persistence: new phone number·authenticator application·software OTP token 등록으로 victim 참여 없이 subsequent sign-in을 유지할 수 있는 source 인용 범위",
+            "campaign: 2026-08-03~05 CEO 사칭 ACH invoice fraud 이메일 100만 건 이상 발송이라는 별도 Microsoft 인용 범위",
+            "경계: passkey protocol 취약점·모든 tenant compromise·개별 user 피해 확정이 아닌 social engineering 및 identity lifecycle 사례"
+          ]
+        },
+        {
+          "heading": "identity persistence와 data-plane 영향",
+          "body": "보도는 attacker-controlled MFA method 등록 뒤 identity가 tenant data plane을 탐색하는 흐름을 설명함. Graph API와 SaaS audit를 sign-in 로그와 분리하면 method persistence 이후의 reconnaissance·exfiltration을 놓칠 수 있음.",
+          "items": [
+            "reconnaissance: Graph API로 users·groups·permissions·resources·high-value account·service identity inventory 수행 범위",
+            "data access: SharePoint Online·OneDrive for Business·Exchange Online의 mailbox·folder·attachment metadata와 high-volume download 범위",
+            "회피: authentication·reconnaissance·exfiltration에 다른 IP를 사용한 source 설명으로 network indicator 단독 판정 제한"
+          ]
+        },
+        {
+          "heading": "증거 경계와 조사",
+          "body": "Microsoft primary page는 현 run HTTP 403으로 직접 검증하지 못했으므로 source article의 인용 범위만 수록함. local tenant의 compromise 여부는 authentication method, session, Graph, SaaS audit evidence로 판정 필요.",
+          "items": [
+            "확인: new authentication method·MFA reset·password reset·OAuth consent·privileged role change event 보존",
+            "조사: Graph enumeration·SharePoint/OneDrive bulk download·Exchange mailbox access·forwarding rule과 sign-in risk correlation",
+            "복구: attacker method 삭제, session/refresh token revoke, password/secret rotation, OAuth grant review를 incident closure evidence로 관리"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "passwordless deployment는 sign-in factor 교체가 아니라 enrollment·recovery·help-desk·SaaS data audit control의 재설계임. high-value identity는 method change부터 data access containment까지 response time을 측정해야 함.",
+          "items": [
+            "점검: privileged·finance identity의 method registration alert·out-of-band confirmation·Conditional Access exception",
+            "점검: session revoke→token invalidation·abnormal download→containment의 p95와 evidence export completeness",
+            "팀 액션: IAM·SOC·finance·help-desk가 공유하는 MFA persistence tabletop과 user containment runbook 운영"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-464",
       "title_ko": "CISA KEV Artifactory·ScreenConnect·RouterOS 5건: 9월 13~25일 patch 기한과 control-plane·RMM·edge forensic 병행",
@@ -273,7 +351,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-465",
@@ -350,7 +428,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-462",
@@ -426,7 +504,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-463",
@@ -499,7 +577,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-461",
@@ -576,7 +654,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-459",
@@ -649,7 +727,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-458",
@@ -760,7 +838,81 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
+    },
+    {
+      "id": "news-468",
+      "title_ko": "CNCF·Atlassian distributed AI training: RDMA socket fallback·Lustre checkpoint를 job acceptance gate로 검증",
+      "title_original": "Building a reliable cloud native foundation for distributed AI training",
+      "summary": "- 사례: CNCF에 게시된 Atlassian platform 경험은 tens-of-billions parameter model의 multi-node training에서 communication·shared storage·topology·validation을 함께 운영하는 조건\n- 통신: source는 socket path가 current-generation GPU multi-node job을 RDMA 대비 약 **절반 속도**로 만들 수 있는 사례를 제시\n- 장애 경로: fabric-capable node의 RDMA device plugin `CrashLoopBackOff`가 socket fallback을 숨긴 source 경험\n- 저장소: Lustre parallel filesystem을 training data·checkpoint·intermediate artifact의 concurrent shared-access 경로로 사용\n- 팀 액션: actual transport·all-reduce latency·step-time variance·checkpoint p95·filesystem wait·node-loss recovery를 acceptance suite로 운영 필요",
+      "detail": "CNCF에 게시된 Atlassian 사례는 distributed AI training이 single node의 model·optimizer state·batch size 한계를 넘을 때 GPU provisioning만으로는 충분하지 않다고 설명한다. source는 inter-node synchronization에 RDMA, training data·checkpoint·intermediate artifact의 concurrent access에 Lustre parallel filesystem을 사용하며 placement, topology, validation을 함께 다룬다. current-generation GPU에서 socket-based path가 같은 hardware의 RDMA path 대비 multi-node job을 약 절반 속도로 만들 수 있다는 수치는 해당 source의 platform 경험이지 일반 SLA가 아니다. source는 다른 cloud에서 fabric-capable production node의 RDMA device plugin이 CrashLoopBackOff였고 collective traffic이 socket으로 silently fallback한 사례를 언급한다. 따라서 GPU resource allocation과 node label만으로 network path 정상성을 판정할 수 없다. RDMA device discovery·actual collective transport·all-reduce latency·step-time variance와 Lustre throughput·checkpoint p95·restart behavior를 same workload canary로 검증해야 한다.",
+      "why_it_matters": "multi-node training의 time-to-result와 GPU-hour는 accelerator allocation 외에 collective transport·shared storage·topology correctness에 좌우됨. degraded path가 job success 상태 뒤에 숨으면 capacity와 FinOps 판단이 왜곡됨.",
+      "engineering_implication": "representative model·dataset·checkpoint workload에서 single-node baseline, multi-node RDMA path, socket fallback, storage pressure, node loss를 비교 필요. device plugin·resource advertisement·topology scheduler·collective library·filesystem quota와 all-reduce/step/checkpoint/recovery telemetry를 release gate로 연결 필요.",
+      "korea_implication": "국내 GPU cluster·hybrid AI platform에서도 accelerator quota와 node label만으로 distributed training readiness를 보고하면 fabric·storage fallback이 결제된 GPU-hour를 소모할 수 있음. network·storage·ML platform owner가 shared acceptance metric과 rollback owner를 합의 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "CNCF",
+        "Kubernetes",
+        "AI Training",
+        "RDMA",
+        "Lustre",
+        "GPU",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-09-11 20:00",
+      "source_name": "CNCF / Atlassian",
+      "source_url": "https://www.cncf.io/blog/2026/09/11/building-a-reliable-cloud-native-foundation-for-distributed-ai-training/",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-2.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "CNCF: Whose GPUs are these, anyway? Secure, self-service metrics for multi-tenant Kubernetes",
+          "url": "https://www.cncf.io/blog/2026/09/09/whose-gpus-are-these-anyway-secure-self-service-metrics-for-multi-tenant-kubernetes/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CNCF에 게시된 Atlassian 사례는 multi-node AI training에서 GPU cluster provision 외에 inter-node communication, shared storage, placement, topology, validation이 predictably 동작해야 하는 조건을 설명함. canonical `datePublished`는 `2026-09-11T11:00:00+00:00`, KST `20:00`.",
+          "items": [
+            "workload: tens-of-billions parameter model이 single node의 model·optimizer state·workable batch size 한계를 넘는 조건",
+            "통신: gradient·model state·collective synchronization의 low-overhead inter-node path 필요",
+            "저장소: training data·checkpoint·intermediate artifact의 concurrent access가 bottleneck과 uneven progress를 만들지 않아야 하는 조건"
+          ]
+        },
+        {
+          "heading": "RDMA와 silent fallback",
+          "body": "source는 current-generation GPU hardware에서 socket path가 RDMA 대비 multi-node job을 약 절반 속도로 만들 수 있는 사례를 제시함. 이는 source 환경의 경험이며 generic throughput 또는 SLA가 아님.",
+          "items": [
+            "RDMA: GPU node 간 low-overhead·high-throughput communication path로 source가 설명한 범위",
+            "failure: fabric-capable production node에서 RDMA device plugin `CrashLoopBackOff`가 지속된 source 사례",
+            "리스크: collective traffic이 socket으로 silently fallback해 job completion만으로 degraded path를 발견하기 어려운 조건"
+          ]
+        },
+        {
+          "heading": "shared storage·checkpoint",
+          "body": "Lustre는 parallel distributed filesystem으로 training data와 checkpoint의 high-throughput shared access에 사용되는 source 구조임. shared storage health는 checkpoint latency·worker skew·restart time과 함께 봐야 함.",
+          "items": [
+            "측정: dataloader wait·checkpoint write p95·metadata operation·retry·restore-to-first-step duration",
+            "용량: dataset/cache/checkpoint namespace·quota·retention·cleanup을 job lifecycle과 연결",
+            "경계: Lustre 사용 자체가 application-consistent checkpoint 또는 workload별 recovery SLO를 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "distributed training의 release approval은 GPU allocation success가 아니라 expected network/storage path의 evidence로 결정 필요. degraded-path fault injection을 하지 않으면 cost와 time-to-result를 왜곡하는 fallback이 production에서 남음.",
+          "items": [
+            "검증: device plugin·resource advertisement·node placement·actual collective transport·all-reduce latency·step-time p95 correlation",
+            "검증: storage pressure·node drain·network degradation에서 alert·abort·fallback·rollback behavior drill",
+            "팀 액션: representative workload의 socket fallback·checkpoint stall·node loss acceptance suite와 rollback owner 운영"
+          ]
+        }
+      ],
+      "rank": 9
     },
     {
       "id": "news-455",
@@ -842,7 +994,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-460",
@@ -920,7 +1072,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-457",
@@ -997,7 +1149,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-456",
@@ -1067,7 +1219,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-454",
@@ -1144,7 +1296,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-453",
@@ -1226,7 +1378,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-466",
@@ -1317,7 +1469,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-452",
@@ -1394,7 +1546,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-451",
@@ -1467,7 +1619,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-449",
@@ -1544,7 +1696,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-450",
@@ -1618,7 +1770,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-447",
@@ -1682,7 +1834,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-446",
@@ -1759,7 +1911,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-445",
@@ -1836,7 +1988,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-433",
@@ -1921,7 +2073,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-448",
@@ -1985,7 +2137,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-420",
@@ -2063,7 +2215,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-444",
@@ -2140,7 +2292,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-443",
@@ -2213,7 +2365,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-442",
@@ -2281,7 +2433,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-439",
@@ -2347,7 +2499,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-440",
@@ -2424,7 +2576,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-441",
@@ -2492,7 +2644,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-437",
@@ -2560,7 +2712,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "source_name": "The Hacker News",
@@ -2627,7 +2779,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "source_name": "The Hacker News",
@@ -2694,7 +2846,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-438",
@@ -2772,7 +2924,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-434",
@@ -2840,7 +2992,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-430",
@@ -2927,7 +3079,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-428",
@@ -2995,7 +3147,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-429",
@@ -3064,7 +3216,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-431",
@@ -3142,7 +3294,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-425",
@@ -3233,7 +3385,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-427",
@@ -3307,7 +3459,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-423",
@@ -3385,7 +3537,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-424",
@@ -3454,7 +3606,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-422",
@@ -3529,7 +3681,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-426",
@@ -3605,7 +3757,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-432",
@@ -3683,7 +3835,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-421",
@@ -3762,7 +3914,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-419",
@@ -3833,149 +3985,6 @@
             "측정: exposed finding backlog·time-to-triage·validated patch rate·WAF false positive·rollback time·reopened vulnerability",
             "통제: data classification·redaction·retention·subprocessor·audit export를 code onboarding 전에 확인",
             "팀 액션: 한 application cohort에서 human approval과 rollback drill을 포함한 finding-to-fix trace를 만든 뒤 확대"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-417",
-      "title_ko": "Kubernetes v1.37 DRA 업데이트: extended resource GA·device taint·NUMA attribute를 device lifecycle으로 운영",
-      "title_original": "Kubernetes v1.37: DRA Updates",
-      "summary": "- GA: `DeviceClass`의 extended resource 이름으로 기존 `example.com/gpu` 요청을 DRA driver가 처리하며 별도 device plugin·ResourceClaim 없이 Pod 매칭 가능한 공식 범위\n- 상태·정비: `ResourceClaim.status.devices` 보고와 Stable device taint/toleration·`DeviceTaintRule`로 device별 상태·정비·eviction을 제어 가능한 변경\n- topology·scale: 표준 `resource.kubernetes.io/numaNode`, Derived Attributes·Compatibility Groups·PreQueueingHint 등은 feature gate별 성숙도가 다른 범위\n- 팀 액션: device plugin/DRA inventory 중복, prepare p95·allocation failure·topology match·taint eviction·rollback을 한 pool의 canary trace로 검증 필요",
-      "detail": "Kubernetes 공식 블로그는 v1.37에서 DRA Extended Resource 지원이 GA가 됐다고 발표했다. `DeviceClass`에 `example.com/gpu` 같은 기존 extended resource 이름을 설정하면 Pod가 별도 ResourceClaim 없이 DRA device와 매칭될 수 있어 기존 workload spec을 바꾸지 않고 allocation backend를 DRA로 옮길 수 있다. `ResourceClaim.status.devices`는 network device의 interface name·MAC·IP 등 per-device 상태 보고를 지원한다. device taint/toleration은 Stable이며 driver 또는 cluster-wide `DeviceTaintRule`로 새 Pod의 특정 device 배정을 막고, 기존 Pod는 ResourceClaim tolerance가 없으면 eviction될 수 있다. 표준 `resource.kubernetes.io/numaNode` attribute도 Stable이다. Workload ResourceClaims는 Beta지만 default disabled이며, Derived Attributes, Device Compatibility Groups, PreQueueingHint, resource availability visibility 등은 Alpha/feature gate 범위다. DRA migration은 API 호환성만 확인할 일이 아니다. device plugin과 DRA driver의 inventory ownership, ResourceClaim RBAC, driver prepare/unprepare, topology match, taint evacuation, driver rollback, managed Kubernetes 지원 여부를 workload별 trace로 검증해야 한다.",
-      "why_it_matters": "가속기·NIC 배정의 실패는 scheduler queue, node prepare, tenant isolation, maintenance recovery를 동시에 흔듦. 기존 extended resource spec 호환은 migration 시작점일 뿐 device lifecycle의 운영 보증이 아님.",
-      "engineering_implication": "GPU/NIC pool 하나에서 legacy plugin과 DRA의 allocation success·queue time·prepare/unprepare p95·topology mismatch·device health·taint eviction·idle reservation을 비교해야 함. DeviceClass·ResourceClaim RBAC, feature gate·driver image, drain·rollback runbook을 namespace 확대 전 release gate로 고정 필요.",
-      "korea_implication": "국내 managed Kubernetes 사용 조직도 v1.37 control plane·worker node·DRA feature gate·지원 driver의 실제 제공 상태를 cluster와 서비스 문서에서 별도 확인해야 함. upstream GA를 managed service의 즉시 지원 또는 GPU isolation 보증으로 해석하지 않아야 함.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "DRA",
-        "GPU",
-        "Accelerator",
-        "Scheduling",
-        "NUMA",
-        "SRE",
-        "Platform Engineering"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 90,
-      "published_kst": "2026-09-04 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/09/03/kubernetes-v1-37-dra-updates/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes 공식 RSS 발행 시각 `Thu, 03 Sep 2026 10:30:00 -0800`와 본문을 확인해 KST `2026-09-04 03:30`으로 기록. v1.37 DRA Extended Resource 지원 GA와 device lifecycle 기능의 공식 발표 범위임.",
-          "items": [
-            "GA: 기존 extended resource API 요청을 DRA driver가 처리하는 호환 경로",
-            "경계: DRA driver·managed Kubernetes·vendor device의 실제 지원 범위는 별도 확인 대상"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "`DeviceClass`의 extended resource 이름을 통해 Pod가 별도 ResourceClaim 없이 DRA device와 매칭됨. `ResourceClaim.status.devices`는 driver가 per-device 상태를 보고할 수 있는 경로이며 네트워크 device는 interface·MAC·IP를 포함 가능함.",
-          "items": [
-            "상태: `ResourceClaim.status.devices` 기반 device status 노출",
-            "정비: Stable device taint/toleration과 `DeviceTaintRule`로 특정 device 신규 배정 차단",
-            "topology: Stable `resource.kubernetes.io/numaNode` 공통 attribute 제공"
-          ]
-        },
-        {
-          "heading": "운영·업그레이드 경계",
-          "body": "Workload ResourceClaims는 Beta이지만 default disabled이며, Derived Attributes·Compatibility Groups·PreQueueingHint는 Alpha/feature gate 범위임. device taint는 기존 Pod eviction으로 이어질 수 있어 maintenance 변경을 node drain과 같은 수준으로 준비해야 함.",
-          "items": [
-            "검증: feature gate·driver version·DeviceClass schema·ResourceClaim RBAC compatibility 확인",
-            "복구: taint 적용·claim release·driver restart·Pod reschedule·legacy plugin 복귀 drill",
-            "경계: API 호환을 device plugin/DRA inventory 중복 방지나 tenant isolation 보증으로 해석하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "DRA migration의 판단 단위는 Pod manifest가 아니라 device allocation lifecycle임. accelerator/NIC pool 하나에서 scheduler와 driver의 event trace를 비교하면 topology·prepare·recovery·idle capacity 문제를 production 확대 전 찾을 수 있음.",
-          "items": [
-            "측정: allocation success·queue time·prepare/unprepare p95·topology match·taint eviction·idle reservation",
-            "팀 액션: feature gate disable·driver rollback·legacy allocation 복귀를 포함한 canary release gate 운영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-418",
-      "title_ko": "Amazon Linux 2027 public preview: kernel 7.1+·SELinux enforcing·AWS-LC·Neuron driver를 image canary로 검증",
-      "title_original": "Amazon Linux 2027 is now available in public preview",
-      "summary": "- preview: AL2023 baseline 위의 Amazon Linux 2027이 commercial AWS Region x86-64·ARM AMI와 ECR Public base image로 제공\n- 변경: kernel 7.1+, **SELinux enforcing 기본값**, AWS-LC, 최신 toolchain/runtime, AWS Neuron driver 지원이라는 AWS 공식 범위\n- 경계: preview 제공은 GA 일정·LTS·package ABI·third-party agent/driver·managed service 호환·성능 보증이 아님\n- 팀 액션: AL2023와 별도 node pool·launch template에서 boot·AVC·CNI/CSI·agent·container·driver·SLO·rollback을 canary로 비교 필요",
-      "detail": "AWS는 Amazon Linux 2027(AL2027) public preview를 발표했다. 공식 공지에 따르면 AL2027은 AL2023 baseline 위에서 kernel 7.1+를 사용하고 SELinux enforcing을 기본으로 켜며 AWS-LC, 최신 toolchain·language runtime을 제공한다. AI/ML workload에는 AWS Neuron driver 지원이 언급됐다. Preview AMI는 모든 commercial AWS Region에서 x86-64와 ARM variant로 제공되고 container base image는 Amazon ECR Public Gallery에 있다. 공지는 public preview 단계의 hands-on validation과 feedback을 목적으로 한다. 따라서 GA 일정, support lifecycle, 모든 RPM·native module ABI, security/observability agent, CNI/CSI, container runtime, third-party accelerator driver, managed service support, performance·cost는 보증 범위가 아니다. OS baseline 전환은 kernel·SELinux·crypto·runtime·driver가 한 change set으로 움직이므로 AL2023 fleet과 분리한 launch template/node pool에서 boot-to-ready, SELinux AVC, package transaction, agent startup, workload SLO, Neuron/device plugin, node drain과 rollback을 함께 검증해야 한다.",
-      "why_it_matters": "OS baseline은 application뿐 아니라 fleet bootstrap, security policy, crypto interoperability, container/accelerator runtime까지 바꿈. SELinux enforcing 기본값은 hidden permission·label 문제를 빠르게 드러내지만 permissive workaround로 넘기면 migration debt가 남음.",
-      "engineering_implication": "AL2027 golden AMI와 AL2023 baseline을 별도 launch template·node group으로 유지하고, AMI ID·kernel·SELinux mode·base image digest·policy module을 deployment record에 고정해야 함. boot·patch/reboot·autoscaling replacement·CNI/CSI·security/observability agent·container start·application SLO·rollback p95를 canary의 promotion gate로 운영 필요.",
-      "korea_implication": "commercial Region preview 제공은 서울 리전의 특정 instance/AMI, 국내 support, data path, managed Kubernetes·ECS node compatibility를 자동 보증하지 않음. 실제 Region·architecture·package mirror·support 계약과 enterprise agent compatibility를 환경별 확인해야 함.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Amazon Linux",
-        "Linux",
-        "SELinux",
-        "AWS-LC",
-        "Neuron",
-        "Containers",
-        "Cloud Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-09-04 02:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/announcing-amazon-linux-2027/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "AL2027 GitHub repository",
-          "url": "https://github.com/amazonlinux/amazon-linux-2027"
-        },
-        {
-          "title": "AL2027 documentation",
-          "url": "https://docs.aws.amazon.com/linux/al2027/ug/what-is-amazon-linux-2027.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS 공식 RSS `Thu, 03 Sep 2026 08:00:00 GMT`와 공지 본문을 확인해 KST `2026-09-04 02:00`으로 기록. Amazon Linux 2027 public preview의 공식 제공 범위임.",
-          "items": [
-            "제공: commercial AWS Region의 x86-64·ARM preview AMI와 ECR Public base image",
-            "대상: web·database·container microservice·AI/ML·대규모 infrastructure workload"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "AL2027은 AL2023 baseline 위에서 kernel 7.1+, SELinux enforcing default, AWS-LC, 최신 toolchain/runtime을 제공하며 AI/ML에는 AWS Neuron driver 지원을 언급함.",
-          "items": [
-            "보안: SELinux enforcing 기본값과 crypto library 변경",
-            "플랫폼: kernel·toolchain·language runtime·accelerator driver가 함께 바뀌는 OS baseline",
-            "경계: GA 일정·LTS·package ABI·third-party agent/driver 호환은 공지의 보증 범위 밖"
-          ]
-        },
-        {
-          "heading": "보안·운영 경계",
-          "body": "SELinux enforcing 전환은 file label·volume mount·socket·sidecar privilege 문제를 AVC로 드러낼 수 있음. preview AMI와 base image는 production lane과 분리하고 package/image provenance·SBOM·scanner·policy exception을 baseline과 비교해야 함.",
-          "items": [
-            "관측: AVC·kernel warning·package transaction·node readiness·agent startup failure 수집",
-            "검증: mTLS·native module·CNI/CSI·security/observability agent·container runtime startup matrix",
-            "복구: permissive 영구 workaround 대신 policy correction과 AL2023 launch template rollback 준비"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "OS upgrade의 release gate는 application test pass가 아니라 fleet lifecycle 증거임. non-critical node pool에서 boot-to-ready·container start·SLO·driver error·rollback p95를 비교하면 kernel·policy·driver 회귀를 production 확대 전에 격리할 수 있음.",
-          "items": [
-            "측정: boot·node join·image pull·container start·p95·CPU/memory·driver error·rollback time",
-            "팀 액션: AMI ID·base image digest·kernel·policy module·owner를 deployment record에 고정하고 pool별 canary 운영"
           ]
         }
       ],
