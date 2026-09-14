@@ -2,12 +2,12 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-15 01:19",
+  "last_updated_kst": "2026-09-15 05:20",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Red Heron의 Gitea `CVE-2026-60004` 악용 보도는 13개 조직 침해와 repository theft 뒤 secret·SSH key·Proxmox lateral movement를 다룸. self-hosted forge는 fixed build와 clone/token/runner/host telemetry·secret rotation을 하나의 incident scope로 점검 필요.",
+    "DDrop 연구는 Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop interposer로 악용하는 laboratory attack을 제시. confidential VM threat model에 physical host custody·hardware maintenance·attestation policy를 분리 반영 필요.",
     "Cilium 1.20은 Gateway API v1.6·`ExternalAuth`·`TCPRoute`/`UDPRoute`와 EKS ENI IPAM IPv6 Beta를 묶음. Gateway/Ingress migration, auth timeout·failure semantics, dual-stack egress, policy precedence를 traffic-path canary와 rollback evidence로 검증 필요.",
-    "CNCF에 게시된 Atlassian 사례는 distributed AI training에서 RDMA actual transport·Lustre shared storage·topology·checkpoint recovery를 GPU allocation과 분리하지 말 것을 제시. socket fallback·storage pressure·node loss를 representative workload로 검증 필요.",
-    "Kubernetes v1.37 `NativeHistograms`가 Beta·default-on으로 전환. native/classic dual exposition 기간에는 `scrape_native_histograms`, PromQL/recording rule, remote write·storage bytes, collector rollback을 target별 canary로 검증 필요.",
     "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요.",
     "CISA KEV가 Artifactory·ScreenConnect·RouterOS active-exploitation 5건을 추가. RouterOS는 **9월 13일**, ScreenConnect는 9월 14일 due date이므로 edge/RMM/artifact control plane의 fixed build·forensic evidence·credential scope를 병행 점검 필요."
   ],
@@ -203,8 +203,149 @@
   ],
   "items": [
     {
+      "region": "Global",
+      "importance": "must-know",
+      "local_image": "",
+      "id": "news-470",
+      "title_ko": "DDrop: Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop으로 악용하는 confidential computing 연구",
+      "title_original": "New DDRop Attack Breaks Intel TDX and AMD SEV-SNP Confidential Computing",
+      "summary": "- 공개: DDR5 interposer가 메모리 write를 조용히 drop해 이전 암호문을 최신 값처럼 재사용시키는 `DDrop` 연구 공개\n- 대상: Intel TDX·Scalable SGX·AMD SEV-SNP의 memory encryption이 freshness를 보장하지 않는 설계 경계\n- 전제: server software control과 짧은 물리 접근, 약 **$159** 부품의 interposer가 모두 필요한 laboratory attack\n- 영향 경계: TDX에서는 protected VM memory read·debug mode·attestation measurement 위조를 연구자가 시연했고, AMD 결과는 page relocation 중 victim page copy로 한정\n- 팀 액션: confidential VM을 물리 접근까지 막는 완전한 trust boundary로 간주하지 말고 host custody·attestation policy·sensitive workload placement를 재검토 필요",
+      "detail": "The Hacker News가 KU Leuven·ETH Zurich·Durham University·Google 연구진의 DDRop 연구를 보도했다. 공격은 processor와 DDR5 DIMM 사이 interposer가 write command에 오류를 유발한 뒤 DIMM의 error report line을 차단해, processor가 write 실패를 알지 못한 채 이전 encrypted value를 읽게 만드는 방식이다. 대상은 Intel TDX, Intel Scalable SGX, AMD SEV-SNP이며 세 기술 모두 대용량 server memory를 위해 encryption은 제공하지만 memory freshness는 보장하지 않는다는 연구 설명을 전제로 한다. 연구진은 Intel TDX logical-integrity mode에서 page-table 초기화 write를 drop해 protected VM memory read, debug mode 전환, launch measurement 변경을 시연했다고 밝혔다. AMD SEV-SNP에서는 page relocation 중 한 victim page 내용을 다른 page로 복제하는 결과를 제시했다. 이는 cloud provider나 특정 tenant 침해 증거가 아니며, server software control·brief physical access·hardware insertion을 함께 요구하는 laboratory attack이다. software patch 하나로 해소되는 CVE가 아니라 future memory-encryption design과 physical custody·attestation trust model의 검토 대상이다.",
+      "why_it_matters": "Confidential computing은 cloud operator·host OS로부터 사용 중 메모리를 보호하는 control로 쓰이지만, DDRop은 physical memory path를 장악한 공격자가 encryption만으로 freshness·integrity가 자동 보장되지 않는 경계를 제시함.",
+      "engineering_implication": "TDX·SEV-SNP workload는 hardware attestation만을 data freshness 증거로 처리하지 말고 bare-metal custody, supply-chain tamper control, host access approval, sensitive workload placement, integrity mode availability를 threat model과 exception register에 반영 필요.",
+      "korea_implication": "국내 regulated workload가 confidential VM을 물리 위협까지 제거하는 control로 설명할 경우 hosting provider access·rack custody·hardware maintenance·attestation policy를 계약과 risk assessment에서 분리 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Confidential Computing",
+        "Intel TDX",
+        "AMD SEV-SNP",
+        "DDR5",
+        "Hardware Security",
+        "Cloud"
+      ],
+      "score": 95,
+      "published_kst": "2026-09-15 03:02",
+      "source_name": "The Hacker News / DDRop researchers",
+      "source_url": "https://thehackernews.com/2026/09/new-ddrop-attack-breaks-intel-tdx-and.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi4IfzHWVZbbX-Jlw_WME4viVgnupLfVdkxzfZ0skzjQpB5I32f-nua5-Gt6UJGJ9-cwTyrHqaCxBFndtNkIFx_Tj9sf3LnxfrqlecJ0zh0N83i5YRdukZRTpTiUP-kVrkpF4gMJZN-tONZy7jjk2gqdq87ELsUHDlyjQDFCIX6Rioz3ljHItZ2IeLDqb-w/s1600/DDRop.gif",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "DDrop은 DDR5 memory bus의 active interposer attack 연구임. write를 drop해 old encrypted data가 그대로 남도록 만들고, processor가 command failure를 인식하지 못하도록 DIMM error report를 차단하는 경로를 제시함.",
+          "items": [
+            "전제: attacker의 server software control과 짧은 physical access, CPU-DIMM 사이 interposer 삽입 조건",
+            "비용: 연구진이 부품 약 **$159**으로 산정한 hardware proof-of-concept",
+            "대상: Intel TDX·Scalable SGX·AMD SEV-SNP의 scalable memory-encryption freshness 경계"
+          ]
+        },
+        {
+          "heading": "연구가 시연한 영향",
+          "body": "Intel TDX logical-integrity mode에서 page-table initialization write drop을 이용해 protected VM memory와 debug state를 조작하는 결과를 제시함. AMD SEV-SNP 결과는 page relocation 중 victim page content copy 범위로 구분됨.",
+          "items": [
+            "TDX: victim VM private memory read와 debug mode 전환을 연구 환경에서 시연한 범위",
+            "TDX: launch measurement overwrite로 controlled VM이 trusted state처럼 attestation을 통과할 수 있다는 연구 주장",
+            "경계: stronger cryptographic-integrity mode의 일부 결과는 test system 미지원으로 직접 검증되지 않은 범위"
+          ]
+        },
+        {
+          "heading": "위협 모델과 증거 경계",
+          "body": "이 연구는 AWS·Azure·Google Cloud customer workload를 대상으로 한 실제 침해나 active exploitation 증거가 아님. home PC·phone 대상도 아니며, server software control과 physical memory path 접근이 동시에 필요한 data-center threat model임.",
+          "items": [
+            "미확정: 특정 cloud service compromise·tenant data theft·in-the-wild use evidence 없음",
+            "제외: NVIDIA confidential-computing GPU memory는 chip package 내부여서 interposer 삽입 범위 밖",
+            "경계: Intel Client SGX는 integrity tree를 사용해 stale-data condition이 다르다는 source 설명"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "memory encryption과 remote attestation은 workload isolation의 유효한 control이지만 physical host custody까지 대체하지 않음. data-center operator, hardware supply chain, break-glass access, sensitive workload placement를 combined assurance로 관리해야 함.",
+          "items": [
+            "점검: confidential VM별 provider·host·rack maintenance·physical access threat assumption 문서화",
+            "점검: TDX integrity mode availability와 attestation verifier가 measurement·policy exception을 처리하는 방식 확인",
+            "팀 액션: high-value key·credential·regulated data workload의 confidential-compute reliance를 threat-model review에 등록"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "region": "Global",
+      "importance": "must-know",
+      "local_image": "",
+      "id": "news-471",
+      "title_ko": "Red Heron의 Gitea RCE 악용: 13개 조직 침해 보도에서 repository·secret·Proxmox lateral movement를 함께 조사",
+      "title_original": "Red Heron Exploits Gitea RCE to Compromise 13 Organizations Across Six Countries",
+      "summary": "- 보도: Red Heron으로 추적되는 China-linked actor가 `CVE-2026-60004` Gitea RCE를 신속 악용한 다국적 campaign 분석 공개\n- 관측: 7개국 Gitea **1,386개** scan, 6개국 13개 조직 confirmed compromise라는 Acronis TRU 인용 범위\n- 침해 경로: repository theft 뒤 configuration secret·token·SSH host key 수집, JITTERLY implant·SIXZUT LD_PRELOAD rootkit·internal pivoting 관측\n- 확장: Taiwan environment에서 3-node Proxmox cluster root access까지 진행한 사례를 보도가 수록\n- 팀 액션: internet-facing Gitea는 fixed version뿐 아니라 repo clone·account·token·SSH key·runner·host/virtualization telemetry를 같은 incident scope로 조사 필요",
+      "detail": "The Hacker News는 Acronis Threat Research Unit 분석을 인용해 Red Heron으로 추적되는 actor가 Gitea critical RCE `CVE-2026-60004`를 July disclosure 직후 weaponize했다고 보도했다. 보도 범위에서 actor는 7개국 Gitea instance 1,386개와 Taiwan-based system 477개를 scan했으며 Canada·Argentina·Taiwan·United States·Qatar·Sri Lanka의 13개 조직 침해가 확인됐다. 공개 PoC는 account registration, vulnerable server exploitation, repository theft, trace removal을 자동화하는 Python framework로 확장됐다고 한다. staging server에서는 shell execution, file transfer, process termination, tunnel, interactive terminal, internal pivoting 기능 30개 이상을 가진 C++ Linux implant JITTERLY와, 15개 Linux function patch로 file·process·network connection을 숨기고 재실행하는 SIXZUT LD_PRELOAD rootkit이 관측됐다. Taiwan 사례는 Gitea에서 3-node Proxmox cluster root access로 진행한 범위다. attribution은 Simplified Chinese label·Taiwan classification·targeting pattern을 근거로 한 Acronis moderate-confidence assessment이며, 모든 exposed Gitea instance의 침해나 동일 actor attribution을 뜻하지 않는다. self-hosted code forge의 patch closure는 version update뿐 아니라 repository·CI secret·host/virtualization credential과 persistence evidence를 포함해야 한다.",
+      "why_it_matters": "Self-hosted Gitea는 source code, deploy key, CI credential, webhook, runner와 연결됨. RCE 뒤 repository clone을 단순 data loss로 끝내면 token·SSH key·configuration secret과 connected infrastructure lateral movement를 놓칠 수 있음.",
+      "engineering_implication": "Gitea asset inventory와 fixed build 확인 뒤 internet exposure·new account·admin/API·repository clone/archive·webhook·access token·SSH host key·runner secret을 incident timeline으로 보존하고, host process·LD_PRELOAD·outbound tunnel·Proxmox credential을 parallel hunt 필요.",
+      "korea_implication": "국내 조직의 self-hosted forge가 SI·affiliate·manufacturing repository와 shared virtualization에 연결된 경우 source-code incident owner와 platform owner가 나뉠 수 있음. patch completion, secret rotation, backup validation, hypervisor access review를 하나의 closure gate로 운영 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Gitea",
+        "CVE-2026-60004",
+        "Software Supply Chain",
+        "CI/CD",
+        "Linux",
+        "Proxmox"
+      ],
+      "score": 97,
+      "published_kst": "2026-09-15 01:56",
+      "source_name": "The Hacker News / Acronis TRU",
+      "source_url": "https://thehackernews.com/2026/09/red-heron-exploits-gitea-rce-to.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEijvj2lBIP05rWNCbhHf0wzhfJ35HBSL0rrr99VOwBa-AzBrvlz0hpopABC1zCHMLj6mqJTNSiij7cFcocgbHUyRbh1QV3V7OCWDLXn3fJ_fRJQxaj63BC8UOjjNlcBdwZ0jdD3zWDA6XpA3Xt2an-6vAE-kyo3sPOpjNa5tzWnntDxaeia-0zzKa-PuywC/s1600/gitea-hacked.jpg",
+      "related_links": [
+        {
+          "title": "The Hacker News: Gitea critical RCE active exploitation report",
+          "url": "https://thehackernews.com/2026/08/critical-gitea-rce-actively-exploited.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Acronis TRU 분석을 인용한 보도는 Red Heron이 Gitea `CVE-2026-60004` 공개 뒤 수일 안에 public PoC를 automated exploitation framework로 바꿨다고 설명함.",
+          "items": [
+            "scan: 7개국 Gitea instance **1,386개**와 Taiwan-based system 477개라는 Acronis 인용 범위",
+            "confirmed compromise: Canada·Argentina·Taiwan·United States·Qatar·Sri Lanka의 13개 조직이라는 보도 범위",
+            "automation: account registration·RCE exploitation·repository theft·selected trace removal 기능을 Python framework에 결합"
+          ]
+        },
+        {
+          "heading": "repository theft 이후의 침해 범위",
+          "body": "보도는 source-code clone 이후 credential collection·persistence·internal pivoting까지 이어진 사례를 수록함. repository와 CI configuration은 token·SSH host key·internal application boundary와 분리해 조사할 수 없음.",
+          "items": [
+            "Taiwan industrial automation target: SCADA/HMI·IoT integration·network sniffer·server configuration repository exfiltration 인용 범위",
+            "Canadian renewable-energy target: configuration secret·internal token·SSH host key·internal application collection 인용 범위",
+            "Taiwan 사례: vulnerable Gitea server에서 three-node Proxmox cluster root-level access로 진행한 보도 범위"
+          ]
+        },
+        {
+          "heading": "persistence·host telemetry",
+          "body": "staging server에서 JITTERLY C++ Linux implant와 SIXZUT LD_PRELOAD rootkit이 관측됐다는 Acronis 인용을 포함함. 해당 malware가 모든 victim environment에 deployed됐다는 뜻은 아니므로 host evidence로 개별 판정 필요.",
+          "items": [
+            "JITTERLY: shell·file transfer·process termination·network tunnel·interactive terminal·internal pivoting 등 30개 이상 post-exploitation command 지원",
+            "SIXZUT: file·process·network connection을 숨기기 위해 15개 Linux function을 patch하고 terminate/remove 뒤 relaunch 기능을 가진 보도 범위",
+            "경계: China-linked attribution은 language·target classification·targeting footprint 기반 moderate-confidence assessment"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Gitea RCE 대응은 web application patch와 code-secret incident response를 동시에 수행하는 작업임. exposed code forge의 closure는 fixed version screen-shot이 아니라 access·clone·secret·host·hypervisor evidence의 reconciliation으로 판정해야 함.",
+          "items": [
+            "점검: public ingress, affected version, new account/admin/API event, repository clone/archive, deploy key·access token·webhook audit",
+            "점검: runner/CI secret, SSH host key, service account, `LD_PRELOAD`, unknown process, outbound tunnel, Proxmox credential evidence",
+            "팀 액션: repository owner·platform·SOC·virtualization owner가 patch, containment, secret rotation, backup restore validation을 같은 incident record로 승인"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-469",
-      "rank": 1,
+      "rank": 3,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -354,7 +495,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-464",
@@ -439,7 +580,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-465",
@@ -516,7 +657,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-462",
@@ -592,7 +733,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-463",
@@ -665,7 +806,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-461",
@@ -742,7 +883,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-459",
@@ -815,7 +956,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-458",
@@ -926,7 +1067,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-468",
@@ -1000,7 +1141,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-455",
@@ -1082,7 +1223,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-460",
@@ -1160,7 +1301,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-457",
@@ -1237,7 +1378,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-456",
@@ -1307,7 +1448,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-454",
@@ -1384,7 +1525,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-453",
@@ -1466,7 +1607,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-466",
@@ -1557,7 +1698,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-452",
@@ -1634,7 +1775,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-451",
@@ -1707,7 +1848,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-449",
@@ -1784,7 +1925,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-450",
@@ -1858,7 +1999,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-447",
@@ -1922,7 +2063,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-446",
@@ -1999,7 +2140,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-445",
@@ -2076,7 +2217,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-433",
@@ -2161,7 +2302,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-448",
@@ -2225,7 +2366,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-420",
@@ -2303,7 +2444,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-444",
@@ -2380,7 +2521,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-443",
@@ -2453,7 +2594,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-442",
@@ -2521,7 +2662,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-439",
@@ -2587,7 +2728,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-440",
@@ -2664,7 +2805,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-441",
@@ -2732,7 +2873,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-437",
@@ -2800,7 +2941,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "source_name": "The Hacker News",
@@ -2867,7 +3008,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "source_name": "The Hacker News",
@@ -2934,7 +3075,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-438",
@@ -3012,7 +3153,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-434",
@@ -3080,7 +3221,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-430",
@@ -3167,7 +3308,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-428",
@@ -3235,7 +3376,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-429",
@@ -3304,7 +3445,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-431",
@@ -3382,7 +3523,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-425",
@@ -3473,7 +3614,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-427",
@@ -3547,7 +3688,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-423",
@@ -3625,7 +3766,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-424",
@@ -3694,7 +3835,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-422",
@@ -3769,7 +3910,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-426",
@@ -3842,163 +3983,6 @@
           "items": [
             "측정: task success·human acceptance·retry·p95·leg별 token/비용·tool failure·revert rate",
             "팀 액션: low-risk repository canary에서 single-model baseline과 routing policy를 비교"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-432",
-      "title_ko": "PostgreSQL logical decoding 12년 결함 수정: replication role의 output plugin 실행 경로 allowlist 전환",
-      "title_original": "PostgreSQL Fixes 12-Year-Old Logical Decoding Flaw Enabling Replication-Role Code Execution",
-      "summary": "- 수정: PostgreSQL logical decoding의 `CVE-2026-6471`이 `REPLICATION` attribute 계정에서 DB server OS user 권한 코드 실행으로 이어질 수 있는 경로를 수정\n- 조건: PostgreSQL 9.4 이후 `wal_level = logical`과 replication credential이 필요한 범위이며, active exploitation은 원문에서 확인되지 않음\n- 대상: 18.6·17.11·16.15·15.19·14.24가 수정 버전이며 기존 logical decoding output plugin loading 경로를 `output_plugin_libraries` allowlist로 제한\n- 호환성: 기본 allowlist는 `pgoutput, test_decoding`이므로 `wal2json`·`decoderbufs` 등 non-default plugin은 update 뒤 명시 등록과 configuration reload 필요\n- 팀 액션: replication role·slot·plugin·CDC/backup/standby dependency를 inventory로 확정하고 canary decode·WAL lag·error·rollback을 함께 검증 필요",
-      "detail": "The Hacker News는 PostgreSQL 18.6 release note와 Cyera 연구를 인용해 `CVE-2026-6471`을 보도했다. PostgreSQL 9.4에서 logical decoding이 도입된 뒤 `REPLICATION` attribute 계정이 output plugin을 지정하는 경로에서 loadable library 제약을 우회할 수 있었고, `wal_level = logical`인 server에서는 database backend process를 통해 OS user 권한 코드 실행으로 이어질 수 있는 범위다. PostgreSQL은 18.6·17.11·16.15·15.19·14.24에서 `output_plugin_libraries` allowlist를 도입했으며 기본값은 `pgoutput, test_decoding`이다. non-default decoder를 운영하면 update 직후 slot·CDC·backup·monitoring workflow가 실패할 수 있으므로, 패치와 plugin inventory·명시 allowlist·reload·consumer lag·WAL retention·rollback을 한 release 단위로 검증해야 한다. 원문은 active exploitation을 확인하지 않으며, 실제 악용은 replication privilege·logical WAL·plugin/file path와 host configuration 조건을 함께 요구한다.",
-      "why_it_matters": "logical decoding은 CDC·backup·standby·monitoring에 널리 연결됨. `REPLICATION` attribute를 저위험 service account로 취급하면 DB privilege와 host execution 경계가 연결될 수 있고, patch는 decoder compatibility·WAL backlog·consumer recovery 위험을 동반함.",
-      "engineering_implication": "모든 PostgreSQL cluster에서 version·`wal_level`·replication role·slot·publication/subscription·output plugin·consumer owner를 inventory로 만들고, 18.6/17.11/16.15/15.19/14.24 또는 distribution fixed package canary 적용 필요. `output_plugin_libraries` allowlist와 reload 뒤 decode success·consumer lag·WAL retention·ERROR log·failover·rollback을 검증하고 unused replication privilege와 unknown slot을 회수 필요.",
-      "korea_implication": "국내 self-managed PostgreSQL·managed service·CDC 기반 데이터 파이프라인은 distribution package와 managed maintenance window가 upstream branch와 다를 수 있음. plugin allowlist와 provider 적용 버전·restart/reload 동작을 production 이전에 별도 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "PostgreSQL",
-        "Security",
-        "Database",
-        "Logical Decoding",
-        "CDC",
-        "Replication",
-        "CVE-2026-6471"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 90,
-      "published_kst": "2026-09-05 00:20",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/postgresql-fixes-12-year-old-logical.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh2Gb4Wd-HSxdrPbdtUFxmldzzEkPEZcW1NkT7tV9-EfTAjDENSExJBWmOey_IJ5UKjszQfCNGkVoBtuxya00rFMrh_lJUAuS66Gr3kvU8GgFjMr7DF-7Ux1rUqwz-aDhum8HkVjxNKQTc6DXHG203CPXwg9sOMcA7nfsq6A81C9cJhb3HUu9GZDIj7FZY/s1600/PostgreSQL.jpg",
-      "local_image": "assets/images/news-432.jpg",
-      "related_links": [
-        {
-          "title": "PostgreSQL 18.6 release notes",
-          "url": "https://www.postgresql.org/docs/release/18.6/"
-        },
-        {
-          "title": "PostgreSQL 18.6 / 17.11 / 16.15 / 15.19 / 14.24 release announcement",
-          "url": "https://www.postgresql.org/about/news/postgresql-186-1711-1615-1519-and-1424-released-3197/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News RSS `Fri, 04 Sep 2026 20:50:19 +0530`를 KST `2026-09-05 00:20`으로 환산. PostgreSQL 공식 18.6 release note는 logical decoding output plugin loading의 security restriction 보완을 기록하며, 이 경로는 `CVE-2026-6471`으로 추적됨.",
-          "items": [
-            "영향: PostgreSQL 9.4에서 logical decoding 도입 뒤 존재한 output plugin loading 경로",
-            "조건: `REPLICATION` attribute 계정과 `wal_level = logical`인 server 구성",
-            "경계: active exploitation은 The Hacker News 보도와 PostgreSQL release note에서 확인되지 않은 상태"
-          ]
-        },
-        {
-          "heading": "수정 범위와 동작 변화",
-          "body": "PostgreSQL은 18.6·17.11·16.15·15.19·14.24에서 `output_plugin_libraries`를 도입해 logical decoding output plugin으로 load할 library를 allowlist로 제한함. default는 `pgoutput, test_decoding`이며 기존의 arbitrary loadable library 선택을 허용하지 않는 방향임.",
-          "items": [
-            "수정: `output_plugin_libraries = 'pgoutput, test_decoding'` 기본값 추가",
-            "호환성: `wal2json`·`decoderbufs` 같은 non-default plugin은 allowlist에 명시 추가 필요",
-            "적용: configuration 변경 뒤 `pg_reload_conf()` 또는 equivalent reload가 필요하며 restart는 항상 요구되지 않는 범위"
-          ]
-        },
-        {
-          "heading": "영향 조건과 운영 위험",
-          "body": "보도상 `REPLICATION` attribute 계정은 backup tool·standby·CDC pipeline·monitoring system에 부여될 수 있음. logical replication path는 database role과 host library loading을 연결하므로 credential scope·slot ownership·plugin path를 함께 점검해야 함.",
-          "items": [
-            "권한: replication role을 일반 read-only service account와 같은 risk tier로 취급하지 않을 필요",
-            "조사: role membership·active/inactive slot·publication/subscription·plugin library·consumer owner를 cluster별 대조",
-            "장애: allowlist 누락 시 decoder load failure·CDC stop·consumer lag·WAL retention 증가 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "패치는 security release와 data-pipeline change를 동시에 발생시킴. package upgrade 완료만으로 종료하지 말고 replication workload의 정상 decode·failover·WAL backlog·rollback을 evidence로 남겨야 함.",
-          "items": [
-            "우선순위: supported branch fixed package 또는 managed service maintenance version 확인",
-            "검증: staging에서 slot creation·decode·consumer lag·ERROR log·WAL disk·failover를 representative workload로 canary",
-            "통제: unused `REPLICATION` privilege와 unknown slot 회수, non-default plugin allowlist를 infrastructure-as-code로 관리",
-            "팀 액션: security owner와 data platform owner가 같은 change record에서 patch·plugin·consumer rollback 승인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-421",
-      "title_ko": "CERN 산업용 가속기 제어 시스템, Debian 13으로 전환: 구형 x86·패키지 공급망·제어망 검증을 분리",
-      "title_original": "CERN Transitioning Industrial Computers To Debian After Being A Longtime RHEL Institution",
-      "summary": "- 전환: CERN이 가속기 제어용 산업 컴퓨터·임베디드 시스템 **2,200대 이상**을 2026년 말까지 Debian 13으로 이전할 계획\n- 배경: CentOS Stream의 기본 `-march=x86-64-v2`가 구형 x86 장비의 강제 노후화를 유발한다는 판단이 RHEL 계열 이탈 요인\n- 범위: 데이터센터와 실험 컴퓨팅은 RHEL/AlmaLinux를 유지하며, 산업 제어 시스템만 별도 migration lane으로 운영\n- 팀 액션: OS 교체를 package build·driver·I/O·network isolation·rollback·safety interlock까지 포함한 control-system change로 검증 필요",
-      "detail": "CERN의 MiniDebConf 발표와 이를 인용한 GeekNews·Phoronix 보도에 따르면, CERN은 가속기 제어용 산업 컴퓨터와 임베디드 시스템 2,200대 이상을 2026년 말까지 Debian 13으로 전환할 계획이다. CERN은 과거 Scientific Linux를 약 10년 운영한 뒤 2015년 CentOS로 이전했고, CentOS Stream도 검토했으나 기본 `-march=x86-64-v2` 컴파일러 정책이 구형 하드웨어의 계속 운용을 어렵게 만든다는 판단을 전환 배경으로 들었다. 대상은 산업용 accelerator-control 시스템이며 데이터센터와 실험용 컴퓨팅 환경은 RHEL/AlmaLinux를 유지한다. 발표에서 언급된 Debian 온보딩 과제는 자동 package build·publish 표준 도구의 공백과 동일 package의 복수 version 지원 제약이다. 보도와 발표 범위는 특정 CERN 시스템의 계획·이행 중 과제이며, 완전한 hardware inventory, driver certification, safety certification, service interruption, 보안 통제와 일정 준수는 별도 검증이 필요하다. 제어망 OS migration은 distro 선택만으로 승인하지 말고 image·repository·kernel module·fieldbus/PCI I/O·time synchronization·access control·operator console·rollback을 분리한 representative rack canary로 증명해야 한다.",
-      "why_it_matters": "지원 종료·컴파일러 baseline 변화는 OT·연구 장비의 교체 주기와 맞지 않을 수 있음. 범용 IT fleet과 산업 제어 fleet을 같은 OS lifecycle로 강제하면 hardware compatibility·안전성·패키지 재현성·복구 절차가 동시에 흔들릴 수 있음.",
-      "engineering_implication": "구형 장비 migration은 CPU ISA·kernel module·PCI/VME/serial I/O·real-time/timing·package repository·SBOM·offline update·operator access를 inventory로 고정해야 함. 한 control cell에서 Debian 13과 현행 image의 boot·I/O·latency·alarm·failover·rollback을 비교하고, production control plane과 data-center fleet의 support policy를 분리 필요.",
-      "korea_implication": "국내 제조·연구·공공 OT 환경도 RHEL 계열 lifecycle을 폐쇄망 장비의 사용연한과 동일시할 수 없음. 배포판 전환 전 vendor driver·국산 장비 지원·망분리 update mirror·안전 인증·비상 복구 절차를 site별 증적으로 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "CERN",
-        "Debian",
-        "RHEL",
-        "CentOS",
-        "Linux",
-        "OT",
-        "Industrial Control",
-        "Package Supply Chain",
-        "Legacy Hardware"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-09-04 16:01",
-      "source_name": "GeekNews GN⁺",
-      "source_url": "https://news.hada.io/topic?id=33217",
-      "image_url": "https://www.phoronix.net/image.php?id=2026&image=cern_debian_1",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Phoronix 원문",
-          "url": "https://www.phoronix.com/news/CERN-Goes-Debian-Leaving-RHEL"
-        },
-        {
-          "title": "MiniDebConf CERN accelerator control 발표 영상",
-          "url": "https://gemmei.ftp.acc.umu.se/pub/debian-meetings/2026/MiniDebConf-Winterthur/ch2026-53-controlling-cerns-accelerators-with-debian.av1.webm"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GeekNews GN⁺는 2026년 9월 4일 16:01 KST에 CERN의 산업용 가속기 제어 컴퓨터 전환을 정리함. 연결된 Phoronix 보도는 MiniDebConf Winterthur 발표를 근거로, 2026년 말까지 2,200대 이상 산업용 컴퓨터·임베디드 시스템을 Debian 13으로 옮기는 계획을 설명함.",
-          "items": [
-            "대상: LHC 데이터센터 전체가 아닌 accelerator-control 산업 시스템과 임베디드 장비 범위",
-            "일정: 2026년 말까지 2,200대 이상 Debian 13 배포 계획",
-            "유지: 데이터센터와 실험용 컴퓨팅은 RHEL/AlmaLinux 지속 운영 범위"
-          ]
-        },
-        {
-          "heading": "전환 배경과 기술 제약",
-          "body": "CERN은 RHEL 파생 Scientific Linux를 약 10년 사용한 뒤 2015년 CentOS로 이전했고, 다시 약 10년 뒤 일부 시스템을 Debian으로 옮기는 경로를 공개함. CentOS Stream도 검토했지만 기본 `-march=x86-64-v2`가 구형 hardware에 강제 노후화를 만든다는 판단을 핵심 배경으로 제시함.",
-          "items": [
-            "호환성: x86-64-v2 baseline이 구형 CPU fleet의 실행 가능 범위를 바꾸는 조건",
-            "선택: RHEL 계열 친화 경로보다 기존 field hardware의 계속 운용을 우선한 판단",
-            "경계: 보도는 각 driver·PCI/VME/serial I/O·real-time workload의 개별 인증 결과를 제공하지 않음"
-          ]
-        },
-        {
-          "heading": "패키지·공급망·운영 과제",
-          "body": "발표에서 언급된 Debian 온보딩의 과제는 package 자동 build·publish 표준 도구의 공백과 같은 package의 여러 version을 지원하지 않는 도구 제약임. 제어망은 일반 서버보다 update cadence와 artifact reproducibility의 영향이 크므로 package 선택을 image·repository·signing·rollback 단위로 묶어야 함.",
-          "items": [
-            "빌드: source·compiler·dependency·repository snapshot을 포함한 reproducible package pipeline 필요",
-            "배포: control cell별 staged repository와 signed artifact·SBOM·CVE exception 기록 필요",
-            "복구: package downgrade·kernel/module rollback·offline mirror 복원 시간을 change evidence로 측정"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "이 사례는 장기 운용 장비에서 배포판 지원 정책과 hardware 수명·제어 안전성의 충돌을 분리해야 한다는 운영 신호임. distro migration의 성공 조건은 새 image boot가 아니라 field I/O·timing·alarm·operator workflow와 원상복구가 기존 SLO 및 안전 조건을 충족하는지임.",
-          "items": [
-            "검증: representative rack에서 boot·device discovery·I/O latency·time sync·alarm·failover·rollback을 현행 image와 비교",
-            "통제: production control network와 build/update network의 credential·repository·egress를 분리",
-            "팀 액션: hardware ISA·driver·firmware·package·owner·recovery runbook inventory를 만든 뒤 cell별 canary 확대"
           ]
         }
       ],

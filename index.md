@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-14 | Total pages: 342
+> Last updated: 2026-09-15 | Total pages: 344
 
 ## Entities
 
@@ -35,6 +35,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-ddrop-confidential-computing-2026-09-15]] — DDRop DDR5 write-drop 연구의 TDX·SGX·SEV-SNP memory freshness·physical custody 경계.
+- [[raw/articles/thn-red-heron-gitea-rce-2026-09-15]] — Red Heron Gitea RCE 보도의 repository·secret·Linux persistence·Proxmox lateral-movement 조사 경계.
 - [[raw/articles/cncf-cilium-1-20-gateway-api-ipv6-2026-09-14]] — Cilium 1.20 Gateway API ExternalAuth·TCP/UDP route·ENI IPv6와 network control-plane migration 검증 경계.
 - [[raw/articles/thn-microsoft-passkey-themed-phishing-2026-09-13]] — Microsoft cloud passkey-themed phishing·MFA persistence·Graph/SaaS data access의 identity lifecycle 대응 경계.
 - [[raw/articles/cncf-atlassian-distributed-ai-training-rdma-lustre-2026-09-11]] — CNCF·Atlassian distributed AI training의 RDMA·Lustre·topology·checkpoint validation 경계.
