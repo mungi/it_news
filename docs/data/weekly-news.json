@@ -2,10 +2,10 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-14 21:11",
+  "last_updated_kst": "2026-09-15 01:19",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Microsoft cloud passkey-themed social engineering 보도는 authentication method 등록·session persistence 뒤 Graph·SharePoint·OneDrive data access로 이어질 수 있는 identity lifecycle을 다룸. high-value identity는 new MFA method·OAuth·SaaS audit·session revoke를 한 timeline으로 조사 필요.",
+    "Cilium 1.20은 Gateway API v1.6·`ExternalAuth`·`TCPRoute`/`UDPRoute`와 EKS ENI IPAM IPv6 Beta를 묶음. Gateway/Ingress migration, auth timeout·failure semantics, dual-stack egress, policy precedence를 traffic-path canary와 rollback evidence로 검증 필요.",
     "CNCF에 게시된 Atlassian 사례는 distributed AI training에서 RDMA actual transport·Lustre shared storage·topology·checkpoint recovery를 GPU allocation과 분리하지 말 것을 제시. socket fallback·storage pressure·node loss를 representative workload로 검증 필요.",
     "Kubernetes v1.37 `NativeHistograms`가 Beta·default-on으로 전환. native/classic dual exposition 기간에는 `scrape_native_histograms`, PromQL/recording rule, remote write·storage bytes, collector rollback을 target별 canary로 검증 필요.",
     "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요.",
@@ -14,89 +14,99 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Microsoft cloud identity: passkey-themed social engineering·MFA persistence·data exfiltration을 identity lifecycle으로 차단",
-      "summary": "한 줄 결론: passkey-themed social engineering 보도는 passkey protocol 취약점이 아니라 authentication method enrollment·recovery·session lifecycle이 social engineering과 결합한 identity control-plane 위험을 다룸. high-value identity는 new MFA method·Graph·SharePoint/OneDrive access·session revoke를 한 incident timeline으로 검증해야 함.",
-      "details": "The Hacker News는 Microsoft Security Blog 두 건을 인용해 CEO 사칭 invoice fraud와 passkey-themed social engineering을 다뤘다. 기사 RSS는 KST 2026-09-13 19:11이며, source는 attacker-controlled phone·authenticator·software OTP 등록 뒤 Graph API reconnaissance, SharePoint/OneDrive/Exchange access와 장시간 exfiltration이 이어질 수 있는 범위를 설명한다. 원 Microsoft article은 현 run HTTP 403으로 직접 retrieval하지 못했으므로 모든 상세 행위는 THN이 인용한 Microsoft 설명 범위로 한정한다. passkey deployment 자체의 cryptographic failure나 모든 tenant compromise로 확대할 수 없다. authentication method registration, recovery, privileged/finance identity, session/token revocation, data access telemetry를 공동 control로 운영해야 한다.",
-      "why_it_matters": "passwordless adoption은 enrollment·recovery·help-desk exception과 data-plane audit가 결합된 identity lifecycle 설계를 요구함.",
+      "title": "Cilium 1.20: Gateway API·ExternalAuth·ENI IPv6를 CNI 업그레이드가 아닌 network control-plane migration으로 검증",
+      "summary": "한 줄 결론: Cilium 1.20은 Gateway API v1.6·`ExternalAuth`·L4 `TCPRoute`/`UDPRoute`와 AWS ENI IPAM IPv6 Beta를 같은 release에 묶음. 승인 기준은 feature enablement가 아니라 auth failure·route convergence·dual-stack egress·policy precedence·rollback을 traffic path별로 재현하는 것임.",
+      "details": "CNCF/Cilium의 2026-09-14 공식 release는 Gateway API를 v1.4에서 v1.6으로 올리고 `ExternalAuth`, CORS filter, ListenerSet, HTTP 이외 traffic용 `TCPRoute`와 `UDPRoute`를 추가했다. AWS ENI IPAM mode는 IPv6 Beta에서 Prefix Delegation으로 각 node ENI에 `/80` prefix를 붙이고 agent가 Pod 주소를 배정하는 구조를 제시한다. Cilium-native CRD와 MCS API·Kubernetes `ClusterNetworkPolicy` 등 upstream resource의 병행은 portability 선택지를 넓히지만, controller compatibility·auth availability·policy precedence·VPC egress는 기존 cluster에서 자동으로 검증되지 않는다. Gateway/Ingress ownership, authorization dependency, IPv4/IPv6 address lifecycle, eBPF datapath observability를 동일 change record에서 canary와 rollback 기준으로 관리해야 한다.",
+      "why_it_matters": "CNI가 ingress/Gateway, L4 routing, external authorization, VPC-routable dual-stack Pod addressing까지 맡으면 network·security·platform의 failure domain과 운영 ownership이 함께 변경됨.",
       "sources": [
-        "https://thehackernews.com/2026/09/attackers-use-passkey-phishing-to.html",
-        "https://www.microsoft.com/en-us/security/blog/2026/09/09/passkey-themed-social-engineering-leads-identity-cloud-compromise/"
+        "https://www.cncf.io/blog/2026/09/14/cilium-1-20-gateway-api-externalauth-tcproute-udproute-eni-ipam-for-ipv6-and-more/",
+        "https://docs.cilium.io/en/stable/network/concepts/ipam/eni/",
+        "https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiZ2E2hmYwxfZ25xw5iPhCHaSDENcuEyEIaha9e_rIJCf68srth31FtjIiIlnOcEiSQDDuk2Vg-dQdNLfR753ePSoDntP3BS-MGbEH2DS8Ch5ihzhpiDZZm5UIzKCbL1vNJSwSABCYst8oG6Oa-7iBWaSF6WSTEkCJBAi9YEEwAmVEdGYvu-JWZnxwEX9ni/s1600/ms-outlook.jpg",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-4.jpg",
       "local_image": "",
-      "refreshed_kst": "2026-09-14 00:55",
+      "refreshed_kst": "2026-09-15 01:19",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "passkey themed social engineering은 passkey protocol 자체의 취약점이 아니라 enrollment·recovery·MFA method 관리가 피싱과 결합한 identity control-plane 문제임. sign-in 성공, 새 MFA 등록, Graph·SharePoint 접근, session revocation을 같은 incident timeline으로 처리 필요.",
+          "body": "Cilium 1.20은 Gateway, L4 route, external authorization, dual-stack IPAM을 같은 CNI control plane에 추가하는 release임. production 승인 기준은 version install이나 Pod Ready가 아니라 request authorization·route convergence·IPv6 egress·policy enforcement·rollback이 예상대로 작동하는지의 evidence임.",
           "items": [
-            "변화: passwordless rollout 뒤에도 authentication method registration과 recovery 경로가 고가치 공격 surface로 유지",
-            "판정: MFA success 로그만으로 종료하지 않고 new method·session·OAuth consent·data access를 함께 조사"
+            "변화: Gateway API v1.6과 `ExternalAuth`·`TCPRoute`·`UDPRoute`가 north-south traffic과 L4 path의 API 범위를 확장",
+            "판정: Cilium upgrade를 feature flag 변경이 아닌 network control-plane migration으로 change review 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "The Hacker News는 Microsoft Security Blog 두 건을 인용해 CEO 사칭 invoice fraud와 passkey-themed social engineering을 다룸. 보도 RSS는 2026-09-13 15:41:48 +05:30으로, 카드 ordering time은 reporter RSS-derived KST 19:11임. 연결된 Microsoft primary URL은 현 run에서 HTTP 403으로 직접 본문 재검증이 제한됨.",
+          "body": "CNCF에 게시된 Cilium 공식 release는 2026-09-14 공개됨. source는 Gateway API v1.4에서 v1.6 이동, `ExternalAuth`·CORS filter·ListenerSet, non-HTTP traffic용 `TCPRoute`·`UDPRoute`를 발표함. 요청이 application에 도달하기 전 authentication·authorization을 처리하는 경로가 포함됨.",
           "items": [
-            "규모: 2026-08-03~05에 CEO 사칭 ACH invoice fraud 이메일 100만 건 이상 발송이라는 Microsoft 인용 범위",
-            "지속성: 초기 account compromise 뒤 attacker-controlled phone·authenticator app·software OTP 등록으로 MFA persistence를 노린 경로",
-            "범위: Graph API reconnaissance, SharePoint Online·OneDrive for Business·Exchange Online data access는 보도에 인용된 행위 범위"
+            "Gateway: HTTP 외 traffic도 Gateway API resource로 다루는 L4 route 지원 추가",
+            "선택지: Cilium-native CRD와 upstream Kubernetes resource를 병행할 수 있는 release 범위",
+            "경계: upstream API support가 기존 Ingress/controller·service mesh·auth service의 호환성이나 무중단 전환을 보장하지 않음"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: Identity·passkey",
-          "body": "passkey phishing이라는 표현을 WebAuthn cryptographic failure로 일반화할 수 없음. source가 설명한 위험은 사용자를 social engineering으로 유도한 뒤 계정·authentication method lifecycle을 장악하는 경로임. enrollment proofing, method change notification, recovery, privileged account policy를 분리 검증 필요.",
+          "heading": "AWS ENI IPv6와 주소 lifecycle",
+          "body": "source는 AWS-specific `eni` IPAM mode의 IPv6를 Beta로 제시함. operator가 Prefix Delegation으로 worker node ENI에 IPv6 `/80` prefix를 attach하고 agent가 Pod 주소를 할당함. EKS Pod가 VPC-routable IPv6와 dual-stack 주소를 갖는 example도 제공됨.",
           "items": [
-            "볼 것: authentication method add/delete·security info registration·MFA reset·password reset의 actor·device·IP·risk event 상관관계",
-            "피할 것: phishing-resistant MFA를 배포했으므로 help-desk·recovery·new method 등록이 자동으로 안전하다고 보는 판단",
-            "판정: privileged role·service identity·break-glass account는 user population과 별도 enrollment 및 review policy 필요"
+            "주소 경로: `ipam.mode: eni`·`eni.enabled: true`·`ipv6.enabled: true` 조합의 feature path 공개",
+            "검증: VPC route·security group·DNS·NAT 또는 egress·NetworkPolicy·observability가 IPv4/IPv6 모두에서 의도대로 동작하는지 확인",
+            "경계: Beta feature와 example output이 리전 capacity·EKS/CNI version compatibility·production SLA를 의미하지 않음"
           ]
         },
         {
-          "heading": "탐지와 조사 관점",
-          "body": "source는 sign-in, reconnaissance, exfiltration에 다른 IP를 써 network indicator 회피를 시도한 범위를 설명함. 따라서 Entra sign-in·audit, Graph activity, SharePoint/OneDrive download, mailbox audit, endpoint token evidence를 identity 중심으로 결합해야 함.",
+          "heading": "AI/Infra 전문가 해석: traffic control-plane",
+          "body": "Gateway와 external authorization을 CNI datapath 인접 영역에 두면 application, identity provider, policy controller, eBPF flow visibility의 dependency가 한 request path로 결합됨. auth service timeout·retry·header propagation·fail-open/fail-closed 선택은 security policy이면서 availability SLO 결정임.",
           "items": [
-            "탐지: unusual authentication-method registration 직후 Graph enumeration·role lookup·high-volume file/mail download correlation",
-            "조사: revoked session·refresh token·registered method·OAuth grant·mailbox forwarding·conditional access result를 사용자별 timeline으로 보존",
-            "경계: 보도는 모든 Microsoft tenant 침해나 passkey credential private-key 탈취를 의미하지 않으며 local telemetry로 판정 필요"
+            "볼 것: `ExternalAuth` denied decision, timeout, retry, upstream outage, identity header propagation의 request-level telemetry",
+            "피할 것: application 2xx만 보고 authorization bypass·fail-open·policy mismatch를 놓치는 관측 방식",
+            "판정: Gateway listener owner·auth service owner·incident escalation path를 release 전 명시 필요"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "MFA enrollment와 recovery는 IAM change management로 취급해야 함. business process fraud와 cloud data exfiltration이 한 identity에서 이어질 수 있으므로 finance approval, help desk, IAM, SOC의 ownership handoff를 predefine해야 함.",
+          "heading": "Datapath·policy·멀티클러스터 관점",
+          "body": "release는 `netkit auto`, stable MCS API, Kubernetes `ClusterNetworkPolicy` alignment도 다룸. source는 Cilium CRD와 portable upstream resource를 함께 선택할 수 있다고 설명하지만, 동일 workload에 중첩될 때 policy precedence와 controller reconciliation은 local cluster matrix로 확인해야 함.",
           "items": [
-            "통제: new authentication method 등록과 recovery에 phishing-resistant verification·device compliance·risk-based step-up 적용 검토",
-            "통제: high-value role와 finance mailbox에 method change alert·delayed activation·out-of-band confirmation 적용 검토",
-            "측정: method registration→detection, session revoke→token invalidation, abnormal download→containment의 p95 time"
+            "검증: existing `NetworkPolicy`·Cilium policy·`ClusterNetworkPolicy`의 allow/deny precedence와 audit evidence",
+            "검증: Gateway API CRD·controller·Ingress·service mesh coexistence 및 rollback 때 connection drain",
+            "관측: L7 request·L4 flow·eBPF drop·policy verdict·route convergence를 service SLO timeline으로 연결"
+          ]
+        },
+        {
+          "heading": "SRE·보안·FinOps 관점",
+          "body": "새 datapath 기능은 control point를 줄일 수 있으나 failure blast radius를 넓힐 수 있음. dual-stack은 address allocation, route lookup, firewall rule, logging storage의 두 경로를 증가시킴. cost는 feature license가 아니라 canary 환경·telemetry cardinality·incident recovery time까지 포함해 비교 필요.",
+          "items": [
+            "SRE: auth p95/p99, route convergence, packet drop, connection reset, IPv4/IPv6 egress failure를 release gate로 측정",
+            "보안: external auth failure mode, policy change audit, privileged Gateway config write 권한을 least privilege로 분리",
+            "FinOps: dual-stack flow log·metric cardinality와 canary/rollback 운영 비용을 baseline과 비교"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "정책을 일괄 강화하기보다 high-risk population과 pilot tenant에서 detection·recovery를 먼저 검증하는 순서가 필요함. policy block이 업무 continuity에 주는 영향을 확인하면서 session revocation과 help-desk exception을 drill해야 함.",
+          "body": "일괄 migration보다 traffic class와 risk level을 나눈 canary가 필요함. 먼저 non-critical HTTP path에서 Gateway and `ExternalAuth` failure semantics를 확인하고, 이어 TCP/UDP와 ENI IPv6 workload로 확대해야 함. rollback은 Helm version만이 아니라 CRD·policy·address allocation state를 포함해야 함.",
           "items": [
-            "1단계: authentication method·recovery·privileged role·finance mailbox·conditional access policy inventory",
-            "2단계: test account에서 method add, risk sign-in, Graph query, download, session revoke event end-to-end 확인",
-            "3단계: privileged/finance cohort에 alert·approval·device/risk control canary 적용",
-            "4단계: false positive·help-desk exception·containment time evidence 뒤 tenant-wide rollout"
+            "1단계: Kubernetes/Cilium/Gateway API CRD, Ingress, service mesh, policy, VPC address ownership inventory",
+            "2단계: representative HTTP request의 allow/deny/timeout, route switch, observability, rollback rehearsal",
+            "3단계: TCP/UDP route와 dual-stack Pod에서 DNS·egress·security group·policy canary 수행",
+            "4단계: auth p95, packet drop, allocation failure, route convergence, rollback duration evidence 뒤 cohort 확대"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "application team은 OAuth app과 data API audit, IAM team은 authentication lifecycle, SOC는 incident correlation을 각각 소유해야 함. 단일 sign-in dashboard로 closure를 선언하면 method persistence와 downstream data access를 놓칠 수 있음.",
+          "body": "platform team만의 version upgrade로 끝낼 수 없음. application team은 auth contract와 client retry를, network team은 routing·IPAM을, security team은 policy and audit을, SRE는 error budget과 rollback trigger를 함께 소유해야 함.",
           "items": [
-            "체크리스트: authentication method registration·MFA reset·password reset·OAuth consent·privileged role change audit retention",
-            "체크리스트: Graph API enumeration·SharePoint/OneDrive bulk download·Exchange mailbox access·impossible travel correlation",
-            "체크리스트: session/token revoke runbook·break-glass handling·help-desk identity verification·forensic export",
-            "팀 액션: finance·IAM·SOC 공동으로 MFA persistence tabletop과 user containment SLO를 승인 기준으로 고정"
+            "체크리스트: Gateway API CRD/controller matrix, listener ownership, Ingress/service mesh coexistence, connection drain",
+            "체크리스트: `ExternalAuth` timeout·failure policy·header handling·identity provider dependency·audit retention",
+            "체크리스트: ENI `/80` prefix, IPv6 route/security group/DNS/egress, allocation exhaustion, flow-log correlation",
+            "팀 액션: platform·network·security·application owner가 canary metric과 rollback authority를 하나의 change record로 승인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "passkey adoption의 승인 기준은 sign-in success rate만이 아님. authentication method lifecycle과 recovery를 공격자가 바꿨을 때 tenant data access를 얼마나 빨리 탐지·차단·복구하는지가 identity resilience의 실제 측정값임.",
+          "body": "Cilium 1.20의 value는 Gateway API와 dual-stack feature 목록이 아니라 network control plane을 한 ownership model로 검증할 수 있는 범위 확장임. success 로그 뒤의 authorization failure, L4 route mismatch, IPv6 egress gap, policy collision을 acceptance suite에 넣어야 함.",
           "items": [
-            "볼 것: new MFA method·session persistence·Graph enumeration·bulk download·revocation time",
-            "피할 것: passwordless 배포 뒤 enrollment·recovery·help-desk workflow를 audit 범위 밖으로 두는 운영",
-            "팀 액션: high-value identity의 method change부터 data access containment까지 one timeline으로 canary 검증"
+            "볼 것: auth p95·denied correctness·route convergence·packet drop·IPv6 allocation/egress·rollback duration",
+            "피할 것: feature enablement 또는 Pod Ready만으로 gateway·IPAM migration 완료를 판정하는 운영",
+            "팀 액션: representative service에서 HTTP/L4/auth/dual-stack failure를 재현한 evidence를 promotion 조건으로 고정"
           ]
         }
       ]
@@ -112,7 +122,7 @@
       ],
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-2.jpg",
       "local_image": "",
-      "refreshed_kst": "2026-09-14 00:55",
+      "refreshed_kst": "2026-09-15 01:19",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
@@ -187,7 +197,8 @@
             "팀 액션: one representative workload로 socket fallback·storage pressure·node loss를 포함한 acceptance suite 운영"
           ]
         }
-      ]
+      ],
+      "refresh_note": "2026-09-15 KST 첫 실행에서 GeekNews·GeekNews Plus·AI타임스·인공지능신문과 OpenAI·AWS·CNCF source surface를 재확인함. 새 coverage window에서 직접 검증된 독립 primary-source replacement는 Cilium 1.20 한 건뿐이어서, Cilium과 source가 겹치지 않는 CNCF·Atlassian distributed training briefing을 유지함. 기존 CNCF 원문 2026-09-11의 RDMA transport·Lustre checkpoint·device-plugin fallback 사실은 새 material update 없이 변경하지 않음."
     }
   ],
   "items": [
