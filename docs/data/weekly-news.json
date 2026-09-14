@@ -1,8 +1,8 @@
 {
-  "week": "2026-W38",
-  "coverage_start_kst": "2026-09-07 17:00",
-  "coverage_end_kst": "2026-09-14 13:00",
-  "last_updated_kst": "2026-09-14 00:55",
+  "week": "2026-W39",
+  "coverage_start_kst": "2026-09-14 17:00",
+  "coverage_end_kst": "2026-09-21 13:00",
+  "last_updated_kst": "2026-09-14 21:11",
   "audience": "developers and engineers",
   "executive_summary": [
     "Microsoft cloud passkey-themed social engineering 보도는 authentication method 등록·session persistence 뒤 Graph·SharePoint·OneDrive data access로 이어질 수 있는 identity lifecycle을 다룸. high-value identity는 new MFA method·OAuth·SaaS audit·session revoke를 한 timeline으로 조사 필요.",
@@ -192,6 +192,83 @@
   ],
   "items": [
     {
+      "id": "news-469",
+      "rank": 1,
+      "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
+      "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
+      "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
+      "detail": "CNCF의 Cilium 1.20 release post는 Gateway API 지원을 v1.4에서 v1.6으로 올리고 ExternalAuth filter, CORS filter, ListenerSet, non-HTTP traffic용 TCPRoute와 UDPRoute를 추가한 내용을 공개했다. source는 authentication·authorization을 request가 application에 도달하기 전 처리할 수 있는 경로와 Cilium-native 기능 및 portable Kubernetes resource를 함께 쓸 수 있는 선택지를 설명한다. AWS ENI IPAM mode에서는 IPv6 Beta가 추가되어 operator가 Prefix Delegation으로 worker node ENI에 IPv6 /80 prefix를 attach하고 agent가 Pod 주소를 배정하는 경로를 제시한다. `netkit auto`, MCS API, Kubernetes ClusterNetworkPolicy도 release 범위에 포함된다. 이는 feature release이며 기존 cluster의 controller compatibility, policy precedence, auth outage behavior, IPv4/IPv6 egress, performance/SLO를 보장하지 않는다. platform team은 traffic path와 IPAM·policy lifecycle을 staged validation으로 확인해야 한다.",
+      "why_it_matters": "Cilium이 ingress/Gateway, L4 routing, external authorization, dual-stack Pod addressing을 같은 CNI control plane으로 확장하면 network ownership과 failure domain이 바뀜. API migration과 datapath upgrade를 feature enable만으로 처리하면 authorization bypass, route mismatch, IPv6 egress·observability 공백이 남을 수 있음.",
+      "engineering_implication": "Cilium 1.20 upgrade 전 Gateway API CRD/controller matrix, `ExternalAuth` timeout·fail-open/fail-closed policy, TCP/UDP route health, ENI IPv6 prefix·security group·NAT/egress·DNS, ClusterNetworkPolicy와 기존 NetworkPolicy precedence를 canary workload로 측정 필요. request success 외에 auth p95, route convergence, dropped packet, IP exhaustion, rollback time을 promotion gate로 기록 필요.",
+      "korea_implication": "국내 EKS·멀티클러스터 운영 조직은 IPv6 address plan·VPC route·security group·egress monitoring과 service mesh/Gateway ownership을 분리해 검증 필요. 공개 feature만으로 국내 리전 capacity·support SLA·기존 ingress migration 완료를 추정할 수 없음.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Kubernetes",
+        "Cilium",
+        "Gateway API",
+        "Network Security",
+        "IPv6",
+        "AWS"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-09-14 19:45",
+      "source_name": "CNCF / Cilium",
+      "source_url": "https://www.cncf.io/blog/2026/09/14/cilium-1-20-gateway-api-externalauth-tcproute-udproute-eni-ipam-for-ipv6-and-more/",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-4.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Cilium documentation: ENI IPAM mode",
+          "url": "https://docs.cilium.io/en/stable/network/concepts/ipam/eni/"
+        },
+        {
+          "title": "Cilium documentation: Gateway API support",
+          "url": "https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CNCF에 게시된 Cilium 1.20 release post의 primary metadata `article:published_time`은 `2026-09-14T10:45:49+00:00`이며 KST `2026-09-14 19:45`로 환산함. source는 2026년 두 번째 major Cilium release로 Gateway API·datapath·upstream Kubernetes API alignment를 묶어 설명함.",
+          "items": [
+            "Gateway API: v1.4에서 v1.6으로 이동하고 `ExternalAuth`·CORS filter·ListenerSet·`TCPRoute`·`UDPRoute` support 추가",
+            "범위: HTTP 외 traffic을 Gateway API로 다루는 L4 route와 request가 application에 닿기 전 authn/authz 처리 경로 추가",
+            "선택지: Cilium-native CRD와 upstream Kubernetes resource를 병행할 수 있다는 source release 범위"
+          ]
+        },
+        {
+          "heading": "ENI IPv6와 datapath 변경",
+          "body": "AWS ENI IPAM IPv6는 Cilium 1.20에서 Beta로 소개됨. source의 설명대로 operator가 Prefix Delegation을 통해 node ENI에 IPv6 `/80` prefix를 attach하고 agent가 Pod address를 배정하는 구조임. source는 `netkit auto`와 upstream MCS API·Kubernetes ClusterNetworkPolicy alignment도 release theme로 제시함.",
+          "items": [
+            "IPAM: 기존 IPv4-only ENI mode의 IPv6 gap을 beta feature로 보완하는 release 범위",
+            "주소 경로: Pod가 VPC-routable IPv6와 dual-stack address를 갖는 example을 source가 제시",
+            "경계: feature beta·example 구성이 EKS version, CNI, VPC route, security group, egress policy의 production readiness 보증은 아님"
+          ]
+        },
+        {
+          "heading": "운영·보안 영향",
+          "body": "Gateway·authorization·routing과 CNI datapath를 함께 변경하면 auth failure, route convergence, policy precedence, observability의 ownership을 release review에 묶어야 함. source가 ExternalAuth를 request arrival 전 처리 경로로 설명하지만 failure semantics와 external service capacity는 local policy·deployment에서 별도 검증 대상임.",
+          "items": [
+            "검증: `ExternalAuth` timeout·retry·failure mode와 identity header propagation을 known-good/denied request로 확인",
+            "검증: `TCPRoute`·`UDPRoute` health, listener ownership, existing Ingress coexistence, rollback 시 connection drain을 canary로 확인",
+            "관측: Gateway request, auth decision, L4 flow drop, eBPF datapath error, IPv4/IPv6 egress를 same service SLO timeline으로 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Cilium 1.20 adoption은 version upgrade보다 network control-plane migration에 가까움. cluster 별 Gateway API CRD/controller matrix와 IPAM·policy state를 inventory한 뒤 representative application에서 traffic·auth·dual-stack failure를 재현해야 함.",
+          "items": [
+            "사전 점검: Kubernetes/Cilium/Gateway API CRD compatibility, existing Ingress·NetworkPolicy·service mesh ownership inventory",
+            "승인 기준: auth p95·denied request correctness·route convergence·packet drop·IPv6 allocation/exhaustion·rollback duration 측정",
+            "팀 액션: platform·network·security owner가 feature gate, canary, rollback, incident log retention을 같은 change record로 승인"
+          ]
+        }
+      ]
+    },
+    {
       "id": "news-467",
       "title_ko": "Microsoft cloud passkey-themed phishing: MFA method persistence 뒤 Graph·SharePoint·OneDrive data access 조사",
       "title_original": "Attackers Use Passkey Phishing to Hijack Microsoft Cloud Accounts and Exfiltrate Data",
@@ -266,7 +343,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-464",
@@ -351,7 +428,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-465",
@@ -428,7 +505,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-462",
@@ -504,7 +581,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-463",
@@ -577,7 +654,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-461",
@@ -654,7 +731,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-459",
@@ -727,7 +804,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-458",
@@ -838,7 +915,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-468",
@@ -912,7 +989,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-455",
@@ -994,7 +1071,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-460",
@@ -1072,7 +1149,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-457",
@@ -1149,7 +1226,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-456",
@@ -1219,7 +1296,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-454",
@@ -1296,7 +1373,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-453",
@@ -1378,7 +1455,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-466",
@@ -1469,7 +1546,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-452",
@@ -1546,7 +1623,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-451",
@@ -1619,7 +1696,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-449",
@@ -1696,7 +1773,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-450",
@@ -1770,7 +1847,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-447",
@@ -1834,7 +1911,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-446",
@@ -1911,7 +1988,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-445",
@@ -1988,7 +2065,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-433",
@@ -2073,7 +2150,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-448",
@@ -2137,7 +2214,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-420",
@@ -2215,7 +2292,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-444",
@@ -2292,7 +2369,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-443",
@@ -2365,7 +2442,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-442",
@@ -2433,7 +2510,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-439",
@@ -2499,7 +2576,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-440",
@@ -2576,7 +2653,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-441",
@@ -2644,7 +2721,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-437",
@@ -2712,7 +2789,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "source_name": "The Hacker News",
@@ -2779,7 +2856,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "source_name": "The Hacker News",
@@ -2846,7 +2923,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-438",
@@ -2924,7 +3001,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-434",
@@ -2992,7 +3069,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-430",
@@ -3079,7 +3156,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-428",
@@ -3147,7 +3224,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-429",
@@ -3216,7 +3293,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-431",
@@ -3294,7 +3371,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-425",
@@ -3385,7 +3462,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-427",
@@ -3459,7 +3536,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-423",
@@ -3537,7 +3614,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-424",
@@ -3606,7 +3683,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-422",
@@ -3681,7 +3758,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-426",
@@ -3757,7 +3834,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-432",
@@ -3835,7 +3912,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-421",
@@ -3911,80 +3988,6 @@
             "검증: representative rack에서 boot·device discovery·I/O latency·time sync·alarm·failover·rollback을 현행 image와 비교",
             "통제: production control network와 build/update network의 credential·repository·egress를 분리",
             "팀 액션: hardware ISA·driver·firmware·package·owner·recovery runbook inventory를 만든 뒤 cell별 canary 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-419",
-      "title_ko": "Cloudflare Managed Defense 취약점 탐지·완화 early access: production context·자동 검증·고객 승인으로 patch 경로 분리",
-      "title_original": "Introducing context-aware vulnerability discovery and remediation with Cloudflare Managed Defense and OpenAI Daybreak models",
-      "summary": "- 공개: Cloudflare가 `Managed Defense` 내 invitation-only `Vulnerability Discovery and Remediation` early access를 발표\n- 우선순위: Web Assets·WAF의 활성 route·traffic·security event·기존 rule 정보를 code finding과 결합해 production exposure 기준으로 분류\n- remediation: 고객이 승인한 codebase에 OpenAI Daybreak 모델을 사용해 reconnaissance·hunting·validation을 수행하고, 제안 patch·WAF mitigation은 자동 검증 뒤 고객 review에 제출\n- 팀 액션: scanner finding 수가 아니라 deployed route·attack signal·control coverage·patch validation·approval·rollback trace를 취약점 release gate로 연결 필요",
-      "detail": "Cloudflare는 2026년 9월 4일 06:03 KST에 Managed Defense의 invitation-only early access 기능인 Vulnerability Discovery and Remediation을 발표했다. 고객이 접근을 승인한 codebase를 대상으로 OpenAI Daybreak Defense Network의 Daybreak 모델(GPT-5.6 Cyber 포함)을 reconnaissance·hunting·validation에 사용하고, 취약점 발견 뒤 제안 code patch와 mitigation을 자동 점검한 뒤 고객 검토에 제공하는 흐름이다. Cloudflare는 Web Assets와 WAF에서 active route, traffic volume, 최근 security event, 적용 중인 WAF rule을 가져와 source finding의 실제 노출·우선순위를 판단하며 Workers와 proxied application을 대상으로 설명한다. 제안 patch와 custom WAF mitigation은 고객이 구현 여부를 결정하며 자동 적용을 선언하지 않는다. early access와 vendor-managed analysis이므로 지원 범위·데이터 처리·source-code retention·모델 호출 경로·patch accuracy·false negative·SLA는 공지에서 보증하지 않는다. 도입 시 code access 최소화, production telemetry 분류, finding-to-route evidence, test/sandbox validation, human approval, WAF rule expiry, patch rollback과 incident audit을 한 change-control trace로 운영해야 한다.",
-      "why_it_matters": "취약점 우선순위는 CVSS나 scanner finding 수만으로 결정되지 않음. deployed route·traffic·공격 activity·기존 edge control을 결합하면 실제 노출을 기준으로 remediation queue를 정렬할 수 있지만 source code와 production telemetry를 외부 분석 경로에 함께 제공하는 data boundary가 생김.",
-      "engineering_implication": "early access pilot은 read-only asset·limited repository에서 시작하고 route evidence·WAF action·test result·reviewer·deployment·rollback을 finding ID로 연결해야 함. code access scope, secret redaction, model/vendor retention, WAF custom rule의 TTL·false-positive·kill switch를 approval 이전의 필수 control로 고정 필요.",
-      "korea_implication": "국내 조직은 invitation-only 제공을 국내 리전 처리·망분리 적합성·소스 코드 국외 이전·금융/공공 규제 충족으로 해석할 수 없음. Cloudflare와 OpenAI 각각의 data path·retention·subprocessor·support·incident notification 조건을 계약과 보안 검토에서 확인해야 함.",
-      "category": "Security",
-      "tags": [
-        "Cloudflare",
-        "Managed Defense",
-        "OpenAI Daybreak",
-        "GPT-5.6 Cyber",
-        "WAF",
-        "Vulnerability Management",
-        "Application Security",
-        "DevSecOps"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-09-04 06:03",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/vulnerability-discovery-remediation/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1M93F7AEJ7GBHA2V4NNP3XK.01M1M93G208121NF47SS8DRCZ6.png",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Cloudflare Managed Defense",
-          "url": "https://www.cloudflare.com/managed-defense/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare 공식 블로그의 `article:published_time` `2026-09-03T21:03:02.023Z`를 KST `2026-09-04 06:03`으로 기록. `Vulnerability Discovery and Remediation`은 Cloudflare Managed Defense에 포함된 invitation-only early access 기능임.",
-          "items": [
-            "대상: Cloudflare Workers와 proxied application의 고객 승인 codebase 범위",
-            "모델: OpenAI Daybreak Defense Network의 Daybreak 모델과 `GPT-5.6 Cyber`를 reconnaissance·hunting·validation에 사용하는 공식 설명",
-            "경계: early access는 일반 제공·SLA·국내 처리·자동 remediation 보증이 아님"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Cloudflare는 code finding에 Web Assets·WAF의 production context를 결합함. active route, traffic volume, recent security event, existing WAF rule을 함께 확인해 단순 코드 취약점이 실제로 노출된 경로인지와 기존 protection 유무를 판단하는 구조임.",
-          "items": [
-            "우선순위: live route·traffic·attack signal·existing control을 finding evidence로 결합",
-            "분석: hot path의 deployed source code에 더 엄격한 security profiling 적용이라는 공식 범위",
-            "완화: custom WAF mitigation과 code patch를 제안하고 자동 check 뒤 customer review에 제출"
-          ]
-        },
-        {
-          "heading": "권한·검증·운영 경계",
-          "body": "서비스가 customer-authorized codebase와 production security telemetry를 함께 다루므로 scanner 교체가 아니라 cross-system access change로 취급해야 함. 고객이 patch와 mitigation의 구현 여부를 결정하는 흐름이므로 approval과 independent test가 release control임.",
-          "items": [
-            "권한: repository·branch·secret·deployment credential을 read-only·least privilege·time-bound scope로 분리",
-            "검증: proposed patch를 representative test·SAST/DAST·dependency scan·staging traffic에서 재현하고 finding evidence와 연결",
-            "복구: custom WAF rule의 action·scope·TTL·owner·false-positive signal·kill switch를 deployment record에 고정"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI-assisted vulnerability workflow의 효과는 발견 건수가 아니라 실제 노출 remediation lead time과 안전한 변경률로 판단해야 함. production context를 쓴 prioritization은 useful signal이지만 telemetry quality와 vendor data boundary가 흐리면 잘못된 우선순위와 과도한 code access가 동시에 생길 수 있음.",
-          "items": [
-            "측정: exposed finding backlog·time-to-triage·validated patch rate·WAF false positive·rollback time·reopened vulnerability",
-            "통제: data classification·redaction·retention·subprocessor·audit export를 code onboarding 전에 확인",
-            "팀 액션: 한 application cohort에서 human approval과 rollback drill을 포함한 finding-to-fix trace를 만든 뒤 확대"
           ]
         }
       ],

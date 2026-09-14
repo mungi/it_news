@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-13 | Total pages: 340
+> Last updated: 2026-09-14 | Total pages: 342
 
 ## Entities
 
@@ -21,6 +21,7 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W39]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W38]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W37]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W36]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
@@ -34,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cncf-cilium-1-20-gateway-api-ipv6-2026-09-14]] — Cilium 1.20 Gateway API ExternalAuth·TCP/UDP route·ENI IPv6와 network control-plane migration 검증 경계.
 - [[raw/articles/thn-microsoft-passkey-themed-phishing-2026-09-13]] — Microsoft cloud passkey-themed phishing·MFA persistence·Graph/SaaS data access의 identity lifecycle 대응 경계.
 - [[raw/articles/cncf-atlassian-distributed-ai-training-rdma-lustre-2026-09-11]] — CNCF·Atlassian distributed AI training의 RDMA·Lustre·topology·checkpoint validation 경계.
 - [[raw/articles/openai-agents-rubygems-rubydoc-analysis-2026-09-12]] — RubyGems 대량 package 게시·RubyDoc build RCE 분석의 agent attribution·공급망 격리·egress 검증 경계.
