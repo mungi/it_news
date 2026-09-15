@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-15 05:20",
+  "last_updated_kst": "2026-09-15 09:30",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Kubernetes CSI Changed Block Tracking Beta는 `SnapshotMetadataService`를 **`v1beta1`**로 전환하고 `v1alpha1`을 제거. CSI driver·sidecar·backup controller·GitOps manifest를 함께 inventory하고 delta metadata·restore canary를 수행 필요.",
     "Red Heron의 Gitea `CVE-2026-60004` 악용 보도는 13개 조직 침해와 repository theft 뒤 secret·SSH key·Proxmox lateral movement를 다룸. self-hosted forge는 fixed build와 clone/token/runner/host telemetry·secret rotation을 하나의 incident scope로 점검 필요.",
     "DDrop 연구는 Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop interposer로 악용하는 laboratory attack을 제시. confidential VM threat model에 physical host custody·hardware maintenance·attestation policy를 분리 반영 필요.",
     "Cilium 1.20은 Gateway API v1.6·`ExternalAuth`·`TCPRoute`/`UDPRoute`와 EKS ENI IPAM IPv6 Beta를 묶음. Gateway/Ingress migration, auth timeout·failure semantics, dual-stack egress, policy precedence를 traffic-path canary와 rollback evidence로 검증 필요.",
-    "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요.",
-    "CISA KEV가 Artifactory·ScreenConnect·RouterOS active-exploitation 5건을 추가. RouterOS는 **9월 13일**, ScreenConnect는 9월 14일 due date이므로 edge/RMM/artifact control plane의 fixed build·forensic evidence·credential scope를 병행 점검 필요."
+    "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요."
   ],
   "deep_dives": [
     {
@@ -204,6 +204,81 @@
   "items": [
     {
       "region": "Global",
+      "importance": "high",
+      "local_image": "assets/images/fallback-infra.svg",
+      "id": "news-472",
+      "title_ko": "Kubernetes CSI Changed Block Tracking Beta: `v1beta1` CRD 전환과 snapshot metadata client migration",
+      "title_original": "Kubernetes Changed Block Tracking API - Beta Differences",
+      "summary": "- 공개: `external-snapshot-metadata` `v1.0.0`에서 CSI Changed Block Tracking(CBT)이 Beta로 승격\n- 변경: `SnapshotMetadataService`가 `cbt.storage.k8s.io/v1alpha1`에서 **`v1beta1`**로 이동하고 구 API 병행 제공 없음\n- 조건: Kubernetes `1.33+`, CSI spec `1.10+`, `csi-snapshot-metadata:v1.0.0` 조합 공개\n- 범위: block volume snapshot metadata 대상이며 file volume·network file-share changed-list tracking은 제외\n- 팀 액션: backup controller·manifest·CRD client를 자동 변환 없는 API migration으로 inventory하고 restore/metadata delta canary 필요",
+      "detail": "Kubernetes SIG Storage는 `external-snapshot-metadata` v1.0.0에서 CSI Changed Block Tracking(CBT)을 Beta로 올리고 `SnapshotMetadataService` CRD를 `cbt.storage.k8s.io/v1beta1`로 전환했다. schema는 바뀌지 않았지만 `v1alpha1`을 함께 제공하지 않아 Alpha 사용자는 CRD, manifest API version, CRD를 호출하는 client/controller 코드를 모두 바꿔야 한다. 기능은 block volume의 snapshot metadata와 allocated/delta metadata 조회를 대상으로 하며, file volume·network file-share의 changed-list tracking은 범위 밖이다. CSI driver support, Kubernetes·CSI spec·sidecar version, backup application의 delta metadata 처리와 restore drill을 같은 compatibility gate에서 검증해야 한다.",
+      "why_it_matters": "CBT metadata API는 incremental backup·snapshot orchestration의 changed-range 판단에 연결될 수 있으며, API version 제거는 backup control plane의 manifest와 client compatibility를 동시에 바꾸는 변경임.",
+      "engineering_implication": "Alpha CBT 사용 조직은 `v1alpha1` CRD reference, GitOps manifest, controller RBAC/client, CSI driver/sidecar version을 inventory하고 `GetMetadataAllocated`·`GetMetadataDelta` 결과와 restore chain을 canary에서 비교 필요.",
+      "korea_implication": "국내 managed Kubernetes와 자체 CSI driver 환경은 provider addon version과 storage vendor의 `v1beta1` support를 확인한 뒤 backup retention·restore drill change window에 반영 필요.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "CSI",
+        "Storage",
+        "Backup",
+        "Snapshot",
+        "API",
+        "Open Source"
+      ],
+      "score": 82,
+      "published_kst": "2026-09-15 03:30",
+      "source_name": "Kubernetes Blog / SIG Storage",
+      "source_url": "https://kubernetes.io/blog/2026/09/14/csi-changed-block-tracking-beta/",
+      "image_url": "",
+      "related_links": [
+        {
+          "title": "external-snapshot-metadata v1.0.0",
+          "url": "https://github.com/kubernetes-csi/external-snapshot-metadata/releases/tag/v1.0.0"
+        },
+        {
+          "title": "CSI snapshot metadata developer documentation",
+          "url": "https://kubernetes-csi.github.io/docs/snapshot-metadata.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes SIG Storage가 `external-snapshot-metadata` `v1.0.0`에서 CSI Changed Block Tracking(CBT)을 Alpha에서 Beta로 승격함. 변경의 중심은 `SnapshotMetadataService` CRD API version 전환임.",
+          "items": [
+            "공개: `cbt.storage.k8s.io/v1alpha1` 대신 **`cbt.storage.k8s.io/v1beta1`** CRD 제공",
+            "범위: CSI snapshot metadata에서 allocated block과 changed block delta 조회를 지원하는 API"
+          ]
+        },
+        {
+          "heading": "API migration 범위",
+          "body": "schema 자체는 같지만 Beta release는 Alpha API를 함께 serving하지 않음. 기존 object와 control-plane integration은 version field만 바꾸는 무중단 전환으로 가정할 수 없음.",
+          "items": [
+            "필수 변경: `v1.0.0` release의 CRD definition 재적용",
+            "필수 변경: `SnapshotMetadataService` manifest의 `apiVersion`과 CRD client/controller reference 수정",
+            "경계: `v1alpha1`에서 `v1beta1`으로 automatic conversion이 없다는 source 명시"
+          ]
+        },
+        {
+          "heading": "지원 조건과 기능 경계",
+          "body": "원문은 minimum Kubernetes `1.33`, CSI spec `1.10+`, `registry.k8s.io/sig-storage/csi-snapshot-metadata:v1.0.0`을 compatibility 조건으로 제시함. 모든 volume type과 driver에 포괄 적용되는 기능은 아님.",
+          "items": [
+            "전제: CSI driver가 volume snapshot과 `external-snapshot-metadata` sidecar를 지원하는 조합",
+            "제외: file volume과 network file-share changed-list tracking은 현재 기능 범위 밖"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "CBT는 backup application의 incremental chain·snapshot orchestration과 연결될 수 있어 CRD apply 성공만으로 migration을 끝낼 수 없음. metadata delta의 정확성과 restore path를 함께 검증해야 함.",
+          "items": [
+            "검증: `GetMetadataAllocated`·`GetMetadataDelta` client response와 snapshot/restore 결과를 pre/post migration 비교",
+            "운영: CSI driver·sidecar·Kubernetes version matrix, RBAC, GitOps rollback, retention chain을 하나의 change record로 관리",
+            "팀 액션: representative block-volume workload에서 full backup·incremental backup·restore와 controller rollback drill 수행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "region": "Global",
       "importance": "must-know",
       "local_image": "",
       "id": "news-470",
@@ -268,7 +343,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "region": "Global",
@@ -341,11 +416,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-469",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -495,7 +570,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-464",
@@ -580,7 +655,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-465",
@@ -657,7 +732,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-462",
@@ -733,7 +808,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-463",
@@ -806,7 +881,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-461",
@@ -883,7 +958,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-459",
@@ -956,7 +1031,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-458",
@@ -1067,7 +1142,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-468",
@@ -1141,7 +1216,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-455",
@@ -1223,7 +1298,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-460",
@@ -1301,7 +1376,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-457",
@@ -1378,7 +1453,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-456",
@@ -1448,7 +1523,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-454",
@@ -1525,7 +1600,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-453",
@@ -1607,7 +1682,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-466",
@@ -1698,7 +1773,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-452",
@@ -1775,7 +1850,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-451",
@@ -1848,7 +1923,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-449",
@@ -1925,7 +2000,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-450",
@@ -1999,7 +2074,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-447",
@@ -2063,7 +2138,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-446",
@@ -2140,7 +2215,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-445",
@@ -2217,7 +2292,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-433",
@@ -2302,7 +2377,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-448",
@@ -2366,7 +2441,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-420",
@@ -2444,7 +2519,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-444",
@@ -2521,7 +2596,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-443",
@@ -2594,7 +2669,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-442",
@@ -2662,7 +2737,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-439",
@@ -2728,7 +2803,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-440",
@@ -2805,7 +2880,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-441",
@@ -2873,7 +2948,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-437",
@@ -2941,7 +3016,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "source_name": "The Hacker News",
@@ -3008,7 +3083,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "source_name": "The Hacker News",
@@ -3075,7 +3150,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-438",
@@ -3153,7 +3228,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-434",
@@ -3221,7 +3296,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-430",
@@ -3308,7 +3383,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-428",
@@ -3376,7 +3451,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-429",
@@ -3445,7 +3520,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-431",
@@ -3523,7 +3598,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-425",
@@ -3614,7 +3689,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-427",
@@ -3688,7 +3763,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-423",
@@ -3766,7 +3841,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-424",
@@ -3835,7 +3910,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-422",
@@ -3907,82 +3982,6 @@
             "검증: CloudWatch error·throttle·duration·concurrency와 API Gateway/EventBridge/SQS 지연을 같은 request correlation으로 비교",
             "측정: triage lead time·false positive·manual API call 감소·token usage·tool failure·rollback time을 pilot 지표로 설정",
             "팀 액션: 한 account·한 Lambda cohort에서 read-only canary를 수행하고 source/log access와 change approval은 제외한 뒤 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-426",
-      "title_ko": "GitHub Project HydraFusion 연구 프리뷰: multi-model coding workflow를 품질·비용·권한 trace로 분리",
-      "title_original": "Project HydraFusion: Frontier quality via multi-model orchestration",
-      "summary": "- 공개: GitHub Copilot `/experimental`에서 모델 다중 제공자 orchestration으로 draft·critique·revision·escalation workflow를 선택하는 research preview\n- 평가: TerminalBench 2.1에서 GitHub가 밝힌 최적 configuration은 Claude Opus 5 대비 verified task quality **4.9%p** 향상·추정 workflow cost 67% 절감\n- 구조: solver는 shared workspace·permission-aware agent loop를 쓰고, review는 repository 변경이 없는 isolated tool-less context로 분리\n- 경계: 수치는 GitHub의 controlled offline evaluation·고정 policy·pricing assumption 기준이며 production task 성공률·latency·provider availability·비용 보증이 아님\n- 팀 액션: routing leg별 model·tool·permission·cost·latency·validation·fallback·patch apply 여부를 하나의 run trace로 저장 필요",
-      "detail": "GitHub는 Project HydraFusion을 GitHub Copilot의 research preview로 공개했다. 사용자가 HydraFusion을 하나의 모델처럼 선택하면 runtime이 여러 provider의 모델을 조합해 draft, critique, revise 또는 더 강한 모델로 cascade하는 execution plan을 선택한다. GitHub는 TerminalBench 2.1의 controlled offline evaluation에서 최적 configuration이 Claude Opus 5 baseline보다 verified task quality 4.9 percentage point 높고 추정 workflow cost가 67% 낮았다고 발표했다. 평가는 TerminalBench 2.1·DeepSWE·실제 Copilot session trajectory 기반 CheckpointBench에서 같은 task input, tool, execution limit, pricing assumption, grading condition, missing-result 처리를 적용했다고 설명한다. solver 단계는 shared workspace와 permission-aware loop를 사용하지만 review는 tool-less isolated context로 분리하며, workflow가 취소되거나 validation에 실패하면 patch를 적용하지 않는 fail-safe를 둔다. 이 결과는 research preview의 offline benchmark 수치이므로 실제 repository, quota, model/provider availability, code confidentiality, prompt injection, tool permission, latency 및 청구 비용을 보증하지 않는다. 도입 시 routing policy 자체를 배포물로 관리하고 task success·human accept·retry·p95·model leg cost·tool failure·permission denial·revert를 release ID로 비교해야 한다.",
-      "why_it_matters": "coding agent의 모델 선택이 단일 endpoint 호출에서 다단계 orchestration control plane으로 이동함. 품질·비용 최적화와 함께 workspace 공유, review 격리, permission, fallback, patch 적용 조건이 운영·감사 대상이 됨.",
-      "engineering_implication": "research preview는 read-only 또는 low-risk repository cohort에서 시작하고, workflow definition·model binding·tool scope·secret redaction·network egress·fallback·validation·apply/rollback authority를 분리 필요. baseline 대비 verified acceptance·p95·leg별 token/비용·retry·tool failure·denied action·revert rate를 동일 task class에서 측정 필요.",
-      "korea_implication": "국내 조직은 Copilot plan별 preview 제공, multi-provider data path·model 선택·code/prompt 보존·감사 export·계약 및 망분리 적합성을 공식 문서와 tenant 설정으로 별도 확인 필요.",
-      "category": "DevTools",
-      "tags": [
-        "GitHub Copilot",
-        "Coding Agent",
-        "Model Routing",
-        "Multi-model",
-        "Agent Orchestration",
-        "Benchmark",
-        "FinOps",
-        "Governance"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-09-05 01:04",
-      "source_name": "GitHub Blog",
-      "source_url": "https://github.blog/ai-and-ml/github-copilot/project-hydrafusion-frontier-quality-via-multi-model-orchestration/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/09/OptA_UI.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitHub 공식 블로그의 `article:published_time` `2026-09-04T16:04:14+00:00`를 KST `2026-09-05 01:04`로 기록. Project HydraFusion은 GitHub Copilot에서 runtime multi-model orchestration을 제공하는 research preview임.",
-          "items": [
-            "접근: 모든 GitHub Copilot plan에서 `/experimental` 경로로 사용하는 research preview",
-            "동작: 여러 provider 모델 중 draft·critique·revision·escalation workflow를 task별로 선택"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "HydraFusion은 사용자가 하나의 모델처럼 선택하면 전체 execution plan을 만들고, 필요한 경우에만 추가 model call을 사용해 quality·cost·latency를 균형화하는 구조임.",
-          "items": [
-            "선택: direct solve·cascade·critique 등 가장 단순한 예상 충족 workflow를 선택",
-            "분리: solver는 shared workspace와 permission-aware agent loop 사용",
-            "분리: review는 repository를 바꾸지 않는 isolated tool-less context 사용"
-          ]
-        },
-        {
-          "heading": "평가 범위와 수치",
-          "body": "GitHub는 TerminalBench 2.1·DeepSWE·CheckpointBench에서 고정 HydraFusion policy를 Claude Opus 5와 GPT-5.6 Sol baseline에 비교했다고 설명. TerminalBench 2.1 최적 configuration의 provider-reported 결과는 Opus 5 대비 verified task quality 4.9 percentage point 향상과 estimated cost 67% 절감 범위임.",
-          "items": [
-            "조건: 동일 task input·tool·execution limit·pricing assumption·grading·missing result 처리",
-            "비용: draft·critique·revision·escalation·retry·fallback의 모든 leg를 추정 workflow cost에 포함",
-            "경계: offline benchmark 수치를 production success·latency·quota·provider SLA 보증으로 확대 금지"
-          ]
-        },
-        {
-          "heading": "권한·변경 통제",
-          "body": "모델을 여러 번 호출하는 workflow는 모델 성능보다 workspace·tool·patch apply 권한의 연결 방식이 더 큰 위험을 만들 수 있음. GitHub는 workflow cancel 또는 validation failure 때 patch를 적용하지 않는 fail-safe를 설명함.",
-          "items": [
-            "통제: workflow definition·model binding·fallback·availability를 실행 전 검증",
-            "승인: solver의 write/tool 권한과 reviewer의 read-only isolation을 별도 policy로 관리",
-            "감사: model role·outcome·cost·latency·diagnostic을 run별로 연결"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "도입 판단은 평균 benchmark보다 실제 repository의 accepted patch·rollback·secret exposure·provider outage를 포함한 end-to-end 결과로 해야 함.",
-          "items": [
-            "측정: task success·human acceptance·retry·p95·leg별 token/비용·tool failure·revert rate",
-            "팀 액션: low-risk repository canary에서 single-model baseline과 routing policy를 비교"
           ]
         }
       ],
