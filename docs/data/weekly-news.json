@@ -2,7 +2,7 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-15 09:30",
+  "last_updated_kst": "2026-09-15 13:33",
   "audience": "developers and engineers",
   "executive_summary": [
     "Kubernetes CSI Changed Block Tracking Beta는 `SnapshotMetadataService`를 **`v1beta1`**로 전환하고 `v1alpha1`을 제거. CSI driver·sidecar·backup controller·GitOps manifest를 함께 inventory하고 delta metadata·restore canary를 수행 필요.",
@@ -278,6 +278,73 @@
       "rank": 1
     },
     {
+      "id": "news-473",
+      "title_ko": "Kubernetes v1.37 Memory QoS Beta: default-on feature gate와 opt-in `memory.high`·tiered reservation 운영 경계",
+      "title_original": "Kubernetes v1.37: Memory QoS Graduates to Beta",
+      "summary": "- 공개: Kubernetes v1.37에서 `MemoryQoS`가 Beta·default-on으로 승격\n- 기본 동작: Linux `cgroup v2` node에서 feature gate는 켜지지만 기본 kubelet 설정은 `memory.high`·`memory.min`·`memory.low`를 쓰지 않음\n- opt-in: `memoryThrottlingFactor`로 Burstable/BestEffort `memory.high` throttling, `memoryReservationPolicy: TieredReservation`으로 tiered memory protection 활성화\n- 변경: Alpha 기본값 `memoryThrottlingFactor: 0.9`을 `null`로 바꿔 기존 workload의 자동 throttling 위험을 제거\n- 팀 액션: cgroup v2 node·kubelet config·QoS class·OOM/PSI·latency SLO를 inventory한 뒤 representative workload에서 throttling/reservation canary 필요",
+      "detail": "Kubernetes v1.37에서 Memory QoS가 Beta가 되고 feature gate가 모든 kubelet에서 기본 활성화된다. 다만 기본 kubelet configuration은 memory throttling과 reservation을 활성화하지 않아 `memory.high`, `memory.min`, `memory.low` cgroup 값이 자동으로 기록되지 않는다. Burstable·BestEffort container의 `memory.high` throttling은 `memoryThrottlingFactor`를 명시해야 하며, tiered reservation은 `memoryReservationPolicy: TieredReservation`을 명시해야 한다. Alpha 단계의 기본 throttling factor `0.9`은 default-on 전환 시 기존 workload를 예상치 않게 throttle할 수 있어 v1.37에서 `null`로 변경됐다. 이 기능은 Linux cgroup v2 memory controller를 전제로 하므로 node OS/cgroup mode와 QoS별 behavior, memory pressure·PSI·OOM·tail latency를 workload canary에서 검증해야 한다.",
+      "why_it_matters": "Memory QoS의 default-on은 kubelet feature-gate 상태와 실제 cgroup enforcement를 분리함. upgrade만으로 memory limit behavior가 바뀐다고 가정하거나, 명시 opt-in 뒤 workload latency·reclaim·OOM risk를 측정하지 않으면 capacity와 SLO 판단이 왜곡될 수 있음.",
+      "engineering_implication": "v1.37 도입 전 node별 cgroup v2 여부와 kubelet config drift를 확인하고, `memoryThrottlingFactor`·`TieredReservation`을 별도 change로 rollout 필요. Burstable/BestEffort별 `memory.events`, PSI, OOM, throttled time, request p95/p99, reclaim를 baseline·canary·rollback 기준으로 기록 필요.",
+      "korea_implication": "국내 managed Kubernetes와 자체 node image 환경은 provider node OS의 cgroup v2 지원과 managed kubelet setting 노출 범위를 확인한 뒤, multi-tenant workload의 QoS·capacity policy에 반영 필요.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "Memory QoS",
+        "cgroup v2",
+        "Kubelet",
+        "SRE",
+        "Resource Management",
+        "Open Source"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-09-15 03:30",
+      "source_name": "Kubernetes Blog / SIG Node",
+      "source_url": "https://kubernetes.io/blog/2026/09/14/kubernetes-v1-37-memory-qos-graduates-to-beta/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes v1.37에서 `MemoryQoS` feature gate가 Beta로 승격되고 기본 활성화됨. 대상 node는 Linux `cgroup v2` memory controller를 사용하는 kubelet 환경임.",
+          "items": [
+            "변경: 모든 v1.37 kubelet에서 `MemoryQoS` gate가 기본 활성화",
+            "경계: feature gate default-on만으로 memory throttling·reservation enforcement가 자동 활성화되지는 않음"
+          ]
+        },
+        {
+          "heading": "기본값과 opt-in 설정",
+          "body": "기본 kubelet configuration은 `memory.high`·`memory.min`·`memory.low`를 cgroup에 쓰지 않음. 실제 behavior 변경은 명시적인 kubelet configuration에서 시작됨.",
+          "items": [
+            "throttling: `memoryThrottlingFactor`를 설정하면 Burstable·BestEffort container에 `memory.high` 적용",
+            "reservation: `memoryReservationPolicy: TieredReservation` 설정으로 `memory.min`·`memory.low` 기반 tiered protection 활성화",
+            "기본값: `memoryThrottlingFactor` 기본 `null`, `memoryReservationPolicy` 기본 `None`"
+          ]
+        },
+        {
+          "heading": "Alpha 대비 migration 경계",
+          "body": "Alpha에서는 `memoryThrottlingFactor` 기본값이 `0.9`였음. v1.37에서는 feature gate가 기본 활성화되는 조건에서 기존 workload의 의도하지 않은 throttling을 피하기 위해 기본값을 `null`로 변경함.",
+          "items": [
+            "영향: 기존 Alpha experiment가 kubelet configuration 또는 manifest automation에 남아 있는지 inventory 필요",
+            "경계: feature gate enabled·`memory.high` enforcement·tiered reservation은 서로 다른 상태이므로 node configuration과 cgroup runtime 값을 함께 확인",
+            "호환성: Linux cgroup v2 전제이며 cgroup v1 또는 non-Linux node behavior로 확대 해석 금지"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Memory QoS는 capacity isolation과 latency trade-off를 바꾸는 kubelet control임. config apply 성공이 아닌 workload별 memory pressure와 SLO evidence로 promotion을 판정해야 함.",
+          "items": [
+            "측정: QoS class별 `memory.events`, PSI, OOM kill, reclaim, `memory.high` throttling, request p95/p99",
+            "canary: memory-heavy service와 batch workload에서 baseline 대비 throughput·tail latency·eviction behavior 비교",
+            "팀 액션: platform·SRE·application owner가 opt-in scope, alert threshold, rollback trigger를 동일 change record로 승인"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "region": "Global",
       "importance": "must-know",
       "local_image": "",
@@ -343,7 +410,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "region": "Global",
@@ -416,11 +483,11 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-469",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -570,7 +637,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-464",
@@ -655,7 +722,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-465",
@@ -732,7 +799,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-462",
@@ -808,7 +875,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-463",
@@ -881,7 +948,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-461",
@@ -958,7 +1025,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-459",
@@ -1031,7 +1098,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-458",
@@ -1142,7 +1209,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-468",
@@ -1216,7 +1283,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-455",
@@ -1298,7 +1365,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-460",
@@ -1376,7 +1443,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-457",
@@ -1453,7 +1520,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-456",
@@ -1523,7 +1590,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-454",
@@ -1600,7 +1667,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-453",
@@ -1682,7 +1749,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-466",
@@ -1773,7 +1840,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-452",
@@ -1850,7 +1917,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-451",
@@ -1923,7 +1990,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-449",
@@ -2000,7 +2067,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-450",
@@ -2074,7 +2141,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-447",
@@ -2138,7 +2205,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-446",
@@ -2215,7 +2282,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-445",
@@ -2292,7 +2359,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-433",
@@ -2377,7 +2444,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-448",
@@ -2441,7 +2508,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-420",
@@ -2519,7 +2586,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-444",
@@ -2596,7 +2663,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-443",
@@ -2669,7 +2736,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-442",
@@ -2737,7 +2804,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-439",
@@ -2803,7 +2870,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-440",
@@ -2880,7 +2947,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-441",
@@ -2948,7 +3015,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-437",
@@ -3016,7 +3083,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "source_name": "The Hacker News",
@@ -3083,7 +3150,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "source_name": "The Hacker News",
@@ -3150,7 +3217,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-438",
@@ -3228,7 +3295,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-434",
@@ -3296,7 +3363,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-430",
@@ -3383,7 +3450,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-428",
@@ -3451,7 +3518,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-429",
@@ -3520,7 +3587,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-431",
@@ -3598,7 +3665,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-425",
@@ -3689,7 +3756,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-427",
@@ -3763,7 +3830,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-423",
@@ -3841,7 +3908,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-424",
@@ -3907,81 +3974,6 @@
             "측정: deployment complete lead time·remaining task ready p95·source drain time·rollback time·error-budget burn",
             "통제: healthy percent·cleanup mode·autoscaling·capacity reservation·alarm·manual rollback authority를 IaC change record에 고정",
             "팀 액션: GPU 또는 constrained-capacity service에서 `BLOCKING`·`DEFERRED`와 100% baseline을 비교한 뒤 workload cohort별 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-422",
-      "title_ko": "AWS MCP Server, Lambda serverless 진단 추가: agent 관측 권한을 7일 baseline·변경 trace로 분리",
-      "title_original": "AWS MCP Server adds a serverless capability for AWS Lambda functions",
-      "summary": "- 추가: AWS MCP Server가 Claude Code·Kiro 등 coding agent의 Lambda 및 연결 리소스 진단 capability 제공\n- 범위: Lambda·API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions의 구성·오류·변경·latency를 같은 조사 흐름에서 확인\n- 분석: **7일 baseline** 대비 error signal 변화, recurring error, 최근 변경 timeline, 연결 리소스 latency를 공식 기능으로 제시\n- 경계: MCP Server 실행 위치는 US East (N. Virginia)·Europe (Frankfurt)이며 prompt·telemetry·로그의 보존·data path·cross-account 권한은 별도 확인 대상\n- 팀 액션: read-only·short-lived role로 시작하고 source·환경변수·payload·log 접근, CloudTrail, baseline anomaly, runbook·rollback을 incident trace로 분리 검증 필요",
-      "detail": "AWS는 2026년 9월 5일 01:31 KST에 AWS MCP Server의 Lambda serverless diagnostic capability를 공지했다. Agent Toolkit for AWS 또는 standalone AWS MCP Server를 통해 Claude Code·Kiro 같은 coding agent가 실행 중인 Lambda와 API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions 연결 리소스를 함께 조사할 수 있다. 공지는 7일 baseline 대비 오류 신호 변화, 반복 오류, 배포 구성, 최근 변경 timeline, 연결 리소스 latency 분석을 기능 범위로 든다. MCP Server 자체는 US East (N. Virginia)와 Europe (Frankfurt)에서 실행되고, 대상 AWS 서비스 접근은 모든 commercial Region에서 가능하다고 안내한다. 추가 비용 없는 capability라는 발표이지만, 실제 IAM action·cross-account 권한·CloudTrail 범위·prompt 및 telemetry 보존·data residency·진단 정확도·latency·token 절감·SLA는 공지만으로 확정할 수 없다. agent에게 incident 원인 판정을 맡기기보다 read-only 조사와 least privilege를 먼저 적용하고, CloudWatch metric·trace·deployment event·human runbook·rollback evidence를 분리해 운영해야 한다.",
-      "why_it_matters": "agent가 Lambda와 연결 리소스의 신호를 한 호출 흐름에서 조합하면 조사 왕복을 줄일 수 있지만, 동시에 observability data·구성·변경 이력의 접근 경계가 넓어짐. 진단 권한을 remediation 권한으로 확장하면 prompt injection·잘못된 상관관계·과도한 데이터 노출이 incident 범위를 키울 수 있음.",
-      "engineering_implication": "Lambda diagnostic MCP는 read-only role·account/region/resource tag allowlist·short session·CloudTrail·request correlation부터 설정 필요. source·환경변수·secret·payload·log의 노출 여부와 7일 baseline의 데이터 품질을 확인하고, agent conclusion은 CloudWatch metric·X-Ray/OTel trace·deployment event·runbook으로 재검증한 뒤에만 변경 승인에 연결 필요.",
-      "korea_implication": "AWS MCP Server 실행 위치가 미국 동부·프랑크푸르트라는 공지 범위를 서울 리전 처리 또는 국내 data residency 보증으로 확대할 수 없음. 국내 규제·망분리 workload는 cross-region control plane·로그 및 prompt 전송·감사 export·계약 조건을 적용 전 별도 검증 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "MCP",
-        "AWS MCP Server",
-        "AWS Lambda",
-        "Serverless",
-        "Agent",
-        "Observability",
-        "IAM",
-        "Incident Response"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-09-05 01:31",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/aws-mcp-server-serverless/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "AWS MCP Server User Guide",
-          "url": "https://docs.aws.amazon.com/mcp/latest/userguide/what-is-mcp.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS 공식 What’s New가 AWS MCP Server의 Lambda serverless diagnostic capability를 공지. AWS RSS `Fri, 04 Sep 2026 16:31:00 GMT`를 KST `2026-09-05 01:31`로 환산.",
-          "items": [
-            "대상: Claude Code·Kiro 등 coding agent가 실행 중인 Lambda와 연결 리소스를 조사하는 공식 범위",
-            "연결: API Gateway·EventBridge·S3·DynamoDB·SNS·SQS·Step Functions를 Lambda 조사 흐름에 포함",
-            "제공: Agent Toolkit for AWS 또는 standalone AWS MCP Server 설치 경로"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "공지는 agent가 한 호출에서 error signal·구성·변경·latency를 종합하도록 설계된 capability를 설명. 반복적인 다수 API 호출을 orchestration하는 경우보다 token 소비를 줄일 수 있다는 AWS 설명도 포함.",
-          "items": [
-            "baseline: 최근 **7일** error signal과 비교해 변경 지점을 식별하는 기능",
-            "추적: recurring error·deployed configuration·recent change timeline을 조사 근거로 수집",
-            "성능: 연결 리소스의 latency를 분석 범위에 포함하되 실제 진단 정확도·latency 절감 수치는 공지에 부재"
-          ]
-        },
-        {
-          "heading": "권한·데이터 경계",
-          "body": "진단에 필요한 Lambda 구성, 로그, event, resource metadata는 보안·개인정보·운영 데이터가 섞일 수 있음. 관측 권한과 source·환경변수·secret·payload 조회, remediation 실행을 같은 role에 묶지 않아야 함.",
-          "items": [
-            "권한: read-only IAM role, resource tag·account·region allowlist, short-lived session으로 시작",
-            "분리: diagnostic MCP tool·secret retrieval·configuration write·deployment action을 별도 role과 approval으로 관리",
-            "감사: MCP request·assumed role·resource scope·tool response·human decision을 CloudTrail 및 incident ID에 연결"
-          ]
-        },
-        {
-          "heading": "운영·SRE 시사점",
-          "body": "7일 baseline은 계절성·배포 주기·traffic shift·sampling 영향에 따라 오탐을 만들 수 있음. agent의 요약을 root cause 확정으로 취급하지 말고 service metric·distributed trace·deployment event·runbook을 교차 검증해야 함.",
-          "items": [
-            "검증: CloudWatch error·throttle·duration·concurrency와 API Gateway/EventBridge/SQS 지연을 같은 request correlation으로 비교",
-            "측정: triage lead time·false positive·manual API call 감소·token usage·tool failure·rollback time을 pilot 지표로 설정",
-            "팀 액션: 한 account·한 Lambda cohort에서 read-only canary를 수행하고 source/log access와 change approval은 제외한 뒤 확대"
           ]
         }
       ],

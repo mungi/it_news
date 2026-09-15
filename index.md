@@ -36,6 +36,7 @@
 
 ## Raw Articles
 - [[raw/articles/kubernetes-csi-changed-block-tracking-beta-2026-09-15]] — Kubernetes CSI Changed Block Tracking Beta의 `v1beta1` CRD migration·snapshot metadata client/restore validation 경계.
+- [[raw/articles/kubernetes-v1-37-memory-qos-beta-2026-09-15]] — Kubernetes v1.37 Memory QoS Beta의 default-on gate·cgroup v2 throttling/reservation opt-in 검증 경계.
 - [[raw/articles/thn-ddrop-confidential-computing-2026-09-15]] — DDRop DDR5 write-drop 연구의 TDX·SGX·SEV-SNP memory freshness·physical custody 경계.
 - [[raw/articles/thn-red-heron-gitea-rce-2026-09-15]] — Red Heron Gitea RCE 보도의 repository·secret·Linux persistence·Proxmox lateral-movement 조사 경계.
 - [[raw/articles/cncf-cilium-1-20-gateway-api-ipv6-2026-09-14]] — Cilium 1.20 Gateway API ExternalAuth·TCP/UDP route·ENI IPv6와 network control-plane migration 검증 경계.
