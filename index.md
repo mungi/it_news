@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-15 | Total pages: 345
+> Last updated: 2026-09-15 | Total pages: 346
 
 ## Entities
 
@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cisco-secure-email-gateway-cve-2026-76461-active-exploitation-2026-09-15]] — Cisco Secure Email Gateway `CVE-2026-76461` 활성 악용·crafted email SQL injection·root command execution 대응 경계.
 - [[raw/articles/kubernetes-csi-changed-block-tracking-beta-2026-09-15]] — Kubernetes CSI Changed Block Tracking Beta의 `v1beta1` CRD migration·snapshot metadata client/restore validation 경계.
 - [[raw/articles/kubernetes-v1-37-memory-qos-beta-2026-09-15]] — Kubernetes v1.37 Memory QoS Beta의 default-on gate·cgroup v2 throttling/reservation opt-in 검증 경계.
 - [[raw/articles/thn-ddrop-confidential-computing-2026-09-15]] — DDRop DDR5 write-drop 연구의 TDX·SGX·SEV-SNP memory freshness·physical custody 경계.
