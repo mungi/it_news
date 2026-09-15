@@ -2,206 +2,323 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-15 17:38",
+  "last_updated_kst": "2026-09-16 01:47",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Marimo `CVE-2026-39987` observed exploitation은 notebook WebSocket에서 AWS Secrets Manager credential read와 SSH bastion authentication까지 **8초** pivot을 기록. public notebook·runtime IAM·secret·bastion trust를 동일 incident scope로 봉쇄 필요.",
+    "Vite `CVE-2026-39364` mass scan은 public dev server에서 query manipulation으로 `.env`, AWS/Azure config, Terraform state를 노림. `--host`·Docker port mapping·`server.fs.allow`/`deny`와 secret rotation을 함께 점검 필요.",
     "Cisco Secure Email Gateway `CVE-2026-76461`은 crafted email SQL injection으로 root command execution이 가능하며 Cisco가 활성 악용을 확인. fixed software 적용과 cluster별 `mail_logs`·root-level forensic·relay/directory integration credential 검토를 같은 incident closure로 운영 필요.",
     "Red Heron의 Gitea `CVE-2026-60004` 악용 보도는 13개 조직 침해와 repository theft 뒤 secret·SSH key·Proxmox lateral movement를 다룸. self-hosted forge는 fixed build와 clone/token/runner/host telemetry·secret rotation을 하나의 incident scope로 점검 필요.",
-    "DDrop 연구는 Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop interposer로 악용하는 laboratory attack을 제시. confidential VM threat model에 physical host custody·hardware maintenance·attestation policy를 분리 반영 필요.",
-    "Cilium 1.20은 Gateway API v1.6·`ExternalAuth`·`TCPRoute`/`UDPRoute`와 EKS ENI IPAM IPv6 Beta를 묶음. Gateway/Ingress migration, auth timeout·failure semantics, dual-stack egress, policy precedence를 traffic-path canary와 rollback evidence로 검증 필요.",
-    "GitLab CE/EE repository commits API `CVE-2026-85706`은 특정 조건 unauthenticated arbitrary file read 가능성을 다룸. self-managed instance는 fixed release 적용과 public project/API ingress·config/log access·runner/CI secret rotation evidence를 병행 필요."
+    "DDrop 연구는 Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop interposer로 악용하는 laboratory attack을 제시. confidential VM threat model에 physical host custody·hardware maintenance·attestation policy를 분리 반영 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cilium 1.20: Gateway API·ExternalAuth·ENI IPv6를 CNI 업그레이드가 아닌 network control-plane migration으로 검증",
-      "summary": "한 줄 결론: Cilium 1.20은 Gateway API v1.6·`ExternalAuth`·L4 `TCPRoute`/`UDPRoute`와 AWS ENI IPAM IPv6 Beta를 같은 release에 묶음. 승인 기준은 feature enablement가 아니라 auth failure·route convergence·dual-stack egress·policy precedence·rollback을 traffic path별로 재현하는 것임.",
-      "details": "CNCF/Cilium의 2026-09-14 공식 release는 Gateway API를 v1.4에서 v1.6으로 올리고 `ExternalAuth`, CORS filter, ListenerSet, HTTP 이외 traffic용 `TCPRoute`와 `UDPRoute`를 추가했다. AWS ENI IPAM mode는 IPv6 Beta에서 Prefix Delegation으로 각 node ENI에 `/80` prefix를 붙이고 agent가 Pod 주소를 배정하는 구조를 제시한다. Cilium-native CRD와 MCS API·Kubernetes `ClusterNetworkPolicy` 등 upstream resource의 병행은 portability 선택지를 넓히지만, controller compatibility·auth availability·policy precedence·VPC egress는 기존 cluster에서 자동으로 검증되지 않는다. Gateway/Ingress ownership, authorization dependency, IPv4/IPv6 address lifecycle, eBPF datapath observability를 동일 change record에서 canary와 rollback 기준으로 관리해야 한다.",
-      "why_it_matters": "CNI가 ingress/Gateway, L4 routing, external authorization, VPC-routable dual-stack Pod addressing까지 맡으면 network·security·platform의 failure domain과 운영 ownership이 함께 변경됨.",
+      "title": "Marimo RCE: notebook WebSocket·runtime IAM·Secrets Manager·SSH bastion을 하나의 breach graph로 차단",
+      "summary": "한 줄 결론: Marimo `CVE-2026-39987` observed chain은 notebook RCE 뒤 AWS credential과 private key를 거쳐 bastion SSH로 8초 만에 pivot함. notebook service update, public exposure 제거, secret read·SSH trust forensic·rotation을 분리하지 않는 incident closure가 필요함.",
+      "details": "Sysdig가 공개한 observed case에서 skilled operator는 Marimo pre-auth RCE 뒤 full interactive shell을 얻고, compromised instance credential로 AWS Secrets Manager를 호출해 SSH private key를 읽은 다음 bastion host에 authentication했다. time sequence는 WebSocket connection부터 8초였으며 9시간 session에서 850개 이상 command가 관측됐다. 이 사례는 all deployment compromise를 뜻하지 않지만, notebook runtime이 broad IAM와 persistent SSH trust를 가진 경우 developer tooling이 cloud lateral-movement control plane이 된다는 근거다. public endpoint, workload identity, secret store, bastion access를 ingress·identity·forensic·recovery의 하나의 change/incident graph로 운영해야 한다.",
+      "why_it_matters": "AI/data notebook은 code execution, cloud SDK, secrets, persistent access path가 만나는 runtime이며 RCE는 cloud identity boundary를 직접 넘을 수 있음.",
       "sources": [
-        "https://www.cncf.io/blog/2026/09/14/cilium-1-20-gateway-api-externalauth-tcproute-udproute-eni-ipam-for-ipv6-and-more/",
-        "https://docs.cilium.io/en/stable/network/concepts/ipam/eni/",
-        "https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/"
+        "https://thehackernews.com/2026/09/human-attacker-exploits-marimo-rce.html"
       ],
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-4.jpg",
-      "local_image": "",
-      "refreshed_kst": "2026-09-15 01:19",
+      "image_url": "",
+      "local_image": "assets/images/news-475.jpg",
+      "refreshed_kst": "2026-09-16 01:47",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Cilium 1.20은 Gateway, L4 route, external authorization, dual-stack IPAM을 같은 CNI control plane에 추가하는 release임. production 승인 기준은 version install이나 Pod Ready가 아니라 request authorization·route convergence·IPv6 egress·policy enforcement·rollback이 예상대로 작동하는지의 evidence임.",
+          "body": "Marimo notebook의 internet exposure는 개발 편의 경로가 아니라 cloud credential과 bastion으로 이어질 수 있는 production ingress임. `CVE-2026-39987` 대응은 package update만이 아니라 exposed `/terminal/ws`, instance role, Secrets Manager read, SSH trust path를 같은 incident graph로 닫는 작업임.",
           "items": [
-            "변화: Gateway API v1.6과 `ExternalAuth`·`TCPRoute`·`UDPRoute`가 north-south traffic과 L4 path의 API 범위를 확장",
-            "판정: Cilium upgrade를 feature flag 변경이 아닌 network control-plane migration으로 change review 필요"
+            "변화: pre-auth RCE 하나가 notebook shell·AWS credential·bastion SSH로 이어진 observed chain",
+            "판정: notebook server의 localhost binding·public ingress·runtime identity를 release gate로 관리 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "CNCF에 게시된 Cilium 공식 release는 2026-09-14 공개됨. source는 Gateway API v1.4에서 v1.6 이동, `ExternalAuth`·CORS filter·ListenerSet, non-HTTP traffic용 `TCPRoute`·`UDPRoute`를 발표함. 요청이 application에 도달하기 전 authentication·authorization을 처리하는 경로가 포함됨.",
+          "body": "Sysdig가 관측한 operator는 public disclosure 뒤 active exploitation된 Marimo `CVE-2026-39987`을 이용함. 보도 기준 CVSS는 9.3이며 모든 Marimo version 영향으로 서술됨. 첫 WebSocket connection 뒤 stored credential lookup, AWS Secrets Manager call, bastion SSH authentication이 8초 안에 연속 발생한 사례임.",
           "items": [
-            "Gateway: HTTP 외 traffic도 Gateway API resource로 다루는 L4 route 지원 추가",
-            "선택지: Cilium-native CRD와 upstream Kubernetes resource를 병행할 수 있는 release 범위",
-            "경계: upstream API support가 기존 Ingress/controller·service mesh·auth service의 호환성이나 무중단 전환을 보장하지 않음"
+            "시간선: `18:57:22` WebSocket connection, `18:57:26` stored credential lookup, `18:57:30` bastion SSH authentication 관측",
+            "경로: full interactive shell 뒤 compromised instance credential로 Secrets Manager private key를 읽고 SSH pivot 수행",
+            "범위: observed one operator 사례이며 모든 Marimo deployment의 compromise 또는 generic dwell-time SLA 의미 아님"
           ]
         },
         {
-          "heading": "AWS ENI IPv6와 주소 lifecycle",
-          "body": "source는 AWS-specific `eni` IPAM mode의 IPv6를 Beta로 제시함. operator가 Prefix Delegation으로 worker node ENI에 IPv6 `/80` prefix를 attach하고 agent가 Pod 주소를 할당함. EKS Pod가 VPC-routable IPv6와 dual-stack 주소를 갖는 example도 제공됨.",
+          "heading": "AI/Infra 전문가 해석",
+          "body": "이 사례의 운영 위험은 exploit 속도보다 identity adjacency에 있음. notebook runtime에 broad AWS role과 Secrets Manager read가 있고 retrieved key가 bastion access를 허용하면 application RCE가 control-plane lateral movement로 확장됨. AI notebook·data science sandbox도 developer tool이라는 이유로 trust zone 밖에 둘 수 없음.",
           "items": [
-            "주소 경로: `ipam.mode: eni`·`eni.enabled: true`·`ipv6.enabled: true` 조합의 feature path 공개",
-            "검증: VPC route·security group·DNS·NAT 또는 egress·NetworkPolicy·observability가 IPv4/IPv6 모두에서 의도대로 동작하는지 확인",
-            "경계: Beta feature와 example output이 리전 capacity·EKS/CNI version compatibility·production SLA를 의미하지 않음"
+            "볼 것: workload IAM policy, Secrets Manager `GetSecretValue`, credential source, EC2/ECS metadata access, bastion authorized key provenance",
+            "피할 것: CVE patch 성공만으로 previously harvested credential 또는 SSH session 부재를 판정하는 방식",
+            "판정: notebook owner·cloud identity owner·bastion owner가 하나의 containment authority를 공유 필요"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: traffic control-plane",
-          "body": "Gateway와 external authorization을 CNI datapath 인접 영역에 두면 application, identity provider, policy controller, eBPF flow visibility의 dependency가 한 request path로 결합됨. auth service timeout·retry·header propagation·fail-open/fail-closed 선택은 security policy이면서 availability SLO 결정임.",
+          "heading": "아키텍처와 운영 관점",
+          "body": "Marimo는 default에서 localhost에 bind한다는 Vite와 달리 본 기사에는 default binding 보장이 없음. 따라서 effective exposure는 reverse proxy, load balancer, Kubernetes Service, security group, port-forward, developer workstation tunnel을 실제 network path로 확인해야 함. terminal WebSocket은 normal web request보다 별도 audit 대상임.",
           "items": [
-            "볼 것: `ExternalAuth` denied decision, timeout, retry, upstream outage, identity header propagation의 request-level telemetry",
-            "피할 것: application 2xx만 보고 authorization bypass·fail-open·policy mismatch를 놓치는 관측 방식",
-            "판정: Gateway listener owner·auth service owner·incident escalation path를 release 전 명시 필요"
+            "검증: `/terminal/ws` public reachability, ingress allowlist, authentication middleware, WAF/log retention, notebook image version",
+            "검증: WebSocket open·command execution·egress·secret read·SSH auth를 correlation ID 또는 time window로 연결",
+            "운영: ephemeral notebook·separate service account·per-project secret scope·short-lived credential 적용"
           ]
         },
         {
-          "heading": "Datapath·policy·멀티클러스터 관점",
-          "body": "release는 `netkit auto`, stable MCS API, Kubernetes `ClusterNetworkPolicy` alignment도 다룸. source는 Cilium CRD와 portable upstream resource를 함께 선택할 수 있다고 설명하지만, 동일 workload에 중첩될 때 policy precedence와 controller reconciliation은 local cluster matrix로 확인해야 함.",
+          "heading": "보안·SRE·FinOps 관점",
+          "body": "9시간 동안 850개 이상 interactive command가 관측됐다는 source 설명은 dwell-time detection이 중요함을 뜻함. command count 자체는 universal threshold가 아니며 workload baseline과 결합해야 함. credential rotation은 application availability와 automation dependency를 동시에 바꾸므로 staged recovery가 필요함.",
           "items": [
-            "검증: existing `NetworkPolicy`·Cilium policy·`ClusterNetworkPolicy`의 allow/deny precedence와 audit evidence",
-            "검증: Gateway API CRD·controller·Ingress·service mesh coexistence 및 rollback 때 connection drain",
-            "관측: L7 request·L4 flow·eBPF drop·policy verdict·route convergence를 service SLO timeline으로 연결"
-          ]
-        },
-        {
-          "heading": "SRE·보안·FinOps 관점",
-          "body": "새 datapath 기능은 control point를 줄일 수 있으나 failure blast radius를 넓힐 수 있음. dual-stack은 address allocation, route lookup, firewall rule, logging storage의 두 경로를 증가시킴. cost는 feature license가 아니라 canary 환경·telemetry cardinality·incident recovery time까지 포함해 비교 필요.",
-          "items": [
-            "SRE: auth p95/p99, route convergence, packet drop, connection reset, IPv4/IPv6 egress failure를 release gate로 측정",
-            "보안: external auth failure mode, policy change audit, privileged Gateway config write 권한을 least privilege로 분리",
-            "FinOps: dual-stack flow log·metric cardinality와 canary/rollback 운영 비용을 baseline과 비교"
+            "보안: public notebook inventory와 stale image/extension lifecycle을 asset program에 편입",
+            "SRE: notebook restart, session revocation, secret rotation, bastion key revoke 뒤 job recovery와 user impact를 측정",
+            "FinOps: compromised runtime의 cryptomining·egress cost 조짐을 billing anomaly와 runtime telemetry로 함께 확인"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "일괄 migration보다 traffic class와 risk level을 나눈 canary가 필요함. 먼저 non-critical HTTP path에서 Gateway and `ExternalAuth` failure semantics를 확인하고, 이어 TCP/UDP와 ENI IPv6 workload로 확대해야 함. rollback은 Helm version만이 아니라 CRD·policy·address allocation state를 포함해야 함.",
+          "body": "긴급 조치는 exposed endpoint를 network에서 제거하고 fixed version으로 이동하는 것임. 다음 단계는 compromised instance가 읽을 수 있는 secret과 접속 가능한 bastion을 역방향으로 수집해 scope를 확정하는 방식이 안전함. clean image rebuild와 temporary role reduction을 parallel track으로 운영 필요.",
           "items": [
-            "1단계: Kubernetes/Cilium/Gateway API CRD, Ingress, service mesh, policy, VPC address ownership inventory",
-            "2단계: representative HTTP request의 allow/deny/timeout, route switch, observability, rollback rehearsal",
-            "3단계: TCP/UDP route와 dual-stack Pod에서 DNS·egress·security group·policy canary 수행",
-            "4단계: auth p95, packet drop, allocation failure, route convergence, rollback duration evidence 뒤 cohort 확대"
+            "1단계: Marimo inventory, version, public route, `/terminal/ws` access log, running session 보존",
+            "2단계: fixed version·public ingress 차단·active session revoke·egress containment 적용",
+            "3단계: instance role·Secrets Manager read·SSH key·bastion authentication·cloud audit log hunt",
+            "4단계: secrets/keys rotation, clean redeploy, representative notebook workflow validation 뒤 access 재개"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "platform team만의 version upgrade로 끝낼 수 없음. application team은 auth contract와 client retry를, network team은 routing·IPAM을, security team은 policy and audit을, SRE는 error budget과 rollback trigger를 함께 소유해야 함.",
+          "body": "개발팀은 notebook dependency와 user workflow를, platform team은 image·service exposure를, IAM team은 secret read를, SOC는 WebSocket/SSH trail을 함께 확인해야 함. 특정 open-source tool의 CVE를 isolated endpoint issue로 처리하면 credential path가 남음.",
           "items": [
-            "체크리스트: Gateway API CRD/controller matrix, listener ownership, Ingress/service mesh coexistence, connection drain",
-            "체크리스트: `ExternalAuth` timeout·failure policy·header handling·identity provider dependency·audit retention",
-            "체크리스트: ENI `/80` prefix, IPv6 route/security group/DNS/egress, allocation exhaustion, flow-log correlation",
-            "팀 액션: platform·network·security·application owner가 canary metric과 rollback authority를 하나의 change record로 승인"
+            "체크리스트: Marimo version·image digest·internet exposure·reverse proxy auth·WebSocket logging",
+            "체크리스트: AWS role/session·Secrets Manager resource policy·secret access history·metadata service restriction",
+            "체크리스트: bastion key inventory·SSH authentication·authorized_keys 변경·outbound VPS connection",
+            "팀 액션: CVE closure proof에 public exposure 제거와 identity-path forensic 결과를 포함"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Cilium 1.20의 value는 Gateway API와 dual-stack feature 목록이 아니라 network control plane을 한 ownership model로 검증할 수 있는 범위 확장임. success 로그 뒤의 authorization failure, L4 route mismatch, IPv6 egress gap, policy collision을 acceptance suite에 넣어야 함.",
+          "body": "8초 사례는 AI-assisted attack 여부보다 developer runtime이 가진 credential reachability가 breach speed를 결정한다는 관측임. notebook server가 secret broker나 bastion pivot이 되지 않도록 default network denial과 least-privilege runtime identity를 먼저 고정해야 함.",
           "items": [
-            "볼 것: auth p95·denied correctness·route convergence·packet drop·IPv6 allocation/egress·rollback duration",
-            "피할 것: feature enablement 또는 Pod Ready만으로 gateway·IPAM migration 완료를 판정하는 운영",
-            "팀 액션: representative service에서 HTTP/L4/auth/dual-stack failure를 재현한 evidence를 promotion 조건으로 고정"
+            "볼 것: exposed terminal endpoint, secret-read event, SSH pivot, long interactive session, egress destination",
+            "피할 것: patch 완료 뒤 secret rotation·bastion audit·clean rebuild를 생략하는 closure",
+            "팀 액션: public notebook path와 Secrets Manager-to-SSH trust chain을 즉시 tabletop으로 재현"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Distributed AI training: RDMA·Lustre·topology·validation을 GPU allocation과 분리하지 않는 platform gate",
-      "summary": "한 줄 결론: CNCF의 Atlassian 사례는 multi-node training에서 GPU provisioning만으로 AI-ready platform이 되지 않음을 설명함. RDMA actual transport, Lustre shared storage, topology placement, checkpoint/recovery, degraded-path validation을 job acceptance gate로 묶어야 함.",
-      "details": "CNCF에 게시된 Atlassian 사례는 tens-of-billions parameter model이 single-node memory 한계를 넘으면서 communication·storage·operational predictability가 동시에 필요해진 조건을 설명한다. RDMA와 Lustre를 각각 inter-node collective와 shared data/checkpoint path로 사용하며, socket path가 current-generation GPU multi-node job을 RDMA 대비 약 절반 속도로 만들 수 있다는 source 경험을 제시한다. device plugin CrashLoopBackOff가 RDMA fabric-capable node에서 지속돼 socket fallback을 숨긴 사례도 포함한다. 이 수치는 vendor-neutral throughput 보증이 아니며 hardware, network, filesystem, workload topology별 benchmark로 재검증해야 한다.",
-      "why_it_matters": "distributed training의 cost·reliability는 accelerator allocation보다 network/storage path correctness와 recovery evidence에 좌우됨.",
+      "title": "AWS Glue zero-ETL ownership: target table property conflict를 data-control-plane 배포 gate로 운영",
+      "summary": "한 줄 결론: AWS Glue zero-ETL의 target table property ownership·conflict detection은 multiple integration이 shared target을 모르게 수정하는 경로를 차단함. source-to-target ownership, catalog permission, lineage, consumer rollback을 release gate로 묶어야 함.",
+      "details": "AWS는 Glue zero-ETL integrations가 source table과 target catalog 구성 시 resulting table property를 owning integration에 연결하고, 다른 integration이 같은 target table property를 create/modify하려 하면 owner를 알려주고 alternate target 또는 existing integration update를 유도한다고 발표했다. 기능은 Amazon S3 Tables와 SageMaker Lakehouse catalog 대상이며 supported AWS Commercial·GovCloud US Region에서 제공된다. 이는 schema correctness·data quality·cross-account governance를 포괄 보장하지 않는다. data platform은 feature를 target namespace, integration owner, catalog write permission, downstream consumer expectation, retarget/rollback을 검증하는 preventative configuration control로 사용해야 한다.",
+      "why_it_matters": "zero-ETL의 operational unit은 source connection 하나가 아니라 source-to-target ownership contract이며 target ambiguity는 lineage·security·recovery risk로 전이됨.",
       "sources": [
-        "https://www.cncf.io/blog/2026/09/11/building-a-reliable-cloud-native-foundation-for-distributed-ai-training/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/glue-zero-etl-ownership-conflicts/"
       ],
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Whose-GPUs-are-these-anyway-2.jpg",
-      "local_image": "",
-      "refreshed_kst": "2026-09-15 01:19",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-09-16 01:47",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "distributed AI training의 reliability는 GPU 수량이 아니라 RDMA fabric, shared storage, Kubernetes device discovery, topology placement, validation을 하나의 workload contract로 운영하는 문제임. socket fallback과 storage stall을 success 상태만으로 숨기지 않도록 measurable gate 필요.",
+          "body": "AWS Glue zero-ETL의 새 ownership·conflict detection은 source table이 어느 target table property를 소유하는지 integration 단위로 추적하는 guardrail임. multiple integration 환경에서는 create 성공보다 existing target ownership, catalog topology, change approval을 검증하는 data-control-plane migration으로 다뤄야 함.",
           "items": [
-            "변화: multi-node training에서 network·storage·scheduler가 분리된 infrastructure component가 아니라 job correctness 조건으로 결합",
-            "판정: GPU allocation 성공이 아니라 collective throughput·step-time variance·checkpoint completion을 promotion gate로 설정"
+            "변화: target table property를 owning integration에 associate하고 conflict를 create/modify 시점에 노출",
+            "판정: target table naming과 integration ownership을 data governance inventory에 포함 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "CNCF에 게시된 Atlassian 사례는 tens-of-billions parameter model이 single node의 model·optimizer state·batch size 한계를 넘는 조건을 설명함. source는 RDMA와 Lustre를 distributed training platform의 communication·shared data path로 제시함.",
+          "body": "AWS는 2026-09-14 Glue zero-ETL integrations에 table property conflict detection과 ownership tracking을 추가했다고 발표함. source table과 target catalog를 설정하면 result table property가 owning integration에 연결됨. two integrations가 같은 target table을 모르게 공유하는 흐름을 막는 기능으로 설명됨.",
           "items": [
-            "통신: gradient·model state·collective synchronization에 low-overhead inter-node path 요구",
-            "스토리지: training data, checkpoint, intermediate artifact의 concurrent access가 storage bottleneck 없이 진행돼야 하는 조건",
-            "수치 경계: current-generation GPU에서 socket path가 RDMA 대비 multi-node job을 약 절반 속도로 만들 수 있다는 source 설명은 해당 platform 경험 범위"
+            "범위: Amazon S3 Tables 및 SageMaker Lakehouse catalogs에서 동작한다고 AWS가 명시",
+            "동작: 다른 integration이 owner인 property를 create 또는 modify하면 owner를 식별하고 alternate target 또는 existing integration update를 안내",
+            "가용성: supported Glue zero-ETL integration의 AWS Commercial 및 GovCloud US Region 범위"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "RDMA enabled node label만으로 data path가 정상이라는 보장은 없음. source는 device plugin이 production fabric-capable node에서 CrashLoopBackOff였고 job이 socket path로 silently fallback한 경험을 설명함. hardware discovery, CNI/device plugin, NCCL/collective telemetry를 함께 검증해야 함.",
+          "body": "zero-ETL은 data movement를 줄이지만 metadata ownership ambiguity를 자동으로 없애지 않음. integration이 same target에 write하는 topology에서 schema/table property contention은 reproducibility·lineage·rollback의 문제로 바뀜. 이번 기능은 write collision 전에 configuration intent를 surface하는 preventative control임.",
           "items": [
-            "볼 것: RDMA device plugin health·resource advertisement·pod placement·actual collective transport·network error counter",
-            "피할 것: GPU utilization 평균만 보고 straggler·step-time variance·socket fallback을 놓치는 관측 방식",
-            "판정: topology-aware scheduling과 communication health는 training job admission 전 검사 대상"
+            "볼 것: source-to-target mapping, catalog/database/table namespace, integration owner, property-change history",
+            "피할 것: data landing 성공만으로 downstream schema expectation과 ownership conflict가 해결됐다고 판단하는 방식",
+            "판정: data platform team이 target namespace와 integration lifecycle owner를 명시 필요"
           ]
         },
         {
-          "heading": "스토리지·checkpoint 관점",
-          "body": "Lustre 같은 parallel shared filesystem은 throughput만이 아니라 concurrent checkpoint consistency와 restart behavior에 영향. source는 shared data access가 long pause와 uneven progress를 만들지 않아야 한다고 설명함. checkpoint byte, duration, retry, restore를 failure drill에 포함 필요.",
+          "heading": "아키텍처·운영 관점",
+          "body": "AWS announcement는 data conflict detection을 설명하지만 all schema evolution, data quality, row-level correctness, cross-account governance를 보장하지 않음. 따라서 integration guardrail 위에 contract test, consumer compatibility, catalog permission boundary가 추가돼야 함. target naming convention은 feature의 효과를 높이는 기본 control임.",
           "items": [
-            "측정: dataloader wait·checkpoint write p95·metadata operation·retry·restart-to-first-step duration",
-            "리스크: network throughput이 정상이어도 shared storage saturation이 worker skew와 GPU idle로 전이되는 조건",
-            "운영: dataset/cache/checkpoint namespace·quota·cleanup·retention을 job lifecycle과 연결"
+            "검증: source table별 target catalog/table mapping과 existing zero-ETL integration inventory",
+            "검증: create·modify conflict message, intended owner identification, approved retarget/update path",
+            "운영: schema/property change ticket에 source owner·target owner·consumer impact·rollback state 기록"
           ]
         },
         {
-          "heading": "SRE·FinOps 관점",
-          "body": "source의 half-speed 비교는 generic SLA가 아니라 degraded path가 비용과 time-to-result를 크게 바꿀 수 있다는 사례임. GPU-hour, idle time, network/storage capacity, failed-run rework를 same experiment으로 비교해야 함.",
+          "heading": "보안·SRE·FinOps 관점",
+          "body": "wrong target landing은 confidential data boundary와 lineage audit을 손상할 수 있음. ownership tracking은 permission policy를 대체하지 않으므로 Lake Formation/IAM, catalog write permission, cross-account sharing은 별도로 점검해야 함. FinOps는 duplicate integration이나 unintended target proliferation을 inventory로 측정해야 함.",
           "items": [
-            "FinOps: successful run 기준 GPU-hour 외에 queue time·straggler·checkpoint retry·reserved fabric/storage cost baseline",
-            "SRE: job success, step-time p50/p95, all-reduce latency, RDMA retry, filesystem wait, node replacement를 하나의 dashboard로 연결",
-            "경계: 특정 vendor hardware·cloud topology·Lustre deployment 결과를 다른 environment throughput 보증으로 사용 금지"
+            "보안: target catalog access·table property modification rights·cross-account role assumption을 least privilege로 검토",
+            "SRE: conflict event·failed create/modify·manual remediation time을 data pipeline operational metric으로 기록",
+            "FinOps: duplicate target·unintended storage/compute·reprocessing cost를 integration namespace와 대조"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "one workload와 small node group에서 known-good topology를 먼저 만들고, fault injection과 scale-out을 거쳐 production class로 확대하는 순서가 안전함. network 또는 storage degradation을 의도적으로 재현하지 않으면 silent fallback을 발견하기 어려움.",
+          "body": "먼저 current zero-ETL configuration을 read-only로 export해 source-to-target mapping을 만든 뒤, non-production에서 intentional conflict와 approved change를 모두 시험하는 순서가 필요함. production rollout은 catalog/domain별로 나누고 consumer validation을 release gate로 둬야 함.",
           "items": [
-            "1단계: model parallelism·batch·dataset·checkpoint·GPU/RDMA/storage topology inventory",
-            "2단계: single-node baseline과 multi-node RDMA path의 collective·step-time·checkpoint metrics 비교",
-            "3단계: device plugin restart·node drain·network degradation·storage pressure에서 fallback/alert/abort behavior drill",
-            "4단계: workload class별 admission check와 rollback path를 evidence 뒤 production policy에 반영"
+            "1단계: integration, source table, target catalog/table, owner, data classification inventory",
+            "2단계: staging에서 same-target conflict와 existing integration update/alternate target workflow 검증",
+            "3단계: IAM/Lake Formation permission·catalog lineage·consumer query compatibility·alert route 확인",
+            "4단계: domain cohort rollout 뒤 conflict/failed change/duplicate target metric을 review"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "ML team의 training configuration, platform team의 scheduling, network/storage team의 SLO를 change record에서 합쳐야 함. resource request만 충족해도 hidden degraded path가 남을 수 있으므로 shared acceptance test가 필요.",
+          "body": "analytics engineer만의 console option 변경이 아니라 data producer·platform·governance·consumer가 함께 ownership contract를 승인해야 함. AWS가 지원한다고 밝힌 catalog와 region도 account별 activation 상태와 service limitation을 직접 확인해야 함.",
           "items": [
-            "체크리스트: GPU/RDMA resource advertisement·device plugin·node label·topology-aware scheduler·collective library version",
-            "체크리스트: shared filesystem mount·throughput·quota·checkpoint consistency·dataset cache·recovery behavior",
-            "체크리스트: step-time variance·all-reduce latency·RDMA counters·filesystem wait·GPU idle·cost telemetry",
-            "팀 액션: distributed-training release gate에 degraded-path fault drill과 rollback owner를 등록"
+            "체크리스트: Glue zero-ETL integration list, S3 Tables/SageMaker Lakehouse target, table property owner, naming convention",
+            "체크리스트: catalog/IAM/Lake Formation write permission, cross-account path, data classification, audit retention",
+            "체크리스트: downstream ETL/BI/ML consumer, schema/property assumption, rollback/retarget procedure",
+            "팀 액션: target ownership exception을 change-management record와 data lineage register에 동시 등록"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI-ready platform의 기준은 GPU provisioning 완료가 아니라 multi-node job이 expected transport와 storage path에서 재현 가능한 step-time·checkpoint·recovery 성능을 내는지임. degraded network path와 shared-storage contention을 success log 뒤에 숨기지 않는 telemetry가 필요.",
+          "body": "zero-ETL의 운영 단위는 source connection이 아니라 source-to-target ownership contract임. conflict detection을 alarm처럼만 보지 말고 target design, permission, lineage, consumer rollback을 검증하는 pre-deployment gate로 사용해야 함.",
           "items": [
-            "볼 것: RDMA actual transport·step-time p95·checkpoint p95·worker skew·recovery duration",
-            "피할 것: device label 또는 job completion만으로 distributed training health를 판단하는 방식",
-            "팀 액션: one representative workload로 socket fallback·storage pressure·node loss를 포함한 acceptance suite 운영"
+            "볼 것: target table property owner, conflict event, create/modify approval, consumer impact",
+            "피할 것: shared target을 팀 관행 또는 console history로만 추적하는 운영",
+            "팀 액션: each integration에 one accountable target owner와 retarget/rollback runbook 지정"
           ]
         }
-      ],
-      "refresh_note": "2026-09-15 KST 첫 실행에서 GeekNews·GeekNews Plus·AI타임스·인공지능신문과 OpenAI·AWS·CNCF source surface를 재확인함. 새 coverage window에서 직접 검증된 독립 primary-source replacement는 Cilium 1.20 한 건뿐이어서, Cilium과 source가 겹치지 않는 CNCF·Atlassian distributed training briefing을 유지함. 기존 CNCF 원문 2026-09-11의 RDMA transport·Lustre checkpoint·device-plugin fallback 사실은 새 material update 없이 변경하지 않음."
+      ]
     }
   ],
   "items": [
+    {
+      "id": "news-475",
+      "title_ko": "Marimo `CVE-2026-39987` 활성 악용: notebook RCE 뒤 AWS Secrets Manager·SSH bastion까지 8초 pivot",
+      "title_original": "Human Attacker Exploits Marimo RCE, Reaches SSH Bastion in Eight Seconds",
+      "summary": "- 경보: Sysdig가 Marimo `CVE-2026-39987` pre-auth RCE의 활성 악용 사례를 공개\n- 관측: WebSocket connection 뒤 stored credential lookup·AWS Secrets Manager·bastion SSH authentication이 **8초** 안에 연속 발생\n- 범위: 9시간 session에서 850개 이상 interactive command와 in-session Python toolkit 사용 관측\n- 조치: public notebook endpoint 차단·fixed version·runtime IAM/secret/SSH trust chain forensic·rotation 병행 필요",
+      "detail": "Sysdig는 skilled human operator가 Marimo `CVE-2026-39987`을 악용해 vulnerable notebook에서 SSH bastion으로 8초 안에 pivot한 사례를 공개했다. 보도에 따르면 첫 WebSocket connection 뒤 compromised instance credential로 AWS Secrets Manager를 호출하고 retrieved private key로 bastion SSH authentication이 발생했다. 9시간 session에서 850개 이상 interactive command와 attacker VPS listener가 관측됐다. 하나의 observed case이며 모든 Marimo deployment compromise를 뜻하지 않는다. public notebook exposure, runtime IAM, secret read, bastion SSH trust를 patch closure와 분리하지 말아야 한다.",
+      "why_it_matters": "Notebook RCE가 workload IAM·Secrets Manager·bastion trust와 연결되면 개발 도구 침해가 cloud control-plane lateral movement로 확장됨.",
+      "engineering_implication": "Marimo version·`/terminal/ws` exposure·session/egress log를 보존하고, instance role의 secret-read history·retrieved SSH key·bastion auth를 time-correlated hunt한 뒤 clean rebuild와 credential rotation 수행 필요.",
+      "korea_implication": "국내 조직도 개발용 notebook·Vite server를 public ingress·cloud IAM·bastion 접근과 분리하고, secrets rotation과 CI/CD 재배포를 같은 incident runbook으로 검증 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Marimo",
+        "CVE-2026-39987",
+        "Cloud Security",
+        "AWS Secrets Manager",
+        "SSH",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 98,
+      "published_kst": "2026-09-15 20:52",
+      "source_name": "The Hacker News / Sysdig",
+      "source_url": "https://thehackernews.com/2026/09/human-attacker-exploits-marimo-rce.html",
+      "image_url": "",
+      "local_image": "assets/images/news-475.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Sysdig가 Marimo `CVE-2026-39987`을 악용한 observed attack chain을 공개함. 보도는 pre-auth RCE와 active exploitation status를 설명함.",
+          "items": [
+            "시간선: WebSocket connection부터 bastion SSH authentication까지 8초 관측",
+            "대상: Marimo notebook runtime과 connected AWS credential·SSH trust path"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공격자는 full interactive shell 뒤 compromised instance credential로 AWS Secrets Manager를 호출하고 private key를 받아 bastion에 SSH authentication을 수행한 것으로 서술됨.",
+          "items": [
+            "행위: 9시간 session에서 850개 이상 interactive command 관측",
+            "도구: public offensive framework 대신 in-session custom Python toolkit 사용 관측"
+          ]
+        },
+        {
+          "heading": "영향 범위와 경계",
+          "body": "source는 특정 operator의 observed activity를 다룸. 모든 Marimo installation의 exploit, generic dwell time, affected AWS account scope를 확정하지 않음.",
+          "items": [
+            "경계: local evidence 없이 secret exfiltration·bastion persistence·tenant compromise를 단정하지 않는 원칙",
+            "경계: patch 적용이 historical secret access 또는 SSH session 부재를 증명하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Notebook endpoint의 public exposure와 runtime identity를 one security boundary로 관리 필요.",
+          "items": [
+            "점검: Marimo image/version·`/terminal/ws` ingress·Secrets Manager audit·bastion SSH log correlation",
+            "팀 액션: fixed version, public route removal, session revoke, secret/key rotation, clean rebuild를 하나의 closure record로 승인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-476",
+      "title_ko": "Vite `CVE-2026-39364` mass scan: public dev server의 `.env`·AWS/Azure credential·Terraform state 유출 대응",
+      "title_original": "Mass-Scanning Campaign Exploits Vite Flaw to Extract Cloud Credentials From Exposed Dev Servers",
+      "summary": "- 경보: F5 Labs가 internet-exposed Vite dev server를 겨냥한 mass-scanning campaign을 관측\n- 원인: `?raw`·`?import&raw` query manipulation으로 `server.fs.deny` 대상 file retrieval 가능\n- 표적: `.env`, AWS credential/configuration, Azure profile, `terraform.tfstate`, `serverless.yml` 탐색\n- 조건: network exposure·`server.fs.allow` 범위·matching `server.fs.deny`가 함께 충족되는 deployment\n- 조치: dev server public exposure 제거, fixed version, secret/state rotation과 access-log hunt 병행 필요",
+      "detail": "F5 Labs는 `CVE-2026-39364`를 악용해 exposed Vite development server에서 sensitive file을 탈취하려는 automated scanning을 관측했다. `?raw`, `?import&raw`, `?import&url&inline` query를 붙이면 `server.fs.deny`가 막아야 할 file이 HTTP 200으로 반환될 수 있다는 Vite advisory 설명을 인용한다. 영향은 public network exposure와 allowed directory/deny pattern 조건이 함께 맞는 경우로 한정된다. requests는 `.env`, AWS/Azure configuration, Terraform state, process environment를 겨냥했고 forged crawler user agent·forwarded IP도 사용했다.",
+      "why_it_matters": "Vite dev server는 localhost default라도 `--host`, `server.host`, Docker port mapping으로 public exposure가 될 수 있어 developer convenience configuration이 cloud credential leak path로 바뀜.",
+      "engineering_implication": "Vite dev server·container port mapping·public route를 inventory하고 fixed version과 exposure removal을 먼저 수행한 뒤 `.env`, cloud key, Terraform state, Azure profile의 read/rotation·cloud audit·access log hunt를 수행 필요.",
+      "korea_implication": "국내 조직도 개발용 notebook·Vite server를 public ingress·cloud IAM·bastion 접근과 분리하고, secrets rotation과 CI/CD 재배포를 같은 incident runbook으로 검증 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Vite",
+        "CVE-2026-39364",
+        "Cloud Security",
+        "AWS",
+        "Azure",
+        "Terraform",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-09-15 20:12",
+      "source_name": "The Hacker News / F5 Labs",
+      "source_url": "https://thehackernews.com/2026/09/mass-scanning-campaign-exploits-vite.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDvoBVfJIN7YwGuf64F0CQWt9GrAVzaxDWGJetCrAGM_QgGEfpZm_I7f3FTkWBydY7v_iV4n8RWPAr4jfp7ZhN9DVbVZGDryBYlZiL6dn5RuYzLd811NH_sARdjbwWIpf9kOj-jtXfLzb7BTuy-iMpHbsgB9n8J5T7Hx0qp0D1_XeJR-ANcGQ5p88YH3fE/s1600/vite.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "F5 Labs가 exposed Vite development server에서 sensitive data를 수집하려는 automated campaign을 공개함. `CVE-2026-39364`는 query parameter manipulation으로 file deny restriction을 우회할 수 있는 high-severity flaw로 설명됨.",
+          "items": [
+            "경로: `/@fs/` request에 bypass query를 붙여 plaintext response를 받는 방식",
+            "표적: `.env`, AWS/Azure configuration, Terraform state, process environment"
+          ]
+        },
+        {
+          "heading": "영향 조건",
+          "body": "source는 network exposure·allowed directory 존재·matching deny pattern을 exploit 조건으로 제시함. default localhost binding이 public reachability를 보장하지 않는 조건임.",
+          "items": [
+            "노출: `--host`, `server.host`, Docker container port mapping이 reachable path가 될 수 있는 조건",
+            "경계: all Vite application 또는 any local dev server가 affected라는 의미 아님"
+          ]
+        },
+        {
+          "heading": "관측된 공격 행위",
+          "body": "F5 Labs는 crawler·AI bot impersonation User-Agent와 forged `X-Forwarded-For`·`X-Real-IP`를 포함한 request를 관측함.",
+          "items": [
+            "탐색: `/proc/self/cwd/.env`로 active working directory의 environment file을 읽으려는 request",
+            "경계: observed request가 각 secret의 successful theft 또는 cloud account takeover를 증명하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "developer server exposure와 secret material co-location을 production incident scope로 다뤄야 함.",
+          "items": [
+            "점검: Vite version·public route·container publish port·`server.fs.allow`/`deny`·access log",
+            "팀 액션: fixed version·public exposure removal·secret/state rotation·cloud audit correlation을 one incident record로 승인"
+          ]
+        }
+      ],
+      "rank": 2
+    },
     {
       "id": "news-474",
       "title_ko": "Cisco Secure Email Gateway `CVE-2026-76461` 활성 악용: crafted email SQL injection의 root command execution 대응",
@@ -275,7 +392,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "region": "Global",
@@ -350,7 +467,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-473",
@@ -417,7 +534,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "region": "Global",
@@ -485,7 +602,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "region": "Global",
@@ -558,11 +675,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-469",
-      "rank": 6,
+      "rank": 8,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -712,7 +829,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-464",
@@ -797,7 +914,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-465",
@@ -874,7 +991,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-462",
@@ -950,7 +1067,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-463",
@@ -1023,7 +1140,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-461",
@@ -1100,7 +1217,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-459",
@@ -1173,7 +1290,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-458",
@@ -1284,7 +1401,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-468",
@@ -1358,7 +1475,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-455",
@@ -1440,7 +1557,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-460",
@@ -1518,7 +1635,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-457",
@@ -1595,7 +1712,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-456",
@@ -1665,7 +1782,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-454",
@@ -1742,7 +1859,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-453",
@@ -1824,7 +1941,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-466",
@@ -1915,7 +2032,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-452",
@@ -1992,7 +2109,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-451",
@@ -2065,7 +2182,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-449",
@@ -2142,7 +2259,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-450",
@@ -2216,7 +2333,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-447",
@@ -2280,7 +2397,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-446",
@@ -2357,7 +2474,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-445",
@@ -2434,7 +2551,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-433",
@@ -2519,7 +2636,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-448",
@@ -2583,7 +2700,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-420",
@@ -2661,7 +2778,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-444",
@@ -2738,7 +2855,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-443",
@@ -2811,7 +2928,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-442",
@@ -2879,7 +2996,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-439",
@@ -2945,7 +3062,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-440",
@@ -3022,7 +3139,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-441",
@@ -3090,7 +3207,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-437",
@@ -3158,7 +3275,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "source_name": "The Hacker News",
@@ -3225,7 +3342,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "source_name": "The Hacker News",
@@ -3292,7 +3409,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-438",
@@ -3370,7 +3487,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-434",
@@ -3438,7 +3555,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-430",
@@ -3525,7 +3642,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-428",
@@ -3593,7 +3710,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-429",
@@ -3662,7 +3779,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-431",
@@ -3740,7 +3857,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-425",
@@ -3828,158 +3945,6 @@
             "측정: scheduled sync 성공률·end-to-end freshness lag·failed crawl·stale answer·denied query·citation coverage",
             "통제: connector scope·credential/OAuth owner·sync cadence·alert·disable switch·index rollback을 change record에 고정",
             "팀 액션: 작은 ServiceNow knowledge-base cohort에서 ACL·삭제·attachment·sync failure drill을 수행한 뒤 corpus별 확대"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-427",
-      "title_ko": "Amazon EC2 AMI 호환 인스턴스 타입 지정: launch template·Auto Scaling의 이미지-인스턴스 조합을 hard block으로 검증",
-      "title_original": "Amazon EC2 now supports specifying compatible instance types on AMIs",
-      "summary": "- 추가: AMI owner가 supported·unsupported instance type 또는 둘 다 지정해 이미지와 맞지 않는 새 instance launch를 EC2에서 차단 가능\n- 동작: 허용되지 않은 type으로 `RunInstances`를 호출하면 `InvalidParameterCombination` error로 launch 실패\n- 전파: `CopyImage`는 instance type specification을 보존하며, existing instance에는 영향 없음\n- 위험: shared AMI의 allow/deny 변경은 참조 중인 launch template·Auto Scaling group의 scale-out 또는 replacement를 실패시킬 수 있음\n- 팀 액션: AMI build pipeline에서 instance family·architecture·accelerator·driver 조건을 manifest로 검증하고 staged canary·ASG failure alarm·rollback을 함께 운영 필요",
-      "detail": "AWS는 AMI owner가 해당 AMI와 호환되는 EC2 instance type을 명시하는 기능을 추가했다. AMI에는 supported instance type, unsupported instance type 또는 둘 다 설정할 수 있으며 허용되지 않은 type으로 새 인스턴스를 실행하면 EC2가 launch를 차단하고 `InvalidParameterCombination` error를 반환한다. 기본값은 specification 미설정이며 모든 instance type을 허용하므로 기존 AMI와 실행 중 인스턴스의 동작은 바뀌지 않는다. owner만 specification을 수정할 수 있고 `CopyImage`는 이를 복사본에도 보존한다. 공식 문서는 launch template 또는 Auto Scaling group이 지정 AMI를 참조할 때 configured type이 허용되지 않으면 launch가 실패할 수 있으므로 shared AMI에 restriction을 적용하기 전에 compatibility 검증을 권고한다. `ReplaceImageInstanceTypeSpecification`은 전체 specification을 교체하므로 한 type만 추가·삭제해도 전체 최신 목록을 요청에 포함해야 한다. 이 기능은 machine image의 architecture·virtualization·driver·accelerator/runtime 조합을 deployment 이전에 차단하는 guardrail이지만, application boot·device discovery·AMI security posture·capacity 확보·ASG 복구·workload SLO를 보증하지 않는다. golden AMI와 launch template의 instance family, CPU architecture, GPU/Neuron driver, ENA/EBS·kernel 조건을 build manifest와 policy-as-code로 연결하고, canary ASG에서 launch error·replacement time·boot health·rollback을 확인한 뒤 공유 AMI에 확대해야 한다.",
-      "why_it_matters": "AMI와 instance type의 불일치는 autoscaling 또는 장애 replacement 시점에 늦게 드러나며, 특히 architecture·accelerator·driver 의존 golden image에서 recovery 지연으로 이어질 수 있음. AMI-level hard block은 잘못된 조합을 빠르게 막지만 launch failure를 control plane의 명시적 운영 신호로 바꿈.",
-      "engineering_implication": "AMI pipeline에 allowed/unsupported instance type manifest와 `DescribeImages` 검증을 추가하고, launch template·ASG·EKS node group 등 consumer inventory를 먼저 대조 필요. 변경 전 canary에서 `InvalidParameterCombination`, ASG activity, replacement p95, instance/system/application health와 rollback을 측정하고, specification 전체 교체 API의 stale-list overwrite를 change review·versioning으로 방지 필요.",
-      "korea_implication": "공식 공지는 모든 AWS Region 제공을 명시하지만, 서울 리전의 특정 instance family capacity나 managed service가 AMI specification을 어떻게 소비하는지는 별도 확인 대상임. 국내 production golden AMI는 account별 launch template·organization policy·capacity reservation·support scope를 canary로 확인 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Amazon EC2",
-        "AMI",
-        "Auto Scaling",
-        "Launch Template",
-        "Golden Image",
-        "Platform Engineering",
-        "Policy as Code"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-09-05 04:26",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/ec2-images-supported-instances/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "AMI allowed instance types — Amazon EC2 User Guide",
-          "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-allowed-instance-types.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New RSS의 `Fri, 04 Sep 2026 19:26:00 GMT`를 KST `2026-09-05 04:26`으로 기록. AMI owner가 AMI별 supported·unsupported EC2 instance type specification을 설정하는 공식 기능을 추가함.",
-          "items": [
-            "설정: supported instance type, unsupported instance type 또는 두 목록을 AMI에 지정",
-            "차단: 허용되지 않은 instance type의 새 launch는 EC2가 hard block",
-            "기본값: specification이 없는 기존 AMI는 모든 instance type 허용 상태 유지"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "EC2는 `RunInstances` 시 AMI specification과 requested instance type의 호환성을 확인함. 허용되지 않은 조합은 `InvalidParameterCombination` error로 실패하며, owner만 specification을 설정·변경할 수 있음.",
-          "items": [
-            "복사: `CopyImage`가 instance type specification을 새 AMI에도 보존",
-            "범위: existing instance에는 영향이 없고 new launch에만 적용",
-            "변경: `ReplaceImageInstanceTypeSpecification`은 부분 patch가 아닌 전체 specification 교체 방식"
-          ]
-        },
-        {
-          "heading": "배포·확장 운영 경계",
-          "body": "launch template와 Auto Scaling group은 AMI restriction과 configured instance type이 충돌하면 scale-out·replacement에서 실패할 수 있음. image guardrail은 runtime compatibility의 일부를 앞당길 뿐 capacity·boot·application health를 보증하지 않음.",
-          "items": [
-            "사전 점검: launch template·ASG·node group·fleet의 instance type과 AMI policy를 consumer inventory로 대조",
-            "관측: ASG activity·EC2 launch error·replacement p95·system/application health를 같은 rollout ID로 연결",
-            "경계: architecture·driver·device·application startup·quota·capacity와 SLO는 별도 canary 검증 대상"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "golden AMI에서 instance family·architecture·accelerator·driver 제약을 policy-as-code로 명시하면 잘못된 조합을 instance creation 이전에 차단할 수 있음. shared AMI restriction은 staging account와 canary ASG에서 launch/rollback evidence를 만든 뒤 확대해야 함.",
-          "items": [
-            "통제: allowed/unsupported type 목록·AMI version·consumer inventory·change approval을 build artifact에 연결",
-            "검증: allow case와 deny case, ASG replacement, failed launch alarm, specification rollback을 rehearsal",
-            "팀 액션: specification 전체 교체 API의 stale-list overwrite를 막도록 manifest version·review·drift detection 적용"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-423",
-      "title_ko": "Kubernetes v1.37 Rootless mode Beta: node component 권한을 user namespace·호환성 canary로 분리",
-      "title_original": "Kubernetes v1.37: KubeletInUserNamespace (aka Rootless mode) Graduates to Beta",
-      "summary": "- Beta: `KubeletInUserNamespace` feature gate가 기본 활성화됐지만 기존 rootful node를 자동 전환하지는 않음\n- 범위: kubelet·CRI/OCI runtime·CNI plugin·kube-proxy를 Linux user namespace 안의 host non-root user로 실행 가능한 공식 기능\n- 보안: container-breakout이 성공해도 host full root 대신 non-root account 범위로 피해를 제한하는 목표\n- 제약: kernel 취약점에는 효과가 없고 특정 CNI·CSI driver 호환성이 깨질 수 있으므로 node label/taint와 workload canary가 필요\n- 팀 액션: rootless node에서 `runningInUserNamespace`, CNI·CSI·cgroup·network·privileged workload·rollback을 production pool별로 검증 필요",
-      "detail": "Kubernetes 공식 블로그는 v1.37에서 `KubeletInUserNamespace` feature gate를 Beta로 승격하고 기본 활성화했다고 밝혔다. 이 기능을 실제로 사용하면 kubelet, CRI와 OCI runtime, CNI plugin, kube-proxy가 Linux user namespace 안에서 host의 non-root user로 실행된다. 기존 rootful cluster는 gate가 기본 활성화돼도 user namespace로 자동 진입하지 않으므로 동작이 바뀌지 않는다. Kubernetes v1.36에서 GA가 된 Pod user namespace `hostUsers: false`와는 다른 기능이며, 두 기능을 결합해 privileged 없이 Kubernetes-in-Kubernetes를 구성할 수 있다. 공식 글은 CRI-O·runc·kubelet·containerd의 과거 container-breakout 사례를 배경으로 들며, user namespace가 host kernel·boot loader·firmware 변경을 막는다는 범위를 설명한다. kernel 자체 취약점은 완화하지 못하고 seccomp 같은 기존 hardening이 필요하다. 실제 전환에는 특정 CNI·CSI driver 호환성, systemd·kernel module·sysctl 조건, real-root 권한을 요구하는 installer workload를 확인해야 한다. `runningInUserNamespace` node property로 label·taint를 부여해 root privilege가 필요한 workload를 분리하고, node pool canary에서 networking·storage·cgroup·observability·upgrade·rollback을 검증해야 한다.",
-      "why_it_matters": "node component의 host root 권한은 container runtime·kubelet·CNI 경로의 취약점이 host compromise로 이어지는 범위를 키움. rootless mode는 완전한 sandbox가 아니라 피해 계층을 낮추는 control이므로 kernel patch·seccomp·workload scheduling 정책을 대체하지 않음.",
-      "engineering_implication": "새 node pool에서 rootless Docker/Podman/nerdctl 또는 지원 runtime의 user namespace 준비 조건을 먼저 재현하고, `runningInUserNamespace` label·taint로 real-root 의존 workload를 격리 필요. CNI·CSI·GPU/device plugin·cgroup·hostPath·privileged DaemonSet·monitoring agent의 동작, pod networking·volume mount·node upgrade·rollback p95를 rootful baseline과 비교한 뒤 확대 필요.",
-      "korea_implication": "국내 managed Kubernetes와 규제 workload에서 이 Beta 기능의 제공 여부, host OS·runtime 조합, 기술지원 및 incident 책임 경계는 공식 글에 포함되지 않음. self-managed node pool에서 먼저 검증하고 managed service의 feature-gate 정책·support matrix를 별도 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Kubernetes",
-        "Rootless",
-        "KubeletInUserNamespace",
-        "Container Security",
-        "User Namespace",
-        "CNI",
-        "CSI",
-        "Node Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-09-05 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/09/04/kubernetes-v1-37-rootless-beta/",
-      "image_url": "assets/images/fallback-infra.svg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Running Kubernetes Node Components as a Non-root User",
-          "url": "https://kubernetes.io/docs/tasks/administer-cluster/kubelet-in-userns/"
-        },
-        {
-          "title": "KEP-2033: Kubelet in User Namespace",
-          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2033-kubelet-in-userns-aka-rootless"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes 공식 블로그의 `article:published_time` `2026-09-04T10:30:00-08:00`를 KST `2026-09-05 03:30`으로 기록. v1.37은 `KubeletInUserNamespace`를 Beta로 승격하고 feature gate를 기본 활성화함.",
-          "items": [
-            "범위: kubelet·CRI/OCI runtime·CNI plugin·kube-proxy를 Linux user namespace의 host non-root user로 실행 가능한 기능",
-            "변화: 기본 활성 gate가 기존 rootful node를 user namespace로 자동 전환하지 않아 현행 cluster behavior 유지",
-            "구분: Pod `hostUsers: false` user namespace와 다른 기능이며 두 기능의 결합 가능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Linux user namespace는 host non-root UID를 namespace 안의 UID 0으로 매핑해 mount·cgroup·Pod network namespace 설정 등 node component 작업을 수행하게 함. namespace 내부 root 권한은 host 전체 root 권한과 동일하지 않음.",
-          "items": [
-            "보호: CRI-O·runc·kubelet·containerd의 과거 container-breakout 같은 경로에서 host full-root 피해 범위 축소 목적",
-            "한계: kernel 취약점 자체에는 user namespace가 방어가 아니며 seccomp 등 기존 hardening 병행 필요",
-            "상태: `kubectl get nodes -o yaml`의 `runningInUserNamespace` property로 rootless node 식별 가능"
-          ]
-        },
-        {
-          "heading": "호환성·스케줄링 경계",
-          "body": "공식 글은 일부 CNI·CSI driver에서 호환성 문제가 생길 수 있다고 명시. real root privilege를 필요로 하는 CNI installer 등 workload를 rootless node에 배치하지 않도록 scheduler policy를 분리해야 함.",
-          "items": [
-            "격리: `runningInUserNamespace` 기반 node label·taint로 privileged installer와 특수 workload의 placement 분리",
-            "검증: CNI networking·CSI volume mount·cgroup write·hostPath·device plugin·observability agent를 node pool별 확인",
-            "전제: user namespace 생성은 Kubernetes 밖에서 준비하며 rootless Docker·nerdctl·Podman 등 host/runtime 조건 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Rootless mode는 node compromise의 blast radius를 줄이는 defense-in-depth control임. Beta 기본 활성화를 production default adoption으로 해석하지 말고 rootful baseline과 비교 가능한 canary·rollback을 마련해야 함.",
-          "items": [
-            "측정: node bootstrap 성공률·CNI/CSI failure·Pod startup p95·volume/network error·privileged workload rejection·rollback time",
-            "운영: rootless node pool을 별도 만들고 admission·taint·runtime version·kernel/sysctl·alert rule을 change record에 연결",
-            "팀 액션: representative workload에서 network·storage·GPU/device·DaemonSet·upgrade·restore를 검증한 뒤 workload cohort별 확대"
           ]
         }
       ],

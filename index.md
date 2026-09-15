@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-15 | Total pages: 346
+> Last updated: 2026-09-16 | Total pages: 349
 
 ## Entities
 
@@ -412,6 +412,10 @@
 
 - [[raw/articles/cisa-kev-artifactory-screenconnect-routeros-2026-09-13]] — CISA KEV의 Artifactory·ScreenConnect·RouterOS 5건, patch due date·control-plane forensic 경계.
 - [[raw/articles/cncf-kubernetes-disaster-recovery-reproducible-failure-scenarios-2026-09-10]] — Kubernetes stateful DR의 backup byte·GitOps 빈 상태·다중 PVC snapshot consistency와 clean-target recovery 검증 경계.
+
+- [[raw/articles/thn-marimo-cve-2026-39987-ssh-bastion-pivot-2026-09-15]] — Marimo RCE 뒤 AWS Secrets Manager·SSH bastion 8초 pivot의 notebook/identity incident 경계.
+- [[raw/articles/thn-vite-cve-2026-39364-cloud-credential-mass-scan-2026-09-15]] — exposed Vite dev server의 `.env`·cloud credential·Terraform state mass scan 대응 경계.
+- [[raw/articles/aws-glue-zero-etl-table-property-ownership-conflict-2026-09-14]] — Glue zero-ETL target ownership·conflict detection의 catalog/lineage 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
