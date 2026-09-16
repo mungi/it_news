@@ -2664,3 +2664,9 @@
 - 확인 시각: 2026-09-16 09:54 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스·인공지능신문 HTML surface는 HTTP 200으로 확인. Cloudflare official blog index와 canonical article을 직접 대조했으며 AWS·Kubernetes·OpenAI·Anthropic surface도 probe함.
 - Cloudflare canonical article의 `article:published_time` `2026-09-15T13:00:00Z`, Open Graph image, 본문을 직접 확인해 KST `2026-09-15 22:00`으로 기록. individual Worker scope·Metadata Read-Only/Content Read-Only/Editor/Admin 4개 역할, CI/agent API token, route·Custom Domain의 별도 Workers Routes permission 조건을 source 범위로 수록.
 - `news-477`을 newest-first final sort에 추가하고 actual tail `news-427`을 제거해 50-item cap과 rank 1–50을 유지. immutable raw capture·weekly archive·index를 동기화. canonical raw body SHA-256 `cf2089a8c01d6af4b8711ebe4f7fba606cf0fb1da05a4d8e59710f2078c55ac9` 보존. Deep Dive 2건은 KST 01:47 전면 재구성 완료 상태이므로 timestamp-only 변경을 하지 않음.
+
+## [2026-09-16] update | 베슬AI·네오AI 포항 40MW 수냉식 AIDC GPU 플랫폼·시설 운영 협력 추가
+- 확인 시각: 2026-09-16 14:00 KST. GeekNews·GeekNews Plus는 빈 렌더링 페이지, 인공지능신문·AI타임스는 HTML surface를 직접 확인했으며 CNCF·Kubernetes·AWS·The Hacker News 최신 surface도 probe. AI타임스의 2026-09-16 12:15 KST 보도와 기존 50건 URL·제목·event를 대조.
+- AI타임스 canonical article의 입력 시각·Open Graph image·본문을 직접 확인. 포항 AIDC 1·2센터 대상 협력 MOU, 경북 40억원 출자 지역활성화 투자펀드 제9호 프로젝트, 총사업비 6,000억원·40MW GPU 기반 수냉식 AIDC 조성 목표, 베슬AI의 GPU 할당·모니터링·스케줄링과 네오AI의 설계·전력·냉각·통신·보안 역할 분담을 source 범위로 수록.
+- 실제 GPU SKU·설치 수량·전력 인입·PUE·준공일·상용 가용 용량·SLA는 공개되지 않아 목표나 MOU를 production capacity로 확대하지 않음. facility plane과 GPU control plane의 commissioning·telemetry·change/incident handoff를 별도 acceptance gate로 검증하도록 정리.
+- `news-478`을 newest-first rank 1에 추가하고 50-item cap의 actual tail `news-431`을 제거해 rank 1–50을 유지. raw capture·weekly archive·index를 동기화. persisted closing-frontmatter delimiter 뒤 raw-body SHA-256 `467c9a92d4a04b161b5e405ebbd52a5dc1132e67115794b857897afeefe3050d` 일치 확인. Deep Dive 2건은 KST 01:47 전면 재구성 완료 상태이므로 timestamp-only 변경을 하지 않음.
