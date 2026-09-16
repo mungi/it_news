@@ -2659,3 +2659,8 @@
 - The Hacker News RSS·canonical body·Open Graph image를 확인. Marimo `CVE-2026-39987` observed chain은 KST 2026-09-15 20:52, Vite `CVE-2026-39364` mass scan은 KST 20:12로 기록. Marimo의 8초 WebSocket→credential→Secrets Manager→SSH pivot과 Vite의 public exposure·query bypass·cloud credential/state target을 source 범위로 한정.
 - KST 첫 실행 정책에 따라 Deep Dive를 Sysdig/THN Marimo incident와 AWS 공식 Glue zero-ETL target ownership release로 전면 교체. 두 주제는 source와 event가 겹치지 않으며 title·summary·details·source/image metadata·8개 expert sections·`refreshed_kst`를 actual write time으로 재구성.
 - `news-475`·`news-476`을 newest-first final sort에 추가하고 actual tail `news-423`·`news-425`를 제거해 50-item cap 및 rank 1–50을 유지. raw capture 3건·weekly archive·index를 동기화.
+
+## [2026-09-16] update | Cloudflare Workers 세분화 권한·CI/agent token scope 추가
+- 확인 시각: 2026-09-16 09:54 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스·인공지능신문 HTML surface는 HTTP 200으로 확인. Cloudflare official blog index와 canonical article을 직접 대조했으며 AWS·Kubernetes·OpenAI·Anthropic surface도 probe함.
+- Cloudflare canonical article의 `article:published_time` `2026-09-15T13:00:00Z`, Open Graph image, 본문을 직접 확인해 KST `2026-09-15 22:00`으로 기록. individual Worker scope·Metadata Read-Only/Content Read-Only/Editor/Admin 4개 역할, CI/agent API token, route·Custom Domain의 별도 Workers Routes permission 조건을 source 범위로 수록.
+- `news-477`을 newest-first final sort에 추가하고 actual tail `news-427`을 제거해 50-item cap과 rank 1–50을 유지. immutable raw capture·weekly archive·index를 동기화. canonical raw body SHA-256 `cf2089a8c01d6af4b8711ebe4f7fba606cf0fb1da05a4d8e59710f2078c55ac9` 보존. Deep Dive 2건은 KST 01:47 전면 재구성 완료 상태이므로 timestamp-only 변경을 하지 않음.

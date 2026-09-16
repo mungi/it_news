@@ -417,6 +417,8 @@
 - [[raw/articles/thn-vite-cve-2026-39364-cloud-credential-mass-scan-2026-09-15]] — exposed Vite dev server의 `.env`·cloud credential·Terraform state mass scan 대응 경계.
 - [[raw/articles/aws-glue-zero-etl-table-property-ownership-conflict-2026-09-14]] — Glue zero-ETL target ownership·conflict detection의 catalog/lineage 운영 경계.
 
+- [[raw/articles/cloudflare-workers-granular-authorization-2026-09-15]] — Cloudflare Workers resource-level role·Worker별 CI/agent API token·route permission 분리 운영 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
