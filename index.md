@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-16 | Total pages: 351
+> Last updated: 2026-09-17 | Total pages: 352
 
 ## Entities
 
@@ -421,6 +421,7 @@
 - [[raw/articles/aws-direct-connect-flat-rate-pricing-2026-09-16]] — AWS Direct Connect 10G·100G 정액제·port-pair의 DTO·이중 연결·BGP failover FinOps 검증 경계.
 
 - [[raw/articles/cloudflare-workers-granular-authorization-2026-09-15]] — Cloudflare Workers resource-level role·Worker별 CI/agent API token·route permission 분리 운영 경계.
+- [[raw/articles/cloudflare-accountable-mixed-use-ai-crawlers-2026-09-15]] — Cloudflare mixed-use crawler의 검색 노출·AI 학습 차단 분리, bot policy·SEO·telemetry 검증 경계.
 - [[raw/articles/aitimes-vessl-ai-pohang-aidc-gpu-platform-2026-09-16]] — 포항 40MW 수냉식 AIDC의 GPU 플랫폼·시설 운영 분담과 capacity/commissioning 검증 경계.
 
 ## Static Website

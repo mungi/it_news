@@ -2683,3 +2683,9 @@
 - Kubernetes canonical article의 `article:published_time` `2026-09-15T10:30:00-08:00`·본문을 직접 확인해 Pod-Level Resource Managers Beta를 KST 02:30으로 기록. default-disabled feature gate, `.spec.resources` 기반 Kubelet placement, primary NUMA exclusive allocation·sidecar shared pool, `v1` PodResources top-level `cpu_ids`/`memory`를 수록.
 - WSO2 security-docs direct retrieval은 JavaScript challenge로 본문 검증이 불가해 active-exploitation detail을 THN/watchTowr 인용 범위로 한정. individual compromise·secret theft·backend lateral movement와 workload 성능·managed Kubernetes 지원은 local evidence 없이 확정하지 않음.
 - `news-479`·`news-480`을 newest-first final sort에 추가하고 50-item cap의 actual tail `news-428`·`news-429`을 제거해 rank 1–50을 유지. raw capture 2건·`weekly/2026-W39.md`·`index.md`를 동기화. Deep Dive 2건은 KST 01:47 전면 재구성 완료 상태이므로 timestamp-only 변경을 하지 않음.
+
+## [2026-09-17] update | Cloudflare mixed-use crawler policy 추가 및 Deep Dive 2건 일일 전면 교체
+- 확인 시각: 2026-09-17 02:14 KST. GeekNews·GeekNews Plus는 빈 렌더링 페이지, 인공지능신문·AI타임스 HTML surface를 확인. AWS·Kubernetes·CNCF·GitHub·Docker·Google Security·OpenAI·Cloudflare feed를 직접 probe했고 후보 URL·title·event를 기존 50건과 대조.
+- Cloudflare canonical article의 `article:published_time` `2026-09-15T13:00:00.000Z`, Open Graph image·본문을 확인해 KST `2026-09-15 22:00`으로 기록. `Disallow AI Training`, Search·Training·Agent 분류, Accountable 조건, source 집계 1% 미만/17%를 source 범위로 수록.
+- KST 첫 실행 정책에 따라 기존 Marimo·AWS Glue Deep Dive를 THN/watchTowr WSO2 forged JWT active-exploitation 관측과 Kubernetes 공식 Pod-Level Resource Managers Beta로 전면 교체. 두 주제는 기존 Deep Dive 및 서로 간 source가 겹치지 않으며 title·summary·details·source/image metadata·8개 expert sections·`refreshed_kst`를 actual write time으로 재구성.
+- `news-482`를 newest-first final sort rank 5에 추가하고 50-item cap의 actual tail `news-434`(KST `2026-09-07 18:12`)를 제거해 rank 1–50을 유지. raw capture·weekly archive·index를 동기화. persisted raw body SHA-256 `39c2fa1b2afbd692e08e008dcb00ccaeabcaa1faba2fd58ad47ffb6e898b8398` 확인.
