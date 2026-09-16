@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-16 14:00",
+  "last_updated_kst": "2026-09-16 18:12",
   "audience": "developers and engineers",
   "executive_summary": [
+    "WSO2 API Manager `CVE-2026-5430` active-exploitation attempt은 administrator privilege를 포함한 forged JWT를 관측. API gateway의 JWT validation·admin API·backend credential·consumer key를 fixed update와 같은 incident scope로 점검 필요.",
     "Marimo `CVE-2026-39987` observed exploitation은 notebook WebSocket에서 AWS Secrets Manager credential read와 SSH bastion authentication까지 **8초** pivot을 기록. public notebook·runtime IAM·secret·bastion trust를 동일 incident scope로 봉쇄 필요.",
     "Vite `CVE-2026-39364` mass scan은 public dev server에서 query manipulation으로 `.env`, AWS/Azure config, Terraform state를 노림. `--host`·Docker port mapping·`server.fs.allow`/`deny`와 secret rotation을 함께 점검 필요.",
     "Cisco Secure Email Gateway `CVE-2026-76461`은 crafted email SQL injection으로 root command execution이 가능하며 Cisco가 활성 악용을 확인. fixed software 적용과 cluster별 `mail_logs`·root-level forensic·relay/directory integration credential 검토를 같은 incident closure로 운영 필요.",
-    "Red Heron의 Gitea `CVE-2026-60004` 악용 보도는 13개 조직 침해와 repository theft 뒤 secret·SSH key·Proxmox lateral movement를 다룸. self-hosted forge는 fixed build와 clone/token/runner/host telemetry·secret rotation을 하나의 incident scope로 점검 필요.",
-    "DDrop 연구는 Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop interposer로 악용하는 laboratory attack을 제시. confidential VM threat model에 physical host custody·hardware maintenance·attestation policy를 분리 반영 필요."
+    "Kubernetes v1.37 Pod-Level Resource Managers Beta는 primary workload의 NUMA-aligned exclusive resource와 sidecar shared pool을 분리. feature gate·PodResources parser·p95/p99 latency·rollback을 node-pool canary로 검증 필요."
   ],
   "deep_dives": [
     {
@@ -191,6 +191,82 @@
   ],
   "items": [
     {
+      "id": "news-479",
+      "title_ko": "WSO2 API Manager `CVE-2026-5430` 활성 악용: forged JWT admin token으로 API backend·secret 접근 경로 노출",
+      "title_original": "Active Exploitation Attempts Target WSO2 API Manager JWT Bypass With Forged Admin Tokens",
+      "summary": "- 경보: watchTowr honeypot이 **2026-09-13** administrator privilege가 baked-in된 forged JWT 수신을 관측\n- 결함: unsupported signing algorithm JWT를 인증이 승인하는 cryptographic signature verification 결함, `CVE-2026-5430`·CVSS 9.8로 기록\n- 범위: API Manager 4.1.0~4.6.0, API Control Plane·Traffic Manager·Universal Gateway의 listed version 영향\n- 영향: administrative account takeover와 registered application의 API backend·credential·consumer key·secret 접근 가능성\n- 팀 액션: fixed update level 적용, external gateway exposure와 JWT auth log·admin account·backend credential을 같은 incident scope로 조사 필요",
+      "detail": "watchTowr가 WSO2 API Manager `CVE-2026-5430`의 active exploitation attempt를 관측했다고 The Hacker News가 보도했다. source에 따르면 unsupported algorithm으로 signed JWT가 승인되는 signature-verification 결함이며, honeypot에는 administrator privilege가 baked-in된 token이 2026년 9월 13일 도착했다. listed affected products는 API Manager 4.1.0~4.6.0, API Control Plane·Traffic Manager·Universal Gateway의 4.5.0·4.6.0이다. community user용 fix pull request와 support subscription update level이 공개됐다. 실제 credential theft·internal-service access·조직별 compromise는 local evidence 없이 확정할 수 없으므로, update와 함께 JWT authentication log, admin principal, API backend routing, registered application secret의 forensic을 병행해야 함.",
+      "why_it_matters": "API Manager는 client JWT 검증과 internal backend traffic을 중개하는 control plane임. forged administrator token은 management account뿐 아니라 API consumer key·backend credential·internal service reachability로 영향 범위가 확장될 수 있음.",
+      "engineering_implication": "WSO2 product/version과 subscription update level을 inventory하고 fixed build 적용 전후 JWT algorithm reject·admin API·backend access를 negative test로 검증 필요. 2026-09-13 이후 JWT validation failure/success, privileged API call, application credential read·rotate, unexpected backend route를 time-correlated hunt로 묶어야 함.",
+      "korea_implication": "국내 API gateway 운영 조직은 public API endpoint patch를 application team에만 위임하지 말고 IAM·platform·backend owner가 JWT signing algorithm allowlist, admin audit, consumer secret rotation을 하나의 closure record로 승인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "WSO2",
+        "API Management",
+        "JWT",
+        "CVE-2026-5430",
+        "Active Exploitation",
+        "IAM"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 98,
+      "published_kst": "2026-09-16 14:18",
+      "source_name": "The Hacker News / watchTowr / WSO2",
+      "source_url": "https://thehackernews.com/2026/09/active-exploitation-attempts-target.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjenXPNzZ8-fnZOSWlAtRwfZVCV0iy-vnK86gK4vmTGsWSjSS7x9a3k80NLsiEZUym2AjBaYj7pLtxyQju7Hiyl6ttQPyXEPMy7Gwn_bQTTTaUOB-8HbhJfYxl54Z3WE5yqKEoW1vvkCBukKwea-6DlpBiO6i08Zo0GhBoqgRsGGXadsOYy8COPUPQ7rn2w/s1600/jwt-api.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "WSO2 community fix pull request 13752",
+          "url": "https://github.com/wso2/carbon-apimgt/pull/13752"
+        },
+        {
+          "title": "CVE Record: CVE-2026-5430",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-5430"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "watchTowr honeypot이 WSO2 API Manager JWT bypass의 active exploitation attempt를 포착했고 The Hacker News가 2026-09-16 보도로 공개함. source는 2026-09-13 administrator privilege가 baked-in된 forged token 수신을 명시함.",
+          "items": [
+            "결함: `CVE-2026-5430`은 unsupported algorithm JWT를 인증이 승인하는 cryptographic signature verification 결함",
+            "위험도: THN은 CVSS 9.8/10.0을 기록하며 WSO2 advisory의 account takeover 가능성 인용"
+          ]
+        },
+        {
+          "heading": "영향 제품과 수정 경로",
+          "body": "THN이 인용한 WSO2 범위는 API Manager 4.1.0~4.6.0, API Control Plane·Traffic Manager·Universal Gateway의 listed version임. community fix pull request와 support subscription별 update level이 함께 제시됨.",
+          "items": [
+            "대상: API Manager 4.1.0·4.2.0·4.3.0·4.4.0·4.5.0·4.6.0의 listed release",
+            "대상: API Control Plane·Traffic Manager·Universal Gateway 4.5.0·4.6.0의 listed release",
+            "조치: local product/version과 WSO2 fixed update level을 대조하고 community build provenance를 검증"
+          ]
+        },
+        {
+          "heading": "공격 경로와 증거 경계",
+          "body": "watchTowr 설명은 forged token이 administrator access를 얻어 registered application의 API backend endpoint·credential·consumer key·secret에 닿을 수 있는 경로를 제시함. honeypot observation은 exploitation attempt 근거이며 개별 조직의 successful takeover·data theft 증명은 아님.",
+          "items": [
+            "조사: JWT algorithm·issuer·subject·key ID·signature validation result와 privileged admin API call correlation",
+            "조사: registered application credential read·consumer key issuance·backend route 변경·unusual internal API request 확인",
+            "경계: local audit evidence 없이 credential theft·lateral movement·backend compromise를 단정하지 않는 원칙"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "API gateway는 authentication과 internal service routing이 맞물린 control plane임. update만으로 prior forged-token use 또는 credential exposure 부재를 증명할 수 없으므로 auth·admin·backend·secret owner가 동일 incident scope를 가져야 함.",
+          "items": [
+            "점검: WSO2 version·deployment exposure·JWT algorithm allowlist·admin account·audit retention",
+            "검증: unsupported algorithm token reject와 normal issuer/key rotation flow를 staging에서 negative test",
+            "팀 액션: fixed update, privileged log hunt, application secret/consumer key review·rotation, backend access review를 one closure record로 승인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-478",
       "title_ko": "베슬AI·네오AI 포항 40MW 수냉식 AIDC 협력: GPU 플랫폼과 데이터센터 운영 경계 분리",
       "title_original": "VESSL AI to operate GPU platform for Pohang AI data center",
@@ -254,7 +330,80 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-480",
+      "title_ko": "Kubernetes v1.37 Pod-Level Resource Managers Beta: NUMA 정렬 primary workload와 sidecar shared pool 분리",
+      "title_original": "Kubernetes v1.37: Pod-Level Resource Managers graduated to Beta",
+      "summary": "- 공개: Kubernetes v1.37에서 Pod-Level Resource Managers가 **Beta·default disabled**로 전환\n- 변화: Kubelet Topology Manager·CPU Manager·Memory Manager가 `.spec.resources` pod-level declaration으로 hardware placement 결정\n- 배치: primary container에는 exclusive NUMA-aligned resource, non-Guaranteed sidecar에는 pod-isolated shared pool 배치 가능\n- 관측: `v1` PodResources gRPC가 top-level `cpu_ids`·`memory`를 반환해 pod-level exclusive assignment 조회 지원\n- 팀 액션: latency-sensitive workload에서 feature gate·NUMA placement·device plugin/monitoring parser·rollback을 canary로 검증 필요",
+      "detail": "Kubernetes는 v1.37에서 Pod-Level Resource Managers를 Beta로 승격했으며 `PodLevelResourceManagers` feature gate로 opt-in해야 한다고 발표했다. Kubelet의 Topology Manager, CPU Manager, Memory Manager가 `.spec.resources`의 pod-level resource declaration을 직접 사용해 hardware placement를 결정한다. source가 제시한 목표는 primary application에는 exclusive NUMA-aligned CPU·memory를 주고, logging/telemetry 같은 non-Guaranteed sidecar는 dedicated physical core를 쓰지 않는 pod-isolated shared pool에 두는 hybrid allocation이다. `v1` PodResources gRPC `PodResourcesLister`는 top-level `cpu_ids`, `memory` field를 추가해 monitoring tool과 device plugin이 container allocation을 double-counting하지 않고 pod-level assignment를 조회하도록 한다. Beta이자 disabled-by-default이므로 managed distribution 노출 여부, existing resource manager configuration, performance/SLO 개선은 cluster별 canary로 검증해야 함.",
+      "why_it_matters": "NUMA-sensitive inference·database·network workload에서 sidecar까지 integer resource request를 강제하면 reserved core 낭비가 생김. pod-level manager는 primary workload isolation과 sidecar placement를 분리하지만 kubelet resource-management behavior를 바꾸는 opt-in control임.",
+      "engineering_implication": "node pool별 cgroup·NUMA topology·CPU/Memory/Topology Manager policy와 `.spec.resources` manifest를 inventory한 뒤 canary workload의 p95/p99 latency, CPU throttling, memory locality, PodResources gRPC consumer compatibility를 baseline과 비교 필요. device plugin·monitoring parser가 top-level field를 double-count하지 않는지 확인하고 feature gate rollback을 runbook에 포함 필요.",
+      "korea_implication": "국내 managed Kubernetes 사용 조직은 upstream Beta availability가 곧 provider support를 뜻하지 않으므로 cluster version, node OS, kubelet flag 노출, SLA 지원 범위를 별도 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Kubernetes",
+        "Kubernetes v1.37",
+        "Kubelet",
+        "NUMA",
+        "CPU Manager",
+        "Memory Manager",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-16 02:30",
+      "source_name": "Kubernetes Blog / SIG Node",
+      "source_url": "https://kubernetes.io/blog/2026/09/15/kubernetes-v1-37-pod-level-resource-managers-beta/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Pod-level resource managers documentation",
+          "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes v1.37에서 Pod-Level Resource Managers가 Beta로 승격됨. `PodLevelResourceManagers` feature gate로 opt-in하는 default-disabled 기능이며 Kubelet의 Topology·CPU·Memory Manager가 `.spec.resources`를 placement input으로 사용함.",
+          "items": [
+            "상태: v1.36 Alpha 뒤 v1.37 Beta 전환, default enable 상태가 아닌 opt-in gate",
+            "구성: Kubelet Topology Manager·CPU Manager·Memory Manager가 pod-level declaration을 직접 해석"
+          ]
+        },
+        {
+          "heading": "배치 모델의 변화",
+          "body": "기존 NUMA-aligned exclusive resource는 pod의 모든 container에 integer request를 주거나 포기하는 양자택일이었음. 새 model은 primary application과 auxiliary sidecar를 서로 다른 allocation 방식으로 배치할 수 있게 설계됨.",
+          "items": [
+            "primary: latency-critical application에 exclusive NUMA-aligned CPU·memory reservation 가능",
+            "sidecar: logging agent·telemetry exporter 같은 non-Guaranteed container를 pod-isolated shared pool에 배치",
+            "경계: sidecar가 dedicated physical core를 소비하지 않는 대신 workload별 performance proof는 별도 필요"
+          ]
+        },
+        {
+          "heading": "API와 관측 경계",
+          "body": "`v1` PodResources gRPC의 `PodResourcesLister` response에 top-level `cpu_ids`, `memory` field가 추가됨. monitoring tool과 device plugin은 pod-level exclusive assignment를 조회할 수 있으나 parser와 accounting model의 version compatibility를 확인해야 함.",
+          "items": [
+            "관측: container allocation 합산 대신 pod-level exclusive assignment direct query 가능",
+            "검증: device plugin·exporter·capacity dashboard가 top-level resource를 container value와 double-count하지 않는지 확인",
+            "경계: source는 특정 plugin·managed service·SLO의 호환성을 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Beta opt-in은 workload placement와 observability semantics를 함께 바꾸는 node-level change임. latency-sensitive workload부터 isolated node pool canary를 적용하고 placement·latency·resource accounting·rollback evidence를 release gate로 관리해야 함.",
+          "items": [
+            "점검: Kubernetes version·feature gate·kubelet manager policy·NUMA topology·pod-level manifest",
+            "측정: p95/p99 latency·CPU utilization/throttling·memory locality·pending/scheduling event baseline 비교",
+            "팀 액션: feature gate disable·manifest rollback·PodResources consumer compatibility를 포함한 canary exit criteria 정의"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-477",
@@ -321,7 +470,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-475",
@@ -385,7 +534,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-476",
@@ -450,7 +599,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-474",
@@ -525,7 +674,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "region": "Global",
@@ -600,7 +749,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-473",
@@ -667,7 +816,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "region": "Global",
@@ -735,7 +884,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "region": "Global",
@@ -808,11 +957,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-469",
-      "rank": 10,
+      "rank": 12,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -962,7 +1111,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-464",
@@ -1047,7 +1196,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-465",
@@ -1124,7 +1273,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-462",
@@ -1200,7 +1349,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-463",
@@ -1273,7 +1422,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-461",
@@ -1350,7 +1499,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-459",
@@ -1423,7 +1572,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-458",
@@ -1534,7 +1683,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-468",
@@ -1608,7 +1757,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-455",
@@ -1690,7 +1839,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-460",
@@ -1768,7 +1917,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-457",
@@ -1845,7 +1994,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-456",
@@ -1915,7 +2064,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-454",
@@ -1992,7 +2141,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-453",
@@ -2074,7 +2223,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-466",
@@ -2165,7 +2314,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-452",
@@ -2242,7 +2391,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-451",
@@ -2315,7 +2464,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-449",
@@ -2392,7 +2541,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-450",
@@ -2466,7 +2615,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-447",
@@ -2530,7 +2679,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-446",
@@ -2607,7 +2756,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-445",
@@ -2684,7 +2833,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-433",
@@ -2769,7 +2918,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-448",
@@ -2833,7 +2982,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-420",
@@ -2911,7 +3060,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-444",
@@ -2988,7 +3137,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-443",
@@ -3061,7 +3210,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-442",
@@ -3129,7 +3278,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-439",
@@ -3195,7 +3344,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-440",
@@ -3272,7 +3421,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-441",
@@ -3340,7 +3489,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-437",
@@ -3408,7 +3557,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "source_name": "The Hacker News",
@@ -3475,7 +3624,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "source_name": "The Hacker News",
@@ -3542,7 +3691,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-438",
@@ -3620,7 +3769,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-434",
@@ -3688,7 +3837,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-430",
@@ -3772,143 +3921,6 @@
             "변경 통제: approved image canary·config diff·boot/route/DNS/VPN health·관리 접속 test를 동일 change record에 연결",
             "사후 조치: password·SSH key·API credential·VPN secret rotation과 upstream/downstream peer credential review",
             "운영 지표: exposed service count·patch compliance·unknown config diff·rebuild lead time·관리 access anomaly를 추적"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-428",
-      "title_ko": "Microsoft Project Zenith 공개 보도: 64GB·250GB/s PC 기준 local 30B 모델·개발 도구 사전 구성",
-      "title_original": "Microsoft introduces Project Zenith for AI developers",
-      "summary": "- 공개: Windows 11 기반 `Project Zenith`가 AI 개발용 설정·도구·runtime을 사전 구성한 ready-to-code 환경으로 소개됨\n- 하드웨어: **64GB 이상 unified memory**와 초당 250GB 이상 memory bandwidth를 전제로 30B 이상 모델의 local 실행을 목표로 제시\n- 구성: VS Code·GitHub Copilot·PowerToys·WinAppCLI·PowerShell 7·Git·GitHub/Azure CLI·Python 3.14+·Node.js 24+·WSL 2 Ubuntu·.NET 10 포함 보도\n- 격리: OS-level identity와 Microsoft Execution Containers(MXC)를 agent 실행 경계로 제시\n- 팀 액션: local 모델 성능·battery/thermal·driver·toolchain 호환성·MXC 격리·corporate policy·cloud fallback 비용을 동일 workload canary로 검증 필요",
-      "detail": "AI타임스는 Microsoft가 AI 개발자용 Windows 11 환경 `Project Zenith`를 공개했다고 보도했다. 기사 범위에서 Zenith는 새 PC의 초기 개발 환경 설정을 줄이기 위해 VS Code, GitHub Copilot, CLI, runtime, WSL 2 기반 Ubuntu 등을 사전 구성하며 첫 적용 대상은 AMD Ryzen AI Halo 플랫폼이다. 기사에 인용된 하드웨어 전제는 64GB 이상 unified memory와 250GB/s 이상 memory bandwidth이며, 30B 이상 파라미터 모델을 token 과금 없이 PC에서 실행하는 local inference 경로를 목표로 든다. 파일 확장자·숨김 파일·전체 경로 표시, long path, command palette, Linux container 생성·실행, agent용 OS identity와 MXC isolation도 언급된다. 이 보도는 Microsoft 원문·지원 SKU·배포 채널·정확한 model/runtime compatibility matrix·실측 throughput·전력/발열·MXC security boundary·enterprise 관리/지원 조건을 직접 검증한 자료가 아니다. 64GB·250GB/s는 모든 모델의 context length·quantization·concurrency·latency를 보장하지 않으며, local execution은 endpoint data classification·patch lifecycle·driver/CVE·artifact provenance·cloud fallback을 대체하지 않는다.",
-      "why_it_matters": "개발자 PC에서 반복적인 coding·agent 작업을 local inference로 옮기면 token 비용과 데이터 경로를 바꿀 수 있지만, memory bandwidth·runtime·endpoint security·fleet support가 함께 배포 단위가 됨.",
-      "engineering_implication": "동일 repository·prompt·context 길이로 local과 cloud baseline을 비교하고 task success·TTFT/p95·memory/VRAM·thermal throttling·battery·token/cloud fallback 비용을 수집 필요. preinstalled toolchain은 version pin·SBOM·update ring·EDR/DLP·MXC escape test·secret/SSH key storage·rollback image를 포함한 endpoint standard로 관리 필요.",
-      "korea_implication": "국내 공급 SKU·가격·한국어 모델 성능·기업 Windows 관리 정책·WSL/container와 망분리·DLP의 호환성은 기사 범위에 없음. 도입 전 device availability와 corporate endpoint control을 국내 tenant·network 조건에서 확인 필요.",
-      "category": "DevTools",
-      "tags": [
-        "Microsoft",
-        "Windows 11",
-        "Local AI",
-        "AI PC",
-        "Developer Experience",
-        "WSL",
-        "AI Agent Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-09-06 16:26",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214904",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/214904_218651_4811.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스의 `article:published_time` `2026-09-06T16:26:59+09:00`를 KST `2026-09-06 16:26`으로 기록. Microsoft의 Windows 11 기반 AI 개발 환경 `Project Zenith` 공개를 보도함.",
-          "items": [
-            "범위: 개발 설정·도구·runtime을 사전 구성한 ready-to-code Windows 환경",
-            "적용: 첫 대상은 AMD Ryzen AI Halo 개발자 플랫폼으로 소개",
-            "전제: 64GB 이상 unified memory와 초당 250GB 이상 memory bandwidth 조건"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에서는 30B 이상 파라미터 모델의 local 실행을 목표로 들며, cloud의 고연산 작업과 반복적인 coding·일반 개발 작업의 local 처리를 분리하는 사용 모델을 설명함.",
-          "items": [
-            "도구: VS Code·GitHub Copilot·PowerToys·WinAppCLI·PowerShell 7·Git·GitHub/Azure CLI 사전 구성",
-            "runtime: Python 3.14+·Node.js 24+·WSL 2 Ubuntu·.NET 10 포함 보도",
-            "환경: long path·파일 확장자·숨김 파일·전체 경로 표시와 command palette 기본 설정"
-          ]
-        },
-        {
-          "heading": "보안·운영 경계",
-          "body": "기사에서 OS-level identity와 Microsoft Execution Containers(MXC)를 agent 보안 기능으로 언급하지만, 격리의 권한 모델·host mount·network egress·secret handling·EDR/DLP 연동은 확인되지 않음.",
-          "items": [
-            "검증: agent file·process·network·credential access를 least privilege test로 확인",
-            "통제: preinstalled package의 version pin·SBOM·patch ring·artifact provenance 관리",
-            "경계: local execution이 endpoint patch·driver CVE·data classification·cloud fallback 책임을 대체하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI PC 도입의 성패는 모델 파라미터 수보다 workload별 memory footprint·context·latency·thermal·fleet support와 security control에 달림. hardware 조건을 production capacity 보증으로 해석하지 않아야 함.",
-          "items": [
-            "측정: task success·TTFT/p95·RAM·thermal throttling·battery·cloud fallback·token 비용",
-            "비교: 같은 repository·prompt·context에서 local quantization과 cloud baseline을 run ID로 연결",
-            "팀 액션: small device cohort에서 MXC·WSL/container·EDR/DLP·rollback image를 검증한 뒤 확대"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-429",
-      "title_ko": "NVIDIA·CrowdStrike SafeMind 공개 보도: red·blue agent loop를 digital twin·승인·rollback으로 검증",
-      "title_original": "NVIDIA and CrowdStrike introduce SafeMind cyber security AI models",
-      "summary": "- 공개 보도: CrowdStrike Falcon 적용 및 API 제공을 목표로 `Red Tempest`·`Blue Solano` 두 cyber AI 모델과 harness loop를 소개\n- 구조: red agent가 실행 가능한 attack path를 탐색하고 blue agent가 보안 설정·보호 조치를 적용한 뒤 재탐색하는 closed loop 방식\n- vendor-reported: Nemotron 기반 fine-tuning에 **45일·B200 71개**, digital twin에서 6~7회 loop 후 attack path 차단 사례 제시\n- 경계: 실제 고객 환경 자동 변경, detection coverage, false positive/negative, model/data path, Falcon/API 권한·SLA는 기사만으로 확인 불가\n- 팀 액션: isolated twin·read-only discovery·human approval·change window·rule TTL·rollback·attack-path revalidation을 finding ID별로 trace 필요",
-      "detail": "AI타임스는 NVIDIA와 CrowdStrike가 cyber security 특화 AI 모델군 `SafeMind`를 공동 개발했다고 보도했다. 기사 범위에서 SafeMind는 CrowdStrike Falcon에 적용되고 API로도 제공될 예정이며, Red Tempest가 공격자 행동을 모방해 취약점과 attack path를 찾고 Blue Solano가 이를 분석해 보안 설정과 보호 조치를 적용하는 two-model harness를 사용한다. 기사에 따르면 CrowdStrike threat intelligence와 cyber data로 NVIDIA Nemotron을 fine-tuning했으며, 45일·B200 GPU 71개로 구축하고 NVIDIA 내부 IT digital twin에서 6~7회 red/blue 반복으로 가능한 attack path를 차단할 때까지 개선했다는 vendor-reported 사례가 제시됐다. 이 보도는 product availability·API schema·model weights·data retention·tenant isolation·evaluation corpus·autonomous remediation scope·false positive/negative·실제 incident MTTR을 독립 검증하지 않는다. digital twin 결과는 production network의 identity sprawl·legacy system·change freeze·third-party integration·lateral movement와 동일하지 않다. 공격 경로 탐색과 자동 조치를 production 권한으로 직결하지 말고 finding evidence, asset owner, approval, staged validation, rule expiry, rollback을 분리해야 한다.",
-      "why_it_matters": "AI-assisted exposure management가 탐지에서 remediation loop로 이동하면 model quality보다 asset graph·권한·change control·rollback·audit가 운영 안전성을 결정함.",
-      "engineering_implication": "red/blue agent는 isolated digital twin 또는 non-production segment에서 read-only discovery로 시작하고, remediation은 human-approved IaC/EDR/WAF change로 제한 필요. finding ID별 attack path evidence·affected asset·policy diff·validation·rule TTL·retest·revert·MTTR을 연결해 자동화의 효과와 오류를 측정 필요.",
-      "korea_implication": "국내 Falcon tenant의 제공 시점, data residency, 한국어 threat intelligence, API 권한과 보안관제·망분리 연동은 기사 범위에 없음. 국내 규제 환경에서는 telemetry 반출·모델 호출 경로·감사 로그 보존·변경 승인 책임을 별도 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "NVIDIA",
-        "CrowdStrike",
-        "Cybersecurity",
-        "AI Agent",
-        "Red Team",
-        "Blue Team",
-        "Digital Twin",
-        "Falcon"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 90,
-      "published_kst": "2026-09-06 11:42",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=214905",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/214905_218653_1936.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스의 `article:published_time` `2026-09-06T11:42:24+09:00`를 KST `2026-09-06 11:42`로 기록. NVIDIA와 CrowdStrike의 SafeMind cyber security AI 모델군 공개를 보도함.",
-          "items": [
-            "구성: 공격 역할 `Red Tempest`와 방어 역할 `Blue Solano`의 two-model 구조",
-            "경로: CrowdStrike Falcon 적용과 API 이용 계획을 기사에서 소개",
-            "목표: attack path 탐색과 보안 설정·보호 조치 적용을 하나의 loop로 결합"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기사에서는 red agent가 공격자 행동을 모방해 실제 악용 가능한 취약점과 경로를 찾고 blue agent가 차단 조치를 적용한 뒤 다시 탐색하는 harness를 설명함.",
-          "items": [
-            "학습: NVIDIA Nemotron을 CrowdStrike threat intelligence·cyber security data로 fine-tuning한 구조 보도",
-            "개발: 초기 발견부터 모델 구축까지 45일·B200 GPU 71개 사용이라는 vendor-reported 수치",
-            "평가: NVIDIA 내부 IT digital twin에서 6~7회 loop 후 가능한 attack path 차단 사례"
-          ]
-        },
-        {
-          "heading": "증거·권한 경계",
-          "body": "digital twin의 loop 결과는 production 자동 remediation·customer tenant coverage·detection quality를 보증하지 않음. agent가 exposure와 change를 함께 다룰수록 evidence와 execution permission을 분리해야 함.",
-          "items": [
-            "분리: discovery read 권한·asset graph 조회·policy proposal·change apply·rollback authority",
-            "확인: API schema·data retention·tenant isolation·model invocation path·false positive/negative는 기사에서 미검증",
-            "금지: 발견 결과만으로 firewall·EDR·identity policy 변경을 자동 승인하는 운영"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI cyber loop의 가치는 발견 건수보다 공격 경로를 안전하게 줄이고 재현 가능하게 되돌리는 control에 있음. finding-to-change trace가 없으면 자동화가 만든 exposure를 조사하기 어려움.",
-          "items": [
-            "측정: validated attack path·false positive·approval latency·change failure·retest success·MTTR·revert",
-            "통제: isolated twin·asset allowlist·human approval·maintenance window·rule TTL·kill switch·rollback",
-            "팀 액션: 대표 attack path에서 read-only discovery와 approved remediation을 분리 canary로 검증"
           ]
         }
       ],
