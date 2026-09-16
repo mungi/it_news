@@ -418,6 +418,7 @@
 - [[raw/articles/thn-marimo-cve-2026-39987-ssh-bastion-pivot-2026-09-15]] — Marimo RCE 뒤 AWS Secrets Manager·SSH bastion 8초 pivot의 notebook/identity incident 경계.
 - [[raw/articles/thn-vite-cve-2026-39364-cloud-credential-mass-scan-2026-09-15]] — exposed Vite dev server의 `.env`·cloud credential·Terraform state mass scan 대응 경계.
 - [[raw/articles/aws-glue-zero-etl-table-property-ownership-conflict-2026-09-14]] — Glue zero-ETL target ownership·conflict detection의 catalog/lineage 운영 경계.
+- [[raw/articles/aws-direct-connect-flat-rate-pricing-2026-09-16]] — AWS Direct Connect 10G·100G 정액제·port-pair의 DTO·이중 연결·BGP failover FinOps 검증 경계.
 
 - [[raw/articles/cloudflare-workers-granular-authorization-2026-09-15]] — Cloudflare Workers resource-level role·Worker별 CI/agent API token·route permission 분리 운영 경계.
 - [[raw/articles/aitimes-vessl-ai-pohang-aidc-gpu-platform-2026-09-16]] — 포항 40MW 수냉식 AIDC의 GPU 플랫폼·시설 운영 분담과 capacity/commissioning 검증 경계.

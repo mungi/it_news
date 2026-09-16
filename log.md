@@ -2671,6 +2671,12 @@
 - 실제 GPU SKU·설치 수량·전력 인입·PUE·준공일·상용 가용 용량·SLA는 공개되지 않아 목표나 MOU를 production capacity로 확대하지 않음. facility plane과 GPU control plane의 commissioning·telemetry·change/incident handoff를 별도 acceptance gate로 검증하도록 정리.
 - `news-478`을 newest-first rank 1에 추가하고 50-item cap의 actual tail `news-431`을 제거해 rank 1–50을 유지. raw capture·weekly archive·index를 동기화. persisted closing-frontmatter delimiter 뒤 raw-body SHA-256 `467c9a92d4a04b161b5e405ebbd52a5dc1132e67115794b857897afeefe3050d` 일치 확인. Deep Dive 2건은 KST 01:47 전면 재구성 완료 상태이므로 timestamp-only 변경을 하지 않음.
 
+## [2026-09-16] update | AWS Direct Connect 10G·100G 정액제·port-pair 추가
+- 확인 시각: 2026-09-16 22:10 KST. GeekNews RSS·GeekNews Plus·AI타임스·인공지능신문 필수 surface와 AWS·Kubernetes·CNCF·GitHub·Google Security feed를 현재 run에서 probe. GeekNews Plus는 HTTP 403, The Hacker News·Cloudflare는 HTTP 403이었음.
+- AWS canonical announcement의 `Posted on: Sep 15, 2026`·본문을 직접 확인하고 feed의 `Tue, 15 Sep 2026 19:00:00 GMT`를 KST `2026-09-16 04:00`으로 변환. 10G·100G Dedicated Connection의 tier 내 DTO 제외 단일 월 요금, same-metro~global 5개 tier, 서로 다른 device/location의 port-pair standby 회선 포함, commercial Region 제공·China Region 제외를 source 범위로 수록.
+- 정액제가 모든 network charge·Hosted Connection·조직별 비용 절감을 보장한다는 해석은 배제. connection별 DTO profile·geographic tier·BGP failover·device diversity·invoice 비교를 별도 검증 action으로 정리.
+- `news-481`을 final sort rank 3에 추가하고 newest-first 50-item cap의 actual tail `news-430`을 제거해 rank 1–50을 유지. raw capture·`weekly/2026-W39.md`·`index.md`를 동기화. persisted closing-frontmatter delimiter 뒤 raw-body SHA-256 `7b29dd4b2319db14badd78eed49501df724f96be646b0c9203a57a8dc42318dd` 확인.
+
 ## [2026-09-16] update | WSO2 API Manager forged JWT 활성 악용·Kubernetes Pod-Level Resource Managers Beta 추가
 - 확인 시각: 2026-09-16 18:12 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스·인공지능신문 root surface는 HTTP 404로 확인. The Hacker News·AWS·Kubernetes·CNCF·GitHub·Docker feed를 직접 파싱했으며 Cloudflare·OpenAI·Anthropic feed는 HTTP 403이었음.
 - The Hacker News RSS `Wed, 16 Sep 2026 10:48:06 +0530`, canonical body·Open Graph image를 대조해 WSO2 `CVE-2026-5430`을 KST 14:18로 기록. watchTowr honeypot의 2026-09-13 forged administrator JWT observation, API Manager 4.1.0~4.6.0 및 listed Control Plane/Traffic Manager/Universal Gateway 영향, community fix·subscription update level을 source 범위로 수록.
