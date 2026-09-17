@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-17 06:21",
+  "last_updated_kst": "2026-09-17 10:28",
   "audience": "developers and engineers",
   "executive_summary": [
+    "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
+    "AI coding assistant session 탈취 사례에서 poisoned PyPI package가 GitHub OAuth token 탈취와 Shai-Hulud의 내부 저장소 약 100개 확산으로 연결됨. AI 추천 dependency의 checksum·allowlist·internal mirror와 extension secret scope를 release gate로 적용 필요.",
     "Issabel Framework `CVE-2026-89026` active exploitation은 모든 설치본의 hard-coded HS256 JWT key를 이용해 PBX manager API에서 Asterisk user OS command 실행으로 이어질 수 있음. fixed build·key provenance·PBX API·Asterisk process audit을 같은 incident scope로 점검 필요.",
     "WSO2 API Manager `CVE-2026-5430` active-exploitation attempt은 administrator privilege를 포함한 forged JWT를 관측. API gateway의 JWT validation·admin API·backend credential·consumer key를 fixed update와 같은 incident scope로 점검 필요.",
-    "Marimo `CVE-2026-39987` observed exploitation은 notebook WebSocket에서 AWS Secrets Manager credential read와 SSH bastion authentication까지 **8초** pivot을 기록. public notebook·runtime IAM·secret·bastion trust를 동일 incident scope로 봉쇄 필요.",
-    "Vite `CVE-2026-39364` mass scan은 public dev server에서 query manipulation으로 `.env`, AWS/Azure config, Terraform state를 노림. `--host`·Docker port mapping·`server.fs.allow`/`deny`와 secret rotation을 함께 점검 필요.",
-    "Cisco Secure Email Gateway `CVE-2026-76461`은 crafted email SQL injection으로 root command execution이 가능하며 Cisco가 활성 악용을 확인. fixed software 적용과 cluster별 `mail_logs`·root-level forensic·relay/directory integration credential 검토를 같은 incident closure로 운영 필요."
+    "Marimo `CVE-2026-39987` observed exploitation은 notebook WebSocket에서 AWS Secrets Manager credential read와 SSH bastion authentication까지 **8초** pivot을 기록. public notebook·runtime IAM·secret·bastion trust를 동일 incident scope로 봉쇄 필요."
   ],
   "deep_dives": [
     {
@@ -193,6 +193,75 @@
   ],
   "items": [
     {
+      "id": "news-485",
+      "title_ko": "SageMaker AI Nemotron 3.5 Lightning serverless customization: SFT·DPO·RFT와 4개 리전 제공",
+      "title_original": "Amazon SageMaker AI now supports serverless model customization for NVIDIA Nemotron 3.5 Lightning",
+      "summary": "- 제공: SageMaker AI에서 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization 지원\n- 모델: AWS는 hybrid MoE **30B total / 3B active parameter** 모델로 설명\n- 운영: infrastructure provisioning·training orchestration을 serverless job이 처리하는 범위\n- 리전: US East (N. Virginia)·US West (Oregon)·Asia Pacific (Tokyo)·Europe (Ireland) 제공\n- 팀 액션: task baseline·holdout 평가·preference/reward data provenance와 Tokyo quota·residency를 job 전에 고정 필요",
+      "detail": "AWS는 SageMaker AI에서 NVIDIA Nemotron 3.5 Lightning 모델의 serverless model customization을 지원한다고 발표했다. 지원 학습 방식은 supervised fine-tuning(SFT), Direct Preference Optimization(DPO), reinforcement fine-tuning(RFT)이다. AWS는 이 모델을 30B total parameter와 3B active parameter의 hybrid Mixture-of-Experts 모델로 설명하며, serverless customization이 infrastructure provisioning과 training orchestration을 처리한다고 밝혔다. 제공 리전은 US East (N. Virginia), US West (Oregon), Asia Pacific (Tokyo), Europe (Ireland)이고 Studio Models page 또는 SageMaker Python SDK에서 job을 시작할 수 있다. smaller model이 특정 task에서 frontier-model quality에 맞춰 비용과 latency를 줄일 수 있다는 설명은 AWS의 일반적 customization 주장으로, 조직별 dataset·evaluation·traffic 조건에서 별도 검증이 필요함.",
+      "why_it_matters": "serverless fine-tuning은 training cluster lifecycle 운영 부담을 줄이지만 SFT/DPO/RFT의 data lineage, evaluation contract, regional data boundary, output deployment gate를 자동으로 해결하지 않음. model customization을 endpoint rollout과 같은 release process로 다뤄야 함.",
+      "engineering_implication": "job 시작 전 task baseline·holdout set·safety regression·cost ceiling을 versioned artifact로 고정하고 SFT label, DPO preference pair, RFT reward signal의 provenance를 audit 가능하게 보존 필요. Tokyo availability만으로 residency·quota·KMS encryption·output artifact retention·endpoint serving region이 충족되는지 가정하지 말고 account별 설정을 확인 필요.",
+      "korea_implication": "한국 리전이 아닌 Tokyo 제공 범위이므로 국내 규제·공공·금융 workload는 training data transfer, model artifact storage, inference endpoint 위치를 service availability와 별도로 검토 필요.",
+      "category": "AI",
+      "tags": [
+        "AI",
+        "AWS",
+        "SageMaker",
+        "Fine-tuning",
+        "Nemotron",
+        "MoE",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 82,
+      "published_kst": "2026-09-17 07:29",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-sagemaker-ft-nemotron-3-5-lightning/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "Amazon SageMaker AI model customization documentation",
+          "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/model-customization.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 SageMaker AI의 serverless model customization 대상으로 NVIDIA Nemotron 3.5 Lightning을 추가함. SFT, DPO, RFT를 제공하며 source는 hybrid MoE 30B total parameter·3B active parameter 모델로 설명함.",
+          "items": [
+            "학습: labeled data 기반 SFT, preference data 기반 DPO, reward signal 기반 RFT 제공",
+            "상태: serverless job이 infrastructure provisioning과 training orchestration을 처리하는 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기능은 US East (N. Virginia), US West (Oregon), Asia Pacific (Tokyo), Europe (Ireland)에서 제공됨. SageMaker Studio Models page 또는 SageMaker Python SDK로 customization job을 시작할 수 있음.",
+          "items": [
+            "리전: Tokyo는 지원 대상이나 Seoul availability를 의미하지 않음",
+            "접근: console workflow와 SDK programmatic job submission을 함께 제공"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "cluster provisioning을 AWS가 처리해도 domain data·preference pair·reward function·holdout evaluation의 품질 책임은 workload owner에게 남음. customization 결과의 cost, latency, safety regression은 base model 또는 frontier model과 같은 task contract로 비교해야 함.",
+          "items": [
+            "검증: production task baseline·holdout set·safety regression·token/latency/cost ceiling을 사전 정의",
+            "경계: smaller model의 frontier-quality matching·cost/latency reduction은 AWS 일반 설명이며 조직별 보장 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "SFT/DPO/RFT 선택은 학습 API의 차이가 아니라 data provenance와 evaluation signal의 차이임. job input·reward/preference dataset·model artifact·endpoint deployment approval을 versioned release record로 연결해야 rollback과 audit이 가능함.",
+          "items": [
+            "팀 액션: dataset classification·KMS encryption·retention·quota·serving region을 account별 preflight로 확인",
+            "팀 액션: customization job 비용과 evaluation outcome을 model version·use case 단위로 FinOps ledger에 귀속"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-483",
       "title_ko": "Issabel Framework `CVE-2026-89026` 활성 악용: 공통 hard-coded JWT key로 PBX API OS command 실행 경로 노출",
       "title_original": "Attackers Exploit Issabel Framework Flaw Enabling Unauthenticated OS Command Execution",
@@ -270,7 +339,78 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-484",
+      "title_ko": "AI coding assistant session 탈취: poisoned PyPI 뒤 Shai-Hulud이 내부 저장소 약 100개로 확산",
+      "title_original": "Attacker Hijacks AI Coding Assistant Session, Spreads Shai-Hulud Across About 100 Repositories",
+      "summary": "- 사례: Mandiant 2026년 9월 보고서가 익명 SaaS 제공사의 active AI coding-assistant session 탈취 사례를 제시\n- 경로: assistant가 추천한 poisoned PyPI package를 승인한 뒤 infostealer 설치와 GitHub OAuth token 탈취로 연결\n- 확산: self-spreading Shai-Hulud worm이 내부 code repository **약 100개**와 official namespace package로 전파\n- 영향: 다른 직원의 compromised package pull로 second infection이 발생했으며 source code·repository secret 탈취가 보도 범위\n- 팀 액션: AI 추천 dependency checksum·allowlist, extension의 raw secret 접근 차단, internal package repository 경유를 release gate로 적용 필요",
+      "detail": "The Hacker News는 Mandiant의 2026년 9월 AI Risk and Resilience 보고서를 인용해 익명 SaaS 제공사에서 active AI coding-assistant session이 탈취된 사례를 보도했다. assistant가 추천한 poisoned PyPI package가 승인된 뒤 attacker는 developer session으로 infostealer를 설치하고 GitHub OAuth token을 획득했다. 이후 self-spreading Shai-Hulud worm을 약 100개 internal code repository에 배포하고 official namespace package도 오염시켰다. 다른 employee가 compromised version을 pull하면서 second infection이 발생했다. 공개 case study는 intrusion 시각과 session takeover 방법을 설명하지 않으며, THN이 언급한 8월 Keyv-linked npm worm 등은 별도 campaign이므로 이 사례와 동일 actor·infrastructure로 단정할 수 없음.",
+      "why_it_matters": "AI coding assistant의 recommendation acceptance는 dependency installation, developer session, OAuth token, repository publish 권한을 한 흐름으로 잇는 supply-chain control-plane임. assistant가 code를 쓰지 않아도 추천 artifact가 trusted path로 들어가면 repository secret과 source distribution 경계가 함께 무너질 수 있음.",
+      "engineering_implication": "AI 추천 dependency는 cryptographic checksum·approved allowlist·internal mirror를 통과해야 install되도록 CI와 developer environment를 구성 필요. extension·assistant가 raw API key나 long-lived OAuth token에 직접 접근하지 못하게 short-lived credential broker를 적용하고, package install·OAuth use·repository publish·CI secret access를 동일 incident timeline으로 hunt 필요.",
+      "korea_implication": "국내 개발 조직도 coding assistant 도입 검토를 모델 사용 정책으로만 끝내지 말고 npm/PyPI mirror, GitHub OAuth App, IDE extension permission, CI secret owner를 하나의 공급망 승인 체계에 묶을 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AI",
+        "DevTools",
+        "Supply Chain",
+        "Shai-Hulud",
+        "GitHub",
+        "OAuth",
+        "PyPI"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-09-16 23:37",
+      "source_name": "The Hacker News / Mandiant",
+      "source_url": "https://thehackernews.com/2026/09/attacker-hijacks-ai-coding-assistant.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEghZsSi9JbsiALEhfWv_49vjKw2uHa-lBOUWCwhyphenhyphensppIZLuNgoQ-VQTs2EjRmXjemfvM0Fj9knUSdDIYbSWg5Pf_sqKBOGV5BA67GVYn_lNreIN_Kwpp3u0yxKgF4dIHXRj-NKcCyimE0kwHUWHqxP7SHUd-Tu31S3jfzxOPmN8_Xk8d5GYRce2N4MdmYY/s1600/shai.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Mandiant: AI Risk and Resilience 2026",
+          "url": "https://cloud.google.com/security/resources/ai-risk-and-resilience-2026"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Mandiant의 2026년 9월 보고서를 인용한 THN은 익명 SaaS 제공사에서 active AI coding-assistant session이 탈취된 사례를 공개함. assistant가 추천한 software를 developer가 승인한 후 compromise가 시작된 흐름이며, 공개 사례는 침입 시각과 session takeover 기술을 밝히지 않음.",
+          "items": [
+            "경로: AI recommendation acceptance 뒤 poisoned PyPI package 설치와 infostealer 실행",
+            "범위: 공개 case study는 조직명·침입 시각·active session 탈취 방법을 비공개로 유지"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "attacker는 developer의 active session을 이용해 GitHub OAuth token을 탈취하고 self-spreading Shai-Hulud worm을 internal repository 약 100개에 배포한 것으로 보도됨. official namespace package가 오염된 뒤 다른 employee가 해당 version을 pull해 second infection이 발생한 사례임.",
+          "items": [
+            "확산: internal code repository 약 100개와 official namespace package가 영향 범위",
+            "탈취: repository secret과 product source code 탈취가 THN의 Mandiant 인용 범위",
+            "경계: 8월 Keyv-linked npm worm과 credential scan 보도는 별도 campaign으로 기록"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI assistant recommendation은 개발자에게 dependency selection을 보조하지만 package install, OAuth session, repository write와 secret exposure를 연속된 attack path로 만들 수 있음. dependency provenance가 release gate 밖에 있으면 assistant approval이 trusted execution의 시작점이 됨.",
+          "items": [
+            "통제: recommendation 자체가 아닌 artifact checksum·publisher provenance·approved allowlist를 enforcement point로 설정",
+            "위험: raw API key·long-lived OAuth token이 extension 또는 infostealer read scope에 남는 credential lifecycle"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Mandiant 권고는 dependency checksum과 approved allowlist 검증, extension의 raw credential 접근 제한, internal repository를 통한 dependency traffic 통제임. 조사 시 package install 단독 로그가 아니라 OAuth use, publish, CI secret access, repository change를 time-correlated evidence로 묶어야 함.",
+          "items": [
+            "팀 액션: internal mirror·lockfile integrity·publisher approval을 CI와 local development 모두에 적용",
+            "팀 액션: short-lived OAuth·credential broker·extension permission review와 repository publish audit을 incident runbook에 포함"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-479",
@@ -346,7 +486,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-478",
@@ -412,7 +552,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-481",
@@ -487,7 +627,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-480",
@@ -560,7 +700,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-477",
@@ -627,7 +767,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-482",
@@ -708,7 +848,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-475",
@@ -772,7 +912,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-476",
@@ -837,7 +977,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-474",
@@ -912,7 +1052,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "region": "Global",
@@ -987,7 +1127,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-473",
@@ -1054,7 +1194,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "region": "Global",
@@ -1122,7 +1262,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "region": "Global",
@@ -1195,11 +1335,11 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-469",
-      "rank": 15,
+      "rank": 17,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -1349,7 +1489,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-464",
@@ -1434,7 +1574,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-465",
@@ -1511,7 +1651,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-462",
@@ -1587,7 +1727,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-463",
@@ -1660,7 +1800,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-461",
@@ -1737,7 +1877,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-459",
@@ -1810,7 +1950,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-458",
@@ -1921,7 +2061,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-468",
@@ -1995,7 +2135,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-455",
@@ -2077,7 +2217,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-460",
@@ -2155,7 +2295,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-457",
@@ -2232,7 +2372,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-456",
@@ -2302,7 +2442,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-454",
@@ -2379,7 +2519,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-453",
@@ -2461,7 +2601,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-466",
@@ -2552,7 +2692,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-452",
@@ -2629,7 +2769,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-451",
@@ -2702,7 +2842,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-449",
@@ -2779,7 +2919,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-450",
@@ -2853,7 +2993,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-447",
@@ -2917,7 +3057,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-446",
@@ -2994,7 +3134,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-445",
@@ -3071,7 +3211,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-433",
@@ -3156,7 +3296,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-448",
@@ -3220,7 +3360,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-420",
@@ -3298,7 +3438,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-444",
@@ -3375,7 +3515,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-443",
@@ -3448,7 +3588,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-442",
@@ -3516,7 +3656,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-439",
@@ -3582,7 +3722,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-440",
@@ -3659,7 +3799,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-441",
@@ -3727,7 +3867,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-437",
@@ -3792,140 +3932,6 @@
             "측정: placement convergence·propagation lag·failover RTO·API error·stale resource·Prometheus metric completeness",
             "통제: workload class별 placement constraint·approval·change window·policy rollback gate",
             "팀 액션: representative stateless/stateful/GPU workload로 failover·failback·etcd restore·secret/RBAC boundary canary 실행"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "source_name": "The Hacker News",
-      "region": "Global",
-      "related_links": [],
-      "local_image": "",
-      "id": "news-435",
-      "title_ko": "PEEP Chrome·Edge post-compromise backdoor: 확장 프로그램 무결성 위조와 Native Messaging host 실행 경로 점검",
-      "title_original": "PEEP Turns Chrome and Edge Into Post-Compromise Backdoors for Host Command Execution",
-      "summary": "- 발견: Chrome·Edge profile에 \"Smart Bookmarks\" 확장으로 위장한 **PEEP** post-compromise toolkit 관측\n- 설치: Secure Preferences integrity 값 위조와 force-install policy·sideloading으로 Web Store 검사·사용자 prompt 우회\n- 실행: Native Messaging `nm_host.exe`가 browser sandbox 밖 host command·file·process/service 탐색 경로 제공\n- 통신: plaintext HTTP C2를 30초마다 polling하며 cookie·history·active-tab metadata·session을 수집\n- 팀 액션: extension policy·Secure Preferences·Native Messaging manifest·PowerShell·browser-to-host child process를 EDR hunt와 allowlist로 점검 필요",
-      "detail": "The Hacker News는 SOCRadar 분석을 인용해 Chromium 기반 PEEP이 이미 확보한 endpoint에 배포되는 post-compromise toolkit이라고 보도했다. \"Smart Bookmarks\" 확장 ID `ejkndncpkdcjcikfhiamcdehdoegilbj`로 위장하고 Chrome·Edge profile의 Secure Preferences integrity 값을 조작해 sideloaded extension을 자동 활성화한다. 30초마다 plaintext HTTP C2를 polling해 browsing history·active tab·cookie·session을 수집하며, `nm_host.exe` Native Messaging bridge로 shell command 실행·file 관리·process/service 탐색을 수행한다. 초기 침투 벡터와 피해 범위·운영 주체는 확인되지 않았고, `/health`의 34 agent·10 active session·507 data record는 실제 감염 수와 구분되지 않는다. browser process 신뢰만으로 extension과 native host 실행을 허용하지 말고 policy·manifest·file path·child process·network telemetry를 같이 검증해야 한다.",
-      "why_it_matters": "브라우저 확장과 Native Messaging은 signed browser process 안의 telemetry처럼 보이면서 endpoint command execution까지 연결할 수 있음. extension allowlist만으로 host bridge·preference tampering·sideloading을 막는다는 보장은 없음.",
-      "engineering_implication": "Chrome·Edge enterprise extension policy와 Native Messaging host manifest를 inventory로 만들고 `Secure Preferences` 변경·`ExtensionInstallForcelist`·HKCU extension registration·PowerShell sideloading·browser child process·plaintext C2를 correlation rule로 운영 필요. browser profile reset·cookie/session revoke·endpoint isolation·credential rotation 조건을 incident runbook에 추가 필요.",
-      "korea_implication": "국내 Windows endpoint fleet도 Chrome·Edge 정책을 GPO/MDM으로 분리 관리하고, local administrator·developer mode·extension installation 권한과 EDR telemetry 보존 범위를 점검 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Browser Security",
-        "Chrome",
-        "Microsoft Edge",
-        "Native Messaging",
-        "Endpoint Detection",
-        "Malware"
-      ],
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-09-08 03:12",
-      "source_url": "https://thehackernews.com/2026/09/peep-turns-chrome-and-edge-into-post.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhA3-5bNylOMc_s8MAT2ibQnV33cnJXadwKPRXjYgAL0GcZWOXuwtM-s5HS4ryVu5ewnhfAqBtOiuSseLcUSyDIfxf5XKF6mAwrpyG-v3Y-siqjJY8I5zVEMXwfkKPwBNAqaO2sQFI-q2oA4MWiagZFUlknIPKADDfvOo8s2Ifsa_xBAojg1rD5ZGUErC85/s1600/chrome-malware.jpg",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 SOCRadar 분석을 인용해 PEEP을 Chromium 기반 post-compromise toolkit으로 보도. 초기 침투 기능은 없으며 이미 확보한 endpoint에 배포되는 범위임.",
-          "items": [
-            "위장: \"Smart Bookmarks\" extension ID `ejkndncpkdcjcikfhiamcdehdoegilbj` 사용",
-            "대상: Chrome·Edge profile에 설치되며 운영 주체·피해 조직·initial access는 미확인"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "installer는 Chromium Secure Preferences integrity 값을 위조해 Web Store 검사와 사용자 prompt를 우회하는 것으로 설명됨. extension은 C2와 30초 간격으로 plaintext HTTP 통신을 수행함.",
-          "items": [
-            "수집: browsing history·active tab metadata·session cookie·public IP·locale·time zone 전송 경로",
-            "지속성: sideloading·enterprise force-install policy·ScriptCache fallback·preference integrity manipulation 언급",
-            "경계: `/health`의 34 agent·10 active session·507 record는 실제 감염·검증된 deployment와 구분 불가"
-          ]
-        },
-        {
-          "heading": "browser-to-host 실행 경계",
-          "body": "Native Messaging Host `nm_host.exe`는 browser extension이 OS command·file management·process/service discovery를 호출하도록 연결하는 경로임. browser sandbox와 signed process 신뢰가 host action 안전성을 보증하지 않음.",
-          "items": [
-            "실행: shell command·file 관리·process/service 탐색을 user context에서 수행하는 것으로 보도",
-            "파일: `install_silent.ps1`·`patch_secure_prefs.ps1`·`force_enable.ps1` 및 Linux 대상 Python script 언급",
-            "탐지: Native Messaging manifest·browser child process·PowerShell·HKCU extension registration을 동일 endpoint timeline으로 연결"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "extension 설치 상태만이 아니라 preference·policy·native host·network egress가 함께 정상인지가 승인 기준임. session theft 가능성이 있으므로 browser remediation은 identity response와 결합 필요.",
-          "items": [
-            "체크: extension allowlist·`ExtensionInstallForcelist`·developer mode·Secure Preferences hash·native host path",
-            "대응: affected profile reset·cookie/session revoke·credential rotation·endpoint isolation·forensic preservation",
-            "팀 액션: browser→`nm_host.exe` child process와 plaintext HTTP 30초 beacon을 EDR·proxy detection rule로 canary 검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "source_name": "The Hacker News",
-      "region": "Global",
-      "related_links": [],
-      "local_image": "",
-      "id": "news-436",
-      "title_ko": "Microsoft 365 임원 표적 fake IT-call: AitM token replay·SharePoint 대량 수집을 identity telemetry로 차단",
-      "title_original": "Fake IT Calls Target Executives in Microsoft 365 Data Theft and Extortion Attacks",
-      "summary": "- 공격: PREY-0058로 추적되는 위협 cluster가 IT/help desk 사칭 전화 뒤 Microsoft 365 authentication URL로 유도\n- 탈취: operator-controlled **AitM** login flow에서 credential·MFA approval을 받아 authenticated session token 확보\n- 재사용: victim과 같은 지역·ASN처럼 보이는 residential proxy에서 token replay 후 SharePoint·Entra ID discovery 수행\n- 유출: SharePoint·OneDrive·Exchange·Box를 대량 수집한 뒤 extortion demand로 연결\n- 팀 액션: phishing-resistant MFA·Conditional Access와 residential proxy replay·SharePoint search/bulk access·mailbox harvesting 탐지를 결합 필요",
-      "detail": "The Hacker News는 Arctic Wolf 분석을 인용해 PREY-0058이 director·vice president 등 임원을 중심으로 IT/help desk vishing과 adversary-in-the-middle(AitM) token theft를 사용하는 것으로 보도했다. 공격자는 authentication-themed lure domain으로 유도해 credential과 MFA approval을 수집하고, victim과 같은 지역·ASN으로 보이는 NodeMaven 같은 residential proxy에서 session token을 replay한다. 초기 sign-in 뒤 My Signins·My Profile·My Apps를 조회하고 SharePoint·Entra ID discovery를 수행한 후 SharePoint·OneDrive·Exchange·Box 데이터를 대량 수집해 extortion으로 연결한다. endpoint malware나 network lateral movement는 관측되지 않은 범위이며 PREY-0058·UNC6671·Cinder·Pink 사이의 동일 actor identity는 확정되지 않았다. identity·SaaS audit log에서 token replay와 content discovery를 조기에 연결하는 통제가 필요하다.",
-      "why_it_matters": "MFA approval이 있어도 AitM으로 session token을 탈취하면 SaaS data plane에 접근할 수 있음. endpoint malware가 없는 공격은 EDR 중심 탐지에서 누락될 수 있어 Entra·SharePoint·mail audit telemetry가 중요함.",
-      "engineering_implication": "Conditional Access와 phishing-resistant MFA를 적용하고, executive account의 unfamiliar residential proxy sign-in·token replay·My Apps enumeration·SharePoint wildcard search·bulk download·mailbox access를 user/session/IP/ASN 기준으로 상관 분석 필요. critical SaaS data scope와 emergency token revoke 절차를 검증 필요.",
-      "korea_implication": "국내 조직도 임원·관리자 계정의 해외/국내 residential proxy 예외 정책, help desk 본인 확인 절차, Entra ID·M365·Box 등 SaaS audit log 보존과 IR 접근 권한을 사전 점검 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Microsoft 365",
-        "Entra ID",
-        "Phishing",
-        "Identity Security",
-        "SaaS",
-        "SharePoint"
-      ],
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-09-08 00:51",
-      "source_url": "https://thehackernews.com/2026/09/microsoft-365-attackers-use-help-desk.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjg-Zo4zgxCrVcz6-00WV2qAPHSD-av2Ed5hgRmR-2vUzkr9jVeph0NNb6gGsQfwSkFyuRfRcSsaISSpfysl_Xx5F48IM7HdBpO4F3CaVuLhk1v0a4vcH5xK_bxX6BxIjkfAjhDaNGcLG7_R9IcTjVGlFcW7y1ZV64imACHi9528LOjH1Flhk-cy9LFgrMv/s1600/phish-ms.jpg",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 Arctic Wolf 분석을 인용해 PREY-0058이 IT/help desk 전화 사칭과 AitM token theft로 Microsoft 365·SaaS data theft와 extortion을 수행한다고 보도. 임원급 계정이 주요 표적 범위임.",
-          "items": [
-            "유도: `<victim organization>.<lure domain>` 형태 authentication-themed URL 사용",
-            "표적: director·vice president 등 executive staff 중심이라는 보도 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "operator-controlled AitM Microsoft 365 login flow는 credential과 MFA approval을 받아 authenticated session token을 확보하는 경로로 설명됨. captured token은 residential proxy에서 replay됨.",
-          "items": [
-            "proxy: NodeMaven 등 victim과 같은 geographical location·ASN으로 보이는 infrastructure 언급",
-            "초기 조회: `My Signins`·`My Profile`·`My Apps`로 account·available application discovery",
-            "경계: PREY-0058·UNC6671·Cinder·Pink의 단일 actor identity는 기사에서 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "SaaS data plane 탐지",
-          "body": "보도된 공격은 endpoint malware deployment나 network-based lateral movement 없이 SaaS audit surface에서 discovery·collection을 수행함. identity와 content access event를 분리하지 않고 incident timeline으로 연결할 필요.",
-          "items": [
-            "SharePoint: `SearchQueryPerformed`의 `contentclass:STS_Site`·`contentclass:STS_Web`·`indexdocid` wildcard pagination 언급",
-            "유출: SharePoint·OneDrive·Exchange·Box 대량 수집 뒤 extortion demand 연결",
-            "탐지: unfamiliar residential proxy token replay·SharePoint discovery/bulk access·mailbox harvesting·new lure domain correlation"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "MFA가 token replay를 자동 차단하지 않으므로 phishing-resistant authentication과 Conditional Access, 최소 data scope, session revoke playbook을 같이 운영해야 함. help desk workflow도 identity control plane의 일부임.",
-          "items": [
-            "통제: phishing-resistant MFA·Conditional Access·executive account data least privilege·help desk call-back verification",
-            "대응: session/token revoke·credential reset·SaaS search/export scope 조사·legal/IR evidence preservation",
-            "팀 액션: proxy ASN·device/session·MFA method·SharePoint search/download volume을 1시간 correlation window로 canary 검증"
           ]
         }
       ],
