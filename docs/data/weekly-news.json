@@ -2,10 +2,10 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-17 22:42",
+  "last_updated_kst": "2026-09-18 02:49",
   "audience": "developers and engineers",
   "executive_summary": [
-    "- **Unbound `CVE-2026-81642`**는 `1.26.0` 이하 DNSSEC validator의 heap overflow로, malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
+    "**Unbound `CVE-2026-81642`**는 `1.26.0` 이하 DNSSEC validator의 heap overflow로, malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
     "GitHub가 Copilot 공통 agent runtime을 **832,378줄 production Rust**로 전환하고 128개 PR·135개 release의 incremental rollout을 공개. shared agent harness migration은 subprocess·FFI·stateful orchestration·E2E·rollback을 같은 release contract로 관리 필요.",
     "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
     "Amazon Corretto 27이 G1 GC 기본값, TLS 1.3 post-quantum hybrid key exchange, compact object header, JFR in-process redaction을 포함한 Feature Release로 제공. JVM upgrade는 GC·heap·TLS peer·JFR export·native agent를 같은 canary evidence로 검증 필요.",
@@ -14,178 +14,178 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "WSO2 API Manager forged JWT: API gateway auth bypass를 admin·backend credential incident로 봉쇄",
-      "summary": "한 줄 결론: `CVE-2026-5430` active-exploitation attempt에서 forged administrator JWT가 관측됨. fixed update와 JWT validation·admin API·registered application credential·backend route forensic을 하나의 incident graph로 처리해야 함.",
-      "details": "watchTowr honeypot이 2026-09-13 administrator privilege가 포함된 forged JWT를 관측했고 The Hacker News는 unsupported signing algorithm JWT가 승인되는 `CVE-2026-5430`을 CVSS 9.8로 기록했다. API Manager 4.1.0~4.6.0과 listed Control Plane·Traffic Manager·Universal Gateway release가 범위다. active attempt는 local compromise 증명은 아니지만 API gateway에서 authentication bypass가 management plane, consumer key, backend credential로 확장될 가능성을 의미한다. fixed build 적용과 audit evidence 보존, privileged action hunt, risk-based credential rotation을 병렬 수행해야 한다.",
-      "why_it_matters": "API gateway의 administrator token은 JWT validation뿐 아니라 registered application과 backend routing control을 묶는 고권한 경계임.",
+      "title": "Unbound DNSSEC `CVE-2026-81642`: resolver fleet을 version·DNSSEC·query exposure 단위로 봉쇄",
+      "summary": "한 줄 결론: Unbound `1.26.0` 이하 DNSSEC validator의 DNSKEY digest heap overflow는 악성 zone 질의에서 DoS와 attacker-controlled data 기반 possible RCE 범위를 가짐. `1.26.1` 또는 vendor backport, recursive exposure 축소, signed-zone canary와 crash·SERVFAIL forensic을 하나의 변경으로 처리해야 함.",
+      "details": "NLnet Labs는 2026-09-16 Unbound DNSSEC validator의 critical `CVE-2026-81642`를 공개했다. self-referential owner compression pointer를 가진 DNSKEY가 digest buffer를 넘치게 하며, 공격자는 malicious zone을 제어하고 취약 resolver가 이를 질의하도록 해야 한다. `1.26.1`은 decompression 후 write 전 capacity check를 추가했고 manual patch도 제공한다. 원문은 active exploitation, 성공 RCE, 특정 조직 영향은 확인하지 않는다. 따라서 version만 교체하지 말고 DNSSEC enablement, public recursive query path, resolver image, signed-zone resolution, failure telemetry를 같은 evidence set으로 검증해야 한다.",
+      "why_it_matters": "recursive resolver는 애플리케이션·Kubernetes·CI/CD가 공유하는 network control plane일 수 있어 patch 누락 또는 잘못된 rollback이 다수 workload의 name resolution에 영향을 줄 수 있음.",
       "sources": [
-        "https://thehackernews.com/2026/09/active-exploitation-attempts-target.html",
-        "https://github.com/wso2/carbon-apimgt/pull/13752"
+        "https://nlnetlabs.nl/projects/unbound/security-advisories/"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjenXPNzZ8-fnZOSWlAtRwfZVCV0iy-vnK86gK4vmTGsWSjSS7x9a3k80NLsiEZUym2AjBaYj7pLtxyQju7Hiyl6ttQPyXEPMy7Gwn_bQTTTaUOB-8HbhJfYxl54Z3WE5yqKEoW1vvkCBukKwea-6DlpBiO6i08Zo0GhBoqgRsGGXadsOYy8COPUPQ7rn2w/s1600/jwt-api.jpg",
+      "image_url": "https://nlnetlabs.nl/static/logos/NLnetLabs/Mark_NLnet_Labs.png",
       "local_image": "",
-      "refreshed_kst": "2026-09-17 02:14",
+      "refreshed_kst": "2026-09-18 02:49",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "WSO2 API Manager의 `CVE-2026-5430`은 JWT signature verification 경계가 무너지면 gateway administrator 권한과 registered application 정보를 잇는 control-plane incident가 될 수 있음. fixed build 적용, forged-token 사용 흔적, admin API와 backend credential exposure를 하나의 closure로 묶어야 함.",
+          "body": "이 결함은 DNSSEC parser의 메모리 안전성 문제이지만 운영 대응은 DNS daemon patch만으로 끝나지 않음. 취약 version, DNSSEC validation, 외부 재귀 질의, forwarder와 container image를 함께 확인하고 정상·실패 DNS resolution 증거로 배포를 닫아야 함.",
           "items": [
-            "변화: unsupported signing algorithm JWT가 승인되는 결함과 forged administrator token 관측",
-            "판정: patch 상태와 token·admin·backend forensic을 분리하지 않는 incident closure 필요"
+            "변화: `CVE-2026-81642`는 Unbound `1.26.0` 이하 DNSKEY digest heap overflow로 공개",
+            "판정: resolver fleet patch와 query exposure·telemetry 검증을 동일 incident closure로 관리 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "The Hacker News와 watchTowr 관측 범위에서 honeypot은 2026-09-13 administrator privilege가 baked-in된 forged JWT를 수신함. `CVE-2026-5430`은 CVSS 9.8로 기록됐으며 API Manager 4.1.0~4.6.0 및 listed API Control Plane·Traffic Manager·Universal Gateway release가 영향 범위임.",
+          "body": "NLnet Labs advisory는 2026-09-16 critical severity로 이 취약점을 게시함. DNSKEY owner compression pointer가 자신의 RDATA를 가리키면 digest buffer overflow가 발생하며, malicious zone을 제어하는 공격자가 vulnerable Unbound의 query를 유도하는 조건이 필요함.",
           "items": [
-            "증거: honeypot의 active-exploitation attempt이며 개별 조직의 successful compromise 증명 아님",
-            "영향: forged token으로 administrative account takeover와 registered application backend·credential·consumer key·secret 접근 가능성",
-            "수정: community fix pull request와 subscription별 update level 공개, 적용 build provenance 확인 필요"
+            "영향: denial of service와 attacker-controlled data를 통한 possible remote code execution 범위",
+            "수정: Unbound `1.26.1`이 decompression 뒤와 write 전에 offending buffer capacity 검사 추가",
+            "대안: minimal·complete·combined patch와 source-tree manual application 경로 제공",
+            "경계: advisory는 active exploitation·successful RCE·개별 resolver 노출을 확인하지 않음"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "API gateway는 JWT validation, developer portal 또는 management API, registered application secret, backend routing이 만나므로 administrator token은 단순 사용자 계정 사고가 아님. auth boundary의 bypass가 credential inventory와 internal API reachability의 breach graph로 확대될 수 있음.",
+          "body": "DNSSEC validation은 application Pod 하나가 아니라 shared resolver 또는 node-local DNS, corporate recursive DNS, upstream forwarding chain에서 수행될 수 있음. public listener 하나의 update 누락이 CI, service discovery, external dependency resolution의 공통 failure domain이 될 수 있으므로 asset inventory와 traffic path가 patch 우선순위를 결정함.",
           "items": [
-            "볼 것: JWT algorithm·issuer·key ID·signature validation result와 privileged call의 시간 상관관계",
-            "피할 것: version update 성공만으로 prior token use·consumer key read·backend route 변경 부재를 판정하는 방식",
-            "판정: IAM·API platform·backend owner가 같은 evidence set으로 containment 승인 필요"
+            "볼 것: package version뿐 아니라 DNSSEC enablement·listen interface·ACL·forwarder·container image provenance",
+            "피할 것: CVE severity만으로 internet exposure 또는 local compromise를 확정하는 판단",
+            "판정: authoritative DNS owner가 아닌 recursive resolver owner와 platform network owner의 공동 approval 필요"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "실제 노출면은 public gateway뿐 아니라 management endpoint, control-plane ingress, internal load balancer와 automation credential에 걸쳐 있음. allowlist와 token validation configuration은 fixed build 뒤에도 negative test가 필요하며, audit retention이 없으면 forged token의 historical scope를 좁힐 수 없음.",
+          "body": "악성 zone을 질의하는 경로가 있어야 하므로 external recursive client, untrusted tenant workload, outbound DNS egress, split-horizon forwarder를 구분해야 함. patch 후에도 stale image나 autoscaling node가 old binary를 재도입하면 fleet closure가 깨질 수 있어 immutable image와 restart evidence가 필요함.",
           "items": [
-            "검증: unsupported algorithm, invalid signature, rotated key JWT가 모두 reject되는 staging negative test",
-            "검증: administrator API, application registration, consumer-key issuance, backend configuration read/write audit",
-            "운영: external ingress와 internal management plane을 network·identity·logging policy로 분리"
+            "검증: representative signed zone resolution과 DNSSEC validation success·failure path 비교",
+            "검증: resolver process version, package backport, deployment image digest, restart time을 asset별 수집",
+            "운영: public recursive service와 internal management·node-local resolver의 owner와 rollback runbook 분리"
           ]
         },
         {
           "heading": "보안·SRE·FinOps 관점",
-          "body": "active exploitation attempt는 patch priority를 높이지만 severity score만으로 local impact를 확정할 수 없음. secret 또는 consumer key rotation은 API client와 deployment automation을 바꾸므로 availability 검증과 rollback plan이 동반돼야 함.",
+          "body": "원문이 successful RCE를 확인하지 않았으므로 incident scope는 telemetry로 좁혀야 함. crash·core dump·unexpected restart·SERVFAIL·validation error와 unusual zone query를 보존하고, patch canary가 resolver latency·cache hit·upstream retry를 악화시키지 않는지 확인해야 함.",
           "items": [
-            "보안: 2026-09-13 이후 validation success/failure·privileged API call·credential read를 hunt 대상으로 지정",
-            "SRE: patch·token/key rotation·gateway restart가 traffic, cache, client authentication에 미치는 영향 검증",
-            "FinOps: abnormal API backend call과 egress를 account·consumer별 baseline으로 대조"
+            "보안: advisory date 이후 abnormal query name·DNSSEC validation error·process crash를 hunt 대상으로 지정",
+            "SRE: canary의 query latency·SERVFAIL rate·restart count·upstream timeout을 baseline과 대조",
+            "FinOps: retry-driven upstream DNS traffic과 resolver autoscaling·incident compute cost를 분리 관측"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "우선 product·version·internet exposure를 inventory하고 vendor-fixed update level을 적용함. 동시에 logs를 보존하고 suspicious JWT와 admin action을 조사한 뒤 affected application credential을 risk-based rotation하는 순서가 필요함.",
+          "body": "첫 단계는 version과 query exposure의 inventory이며, 그 다음 fixed build 적용과 negative/representative resolution test를 병렬 수행해야 함. 서비스 영향이 큰 resolver는 canary cohort로 진행하고 old image 재배포를 막은 뒤 fleet closure evidence를 남겨야 함.",
           "items": [
-            "1단계: product version·deployment role·management ingress·JWT configuration·log retention 확인",
-            "2단계: fixed build 적용과 forged/unsupported JWT reject test, external exposure 차단",
-            "3단계: auth/admin/backend/app-secret audit hunt 및 affected consumer key scope 확정",
-            "4단계: credential rotation·clean configuration review·representative client regression test"
+            "1단계: Unbound version·DNSSEC setting·listener ACL·external query path·deployment owner inventory",
+            "2단계: `1.26.1` 또는 vendor backport 적용과 malicious/invalid input reject test",
+            "3단계: signed-zone resolution·SERVFAIL·latency·crash telemetry canary와 rollback rehearsal",
+            "4단계: image drift·autoscaling node·forwarder path 재점검 후 fleet closure 승인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "application team, API platform, IAM, SOC가 서로 다른 owner라도 evidence handoff를 끊지 않아야 함. gateway update만 ticket에 남기고 backend credential 또는 application secret owner에게 scope를 전달하지 않으면 closure proof가 불완전해짐.",
+          "body": "DNS 운영, platform engineering, application networking, SOC가 같은 resolver의 역할을 다르게 인식할 수 있음. update ticket에는 binary version뿐 아니라 query client 범위와 observation window를 남겨야 change 완료와 security closure를 동시에 판단할 수 있음.",
           "items": [
-            "체크리스트: API Manager·Control Plane·Traffic Manager·Universal Gateway release와 update level",
-            "체크리스트: JWT algorithm allowlist·issuer/key rotation·administrator principal·audit log retention",
-            "체크리스트: registered application secret·consumer key·backend route와 unexpected internal request",
-            "팀 액션: update, hunt, rotation, regression evidence를 one incident record로 승인"
+            "체크리스트: Unbound release·vendor package·DNSSEC validation·service manager/container image 상태",
+            "체크리스트: public recursion·tenant query·forwarder·egress DNS·ACL과 authoritative zone ownership 구분",
+            "체크리스트: signed-zone test, SERVFAIL, crash/core dump, validation error, latency dashboard",
+            "팀 액션: patch·restart·telemetry review·rollback owner를 한 incident record에 연결"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "forged administrator JWT 관측은 API gateway의 cryptographic validation 결함이 management plane과 backend credential 경계까지 이어질 수 있다는 경보다. source가 개별 침해를 확인하지 않은 만큼 evidence 없이 과대판정하지 말고, update와 audit-based scope 확정을 병렬 수행해야 함.",
+          "body": "가능한 RCE라는 advisory 표현은 신속한 patch 우선순위를 뜻하지만, 현재 침해의 증명은 아님. resolver fleet의 실제 위험은 취약 version과 DNSSEC·query path가 만나는 지점에서 결정되므로 update 뒤에도 traffic·failure·image drift를 확인해야 함.",
           "items": [
-            "볼 것: forged token claim·algorithm·signature result, privileged API call, credential read, backend route change",
-            "피할 것: public endpoint patch 뒤 admin audit·consumer secret review를 생략하는 closure",
-            "팀 액션: gateway JWT validation과 registered application credential path를 tabletop으로 검증"
+            "볼 것: version, DNSSEC, external recursion, malformed-query rejection, crash·SERVFAIL telemetry",
+            "피할 것: patch 완료 표시만 남기고 autoscaling image·forwarder·query exposure 검증을 생략하는 closure",
+            "팀 액션: resolver change window에 signed-zone canary와 forensic retention을 필수 gate로 반영"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Kubernetes Pod-Level Resource Managers Beta: NUMA·sidecar resource contract를 canary로 검증",
-      "summary": "한 줄 결론: Kubernetes v1.37의 default-disabled `PodLevelResourceManagers` Beta는 primary workload의 exclusive NUMA resource와 sidecar shared pool을 분리함. feature gate, kubelet policy, PodResources consumer, p99 latency와 rollback을 node-pool canary로 함께 검증해야 함.",
-      "details": "Kubernetes v1.37은 Pod-Level Resource Managers를 Beta로 승격했다. Kubelet Topology Manager, CPU Manager, Memory Manager가 `.spec.resources`의 pod-level declaration을 hardware placement input으로 사용한다. source는 primary container의 exclusive NUMA-aligned CPU·memory와 non-Guaranteed sidecar의 pod-isolated shared pool을 조합하는 allocation model, 그리고 top-level `cpu_ids`·`memory`를 제공하는 v1 PodResources gRPC를 설명한다. 이는 managed distribution 지원이나 workload 성능을 보장하지 않으므로 isolated node pool에서 policy·telemetry·rollback을 검증해야 한다.",
-      "why_it_matters": "NUMA-sensitive workload의 isolation과 sidecar core waste 사이 trade-off가 kubelet placement·capacity accounting·observability contract 전체를 바꿈.",
+      "title": "GitHub Copilot runtime Rust 전환: shared agent harness의 ABI·release·rollback contract 재설계",
+      "summary": "한 줄 결론: GitHub는 Copilot CLI·app·SDK의 shared agent runtime을 128개 PR, 832,378줄 production Rust, 135개 release의 incremental migration으로 전환했다고 공개. agent-assisted rewrite의 판단 기준은 생성 코드량이 아니라 process/FFI boundary, E2E cohort, observability와 revert 가능성을 함께 유지하는 release contract임.",
+      "details": "GitHub Blog는 2026-09-16 Copilot agent runtime이 TypeScript/Node.js/V8에서 800,000줄 이상 production Rust로 전환됐다고 설명했다. Copilot CLI, app, SDK와 여러 integration이 같은 runtime을 공유하며, 기존 SDK consumer는 headless CLI subprocess와 JSON-RPC 경로를 사용했다. GitHub는 C ABI 기반 in-process embedding을 목표로 하면서 128개 port PR을 main에 incremental하게 반영했고 14.5주 동안 135개 release, 이 중 100개 prerelease를 운용했다. source의 performance improvement는 GitHub 환경 설명이며 다른 SDK 또는 조직의 latency·memory·reliability 보장은 아니다. 대규모 agent runtime migration은 ABI, permission callback, state ownership, telemetry, rollback을 component별 shipped increment로 검증해야 한다.",
+      "why_it_matters": "shared agent harness의 runtime 변경은 CLI·SDK·IDE·cloud agent에 process supervision, memory footprint, security fix와 failure mode를 동시에 전파할 수 있음.",
       "sources": [
-        "https://kubernetes.io/blog/2026/09/15/kubernetes-v1-37-pod-level-resource-managers-beta/",
-        "https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/"
+        "https://github.blog/ai-and-ml/generative-ai/migrating-the-github-copilot-runtime-to-rust-using-copilot/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-09-17 02:14",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-copilot-logo-stripe.png",
+      "local_image": "",
+      "refreshed_kst": "2026-09-18 02:49",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Kubernetes v1.37 Pod-Level Resource Managers Beta는 latency-sensitive primary container의 NUMA-aligned exclusive resource와 non-Guaranteed sidecar의 shared pool을 같은 Pod에서 분리하려는 kubelet control임. default-disabled Beta이므로 workload 성능 주장보다 node-pool canary와 observability compatibility를 먼저 증명해야 함.",
+          "body": "GitHub 사례는 Rust 전환 자체보다 shared agent runtime을 main에 계속 배포 가능한 component 단위로 옮긴 운영 기록임. language replacement를 목표로 삼지 말고 SDK ABI, agent lifecycle, permission callback, telemetry와 revert artifact를 하나의 release surface로 취급해야 함.",
           "items": [
-            "변화: `.spec.resources` pod-level declaration을 Topology·CPU·Memory Manager placement input으로 사용",
-            "판정: feature gate, NUMA policy, resource accounting parser를 하나의 rollout unit으로 취급 필요"
+            "변화: TypeScript/Node.js/V8 runtime을 production Rust 832,378줄로 재작성했다고 공개",
+            "판정: shared harness migration의 완료 기준은 compile 성공이 아니라 consumer별 behavior·rollback evidence 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes v1.37에서 `PodLevelResourceManagers`가 Beta로 전환됐으나 default disabled 상태임. source는 primary application에는 exclusive NUMA-aligned CPU·memory를, logging·telemetry 같은 non-Guaranteed sidecar에는 pod-isolated shared pool을 배치하는 hybrid allocation을 제시함.",
+          "body": "GitHub는 Copilot CLI, Copilot app, Copilot SDK가 Copilot agent runtime을 공유한다고 설명함. 기존 SDK consumer는 headless CLI subprocess와 JSON-RPC process boundary를 썼고, Rust runtime은 C ABI를 통해 TypeScript·Python·Go·C#·Java·Rust SDK의 in-process consumption을 목표로 함.",
           "items": [
-            "상태: v1.36 Alpha 뒤 v1.37 Beta, kubelet feature gate opt-in 필요",
-            "배치: Topology Manager·CPU Manager·Memory Manager가 pod-level declaration을 직접 사용",
-            "API: `v1` PodResources gRPC가 top-level `cpu_ids`·`memory`로 pod-level assignment 조회 지원"
+            "규모: 128개 port PR이 main에 landed되고 약 14.5주 incremental migration 수행",
+            "배포: migration 기간 135개 release 중 prerelease 100개와 stable 35개 운영",
+            "검증: 기존 E2E test와 deployed prerelease feedback으로 regression 탐지·수정",
+            "경계: source의 orders-of-magnitude performance 설명은 GitHub runtime 환경의 결과이며 일반 보장 아님"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "integer request를 Pod의 모든 sidecar에 강제하면 exclusive core가 auxiliary container에 묶일 수 있고, 반대로 isolation을 포기하면 primary latency가 흔들릴 수 있음. 새 model은 이 trade-off를 분리하지만 node resource manager semantics와 capacity dashboard 계산을 함께 바꾸는 운영 변화임.",
+          "body": "agent harness는 model call만 처리하지 않고 tool execution, auth, hooks, workspace state, retries, UI and SDK callback을 연결함. subprocess를 in-process ABI로 바꾸면 startup과 memory path가 달라질 수 있지만 crash isolation, cancellation, backpressure, native library patch cadence도 함께 달라짐.",
           "items": [
-            "볼 것: primary/sidecar QoS class, CPU·Memory Manager policy, NUMA topology, admission manifest",
-            "피할 것: upstream Beta 승격을 managed Kubernetes support 또는 SLO 개선 보증으로 해석하는 방식",
-            "판정: workload owner와 platform owner가 placement와 observability exit criteria를 공동 승인 필요"
+            "볼 것: process boundary 제거 뒤 failure containment·restart·cancellation·resource limit semantics",
+            "피할 것: Rust 전환 또는 AI-authored line count를 security·reliability 성과로 바로 해석하는 방식",
+            "판정: platform owner와 SDK consumer owner가 compatibility matrix와 error budget을 공동 소유 필요"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "PodResources consumer가 기존 container allocation과 새로운 top-level field를 함께 합산하면 capacity 또는 usage가 double-count될 수 있음. device plugin, exporter, scheduler-adjacent tool은 API version과 parser behavior를 canary cluster에서 확인해야 함.",
+          "body": "C ABI는 language binding을 넓히지만 memory ownership, thread lifecycle, version negotiation, error translation을 explicit contract로 만듦. shared runtime의 update가 여러 product surface에 전달되므로 feature flag, protocol compatibility, crash reporting, release provenance가 single binary보다 중요한 control plane이 됨.",
           "items": [
-            "검증: `PodResourcesLister` top-level `cpu_ids`·`memory`를 소비하는 plugin/exporter/dashboard 목록",
-            "검증: exclusive CPU, memory locality, sidecar shared-pool placement와 cgroup 상태",
-            "운영: isolated node pool, taint/toleration, manifest rollback, kubelet gate disable runbook"
+            "검증: ABI version·memory ownership·callback thread·cancellation·structured error contract",
+            "검증: tool/auth/telemetry hook, subprocess fallback, socket/stdin-stdout server path의 behavior parity",
+            "운영: SDK별 supported runtime range, feature flag, crash signature, revert artifact를 release manifest에 기록"
           ]
         },
         {
-          "heading": "성능·SRE·FinOps 관점",
-          "body": "NUMA locality와 dedicated core의 효과는 model server, database, network function 등 workload별로 다름. shared pool 사용은 reserved-core waste를 줄일 수 있으나 noisy-neighbor와 throttling risk를 baseline 없이 판단할 수 없음.",
+          "heading": "보안·SRE·FinOps 관점",
+          "body": "in-process embedding은 process startup과 working set을 줄일 가능성이 있으나 blast radius와 observability path도 바꿈. performance claim은 task mix, model latency, tool I/O, cache, host density 조건에 따라 달라져 same-workload measurement 없이는 capacity plan으로 사용할 수 없음.",
           "items": [
-            "SRE: p95/p99 latency, CPU throttling, memory pressure, scheduling event를 pre/post 비교",
-            "FinOps: allocatable core, reserved exclusive CPU, sidecar shared-pool usage를 node-pool별로 측정",
-            "경계: source는 특정 hardware·device plugin·managed provider의 성능과 호환성을 보장하지 않음"
+            "보안: native dependency·FFI input validation·credential callback·tool permission boundary를 별도 review",
+            "SRE: startup, RSS memory, crash/restart, request cancellation, E2E success, tail latency를 cohort별 비교",
+            "FinOps: host density·CPU/RSS·subprocess count·retry rate를 workload unit과 model cost에서 분리 측정"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 rollout은 representative latency-sensitive workload 한 종류와 별도 node pool에서 시작하는 것이 안전함. manifest와 kubelet policy를 versioned change로 관리하고, threshold를 넘으면 gate와 manifest를 함께 되돌릴 수 있어야 함.",
+          "body": "migration은 pure helper와 deterministic component부터 시작하고 state owner와 orchestration은 dual implementation 또는 clear rollback boundary가 있을 때 옮기는 편이 안전함. release마다 input/output compatibility와 operational metric threshold를 통과해야 다음 component로 확장할 수 있음.",
           "items": [
-            "1단계: node NUMA/cgroup topology·current manager policy·PodResources consumer inventory",
-            "2단계: staging에서 feature gate와 `.spec.resources` manifest, primary/sidecar allocation 검증",
-            "3단계: canary에서 p95/p99·throttling·locality·capacity accounting·plugin telemetry 비교",
-            "4단계: exit criteria 충족 뒤 cohort 확대, gate disable과 manifest rollback rehearsal"
+            "1단계: process·FFI·state·tool permission·telemetry dependency와 consumer inventory",
+            "2단계: leaf component port, golden/E2E test, error/cancellation behavior parity 검증",
+            "3단계: prerelease cohort에서 memory·startup·crash·latency·rollback signal 관측",
+            "4단계: stateful orchestration 확대 전 SDK compatibility·security review·revert rehearsal 승인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "application team은 resource request와 sidecar behavior를, platform team은 kubelet policy와 node topology를, observability team은 accounting schema를 확인해야 함. isolated benchmark만 통과하고 rollout telemetry가 깨지면 scheduling decision을 신뢰할 수 없음.",
+          "body": "코드 변경량이 크면 review capacity와 supply-chain 검증도 병목이 됨. codegen 사용 여부와 무관하게 PR provenance, dependency lock, unsafe/FFI review, benchmark harness, release owner가 traceable해야 production decision을 재현할 수 있음.",
           "items": [
-            "체크리스트: Kubernetes version·`PodLevelResourceManagers` gate·CPU/Memory/Topology Manager policy",
-            "체크리스트: primary/sidecar request·limit·QoS·NUMA affinity·node pool placement",
-            "체크리스트: PodResources gRPC consumer·device plugin·exporter·capacity dashboard double-count test",
-            "팀 액션: placement proof와 rollback proof를 release gate에 포함"
+            "체크리스트: SDK language별 ABI/API compatibility·binary distribution·supported version range",
+            "체크리스트: subprocess/IPC fallback·auth/tool callback·workspace state·cancellation and retry behavior",
+            "체크리스트: E2E cohort·crash signature·RSS/startup·tail latency·revert artifact와 owner",
+            "팀 액션: component PR과 deployed release evidence를 same change record로 연결"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "이 기능은 Pod resource declaration의 편의성 개선이 아니라 kubelet placement와 resource accounting contract의 Beta 변경임. sidecar reserved-core 낭비 감소를 기대하기 전에 topology, telemetry, failure rollback을 동일 canary에서 증명해야 함.",
+          "body": "agent-assisted rewrite의 실질 위험은 generated code의 양보다 shared state와 runtime boundary를 바꾸는 순간에 집중됨. GitHub가 공개한 incremental release 방식처럼, 새 runtime이 더 빠르다는 주장보다 각 consumer에서 동작·관측·복구가 가능한지를 먼저 증명해야 함.",
           "items": [
-            "볼 것: exclusive CPU/memory assignment, shared-pool sidecar, top-level PodResources field, p99 latency",
-            "피할 것: feature gate만 enable하고 resource manager policy·dashboard parser를 기존 상태로 두는 rollout",
-            "팀 액션: node-pool canary의 성능·회계·rollback evidence를 정기 change review에 제출"
+            "볼 것: ABI contract, process isolation 변화, E2E cohort, memory·crash telemetry, rollback time",
+            "피할 것: big-bang cutover 또는 benchmark 하나로 all-consumer migration을 승인하는 방식",
+            "팀 액션: shared agent runtime의 다음 migration은 compatibility·observability·revert를 release gate로 고정"
           ]
         }
       ]
