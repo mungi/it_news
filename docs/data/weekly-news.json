@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-17 10:28",
+  "last_updated_kst": "2026-09-17 14:29",
   "audience": "developers and engineers",
   "executive_summary": [
+    "GitHub가 Copilot 공통 agent runtime을 **832,378줄 production Rust**로 전환하고 128개 PR·135개 release의 incremental rollout을 공개. shared agent harness migration은 subprocess·FFI·stateful orchestration·E2E·rollback을 같은 release contract로 관리 필요.",
     "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
-    "AI coding assistant session 탈취 사례에서 poisoned PyPI package가 GitHub OAuth token 탈취와 Shai-Hulud의 내부 저장소 약 100개 확산으로 연결됨. AI 추천 dependency의 checksum·allowlist·internal mirror와 extension secret scope를 release gate로 적용 필요.",
-    "Issabel Framework `CVE-2026-89026` active exploitation은 모든 설치본의 hard-coded HS256 JWT key를 이용해 PBX manager API에서 Asterisk user OS command 실행으로 이어질 수 있음. fixed build·key provenance·PBX API·Asterisk process audit을 같은 incident scope로 점검 필요.",
-    "WSO2 API Manager `CVE-2026-5430` active-exploitation attempt은 administrator privilege를 포함한 forged JWT를 관측. API gateway의 JWT validation·admin API·backend credential·consumer key를 fixed update와 같은 incident scope로 점검 필요.",
-    "Marimo `CVE-2026-39987` observed exploitation은 notebook WebSocket에서 AWS Secrets Manager credential read와 SSH bastion authentication까지 **8초** pivot을 기록. public notebook·runtime IAM·secret·bastion trust를 동일 incident scope로 봉쇄 필요."
+    "Kubernetes v1.37이 `emptyDir` permission mode와 volume bind mount `noexec`·`nosuid`·`nodev` Alpha를 추가. feature gate·CRI capability·node skew·`fsGroup` override를 negative test와 canary로 검증 필요.",
+    "브라우저 extension 연구에서 Chrome·Comet·Edge·Opera Neon·Claude in Chrome AI 기능 제어 가능성이 공개됨. managed extension permission과 browser patch·AI action audit을 endpoint control plane으로 결합 필요.",
+    "Issabel Framework `CVE-2026-89026` active exploitation은 모든 설치본의 hard-coded HS256 JWT key를 이용해 PBX manager API에서 Asterisk user OS command 실행으로 이어질 수 있음. fixed build·key provenance·PBX API·Asterisk process audit을 같은 incident scope로 점검 필요."
   ],
   "deep_dives": [
     {
@@ -193,6 +193,78 @@
   ],
   "items": [
     {
+      "id": "news-487",
+      "title_ko": "GitHub Copilot agent runtime Rust 전환: 80만 줄·128 PR을 incremental rollout으로 운영",
+      "title_original": "Migrating the GitHub Copilot runtime to Rust, using Copilot",
+      "summary": "- 전환: GitHub가 Copilot CLI·app·SDK 공통 agent runtime을 TypeScript/Node.js에서 production Rust로 재작성\n- 규모: **832,378줄 production Rust**와 128개 port PR, 약 14.5주 incremental migration 공개\n- 구조: SDK가 Node/V8 subprocess와 JSON-RPC에 의존하던 구조에서 C ABI 기반 in-process embedding 경로를 추가\n- 검증: 135개 release 중 prerelease 100개를 포함한 점진 배포와 E2E test로 regressions를 발견·수정\n- 팀 액션: agent-assisted rewrite는 big-bang보다 component별 shipped increment·test·telemetry·rollback proof를 release unit으로 관리 필요",
+      "detail": "GitHub는 Copilot CLI, Copilot app, Copilot SDK가 공유하는 agent runtime을 TypeScript/Node.js/V8에서 Rust로 재작성했다고 공개했다. GitHub 설명상 최종 runtime은 production Rust 832,378줄이며 AI agent가 작성한 다수의 code를 포함해 128개 PR을 main에 incremental하게 반영했다. 기존 SDK consumer는 client마다 CLI subprocess와 Node/V8 약 100MB working set, JSON-RPC process boundary를 부담했지만 Rust runtime은 C ABI로 여섯 SDK language의 in-process consumption을 목표로 한다. 14.5주 migration 중 main은 135개 release를 냈고 100개 prerelease와 E2E test로 port component를 단계적으로 검증했다. 성능 개선은 GitHub의 운영 환경 설명이며 개별 consumer 환경의 동일한 수치 보장은 아님.",
+      "why_it_matters": "agent harness가 CLI, IDE, SDK, cloud agent에 공유되면 runtime의 memory·startup·process supervision·security fix가 여러 product surface에 동시에 전파됨. 이 사례는 AI-assisted 대규모 rewrite의 생산성 주장보다 interop boundary, stateful component 순서, release telemetry를 공개한 운영 사례임.",
+      "engineering_implication": "rewrite 대상은 process boundary, language runtime, ABI, credential/permission callback, test suite, observability ownership을 먼저 inventory 필요. leaf component부터 port하고 each PR을 shippable하게 유지하며 prerelease cohort, E2E regression, crash·memory·startup metric, revert path를 결합해야 stateful orchestration migration의 blast radius를 줄일 수 있음.",
+      "korea_implication": "국내 조직의 agent-assisted modernization도 생성 코드량을 성공 지표로 삼기보다 code review owner, dependency/FFI supply chain, production telemetry, rollback responsibility를 기존 change management에 연결 필요.",
+      "category": "DevTools",
+      "tags": [
+        "DevTools",
+        "AI",
+        "GitHub Copilot",
+        "Rust",
+        "Agent Runtime",
+        "Migration",
+        "SDK"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-17 09:26",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/ai-and-ml/generative-ai/migrating-the-github-copilot-runtime-to-rust-using-copilot/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-copilot-logo-stripe.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "GitHub Copilot SDK",
+          "url": "https://github.com/github/copilot-sdk"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub가 Copilot CLI·Copilot app·Copilot SDK의 공통 agent runtime을 TypeScript/Node.js/V8에서 Rust로 재작성했다고 공개함. 최종 상태는 production Rust 832,378줄이며 port PR 128개가 main에 incremental하게 반영된 구조임.",
+          "items": [
+            "범위: CLI·app·SDK와 GitHub Copilot cloud agent를 포함한 shared agent harness 전환",
+            "기간: 약 14.5주 동안 component별 port와 production release를 병행"
+          ]
+        },
+        {
+          "heading": "기존 구조와 변경점",
+          "body": "기존 SDK는 headless CLI subprocess를 spawn하고 JSON-RPC로 agent loop를 호출하는 방식이었음. GitHub는 Node/V8 process와 IPC가 startup·memory·throughput·crash isolation·supervision 부담을 만들었다고 설명함.",
+          "items": [
+            "변경: Rust native runtime이 C ABI로 TypeScript·Python·Go·C#·Java·Rust SDK interop 경로 제공",
+            "변경: runtime과 TUI를 분리하고 in-process embedding 또는 필요 시 socket/stdin-stdout server 사용",
+            "경계: CLI의 일부 runtime internal access 분리는 source 기준으로 진행 중 상태"
+          ]
+        },
+        {
+          "heading": "점진 전환과 검증",
+          "body": "big-bang cutover 대신 TypeScript component를 Rust shim으로 한 PR 단위로 교체해 main을 항상 shippable하게 유지함. 기존 E2E test가 각 port 뒤 Rust code를 검증하고 deployed prerelease feedback을 regression signal로 사용함.",
+          "items": [
+            "배포: 135개 release 중 100개 prerelease와 35개 stable release를 migration 기간에 제공",
+            "검증: trailing seven-day npm sample에서 prerelease download 비중 10.5%로 초기 exposure를 제한",
+            "순서: pure helper부터 state ownership·orchestration으로 이동하고 MCP·tool·hook·auth·telemetry를 단계적 port"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI-assisted rewrite의 위험은 code generation보다 shared state, FFI, lifecycle callback, rollout 관측이 끊기는 구간에 집중됨. source가 말한 성능 improvement를 다른 조직의 baseline으로 전용하지 말고 service-level evidence로 다시 측정해야 함.",
+          "items": [
+            "검증: startup·RSS memory·crash/restart·IPC latency·permission callback·E2E success를 pre/post 비교",
+            "검증: component별 PR, release cohort, regression owner, revert commit을 traceable change record로 보존",
+            "팀 액션: stateful orchestration은 dual implementation 유지 비용과 rollback boundary를 별도 설계"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-485",
       "title_ko": "SageMaker AI Nemotron 3.5 Lightning serverless customization: SFT·DPO·RFT와 4개 리전 제공",
       "title_original": "Amazon SageMaker AI now supports serverless model customization for NVIDIA Nemotron 3.5 Lightning",
@@ -259,7 +331,83 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-486",
+      "title_ko": "Kubernetes v1.37 storage hardening Alpha: `emptyDir` 권한과 bind mount `noexec`·`nosuid`를 feature gate로 검증",
+      "title_original": "Kubernetes v1.37: Hardening Container Storage with Bind Mount Options and EmptyDir Permissions",
+      "summary": "- 기능: Kubernetes v1.37에 `VolumeBindMountOptions`·`EmptyDirVolumeMode` Alpha feature gate 추가\n- 통제: container volume bind mount에 `noexec`·`nosuid`·`nodev`, `emptyDir`에 Unix mode·sticky bit 지정 가능\n- 경계: 기본값은 기존과 동일하며 `bindMountOptions`는 CRI runtime capability와 node feature 선언 필요\n- 호환성: `fsGroup`은 `emptyDir` mode의 group permission을 덮어쓰고 Windows node에서는 Unix permission·mount flag 미적용\n- 팀 액션: writable volume inventory, runtime support, feature-gate skew, `fsGroup`·sidecar behavior를 staging에서 negative test로 확인 필요",
+      "detail": "Kubernetes v1.37은 writable volume에서 실행 파일·setuid·device file 사용을 제한할 수 있는 bind mount option과 `emptyDir` 생성 mode를 Alpha로 추가했다. `VolumeBindMountOptions`와 `EmptyDirVolumeMode`를 API server와 kubelet에서 모두 enable해야 하며, `bindMountOptions`는 emptyDir, PersistentVolume, CSI, projected volume, ConfigMap, Secret 등에 적용하되 image volume은 지원하지 않는다. `emptyDir.mode: 01777`은 shared scratch space에서 file owner 또는 root만 삭제·rename하도록 sticky bit을 적용한다. runtime의 CRI mount option support와 node declared feature가 필요한 만큼, manifest 선언만으로 enforcement가 보장되는 것은 아니며 version skew와 runtime capability를 canary에서 확인해야 함.",
+      "why_it_matters": "read-only root filesystem만으로 writable volume에서 내려받은 binary 실행을 막지 못하는 경우가 있음. mount-level `noexec`·`nosuid`와 shared `emptyDir`의 deletion boundary를 workload policy로 표현할 수 있으나 Alpha gate·runtime·node 조합이 실제 enforcement 조건임.",
+      "engineering_implication": "CI runner·build Pod·multi-container workload의 writable volume을 우선 inventory하고, `noexec` 실패 확인·sticky-bit cross-user delete 차단·`fsGroup` override·unsupported runtime scheduling/rejection을 staging에서 자동화 필요. feature gate가 API server와 kubelet 사이에 어긋나면 `emptyDir` mode가 0777로 fallback될 수 있으므로 node-pool rollout과 rollback evidence를 release gate에 포함 필요.",
+      "korea_implication": "국내 managed Kubernetes 사용 조직은 upstream Alpha API 존재만으로 지원 여부를 판단하지 말고 provider version, control-plane feature gate 노출, node runtime capability를 계약·staging 검증 항목으로 분리 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Kubernetes",
+        "Storage",
+        "emptyDir",
+        "Container Runtime",
+        "Linux",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-17 03:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/09/16/kubernetes-v1-37-hardening-container-storage/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "KEP-5855: Bind mount options",
+          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-storage/5855-volume-bind-mount-options"
+        },
+        {
+          "title": "KEP-5502: EmptyDir permission mode",
+          "url": "https://github.com/kubernetes/enhancements/tree/master/keps/sig-storage/5502-empty-dir-mode"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes v1.37이 container volume bind mount option과 `emptyDir` permission mode를 Alpha feature로 공개함. 두 기능은 writable volume의 실행·권한·공유 파일 삭제 경계를 Pod manifest에 표현하는 범위임.",
+          "items": [
+            "기능: `VolumeBindMountOptions`가 volume mount에 `noexec`·`nosuid`·`nodev` 지정 지원",
+            "기능: `EmptyDirVolumeMode`가 disk-backed·tmpfs·HugePages `emptyDir`의 Unix mode 지정 지원"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기본 volume bind mount에는 이전까지 `noexec`·`nosuid`·`nodev`를 container-level로 설정할 통로가 없었음. source는 read-only root filesystem 환경에서도 writable volume에 내려받은 binary를 실행할 수 있는 gap과 0777 `emptyDir`의 shared-file deletion 문제를 제시함.",
+          "items": [
+            "보호: `noexec`가 writable mount의 direct binary execution 차단, `nosuid`가 setuid/setgid effect 차단",
+            "보호: `mode: 01777` sticky bit가 shared scratch directory에서 file owner 또는 root 외 delete·rename 차단",
+            "범위: bind mount option은 image volume 제외 emptyDir·PV·CSI·projected·ConfigMap·Secret 등 지원"
+          ]
+        },
+        {
+          "heading": "호환성·운영 조건",
+          "body": "두 기능은 API server와 kubelet의 Alpha feature gate opt-in이 필요함. bind mount option은 CRI `mount_options` support와 node declared feature가 필요하며 scheduler는 compatible node를 선택하고 incompatible node에 도달한 kubelet은 request를 reject함.",
+          "items": [
+            "경계: option 또는 mode를 생략하면 기존 default behavior와 `emptyDir` 0777 permission 유지",
+            "경계: `fsGroup` 설정 시 group permission이 `emptyDir` mode보다 우선하는 기존 behavior 유지",
+            "경계: Windows node는 Unix mount flag와 permission mode를 적용하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "manifest syntax 도입은 보안 enforcement 완료가 아니라 runtime·node feature·version skew 검증의 시작점임. container securityContext, volume type, sidecar ownership과 node rollout을 함께 검증해야 정책이 silent fallback 없이 적용됨.",
+          "items": [
+            "검증: `noexec` mount에서 chmod 뒤 script 실행이 `Permission denied`로 실패하는 negative test",
+            "검증: shared `emptyDir`에서 cross-user delete와 `fsGroup` 조합, Linux/Windows node placement 비교",
+            "팀 액션: CI/build Pod부터 canary 적용하고 feature gate disable·manifest rollback을 같은 runbook에 기록"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-483",
@@ -339,7 +487,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-484",
@@ -410,7 +558,87 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
+    },
+    {
+      "id": "news-488",
+      "title_ko": "브라우저 확장 하나로 Chromium AI assistant 제어 가능성: Chrome·Comet·Edge·Opera Neon·Claude in Chrome 연구 공개",
+      "title_original": "One Extension Could Hijack AI Assistants Across Chrome, Comet, Edge, Opera Neon and Claude",
+      "summary": "- 연구: Forever Security가 일반 browser extension 하나로 Chromium 기반 AI 기능 5종을 제어하는 demonstration 공개\n- 권한: page modification과 `declarativeNetRequest` 두 일반 extension permission으로 trusted AI page에 code injection하는 경로 제시\n- 영향: Comet·Edge·Opera Neon·Claude in Chrome agent action 제어, Chrome·Comet local file read, Chrome camera·microphone 접근 demonstration\n- 수정: Chrome `CVE-2026-0628`은 143.0.7499.192에서, Edge `CVE-2026-55945`는 150.0.4078.48에서 수정된 범위\n- 팀 액션: managed browser extension allowlist·permission review·browser fleet version·AI action audit을 endpoint control plane으로 함께 운영 필요",
+      "detail": "The Hacker News는 Forever Security가 이미 설치된 일반 browser extension이 Chrome Gemini Live, Perplexity Comet, Microsoft Edge, Opera Neon, Claude in Chrome의 built-in AI 기능을 제어할 수 있음을 demonstration했다고 보도했다. 연구는 page content 변경 권한과 `declarativeNetRequest`로 trusted AI web page에 code를 주입해 browser 내부 AI body에 vendor처럼 command를 전달하는 흐름을 설명한다. Chrome과 Comet에서는 local file read, Chrome에서는 camera·microphone activation, Comet·Edge·Opera Neon·Claude in Chrome에서는 agent action control demonstration이 포함됐다. source는 in-the-wild attack이 아니라 extension이 먼저 victim browser에 실행 중이어야 하는 researcher demonstration이라고 명시한다. Chrome GlicJack `CVE-2026-0628`과 Edge `CVE-2026-55945`의 fixed version 외 Comet·Opera Neon·Claude finding은 CVE가 없고 researcher account 범위임.",
+      "why_it_matters": "browser AI assistant는 trusted web origin, extension permission, local device/file access, agent action을 한 session에 결합함. extension allowlist만으로는 content/network modification permission이 AI control plane에 미치는 영향이 드러나지 않으므로 managed browser와 AI assistant governance를 함께 점검해야 함.",
+      "engineering_implication": "enterprise browser extension inventory에서 host permission, content-script injection, `declarativeNetRequest`, AI-enabled browser/product scope를 교차 조회하고 fixed version compliance를 확인 필요. AI assistant가 file·camera·microphone·enterprise web action에 접근하는 경우 extension install event, policy exception, agent action log, sensitive-origin visit을 time-correlated audit 대상으로 운영 필요.",
+      "korea_implication": "국내 기업의 browser-based AI 도입은 SaaS 승인만으로 끝나지 않음. endpoint management의 extension publishing source·permission change·browser update SLA와 AI assistant data/action scope를 동일 보안 검토에 포함 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AI",
+        "Browser Security",
+        "Extensions",
+        "Chromium",
+        "Claude",
+        "CVE-2026-0628"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-16 23:36",
+      "source_name": "The Hacker News / Forever Security",
+      "source_url": "https://thehackernews.com/2026/09/one-extension-could-hijack-ai.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjnDFTLauyvgkyhmqrKcQ3QI3yCM1vbu_L8iwQK997zJz25tL7Gkm50y5S_wiSVF7hSJ7sLUMJEwXzxaubfjQc9JTdwttimIg5POxADfGNPLZEWbplFqzlKn2SZPvPuAyN0BhFtsc8PCzV2bZdBtx3z6qnRdRfw9tj-zk3aWL3t4TufGwksVdAjBuhVdO0/s1700-nu-rw-lo-l85-e365/jack.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Forever Security: GlicJack",
+          "url": "https://www.forever-security.com/blog/glicjack"
+        },
+        {
+          "title": "CVE Record: CVE-2026-0628",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-0628"
+        },
+        {
+          "title": "CVE Record: CVE-2026-55945",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-55945"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Forever Security가 one ordinary browser extension으로 Chromium 기반 AI assistant 다섯 제품을 제어할 수 있는 demonstration을 공개했고 THN이 2026-09-16 보도로 정리함. source는 실제 악용 관측이 아닌 researcher demonstration이며 malicious extension이 victim browser에 이미 실행 중이어야 한다고 한정함.",
+          "items": [
+            "대상: Chrome Gemini Live·Perplexity Comet·Microsoft Edge·Opera Neon·Claude in Chrome",
+            "전제: 공격자 extension의 사전 설치·실행이 필요한 browser-local attack path"
+          ]
+        },
+        {
+          "heading": "공격 경로와 권한",
+          "body": "연구가 제시한 extension은 web page 변경 권한과 `declarativeNetRequest`를 이용해 trusted AI page에 code를 넣고, browser 내부 AI body가 신뢰 origin에서 온 command로 인식하도록 유도하는 흐름임.",
+          "items": [
+            "권한: content/page modification과 network request 변경 권한 두 가지가 source의 전제",
+            "경로: extension이 browser 자체를 직접 제어하는 대신 AI body가 듣는 trusted page를 장악하는 구조",
+            "경계: permission 명칭만으로 AI agent·device capability에 대한 effective reach를 판단하기 어려운 조건"
+          ]
+        },
+        {
+          "heading": "관측된 capability와 수정 상태",
+          "body": "source table은 product별 capability 차이를 구분함. Chrome·Comet에서는 local file read가, Chrome에서는 camera·microphone access가, Comet·Edge·Opera Neon·Claude in Chrome에서는 AI agent action control이 demonstration 범위임.",
+          "items": [
+            "수정: Chrome GlicJack `CVE-2026-0628`은 Chrome 143.0.7499.192에서 fixed로 기록",
+            "수정: Edge `CVE-2026-55945`는 Edge 150.0.4078.48에서 fixed로 기록",
+            "경계: Comet·Opera Neon·Claude finding은 CVE 없이 Forever Security own account에 근거한 범위"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "browser AI assistant의 policy는 model account access뿐 아니라 extension supply chain·browser patch·local capability·agent action audit을 포함해야 함. local compromise나 data theft를 source보다 넓게 단정하지 말고 installation evidence와 action trace로 scope를 확정해야 함.",
+          "items": [
+            "점검: managed extension allowlist, publisher provenance, host permission, `declarativeNetRequest`, content-script policy",
+            "점검: Chrome·Edge fixed version, auto-update compliance, AI file/device/action permission, enterprise origin access",
+            "팀 액션: extension install/change event와 AI agent action·file/device permission audit을 endpoint incident timeline으로 결합"
+          ]
+        }
+      ],
+      "rank": 6
     },
     {
       "id": "news-479",
@@ -486,7 +714,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-478",
@@ -552,7 +780,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-481",
@@ -627,7 +855,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-480",
@@ -700,7 +928,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-477",
@@ -767,7 +995,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 11
     },
     {
       "id": "news-482",
@@ -848,7 +1076,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 12
     },
     {
       "id": "news-475",
@@ -912,7 +1140,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 13
     },
     {
       "id": "news-476",
@@ -977,7 +1205,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 14
     },
     {
       "id": "news-474",
@@ -1052,7 +1280,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 15
     },
     {
       "region": "Global",
@@ -1127,7 +1355,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 16
     },
     {
       "id": "news-473",
@@ -1194,7 +1422,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 17
     },
     {
       "region": "Global",
@@ -1262,7 +1490,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 18
     },
     {
       "region": "Global",
@@ -1335,11 +1563,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 19
     },
     {
       "id": "news-469",
-      "rank": 17,
+      "rank": 20,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -1489,7 +1717,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 21
     },
     {
       "id": "news-464",
@@ -1574,7 +1802,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 22
     },
     {
       "id": "news-465",
@@ -1651,7 +1879,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 23
     },
     {
       "id": "news-462",
@@ -1727,7 +1955,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 24
     },
     {
       "id": "news-463",
@@ -1800,7 +2028,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 25
     },
     {
       "id": "news-461",
@@ -1877,7 +2105,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 26
     },
     {
       "id": "news-459",
@@ -1950,7 +2178,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 27
     },
     {
       "id": "news-458",
@@ -2061,7 +2289,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 28
     },
     {
       "id": "news-468",
@@ -2135,7 +2363,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 29
     },
     {
       "id": "news-455",
@@ -2217,7 +2445,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 30
     },
     {
       "id": "news-460",
@@ -2295,7 +2523,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 31
     },
     {
       "id": "news-457",
@@ -2372,7 +2600,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 32
     },
     {
       "id": "news-456",
@@ -2442,7 +2670,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 33
     },
     {
       "id": "news-454",
@@ -2519,7 +2747,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 34
     },
     {
       "id": "news-453",
@@ -2601,7 +2829,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 35
     },
     {
       "id": "news-466",
@@ -2692,7 +2920,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 36
     },
     {
       "id": "news-452",
@@ -2769,7 +2997,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 37
     },
     {
       "id": "news-451",
@@ -2842,7 +3070,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 38
     },
     {
       "id": "news-449",
@@ -2919,7 +3147,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 39
     },
     {
       "id": "news-450",
@@ -2993,7 +3221,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 40
     },
     {
       "id": "news-447",
@@ -3057,7 +3285,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 41
     },
     {
       "id": "news-446",
@@ -3134,7 +3362,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 42
     },
     {
       "id": "news-445",
@@ -3211,7 +3439,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 43
     },
     {
       "id": "news-433",
@@ -3296,7 +3524,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 44
     },
     {
       "id": "news-448",
@@ -3360,7 +3588,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 45
     },
     {
       "id": "news-420",
@@ -3438,7 +3666,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 46
     },
     {
       "id": "news-444",
@@ -3515,7 +3743,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 47
     },
     {
       "id": "news-443",
@@ -3588,7 +3816,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 48
     },
     {
       "id": "news-442",
@@ -3656,7 +3884,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 49
     },
     {
       "id": "news-439",
@@ -3719,219 +3947,6 @@
             "측정: negotiated group·HelloRetryRequest·TLS alert·handshake p50/p95/p99·origin 5xx",
             "통제: origin TLS/library inventory·canary pool·legacy exclusion·rollback owner 지정",
             "팀 액션: representative origin에서 PQC enable/disable 전후 handshake trace와 mTLS·health check를 비교"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-440",
-      "title_ko": "FreeIPA·389 Directory Server flaw chain: 익명 client의 관리자 Kerberos credential 생성 경로를 기본 ACI·patch 상태로 차단",
-      "title_original": "FreeIPA Flaw Chain Lets Anonymous Clients Create Reusable Administrator Credentials",
-      "summary": "- 취약점: **CVE-2026-76578**과 `CVE-2026-76560` 조합이 anonymous client의 attacker-chosen Kerberos identity·administrator credential 생성으로 이어질 수 있음\n- 조건: FreeIPA 기본 OTP self-service ACI와 389 DS의 빈 owner value 처리 결합이 stock configuration에 영향\n- 평가: Red Hat은 CVE-2026-76578을 preliminary CVSS `9.8` Critical로 표기, CVE-2026-76560은 `7.5` 범위\n- 경계: 실제 공격 악용은 advisory·bug report에서 확인되지 않음\n- 팀 액션: FreeIPA/IdM·389 DS version과 errata, anonymous LDAP exposure, OTP ACI·admin group·Kerberos/CA audit를 같은 change record로 확인 필요",
-      "detail": "The Hacker News는 Red Hat과 FreeIPA 자료를 바탕으로 FreeIPA와 389 Directory Server의 결함 조합을 보도했다. FreeIPA의 OTP self-service ACI는 로그인하지 않은 client도 token entry를 관리할 수 있도록 하는데, 389 DS의 owner check가 anonymous client의 빈 이름과 빈 stored owner를 일치시킬 수 있어 attacker-chosen Kerberos identity와 password를 함께 기록하는 경로가 될 수 있다. Red Hat은 CVE-2026-76578을 preliminary CVSS 9.8 Critical로, CVE-2026-76560을 7.5로 표기했다. Red Hat은 stock FreeIPA container image 4.13.1에서 chain을 재현했다고 설명하며, 실제 공격 악용은 공개 자료에서 확인되지 않았다. IdM은 Linux login·Kerberos·CA·HTTP/Dogtag trust를 묶으므로 patch뿐 아니라 anonymous LDAP path, ACI, administrator group/member, service keytab·certificate와 ticket issuance audit를 함께 조사해야 한다.",
-      "why_it_matters": "FreeIPA/IdM은 identity control plane으로서 Linux fleet, Kerberos service, certificate authority를 연결함. anonymous write와 directory authorization의 작은 불일치가 reusable privileged credential로 이어지면 endpoint patch보다 넓은 trust reset과 access review가 필요할 수 있음.",
-      "engineering_implication": "FreeIPA/IdM·389 DS deployed version과 vendor errata를 확인하고 anonymous bind/LDAP ingress·OTP ACI·directory owner rules·admin group/member·최근 principal/password/keytab/certificate 변경을 조사 필요. patch 전후에는 non-production replica에서 identity enrollment, OTP self-service, Kerberos ticket, Dogtag/HTTP service access를 canary하고 replication·backup/restore·rollback을 검증 필요.",
-      "korea_implication": "국내 온프레미스 Linux/연구·제조 환경에서 FreeIPA를 AD 연동 또는 내부 CA와 결합한 경우 IdM 노출이 service credential과 certificate issuance까지 이어질 수 있음. 외부 LDAP 접근 차단 여부와 운영팀의 principal·CA audit 접근권한을 먼저 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Identity",
-        "FreeIPA",
-        "389 Directory Server",
-        "Kerberos",
-        "Linux",
-        "Vulnerability Management"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-09-08 20:22",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/freeipa-flaw-chain-lets-anonymous.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiSKAVaHcAsULrGXPVkGXRyf94eoG7Kv3X0wwK2lRC64l3Em-S4_H5iE8-poK04yzrAC18tuHqpZyHhJvFTgliu_z8jo4QR78Mi4ghhCA-cUVL4oj2zjoLGiWKmD16oV4i44VfY45DYll0Uij_Exf4U2JMSLJEyH8jZk_xXKq7O_7D73q7vTYCCc4hrTnQ/s1600/freeipa.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Red Hat CVE-2026-76578",
-          "url": "https://access.redhat.com/security/cve/CVE-2026-76578"
-        },
-        {
-          "title": "Red Hat CVE-2026-76560",
-          "url": "https://access.redhat.com/security/cve/CVE-2026-76560"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "보도는 FreeIPA와 389 Directory Server 결함의 조합이 anonymous client에게 attacker-chosen Kerberos identity와 administrator credential을 생성할 수 있는 경로를 준다고 설명. Red Hat은 stock FreeIPA container image `4.13.1`에서 chain을 재현했다고 밝힘.",
-          "items": [
-            "취약점: `CVE-2026-76578` preliminary CVSS `9.8` Critical 표기",
-            "연결: `CVE-2026-76560`의 directory owner check 처리와 FreeIPA OTP ACI 결합",
-            "경계: 실제 공격 악용은 공개 advisory·bug report에서 확인되지 않음"
-          ]
-        },
-        {
-          "heading": "결함 조합의 조건",
-          "body": "FreeIPA의 shipped OTP self-service ACI는 token entry 관리 권한을 제공하는 범위임. 보도에 따르면 389 DS의 owner rule은 client name과 stored value를 plain text로 비교하며 anonymous client의 빈 name이 빈 owner value와 일치할 수 있음.",
-          "items": [
-            "조건: 로그인하지 않은 client와 빈 ownership field가 맞물리는 directory authorization 경로",
-            "결과: token entry와 함께 attacker-chosen Kerberos identity·password를 기록하는 가능성",
-            "범위: Red Hat Directory Server에 같은 rule이 기본 탑재된다는 뜻은 아니며 deployment rule 확인 필요"
-          ]
-        },
-        {
-          "heading": "identity control-plane 영향",
-          "body": "FreeIPA는 principal, group, OTP, keytab, Kerberos ticket, certificate와 Dogtag CA 서비스 경계를 연결함. injected identity가 endpoint login 또는 service trust에 실제로 사용됐는지는 local audit로 별도 판정 필요.",
-          "items": [
-            "조사: administrator group/member·신규 principal·password reset·keytab·certificate issuance·LDAP modify audit",
-            "분리: directory write 성공·Kerberos ticket 발급·HTTP/Dogtag access·host authorization",
-            "보존: LDAP/access log·KDC log·CA audit·replication change·backup snapshot 증거"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "IdM 대응은 CVE version update만으로 종료하지 않고 anonymous exposure와 privileged identity history를 함께 점검하는 incident/change 작업임. 업무 OTP flow는 patch validation에서 실제로 검증할 필요.",
-          "items": [
-            "점검: deployed package/errata·anonymous bind·LDAP ingress·OTP ACI·owner rule·replica state",
-            "검증: patched test replica에서 enrollment·OTP self-service·Kerberos ticket·CA service canary",
-            "팀 액션: suspicious principal·admin membership·keytab/certificate 변경 발견 시 credential rotation과 trust review gate 실행"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-441",
-      "title_ko": "Adobe Commerce·Magento CVE-2026-75650 active exploitation: template injection hotfix와 encryption key rotation·store forensic을 동시 수행",
-      "title_original": "Adobe Patches Magento Zero-Day Exploited to Deploy Rust Backdoor and PHP Web Shell",
-      "summary": "- 긴급: Adobe가 in-the-wild exploitation을 인지한 **CVE-2026-75650**을 Commerce·Magento의 arbitrary code execution으로 수정\n- 심각도: CVSS `10.0`, Magento template system의 PHP code injection으로 transaction reminder email 생성 과정에서 실행 경로 형성\n- 대상: Adobe Commerce/Magento Open Source `2.4.4`~`2.4.9-2026-aug` 및 Commerce B2B 영향 버전 범위\n- 조치: Adobe가 version별 `VULN-39341` patch와 encryption key rotation을 요구\n- 팀 액션: patch 적용 전후 template·email queue·webroot·cron·PHP-FPM·admin/API token·payment/customer secret을 forensic preservation 뒤 조사 필요",
-      "detail": "Adobe가 Adobe Commerce와 Magento Open Source의 CVE-2026-75650에 대한 hotfix를 제공했으며, The Hacker News는 Adobe가 실제 악용을 인지하고 있다고 보도했다. CVSS 10.0으로 소개된 이 결함은 Magento template system의 PHP code injection을 악용해 \"Payment Transaction Failed Reminder\" email을 생성하는 과정에서 arbitrary code execution으로 이어질 수 있다. 보도 범위의 영향 버전은 Adobe Commerce 2.4.4~2.4.9-2026-aug 및 Commerce B2B 1.3.3~1.5.3의 해당 또는 이전 release, Magento Open Source 2.4.6~2.4.9-2026-aug이다. Adobe는 version별 `VULN-39341` patch와 encryption key rotation을 요구했다. patch는 active compromise, web shell, database/admin credential 탈취, payment/customer data access를 자동 제거하지 않으므로 application·host·identity·payment boundary를 함께 조사해야 한다.",
-      "why_it_matters": "e-commerce application RCE는 storefront availability뿐 아니라 admin session, encryption key, customer·payment 관련 data path, extension 공급망과 host persistence를 동시에 노출시킬 수 있음. active exploitation 여부가 확인된 경우 긴급 patch와 incident triage를 분리하지 않아야 함.",
-      "engineering_implication": "Commerce/Magento edition·exact build·B2B module·custom template/extension을 inventory화하고 approved `VULN-39341` patch를 stage 환경에서 적용 필요. webroot·generated/cache·media·cron·PHP-FPM/nginx/apache log·email queue·admin/API/integration token·encryption key use를 보존·검사하고, clean artifact redeploy·key/session rotation·WAF virtual control·payment processor notification gate를 runbook으로 실행 필요.",
-      "korea_implication": "국내 쇼핑몰의 Magento 운영은 외부 PG, CDN/WAF, agency extension, 해외 hosting을 함께 쓰는 경우가 많아 patch ownership과 log custody가 분산될 수 있음. store별 source build·admin account·PG credential·encryption key rotation 책임자를 incident 시작 전에 확정 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Adobe Commerce",
-        "Magento",
-        "E-commerce Security",
-        "Web Security",
-        "RCE",
-        "Incident Response"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-09-08 18:13",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/adobe-patches-magento-zero-day.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_xdakttovno7kFgFYIw5XGFGcSZibVvXYB64vih4iZpc4_WY_t7oe1X3igSPGXBa8UTkf4z4xn_GzZ_n7PmuFFvYC8Wsmb04PxYP5z-XHjZZFe_SASihwZNg1dxHXQzz8hBRo-6LhvQmwyo_MA9Kj6hrcci6ouvOX1D4f-0dNvs57M6WneQHC61yZkF_o/s1600/magento.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Adobe는 Commerce와 Magento Open Source의 `CVE-2026-75650`을 수정하는 hotfix를 제공. Adobe가 in-the-wild exploitation을 인지하고 있다는 보도 범위이며 The Hacker News는 CVSS `10.0`으로 소개.",
-          "items": [
-            "대상: Adobe Commerce·Commerce B2B·Magento Open Source 영향 version 범위",
-            "조치: version별 `VULN-39341` patch와 encryption key rotation 요구",
-            "상태: zero-day exploitation은 Adobe 인지 범위이나 개별 store compromise 여부는 별도 조사 대상"
-          ]
-        },
-        {
-          "heading": "취약점과 영향 버전",
-          "body": "보도에 따르면 공격은 Magento template system의 PHP code injection으로 Payment Transaction Failed Reminder email 생성 과정에서 arbitrary code execution을 유도하는 경로임. 정확한 edition·patch level·customization을 inventory로 대조해야 함.",
-          "items": [
-            "Commerce: `2.4.4`~`2.4.9-2026-aug` 및 이전 해당 release 영향 범위",
-            "Commerce B2B: `1.3.3`~`1.5.3-2026-aug` 및 이전 해당 release 영향 범위",
-            "Open Source: `2.4.6`~`2.4.9-2026-aug` 및 이전 해당 release 영향 범위"
-          ]
-        },
-        {
-          "heading": "침해 조사와 복구 경계",
-          "body": "hotfix 적용은 vulnerable code path를 막는 작업이며 already-executed PHP, web shell, cron persistence, admin/API token 또는 encryption material misuse를 자동 정리하지 않음. patch 전에 증거를 보존하고 clean artifact 기준을 정해야 함.",
-          "items": [
-            "보존: web/access/error·PHP-FPM·cron·application·email queue·admin/API audit log",
-            "조사: template·generated/cache·webroot·media·unexpected PHP/Rust binary·outbound connection·admin user/integration diff",
-            "회전: encryption key·admin/API/integration token·session·database/cloud secret을 impact 판정과 연결"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "active exploitation은 emergency change와 incident response를 병렬로 시작해야 하는 신호임. storefront 기능 검증만으로 closure하지 말고 payment·customer data path와 third-party extension 운영 범위를 포함해야 함.",
-          "items": [
-            "검증: staging patch·checkout/order/email workflow·extension compatibility·rollback·WAF mitigation",
-            "측정: patch coverage·web shell hit·new admin/integration·template mutation·outbound anomaly·checkout error",
-            "팀 액션: store별 clean redeploy·key/session rotation·forensic review·PG/법무 notification decision gate 실행"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-437",
-      "title_ko": "CNCF Karmada Graduated: multi-cluster placement·failover control plane의 운영 검증 범위 확대",
-      "title_original": "Cloud Native Computing Foundation Announces Karmada Graduation",
-      "summary": "- 승격: CNCF가 **Karmada**를 Graduated project로 공지, 2021년 Sandbox·2023년 Incubating 이후 maturity 단계 완료\n- 기능: 표준 Kubernetes API를 확장해 중앙 placement·propagation·failover·multi-cluster autoscaling 제공\n- 규모: CNCF 발표 기준 contributor `1,214명 이상`, 기여 조직 `292곳 이상`, GitHub star `5,600개 이상` 집계\n- 적용: hybrid cloud capacity·multi-region resilience·AI training·GPU/CPU scheduling·fleet-wide configuration distribution 사례 열거\n- 팀 액션: cluster federation 권한·placement 정책 충돌·etcd state·Prometheus telemetry·failover/rollback drill을 production workload별로 검증 필요",
-      "detail": "CNCF는 Karmada를 Graduated project로 승격했다고 공지했다. Karmada는 Kubernetes API 위에 중앙 placement, propagation, failover, multi-cluster autoscaling을 제공하며 CNCF 발표에는 hybrid cloud capacity, multi-region resilience, AI training, GPU/CPU scheduling, multi-cluster delivery와 configuration distribution 활용 사례가 포함됐다. CNCF는 2020년 11월 첫 commit, 2021년 9월 Sandbox 합류, 2023년 12월 Incubating 승격의 이력과 contributor 1,214명 이상·292개 기여 조직·GitHub star 5,600개 이상을 제시했다. Graduated는 프로젝트 성숙도·거버넌스 신호이나 개별 cluster distribution, CNI/CSI/GPU driver, identity, policy, network partition, workload state recovery, managed support SLA의 호환성 보증은 아니다. multi-cluster control plane 도입은 placement decision, propagation status, failover action, cluster별 RBAC·secret boundary, etcd backup/restore, observability와 rollback을 실제 장애 drill로 검증해야 한다.",
-      "why_it_matters": "Karmada는 fleet 단위 배치와 장애 조치를 Kubernetes control plane에 추가하는 구성임. 단일 cluster autoscaling과 달리 federation 권한·정책·상태 동기화 오류가 여러 cluster의 workload와 data path에 전파될 수 있음.",
-      "engineering_implication": "workload class별 active-active/active-passive 목표, placement constraint, data locality, cluster admission/RBAC, secret distribution, propagation SLO를 먼저 명시 필요. canary workload에서 scheduling convergence·failover RTO·stale propagation·API error·etcd recovery·Prometheus metric completeness를 측정하고, failback과 policy rollback 승인 조건을 runbook에 추가 필요.",
-      "korea_implication": "국내외 리전과 온프레미스 cluster를 함께 운영하는 조직은 graduation을 국내 리전·managed Kubernetes·GPU availability 보증으로 해석하지 않아야 함. 데이터 경계와 inter-region network 비용, support escalation, 장애 시 workload placement를 자체 환경에서 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "Kubernetes",
-        "Karmada",
-        "Multi-cluster",
-        "Cloud Native",
-        "Open Source",
-        "Platform Engineering"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-09-08 11:06",
-      "source_name": "CNCF",
-      "source_url": "https://www.cncf.io/announcements/2026/09/07/cloud-native-computing-foundation-announces-karmada-graduation/",
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Screenshot-2026-09-07-at-9.01.51-PM.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CNCF는 Karmada의 Graduated project 승격을 공지. Karmada는 Kubernetes Armada의 약자로, 표준 Kubernetes API 위에 multi-cluster control plane 기능을 제공하는 범위임.",
-          "items": [
-            "이력: 2020년 11월 첫 commit, 2021년 9월 Sandbox 합류, 2023년 12월 Incubating 승격",
-            "기능: 중앙 placement·propagation·failover·multi-cluster autoscaling 제공"
-          ]
-        },
-        {
-          "heading": "CNCF 공지의 프로젝트 지표와 적용 범위",
-          "body": "CNCF는 Karmada의 contributor와 adopter 집계를 발표하고 cloud·telecom·AI 플랫폼의 production 활용 사례를 열거. 이 수치는 CNCF의 프로젝트 현황 발표 범위이며 개별 조직의 성능·비용·가용성 보증은 아님.",
-          "items": [
-            "지표: contributor `1,214명 이상`, 기여 조직 `292곳 이상`, GitHub star `5,600개 이상`이라는 CNCF 발표",
-            "활용: hybrid cloud capacity·multi-region resilience·intelligent traffic distribution·AI training 언급",
-            "자원: GPU/CPU scheduling·multi-cluster application delivery·fleet-wide service/configuration distribution 사례",
-            "연동: control-plane component Prometheus metric export·etcd state·Helm chart 제공 범위"
-          ]
-        },
-        {
-          "heading": "아키텍처·운영 경계",
-          "body": "중앙 control plane의 placement와 propagation은 cluster별 workload 상태·정책·권한 경계를 연결함. graduation은 이 control plane이 각 조직의 identity, CNI/CSI, GPU, data replication, network partition 조건에서 안전하게 failover한다는 증거와 구분 필요.",
-          "items": [
-            "분리: global placement decision·member-cluster admission·workload propagation·data/service traffic path",
-            "검증: cluster RBAC·secret distribution·policy conflict·CRD version skew·network partition·stale status",
-            "복구: etcd backup/restore·propagation rollback·failback order·orphan resource cleanup을 장애 drill로 확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "multi-cluster 도입의 완료 기준은 project maturity label이 아니라 workload가 장애와 정책 변경 뒤에도 지정된 cluster·data boundary·SLO에서 복구되는지임. federation control plane의 권한과 관측성을 단일 cluster보다 더 엄격히 운영할 필요.",
-          "items": [
-            "측정: placement convergence·propagation lag·failover RTO·API error·stale resource·Prometheus metric completeness",
-            "통제: workload class별 placement constraint·approval·change window·policy rollback gate",
-            "팀 액션: representative stateless/stateful/GPU workload로 failover·failback·etcd restore·secret/RBAC boundary canary 실행"
           ]
         }
       ],
