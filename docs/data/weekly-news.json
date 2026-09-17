@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-17 18:39",
+  "last_updated_kst": "2026-09-17 22:42",
   "audience": "developers and engineers",
   "executive_summary": [
+    "- **Unbound `CVE-2026-81642`**는 `1.26.0` 이하 DNSSEC validator의 heap overflow로, malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
     "GitHub가 Copilot 공통 agent runtime을 **832,378줄 production Rust**로 전환하고 128개 PR·135개 release의 incremental rollout을 공개. shared agent harness migration은 subprocess·FFI·stateful orchestration·E2E·rollback을 같은 release contract로 관리 필요.",
     "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
     "Amazon Corretto 27이 G1 GC 기본값, TLS 1.3 post-quantum hybrid key exchange, compact object header, JFR in-process redaction을 포함한 Feature Release로 제공. JVM upgrade는 GC·heap·TLS peer·JFR export·native agent를 같은 canary evidence로 검증 필요.",
-    "브라우저 extension 연구에서 Chrome·Comet·Edge·Opera Neon·Claude in Chrome AI 기능 제어 가능성이 공개됨. managed extension permission과 browser patch·AI action audit을 endpoint control plane으로 결합 필요.",
-    "Issabel Framework `CVE-2026-89026` active exploitation은 모든 설치본의 hard-coded HS256 JWT key를 이용해 PBX manager API에서 Asterisk user OS command 실행으로 이어질 수 있음. fixed build·key provenance·PBX API·Asterisk process audit을 같은 incident scope로 점검 필요."
+    "브라우저 extension 연구에서 Chrome·Comet·Edge·Opera Neon·Claude in Chrome AI 기능 제어 가능성이 공개됨. managed extension permission과 browser patch·AI action audit을 endpoint control plane으로 결합 필요."
   ],
   "deep_dives": [
     {
@@ -193,6 +193,87 @@
   ],
   "items": [
     {
+      "id": "news-490",
+      "title_ko": "Unbound DNSSEC validator `CVE-2026-81642`: 악성 DNS zone 질의의 heap overflow·possible RCE를 1.26.1로 차단",
+      "title_original": "Heap buffer overflow and possible Remote Code Execution when digesting DNSKEY",
+      "summary": "- 공개: NLnet Labs가 Unbound `1.26.0` 이하 DNSSEC validator의 critical heap buffer overflow `CVE-2026-81642`를 9월 16일 advisory로 공개\n- 경로: attacker가 제어하는 malicious zone을 취약 recursive resolver가 질의할 때 self-referential DNSKEY compression pointer가 digest buffer overflow 유발\n- 영향: advisory는 denial of service와 attacker-controlled data를 통한 **possible remote code execution**을 명시, active exploitation·성공 사례는 미공개\n- 수정: Unbound `1.26.1`이 decompression 뒤 write 전 buffer capacity check를 추가하고 minimal·complete·combined patch도 제공\n- 팀 액션: resolver version·DNSSEC enablement·internet-facing query path를 inventory화하고 upgrade 뒤 signed-zone validation·SERVFAIL·crash telemetry canary 필요",
+      "detail": "NLnet Labs는 Unbound DNSSEC validator가 DNSKEY를 digest하는 과정에서 발생하는 critical heap buffer overflow `CVE-2026-81642`를 공개했다. advisory에 따르면 영향을 받는 버전은 `1.26.0` 이하이며, 자신의 RDATA를 가리키는 owner compression pointer를 가진 DNSKEY가 digest buffer를 넘칠 수 있다. 악성 DNS zone을 제어하는 공격자가 취약 resolver가 그 zone을 질의하게 만들면 denial of service와 attacker-controlled data 기반 possible remote code execution이 가능하다는 범위다. Unbound `1.26.1`은 decompression 뒤와 write 전에 buffer capacity를 검사하도록 수정했으며, 업그레이드가 어려운 경우 patch를 제공한다. 원문은 active exploitation, 개별 resolver의 인터넷 노출 여부, 실제 RCE 성공 사례를 확인하지 않으므로 자산별 version·DNSSEC·query exposure을 먼저 확인해야 한다.",
+      "why_it_matters": "recursive resolver는 애플리케이션·클러스터·CI/CD가 공유하는 네트워크 기반 서비스일 수 있음. DNSSEC validation 취약점은 단일 workload patch가 아니라 resolver fleet·upstream query path·monitoring을 묶어 복구해야 하는 인프라 incident 범위임.",
+      "engineering_implication": "Unbound version과 DNSSEC validation 설정, listen interface·ACL·external recursive-client exposure을 inventory화 필요. `1.26.1` 또는 vendor backport 적용 뒤 signed-zone resolution, SERVFAIL·latency·process restart·core dump telemetry를 pre/post 비교하고 patch가 끝날 때까지 resolver egress와 incident restart 절차를 점검 필요.",
+      "korea_implication": "국내 조직도 사내 recursive DNS, Kubernetes node DNS, managed resolver forwarding chain에 Unbound를 포함할 수 있음. 외부 질의 노출·DNSSEC enablement·vendor package backport 상태를 CMDB와 DNS 운영 로그에서 대조 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "DNS",
+        "DNSSEC",
+        "Unbound",
+        "RCE",
+        "Open Source",
+        "Infrastructure"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-09-17 20:30",
+      "source_name": "NLnet Labs",
+      "source_url": "https://nlnetlabs.nl/projects/unbound/security-advisories/",
+      "image_url": "https://nlnetlabs.nl/static/logos/NLnetLabs/Mark_NLnet_Labs.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Unbound 1.26.1 다운로드",
+          "url": "https://nlnetlabs.nl/downloads/unbound/unbound-1.26.1.tar.gz"
+        },
+        {
+          "title": "CVE-2026-81642 minimal patch",
+          "url": "https://nlnetlabs.nl/downloads/unbound/patch_CVE-2026-81642.diff"
+        },
+        {
+          "title": "The Hacker News 보도",
+          "url": "https://thehackernews.com/2026/09/critical-unbound-dnssec-validator-flaw.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "NLnet Labs는 Unbound DNSSEC validator의 critical heap buffer overflow `CVE-2026-81642`를 2026년 9월 16일 advisory로 공개함. 영향 버전은 `1.26.0` 이하이며 other versions는 not affected로 표기함.",
+          "items": [
+            "취약점: DNSKEY digest 과정의 heap buffer overflow",
+            "영향: denial of service와 attacker-controlled data 기반 possible remote code execution",
+            "경계: advisory는 active exploitation·성공 RCE·개별 조직 영향 여부를 공개하지 않음"
+          ]
+        },
+        {
+          "heading": "공격 조건과 영향 범위",
+          "body": "DNSKEY owner compression pointer가 자신의 RDATA를 가리키면 digest buffer overflow가 발생할 수 있음. 공격자는 malicious zone을 제어하고 취약 resolver가 그 zone을 질의하는 조건을 만들어야 함.",
+          "items": [
+            "조건: attacker-controlled malicious DNS zone과 vulnerable resolver query 필요",
+            "경로: self-referential compression pointer가 DNSKEY RDATA digest buffer를 초과시키는 구조",
+            "우선순위: internet-facing recursive resolver와 untrusted client query path를 먼저 식별 필요"
+          ]
+        },
+        {
+          "heading": "수정 버전과 배포 경계",
+          "body": "Unbound `1.26.1`은 decompression 이후와 write 이전 offending buffer capacity를 검사하도록 변경함. 원문은 minimal patch·complete patch·combined patch도 제공함.",
+          "items": [
+            "권장: package/vendor backport 또는 upstream `1.26.1` 적용",
+            "대안: upgrade 불가 시 source directory에 제공 patch 중 하나를 적용",
+            "검증: signed-zone resolution·DNSSEC validation failure·SERVFAIL·latency·process restart를 canary로 비교"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "resolver patch는 daemon version만 바꾸는 작업이 아니라 shared network control plane의 change 관리임. query ACL·forwarder·DNSSEC 정책·container image·restart·observability를 같은 rollback contract로 묶어야 함.",
+          "items": [
+            "통제: version·DNSSEC enablement·listen interface·ACL·external query exposure inventory",
+            "관측: crash·core dump·SERVFAIL·validation error·query latency와 unusual zone query telemetry",
+            "팀 액션: resolver fleet patch 완료 전 egress DNS path·restart ownership·incident evidence retention을 runbook에 반영"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-487",
       "title_ko": "GitHub Copilot agent runtime Rust 전환: 80만 줄·128 PR을 incremental rollout으로 운영",
       "title_original": "Migrating the GitHub Copilot runtime to Rust, using Copilot",
@@ -262,7 +343,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-489",
@@ -336,7 +417,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-485",
@@ -405,7 +486,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-486",
@@ -481,7 +562,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-483",
@@ -561,7 +642,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-484",
@@ -632,7 +713,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-488",
@@ -712,7 +793,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-479",
@@ -788,7 +869,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-478",
@@ -854,7 +935,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-481",
@@ -929,7 +1010,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-480",
@@ -1002,7 +1083,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-477",
@@ -1069,7 +1150,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-482",
@@ -1150,7 +1231,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-475",
@@ -1214,7 +1295,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-476",
@@ -1279,7 +1360,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-474",
@@ -1354,7 +1435,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "region": "Global",
@@ -1429,7 +1510,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-473",
@@ -1496,7 +1577,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "region": "Global",
@@ -1564,7 +1645,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "region": "Global",
@@ -1637,11 +1718,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-469",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -1791,7 +1872,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-464",
@@ -1876,7 +1957,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-465",
@@ -1953,7 +2034,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-462",
@@ -2029,7 +2110,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-463",
@@ -2102,7 +2183,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-461",
@@ -2179,7 +2260,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-459",
@@ -2252,7 +2333,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-458",
@@ -2363,7 +2444,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-468",
@@ -2437,7 +2518,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-455",
@@ -2519,7 +2600,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-460",
@@ -2597,7 +2678,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-457",
@@ -2674,7 +2755,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-456",
@@ -2744,7 +2825,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-454",
@@ -2821,7 +2902,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-453",
@@ -2903,7 +2984,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-466",
@@ -2994,7 +3075,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-452",
@@ -3071,7 +3152,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-451",
@@ -3144,7 +3225,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-449",
@@ -3221,7 +3302,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-450",
@@ -3295,7 +3376,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-447",
@@ -3359,7 +3440,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-446",
@@ -3436,7 +3517,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-445",
@@ -3513,7 +3594,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-433",
@@ -3598,7 +3679,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-448",
@@ -3662,7 +3743,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-420",
@@ -3740,7 +3821,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-444",
@@ -3817,7 +3898,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-443",
@@ -3887,74 +3968,6 @@
             "검증: representative agent task에서 denied action·approval·audit completeness·egress block·token revoke drill",
             "측정: secret read rate·tool failure/retry·destination diversity·quota burn·MTTD·credential rotation time",
             "팀 액션: AI tool inventory와 CI/CD/cloud identity inventory를 하나의 attack-path review로 결합"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-442",
-      "title_ko": "퀄컴·AWS 다세대 AIDC custom silicon·1.6Tbps 광연결 협력: 추론 compute와 fabric을 같은 capacity gate로 검증",
-      "title_original": "Qualcomm and Amazon collaborate on multi-generation custom silicon and optical connectivity for next-generation AI data centers",
-      "summary": "- 공개: 퀄컴과 AWS가 대규모 AI 데이터센터의 다세대 custom silicon과 광통신 솔루션을 공동 개발한다는 인공지능신문 보도\n- 범위: AI inference용 맞춤형 반도체와 **최대 1.6Tbps**급을 포함한 차세대 optical connectivity 협력\n- 설계: Qualcomm SerDes·optical DSP와 AWS AI infrastructure·Bedrock 기반 EDA 활용 계획 언급\n- 경계: SKU·배치 시점·전력·리전·실측 성능·상용 제공 조건은 보도만으로 확인되지 않음\n- 팀 액션: accelerator만 분리 구매하지 말고 fabric bandwidth·memory·power·rack acceptance·workload p95와 task당 비용을 동일 canary로 검증 필요",
-      "detail": "인공지능신문은 Qualcomm과 Amazon이 대규모 AI 데이터센터를 위한 다세대 custom silicon 및 optical connectivity 협력 관계를 발표했다고 보도했다. 기사 범위에는 AI inference workload용 맞춤형 반도체, 최대 1.6Tbps급을 포함한 차세대 광연결, Qualcomm의 SerDes·optical DSP 활용, AWS AI infrastructure와 Amazon Bedrock을 EDA 작업에 활용해 설계 주기를 단축하려는 계획이 포함된다. 이는 timestamped secondary report이며 제품 SKU, 실제 rack deployment, delivered bandwidth·power, availability region, 가격, benchmark, SLA와 고객 제공 시점은 독립 확인되지 않았다. 따라서 발표를 즉시 사용 가능한 AI capacity로 환산하지 말고 compute·memory·network·power·software toolchain·workload utilization을 함께 측정해야 한다.",
-      "why_it_matters": "AI inference fleet의 병목은 accelerator FLOPS만이 아니라 memory movement, node-to-node fabric, optical interconnect, power와 workload scheduling의 결합으로 발생함. custom silicon과 connectivity를 함께 설계하는 협력은 시스템 단위 capacity·FinOps 평가가 필요하다는 신호이나, 발표 단계의 성능·공급 보증과 구분 필요.",
-      "engineering_implication": "대표 inference workload를 기준으로 accelerator/CPU·memory·NIC/optics·rack power·fabric topology·runtime version을 같은 inventory에 묶고, throughput·TTFT/p95·collective/network retry·watts·task당 성공 비용을 canary로 수집 필요. vendor roadmap은 quota·lead time·SLA·failure domain·interoperability·fallback이 계약과 실제 acceptance로 확인된 뒤 capacity plan에 반영 필요.",
-      "korea_implication": "국내 AIDC 또는 글로벌 AWS 리전을 쓰는 조직은 협력 발표를 국내 가용성·전력 효율·Bedrock capacity 보증으로 해석하지 않아야 함. 사용 리전의 quota·network topology·egress·support path와 자체 workload의 latency/cost를 별도로 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "AI Infrastructure",
-        "Custom Silicon",
-        "Optical Networking",
-        "AWS",
-        "Qualcomm",
-        "Inference",
-        "Data Center"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-09-08 22:32",
-      "source_name": "인공지능신문",
-      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=41821",
-      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202609/41821_62915_3056_v150.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "인공지능신문은 Qualcomm과 Amazon이 대규모 AI 데이터센터용 custom silicon을 여러 세대에 걸쳐 개발·확대하고 optical connectivity도 함께 개발한다고 보도함. 발표의 직접 원문·제품 문서는 이번 검증에서 확보하지 못했으므로 보도 범위를 넘는 공급·성능 주장은 제외함.",
-          "items": [
-            "범위: AI inference workload용 맞춤형 반도체 공동 개발 계획",
-            "연결: 데이터센터 내부 고대역폭 optical connectivity를 협력 범위에 포함"
-          ]
-        },
-        {
-          "heading": "기사에 명시된 기술 범위",
-          "body": "기사에는 Qualcomm의 low-power processing·semiconductor design·system integration 역량과 AWS의 대규모 AI infrastructure 결합 계획이 언급됨. connectivity는 Qualcomm SerDes와 optical DSP를 활용하고 최대 1.6Tbps급을 포함한 차세대 optical solution을 공동 개발하는 범위임.",
-          "items": [
-            "광연결: 최대 `1.6Tbps`급과 향후 세대 solution 언급",
-            "설계: `SerDes`·optical `DSP`를 통한 데이터 이동량·bandwidth 요구 대응 계획",
-            "도구: AWS AI infrastructure와 Amazon Bedrock을 EDA 작업에 활용해 설계 주기 단축 목표"
-          ]
-        },
-        {
-          "heading": "성능·공급 증거의 경계",
-          "body": "custom silicon·optics 협력 발표는 deployed cluster의 usable capacity와 다른 단계임. accelerator SKU, memory, topology, optics qualification, rack power, cooling, software runtime, region별 quota가 실제 workload 성능과 availability를 결정함.",
-          "items": [
-            "미확인: SKU·tape-out·sample·production ramp·rack deployment·regional availability",
-            "미확인: throughput·latency·energy·reliability·가격·SLA·customer allocation",
-            "금지: 1.6Tbps 언급을 end-to-end application bandwidth 또는 inference latency 보증으로 환산"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI data center 설계는 compute와 fabric을 별도 procurement line으로 두면 admission control·tail latency·idle capacity의 원인을 놓칠 수 있음. capacity acceptance는 representative workload에서 compute, memory, network, power와 software telemetry를 결합한 운영 지표로 판정할 필요.",
-          "items": [
-            "측정: TTFT/p95·token throughput·NIC/optics error·collective retry·rack power·thermal headroom",
-            "통제: fabric failure domain·spare optics·firmware compatibility·vendor escalation·fallback path 정의",
-            "팀 액션: target workload canary에서 task 성공률·tail latency·watts·effective cost를 pre/post topology별로 비교"
           ]
         }
       ],
