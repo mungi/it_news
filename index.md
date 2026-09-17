@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-corretto-27-ga-2026-09-17]] — Amazon Corretto 27 GA의 G1 기본값·PQC TLS·compact object header·JFR redaction과 JVM canary 검증 경계.
 - [[raw/articles/github-copilot-runtime-rust-migration-2026-09-17]] — GitHub Copilot 공통 agent runtime Rust 전환의 subprocess·FFI·incremental release·E2E rollback 검증 경계.
 - [[raw/articles/kubernetes-v1-37-storage-bind-mount-emptydir-hardening-2026-09-17]] — Kubernetes v1.37 bind mount option·emptyDir mode Alpha의 CRI capability·feature-gate skew·fsGroup 검증 경계.
 - [[raw/articles/thn-browser-extension-ai-assistant-hijack-2026-09-16]] — Chromium AI assistant extension control 연구의 permission·browser patch·AI action audit 경계.

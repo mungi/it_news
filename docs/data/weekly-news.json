@@ -2,12 +2,12 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-17 14:29",
+  "last_updated_kst": "2026-09-17 18:39",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitHub가 Copilot 공통 agent runtime을 **832,378줄 production Rust**로 전환하고 128개 PR·135개 release의 incremental rollout을 공개. shared agent harness migration은 subprocess·FFI·stateful orchestration·E2E·rollback을 같은 release contract로 관리 필요.",
     "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
-    "Kubernetes v1.37이 `emptyDir` permission mode와 volume bind mount `noexec`·`nosuid`·`nodev` Alpha를 추가. feature gate·CRI capability·node skew·`fsGroup` override를 negative test와 canary로 검증 필요.",
+    "Amazon Corretto 27이 G1 GC 기본값, TLS 1.3 post-quantum hybrid key exchange, compact object header, JFR in-process redaction을 포함한 Feature Release로 제공. JVM upgrade는 GC·heap·TLS peer·JFR export·native agent를 같은 canary evidence로 검증 필요.",
     "브라우저 extension 연구에서 Chrome·Comet·Edge·Opera Neon·Claude in Chrome AI 기능 제어 가능성이 공개됨. managed extension permission과 browser patch·AI action audit을 endpoint control plane으로 결합 필요.",
     "Issabel Framework `CVE-2026-89026` active exploitation은 모든 설치본의 hard-coded HS256 JWT key를 이용해 PBX manager API에서 Asterisk user OS command 실행으로 이어질 수 있음. fixed build·key provenance·PBX API·Asterisk process audit을 같은 incident scope로 점검 필요."
   ],
@@ -265,6 +265,80 @@
       "rank": 1
     },
     {
+      "id": "news-489",
+      "title_ko": "Amazon Corretto 27 GA: G1 기본값·PQC TLS·JFR redaction을 Java runtime canary로 검증",
+      "title_original": "Amazon Corretto 27 is now generally available",
+      "summary": "- 제공: Amazon Corretto 27 Feature Release를 Linux·Windows·macOS용 production-ready OpenJDK distribution으로 제공\n- 수명: 지원 종료는 **2027년 4월**이며 원문은 LTS 또는 장기 support를 주장하지 않는 범위\n- runtime: `JEP 523` G1 GC default와 `JEP 534` compact object header default로 GC·heap baseline 변동 가능\n- 보안·진단: `JEP 527` TLS 1.3 post-quantum hybrid key exchange와 `JEP 536` JFR in-process data redaction 추가\n- 팀 액션: GC·heap·TLS peer·JFR export와 preview/incubator API 의존성을 canary release evidence로 확인 필요",
+      "detail": "AWS가 Amazon Corretto 27을 Feature Release 버전으로 일반 제공했다. Corretto는 Linux, Windows, macOS용 no-cost, multi-platform, production-ready OpenJDK distribution이며 지원 종료는 2027년 4월이다. 원문은 G1을 모든 environment의 default garbage collector로 바꾸는 `JEP 523`, TLS 1.3 classical·post-quantum hybrid key exchange `JEP 527`, compact object headers default `JEP 534`, JVM 밖으로 나가기 전 JFR recording의 sensitive data redaction을 지원하는 `JEP 536`을 열거한다. enhanced pattern matching, structured concurrency, Vector API는 각각 continued preview 또는 incubator 상태다. AWS는 workload별 heap 절감률, pause time, TLS interoperability, library/APM agent compatibility를 보장하지 않았으므로 JVM upgrade는 production canary로 검증해야 함.",
+      "why_it_matters": "Java runtime feature release는 애플리케이션 코드 변경 없이 GC selection, object layout, TLS handshake path, profiling data exposure를 바꿀 수 있음. Java fleet의 base image와 CI build JDK를 동시에 바꾸면 library, native agent, security inspection, observability pipeline이 같은 change window에 영향을 받을 수 있음.",
+      "engineering_implication": "대표 workload에서 GC log, p95/p99 latency, heap/RSS, allocation rate, startup time을 기존 Corretto와 비교하고 `JEP 527` TLS peer·proxy·inspection interoperability를 test matrix에 포함 필요. JFR export의 redaction field와 observability collector schema를 확인하고 preview/incubator API, build plugin, JNI/native agent, APM 지원 버전을 inventory한 뒤 cohort rollout과 rollback artifact를 연결해야 함.",
+      "korea_implication": "국내 Java 서비스의 managed runtime·container base image·사내 CA 또는 TLS inspection 환경은 Corretto availability와 별도로 update cadence, peer interoperability, vendor agent support를 staging에서 확인 필요.",
+      "category": "DevTools",
+      "tags": [
+        "DevTools",
+        "AWS",
+        "Java",
+        "OpenJDK",
+        "JVM",
+        "TLS",
+        "Post-Quantum",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 83,
+      "published_kst": "2026-09-17 09:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-corretto-27-generally-available/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "OpenJDK 27 Project",
+          "url": "https://openjdk.org/projects/jdk/27/"
+        },
+        {
+          "title": "Amazon Corretto downloads",
+          "url": "https://aws.amazon.com/corretto/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Corretto 27을 Feature Release로 일반 제공함. Corretto는 Linux·Windows·macOS용 no-cost, multi-platform, production-ready OpenJDK distribution이며 source가 명시한 지원 종료는 2027년 4월임.",
+          "items": [
+            "제공: download page에서 Linux·Windows·macOS artifact 제공",
+            "수명: support through April 2027이며 원문이 LTS 또는 장기 support로 분류하지 않는 범위"
+          ]
+        },
+        {
+          "heading": "runtime·memory 변경",
+          "body": "`JEP 523`은 G1 garbage collector를 모든 environment의 default로 설정함. `JEP 534`는 compact object headers를 default로 적용해 object memory footprint와 cache utilization 개선을 목표로 하나 workload별 효과는 source에 미공개임.",
+          "items": [
+            "변경: default GC selection이 바뀌므로 GC log·pause time·allocation baseline 비교 필요",
+            "변경: object header layout 영향으로 heap/RSS·serialization·native agent compatibility canary 필요"
+          ]
+        },
+        {
+          "heading": "TLS·진단 보호",
+          "body": "`JEP 527`은 TLS 1.3 connection에서 classical과 post-quantum key exchange algorithm을 결합하는 hybrid key exchange를 추가함. `JEP 536`은 Java Flight Recorder recording이 JVM을 떠나기 전에 sensitive data를 redact하는 경로를 제공함.",
+          "items": [
+            "검증: TLS peer·proxy·load balancer·inspection appliance의 handshake interoperability 확인",
+            "검증: JFR export redaction field와 collector·retention·incident workflow의 schema 확인"
+          ]
+        },
+        {
+          "heading": "preview·도입 경계",
+          "body": "enhanced pattern matching과 structured concurrency는 continued preview, Vector API는 continued incubator 상태임. source는 특정 application의 throughput, heap 절감률, TLS 호환성, third-party library 또는 APM agent 지원을 보장하지 않음.",
+          "items": [
+            "inventory: preview/incubator API, build plugin, JNI/native agent, framework·APM 지원 버전 확인",
+            "팀 액션: representative cohort의 latency·heap·GC·TLS·JFR evidence와 rollback image를 release gate에 포함"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-485",
       "title_ko": "SageMaker AI Nemotron 3.5 Lightning serverless customization: SFT·DPO·RFT와 4개 리전 제공",
       "title_original": "Amazon SageMaker AI now supports serverless model customization for NVIDIA Nemotron 3.5 Lightning",
@@ -331,7 +405,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-486",
@@ -407,7 +481,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-483",
@@ -487,7 +561,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-484",
@@ -558,7 +632,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-488",
@@ -638,7 +712,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-479",
@@ -714,7 +788,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-478",
@@ -780,7 +854,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-481",
@@ -855,7 +929,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-480",
@@ -928,7 +1002,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-477",
@@ -995,7 +1069,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-482",
@@ -1076,7 +1150,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-475",
@@ -1140,7 +1214,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-476",
@@ -1205,7 +1279,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-474",
@@ -1280,7 +1354,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "region": "Global",
@@ -1355,7 +1429,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-473",
@@ -1422,7 +1496,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "region": "Global",
@@ -1490,7 +1564,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "region": "Global",
@@ -1563,11 +1637,11 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-469",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -1717,7 +1791,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-464",
@@ -1802,7 +1876,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-465",
@@ -1879,7 +1953,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-462",
@@ -1955,7 +2029,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-463",
@@ -2028,7 +2102,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-461",
@@ -2105,7 +2179,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-459",
@@ -2178,7 +2252,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-458",
@@ -2289,7 +2363,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-468",
@@ -2363,7 +2437,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-455",
@@ -2445,7 +2519,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-460",
@@ -2523,7 +2597,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-457",
@@ -2600,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-456",
@@ -2670,7 +2744,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-454",
@@ -2747,7 +2821,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-453",
@@ -2829,7 +2903,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-466",
@@ -2920,7 +2994,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-452",
@@ -2997,7 +3071,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-451",
@@ -3070,7 +3144,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-449",
@@ -3147,7 +3221,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-450",
@@ -3221,7 +3295,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-447",
@@ -3285,7 +3359,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-446",
@@ -3362,7 +3436,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-445",
@@ -3439,7 +3513,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-433",
@@ -3524,7 +3598,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-448",
@@ -3588,7 +3662,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-420",
@@ -3666,7 +3740,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-444",
@@ -3743,7 +3817,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-443",
@@ -3816,7 +3890,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-442",
@@ -3881,72 +3955,6 @@
             "측정: TTFT/p95·token throughput·NIC/optics error·collective retry·rack power·thermal headroom",
             "통제: fabric failure domain·spare optics·firmware compatibility·vendor escalation·fallback path 정의",
             "팀 액션: target workload canary에서 task 성공률·tail latency·watts·effective cost를 pre/post topology별로 비교"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-439",
-      "title_ko": "Cloudflare Automatic Key Exchange: 원본 TLS 1.3 알고리즘 탐지로 PQC handshake retry와 p90 지연 축소",
-      "title_original": "Automatic Key Exchange: faster, post-quantum secure origin handshakes for 45 billion daily connections (and counting)",
-      "summary": "- 공개: **Automatic Key Exchange**가 origin의 TLS 1.3 key-agreement 지원을 probe해 첫 연결에서 적합한 알고리즘을 선택\n- 우선순위: origin이 지원하면 post-quantum hybrid `X25519MLKEM768`을 우선 사용\n- 성능: rollout 측정에서 HelloRetryRequest 비율이 약 `52%`에서 `3.7%`로 감소, handshake p90 `150ms 이상` 절감\n- 범위: 수십만 domain에서 별도 설정 없이 post-quantum origin connection이 활성화됐다는 Cloudflare 발표\n- 팀 액션: origin TLS library·certificate/edge proxy·algorithm support·handshake error·p95/p99 latency를 실제 client path에서 baseline과 비교 필요",
-      "detail": "Cloudflare는 Automatic SSL/TLS의 확장인 Automatic Key Exchange를 공개했다. 서비스는 TLS 1.3-capable origin이 지원·선호하는 key-agreement algorithm을 probe하고, origin이 지원할 때 post-quantum hybrid `X25519MLKEM768`을 첫 시도에 우선한다. Cloudflare rollout 측정에서는 origin connection의 HelloRetryRequest가 약 52%에서 3.7%로 줄고 p90 handshake latency가 150ms 이상 감소했다. 이는 Cloudflare origin connection 경로의 측정이며 모든 browser-to-origin 경로·모든 TLS implementation·고객별 certificate/MTLS/legacy client 호환성을 보증하지 않는다. origin crypto capability와 CDN edge policy 변경은 availability와 cryptographic agility를 함께 건드리므로, protocol alert·retry·fallback·MTLS·origin fleet version을 canary와 rollback 기준으로 운영해야 한다.",
-      "why_it_matters": "PQC migration은 certificate 교체만으로 끝나지 않으며 client·edge·origin의 key-agreement negotiation과 fallback이 실제 연결 성능과 decrypt-later 위험 노출을 결정함. 자동 선택은 운영 부담을 줄이지만 origin별 crypto capability inventory와 failure telemetry가 없으면 호환성 문제를 늦게 발견할 수 있음.",
-      "engineering_implication": "origin별 TLS 1.3/library·supported group·MTLS·proxy chain을 inventory화하고 `X25519MLKEM768` negotiation, HelloRetryRequest, TLS alert, handshake p50/p95/p99, origin error rate를 pre/post rollout으로 비교 필요. legacy origin과 non-TLS 1.3 endpoint는 명시적인 fallback·exclusion·rollback ownership을 두고, PQC enablement를 key rotation·certificate lifecycle·incident runbook에 연결 필요.",
-      "korea_implication": "국내 origin과 global CDN을 함께 쓰는 서비스는 국내 리전 origin·WAF/load balancer·mTLS partner endpoint의 TLS stack과 cryptographic policy가 동일하지 않을 수 있음. public edge의 성공률만 보지 말고 region·ISP·origin pool별 handshake telemetry와 rollback path를 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "TLS",
-        "Post-Quantum Cryptography",
-        "Cloudflare",
-        "Origin Security",
-        "Performance"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-08 22:10",
-      "source_name": "Cloudflare",
-      "source_url": "https://blog.cloudflare.com/automatic-key-exchange-for-origins/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M1PVVA86NJR4N0MTKCH06A9V.01M1PVVAXCHV18R9AZA18HS4AQ.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare는 Automatic SSL/TLS에 Automatic Key Exchange를 추가했다고 발표. TLS 1.3-capable origin을 probe해 key-agreement algorithm 지원과 선호를 학습하고 첫 origin connection에 적용하는 구성임.",
-          "items": [
-            "변화: origin capability를 추측하지 않고 probe 결과로 첫 handshake algorithm 선택",
-            "우선: 지원 origin에서 post-quantum hybrid `X25519MLKEM768`을 우선하는 rollout"
-          ]
-        },
-        {
-          "heading": "측정 결과와 적용 범위",
-          "body": "Cloudflare는 origin connection rollout에서 HelloRetryRequest 비율과 p90 handshake latency 변화를 제시. 수치는 Cloudflare가 관측한 서비스 경로의 결과이므로 모든 TLS endpoint의 성능 보증과 구분 필요.",
-          "items": [
-            "측정: HelloRetryRequest 약 `52%`에서 `3.7%`로 감소라는 Cloudflare 발표",
-            "측정: handshake p90 `150ms 이상` 절감이라는 Cloudflare 발표",
-            "범위: 수십만 domain에서 별도 고객 설정 없이 post-quantum origin connection 활성화 언급"
-          ]
-        },
-        {
-          "heading": "암호·호환성 경계",
-          "body": "post-quantum hybrid handshake는 harvest-now-decrypt-later 위험을 낮추는 migration 단계이나 origin library, intermediary proxy, mTLS, supported group와 TLS alert 처리에 의존함. edge가 성공해도 upstream origin fleet 전체의 crypto posture가 자동 검증되는 것은 아님.",
-          "items": [
-            "분리: edge-to-origin negotiation·browser-to-edge TLS·origin application protocol·mTLS trust chain",
-            "미확인: 개별 origin의 library version·certificate chain·legacy client/proxy compatibility",
-            "리스크: unsupported group·middlebox·origin policy mismatch가 retry·alert·availability degradation으로 연결될 가능성"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "PQC enablement의 완료 기준은 설정 화면이 아니라 origin pool별 handshake 성공률과 fallback이 검증된 상태임. cryptographic agility 변경을 performance·availability change로도 관리할 필요.",
-          "items": [
-            "측정: negotiated group·HelloRetryRequest·TLS alert·handshake p50/p95/p99·origin 5xx",
-            "통제: origin TLS/library inventory·canary pool·legacy exclusion·rollback owner 지정",
-            "팀 액션: representative origin에서 PQC enable/disable 전후 handshake trace와 mTLS·health check를 비교"
           ]
         }
       ],
