@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-18 02:49",
+  "last_updated_kst": "2026-09-18 10:55",
   "audience": "developers and engineers",
   "executive_summary": [
     "**Unbound `CVE-2026-81642`**는 `1.26.0` 이하 DNSSEC validator의 heap overflow로, malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
     "GitHub가 Copilot 공통 agent runtime을 **832,378줄 production Rust**로 전환하고 128개 PR·135개 release의 incremental rollout을 공개. shared agent harness migration은 subprocess·FFI·stateful orchestration·E2E·rollback을 같은 release contract로 관리 필요.",
     "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
     "Amazon Corretto 27이 G1 GC 기본값, TLS 1.3 post-quantum hybrid key exchange, compact object header, JFR in-process redaction을 포함한 Feature Release로 제공. JVM upgrade는 GC·heap·TLS peer·JFR export·native agent를 같은 canary evidence로 검증 필요.",
-    "브라우저 extension 연구에서 Chrome·Comet·Edge·Opera Neon·Claude in Chrome AI 기능 제어 가능성이 공개됨. managed extension permission과 browser patch·AI action audit을 endpoint control plane으로 결합 필요."
+    "ISC BIND 9가 DoH SIG(0) 무인증 crash를 포함한 **14개 보안 결함**을 `9.20.29`·`9.21.26`에서 수정. DoH·recursive·DNSSEC·DNS64·SVCB/HTTPS 역할과 EOL `9.18` image·vendor backport를 함께 inventory하고 query failure·cache resource canary 필요."
   ],
   "deep_dives": [
     {
@@ -274,6 +274,92 @@
       "rank": 1
     },
     {
+      "id": "news-491",
+      "title_ko": "ISC BIND 9 보안 업데이트: DoH SIG(0) 무인증 crash를 포함한 14개 결함을 9.20.29·9.21.26으로 수정",
+      "title_original": "BIND 9 Update Fixes 14 Flaws, Including an Unauthenticated Crash Over DNS-over-HTTPS",
+      "summary": "- 수정: ISC가 BIND `9.20.29`·`9.21.26`을 공개해 9월 16일 공지한 **14개 보안 결함** 수정\n- DoH: invalid `SIG(0)` request 뒤 client가 connection을 조기 종료하면 `named`가 crash할 수 있는 `CVE-2026-77692` 수정\n- resolver: crafted negative response·DNSSEC proof·HTTPS/SVCB alias가 default recursive resolver의 crash 또는 CPU·cache memory exhaustion을 유발할 수 있는 범위\n- 무결성: unrelated zone의 NSEC/NSEC3 proof를 통한 forged DNSSEC answer acceptance와 TSIG zone transfer 처리 경계 수정\n- 팀 액션: authoritative·recursive·DoH·DNSSEC validation·DNS64·SVCB/HTTPS workload와 package backport를 inventory하고 fixed build·restart·query failure canary 필요",
+      "detail": "ISC는 BIND 9의 보안 결함 14건을 수정한 `9.20.29`과 `9.21.26`을 공개했다. 가장 직접적인 노출 경로 중 하나인 `CVE-2026-77692`는 DoH를 응답하는 서버에서 invalid `SIG(0)` request를 보낸 client가 signature 검증 전 연결을 닫으면 `named`가 crash할 수 있는 문제다. release notes는 recursive resolver가 crafted negative response, DNSSEC proof, HTTPS/SVCB alias data를 처리할 때 crash 또는 CPU·cache memory exhaustion에 이를 수 있는 여러 결함도 수정한다. ISC는 14건의 active exploitation을 인지하지 못한다고 밝혔고 workaround는 제시하지 않았다. `9.18`은 2026년 6월 지원이 끝난 branch이므로 EOL image·OS package의 backport 여부를 release number만으로 추정하지 말고 vendor advisory와 deployed binary를 함께 확인해야 함.",
+      "why_it_matters": "BIND는 authoritative DNS, recursive resolver, DNSSEC validation, DoH endpoint 역할을 겸할 수 있어 하나의 package patch가 public query surface와 내부 name-resolution control plane에 동시에 영향. DoH·recursive path는 unauthenticated client 또는 attacker-controlled authoritative response 조건을 분리해 위험도를 판단해야 함.",
+      "engineering_implication": "`named -v`, package changelog, container image digest, vendor security tracker로 `9.20.29`·`9.21.26` 또는 backport 적용 여부를 대조 필요. DoH listener·recursion ACL·DNSSEC validation·DNS64 `break-dnssec`·SVCB/HTTPS response path를 inventory하고 canary에서 `named` restart, SERVFAIL, query latency, cache memory, CPU, zone-transfer failure를 기존 baseline과 비교 필요.",
+      "korea_implication": "국내 조직도 ISP·enterprise DNS, Kubernetes/CoreDNS upstream, public DoH, appliance 또는 Linux distribution package로 BIND를 운영할 수 있음. EOL `9.18` 기반 image와 managed appliance의 fixed build·maintenance window는 upstream version과 별도 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "DNS",
+        "BIND",
+        "DoH",
+        "DNSSEC",
+        "Open Source",
+        "Infrastructure"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-09-17 17:00",
+      "source_name": "ISC BIND 9 Release Notes",
+      "source_url": "https://bind9.readthedocs.io/en/stable/notes.html#notes-for-bind-9-20-29",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News: BIND 9 14개 결함 분석",
+          "url": "https://thehackernews.com/2026/09/bind-9-update-fixes-14-flaws-including.html"
+        },
+        {
+          "title": "ISC BIND 9 download",
+          "url": "https://www.isc.org/download/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "ISC가 9월 16일 공개한 BIND 9 보안 결함 14건을 `9.20.29` stable branch와 `9.21.26` development branch에서 수정함. source와 보도 기준 `9.20.29`은 14건 전체를, `9.21.26`은 `CVE-2026-19662`를 제외한 13건을 수정함.",
+          "items": [
+            "수정: `9.20.29`·`9.21.26` release에 14개 security fix 포함",
+            "경계: ISC는 14개 결함의 active exploitation을 인지하지 못한다고 공지",
+            "수명: `9.18` branch는 2026년 6월 지원 종료 상태이며 fixed upstream release 부재"
+          ]
+        },
+        {
+          "heading": "직접 query로 가능한 crash 경로",
+          "body": "`CVE-2026-77692`는 DoH를 응답하는 `named`가 invalid `SIG(0)` authentication request를 검증하기 전에 client connection이 닫히면 crash할 수 있는 결함임. `CVE-2026-76163`은 global `options` block이 없는 configuration에서 remote TKEY query가 `named` termination을 유발할 수 있는 범위임.",
+          "items": [
+            "DoH: unauthenticated sender의 malformed `SIG(0)` request와 early connection close 조건",
+            "TKEY: global options block이 없는 `named.conf` configuration 조건",
+            "우선순위: internet-facing DoH listener와 external query ACL을 package update 전에 식별 필요"
+          ]
+        },
+        {
+          "heading": "recursive resolver·DNSSEC 영향",
+          "body": "release notes는 default recursive resolver의 crafted oversized negative cache response assertion failure `CVE-2026-19667`, cached DNSSEC NOQNAME proof 경쟁 조건 `CVE-2026-19662`, DNS64 `break-dnssec yes` 조건의 assertion failure `CVE-2026-19666`를 수정함. validating resolver는 unrelated zone proof로 forged DNSSEC answer를 accept할 수 있는 결함도 수정 대상임.",
+          "items": [
+            "crash: attacker-controlled authoritative response가 recursive resolver에 도달하는 query path 조건",
+            "무결성: unrelated signed NSEC proof의 forged NXDOMAIN acceptance `CVE-2026-19941` 수정",
+            "운영: DNSSEC validation·DNS64·forwarder·untrusted recursive client path를 patch scope에 포함 필요"
+          ]
+        },
+        {
+          "heading": "HTTPS·SVCB와 운영 자원 경계",
+          "body": "HTTPS/SVCB alias record 처리도 resolver resource exhaustion 범위에 포함됨. `CVE-2026-81563`은 alias target record가 cache에서 적절히 release되지 않아 configured cache limit을 넘어 unrelated name resolution failure로 이어질 수 있는 조건을, `CVE-2026-81736`은 cached interlinked alias response assembly의 CPU 과다 사용 조건을 수정함.",
+          "items": [
+            "메모리: fresh alias name을 반복 처리할 때 cache growth와 resolution failure 가능성",
+            "CPU: cached HTTPS/SVCB alias를 따라 additional section을 구성하는 excessive work 조건",
+            "검증: canary에서 query latency·SERVFAIL·cache memory·CPU와 SVCB/HTTPS response behavior 비교 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "DNS patch closure는 CVE 목록과 binary version만으로 끝나지 않음. authoritative, recursive, DoH, DNSSEC, zone-transfer 역할과 OS package backport·container image·appliance maintenance channel을 asset별로 연결해야 fixed build와 restart 증거가 일치함.",
+          "items": [
+            "확인: `named -v`, package advisory, image digest, listener·recursion ACL, DNSSEC·DNS64·DoH configuration",
+            "검증: representative resolution, DNSSEC validation, DoH request, zone transfer, restart·SERVFAIL·resource telemetry",
+            "팀 액션: EOL `9.18` 및 vendor backport 미확인 asset을 exception register와 replacement plan으로 분리"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-487",
       "title_ko": "GitHub Copilot agent runtime Rust 전환: 80만 줄·128 PR을 incremental rollout으로 운영",
       "title_original": "Migrating the GitHub Copilot runtime to Rust, using Copilot",
@@ -343,7 +429,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-489",
@@ -417,7 +503,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-485",
@@ -486,7 +572,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-486",
@@ -562,7 +648,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-483",
@@ -642,7 +728,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-484",
@@ -713,7 +799,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-488",
@@ -793,7 +879,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-479",
@@ -869,7 +955,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-478",
@@ -935,7 +1021,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-481",
@@ -1010,7 +1096,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-480",
@@ -1083,7 +1169,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-477",
@@ -1150,7 +1236,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-482",
@@ -1231,7 +1317,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-475",
@@ -1295,7 +1381,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-476",
@@ -1360,7 +1446,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-474",
@@ -1435,7 +1521,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "region": "Global",
@@ -1510,7 +1596,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-473",
@@ -1577,7 +1663,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "region": "Global",
@@ -1645,7 +1731,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "region": "Global",
@@ -1718,11 +1804,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-469",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -1872,7 +1958,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-464",
@@ -1957,7 +2043,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-465",
@@ -2034,7 +2120,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-462",
@@ -2110,7 +2196,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-463",
@@ -2183,7 +2269,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-461",
@@ -2260,7 +2346,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-459",
@@ -2333,7 +2419,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-458",
@@ -2444,7 +2530,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-468",
@@ -2518,7 +2604,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-455",
@@ -2600,7 +2686,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-460",
@@ -2678,7 +2764,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-457",
@@ -2755,7 +2841,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-456",
@@ -2825,7 +2911,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-454",
@@ -2902,7 +2988,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-453",
@@ -2984,7 +3070,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-466",
@@ -3075,7 +3161,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-452",
@@ -3152,7 +3238,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-451",
@@ -3225,7 +3311,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-449",
@@ -3302,7 +3388,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-450",
@@ -3376,7 +3462,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-447",
@@ -3440,7 +3526,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-446",
@@ -3517,7 +3603,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-445",
@@ -3594,7 +3680,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-433",
@@ -3679,7 +3765,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-448",
@@ -3743,7 +3829,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-420",
@@ -3821,7 +3907,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-444",
@@ -3895,79 +3981,6 @@
             "통제: tenant namespace·least-privilege read/write token·property ACL·cross-tenant regression test",
             "측정: connector read·artifact metadata write·cross-account access denial·export·admin policy change telemetry",
             "팀 액션: AI connector threat model에 hidden instruction·internal shared service·permissioned data egress 항목 추가"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-443",
-      "title_ko": "Google GTIG: 6시간 미만 multi-agent credential harvesting 관측, AI 자산·개발 공급망을 같은 공격면으로 관리",
-      "title_original": "GTIG AI Threat Tracker: From Prompting to Autonomy – The Evolution of Adversarial AI",
-      "summary": "- 관측: Google GTIG가 Q2 2026에 cloud resource 탈취 뒤 **6시간 미만**으로 대규모 credential harvesting을 실행한 agent-enabled campaign 공개\n- 동작: multi-agent framework가 scanning pipeline·실시간 troubleshooting·IP rotation을 사람 개입 없이 관리한 범위\n- 공급망: UNC6780/TeamPCP의 PyPI·npm·Docker Hub compromise와 AI coding assistant·LLM scanner 표적화 병행 관측\n- 자산: model weight·source code·prompt·API credential·cloud quota가 espionage·extortion·resource theft 대상이라는 GTIG 평가\n- 팀 액션: agent/tool identity·secret egress·package provenance·cloud quota anomaly·human approval을 하나의 detection/response trace로 연결 필요",
-      "detail": "Google Threat Intelligence Group은 Q2 2026에 위협 행위자가 탈취한 cloud resource에서 AI coding chatbot과 instruction set을 사용해 6시간 미만으로 대규모 credential harvesting을 계획·구축·실행한 사례를 공개했다. 원문은 multi-agent framework가 vulnerability scanning, 오류 처리와 IP rotation을 자동화했다고 설명한다. 또한 GTIG는 AI-assisted coding과 open-source 생태계가 개발자·AI coding assistant·LLM security scanner를 겨냥한 공급망 compromise의 운영 위험을 넓혔다고 평가한다. 이 자료는 GTIG telemetry의 관측 보고서이며 모든 AI agent 또는 모든 cloud 환경의 침해를 뜻하지 않는다. 조직은 agent가 가진 tool credential과 data path, package install, cloud API·quota, CI/CD runner를 독립 제어면으로 보고 egress·approval·audit·revocation을 연결해야 한다.",
-      "why_it_matters": "agentic automation은 공격자의 discovery·scan·retry·credential collection loop에서 사람 대기 시간을 줄일 수 있음. AI 도구 보안은 prompt filter 하나가 아니라 developer identity, dependency provenance, tool permission, cloud billing/quota telemetry를 함께 다루는 운영 문제임.",
-      "engineering_implication": "AI coding assistant·MCP/tool·CI runner마다 identity, allowed action, secret scope, network destination, package source와 audit event를 inventory화 필요. high-risk tool call은 approval·rate limit·egress allowlist로 묶고, cloud credential 생성·API key read·quota spike·new package install·unusual IP rotation을 동일 incident trace로 상관 분석 필요.",
-      "korea_implication": "국내 조직도 해외 SaaS coding assistant, public package registry, multi-cloud credential을 함께 쓰면 개발망과 production 계정 경계가 달라질 수 있음. 해외 provider audit log 보존 기간과 국내 보안관제의 API·egress 수집 범위를 사전에 맞출 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Security",
-        "Agent",
-        "Supply Chain",
-        "Cloud Security",
-        "Credential Theft",
-        "CI/CD"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-08 22:48",
-      "source_name": "Google Threat Intelligence",
-      "source_url": "https://cloud.google.com/blog/topics/threat-intelligence/from-prompting-to-autonomy-the-evolution-of-adversarial-ai",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdVKt_UmqEYNHNt0K516skza4MoV47hITqzcoC3WLLI3QkQ_jUEffHvaL7VHVtzRqvdt6k2bZwGAFVif-hRkoiTQva6JM95w3NgNRU_WpuTaZfhLGXAcOdLQXy_sMWU1dxAunMAsf7J8PEDG2AKvkFuXbOFyOmIQcaocMIBhNpaYscCUeJElKDXu6xGhkX/s1600/ai-agent.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "The Hacker News 보도",
-          "url": "https://thehackernews.com/2026/09/autonomous-ai-agents-compromise.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GTIG는 Q2 2026에 공격자가 탈취한 cloud resource에서 agent-enabled 대규모 credential harvesting을 수행한 사례를 공개함. 원문은 AI coding chatbot, prompt와 preconfigured Markdown instruction set을 operational playbook으로 사용한 범위를 설명함.",
-          "items": [
-            "관측: 계획·구축·실행이 **6시간 미만**에 완료된 credential harvesting campaign",
-            "구성: multi-agent framework가 scanning pipeline·오류 처리·IP rotation을 자동 관리",
-            "범위: GTIG의 특정 telemetry 관측이며 모든 AI agent의 보편적 행위라는 뜻은 아님"
-          ]
-        },
-        {
-          "heading": "공급망과 AI 자산 표적",
-          "body": "GTIG는 AI-assisted coding과 open-source 의존성이 developer, coding assistant, LLM security scanner를 겨냥하는 공급망 위험을 넓혔다고 정리함. proprietary model·source code·prompt·API credential·cloud compute quota도 별도 표적 범위로 열거함.",
-          "items": [
-            "공급망: UNC6780/TeamPCP의 PyPI·npm·Docker Hub compromise와 credential stealer 연계",
-            "자산: model weight·source code·prompt·API credential·cloud resource가 espionage·extortion·resource theft 대상",
-            "경계: 원문은 개별 조직의 감염 수·영향 범위를 일반화하지 않음"
-          ]
-        },
-        {
-          "heading": "탐지와 통제의 단위",
-          "body": "agent가 도구를 호출하는 흐름은 human user session과 CI/CD service identity를 함께 통과할 수 있음. package 설치·secret read·cloud API call·network egress·quota 소비를 분리 로그로 남기면 자동화된 공격 loop를 늦게 발견할 수 있음.",
-          "items": [
-            "추적: agent/workload ID·tool call·secret access·package digest·destination·cloud API·quota event 연결",
-            "통제: high-risk action approval·least-privilege token·registry allowlist·egress allowlist 적용",
-            "경보: new credential·bulk secret read·unusual IP rotation·quota spike·CI runner child process 상관 분석"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "방어의 완료 기준은 AI assistant 도입 여부가 아니라 자동 tool-use가 권한·네트워크·비용·감사 경계를 넘을 때 멈추고 복원되는 상태임. incident runbook은 model prompt만이 아니라 developer credential과 cloud quota revoke 순서를 포함해야 함.",
-          "items": [
-            "검증: representative agent task에서 denied action·approval·audit completeness·egress block·token revoke drill",
-            "측정: secret read rate·tool failure/retry·destination diversity·quota burn·MTTD·credential rotation time",
-            "팀 액션: AI tool inventory와 CI/CD/cloud identity inventory를 하나의 attack-path review로 결합"
           ]
         }
       ],
