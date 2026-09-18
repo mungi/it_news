@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-18 | Total pages: 354
+> Last updated: 2026-09-18 | Total pages: 355
 
 ## Entities
 
@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/air-plugin4shell-agent-plugin-sha-pinning-bypass-2026-09-18]] — Plugin4Shell의 Claude Code·Codex·Copilot·Gemini CLI plugin SHA pin bypass, resolved `HEAD` 검증·auto-update·fixed-version 운영 경계.
 - [[raw/articles/thn-checkpoint-security-management-cve-2026-91843-2026-09-18]] — Check Point Security Management·Log Server `CVE-2026-91843`의 Trusted Clients login stack overflow·LivePatch와 management-plane ACL 검증 경계.
 - [[raw/articles/docker-sandboxes-cve-2026-77179-79994-2026-09-18]] — Docker Sandboxes `0.42.0`의 macOS virtio-fs·Unix socket relay symlink race 2건과 shared workspace·clone mode 검증 경계.
 - [[raw/articles/isc-bind-9-20-29-security-fixes-2026-09-18]] — ISC BIND 9 `9.20.29`·`9.21.26`의 DoH SIG(0) crash·recursive resolver DNSSEC/SVCB 결함 14건과 patch·EOL inventory 경계.
