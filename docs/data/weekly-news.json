@@ -2,13 +2,13 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-18 10:55",
+  "last_updated_kst": "2026-09-18 15:01",
   "audience": "developers and engineers",
   "executive_summary": [
-    "**Unbound `CVE-2026-81642`**는 `1.26.0` 이하 DNSSEC validator의 heap overflow로, malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
+    "Check Point Security Management·Log Server `CVE-2026-91843`는 Trusted Clients 경로의 인증 전 stack overflow로 root code execution 가능 범위를 가짐. `sk1000155` LivePatch install 상태와 Trusted Clients known-host ACL·management-plane internet exposure를 같은 incident evidence로 확인 필요.",
+    "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`는 macOS shared workspace의 virtio-fs·Unix socket relay symlink race를 `0.42.0`에서 수정. AI coding sandbox는 VM 여부만 보지 말고 read-write mount·clone mode·forwarded socket·VMM user 권한을 함께 inventory 필요.",
+    "Unbound `CVE-2026-81642`는 `1.26.0` 이하 DNSSEC validator의 heap overflow로 malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
     "GitHub가 Copilot 공통 agent runtime을 **832,378줄 production Rust**로 전환하고 128개 PR·135개 release의 incremental rollout을 공개. shared agent harness migration은 subprocess·FFI·stateful orchestration·E2E·rollback을 같은 release contract로 관리 필요.",
-    "SageMaker AI가 NVIDIA Nemotron 3.5 Lightning의 serverless SFT·DPO·RFT customization을 Tokyo 포함 4개 리전에 제공. model customization은 data provenance·holdout evaluation·quota·residency·artifact release를 별도 gate로 운영 필요.",
-    "Amazon Corretto 27이 G1 GC 기본값, TLS 1.3 post-quantum hybrid key exchange, compact object header, JFR in-process redaction을 포함한 Feature Release로 제공. JVM upgrade는 GC·heap·TLS peer·JFR export·native agent를 같은 canary evidence로 검증 필요.",
     "ISC BIND 9가 DoH SIG(0) 무인증 crash를 포함한 **14개 보안 결함**을 `9.20.29`·`9.21.26`에서 수정. DoH·recursive·DNSSEC·DNS64·SVCB/HTTPS 역할과 EOL `9.18` image·vendor backport를 함께 inventory하고 query failure·cache resource canary 필요."
   ],
   "deep_dives": [
@@ -193,6 +193,163 @@
   ],
   "items": [
     {
+      "id": "news-492",
+      "rank": 1,
+      "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
+      "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
+      "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
+      "detail": "The Hacker News가 Check Point community notice, vendor 응답, Censys advisory, CVE record를 대조해 Security Management·Log Server의 `CVE-2026-91843`을 보도했다. vendor 설명상 취약 경로는 SmartConsole 접근 host를 정하는 Trusted Clients setting을 통해서만 도달하며, login request의 긴 username이 인증 전 stack overflow를 유발할 수 있다. Check Point는 LivePatch `sk1000155`와 automatic update를 안내했고, 자동 설치를 가정하지 말고 `cplp list`로 상태를 확인하라고 했다. 보도는 R82.10 Take 44 이하, R82 Take 126 이하, R81.20 Take 166 이하, R81.10 Take 190 이하와 EOL branch를 affected로 열거하고 R82.20도 vulnerable이라는 vendor 응답을 수록한다. active exploitation·public PoC·개별 조직 노출은 확인되지 않았으므로 internet-facing 여부, Trusted Clients ACL, LivePatch 상태, management audit를 자산별 증거로 확인해야 함.",
+      "why_it_matters": "Security Management Server는 firewall policy·administrator access·gateway configuration을 제어하는 management plane임. 인증 전 결함은 endpoint 하나의 patch가 아니라 management server, Log Server, Multi-Domain·standalone 역할과 HA·admin network 경계를 함께 닫아야 하는 incident 범위임.",
+      "engineering_implication": "`cplp list`와 automatic-update setting으로 `sk1000155` 설치 상태를 asset별 확인 필요. Trusted Clients를 any IP가 아닌 known management host로 제한하고 direct internet exposure를 제거한 뒤 SmartConsole login, policy install, administrator/API audit, process·network log를 patch 전후 비교 필요.",
+      "korea_implication": "국내 enterprise도 Check Point management plane을 본사·지사·MSSP 운영망에서 공유할 수 있음. gateway patch와 별도로 SmartConsole 접근 IP, management VPN·jump host, Log Server 및 Multi-Domain server의 LivePatch delivery 증거를 운영 변경 기록에 남길 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Check Point",
+        "Firewall",
+        "Management Plane",
+        "RCE",
+        "LivePatch",
+        "Network Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-18 03:08",
+      "source_name": "The Hacker News / Check Point / Censys",
+      "source_url": "https://thehackernews.com/2026/09/critical-check-point-management-server.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiuFSb4LQQ7e_Iz1RS0JfQEDY9G9LcQZ23RM0h6ladr56GJ6nN3kPwVoZPpNVJUyJEBmLVEyMaIxytF2XqyQs8fGjIdd_ymPjwaZA8Q8R7JiXC-srMFj0_YBd-a94juv46HZm4ie72j7PTj45veyTgOBaeuN53HvktSH3JTgasvV_Mo-RwjsTPnRLlHFVk/s1600/cp-main.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Check Point community notice",
+          "url": "https://community.checkpoint.com/t5/General-Topics/Important-Notification-Action-required-Critical-Security-Update/m-p/282409"
+        },
+        {
+          "title": "Check Point advisory sk1000155",
+          "url": "https://support.checkpoint.com/results/sk/sk1000155"
+        },
+        {
+          "title": "Censys advisory CVE-2026-91843",
+          "url": "https://censys.com/advisory/cve-2026-91843/"
+        },
+        {
+          "title": "CVE record",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-91843"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Check Point Security Management·Log Server의 login process stack overflow `CVE-2026-91843`이 CVSS 9.8로 공개됨. 보도와 vendor 응답 기준 인증 전 network request가 root code execution으로 이어질 수 있는 범위임.",
+          "items": [
+            "대상: firewall policy와 administrator access를 제어하는 Security Management·Log Server management plane",
+            "경로: Trusted Clients에서 허용한 host가 긴 username을 담은 login request를 보내는 조건",
+            "경계: active exploitation·public PoC·개별 조직 침해는 Check Point·CISA·Censys가 보도 시점 확인하지 않음"
+          ]
+        },
+        {
+          "heading": "영향 version과 역할",
+          "body": "보도는 R82.10 Jumbo Hotfix Take 44 이하, R82 Take 126 이하, R81.20 Take 166 이하, R81.10 Take 190 이하와 EOL branch를 affected로 열거함. R82.20은 CVE record 목록에 없지만 vendor가 vulnerable이라고 답한 범위임.",
+          "items": [
+            "역할: standalone deployment, Log Server, Multi-Domain Server도 vendor 응답 기준 영향 범위",
+            "수명: R81.10 및 older branch는 EOL 표기이며 fix delivery는 support ticket 경로를 포함",
+            "주의: Censys의 3,836 host identity 관측은 role presence이며 vulnerable host 확정 수가 아님"
+          ]
+        },
+        {
+          "heading": "수정과 접근 통제",
+          "body": "Check Point는 `sk1000155` LivePatch와 automatic update를 안내함. automatic update가 설정돼도 rollout delivery를 가정하지 말고 installed patch와 status를 확인해야 함.",
+          "items": [
+            "수정: `cplp list`로 installed LivePatch와 status 확인",
+            "통제: Trusted Clients를 known trusted host로 제한하고 any IP 설정 제거",
+            "통제: management access direct internet exposure를 피하고 admin VPN·jump host 경유로 제한"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "management-plane vulnerability closure는 gateway software version만으로 완료되지 않음. patch delivery, Trusted Clients ACL, admin access path, policy-change audit와 HA peer를 하나의 evidence set으로 묶어야 함.",
+          "items": [
+            "검증: SmartConsole login·policy install·administrator/API activity·unexpected process/outbound connection log 비교",
+            "검증: management server·Log Server·Multi-Domain·standalone role별 LivePatch status와 owner 대조",
+            "팀 액션: known-host ACL과 LivePatch evidence가 확인될 때까지 management network exposure를 incident tracker로 관리"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-493",
+      "rank": 2,
+      "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
+      "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
+      "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
+      "detail": "Docker는 2026년 9월 7일 Sandboxes `0.42.0`에 `CVE-2026-77179`과 `CVE-2026-79994` 수정 사항을 게시했다. 첫 결함은 macOS virtio-fs host server가 stored path로 unlinked file을 reopen할 때 symlink를 따라가는 문제로, malicious guest가 parent directory를 symlink로 바꿔 shared workspace를 벗어나 VMM user 권한의 arbitrary host file을 read·modify하고 host code execution으로 이어질 가능성을 만든다. 두 번째 결함은 guest-to-host Unix domain socket relay가 authorized workspace 내부인지 확인한 뒤 pathname으로 reconnect하는 TOCTOU 조건으로, intermediate directory 교체로 workspace 밖 AF_UNIX socket에 host를 연결시킬 수 있다. Docker는 `0.42.0` 이상 update를 권고하며, 불가하면 clone mode와 read-write host mount 회피를 제시한다. source는 active exploitation·특정 IDE/agent 영향·Windows/Linux 동일 영향 여부를 공개하지 않으므로 macOS endpoint와 actual mount·socket configuration을 분리 확인해야 함.",
+      "why_it_matters": "AI coding agent sandbox는 untrusted repository code와 host workspace·credentials·local sockets 사이의 trust boundary임. guest VM이 있어도 shared filesystem과 relay path가 host privilege로 재연결되면 agent isolation의 전제가 깨질 수 있음.",
+      "engineering_implication": "macOS developer fleet에서 `docker sandbox`/`sbx` version, read-write workspace mount, clone mode, forwarded Unix socket, VMM user 권한을 inventory 필요. `0.42.0` 이상 canary 뒤 sandbox guest의 file write·tool socket workflow를 재검증하고, update 완료 전에는 sensitive checkout·credential socket을 shared workspace에서 분리 필요.",
+      "korea_implication": "국내 개발 조직도 macOS 기반 AI coding agent pilot에서 Docker Sandboxes 또는 유사 shared-workspace VM을 사용할 수 있음. MDM inventory, endpoint patch channel, repository secret policy와 local socket forwarding을 같은 rollout checklist에 연결 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Docker",
+        "AI Agent",
+        "Sandbox",
+        "macOS",
+        "Symlink",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-09-18 00:37",
+      "source_name": "Docker Security Advisory / The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/critical-docker-sandboxes-flaw-lets.html",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Docker Sandboxes 0.42.0 security announcement",
+          "url": "https://docs.docker.com/security/security-announcements/#docker-sandboxes-0420-security-update-cve-2026-77179-and-cve-2026-79994"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Docker가 Sandboxes `0.42.0`에서 shared workspace 경계를 넘을 수 있는 symlink race 2건을 수정함. source는 macOS virtio-fs 결함과 guest-to-host Unix domain socket relay 결함을 각각 Critical·High로 표기함.",
+          "items": [
+            "수정: `CVE-2026-77179`과 `CVE-2026-79994`를 2026년 9월 7일 `0.42.0` release에서 수정",
+            "경계: source는 active exploitation·individual compromise·Windows/Linux 영향 여부를 확인하지 않음"
+          ]
+        },
+        {
+          "heading": "macOS virtio-fs host file 경로",
+          "body": "`CVE-2026-77179`은 macOS virtio-fs host server가 stored path로 unlinked file을 reopen하면서 symlink를 따라가는 조건임. malicious guest가 parent directory를 symlink로 교체하면 shared workspace 밖 host file 접근이 가능해질 수 있음.",
+          "items": [
+            "영향: macOS Docker Sandboxes `0.28.0` 이상 `0.42.0` 미만",
+            "권한: VMM user 권한으로 arbitrary host file read·modify와 potential host code execution 범위",
+            "검증: shared workspace path·VMM user·agent write capability와 sensitive host file proximity 확인"
+          ]
+        },
+        {
+          "heading": "Unix socket relay 경로",
+          "body": "`CVE-2026-79994`은 socket path가 authorized workspace 안인지 검사한 뒤 path name으로 reconnect하는 TOCTOU 조건임. malicious guest가 intermediate directory를 symlink로 바꾸면 host가 workspace 밖 AF_UNIX socket에 연결될 수 있음.",
+          "items": [
+            "영향: Docker Sandboxes `0.37.0` 이상 `0.42.0` 미만",
+            "위험: host-side capability 또는 socket이 노출하는 data가 guest path 교체로 연결될 수 있는 범위",
+            "검증: forwarded socket·workspace mount·agent tool connector가 path validation 뒤 reconnect하는지 점검"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "sandbox guest와 host 사이의 shared filesystem·socket relay는 agent tool 권한과 별도의 escape surface임. Docker가 제시한 update·clone mode 완화와 함께 host mount 및 local credential/socket exposure를 최소화해야 함.",
+          "items": [
+            "조치: `0.42.0` 이상 update, 불가 시 clone mode 사용과 read-write host mount 추가 회피",
+            "검증: `sbx run` default workspace sharing, repository secret location, SSH·container·cloud credential socket forwarding 확인",
+            "팀 액션: macOS endpoint patch evidence와 sandbox guest file/socket negative test를 agent rollout gate로 연결"
+          ]
+        }
+      ]
+    },
+    {
       "id": "news-490",
       "title_ko": "Unbound DNSSEC validator `CVE-2026-81642`: 악성 DNS zone 질의의 heap overflow·possible RCE를 1.26.1로 차단",
       "title_original": "Heap buffer overflow and possible Remote Code Execution when digesting DNSKEY",
@@ -271,7 +428,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-491",
@@ -357,7 +514,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-487",
@@ -429,7 +586,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-489",
@@ -503,7 +660,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-485",
@@ -572,7 +729,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-486",
@@ -648,7 +805,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-483",
@@ -728,7 +885,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-484",
@@ -799,7 +956,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-488",
@@ -879,7 +1036,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-479",
@@ -955,7 +1112,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-478",
@@ -1021,7 +1178,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-481",
@@ -1096,7 +1253,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-480",
@@ -1169,7 +1326,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-477",
@@ -1236,7 +1393,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-482",
@@ -1317,7 +1474,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-475",
@@ -1381,7 +1538,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-476",
@@ -1446,7 +1603,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-474",
@@ -1521,7 +1678,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "region": "Global",
@@ -1596,7 +1753,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-473",
@@ -1663,7 +1820,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "region": "Global",
@@ -1731,7 +1888,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "region": "Global",
@@ -1804,11 +1961,11 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-469",
-      "rank": 23,
+      "rank": 25,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -1958,7 +2115,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-464",
@@ -2043,7 +2200,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-465",
@@ -2120,7 +2277,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-462",
@@ -2196,7 +2353,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-463",
@@ -2269,7 +2426,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-461",
@@ -2346,7 +2503,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-459",
@@ -2419,7 +2576,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-458",
@@ -2530,7 +2687,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-468",
@@ -2604,7 +2761,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-455",
@@ -2686,7 +2843,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-460",
@@ -2764,7 +2921,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-457",
@@ -2841,7 +2998,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-456",
@@ -2911,7 +3068,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-454",
@@ -2988,7 +3145,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-453",
@@ -3070,7 +3227,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-466",
@@ -3161,7 +3318,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-452",
@@ -3238,7 +3395,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-451",
@@ -3311,7 +3468,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-449",
@@ -3388,7 +3545,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-450",
@@ -3462,7 +3619,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-447",
@@ -3526,7 +3683,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-446",
@@ -3603,7 +3760,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-445",
@@ -3680,7 +3837,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-433",
@@ -3765,7 +3922,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-448",
@@ -3826,161 +3983,6 @@
           "items": [
             "운영: topology·CXL error·link reset·switch/optics health·firmware/driver·job placement를 같은 trace로 수집",
             "팀 액션: canary rack에서 fault injection과 collective tail-latency·power·task당 비용 gate를 통과한 workload만 확대"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-420",
-      "title_ko": "OpenAI GPT-6 Astra, Amazon Bedrock에서 정식 제공: 100만 input token·ChatGPT Work/Codex 연결을 IAM·quota·tool trace로 검증",
-      "title_original": "OpenAI GPT-6 Astra is now generally available on Amazon Bedrock",
-      "summary": "- GA: AWS가 `GPT-6 Astra`의 Amazon Bedrock 정식 제공을 공식 발표\n- 사용 경로: 지원 Bedrock API 직접 호출 또는 ChatGPT Work·Codex의 Bedrock 모델 연결 가능\n- 기능 범위: 최대 **100만 input token** context와 조직 voice·template·standard에 맞춘 output 생성이라는 AWS 발표\n- 확장: ChatGPT Work용 enterprise plugin이 common business application 전반의 browser-use capability를 확장한다는 범위\n- 팀 액션: model access·리전·quota·IAM·plugin scope·audit을 확인하고 read-only cohort에서 task 성공률·p95·context 비용·approval·rollback을 검증 필요",
-      "detail": "AWS는 OpenAI GPT-6 Astra가 Amazon Bedrock에서 GA가 됐다고 발표했다. 지원 Bedrock API로 모델을 직접 호출하거나 ChatGPT Work·Codex를 Bedrock의 모델에 연결할 수 있으며, AWS는 autonomous agent, 대규모 문서 분석, 복잡한 software issue 조사와 경쟁하는 입력 간 판단이 필요한 application을 사용 사례로 제시한다. 공식 announcement는 최대 100만 input token context와 조직 voice·template·standard에 맞춘 output 생성을 언급하고, ChatGPT Work enterprise plugin이 common business application에서 browser-use capability를 확장한다고 설명한다. 지원 리전, model identifier·API parameter, pricing, quota, latency·throughput SLO, data retention·residency, plugin별 권한·action approval은 이번 announcement에서 확인하지 못했다. 기존 AI타임스의 공개·benchmark·가격 보도는 관련 링크로 보존하되, 이번 카드의 source와 발행 시각은 직접 확인한 AWS GA announcement로 갱신한다.",
-      "why_it_matters": "모델 GA와 Bedrock 연결은 API endpoint 교체가 아니라 AWS IAM·model access·quota·CloudTrail/audit와 ChatGPT Work/Codex tool·plugin 권한이 결합되는 deployment change임. 100만 token context와 browser-use 연결은 문서·tool input 범위와 실패 시 비용·복구 범위를 함께 키울 수 있음.",
-      "engineering_implication": "Bedrock model access와 target region·quota를 먼저 확인하고, ChatGPT Work/Codex 연결은 read-only tool·short-lived credential·destination allowlist·spend cap을 가진 cohort부터 적용 필요. model invocation·tool call·plugin action·approval·denial·context/token 비용·fallback·revoke를 같은 trace로 수집하고, production write action은 별도 approval gate로 유지 필요.",
-      "korea_implication": "한국 리전 제공 여부, cross-region inference, 데이터 처리·보존, 가격·quota, support 조건은 이번 announcement에서 확인하지 못함. 국내 공공·금융·기업 환경은 source code·prompt·connector data·browser action의 국외 처리와 audit retention을 계약·보안 검토에서 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "OpenAI",
-        "GPT-6 Astra",
-        "AWS",
-        "Amazon Bedrock",
-        "Agent",
-        "ChatGPT Work",
-        "Codex",
-        "Model Governance"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-09-09 07:49",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-astra-on-amazon-bedrock/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "AI타임스 GPT-6 Astra 공개·benchmark·가격 보도",
-          "url": "https://www.aitimes.com/news/articleView.html?idxno=214821"
-        },
-        {
-          "title": "Amazon Bedrock model access documentation",
-          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS What’s New RSS의 `Tue, 08 Sep 2026 22:49:00 GMT`와 canonical announcement 본문을 직접 확인해 KST `2026-09-09 07:49`로 기록. OpenAI GPT-6 Astra의 Amazon Bedrock GA 공식 발표임.",
-          "items": [
-            "호출: 지원 Amazon Bedrock API로 GPT-6 Astra 직접 호출 가능",
-            "연결: ChatGPT Work·Codex를 Amazon Bedrock의 모델에 연결 가능한 공식 범위",
-            "경계: announcement는 model identifier·지원 리전·quota·가격·SLA를 명시하지 않음"
-          ]
-        },
-        {
-          "heading": "AWS가 제시한 기능과 사용 범위",
-          "body": "AWS는 최대 100만 input token context window와 조직 voice·template·standard에 맞춘 output 생성을 언급함. autonomous agent, 대규모 문서 collection 분석, 복잡한 software issue 조사, 여러 입력 간 판단이 필요한 application이 예시 범위임.",
-          "items": [
-            "context: 최대 **100만 input token**이라는 AWS 발표 범위",
-            "workflow: agent·document analysis·software investigation·judgment application 예시",
-            "확장: ChatGPT Work enterprise plugin이 common business application에서 browser-use capability를 확장한다는 설명"
-          ]
-        },
-        {
-          "heading": "권한·데이터·운영 경계",
-          "body": "Bedrock model access와 ChatGPT Work/Codex·plugin 연결은 별도 identity와 data path를 가질 수 있음. 긴 context와 browser-use를 실제 production authority로 해석하기 전 IAM policy, connector scope, tool destination, action approval, audit와 revoke propagation을 tenant별로 확인해야 함.",
-          "items": [
-            "확인: model access·target region·quota·service role·CloudTrail/audit·retention 설정",
-            "분리: read-only lookup과 browser·repository·cloud production write action의 approval lane",
-            "경계: data residency·plugin별 permission·action confirmation·throughput/latency 보증은 원문 미확인"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "GA 여부가 deployment acceptance의 완료 기준은 아님. 모델 invocation과 tool·plugin action, context/token 비용, human approval·denial, fallback과 credential revoke가 하나의 trace에서 확인돼야 agent workload를 확장할 수 있음.",
-          "items": [
-            "측정: task success·TTFT/p95·context/token 비용·tool retry·approval rate·denied action·rollback time",
-            "통제: feature flag·concurrency/spend cap·short-lived credential·destination allowlist·write approval 적용",
-            "팀 액션: representative workflow의 read-only canary와 provider/quota failure fallback을 release gate로 고정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-444",
-      "title_ko": "ChatGPT cross-account sandbox channel 연구: connected app read와 internal artifact metadata를 데이터 경계·승인 정책으로 재검토",
-      "title_original": "The Shared Clipboard Inside the Sandbox: Cross-Account Data Leakage in ChatGPT",
-      "summary": "- 공개: Check Point가 planted instruction이 ChatGPT connected Gmail data를 다른 account로 전달할 수 있었던 PoC를 공개\n- 경로: conversation별 code container가 shared internal JFrog Artifactory metadata를 cross-account channel로 사용할 수 있었던 연구 범위\n- 조건: pasted prompt·shared conversation·custom GPT builder instruction으로 injection이 선행되고 session의 app/tool permission이 필요\n- 상태: Check Point는 OpenAI가 internal service channel을 offline 처리했다고 설명, user update 설치는 없다는 보도\n- 팀 액션: connected app read 권한·Always ask·workspace app enablement·data-analysis sandbox egress와 internal shared service isolation을 같이 검증 필요",
-      "detail": "Check Point Research는 ChatGPT conversation에 심어진 instruction이 user-visible answer와 별도로 connected Gmail data를 읽고 다른 ChatGPT account로 전달하는 proof of concept을 공개했다. 보도와 연구 설명에 따르면 conversation별 code container가 package retrieval용 internal JFrog Artifactory의 file property를 cross-account shared clipboard처럼 사용한 것이 경로였다. 공격은 prompt를 붙여넣거나 shared conversation 또는 custom GPT instruction을 여는 선행 조건과 해당 session의 connected app/tool permission에 의존한다. Check Point는 disclosure 뒤 OpenAI가 internal service channel을 offline 처리했다고 설명했으며, 공개 자료는 개별 사용자 영향·채널의 실제 노출 기간을 확정하지 않는다. 조직은 connector enablement, read action approval, sandbox identity, internal artifact metadata ACL과 audit를 하나의 data egress boundary로 검토해야 한다.",
-      "why_it_matters": "agentic app의 data leak은 external HTTP egress 차단만으로 막히지 않을 수 있음. sandbox와 account가 분리돼 보여도 shared package cache, metadata store, observability service, queue 같은 internal service가 tenant-crossing channel이 될 수 있음.",
-      "engineering_implication": "ChatGPT/agent connector의 read scope와 workspace default, Always ask 적용, custom GPT/shared conversation intake policy를 inventory화 필요. sandbox가 접근하는 internal artifact·cache·metadata API에는 tenant namespace, read/write privilege separation, property ACL, cross-tenant test, immutable audit를 적용하고 app read event와 file/chat export event를 correlation 필요.",
-      "korea_implication": "국내 기업이 ChatGPT Business·Enterprise·Edu 또는 유사 connected app을 도입할 때 Gmail/Drive/SharePoint 연결을 단순 생산성 설정으로 취급하면 안 됨. 한국 개인정보·고객 데이터 분류와 connector별 read scope·audit retention·admin approval을 배포 gate에 포함 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Security",
-        "ChatGPT",
-        "Prompt Injection",
-        "SaaS Security",
-        "Data Egress",
-        "Sandbox"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-09-08 23:19",
-      "source_name": "Check Point Research",
-      "source_url": "https://research.checkpoint.com/2026/the-shared-clipboard-inside-the-sandbox-cross-account-data-leakage-in-chatgpt/",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi0jB-6O69dYNeqBTcSFXPcSQCqwabmHwmdGzC_ne5LyuUH-9v0MpLbJ1cgApFSqTuGG0Z_fKAD4A7gLcBcTdw6oUIv0nh_Pmyb5Obv7XhRY0jVGwPQ50S7rUnYZR8FUvYntVxL03GYJ010-iagkPkeZJ8oV6gvbEaVJPGw-L2rabD5pqOOu2HYW9g_nFcT/s1600/chatgpt-gmail.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "The Hacker News 보도",
-          "url": "https://thehackernews.com/2026/09/chatgpt-flaw-let-planted-prompt-send.html"
-        },
-        {
-          "title": "OpenAI connected apps action documentation",
-          "url": "https://help.openai.com/en/articles/11487775-apps-in-chatgpt"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Check Point Research는 conversation에 심긴 단일 instruction이 user response와 병행해 connected Gmail data를 읽고 다른 account에 전달하는 PoC를 공개함. user-visible response는 이 hidden task를 표시하지 않는 설계 범위를 설명함.",
-          "items": [
-            "조건: pasted prompt·shared conversation·custom GPT builder instruction 중 하나로 injection 선행",
-            "동작: session이 가진 app/tool permission 범위 안에서 Gmail·chat history·conversation file 접근 가능성",
-            "경계: PoC는 permission이 있는 session의 위험을 설명하며 모든 ChatGPT session의 데이터 유출 사실은 아님"
-          ]
-        },
-        {
-          "heading": "cross-account channel의 구조",
-          "body": "보도에 따르면 conversation별 code container는 public internet 대신 internal JFrog Artifactory를 통해 package를 받음. container credential이 cached file property의 read와 write에 모두 쓰일 수 있고 property namespace가 account별로 분리되지 않은 경로가 연구의 핵심임.",
-          "items": [
-            "매체: file property가 plain text/Base64를 담는 shared clipboard로 사용된 연구 경로",
-            "경계: external network 차단과 internal shared-service tenant isolation은 별도 통제 대상",
-            "상태: Check Point는 OpenAI가 internal service channel을 offline 처리했다고 설명"
-          ]
-        },
-        {
-          "heading": "권한·관리자 설정 영향",
-          "body": "connected app의 read action은 user consent UX와 workspace admin policy를 함께 거침. 보도는 Business plan에서 app default-on, Enterprise·Edu에서 default-off라는 설정 차이와 Always ask 선택지를 언급함.",
-          "items": [
-            "점검: connector enablement·allowed action·user/group assignment·read scope·custom GPT governance",
-            "점검: shared conversation intake·untrusted prompt·builder instruction review·app usage audit",
-            "검증: admin policy 변경 뒤 app read prompt·denied action·audit event·revocation propagation canary"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "sandbox 격리 검증은 container outbound network만 보지 않고 artifact cache, metadata, queue, logging, package proxy의 account/tenant separation을 포함해야 함. data connector 기능은 DLP와 동일한 approval·audit·incident scope로 운영 필요.",
-          "items": [
-            "통제: tenant namespace·least-privilege read/write token·property ACL·cross-tenant regression test",
-            "측정: connector read·artifact metadata write·cross-account access denial·export·admin policy change telemetry",
-            "팀 액션: AI connector threat model에 hidden instruction·internal shared service·permissioned data egress 항목 추가"
           ]
         }
       ],

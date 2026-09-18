@@ -35,6 +35,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-checkpoint-security-management-cve-2026-91843-2026-09-18]] — Check Point Security Management·Log Server `CVE-2026-91843`의 Trusted Clients login stack overflow·LivePatch와 management-plane ACL 검증 경계.
+- [[raw/articles/docker-sandboxes-cve-2026-77179-79994-2026-09-18]] — Docker Sandboxes `0.42.0`의 macOS virtio-fs·Unix socket relay symlink race 2건과 shared workspace·clone mode 검증 경계.
 - [[raw/articles/isc-bind-9-20-29-security-fixes-2026-09-18]] — ISC BIND 9 `9.20.29`·`9.21.26`의 DoH SIG(0) crash·recursive resolver DNSSEC/SVCB 결함 14건과 patch·EOL inventory 경계.
 - [[raw/articles/unbound-dnssec-validator-cve-2026-81642-2026-09-17]] — Unbound DNSSEC validator `CVE-2026-81642` malicious-zone heap overflow·possible RCE와 1.26.1 patch 검증 경계.
 - [[raw/articles/aws-corretto-27-ga-2026-09-17]] — Amazon Corretto 27 GA의 G1 기본값·PQC TLS·compact object header·JFR redaction과 JVM canary 검증 경계.
