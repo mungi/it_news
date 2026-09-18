@@ -2744,3 +2744,9 @@
 - AIR Security 원문을 직접 확인해 2026-09-17 게시일, Open Graph image, Claude Code·Codex·Copilot·Gemini CLI의 plugin SHA checkout 결과 미검증 연구를 수록. 40-hex default-branch/ref precedence, background auto-update, `git rev-parse HEAD` assertion, Claude Code `2.1.179`·Codex `0.146.0` fix와 Copilot/Gemini CLI vendor 상태는 연구 원문 범위로 한정.
 - 원문은 특정 조직의 plugin 수·실제 악용·침해를 확인하지 않아 inventory와 telemetry 검증 항목으로 분리. THN RSS reporter timestamp를 KST `2026-09-18 20:01`로 환산해 card publication time으로 기록.
 - `news-494`를 newest-first rank 1에 추가하고 actual tail `news-448`을 제거해 50-item cap과 rank 1–50 유지. raw capture SHA-256 `8792ae6b19e472291244db37c09c2c504b70d1910b1b91d53eb316acf829cb9b` 보존, weekly archive·index 동기화. Deep Dive는 KST 02:49 전면 교체 완료 상태여서 timestamp-only 변경 없이 유지.
+
+## [2026-09-19] update | AgentCore Runtime V2·Cloudflare Pingora memory Deep Dive 일일 전면 교체
+- 확인 시각: 2026-09-19 03:19 KST. GeekNews RSS와 AI타임스·AI타임스KR RSS, AWS·GitHub·Cloudflare·Kubernetes·The Hacker News feed를 직접 probe했고 GeekNews Plus RSS는 HTTP 404로 content 미확인 상태를 기록. 기존 50건의 URL·title·event와 후보를 대조했으며 추가 regular card는 source quality·운영 가치 기준에서 tail replacement 기준을 넘지 않아 유지.
+- AWS canonical announcement를 직접 확인해 AgentCore Runtime V2의 unused-memory reclaim, snapshot restore, 200MB~2GB image P75 cold start `1.9~2.0초` 대 V1 `5.4~30초`, 5개 제공 리전과 `platformVersion: V2`를 source 범위로 수록. Cloudflare canonical article의 `2026-09-18T17:23:58.667Z`, Open Graph image·본문을 직접 확인해 Pingora Backend Router `pingora-ketama` optimization의 global 100TB 초과 RAM 회수와 consistent-hashing routing context를 source 범위로 수록.
+- KST 첫 실행 정책에 따라 전일 Unbound·GitHub Copilot Runtime Deep Dive를 AWS AgentCore Runtime V2와 Cloudflare Pingora라는 상이한 current-window event·non-overlapping primary source로 전면 교체. title·summary·details·source/image metadata·8개 expert sections·`refreshed_kst`를 실제 write time으로 재구성했으며 timestamp-only 변경을 하지 않음.
+- raw source 2건·`index.md`·weekly archive를 동기화. regular item 50건의 newest-first order와 rank는 변경하지 않음.

@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-18 | Total pages: 355
+> Last updated: 2026-09-19 | Total pages: 357
 
 ## Entities
 
@@ -435,6 +435,9 @@
 - [[raw/articles/cloudflare-workers-granular-authorization-2026-09-15]] — Cloudflare Workers resource-level role·Worker별 CI/agent API token·route permission 분리 운영 경계.
 - [[raw/articles/cloudflare-accountable-mixed-use-ai-crawlers-2026-09-15]] — Cloudflare mixed-use crawler의 검색 노출·AI 학습 차단 분리, bot policy·SEO·telemetry 검증 경계.
 - [[raw/articles/aitimes-vessl-ai-pohang-aidc-gpu-platform-2026-09-16]] — 포항 40MW 수냉식 AIDC의 GPU 플랫폼·시설 운영 분담과 capacity/commissioning 검증 경계.
+
+- [[raw/articles/aws-agentcore-runtime-v2-2026-09-19]] — AgentCore Runtime V2의 memory reclaim·snapshot cold start·SLO/FinOps canary 검증 경계.
+- [[raw/articles/cloudflare-pingora-ketama-memory-2026-09-19]] — Pingora Backend Router consistent hashing의 100TB RAM 회수와 routing state·skew·rollback 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
