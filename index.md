@@ -438,6 +438,7 @@
 - [[raw/articles/aitimes-vessl-ai-pohang-aidc-gpu-platform-2026-09-16]] — 포항 40MW 수냉식 AIDC의 GPU 플랫폼·시설 운영 분담과 capacity/commissioning 검증 경계.
 
 - [[raw/articles/aws-agentcore-runtime-v2-2026-09-19]] — AgentCore Runtime V2의 memory reclaim·snapshot cold start·SLO/FinOps canary 검증 경계.
+- [[raw/articles/aws-resilience-hub-eks-dependency-policy-2026-09-19]] — AWS Resilience Hub의 EKS label 분석 범위·AI dependency insight·Organizations policy 공유와 recovery drill 검증 경계.
 - [[raw/articles/cloudflare-pingora-ketama-memory-2026-09-19]] — Pingora Backend Router consistent hashing의 100TB RAM 회수와 routing state·skew·rollback 검증 경계.
 
 - [[raw/articles/thn-linux-kernel-four-lpe-public-exploits-2026-09-19]] — DirtyAH6·TUNderflow·PPPoEject·DiagSpill 공개 exploit의 배포판 backport·user namespace·SCTP 노출 점검 경계.

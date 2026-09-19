@@ -2761,3 +2761,9 @@
 - The Hacker News canonical body와 RSS `Fri, 18 Sep 2026 23:32:24 +0530`, Open Graph image, 연결된 Asim Manizada technical write-up URL을 직접 확인해 Linux kernel local-root 결함 4건 공개 exploit을 KST `2026-09-19 03:02`로 기록. DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`의 unprivileged user namespace 조건과 DiagSpill `CVE-2026-74469`의 SCTP 조건, upstream complete-fix baseline·remote/escape evidence boundary를 source 범위로 수록.
 - source는 현실 악용 보고가 없고 remote root·container escape를 일반화하지 않아, 배포판 advisory backport·running kernel·reboot·namespace/network feature inventory를 운영 action으로 분리.
 - `news-496`을 newest-first final sort rank 1에 추가하고 50-item cap의 actual tail `news-445`를 제거해 rank 1–50을 유지. immutable raw capture·weekly archive·index를 동기화. Deep Dive 2건은 KST 03:19 전면 교체 완료 상태여서 timestamp-only 변경 없이 유지.
+
+## [2026-09-19] update | AWS Resilience Hub EKS label·dependency insight·Organizations policy 공유 추가
+- 확인 시각: 2026-09-19 19:34 KST. GeekNews RSS, AI타임스·인공지능신문 surface, AWS·Cloudflare·GitHub·Kubernetes·The Hacker News feed를 재검토했으며 GeekNews Plus는 HTTP 403으로 content inspection 불가 상태를 기록.
+- AWS canonical announcement와 feed의 `Fri, 18 Sep 2026 16:49:00 GMT`를 직접 대조해 Resilience Hub의 EKS namespace label service input source, 생성형 AI dependency insights, AWS Organizations resilience policy sharing을 KST `2026-09-19 01:49`로 기록. 새 의존성·cross-Region dependency·unusual usage pattern 표시와 서울 포함 15개 리전 제공은 source 범위로 수록.
+- source는 discovery 정확도·RTO/RPO 달성·복구 성공을 보장하지 않아 EKS label selector·account/Region boundary·policy exception·recovery drill을 별도 검증 action으로 분리.
+- `news-497`을 newest-first final sort rank 2에 추가하고 50-item cap의 actual tail `news-446`을 제거해 rank 1–50 유지. immutable raw capture SHA-256 `6b7e1271846d11158ca20adc9bdc82ab4ccb4fc251e4a720e2de59e745732ad0`, weekly archive·index를 동기화. Deep Dive 2건은 KST 03:19 전면 교체 완료 상태여서 timestamp-only 변경 없이 유지.

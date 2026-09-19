@@ -2,7 +2,7 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-19 15:27",
+  "last_updated_kst": "2026-09-19 19:34",
   "audience": "developers and engineers",
   "executive_summary": [
     "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill 4건은 working exploit 공개 뒤 low-privilege foothold의 root escalation 비용을 낮춤. 배포판 backport·running kernel·reboot 상태와 unprivileged user namespace·SCTP·TUN/TAP·PPPoE 사용을 asset별 대조 필요.",
@@ -264,8 +264,76 @@
       ]
     },
     {
-      "id": "news-495",
+      "id": "news-497",
       "rank": 2,
+      "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
+      "title_original": "AWS Resilience Hub adds three new capabilities",
+      "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
+      "detail": "AWS는 2026년 9월 18일 Resilience Hub에 EKS label 기반 service input source, dependency insights, AWS Organizations resilience policy sharing을 추가했다. EKS label 기능은 namespace 내부에서 기존 Kubernetes labeling convention으로 failure mode analysis 대상 리소스 범위를 지정하는 경로다. dependency discovery를 활성화한 고객은 생성형 AI 기반 dependency insights에서 새 의존성, cross-Region dependency, unusual usage pattern을 확인할 수 있다. Organizations policy sharing은 중앙 팀이 여러 account에 resilience policy를 적용하고 어떤 service가 어느 policy를 사용하는지 확인하는 기능이다. AWS는 차세대 Resilience Hub가 서울을 포함한 15개 리전에서 제공된다고 명시했다. source는 insight의 정확도, 분석 완전성, 실제 RTO/RPO 달성 또는 장애 복구 성공을 보장하지 않는다. 따라서 EKS label selector와 namespace 경계, discovery graph, account·Region 의존성, policy exception, recovery drill 결과를 변경 증적으로 함께 유지해야 함.",
+      "why_it_matters": "Kubernetes label과 Organizations policy는 platform team의 운영 경계를 코드화하는 입력값임. discovery 결과와 policy 적용 대상을 분리하면 중요한 workload·cross-Region dependency·예외 account가 resilience report에서 빠질 수 있음.",
+      "engineering_implication": "EKS label selector·namespace·account·Region별 service inventory를 failure-mode analysis 대상과 대조하고, AI insight가 제시한 dependency는 CloudTrail·VPC flow·service map·runbook으로 검증 필요. policy 공유 전에는 account별 RTO/RPO, exception owner, drill schedule, rollback 기준을 명시해야 함.",
+      "korea_implication": "서울 리전 사용 조직은 본사 account와 국내 EKS workload를 policy target으로 묶을 수 있으나, 해외 Region·SaaS·온프레미스 dependency는 자동 발견 범위 밖일 수 있음. 국가·리전 경계를 넘는 복구 경로를 별도 drill로 검증 필요.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Resilience Hub",
+        "EKS",
+        "Kubernetes",
+        "SRE",
+        "Dependency Discovery",
+        "AWS Organizations",
+        "Disaster Recovery"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-19 01:49",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/resilience-hub-eks-dependency-policy/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Resilience Hub에 EKS label 기반 service input source, dependency insights, AWS Organizations resilience policy sharing을 추가함. source는 차세대 Resilience Hub가 서울을 포함한 15개 리전에서 제공된다고 명시함.",
+          "items": [
+            "범위: EKS namespace 안의 label을 사용해 failure mode analysis 대상 리소스 선택",
+            "제공: US·Europe·Asia Pacific·서울을 포함한 15개 리전 제공"
+          ]
+        },
+        {
+          "heading": "EKS label과 분석 범위",
+          "body": "EKS label 기능은 별도 resource list를 유지하지 않고 기존 Kubernetes labeling convention을 analysis input에 재사용하는 경로임. label의 누락·중복·selector 변경은 분석 대상과 실제 production service의 차이로 이어질 수 있음.",
+          "items": [
+            "검증: namespace·label key/value·selector와 deployment·service·ingress ownership 대조",
+            "리스크: shared namespace, ephemeral workload, label drift로 인해 critical dependency가 analysis 대상에서 빠질 가능성",
+            "운영: GitOps change와 label taxonomy owner를 resilience evidence에 연결"
+          ]
+        },
+        {
+          "heading": "Dependency insight와 policy 공유",
+          "body": "dependency discovery를 활성화한 고객은 생성형 AI 기반 insight로 새 의존성, cross-Region dependency, unusual usage pattern을 확인할 수 있음. Organizations 공유는 중앙 팀이 policy를 여러 account에 적용하고 service별 사용 현황을 볼 수 있는 control-plane 기능임.",
+          "items": [
+            "경계: insight는 조사 우선순위 입력이며 실제 dependency graph·장애 영향·복구 시간의 확정 증거 아님",
+            "검증: AI가 제시한 dependency를 CloudTrail·network flow·service map·application trace와 대조",
+            "통제: policy target account, exception, RTO/RPO, policy owner를 Organizations 구조와 함께 기록"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "resilience control plane의 적용 범위는 label과 account policy가 결정함. 자동 discovery와 생성형 AI 결과를 도입해도 recovery readiness는 restore·failover·rollback drill로만 검증 가능함.",
+          "items": [
+            "SRE: cross-Region dependency·policy coverage·failed assessment·drill completion을 dashboard와 alarm에 연결",
+            "DR: account 분리·Region outage·EKS namespace 삭제·third-party dependency를 포함한 recovery scenario 실행",
+            "팀 액션: 매 release에서 label selector diff와 policy attachment diff를 review하고 분기별 recovery evidence 갱신"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-495",
+      "rank": 3,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -334,7 +402,7 @@
     },
     {
       "id": "news-494",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -418,7 +486,7 @@
     },
     {
       "id": "news-492",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -503,7 +571,7 @@
     },
     {
       "id": "news-493",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -652,7 +720,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-491",
@@ -738,7 +806,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-487",
@@ -810,7 +878,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-489",
@@ -884,7 +952,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-485",
@@ -953,7 +1021,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-486",
@@ -1029,7 +1097,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-483",
@@ -1109,7 +1177,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-484",
@@ -1180,7 +1248,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-488",
@@ -1260,7 +1328,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-479",
@@ -1336,7 +1404,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-478",
@@ -1402,7 +1470,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-481",
@@ -1477,7 +1545,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-480",
@@ -1550,7 +1618,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-477",
@@ -1617,7 +1685,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-482",
@@ -1698,7 +1766,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-475",
@@ -1762,7 +1830,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-476",
@@ -1827,7 +1895,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-474",
@@ -1902,7 +1970,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "region": "Global",
@@ -1977,7 +2045,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-473",
@@ -2044,7 +2112,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "region": "Global",
@@ -2112,7 +2180,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "region": "Global",
@@ -2185,11 +2253,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-469",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -2339,7 +2407,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-464",
@@ -2424,7 +2492,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-465",
@@ -2501,7 +2569,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-462",
@@ -2577,7 +2645,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-463",
@@ -2650,7 +2718,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-461",
@@ -2727,7 +2795,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-459",
@@ -2800,7 +2868,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-458",
@@ -2911,7 +2979,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-468",
@@ -2985,7 +3053,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-455",
@@ -3067,7 +3135,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-460",
@@ -3145,7 +3213,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-457",
@@ -3222,7 +3290,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-456",
@@ -3292,7 +3360,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-454",
@@ -3369,7 +3437,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-453",
@@ -3451,7 +3519,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-466",
@@ -3542,7 +3610,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-452",
@@ -3619,7 +3687,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-451",
@@ -3692,7 +3760,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-449",
@@ -3769,7 +3837,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-450",
@@ -3843,7 +3911,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-447",
@@ -3904,83 +3972,6 @@
           "items": [
             "탐지: new device·proxy·geo·bulk export·connector read·API spend·session renewal의 상관 분석",
             "대응: endpoint isolate→session revoke→API key/OAuth rotation→connector scope audit→data access timeline 확보"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-446",
-      "title_ko": "DeepSeek Harness CVE-2026-82533: agent가 local web interface로 file sandbox·approval을 해제한 경로 수정",
-      "title_original": "DeepSeek Harness Flaw Let AI Agents Disable Their Own File Sandbox Without Approval",
-      "summary": "- 취약점: `CVE-2026-82533`은 attacker-supplied text를 읽은 agent가 local web interface를 호출해 `danger-full-access`로 세션을 바꾸고 file sandbox·approval을 해제할 수 있었던 경로\n- 영향: 기본 설치의 `0.1.1-rc.2` 이하가 영향 범위이며 VulnCheck는 CVSS `9.4`를 부여\n- 수정: GitHub fix 뒤 npm에 처음 게시된 수정 버전은 `0.1.2-alpha.2`, 현재 npm release `0.1.2-rc.1`도 수정 포함\n- 경계: default sandbox는 file write만 workspace·temporary folder로 제한하며 read·network access는 원래 격리 대상이 아님\n- 팀 액션: Harness 버전과 bundled desktop distribution을 inventory화하고 update, local interface tunnel/proxy/port-forward 제거, agent session privilege-change·conversation-log access를 audit 필요",
-      "detail": "The Hacker News는 DeepSeek의 open-source local coding-agent 도구 Harness에서 sandboxed agent가 attacker-supplied text의 지시를 따라 같은 machine의 local web interface를 호출하고 `danger-full-access` 세션 모드로 전환할 수 있었다고 보도했다. 이 경로는 file sandbox와 approval prompt를 끄며, ordinary command는 기존 session 권한 안에서 approval 없이 시작할 수 있다는 동작과 결합한다. 취약점 `CVE-2026-82533`은 `0.1.1-rc.2` 이하에 영향을 주고, DeepSeek는 8월 27일 수정했다. source가 확인한 npm 기준 첫 수정 게시물은 `0.1.2-alpha.2`이며 current `0.1.2-rc.1`에도 수정이 포함된다. local interface는 authentication이 없고 Host header를 기반으로 요청 도달 여부를 판단했던 보도 범위다. 외부 접근은 tunnel·SSH forward·editor proxy 등 별도 포트 노출 조건이 필요하지만, interface가 session ID와 address를 agent shell에 제공해 local sandbox 안의 agent가 호출하기 쉬웠다. 조직은 sandbox를 file-only boundary로 오인하지 말고 agent tool control plane의 session privilege, loopback interface, tunnel, conversation-log access를 같은 권한 경계로 점검해야 한다.",
-      "why_it_matters": "agent sandbox는 filesystem restriction만으로 안전 판정할 수 없음. untrusted repository·document·prompt가 agent를 통해 local control interface와 session policy를 바꾸면 workspace 밖 write, approval bypass, stored conversation exposure가 하나의 실행 경로가 될 수 있음.",
-      "engineering_implication": "`deepseek-harness` dependency·desktop bundled version·session mode·loopback listener·tunnel/proxy/SSH forwarding을 inventory로 확정하고 `0.1.2-alpha.2` 이상으로 upgrade 필요. CI·developer endpoint에서 privilege-change API·`danger-full-access`·sandbox escape deny/allow와 session-log download를 같은 audit trace로 수집하고, untrusted input cohort에서 workspace escape regression test를 release gate로 운영 필요.",
-      "korea_implication": "국내 개발 조직이 local coding agent를 PoC나 IDE extension으로 배포했다면 package lockfile만 확인하지 말고 bundled binary·endpoint version·loopback port exposure를 함께 조사 필요. 소스코드·고객 데이터가 있는 workstation은 untrusted repository 처리와 production credential 접근을 별도 profile로 분리 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Security",
-        "DeepSeek Harness",
-        "CVE-2026-82533",
-        "Coding Agent",
-        "Sandbox",
-        "Prompt Injection"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-09-09 20:17",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/deepseek-harness-flaw-let-ai-agents.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi0fUTc6rz4ZeeaMmjDLOfb2qNhnJf_TdNHK3F3qbNCQLLJbaF-nbSw5YPdeSAwg1HjoGwfQJZaXBpwvEbasFDhQb5ZkUm158shateq7uubMyrlejW4SDZAAzNQGUYkYdsxHupipxzRA7dQwTwTt9ArVJgU-wA5bGxIXduJj3CdyBF69Ixp6_qAU1LGzfI/s1600/deepseek.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "VulnCheck CVE-2026-82533 record",
-          "url": "https://www.vulncheck.com/advisories/deepseek-harness-alpha-1-authentication-bypass-via-host-header-spoofing"
-        },
-        {
-          "title": "DeepSeek Harness npm package",
-          "url": "https://www.npmjs.com/package/deepseek-harness"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News RSS `Wed, 09 Sep 2026 16:47:07 +0530`와 본문을 직접 확인해 KST `2026-09-09 20:17`로 기록함. DeepSeek Harness의 sandboxed coding agent가 attacker-supplied text를 읽은 뒤 local web interface에 요청해 현재 session의 접근 모드를 바꿀 수 있었던 취약점임.",
-          "items": [
-            "식별자: **CVE-2026-82533**, VulnCheck CVSS `9.4` 평가 범위",
-            "동작: local interface 요청으로 `danger-full-access` 전환, file sandbox와 approval prompt 해제",
-            "조건: agent가 untrusted text의 지시를 읽고 해당 요청을 수행하는 prompt-injection 성격의 경로"
-          ]
-        },
-        {
-          "heading": "영향 경로와 격리 경계",
-          "body": "Harness의 기본 sandbox는 write를 workspace와 temporary folder에 제한하지만 read와 network access는 격리하지 않는다고 command-line reference가 설명함. interface 주소와 current session identifier가 agent shell에 제공돼 agent가 별도 discovery 없이 control endpoint를 호출할 수 있었던 보도 범위임.",
-          "items": [
-            "경계: file sandbox가 credential read·network egress·local control-plane access를 자동 차단하지 않음",
-            "원인: affected release의 interface request check가 connection origin 대신 client-supplied Host header를 사용",
-            "노출: external access는 tunnel·SSH forward·editor proxy 같은 별도 forwarding 조건에서 확대 가능"
-          ]
-        },
-        {
-          "heading": "수정 버전과 배포 확인",
-          "body": "기사 기준 `0.1.1-rc.2` 이하가 영향 버전이며 GitHub의 `0.1.2-alpha.1` fix는 npm registry에 게시되지 않았음. npm에서 설치 가능한 첫 수정본은 8월 30일의 `0.1.2-alpha.2`, 9월 3일 current `0.1.2-rc.1`도 fix 포함이라는 확인 범위임.",
-          "items": [
-            "수정: npm 설치 기준 **`0.1.2-alpha.2` 이상** 적용 대상",
-            "확인: third-party desktop app·IDE extension이 bundled Harness를 포함하는지 별도 version inventory 필요",
-            "완화: 즉시 update가 어렵다면 unused local web interface 종료와 tunnel·proxy·port forward 제거"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "agent runtime의 file sandbox, session policy, local control interface, conversation log는 하나의 authority boundary임. package update event만으로 closure를 판단하지 말고 untrusted input이 session privilege를 바꾸지 못하는지와 privilege-change·log access evidence가 남는지를 regression과 endpoint telemetry로 확인할 대상임.",
-          "items": [
-            "측정: affected version 수·`danger-full-access` 전환 수·loopback listener·forwarded port·sandbox deny event",
-            "통제: untrusted repository/profile과 secret·production credential 접근 profile 분리",
-            "팀 액션: prompt injection simulation에서 sandbox escape·approval bypass·session-log download가 차단·감사되는지 검증"
           ]
         }
       ],
