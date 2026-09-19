@@ -2,14 +2,14 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-19 07:22",
+  "last_updated_kst": "2026-09-19 15:27",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill 4건은 working exploit 공개 뒤 low-privilege foothold의 root escalation 비용을 낮춤. 배포판 backport·running kernel·reboot 상태와 unprivileged user namespace·SCTP·TUN/TAP·PPPoE 사용을 asset별 대조 필요.",
     "Check Point Security Management·Log Server `CVE-2026-91843`는 Trusted Clients 경로의 인증 전 stack overflow로 root code execution 가능 범위를 가짐. `sk1000155` LivePatch install 상태와 Trusted Clients known-host ACL·management-plane internet exposure를 같은 incident evidence로 확인 필요.",
     "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`는 macOS shared workspace의 virtio-fs·Unix socket relay symlink race를 `0.42.0`에서 수정. AI coding sandbox는 VM 여부만 보지 말고 read-write mount·clone mode·forwarded socket·VMM user 권한을 함께 inventory 필요.",
     "Unbound `CVE-2026-81642`는 `1.26.0` 이하 DNSSEC validator의 heap overflow로 malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
-    "Plugin4Shell 연구는 marketplace plugin SHA pin 뒤 resolved `HEAD` 검증 누락으로 Claude Code·Codex·Copilot·Gemini CLI의 background auto-update가 **zero-click RCE**로 이어질 수 있는 경로를 제시. Claude Code `2.1.179`·Codex `0.146.0` update, plugin auto-update·repo host·pinned SHA/HEAD evidence inventory 필요.",
-    "ISC BIND 9가 DoH SIG(0) 무인증 crash를 포함한 **14개 보안 결함**을 `9.20.29`·`9.21.26`에서 수정. DoH·recursive·DNSSEC·DNS64·SVCB/HTTPS 역할과 EOL `9.18` image·vendor backport를 함께 inventory하고 query failure·cache resource canary 필요."
+    "Plugin4Shell 연구는 marketplace plugin SHA pin 뒤 resolved `HEAD` 검증 누락으로 Claude Code·Codex·Copilot·Gemini CLI의 background auto-update가 **zero-click RCE**로 이어질 수 있는 경로를 제시. Claude Code `2.1.179`·Codex `0.146.0` update, plugin auto-update·repo host·pinned SHA/HEAD evidence inventory 필요."
   ],
   "deep_dives": [
     {
@@ -191,8 +191,81 @@
   ],
   "items": [
     {
-      "id": "news-495",
+      "id": "news-496",
       "rank": 1,
+      "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
+      "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
+      "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
+      "detail": "The Hacker News는 Asim Manizada가 DirtyAH6, TUNderflow, PPPoEject, DiagSpill 네 Linux kernel 결함의 working exploit를 2026년 9월 18일 공개했다고 보도했다. source 기준 모든 결함은 이미 kernel maintainer가 수정했고 현실 악용 보고는 없으며, exploit은 특정 kernel build용이고 crash를 일으킬 수 있어 isolated test system을 대상으로 한다. DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`은 unprivileged user namespace가 있어야 일반 사용자가 필요한 network privilege에 도달할 수 있다. DiagSpill `CVE-2026-74469`은 `sctp_diag`와 SCTP module이 있을 때 user namespace나 특별 권한 없이 local root 범위가 제시됐다. source는 DirtyAH6와 DiagSpill의 network trigger를 제한적 crash 조건으로만 설명하며, remote root는 DirtyAH6의 lab memory shaping 외 매우 어렵다는 연구자 평가와 DiagSpill의 경로 없음으로 한정한다. upstream complete-fix stable release는 `5.10.270`, `5.15.221`, `6.1.188`, `6.6.157`, `6.12.109`, `6.18.50`, `7.2.4`로 열거됐지만, 실제 운영 판단은 Ubuntu·Debian·RHEL·SUSE 등 배포판 advisory의 backport 포함 여부와 reboot evidence로 닫아야 함.",
+      "why_it_matters": "public exploit 공개는 이미 low-privilege shell·CI runner·shared developer host·container foothold를 가진 공격자의 local privilege escalation 비용을 낮춤. upstream kernel version 숫자만 비교하면 vendor backport와 reboot 누락을 놓칠 수 있음.",
+      "engineering_implication": "kernel package·running kernel·reboot 상태와 배포판 advisory를 asset별 대조하고, unprivileged user namespace, `sctp`, `ppp`, `tun`, AH6/IPsec 기능이 필요한 workload만 남겨야 함. container host와 multi-user runner는 namespace 정책·privileged workload·SCTP exposure를 patch 증적과 함께 검토 필요.",
+      "korea_implication": "국내 조직의 managed Kubernetes node, self-hosted CI runner, VDI·개발 서버도 배포판 kernel과 cloud image가 서로 다를 수 있음. OS patch 완료 보고에 running-kernel·reboot·user namespace 정책 증적을 포함할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Linux Kernel",
+        "Local Privilege Escalation",
+        "Container Security",
+        "User Namespace",
+        "SCTP",
+        "Patch Management"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-19 03:02",
+      "source_name": "The Hacker News / Asim Manizada research",
+      "source_url": "https://thehackernews.com/2026/09/public-exploits-released-for-four-linux.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEixfmcEQbMRp9dJbUmuhA3LSquz7yG3lph_Nbh6NqiVGOPOiOoKYcWbspSqEDBpeyUMH-KK_DHWoBSFmaZPE_BlWRjy4swhpEPCBJ-p2NCJRTceTeDx84tDToap0VrFW304zxv0nKsRSVOMM3GPhFyJ7GZkGPG92N3aKvW3edGBBdoAJl0_fH6IehDA0I8/s1600/linux-kernel.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Asim Manizada technical write-up",
+          "url": "https://heyitsas.im/posts/lpe-quartet/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Asim Manizada가 Linux kernel local privilege escalation 결함 4건의 technical write-up과 working exploit를 2026년 9월 18일 공개함. source는 kernel maintainer가 앞선 몇 주 동안 모두 수정했고, 현실 공격 사용 보고는 없다고 명시함.",
+          "items": [
+            "대상: DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`, DiagSpill `CVE-2026-74469`",
+            "경계: 공개 exploit은 특정 kernel build용이며 crash 가능성이 있어 isolated test system 목적이라는 연구자 설명"
+          ]
+        },
+        {
+          "heading": "도달 조건과 영향 범위",
+          "body": "세 결함은 unprivileged user namespace가 켜진 일반 사용자가 private sandbox에서 필요한 network privilege를 얻는 조건을 사용함. DiagSpill은 예외로 SCTP networking module과 `sctp_diag`가 있으면 user namespace나 특수 권한이 필요 없다고 source가 설명함.",
+          "items": [
+            "DirtyAH6: IPv6 IPsec AH6 영역, unprivileged user namespace 조건",
+            "TUNderflow: TUN/TAP virtual network device 영역, unprivileged user namespace 조건",
+            "PPPoEject: PPPoE 영역, unprivileged user namespace 조건",
+            "DiagSpill: SCTP `sctp_diag` 영역, SCTP module 존재 시 별도 local privilege 불필요"
+          ]
+        },
+        {
+          "heading": "원격·컨테이너 경계",
+          "body": "source는 DirtyAH6와 DiagSpill의 network trigger를 매우 좁은 crash 조건으로 구분함. DirtyAH6는 IPv6 router/gateway가 transport-mode Authentication Header를 추가할 때, DiagSpill은 default-off SCTP option을 켠 경우에만 remote crash 가능성을 기술함.",
+          "items": [
+            "경계: DirtyAH6 remote root은 연구자 lab의 target memory shaping 조건 외 remote-only 실증이 없고 매우 어렵다는 평가",
+            "경계: DiagSpill에는 perfect memory shaping에도 remote root 경로가 없다는 연구자 평가",
+            "컨테이너: escape 가능성은 이론 범위로 언급됐으며 source가 exploit chain을 구축하지 않음"
+          ]
+        },
+        {
+          "heading": "패치와 시사점",
+          "body": "upstream complete-fix stable baseline은 `5.10.270`, `5.15.221`, `6.1.188`, `6.6.157`, `6.12.109`, `6.18.50`, `7.2.4`로 열거됨. 대부분의 운영 환경은 배포판 kernel을 사용하므로 upstream 문자열이 아니라 vendor security advisory·installed package·running kernel·reboot를 같은 closure evidence로 확인해야 함.",
+          "items": [
+            "조치: 배포판 advisory에서 4개 fix backport 포함 여부와 running kernel을 asset별 대조",
+            "완화: patch 전 unprivileged user namespace와 미사용 AH6·TUN/TAP·PPPoE·SCTP 기능을 최소화",
+            "팀 액션: shared CI runner·container host·multi-user server를 우선순위로 patch와 reboot evidence를 incident tracker에 기록"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-495",
+      "rank": 2,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -261,7 +334,7 @@
     },
     {
       "id": "news-494",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -345,7 +418,7 @@
     },
     {
       "id": "news-492",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -430,7 +503,7 @@
     },
     {
       "id": "news-493",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -579,7 +652,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-491",
@@ -665,7 +738,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-487",
@@ -737,7 +810,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-489",
@@ -811,7 +884,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-485",
@@ -880,7 +953,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-486",
@@ -956,7 +1029,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-483",
@@ -1036,7 +1109,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-484",
@@ -1107,7 +1180,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-488",
@@ -1187,7 +1260,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-479",
@@ -1263,7 +1336,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-478",
@@ -1329,7 +1402,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-481",
@@ -1404,7 +1477,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-480",
@@ -1477,7 +1550,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-477",
@@ -1544,7 +1617,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-482",
@@ -1625,7 +1698,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-475",
@@ -1689,7 +1762,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-476",
@@ -1754,7 +1827,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-474",
@@ -1829,7 +1902,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "region": "Global",
@@ -1904,7 +1977,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-473",
@@ -1971,7 +2044,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "region": "Global",
@@ -2039,7 +2112,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "region": "Global",
@@ -2112,11 +2185,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-469",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -2266,7 +2339,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-464",
@@ -2351,7 +2424,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-465",
@@ -2428,7 +2501,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-462",
@@ -2504,7 +2577,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-463",
@@ -2577,7 +2650,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-461",
@@ -2654,7 +2727,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-459",
@@ -2727,7 +2800,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-458",
@@ -2838,7 +2911,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-468",
@@ -2912,7 +2985,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-455",
@@ -2994,7 +3067,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-460",
@@ -3072,7 +3145,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-457",
@@ -3149,7 +3222,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-456",
@@ -3219,7 +3292,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-454",
@@ -3296,7 +3369,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-453",
@@ -3378,7 +3451,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-466",
@@ -3469,7 +3542,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-452",
@@ -3546,7 +3619,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-451",
@@ -3619,7 +3692,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-449",
@@ -3696,7 +3769,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-450",
@@ -3770,7 +3843,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-447",
@@ -3834,7 +3907,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-446",
@@ -3908,83 +3981,6 @@
             "측정: affected version 수·`danger-full-access` 전환 수·loopback listener·forwarded port·sandbox deny event",
             "통제: untrusted repository/profile과 secret·production credential 접근 profile 분리",
             "팀 액션: prompt injection simulation에서 sandbox escape·approval bypass·session-log download가 차단·감사되는지 검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-445",
-      "title_ko": "Chrome V8 CVE-2026-87491 active exploitation: 데스크톱 153.0.8010.36/.37 재시작 배포와 Chromium 파생 브라우저 patch 추적",
-      "title_original": "Chrome V8 Zero-Day Exploited in the Wild Enables Code Execution Inside Sandbox",
-      "summary": "- 상태: Google이 `CVE-2026-87491` exploit이 wild에서 존재함을 인지했다고 The Hacker News가 Chrome release를 인용\n- 취약점: V8 JavaScript·WebAssembly engine의 out-of-bounds write로 crafted HTML page가 sandbox 내부 arbitrary code execution으로 이어질 수 있는 NVD 설명 범위\n- 수정: Windows·macOS `153.0.8010.36/.37`, Linux `153.0.8010.36`으로 업데이트·Relaunch 대상\n- 범위: 같은 업데이트가 230개 취약점을 수정하고 WebGL·Cast의 critical flaw 5개를 포함했다는 보도\n- 팀 액션: managed browser fleet version·restart·extension policy·proxy/DNS/web telemetry와 Edge·Brave·Opera·Vivaldi vendor patch 상태를 동일 emergency change로 추적 필요",
-      "detail": "The Hacker News는 Google이 Chrome 데스크톱 안정 채널 업데이트에서 `CVE-2026-87491`의 wild exploitation 존재를 인지한다고 밝혔다고 보도했다. 취약점은 V8의 out-of-bounds write이며, NVD 설명 인용 범위에서 `153.0.8010.36` 이전 Chrome은 crafted HTML page를 통해 sandbox 내부 arbitrary code execution 영향을 받을 수 있다. 보도는 Windows·macOS의 `153.0.8010.36/.37`, Linux의 `153.0.8010.36` 적용과 Relaunch를 안내한다. 같은 release는 총 230개 취약점과 WebGL·Cast 관련 critical flaw 5개를 수정한 범위다. exploit chain의 delivery vector, sandbox escape, 피해 조직·사용자·actor, 실제 데이터 접근은 공개 자료에서 확인되지 않았다. 브라우저 자동 업데이트가 있어도 재시작 지연·고정 버전·VDI·kiosk·air-gapped endpoint와 Chromium 파생 브라우저가 residual exposure를 남길 수 있으므로 asset/version/restart/exception evidence를 patch 작업과 같이 수집해야 한다.",
-      "why_it_matters": "웹 콘텐츠를 처리하는 브라우저의 active exploitation은 개발자·관리자 endpoint와 VDI·shared workstation에서 code execution risk를 만든다. browser sandbox 내부 실행이라는 공개 범위를 sandbox escape·host compromise·개별 data theft로 확대하지 않되, 패치 배포와 재시작 완료율을 endpoint security SLO로 관리할 필요.",
-      "engineering_implication": "Chrome stable channel version·last relaunch·OS·management state·exception을 inventory로 확정하고, force-relaunch window와 업무 영향 rollback을 정의 필요. proxy/DNS·EDR에서 exploit URL·unusual renderer/child process·download·extension installation을 사건별로 상관 분석하고, Chromium 파생 브라우저는 각 vendor의 fixed build 공개 전 별도 risk acceptance·access control로 관리 필요.",
-      "korea_implication": "국내 기업의 managed Chrome·VDI·공용 단말은 야간 update 정책만으로 종료하지 말고 재시작 완료율과 예외 단말을 부서별로 증빙 필요. 금융·공공 환경의 고정 이미지와 망분리 endpoint는 vendor package 검증·배포·reboot window를 긴급 변경 절차로 분리 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Browser Security",
-        "Chrome",
-        "V8",
-        "CVE-2026-87491",
-        "Endpoint Security",
-        "Patch Management"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-09-09 18:11",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/chrome-v8-zero-day-exploited-in-wild.html",
-      "image_url": "",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Chrome Releases: Stable Channel Update for Desktop",
-          "url": "https://chromereleases.googleblog.com/2026/09/stable-channel-update-for-desktop_0808145027.html"
-        },
-        {
-          "title": "NVD: CVE-2026-87491",
-          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-87491"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 Google이 2026년 Chrome 데스크톱 안정 채널 보안 업데이트를 공개하고 `CVE-2026-87491` exploit이 wild에서 존재함을 인지한다고 밝혔다고 보도함. 기사 RSS 시각 `Wed, 09 Sep 2026 12:41:00 +0530`을 KST `2026-09-09 18:11`로 변환해 기록함.",
-          "items": [
-            "상태: Google의 active-exploitation 인지라는 보도 범위",
-            "식별자: **CVE-2026-87491** V8 out-of-bounds write",
-            "경계: exploit delivery vector·actor·피해 조직·sandbox escape 여부는 공개 자료 미확인"
-          ]
-        },
-        {
-          "heading": "수정 버전과 영향 범위",
-          "body": "NVD 설명을 인용한 보도에서 `153.0.8010.36` 이전 Google Chrome은 crafted HTML page를 통해 sandbox 내부 arbitrary code execution 영향을 받을 수 있음. 보도는 Windows·macOS `153.0.8010.36/.37`, Linux `153.0.8010.36` 업데이트와 Relaunch를 안내함.",
-          "items": [
-            "대상: Windows·macOS Chrome `153.0.8010.36/.37`",
-            "대상: Linux Chrome `153.0.8010.36`",
-            "운영: package update와 browser process Relaunch를 분리해 완료율 확인"
-          ]
-        },
-        {
-          "heading": "같은 release의 보안 변경",
-          "body": "기사 보도 범위에서 이번 Chrome update는 230개 보안 취약점을 수정하고 WebGL·Cast component의 critical flaw 5개를 포함함. OpenAI Codex Security가 발견한 WebPackaging high use-after-free `CVE-2026-87639`도 같은 보도에 포함됨.",
-          "items": [
-            "수량: 보도 기준 총 **230개** security flaw 수정",
-            "구성: WebGL use-after-free·out-of-bounds write·buffer overflow와 Cast use-after-free 포함",
-            "경계: release의 모든 CVE가 active exploitation 또는 동일 exploit chain을 뜻하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "브라우저 auto-update는 exposure 감소 수단이지만 managed fleet의 고정 version, restart deferral, VDI golden image, kiosk, offline endpoint와 Chromium 파생 브라우저는 별도 상태 추적이 필요함. patch acceptance는 install event가 아니라 fixed version 실행·relaunch·exception closure로 판정할 대상임.",
-          "items": [
-            "측정: fixed version 실행율·relaunch 완료율·예외 endpoint 수·patch lead time",
-            "탐지: malicious URL·renderer crash·비정상 child process·download·extension install의 endpoint telemetry",
-            "팀 액션: Chrome과 Edge·Brave·Opera·Vivaldi의 fixed build·배포 상태를 하나의 emergency change record로 관리"
           ]
         }
       ],
