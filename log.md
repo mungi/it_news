@@ -2767,3 +2767,10 @@
 - AWS canonical announcement와 feed의 `Fri, 18 Sep 2026 16:49:00 GMT`를 직접 대조해 Resilience Hub의 EKS namespace label service input source, 생성형 AI dependency insights, AWS Organizations resilience policy sharing을 KST `2026-09-19 01:49`로 기록. 새 의존성·cross-Region dependency·unusual usage pattern 표시와 서울 포함 15개 리전 제공은 source 범위로 수록.
 - source는 discovery 정확도·RTO/RPO 달성·복구 성공을 보장하지 않아 EKS label selector·account/Region boundary·policy exception·recovery drill을 별도 검증 action으로 분리.
 - `news-497`을 newest-first final sort rank 2에 추가하고 50-item cap의 actual tail `news-446`을 제거해 rank 1–50 유지. immutable raw capture SHA-256 `6b7e1271846d11158ca20adc9bdc82ab4ccb4fc251e4a720e2de59e745732ad0`, weekly archive·index를 동기화. Deep Dive 2건은 KST 03:19 전면 교체 완료 상태여서 timestamp-only 변경 없이 유지.
+
+## [2026-09-20] update | Linux kernel LPE 4건·AWS Resilience Hub Deep Dive 일일 전면 교체
+- 확인 시각: 2026-09-20 03:38 KST. GeekNews·GeekNews Plus·AI타임스·인공지능신문 및 AWS·Cloudflare·Kubernetes·GitHub·CISA surface를 research pass에 포함했으며, 이번 pass에서 current-window의 새 regular-card 후보는 50건 tail replacement 기준을 넘지 않아 regular list는 유지.
+- Asim Manizada 원문을 직접 확인해 2026-09-18 공개, DirtyAH6·TUNderflow·PPPoEject의 unprivileged user namespace 조건과 SCTP·`sctp_diag` 사용 시 DiagSpill의 별도 capability 불필요 조건, remote root·container escape의 제한된 evidence boundary를 재구성. upstream version만이 아닌 vendor backport·running kernel·reboot·feature inventory를 Deep Dive action으로 수록.
+- AWS canonical announcement를 직접 확인해 EKS label input source, generative AI dependency insight, AWS Organizations policy sharing, 서울 포함 15개 리전 제공 범위를 재구성. source가 analysis completeness·RTO/RPO·recovery success를 보장하지 않아 selector·account/Region boundary·exception·recovery drill evidence를 분리.
+- KST 첫 실행 정책에 따라 전일 AgentCore Runtime V2·Cloudflare Pingora Deep Dive를 서로 non-overlapping primary source인 Linux 연구 원문과 AWS 발표로 전면 교체. 두 항목의 title·summary·details·source/image metadata·8개 expert sections·`refreshed_kst`를 실제 시각으로 재작성했으며 timestamp-only 변경을 하지 않음. `weekly/2026-W39.md`를 데이터에서 재생성.
+- 검증 통과: `python3 scripts/validate_weekly_news.py`(50 items, 2 deep dives), `node --check docs/app.js`, `git diff --check`.

@@ -2,7 +2,7 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-19 19:34",
+  "last_updated_kst": "2026-09-20 03:38",
   "audience": "developers and engineers",
   "executive_summary": [
     "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill 4건은 working exploit 공개 뒤 low-privilege foothold의 root escalation 비용을 낮춤. 배포판 backport·running kernel·reboot 상태와 unprivileged user namespace·SCTP·TUN/TAP·PPPoE 사용을 asset별 대조 필요.",
@@ -14,176 +14,205 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Amazon Bedrock AgentCore Runtime V2: agent session의 memory reclaim·snapshot cold start를 SLO·비용 evidence로 검증",
-      "summary": "한 줄 결론: AWS AgentCore Runtime V2는 미사용 session memory 회수와 snapshot restore를 통해 peak memory reservation과 image-size dependent cold start를 줄이려는 serverless microVM runtime임. `platformVersion: V2` 전환은 실제 agent task에서 cold-start percentile, session RSS, tool/secret lifecycle, retry, invoice를 V1과 대조하는 canary로 닫아야 함.",
-      "details": "AWS는 2026-09-18 차세대 AgentCore Runtime을 공개했다. V2는 session 중 미사용 memory를 회수하고, agent environment를 한 번 준비해 snapshot에서 instance를 복원하는 방식을 설명한다. AWS test에서 200MB~2GB image의 P75 cold start는 1.9~2.0초, V1은 5.4~30초로 제시됐다. 제공 리전은 미국 동·서부와 아일랜드, 도쿄를 포함한 5곳이다. 이 수치는 AWS 환경의 결과이므로 agent tool chain, long session, secret refresh, network bootstrap, tenant audit가 같은 workload에서 유지되는지 검증해야 함.",
-      "why_it_matters": "agent runtime은 model 호출 외에도 tool process·session state·idle memory·retry를 운영하므로 V2의 memory reclaim과 startup 경로는 비용·SLO·capacity에 함께 영향을 줄 수 있음.",
+      "title": "Linux kernel LPE 4건 공개: kernel version만이 아닌 backport·namespace·network feature로 patch closure 확인",
+      "summary": "한 줄 결론: DirtyAH6·TUNderflow·PPPoEject·DiagSpill의 공개 PoC는 low-privilege foothold 이후 root escalation 비용을 낮춤. closure는 upstream version 비교가 아니라 배포판 backport, running kernel·reboot, unprivileged user namespace와 AH6·TUN/TAP·PPPoE·SCTP reachability를 자산별로 결합해 판단해야 함.",
+      "details": "Asim Viladi Oglu Manizada는 2026-09-18 Linux kernel local privilege escalation 취약점 4건의 기술 분석과 PoC를 공개했다. 세 결함은 이미 upstream maintainer가 수정했으며, PoC는 특정 build에서 crash를 낼 수 있어 isolated test system 목적이라고 명시됐다. DirtyAH6·TUNderflow·PPPoEject는 unprivileged user namespace를 통해 필요한 network privilege에 도달하는 조건을 가지며, DiagSpill은 SCTP와 sctp_diag가 있으면 별도 capability나 user namespace 없이 host kernel corruption 범위가 제시됐다. 원격 영향은 제한적 crash 조건과 연구자 lab의 DirtyAH6 memory-grooming 결과로 한정해야 하며, 원격 root 또는 container escape를 일반화할 근거는 없음.",
+      "why_it_matters": "공개 exploit은 CI runner, shared development host, bastion, multi-tenant container host에서 이미 획득한 저권한 계정을 root로 확장하는 후속 단계가 될 수 있음. vendor kernel은 upstream version과 다르게 fix를 backport하므로 package version·running kernel·reboot 증적이 모두 필요함.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/09/new-agentcore-runtime-generally-available"
+        "https://heyitsas.im/posts/lpe-quartet/"
       ],
       "image_url": "",
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-09-19 03:19",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-09-20 03:38",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AgentCore Runtime V2는 session 중 미사용 memory를 회수하고 image size·concurrency와 무관한 cold start를 목표로 하는 serverless microVM runtime임. 기존 V1과 같은 workload를 기준으로 memory, startup, isolation, 비용을 함께 canary해야 실제 절감 여부를 판단할 수 있음.",
+          "body": "이번 공개는 네 결함의 영향 조건을 자산 구성 단위로 점검해야 하는 patch-closure 작업임. CVE 목록을 일괄 적용 여부로 처리하지 말고 kernel build, vendor advisory, runtime feature exposure, reboot를 같은 증거로 닫아야 함.",
           "items": [
-            "변화: runtime create·update에서 `platformVersion`을 `V2`로 지정하는 신규 경로 공개",
-            "판정: peak memory billing 가정과 cold-start SLO를 workload evidence로 다시 측정 필요"
+            "변화: 2026-09-18 technical write-up과 working PoC 공개",
+            "판정: upstream release 문자열만으로 vulnerable·fixed 상태를 단정하지 않는 운영 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS는 2026-09-18 차세대 AgentCore Runtime을 발표함. 세션이 small memory profile로 시작하고 수요에 따라 memory를 할당하며 더 이상 사용하지 않는 memory를 세션 종료 전 회수한다고 설명함. agent environment를 한 번 준비해 snapshot으로 만들고 새 instance가 이를 복원하는 방식도 제시함.",
+          "body": "원문은 DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`, DiagSpill `CVE-2026-74469`을 함께 다룸. 공개 일정은 affected system owner가 patch 우선순위를 정할 수 있도록 조정됐고, 모든 결함은 maintainer가 이미 수정한 상태라고 설명함.",
           "items": [
-            "성능 주장: 200MB~2GB container image에서 P75 cold start `1.9~2.0초`, V1은 `5.4~30초`라는 AWS test 결과",
-            "제공: us-east-1·us-east-2·us-west-2·eu-west-1·ap-northeast-1 리전 공개",
-            "경계: AWS test 수치이며 고객 workload의 latency·비용·isolation 보장 아님"
+            "범위: 특정 kernel build용 PoC이며 crash 가능성이 있는 isolated test 목적",
+            "경계: 원문에 현실 악용 또는 조직별 침해 사실 없음",
+            "기준: complete-fix upstream stable release와 배포판 advisory를 별도 대조 필요"
+          ]
+        },
+        {
+          "heading": "도달 조건과 권한 경계",
+          "body": "세 결함은 unprivileged user namespace가 활성화된 환경에서 일반 사용자가 private network sandbox의 권한에 도달하는 흐름을 사용함. DiagSpill은 SCTP module과 `sctp_diag`가 사용 가능하면 user namespace나 별도 capability 없이 host kernel corruption이 가능하다고 원문이 구분함.",
+          "items": [
+            "DirtyAH6: IPv6 IPsec AH6 transport-mode 영역과 user namespace 조건",
+            "TUNderflow: TUN/TAP virtual network device 영역과 user namespace 조건",
+            "PPPoEject: PPPoE header 처리 영역과 user namespace 조건",
+            "DiagSpill: SCTP·`sctp_diag` 사용 가능 시 별도 local privilege 불필요"
+          ]
+        },
+        {
+          "heading": "원격·컨테이너 해석",
+          "body": "원문은 DirtyAH6와 DiagSpill의 network-trigger 가능성을 곧바로 remote root로 등치하지 않음. DirtyAH6는 IPv6 router/gateway와 transport-mode AH6 조건에서 remote crash/DoS, 연구자 lab의 memory grooming에서 remote root를 제시했지만 remote-only 성공은 매우 어렵다고 기술함.",
+          "items": [
+            "경계: DiagSpill의 remote crash는 default-off SCTP option 조합 조건",
+            "경계: DiagSpill에는 perfect grooming 가정에서도 full remote-root path가 없다는 연구자 평가",
+            "컨테이너: escape chain은 원문에서 구축되지 않아 host configuration inventory 대상"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent runtime의 비용은 model token만이 아니라 session residency, tool process, package image, idle memory, cold start retry로 결정됨. V2 memory reclamation은 long-lived session의 reservation 곡선을 바꿀 수 있으나 Python heap, native extension, child process, cache가 실제로 회수되는지는 application별 관측이 필요함.",
+          "body": "문제의 실질적 우선순위는 CVSS 또는 headline보다 attack prerequisite와 tenant model임. shared runner와 multi-user host는 low-privilege foothold가 이미 존재할 수 있으므로 kernel feature를 사용하지 않는 일반 server보다 patch window를 앞당길 근거가 됨.",
           "items": [
-            "볼 것: session duration·RSS·memory high-water mark·tool subprocess·retry와 concurrent session 분포",
-            "피할 것: platform version 변경만으로 V1 capacity plan과 timeout budget을 폐기하는 방식",
-            "판정: runtime owner와 agent application owner가 same workload의 before/after dashboard 공동 소유 필요"
+            "볼 것: local user population·CI job isolation·privileged container·host networking·kernel module load state",
+            "피할 것: managed Kubernetes라는 이유만으로 node OS patch와 reboot 증적을 생략하는 방식",
+            "판정: platform owner와 OS owner가 node image·running kernel·workload feature를 공동 확인 필요"
           ]
         },
         {
-          "heading": "아키텍처·운영 관점",
-          "body": "snapshot restore는 image pull·initialization 비용을 줄일 수 있지만 initialization 시점에 주입되는 configuration, credential, dynamic secret, connection bootstrap의 lifecycle을 명확히 해야 함. session isolation은 AWS 설명 범위이며 application-level tenant authorization과 tool permission은 별도 control plane으로 남음.",
+          "heading": "보안·SRE·운영 관점",
+          "body": "patch 적용 뒤에도 old kernel로 부팅된 node, drain되지 않은 CI runner, immutable image cache가 남으면 closure가 성립하지 않음. 기능 비활성화는 interim exposure reduction일 뿐 vendor fix 또는 upstream fix의 대체가 아님.",
           "items": [
-            "검증: startup hook·secret fetch·environment variable·network connection이 snapshot restore 뒤 최신 상태인지 확인",
-            "검증: V1/V2 request schema·session lifecycle·timeout·failure semantics의 compatibility matrix 작성",
-            "운영: V2 rollout cohort, rollback target, image digest, region별 enablement를 change record에 보존"
+            "보안: unprivileged user namespace policy, SCTP·PPP·TUN module, IPv6 AH6 사용 여부 inventory",
+            "SRE: kernel rollout의 node drain·reboot·health check·rollback window와 workload disruption 계획",
+            "증적: package version·`uname -r`·reboot timestamp·vendor advisory ID를 asset record에 연결"
           ]
         },
         {
-          "heading": "보안·SRE·FinOps 관점",
-          "body": "microVM isolation과 scale-to-zero는 agent 권한 검토를 대체하지 않음. tool credential의 scope, per-session audit, egress policy를 V2 전환과 함께 점검해야 함. FinOps는 peak 대신 actual usage 과금이라는 AWS 설명을 invoice와 session telemetry로 분리 검증해야 함.",
+          "heading": "도입·완화 로드맵",
+          "body": "먼저 asset을 distribution, kernel package, running release, role, relevant feature로 분류한 뒤 vendor advisory의 backport 상태를 매핑해야 함. 이후 high-risk shared host부터 canary reboot와 service health를 확인하고 fleet rollout으로 확장하는 순서가 필요함.",
           "items": [
-            "보안: tool IAM role·secret rotation·network egress·tenant context reset을 session boundary별 확인",
-            "SRE: P50/P75/P99 cold start, timeout, restore failure, memory pressure, retry rate를 V1 baseline과 대조",
-            "FinOps: GB-second·request·idle residency·model token·image storage를 분리해 cohort cost 비교"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "첫 단계는 production agent를 바로 전환하지 않고 representative image와 tool chain을 선택해 V2 contract를 확인하는 작업임. 이후 low-risk cohort에서 telemetry와 cost를 비교하고, SLO·security gate를 통과한 경우에만 region과 traffic을 확장해야 함.",
-          "items": [
-            "1단계: runtime·image size·session duration·tool/secret·region inventory",
-            "2단계: `platformVersion: V2` canary와 startup·memory·tool-call parity test",
-            "3단계: cold-start percentile·RSS·error·retry·cost cohort 비교와 rollback rehearsal",
-            "4단계: tenant·egress audit와 SLO 승인 뒤 traffic 확대"
+            "1단계: OS·kernel·running kernel·reboot·namespace/network feature inventory",
+            "2단계: vendor advisory와 installed package의 fixed/backport matrix 작성",
+            "3단계: CI runner·container host·bastion canary, workload health·module dependency 확인",
+            "4단계: fleet reboot completion과 exception owner를 incident closure에 기록"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "runtime migration의 완료 증거는 deployment success가 아니라 agent task completion과 operational behavior가 모두 유지되는지 여부임. package update, IaC parameter, observability dimension, on-call runbook을 하나의 release unit으로 관리해야 version drift를 줄일 수 있음.",
+          "body": "patch 완료 기준은 package manager 성공 메시지가 아니라 취약 조건을 가진 모든 asset이 fixed running kernel로 재기동됐는지 여부임. CI image와 golden image도 다음 autoscale·rebuild에서 old kernel이 재유입되지 않도록 같이 갱신해야 함.",
           "items": [
-            "체크리스트: supported region·`platformVersion`·image digest·runtime configuration·IaC diff",
-            "체크리스트: cold start·memory reclaim·session timeout·tool subprocess·secret refresh·network egress",
-            "체크리스트: V1 rollback path·alarm threshold·cost allocation tag·incident owner",
-            "팀 액션: V2 approval에 representative task trace와 billing telemetry를 첨부"
+            "체크리스트: user namespace, SCTP, `sctp_diag`, TUN/TAP, PPPoE, AH6/IPsec actual use",
+            "체크리스트: vendor backport advisory, package build, `uname -r`, reboot, node drain evidence",
+            "체크리스트: immutable image·AMI·container host baseline·runner template 갱신",
+            "팀 액션: exception asset에 owner·expiry·compensating control을 부여"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "V2는 agent runtime의 memory와 startup economics를 바꿀 수 있는 platform change지만, AWS benchmark만으로 조직의 비용 절감이나 reliability 개선을 확정할 수 없음. 같은 image·session·tool workload에서 p75뿐 아니라 tail latency, reclaim failure, retry, invoice를 함께 확인해야 함.",
+          "body": "공개 PoC는 patch 우선순위를 높이는 신호이나, 원문이 확인하지 않은 remote root·container escape·active exploitation을 사실처럼 확장하면 안 됨. 배포판 fix와 runtime configuration을 함께 확인하는 것이 재현 가능한 대응 기준임.",
           "items": [
-            "볼 것: actual session memory, cold-start percentile, isolation/audit continuity, regional availability",
-            "피할 것: short benchmark 하나로 long-running agent와 tool-heavy workflow를 일괄 전환하는 방식",
-            "팀 액션: V2 pilot을 SLO·security·FinOps 공동 gate로 운영"
+            "볼 것: backport, running kernel, reboot, namespace·SCTP·network feature reachability",
+            "피할 것: upstream version 비교 또는 CVE scanner 결과만으로 closure 선언",
+            "팀 액션: high-risk Linux asset부터 kernel patch와 configuration exposure를 하나의 change record로 승인"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Cloudflare Pingora consistent hashing 최적화: 100TB RAM 절감보다 중요한 routing state·skew·rollback 검증",
-      "summary": "한 줄 결론: Cloudflare는 Pingora Backend Router의 `pingora-ketama` consistent-hashing memory footprint를 줄여 100TB 초과 RAM을 회수했다고 공개. 대규모 routing 최적화는 allocation 절감만이 아니라 key skew, backend churn, cache locality, p99 latency와 failure rollback을 같은 production evidence로 평가해야 함.",
-      "details": "Cloudflare는 2026-09-18 Pingora Backend Router의 consistent-hashing implementation 최적화로 global RAM 100TB 이상을 회수했다고 밝혔다. 이 route는 cacheable URL을 backend로 안정적으로 보내 data center 내 copy 수와 server addition/removal 때의 이동을 제한한다. 원문은 `pingora-ketama` 구조의 과도한 memory 사용을 출발점으로 제시한다. 효과는 Cloudflare fleet 수치이며 다른 proxy나 cache에 일반화할 수 없다. 자체 환경에서는 ring state size, key distribution, backend churn, cache hit, origin retry, tail latency를 trace replay와 failure canary로 검증해야 함.",
-      "why_it_matters": "AI/웹 cache·proxy·service routing에서 backend membership과 key distribution은 memory efficiency, cache locality, origin cost, tail latency를 동시에 좌우하는 control-plane 상태임.",
+      "title": "AWS Resilience Hub 3개 기능: EKS label·AI dependency insight·Organizations policy를 recovery drill 증적으로 연결",
+      "summary": "한 줄 결론: AWS Resilience Hub의 EKS label input, generative AI dependency insight, Organizations policy sharing은 resilience control plane의 분석 범위와 적용 대상을 코드화하는 기능임. 자동 발견·정책 공유 결과를 RTO/RPO 달성 증거로 간주하지 말고 selector, account·Region boundary, exception, recovery drill을 동일한 운영 증거로 대조해야 함.",
+      "details": "AWS는 2026-09-18 차세대 Resilience Hub에 EKS labels support for service input sources, dependency insights, AWS Organizations를 통한 resilience policy sharing을 추가했다. EKS namespace label을 기존 ownership convention에 맞춰 failure mode analysis 입력으로 사용할 수 있고, dependency discovery를 활성화한 고객에게는 new dependency·cross-Region dependency·unusual usage pattern을 표시하는 생성형 AI 기반 insight를 제공한다. 중앙 팀은 policy를 여러 account에 공유하고 service별 policy 사용 현황을 볼 수 있다. 서울을 포함한 15개 리전 제공이 발표됐지만, source는 analysis completeness·AI insight accuracy·실제 recovery success나 RTO/RPO 보장을 주장하지 않음.",
+      "why_it_matters": "Kubernetes label과 AWS Organizations attachment는 platform team이 resilience 분석 범위와 policy 적용 범위를 결정하는 control-plane 입력값임. selector drift, shared namespace, cross-account 또는 external dependency가 빠지면 자동화된 posture report와 실제 복구 범위가 달라질 수 있음.",
       "sources": [
-        "https://blog.cloudflare.com/saving-100-tb-of-ram-with-math/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/09/resilience-hub-eks-dependency-policy/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M2PFY1FZ7AH3P8JEQCDM9YWH.01M2PFY2XJ3KBV9JD78JMJK88K.png",
-      "local_image": "",
-      "refreshed_kst": "2026-09-19 03:19",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-09-20 03:38",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Cloudflare는 Pingora Backend Router의 `pingora-ketama` consistent-hashing 구조를 최적화해 전 세계적으로 100TB 초과 RAM을 회수했다고 공개함. 대규모 routing state 최적화는 allocation만 줄이는 일이 아니라 hash distribution·failover·cache locality·tail latency를 함께 검증하는 변경임.",
+          "body": "Resilience Hub의 신규 기능은 assessment input과 policy distribution을 중앙화하지만 복구 능력을 자동으로 증명하지 않음. label selector·dependency evidence·account policy·drill result가 같은 service boundary를 가리키는지 확인해야 함.",
           "items": [
-            "변화: 한 Pingora 기반 service의 memory footprint 축소와 100TB 초과 RAM 회수 공개",
-            "판정: hash-ring representation 변경은 memory·load skew·rebalancing을 같은 release gate로 관리 필요"
+            "변화: EKS label input, dependency insight, Organizations policy sharing 추가",
+            "판정: control-plane coverage와 recovery outcome을 분리해 검증 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 2026-09-18 Pingora Backend Router가 `pingora-ketama` consistent-hashing 구조에서 예상보다 큰 memory를 사용한 문제를 설명함. consistent hashing은 cacheable request를 URL 기준 server로 보내 data center 내 file copy 수를 제한하고 server add/remove 때 이동 범위를 줄이는 데 사용됨.",
+          "body": "AWS는 next-generation Resilience Hub가 automated dependency discovery, generative AI-powered failure mode analysis, modular policy, resilience testing, organization-wide posture reporting을 제공한다고 설명함. 9월 18일 발표는 이 흐름에 세 가지 입력·분석·배포 기능을 추가한 내용임.",
           "items": [
-            "효과: 해당 service 최적화로 global RAM 100TB 초과 회수, DNS team의 전월 100TB 절감과 별도 수치",
-            "대상: internal Pingora Backend Router와 open-source `pingora-ketama` library 관련 구조",
-            "경계: Cloudflare fleet 결과이며 다른 cache/router의 memory 절감률 또는 capacity 증설 보장 아님"
+            "EKS: namespace label을 service input source로 사용",
+            "Insight: new dependency·cross-Region dependency·unusual usage pattern 표시",
+            "Policy: AWS Organizations를 통해 여러 account에 resilience policy 공유",
+            "제공: 서울을 포함한 15개 AWS Region"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "consistent hashing은 backend 수가 변할 때 cache affinity와 hot-key distribution을 함께 다루는 control-plane 자료구조임. virtual node 수를 단순히 크게 잡으면 skew를 낮출 수 있지만 node·backend·ring metadata가 늘어 memory와 update cost가 커질 수 있음.",
+          "heading": "AI/Infra 전문가 해석: EKS label과 서비스 경계",
+          "body": "label은 GitOps와 Kubernetes ownership convention에 이미 존재할 수 있어 resource list를 별도로 관리하는 부담을 줄일 수 있음. 반대로 label 누락, mutable selector, shared namespace, ephemeral job은 분석 대상과 실제 production service의 차이를 만들 수 있음.",
           "items": [
-            "볼 것: key-space skew·backend churn·ring build time·per-process RSS·cache hit ratio",
-            "피할 것: average utilization만 보고 hottest backend의 tail latency와 eviction을 놓치는 판단",
-            "판정: routing algorithm의 memory saving은 load balance와 cache locality SLO를 훼손하지 않을 때만 유효"
+            "검증: namespace·label key/value·selector를 Deployment·Service·Ingress·HPA ownership과 대조",
+            "리스크: critical dependency가 label taxonomy drift로 analysis에서 제외될 가능성",
+            "운영: label schema와 selector 변경을 application release review 및 resilience evidence에 연결"
           ]
         },
         {
-          "heading": "아키텍처·운영 관점",
-          "body": "PBR의 route 결정은 cacheable URL을 backend에 안정적으로 연결하는 경로임. representation 변경 뒤 server addition, removal, unhealthy backend, partial rollout에서 key remapping이 예상 범위를 넘으면 cache miss surge와 origin load가 발생할 수 있음.",
+          "heading": "AI dependency insight의 해석",
+          "body": "generative AI insight는 조사 우선순위를 만드는 보조 신호이지 dependency graph의 확정 사실이 아님. cross-Region 또는 unusual usage 표시 뒤에는 trace, CloudTrail, network flow, service map, runbook으로 service-to-service path를 검증해야 함.",
           "items": [
-            "검증: ring rebuild 전후 key remap 비율·backend ownership·request skew·cache hit ratio 비교",
-            "검증: node failure·scale-out·scale-in·configuration rollback에서 routing determinism 확인",
-            "운영: ring version과 backend membership change를 trace·metric·revert artifact에 연결"
+            "볼 것: discovery 결과의 최초·최종 관측 시각, source signal, account·Region context",
+            "피할 것: insight card 하나로 data path·failover path·RTO impact를 확정하는 방식",
+            "판정: unknown dependency를 drill scenario와 architecture review backlog로 승격 필요"
           ]
         },
         {
-          "heading": "보안·SRE·FinOps 관점",
-          "body": "100TB 회수는 fleet capacity와 power headroom에 영향을 줄 수 있으나 source는 비용 절감액이나 energy reduction을 공개하지 않음. SRE 관점에서는 allocator pressure 감소보다 routing regression 탐지가 먼저이며, security 관점에서는 request affinity가 tenant isolation이나 authorization boundary를 대체하지 않음.",
+          "heading": "Organizations policy와 거버넌스",
+          "body": "policy sharing은 중앙 팀이 여러 account의 resilience posture를 정렬하는 수단임. 그러나 account attachment가 있다고 해서 모든 workload가 policy target 또는 assessment 대상이라는 뜻은 아니며 exception과 delegated ownership이 남음.",
           "items": [
-            "SRE: RSS·allocation rate·OOM/restart·p99 routing latency·origin retry·cache miss를 cohort별 비교",
-            "FinOps: reclaimed memory를 서버 감축·새 workload·resilience reserve 중 어디에 배정할지 capacity plan으로 결정",
-            "보안: cache key partition·tenant boundary·backend authorization을 hash distribution과 별도 검토"
+            "검증: Organization OU·account·service·policy attachment·effective version을 inventory와 대조",
+            "거버넌스: exception owner·expiry·RTO/RPO owner·review cadence를 policy metadata에 기록",
+            "경계: external SaaS·on-premises·other-cloud dependency는 AWS account policy만으로 포괄 불가"
+          ]
+        },
+        {
+          "heading": "아키텍처·SRE 관점",
+          "body": "실제 resiliency는 database, identity, DNS, queue, network, third-party API를 포함한 recovery sequence에서 드러남. label 또는 discovery가 이를 누락하면 assessment score가 좋아도 failover 중 hidden dependency가 RTO를 지배할 수 있음.",
+          "items": [
+            "SRE: assessment coverage, unresolved insight, policy exception, drill completion을 service SLO dashboard에 연결",
+            "아키텍처: cross-Region data replication·DNS failover·identity path·secret availability를 failure mode에 포함",
+            "운영: application topology 변경 시 resilience input diff를 deployment gate로 확인"
+          ]
+        },
+        {
+          "heading": "보안·FinOps 관점",
+          "body": "dependency discovery와 policy reporting은 control-plane metadata와 observability data에 접근할 수 있으므로 least privilege와 audit boundary가 필요함. resilience 강화는 multi-Region capacity, backup, testing 비용을 수반하므로 score 향상과 cost 증가를 별도 지표로 관리해야 함.",
+          "items": [
+            "보안: IAM delegation·CloudTrail·cross-account read scope·data classification을 review",
+            "FinOps: standby capacity·backup retention·drill 비용·inter-Region transfer를 service별 분리",
+            "통제: policy change와 recovery test 결과를 change approval·audit trail에 보존"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "자체 proxy나 cache routing에서 같은 문제를 다룰 때는 ring structure를 곧바로 교체하기보다 production key distribution을 capture해 offline replay부터 수행해야 함. 다음으로 small cohort에서 backend churn과 failure case를 포함한 canary를 운영해야 함.",
+          "body": "첫 rollout은 label quality가 높은 한 EKS service와 명확한 account boundary에서 시작하는 것이 안전함. discovery result를 manual evidence와 비교하고, policy를 read-only posture review부터 적용한 뒤 scheduled recovery drill로 확대해야 함.",
           "items": [
-            "1단계: routing state size·backend count·key distribution·RSS·hot-key·churn inventory",
-            "2단계: production trace replay로 skew·remap·cache locality baseline 작성",
-            "3단계: small cohort에서 memory·p99·cache miss·origin retry·rollback signal 관측",
-            "4단계: failure injection과 capacity review 뒤 fleet rollout"
+            "1단계: EKS label taxonomy·service inventory·account/Region ownership 정리",
+            "2단계: representative service에서 selector coverage와 dependency insight manual verification",
+            "3단계: Organizations policy canary·exception workflow·effective attachment 확인",
+            "4단계: region/account failure scenario drill과 RTO/RPO evidence 승인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "memory optimization은 Rust implementation 변경만이 아니라 data structure contract 변경일 수 있음. code review에는 ownership·allocation·integer range뿐 아니라 deterministic routing, membership update, observability compatibility가 포함돼야 함.",
+          "body": "완료 기준은 Resilience Hub에 service가 보이는지가 아니라 clean recovery와 owner decision이 반복 가능한지 여부임. IaC, GitOps label, account policy, runbook, drill log를 하나의 release record로 연결해야 drift를 찾을 수 있음.",
           "items": [
-            "체크리스트: virtual node/ring parameter·backend membership source·key hash·fallback policy",
-            "체크리스트: RSS·allocator·GC/compaction·cache hit·origin load·tail latency dashboard",
-            "체크리스트: node drain·backend failure·rollout stop·ring rollback과 owner",
-            "팀 액션: memory saving claim을 load-skew·cache-miss·origin-cost guardrail과 함께 승인"
+            "체크리스트: label schema·selector·namespace·service inventory·critical dependency",
+            "체크리스트: account/OU policy attachment·exception·effective policy version·owner",
+            "체크리스트: cross-Region·identity·DNS·data replication·external API recovery scenario",
+            "팀 액션: release마다 topology diff와 latest drill evidence를 resilience review에 첨부"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Cloudflare 사례의 100TB는 fleet scale의 결과이며 숫자를 그대로 일반화할 수 없음. 재사용 가능한 교훈은 stateful routing에서 memory, balancing, failure behavior, cache locality를 분리하지 않고 동일한 production evidence로 확인해야 한다는 점임.",
+          "body": "자동 discovery와 generative AI는 resilience 운영의 범위를 넓히지만 recovery proof를 대체하지 않음. 서울 리전을 포함한 제공 범위도 organisation별 dependency와 drill readiness를 보장하지 않으므로 evidence-driven rollout이 필요함.",
           "items": [
-            "볼 것: state size, key skew, backend churn, remap, cache hit, p99 latency",
-            "피할 것: allocation 축소만 측정하고 hot partition·origin retry·rollback complexity를 생략하는 방식",
-            "팀 액션: routing optimization release에 workload replay와 failure canary를 필수 gate로 추가"
+            "볼 것: selector coverage, insight evidence, policy attachment, exception, drill outcome",
+            "피할 것: posture report만으로 RTO/RPO 또는 cross-Region failover 성공을 선언하는 방식",
+            "팀 액션: 플랫폼 팀이 분기별 clean-target recovery drill과 policy coverage diff를 공동 승인"
           ]
         }
       ]
