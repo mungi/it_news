@@ -2,10 +2,10 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-20 03:38",
+  "last_updated_kst": "2026-09-20 07:42",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill 4건은 working exploit 공개 뒤 low-privilege foothold의 root escalation 비용을 낮춤. 배포판 backport·running kernel·reboot 상태와 unprivileged user namespace·SCTP·TUN/TAP·PPPoE 사용을 asset별 대조 필요.",
+    "Hacktron 연구는 Discourse image-processing 취약점과 OpenAI SSO 결함을 연쇄해 직원 ChatGPT·Codex 계정과 internal repository 권한을 시연. self-hosted forum은 UI patch만 보지 말고 `libheif`·container base image와 SSO client·connected-app token revoke를 같은 incident runbook으로 점검 필요.",
     "Check Point Security Management·Log Server `CVE-2026-91843`는 Trusted Clients 경로의 인증 전 stack overflow로 root code execution 가능 범위를 가짐. `sk1000155` LivePatch install 상태와 Trusted Clients known-host ACL·management-plane internet exposure를 같은 incident evidence로 확인 필요.",
     "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`는 macOS shared workspace의 virtio-fs·Unix socket relay symlink race를 `0.42.0`에서 수정. AI coding sandbox는 VM 여부만 보지 말고 read-write mount·clone mode·forwarded socket·VMM user 권한을 함께 inventory 필요.",
     "Unbound `CVE-2026-81642`는 `1.26.0` 이하 DNSSEC validator의 heap overflow로 malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
@@ -220,8 +220,89 @@
   ],
   "items": [
     {
-      "id": "news-496",
+      "id": "news-498",
       "rank": 1,
+      "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
+      "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
+      "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
+      "detail": "Hacktron은 2026년 9월 13일 공개한 연구에서 OpenAI community forum의 Discourse image-processing 경로와 별도의 OpenAI SSO 결함을 연쇄해 7월 25일 여러 직원 ChatGPT·Codex 계정에 접근했고, internal monorepo `openai/openai`에서 harmless pull request 1건으로 권한을 검증했다고 기술했다. 연구자는 source code·customer data를 읽지 않았고 merge·ship 작업도 하지 않았다고 명시한다. The Hacker News 보도는 OpenAI가 신고 약 14시간 뒤 OpenAI-side finding을 수정했고 9월 1일 $6,500 bounty를 지급했다고 전한다. 원인은 forum 자체의 SSO button이 아니라 compromised first- or third-party service가 shared OpenAI sign-on 경계에 도달할 수 있었던 identity 문제라는 연구자 평가다. forum 침투는 HEIC/HEIF upload가 ImageMagick·`libheif`를 거치는 경로에서 시작됐다. CVE-2026-32882 공개 기록은 out-of-bounds read·crash 또는 memory disclosure 범위이며, 연구자가 다른 memory bug와 결합해 ASLR을 우회하고 RCE로 확장했다고 설명한다. 이 연구는 실제 공격·고객 데이터 접근·모든 OpenAI 사용자 영향 또는 일반적인 AI autonomous hacking을 확인하지 않으므로, self-hosted forum image patch와 SSO trust boundary 점검의 사례로 한정해야 함.",
+      "why_it_matters": "public-facing support forum의 native dependency 지연 패치가 identity provider와 high-value developer connector까지 연결될 수 있음을 보여줌. AI model 사용 여부보다 image decoder·container base image·SSO session trust·connected application scope가 동시에 열렸는지가 공격면을 결정함.",
+      "engineering_implication": "Discourse 운영 팀은 fixed release와 함께 runtime `libheif` package·container digest를 확인하고 HEIC/HEIF upload path를 canary 점검해야 함. identity 팀은 forum·SaaS SSO client별 issuer, redirect URI, session audience, account-linking, privileged staff membership과 ChatGPT·Codex connected GitHub/Slack/email scope를 asset inventory·revocation drill에 연결 필요.",
+      "korea_implication": "국내 조직의 help center·developer community·partner portal도 공용 IdP와 Git repository·chat·email connector를 연결할 수 있음. 공개 웹 서비스의 image-processing library patch와 staff SSO client 등록을 서로 다른 운영팀이 닫지 않도록 공동 change record가 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AI Security",
+        "Identity Security",
+        "SSO",
+        "OpenAI",
+        "Claude",
+        "Discourse",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-09-19 03:36",
+      "source_name": "Hacktron research / The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/claude-opus-5-helped-researchers-take.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhAElV4rXwWf_kTjj5e0UJFsEG-a0B7MUsCFqhFLYEA76kk2A7UeXbaG0DfRt-Syf7dxx4bHUanr0lVvwIUFyFgtPIfhyphenhyphenx61ccuo3oDZr6-wKROoEAVWjrAcKWuZ5WdlvL_pmKC91i9juBrsnI3FiLTGGgjnnJRAnjTgAxAbMjcbCTxZSWybZPPtG8HN1E/s1700-nu-rw-lo-l85-e365/claude-openai.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Hacktron technical research",
+          "url": "https://www.hacktron.ai/blog/hacking-openai"
+        },
+        {
+          "title": "Discourse advisory GHSA-vhm9-85gw-x335",
+          "url": "https://github.com/discourse/discourse/security/advisories/GHSA-vhm9-85gw-x335"
+        },
+        {
+          "title": "libheif 1.22.0 release",
+          "url": "https://github.com/strukturag/libheif/releases/tag/v1.22.0"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Hacktron은 7월 25일 public `community.openai.com` forum compromise와 별도 OpenAI SSO weakness를 연쇄해 여러 직원의 ChatGPT·Codex account에 접근했다고 공개함. 9월 19일 보도는 OpenAI가 OpenAI-side finding을 신고 약 14시간 뒤 수정하고 9월 1일 bounty를 지급한 범위를 전함.",
+          "items": [
+            "검증: internal monorepo `openai/openai`에 harmless pull request 1건을 열어 권한을 증명",
+            "경계: source code·customer data 읽기, merge·ship 작업, 실제 공격 또는 개별 사용자 영향은 연구자가 부인"
+          ]
+        },
+        {
+          "heading": "침투 경로와 취약 조건",
+          "body": "forum의 HEIC·HEIF upload는 ImageMagick와 `libheif` decoding path를 통과함. Hacktron은 `CVE-2026-32882`의 memory disclosure 성격과 별도 memory bug를 결합해 ASLR을 우회하고 forum server RCE에 도달했다고 설명함.",
+          "items": [
+            "패치 지연: upstream `libheif 1.22.0` 수정 뒤에도 forum Debian 12 image가 `1.19.7`을 포함했던 연구 시점",
+            "경계: public CVE record는 out-of-bounds read·crash·nearby memory leak 범위이며 standalone RCE로 일반화 불가",
+            "조치: UI application update와 native library·base-image update를 별도 patch evidence로 확인"
+          ]
+        },
+        {
+          "heading": "SSO와 connected application 영향",
+          "body": "연구자는 Discourse 자체 결함보다 compromised forum이 shared OpenAI sign-on trust boundary에 연결된 점을 결정 요인으로 설명함. 동일 sign-on을 쓰는 staff account의 ChatGPT·Codex session과 connector가 접근 가능한 GitHub·Slack·email은 이론상 확장 범위이나 사용되지 않음.",
+          "items": [
+            "검증: forum·third-party SSO client의 issuer, redirect URI, audience, session binding, account-linking 설정 대조",
+            "최소화: staff membership과 connected-app OAuth scope를 일반 community user와 분리",
+            "대응: forum compromise 시 IdP session revoke·connector token revoke·repository access review를 incident runbook에 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI가 exploit-development 시간을 줄였다는 연구 맥락은 있으나, 성공 조건은 skilled human direction과 exposed service·unpatched dependency·identity trust chain의 결합이었음. 모델 capability headline만으로 autonomous compromise 또는 전 조직 영향으로 확대하지 말아야 함.",
+          "items": [
+            "inventory: self-hosted Discourse release·container digest·`libheif` build·HEIC/HEIF upload enablement 확인",
+            "drill: public forum RCE 가정에서 IdP session·GitHub/Slack/email connector·privileged repository 접근의 revoke와 forensic log 보존 확인",
+            "팀 액션: application security와 identity engineering이 release·SSO client·connected-app scope를 하나의 change record로 공동 승인"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-496",
+      "rank": 2,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -294,7 +375,7 @@
     },
     {
       "id": "news-497",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -362,7 +443,7 @@
     },
     {
       "id": "news-495",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -431,7 +512,7 @@
     },
     {
       "id": "news-494",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -515,7 +596,7 @@
     },
     {
       "id": "news-492",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -600,7 +681,7 @@
     },
     {
       "id": "news-493",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -749,7 +830,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-491",
@@ -835,7 +916,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-487",
@@ -907,7 +988,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-489",
@@ -981,7 +1062,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-485",
@@ -1050,7 +1131,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-486",
@@ -1126,7 +1207,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-483",
@@ -1206,7 +1287,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-484",
@@ -1277,7 +1358,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-488",
@@ -1357,7 +1438,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-479",
@@ -1433,7 +1514,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-478",
@@ -1499,7 +1580,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-481",
@@ -1574,7 +1655,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-480",
@@ -1647,7 +1728,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-477",
@@ -1714,7 +1795,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-482",
@@ -1795,7 +1876,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-475",
@@ -1859,7 +1940,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-476",
@@ -1924,7 +2005,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-474",
@@ -1999,7 +2080,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "region": "Global",
@@ -2074,7 +2155,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-473",
@@ -2141,7 +2222,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "region": "Global",
@@ -2209,7 +2290,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "region": "Global",
@@ -2282,11 +2363,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-469",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -2436,7 +2517,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-464",
@@ -2521,7 +2602,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-465",
@@ -2598,7 +2679,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-462",
@@ -2674,7 +2755,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-463",
@@ -2747,7 +2828,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-461",
@@ -2824,7 +2905,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-459",
@@ -2897,7 +2978,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-458",
@@ -3008,7 +3089,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-468",
@@ -3082,7 +3163,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-455",
@@ -3164,7 +3245,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-460",
@@ -3242,7 +3323,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-457",
@@ -3319,7 +3400,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-456",
@@ -3389,7 +3470,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-454",
@@ -3466,7 +3547,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-453",
@@ -3548,7 +3629,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-466",
@@ -3639,7 +3720,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-452",
@@ -3716,7 +3797,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-451",
@@ -3789,7 +3870,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-449",
@@ -3866,7 +3947,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-450",
@@ -3937,70 +4018,6 @@
             "점검: Chrome·Edge·기타 Chromium browser fixed build, last relaunch, VDI/golden image, Windows build",
             "차단: phishing URL·web proxy/DNS policy, risky attachment·link protection, emergency browser restart window",
             "팀 액션: browser renderer→broker→ALPC→payload telemetry를 detection rule과 incident drill에 추가"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-447",
-      "title_ko": "Okta 분석: infostealer 로그의 AI 세션 토큰·API key 재생으로 MFA 우회 가능한 계정 접근 경로",
-      "title_original": "Infostealer Logs Expose Replayable AI Tokens That Can Bypass MFA",
-      "summary": "- 관측: Okta가 8월 2일 Telegram에 공개된 **7GB** infostealer dump에서 5,871대·162개국 데이터를 분석\n- 토큰: 44,791개 JWT 중 AI 서비스 인증 관련 가능성이 있는 JWT 555개, 인증 관련 JWE 2,937개를 확인\n- 유효성: 공개 당일 만료되지 않은 JWT·JWE 1,843개가 남아 있어 password·MFA 재입력 없이 session replay가 가능한 보도 범위\n- 대상: Google·Microsoft·Anthropic·Amazon·OpenAI·Cursor 등 서비스 관련 token이 포함됐다는 분석 범위\n- 팀 액션: endpoint infostealer 대응과 별개로 AI SaaS session·API key의 revoke, device binding, anomalous token replay 탐지, connector·cloud credential scope 점검 필요",
-      "detail": "The Hacker News는 Okta가 분석한 infostealer dump에서 AI 서비스용 session token·API key가 탈취돼 재생될 수 있다고 보도했다. Okta 분석 범위는 2026년 8월 2일 Telegram에 공개된 7GB dump이며 5,871대 감염 장비·162개국 데이터, 44,791개 JWT 중 AI 인증 관련 가능성 JWT 555개, 인증 관련 JWE 2,937개를 포함한다. 공개 당일 1,843개의 만료되지 않은 JWT·JWE가 남아 있었다는 보도다. 유효한 session token/JWT는 username·password·MFA를 다시 통과하지 않고 계정 접근에 재사용될 수 있으나, 모든 token의 유효성·개별 vendor 계정 침해·모든 AI 서비스의 영향을 뜻하지는 않는다. 기사 인용 범위에서 anti-detect browser와 proxy가 impossible-travel·behavioral trigger 회피에 사용될 수 있어, SSO MFA 강화만으로 session theft 이후의 계정 탈취를 종결할 수 없다. 조직은 AI SaaS, coding IDE, cloud console의 browser session과 API key를 같은 credential lifecycle로 취급하고 endpoint 감염 조사, revoke, connector scope, audit trace를 함께 수행해야 한다.",
-      "why_it_matters": "MFA는 interactive login 방어지만 탈취된 session token·API key의 replay를 자동 차단하지 않음. AI SaaS·coding agent·cloud connector는 source code, prompt, document, model quota, API credential에 접근할 수 있어 browser token incident가 data·compute·supply-chain incident로 확장될 수 있음.",
-      "engineering_implication": "EDR/MDM에서 infostealer IOC와 browser profile 접근을 hunt하고, AI SaaS·coding IDE·cloud console의 session revoke·API key rotation·OAuth app/connector scope review를 incident runbook으로 연결 필요. device-bound session·risk-based reauthentication·short token TTL·new device/proxy/geo·bulk export·API spend anomaly를 같은 trace로 상관 분석하고, simulated token replay에서 revoke propagation과 alert latency를 측정 필요.",
-      "korea_implication": "국내 조직도 개인 개발 PC의 browser profile과 SaaS token이 업무용 AI·cloud 계정으로 이어지는 경우 SSO MFA 준수율만이 아니라 device trust, endpoint isolation, token revoke SLA, 외부 SaaS connector 범위를 함께 증빙 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Security",
-        "Identity Security",
-        "Session Token",
-        "Infostealer",
-        "MFA",
-        "API Key"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-09-10 00:23",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/infostealer-logs-expose-replayable-ai.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiYP_zrhRTZRWnPPcDkUrE7dBh2Bf5eaQmlBxyl7euTRGjS0C8boQppnrmjY0CIVjGrS_PF13V1W3BPVI3RDPZY59s_7xIkI8LnFkg3Tn_Q0x7_tbCs_sMkvhZMREtFLW3IOJSNNmQrKCDI88FCWhfymdWkEWtdMMRzivv3lZXImjreAz0d74VXt2K80ipH/s1600/tokens.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News RSS `Wed, 09 Sep 2026 19:53:55 +0530`와 기사 본문을 직접 확인해 KST `2026-09-10 00:23`으로 기록함. Okta가 공개된 infostealer dump에서 AI 서비스 계정에 재사용 가능한 session token·API key를 분석한 보도임.",
-          "items": [
-            "분석: **7GB** dump에서 5,871대 감염 장비와 162개국 데이터 확인",
-            "범위: Lumma Stealer·Vidar 같은 infostealer가 credential·session token·API key를 수집할 수 있는 경로"
-          ]
-        },
-        {
-          "heading": "토큰과 계정 접근 범위",
-          "body": "기사 인용 Okta 분석에서 44,791개 JWT 가운데 555개가 AI 서비스 인증 관련일 수 있었고, 2,937개 인증 관련 JWE도 발견됨. 공개 당일 만료되지 않은 JWT·JWE는 1,843개라는 보도 범위임.",
-          "items": [
-            "대상: Google·Microsoft·Anthropic·Amazon·Gamma·Notion·Cursor 등 관련 token 포함",
-            "경계: token 보유가 모든 계정의 유효 접근·개별 vendor 침해·실제 악용을 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "MFA와 session replay의 차이",
-          "body": "유효한 JWT·session token·API key는 interactive credential 검증 뒤 발급된 bearer credential 성격을 가질 수 있음. 기사 인용 범위에서 재생된 token은 username·password·MFA 재입력 없이 계정 접근에 쓰일 수 있음.",
-          "items": [
-            "위험: MFA 도입만으로 browser profile·local storage·session store 탈취 이후의 접근을 차단하지 못할 수 있음",
-            "검증: token TTL·device binding·reauthentication·revoke·refresh token rotation 정책 확인"
-          ]
-        },
-        {
-          "heading": "탐지와 대응 시사점",
-          "body": "기사에는 anti-detect browser·proxy가 stolen session data를 불러 impossible-travel·behavioral trigger를 피하는 데 사용될 수 있다는 Okta 설명이 포함됨. endpoint·identity·SaaS telemetry를 분리하면 정상 사용자와 replay를 구분하기 어려움.",
-          "items": [
-            "탐지: new device·proxy·geo·bulk export·connector read·API spend·session renewal의 상관 분석",
-            "대응: endpoint isolate→session revoke→API key/OAuth rotation→connector scope audit→data access timeline 확보"
           ]
         }
       ],
