@@ -2790,3 +2790,6 @@
 - The Hacker News canonical body·RSS `2026-09-19 13:48:54 +05:30`·Open Graph image를 직접 확인. Orkes Conductor `CVE-2026-58138`은 `3.21.21`~`3.30.1`의 인증 전 inline JavaScript·Python workflow expression이 unrestricted GraalVM host access에서 OS command 실행으로 이어지는 범위이며, Fortinet active targeting telemetry·fixed `3.30.2` 이상·API exposure restriction을 source 범위로 수록.
 - Fortinet 7,000 blocked attempt·Previdian honeypot 3건은 targeting evidence로만 기록했으며 successful compromise·actor identity·customer data access는 확인되지 않아 단정하지 않음. `news-500`을 KST `2026-09-19 17:18` 기준 final sort rank 2에 추가하고 actual tail `news-452`를 제거해 50-item cap·rank 1–50 유지. raw capture SHA-256 `9949d9d2680185cbd0cbd175fb6efbc4d928aee7e50b7f02808ab4cef9a0f2d4`, weekly archive·index 동기화.
 - 검증 통과: `python3 scripts/validate_weekly_news.py`, `node --check docs/app.js`, `git diff --check`. Local static server에서 50개 regular card·2개 Deep Dive를 렌더링했고, `Orkes Conductor \`CVE-2026-58138\`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요` modal의 5개 rich section·3개 source link·visible state를 DOM으로 확인.
+
+## [2026-09-20] correction | Orkes capped-tail audit
+- 직전 update의 cap removal 표기 `news-452`는 잘못된 ID였음. commit `9d908ea`의 parent/current ID set 재대조 결과 추가 `news-500`, 실제 제거 `news-449`(KST `2026-09-10 03:30`)를 확인. 50-item count·newest-first order·rank 1–50·source content에는 변경 없음.
