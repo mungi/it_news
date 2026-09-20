@@ -2,7 +2,7 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-20 11:47",
+  "last_updated_kst": "2026-09-20 15:54",
   "audience": "developers and engineers",
   "executive_summary": [
     "Hacktron 연구는 Discourse image-processing 취약점과 OpenAI SSO 결함을 연쇄해 직원 ChatGPT·Codex 계정과 internal repository 권한을 시연. self-hosted forum은 UI patch만 보지 말고 `libheif`·container base image와 SSO client·connected-app token revoke를 같은 incident runbook으로 점검 필요.",
@@ -293,8 +293,92 @@
       ]
     },
     {
-      "id": "news-498",
+      "id": "news-500",
       "rank": 2,
+      "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
+      "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
+      "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
+      "detail": "인증 전 workflow definition 처리와 GraalVM host access가 결합된 RCE임. 패치만 적용하지 말고 API 접근 경로, evaluator 설정, process privilege, workflow submission·subprocess telemetry를 같은 incident evidence로 검증 필요.",
+      "why_it_matters": "workflow orchestration control plane의 인증 전 expression 실행은 CI/CD·data pipeline·agent workflow에서 service-account 권한으로 이어질 수 있음. Fortinet·honeypot telemetry가 active targeting을 보고한 만큼 노출된 Conductor는 patch와 forensic을 병행할 우선순위 대상.",
+      "engineering_implication": "`3.30.2` 이상 fixed version과 running process를 확인하고, 임시로 workflow API를 allowlist·VPN·reverse proxy 뒤로 제한. INLINE·LAMBDA·DO_WHILE·SWITCH task와 GraalVM host access, unexpected command·child process·workflow payload 로그를 우선 점검.",
+      "korea_implication": "국내 self-hosted workflow·agent orchestration 환경도 public API, SSO·VPN 경유 API, service account 권한을 분리해 inventory하고 patch/restart·로그 보존을 change record로 남길 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Workflow",
+        "RCE",
+        "GraalVM",
+        "DevOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-09-19 17:18",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/critical-pre-auth-rce-in-orkes.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL-YeIVFaRBKvtwQKBxAilhKMaZP_x6L979d8JL60W3AEHy9o2sfL_dMrJWy_sPIV70oIbP6DYe2KVhHh-mwbB4zBvrV_jEgdRiuc_IzNyyPSfUAOGvAp7J7JO06OWUWjSwuqpU4JJ_kNy0vtW1D9_gEtQNNVmWiYzRTpYMwhe-J3Bvve3EHrAp81Wht4L/s1700-nu-rw-lo-l85-e365/orkes.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "NVD CVE-2026-58138",
+          "url": "https://nvd.nist.gov/vuln/detail/cve-2026-58138"
+        },
+        {
+          "title": "Conductor v3.30.2 release",
+          "url": "https://github.com/conductor-oss/conductor/releases/tag/v3.30.2"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Fortinet이 Orkes Conductor의 인증 전 RCE를 노린 active targeting을 관측한 상황.",
+          "items": [
+            "`CVE-2026-58138`: Orkes Conductor `3.21.21`부터 `3.30.1` 이전 버전에 영향",
+            "인증 전 workflow API에 inline workflow definition을 제출하는 경로에서 arbitrary OS command 실행 가능",
+            "CVSS v3.1 9.8·v4 9.3으로 표기된 critical 취약점"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "GraalVM evaluator의 unrestricted host access와 workflow expression task가 공격 경로를 구성.",
+          "items": [
+            "`HostAccess.ALL` 또는 `allowAllAccess(true)` 설정의 unsandboxed GraalVM evaluator가 조건",
+            "`INLINE`·`LAMBDA`·`DO_WHILE`·`SWITCH` task type에서 Java reflection·direct subprocess call 가능 범위",
+            "Fortinet은 crafted JavaScript·Python expression을 workflow API로 제출하는 targeting을 관측"
+          ]
+        },
+        {
+          "heading": "관측 범위와 증거 경계",
+          "body": "보고된 telemetry는 targeting 신호이며 개별 조직 침해·data access를 자동으로 뜻하지 않음.",
+          "items": [
+            "Fortinet은 2026-09-02~09 사이 약 7,000건, 9월 9일 24시간 1,290건 blocked attempt를 보고",
+            "Previdian honeypot은 7월 24일 이후 2개 IP의 3건 exploitation attempt를 관측",
+            "attempt·honeypot telemetry는 successful compromise, actor identity, customer data access의 증거가 아님"
+          ]
+        },
+        {
+          "heading": "패치와 노출 축소",
+          "body": "fixed release 적용과 API control-plane 접근 경로 축소를 동시에 수행할 필요.",
+          "items": [
+            "공식 release `3.30.2` 이상으로 upgrade하고 deployed artifact·running process version을 재확인",
+            "즉시 패치가 어렵다면 external workflow API endpoint를 network access control 뒤로 제한",
+            "workflow submission, evaluator error, unexpected child process·OS command execution 로그 보존 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "workflow engine은 code execution surface이므로 일반 application patch보다 service identity·workflow payload·egress까지 closure 범위를 넓혀야 함.",
+          "items": [
+            "Conductor process user·cloud credential·secret mount·network egress를 asset별로 inventory",
+            "patch canary 뒤 정상 workflow, retry, scheduled execution, worker compatibility와 rollback을 검증",
+            "exception에는 owner·expiry·API isolation·enhanced logging을 change record로 기록"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-498",
+      "rank": 3,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -375,7 +459,7 @@
     },
     {
       "id": "news-496",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -448,7 +532,7 @@
     },
     {
       "id": "news-497",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -516,7 +600,7 @@
     },
     {
       "id": "news-495",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -585,7 +669,7 @@
     },
     {
       "id": "news-494",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -669,7 +753,7 @@
     },
     {
       "id": "news-492",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -754,7 +838,7 @@
     },
     {
       "id": "news-493",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -903,7 +987,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-491",
@@ -989,7 +1073,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-487",
@@ -1061,7 +1145,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-489",
@@ -1135,7 +1219,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-485",
@@ -1204,7 +1288,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-486",
@@ -1280,7 +1364,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-483",
@@ -1360,7 +1444,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-484",
@@ -1431,7 +1515,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-488",
@@ -1511,7 +1595,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-479",
@@ -1587,7 +1671,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-478",
@@ -1653,7 +1737,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-481",
@@ -1728,7 +1812,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-480",
@@ -1801,7 +1885,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-477",
@@ -1868,7 +1952,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-482",
@@ -1949,7 +2033,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-475",
@@ -2013,7 +2097,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-476",
@@ -2078,7 +2162,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-474",
@@ -2153,7 +2237,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "region": "Global",
@@ -2228,7 +2312,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-473",
@@ -2295,7 +2379,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "region": "Global",
@@ -2363,7 +2447,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "region": "Global",
@@ -2436,11 +2520,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-469",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -2590,7 +2674,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-464",
@@ -2675,7 +2759,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-465",
@@ -2752,7 +2836,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-462",
@@ -2828,7 +2912,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-463",
@@ -2901,7 +2985,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-461",
@@ -2978,7 +3062,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-459",
@@ -3051,7 +3135,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-458",
@@ -3162,7 +3246,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-468",
@@ -3236,7 +3320,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-455",
@@ -3318,7 +3402,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-460",
@@ -3396,7 +3480,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-457",
@@ -3473,7 +3557,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-456",
@@ -3543,7 +3627,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-454",
@@ -3620,7 +3704,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-453",
@@ -3702,7 +3786,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-466",
@@ -3793,7 +3877,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-452",
@@ -3870,7 +3954,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-451",
@@ -3940,83 +4024,6 @@
           "items": [
             "차단: default-deny egress·test-owned domain allowlist·metadata/package registry deny·redirect validation",
             "팀 액션: kill switch·abort owner·privileged-tool approval·immutable trace·affected-party notification을 rehearsal으로 검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-449",
-      "title_ko": "Kubernetes v1.37 Node Lifecycle Conditions: drain·maintenance·graceful shutdown 상태를 공통 Node signal로 게시",
-      "title_original": "Kubernetes v1.37: Introducing Node Lifecycle Conditions",
-      "summary": "- 변화: v1.37이 `DrainInProgress`·`Drained`·`MaintenancePlanned`·`MaintenanceInProgress`·`GracefulNodeShutdownInProgress` 5개 well-known Node condition을 도입\n- 상태: 각 condition은 `True`·`False`·`Unknown`, 안정적인 machine-readable `reason`, 사람용 `message`로 lifecycle 상태 게시\n- 범위: Alpha `NodeLifecycleConditions` feature gate는 default-disabled이며 v1.37에서 core component가 condition을 읽거나 setting 권한을 제한하지 않는 no-op 성격\n- 운영: cordon·drain·taint·workload-specific control은 기존 방식으로 계속 수행하고, condition은 dashboard·alert·automation의 공통 상태 채널로 사용\n- 팀 액션: condition writer 소유권·reason vocabulary·drain 완료 기준을 정하고 DaemonSet·Job·storage·autoscaler가 같은 lifecycle evidence를 쓰도록 canary 검증 필요",
-      "detail": "Kubernetes Blog는 v1.37에 Node가 drain, 유지보수, graceful shutdown 중임을 Kubernetes-owned signal로 표현하는 5개 well-known Node condition을 도입한다고 발표했다. `DrainInProgress`, `Drained`, `MaintenancePlanned`, `MaintenanceInProgress`, `GracefulNodeShutdownInProgress`는 상태의 현재 관측 여부를 `True`·`False`·`Unknown`으로, 원인을 stable `reason`으로, 세부를 `message`로 전달한다. v1.37의 `NodeLifecycleConditions` feature gate는 Alpha·default-disabled이고 현재 core component가 condition을 읽거나 writer 권한을 제한하지 않는 no-op이므로, enable만으로 scheduling·eviction·rollout 동작이 바뀌지 않는다. 관리자는 기존 `kubectl cordon`, `kubectl drain`, taint, workload control로 lifecycle 작업을 수행하고, authorized controller가 condition을 설정·해제해야 한다. 발표는 Node Ready, taint, terminating Pod 같은 간접 signal만으로는 planned maintenance와 unexpected failure를 구분하기 어렵고, DaemonSet rollout·Job completion·storage operator가 충돌할 수 있는 문제를 제시한다. 조직은 이 condition을 자동 drain의 대체 수단으로 오해하지 말고, maintenance window와 drain criteria, writer ownership, alert·dashboard·automation consumption을 별도 운영 계약으로 정의해야 한다.",
-      "why_it_matters": "Node lifecycle signal이 없으면 scheduler, autoscaler, workload controller, storage operator, external maintenance system이 readiness·taint·Pod state를 서로 다르게 해석할 수 있음. v1.37은 상태 표현의 공통 contract를 제공하지만 controller behavior와 enforcement는 후속 작업 대상이므로 운영 자동화의 직접 트리거로 쓰기 전 검증 필요.",
-      "engineering_implication": "Node lifecycle condition writer를 maintenance controller·drain automation 중 하나로 지정하고, `reason` 값·drain completion 기준·condition clear 규칙을 runbook으로 고정 필요. canary cluster에서 planned maintenance·graceful shutdown·unexpected NotReady를 구분해 dashboard·alert·DaemonSet rollout·Job·storage workflow의 false action과 propagation lag를 측정하고, 기존 cordon/drain/taint 절차는 유지 필요.",
-      "korea_implication": "국내 managed Kubernetes와 온프레미스 cluster 모두 upstream Alpha signal의 지원 여부·control-plane exposure·provider maintenance integration은 별도 확인 대상. 야간 maintenance와 DR drill에서 tenant별 node lifecycle evidence와 workload availability 영향 기록을 우선 확보 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "Kubernetes",
-        "Node Lifecycle",
-        "DevOps",
-        "SRE",
-        "Maintenance",
-        "Drain"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-10 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/09/09/kubernetes-v1-37-node-lifecycle-conditions/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "KEP-5683: Node Lifecycle Conditions",
-          "url": "https://kep.k8s.io/5683/"
-        },
-        {
-          "title": "Kubernetes Node Lifecycle Working Group",
-          "url": "https://github.com/kubernetes/community/tree/master/wg-node-lifecycle"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes v1.37은 Node가 drain, 유지보수, graceful shutdown 중인 상태를 공통으로 게시하는 well-known `NodeConditionType` 5개를 예약함. Kubernetes Blog의 `article:published_time` `2026-09-09T10:30:00-08:00`을 KST `2026-09-10 03:30`으로 변환해 기록함.",
-          "items": [
-            "추가: **`DrainInProgress`·`Drained`·`MaintenancePlanned`·`MaintenanceInProgress`·`GracefulNodeShutdownInProgress`** 5개 lifecycle signal",
-            "표현: active state는 `True`, inactive state는 `False`, 판정 불가는 `Unknown`으로 게시",
-            "메타데이터: 자동화용 stable `reason`과 운영자용 `message`를 함께 기록"
-          ]
-        },
-        {
-          "heading": "v1.37 동작 범위",
-          "body": "`NodeLifecycleConditions` feature gate는 Alpha이며 default-disabled임. v1.37에서는 gate가 condition writer를 제한하지 않고 core component가 condition을 소비하지도 않아, gate enable만으로 scheduling·eviction·rollout 동작이 변하지 않음.",
-          "items": [
-            "writer: 관리자 또는 관리자 승인을 받은 maintenance controller가 condition 설정·해제 대상",
-            "유지: `kubectl cordon`, `kubectl drain`, taint, workload별 control은 기존 절차로 계속 수행",
-            "경계: condition은 status signal이며 drain·eviction·maintenance를 실행하는 command 또는 lock이 아님"
-          ]
-        },
-        {
-          "heading": "왜 공통 상태가 필요한가",
-          "body": "Node readiness, taint, terminating Pod, provider label은 각각 유용하지만 planned maintenance, unexpected failure, graceful shutdown을 같은 의미로 설명하지 않음. 서로 다른 controller가 간접 signal을 재구성하면 독립적으로 정상인 판단도 충돌 가능.",
-          "items": [
-            "예시: DaemonSet controller가 graceful shutdown으로 종료한 Pod를 replacement 처리할 수 있는 경계",
-            "예시: Job controller가 제거 중인 Node의 terminal Pod phase를 기다려 completion이 지연될 수 있는 경계",
-            "예시: storage operator가 drain 시작 뒤에야 maintenance를 인지해 volume 작업이 뒤늦게 충돌하는 리스크"
-          ]
-        },
-        {
-          "heading": "시사점과 도입 점검",
-          "body": "공통 condition은 dashboard·alert·lifecycle automation이 같은 상태 evidence를 읽게 하는 기반임. writer가 여럿이면 conflicting write가 생길 수 있으므로 owner·reason vocabulary·transition·clear policy와 consumer behavior를 먼저 정의해야 함.",
-          "items": [
-            "점검: planned maintenance, active drain, drained, graceful shutdown, unexpected NotReady의 reason·message taxonomy",
-            "검증: Node별 condition propagation lag, stale condition, duplicate writer, alert false-positive, rollout availability 영향",
-            "팀 액션: canary node pool에서 cordon·drain·taint 절차와 condition dashboard를 병행하고 rollback·clear owner를 runbook에 명시"
           ]
         }
       ],
