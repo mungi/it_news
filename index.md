@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/crowdsec-tanstack-supply-chain-private-repository-leak-2026-09-21]] — TanStack npm 공급망 침해 뒤 전 직원 OAuth token으로 CrowdSec private repository 약 170개 복사, offboarding·token·secret rotation 대응 경계.
 - [[raw/articles/thn-orkes-conductor-cve-2026-58138-active-exploitation-2026-09-20]] — Orkes Conductor `CVE-2026-58138` 인증 전 workflow expression RCE active targeting·GraalVM host access·API control-plane patch 경계.
 - [[raw/articles/msrc-azure-ai-foundry-cve-2026-85889-2026-09-19]] — Azure AI Foundry `CVE-2026-85889`의 service-side mitigation, tenant control-plane·identity audit 경계.
 - [[raw/articles/air-plugin4shell-agent-plugin-sha-pinning-bypass-2026-09-18]] — Plugin4Shell의 Claude Code·Codex·Copilot·Gemini CLI plugin SHA pin bypass, resolved `HEAD` 검증·auto-update·fixed-version 운영 경계.
