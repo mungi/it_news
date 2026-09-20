@@ -2,7 +2,7 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-20 07:42",
+  "last_updated_kst": "2026-09-20 11:47",
   "audience": "developers and engineers",
   "executive_summary": [
     "Hacktron 연구는 Discourse image-processing 취약점과 OpenAI SSO 결함을 연쇄해 직원 ChatGPT·Codex 계정과 internal repository 권한을 시연. self-hosted forum은 UI patch만 보지 말고 `libheif`·container base image와 SSO client·connected-app token revoke를 같은 incident runbook으로 점검 필요.",
@@ -220,8 +220,81 @@
   ],
   "items": [
     {
-      "id": "news-498",
+      "id": "news-499",
       "rank": 1,
+      "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
+      "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
+      "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
+      "detail": "SolarWinds는 2026년 9월 17일 Access Rights Manager(ARM)의 `CVE-2026-28326`을 공개했다. vendor advisory는 hard-coded static key에서 비롯된 unauthenticated remote code execution 취약점으로 분류하고 ARM `2026.2` 및 모든 이전 버전을 영향 범위, `2026.2.1`을 fixed release로 명시한다. CVSS 3.1 vector는 `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`로 adjacent-network 조건을 포함하므로 public internet RCE로 과장하면 안 된다. The Hacker News 보도도 active exploitation을 언급하지 않는다. ARM은 Active Directory 권한·파일 서버 access governance를 다루는 관리 제품이므로, 패치는 binary version만이 아니라 ARM server가 접속하는 network segment, admin access path, service account와 directory privilege, audit log를 함께 점검하는 change로 처리해야 함.",
+      "why_it_matters": "ARM은 directory 권한과 파일 접근 관리의 control plane에 놓일 수 있어, 인접 네트워크에서의 무인증 코드 실행 가능성은 identity·file-service 권한 경계와 연결될 수 있음. CVSS의 `AV:A` 조건을 확인하지 않고 internet exposure 또는 조직 침해로 확대하지 않는 판단이 필요함.",
+      "engineering_implication": "ARM inventory에서 installed version·server role·reachable VLAN/VPN·management ACL·service account·AD delegation을 묶어 확인하고, `2026.2.1` canary 뒤 service health와 scheduled task·connector·audit continuity를 검증해야 함. patch 전후 ARM host process, administrator activity, AD privilege와 file-share permission 변경을 보존하고 exception asset에는 owner·expiry·network compensating control을 기록 필요.",
+      "korea_implication": "국내 AD 기반 파일 서버와 권한관리 시스템에서 ARM을 운영하면 본사·지사·협력사 VPN과 관리망의 adjacent reachability가 다를 수 있음. 중앙 보안팀의 version report와 현장 네트워크팀의 ACL 증적을 같은 patch closure record로 결합할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "SolarWinds",
+        "Access Rights Manager",
+        "Identity Security",
+        "Active Directory",
+        "Patch Management"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-09-19 18:31",
+      "source_name": "SolarWinds Security Advisory / The Hacker News",
+      "source_url": "https://www.solarwinds.com/trust-center/security-advisories/cve-2026-28326",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjXW-SaTg898BaxxlrDjSCrcm6ZYDgxoeuYCBY4QNWs6Nt5RhyphenhyphenCf4iSIyodz-7jk8rTqUT8hjlMT74dIf6ZjL_pD5NmiNbAHhsZwzw2rakJUDaU1tVeEvKw7Az3tMf34Xwh3ffToJeI1tpTQ8rAR8AvVn2XTupFgfhehb9sHClHDDGeDd4Y9z4oUf5CYPoS/s1600/solar.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "The Hacker News report",
+          "url": "https://thehackernews.com/2026/09/solarwinds-patches-arm-hard-coded-key.html"
+        },
+        {
+          "title": "ARM 2026.2.1 release notes",
+          "url": "https://documentation.solarwinds.com/en/success_center/arm/content/release_notes/arm_2026-2-1_release_notes.htm"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "SolarWinds advisory는 Access Rights Manager의 `CVE-2026-28326`을 hard-coded static key에서 비롯된 unauthenticated RCE로 분류함. advisory의 first-published date는 2026-09-17이며 THN 보도 RSS 시각은 KST 2026-09-19 18:31로 확인됨.",
+          "items": [
+            "영향: ARM `2026.2` 및 모든 이전 버전",
+            "수정: `ARM 2026.2.1` fixed release 공개"
+          ]
+        },
+        {
+          "heading": "영향 조건과 경계",
+          "body": "vendor CVSS 3.1 vector는 `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`임. 인증과 사용자 상호작용은 필요 없지만 attack vector는 adjacent network이므로 management interface의 실제 reachability가 우선 확인 대상임.",
+          "items": [
+            "조건: attacker와 ARM service 사이의 adjacent-network reachability 확인",
+            "경계: public internet 노출, active exploitation, public PoC는 vendor·보도 원문에서 확인되지 않음"
+          ]
+        },
+        {
+          "heading": "identity·관리 plane 영향",
+          "body": "ARM은 Active Directory 및 file-system 권한을 관리하는 제품이므로 server code execution 가능성은 단일 application host보다 넓은 identity governance 경계에 닿을 수 있음. 다만 tenant별 directory 권한·service account 범위는 public advisory만으로 확정 불가함.",
+          "items": [
+            "inventory: ARM server role, service account, AD delegation, managed file-share와 connector 목록 확인",
+            "분리: ARM application compromise 가능성과 domain compromise·data access를 같은 사실로 단정하지 않는 조사 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patch closure는 installed package가 아니라 fixed version으로 실행 중인 ARM server와 접근 경로가 검증된 상태임. `2026.2.1` 배포는 maintenance window·connector health·audit continuity를 확인하는 canary부터 진행해야 함.",
+          "items": [
+            "조치: version·reachable VLAN/VPN·management ACL·host firewall을 asset record에서 대조",
+            "관측: patch 전후 administrator activity, service process, AD privilege·file-share permission 변경 로그 보존",
+            "팀 액션: unpatched exception에 owner·expiry·network isolation 또는 ACL compensating control 기록"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-498",
+      "rank": 2,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -302,7 +375,7 @@
     },
     {
       "id": "news-496",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -375,7 +448,7 @@
     },
     {
       "id": "news-497",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -443,7 +516,7 @@
     },
     {
       "id": "news-495",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -512,7 +585,7 @@
     },
     {
       "id": "news-494",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -596,7 +669,7 @@
     },
     {
       "id": "news-492",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -681,7 +754,7 @@
     },
     {
       "id": "news-493",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -830,7 +903,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-491",
@@ -916,7 +989,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-487",
@@ -988,7 +1061,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-489",
@@ -1062,7 +1135,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-485",
@@ -1131,7 +1204,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-486",
@@ -1207,7 +1280,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-483",
@@ -1287,7 +1360,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-484",
@@ -1358,7 +1431,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-488",
@@ -1438,7 +1511,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-479",
@@ -1514,7 +1587,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-478",
@@ -1580,7 +1653,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-481",
@@ -1655,7 +1728,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-480",
@@ -1728,7 +1801,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-477",
@@ -1795,7 +1868,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-482",
@@ -1876,7 +1949,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-475",
@@ -1940,7 +2013,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-476",
@@ -2005,7 +2078,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-474",
@@ -2080,7 +2153,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "region": "Global",
@@ -2155,7 +2228,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-473",
@@ -2222,7 +2295,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "region": "Global",
@@ -2290,7 +2363,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "region": "Global",
@@ -2363,11 +2436,11 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-469",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -2517,7 +2590,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-464",
@@ -2602,7 +2675,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-465",
@@ -2679,7 +2752,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-462",
@@ -2755,7 +2828,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-463",
@@ -2828,7 +2901,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-461",
@@ -2905,7 +2978,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-459",
@@ -2978,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-458",
@@ -3089,7 +3162,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-468",
@@ -3163,7 +3236,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-455",
@@ -3245,7 +3318,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-460",
@@ -3323,7 +3396,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-457",
@@ -3400,7 +3473,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-456",
@@ -3470,7 +3543,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-454",
@@ -3547,7 +3620,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-453",
@@ -3629,7 +3702,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-466",
@@ -3720,7 +3793,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-452",
@@ -3797,7 +3870,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-451",
@@ -3870,7 +3943,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-449",
@@ -3944,80 +4017,6 @@
             "점검: planned maintenance, active drain, drained, graceful shutdown, unexpected NotReady의 reason·message taxonomy",
             "검증: Node별 condition propagation lag, stale condition, duplicate writer, alert false-positive, rollout availability 영향",
             "팀 액션: canary node pool에서 cordon·drain·taint 절차와 condition dashboard를 병행하고 rollback·clear owner를 runbook에 명시"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-450",
-      "title_ko": "Proofpoint BlueMoon: 4개 espionage cluster가 Chrome·Windows 3단계 exploit chain을 수일 내 재사용",
-      "title_original": "Once in a BlueMoon: Multiple State-Aligned Threat Actors Rapidly Adopt Novel Exploit Chain Using Chrome and Windows Zero-Days",
-      "summary": "- 관측: Proofpoint가 **4개** espionage-motivated threat actor가 BlueMoon exploit kit으로 Chrome·Windows 취약점 연쇄를 사용한 활동 확인\n- 초기 사용: China-aligned TA412이 8월 28일 처음 관측됐고, 수일 안에 다수의 China nexus 의심 cluster가 채택한 범위\n- 연쇄: Chromium V8 type confusion `CVE-2026-85046`·CVE 미배정 V8 sandbox escape·Windows ALPC LPE `CVE-2026-85880`의 3단계 경로\n- patch gap: 두 V8 결함은 upstream Chromium 공개 수정 뒤 stable Chrome·Chromium 기반 browser 반영 전 악용된 patch-gap zero-day라는 Proofpoint 분석\n- 팀 액션: Chrome/Chromium fixed build·Windows September patch·browser restart·phishing URL·renderer→broker/ALPC·curl child process를 동일 incident runbook으로 점검 필요",
-      "detail": "Proofpoint는 BlueMoon이라는 신규 exploit kit을 사용한 4개 espionage-motivated threat actor 활동을 확인했다고 발표했다. 첫 관측은 2026년 8월 28일 TA412(JungleBamboo·Violet Typhoon·APT31·TIDE CASTLE)이며, 수일 안에 다른 cluster가 채택했다는 분석이다. 공격은 spearphishing URL에서 Chromium V8 type confusion `CVE-2026-85046`, CVE가 배정되지 않은 V8 sandbox escape, 구형 Windows build의 ALPC local privilege escalation `CVE-2026-85880`을 연쇄해 renderer process 탈출과 추가 payload 실행을 노린다. Proofpoint는 두 V8 결함이 public upstream Chromium source에는 수정돼 있었지만 당시 latest stable Chrome·Chromium browser에는 아직 전파되지 않은 patch-gap zero-day였다고 설명한다. observed chain은 최신 stable Chrome/Chromium 기반 browser와 구형 Windows build를 함께 요구하므로 target pool과 성공 확률에 제약이 있다. 공개 자료는 모든 Chrome zero-day, 모든 Chromium browser, 모든 Windows endpoint의 침해나 AI-assisted 개발을 확정하지 않는다. 조직은 browser patch 완료를 설치 기록이 아니라 fixed version 실행과 restart로, endpoint hunt를 phishing·renderer/broker·ALPC·download 실행 telemetry의 시간 순서로 판정해야 한다.",
-      "why_it_matters": "Browser renderer exploit와 sandbox escape, Windows LPE가 결합하면 phishing URL 한 번으로 user-level browser context에서 host-level payload execution까지 이어질 수 있음. public source patch와 stable channel 배포 사이의 gap은 managed browser·VDI·고정 이미지·Chromium 파생 browser의 patch verification을 긴급 운영 항목으로 만듦.",
-      "engineering_implication": "Chrome·Edge 등 Chromium fleet의 fixed build·last relaunch·Windows build·patch exception을 교차 inventory화하고, force-restart와 rollback window를 emergency change에 포함 필요. secure web gateway·DNS·EDR에서 spearphishing URL, renderer crash/abnormal child process, ALPC privilege elevation, browser broker injection, `curl` download 실행을 하나의 timeline으로 상관하고, older Windows build는 우선 격리·patch 완료까지 risk acceptance를 제한 필요.",
-      "korea_implication": "국내 managed browser·VDI·망분리 workstation은 browser auto-update 여부만으로 종료하지 말고 Windows monthly patch와 browser restart 증빙을 함께 수집 필요. 협력사·제조·공공 endpoint의 고정 이미지와 Chromium 파생 browser는 별도 fixed-build 확인 대상.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Threat Intelligence",
-        "Chrome",
-        "Chromium",
-        "Windows",
-        "CVE-2026-85046",
-        "CVE-2026-85880",
-        "Patch Management"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-09-10 01:34",
-      "source_name": "The Hacker News / Proofpoint",
-      "source_url": "https://thehackernews.com/2026/09/four-spy-groups-used-same-chrome-and.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhxouoVfK0MjZpruL0J1chmWnC7avUov1fOLbgX-XyFGrTcXeOh08tVntBjzJ7wBMmOB3P-PpxMr6E868Wpsaky-b-Nrf1LajzoQFfmjnkI1KHQzGXrCcVnC57nF2ndYZHCLx5WA3dENCWmCbZlSAb5TC-p8DXCGWxWB7I3iRIsdMMk6SS6IV03722lZIS4/s1700-nu-rw-lo-l85-e365/spy.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Proofpoint: Once in a BlueMoon",
-          "url": "https://www.proofpoint.com/us/blog/threat-insight/once-bluemoon-multiple-state-aligned-threat-actors-rapidly-adopt-novel-exploit"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News RSS `Wed, 09 Sep 2026 22:04:05 +0530`와 기사 본문·Open Graph image를 직접 확인해 KST `2026-09-10 01:34`로 기록함. Proofpoint는 BlueMoon exploit kit을 사용한 4개 espionage-motivated cluster를 확인했다고 발표함.",
-          "items": [
-            "관측: **4개** cluster의 Chrome·Windows exploit chain 사용 확인",
-            "초기 활동: TA412의 2026년 8월 28일 사용과 수일 내 후속 cluster 채택 범위",
-            "경계: BlueMoon의 유통 경로·모든 사용자·모든 endpoint 피해는 공개 자료 미확정"
-          ]
-        },
-        {
-          "heading": "공격 연쇄와 패치 경계",
-          "body": "Proofpoint가 제시한 연쇄는 Chromium V8 type confusion `CVE-2026-85046`, CVE 미배정 V8 sandbox escape, Windows ALPC LPE `CVE-2026-85880`으로 구성됨. 두 V8 결함은 upstream 공개 source의 fix가 stable Chrome·Chromium 기반 browser에 전파되기 전 악용된 patch-gap zero-day라는 설명임.",
-          "items": [
-            "browser: `CVE-2026-85046` V8 type confusion과 V8 sandbox escape 결합",
-            "host: 구형 Windows build의 `CVE-2026-85880` ALPC local privilege escalation 사용 범위",
-            "조건: 최신 stable Chromium browser와 구형 Windows build의 조합으로 viable target이 제한되는 범위"
-          ]
-        },
-        {
-          "heading": "관측된 delivery·실행 경로",
-          "body": "Proofpoint는 spearphishing lure가 actor-controlled URL로 유도하고 browser exploit 뒤 renderer privilege를 높여 actor-specified command를 실행하는 경로를 설명함. 기본 configuration의 remote executable download와 실행은 high-signal endpoint telemetry를 남길 수 있는 범위임.",
-          "items": [
-            "유입: spearphishing URL과 campaign별 landing page·redirect 조건",
-            "실행: reflectively loaded DLL의 host fingerprint와 renderer process 권한 상승 경로",
-            "탐지: browser broker injection·비정상 child process·`curl` download·new executable 실행 상관 분석"
-          ]
-        },
-        {
-          "heading": "시사점과 대응 우선순위",
-          "body": "browser patch는 package install event가 아니라 fixed version 실행·browser restart·Windows build update·예외 closure까지 확인해야 함. browser fleet과 OS patch fleet이 다른 owner이면 patch gap이 남으므로 동일 emergency change와 endpoint hunt timeline으로 묶을 필요.",
-          "items": [
-            "점검: Chrome·Edge·기타 Chromium browser fixed build, last relaunch, VDI/golden image, Windows build",
-            "차단: phishing URL·web proxy/DNS policy, risky attachment·link protection, emergency browser restart window",
-            "팀 액션: browser renderer→broker→ALPC→payload telemetry를 detection rule과 incident drill에 추가"
           ]
         }
       ],

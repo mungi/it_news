@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-20 | Total pages: 360
+> Last updated: 2026-09-20 | Total pages: 361
 
 ## Entities
 
@@ -444,6 +444,7 @@
 - [[raw/articles/thn-linux-kernel-four-lpe-public-exploits-2026-09-19]] — DirtyAH6·TUNderflow·PPPoEject·DiagSpill 공개 exploit의 배포판 backport·user namespace·SCTP 노출 점검 경계.
 
 - [[raw/articles/thn-hacktron-openai-sso-discourse-chain-2026-09-20]] — Discourse native image dependency·OpenAI SSO trust chain·connected-app revoke 경계.
+- [[raw/articles/solarwinds-arm-cve-2026-28326-2026-09-20]] — SolarWinds Access Rights Manager `CVE-2026-28326` hard-coded static key·adjacent-network RCE의 fixed version·identity control-plane 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
