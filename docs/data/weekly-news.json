@@ -2,7 +2,7 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-21 04:21",
+  "last_updated_kst": "2026-09-21 08:29",
   "audience": "developers and engineers",
   "executive_summary": [
     "CISA는 Linux kernel `CVE-2025-39682`·`CVE-2026-53266`·`CVE-2025-39964`를 KEV에 9월 18일 추가하고 9월 21일 조치 기한을 제시. high-risk fleet은 vendor backport·running kernel·reboot·kTLS/ebtables/AF_ALG 노출을 자산별 closure evidence로 확인 필요.",
@@ -703,8 +703,81 @@
       ]
     },
     {
-      "id": "news-497",
+      "id": "news-503",
       "rank": 7,
+      "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
+      "title_original": "Saving another 100TB of RAM with math (and Rust)",
+      "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
+      "detail": "Cloudflare는 2026년 9월 18일 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash ring을 재설계해 전 세계에서 100TB 이상의 RAM을 회수했다고 공개했다. PBR은 cacheable URL을 backend에 안정적으로 연결해 데이터센터 내 파일 사본 수와 backend 증감 시 재배치를 제한한다. 기존 ring은 서버별 hash point 수를 늘려 분산 오차를 낮추고 storage weight를 반영했지만, 고가중 서버에서 많은 32-bit hash와 ring state가 memory 비용을 키웠다. 새 v2는 compacted storage, faster sorting, node당 base hash 수 조정을 제공한다. Cloudflare는 캐시 가능한 요청의 backend를 한 번에 바꾸면 cache invalidation과 origin traffic이 급증할 수 있다고 판단해, old/new ring을 동시 운영하고 request hash와 data-center scope로 rollout·rollback을 제어했다. 100TB 수치는 Cloudflare fleet 결과이므로 다른 proxy·cache에 같은 절감률을 가정하면 안 되며, 자체 환경에서는 distribution·cache churn·origin load·p99 latency를 replay와 canary로 확인해야 함.",
+      "why_it_matters": "consistent hashing은 cache·object storage·shard routing에서 state size, key 분포, backend weight, cache locality를 동시에 바꾸는 자료구조임. memory 절감만 보고 ring을 전환하면 cache miss와 origin egress·tail latency가 증가할 수 있어, data-plane 비용과 안정성을 함께 측정해야 함.",
+      "engineering_implication": "hash ring 변경은 API 호환성보다 routing state migration으로 취급 필요. old/new ring dual-run, request-stable assignment, region·data-center scoped canary, cache-hit·origin egress·backend skew·p99/p999 latency·error budget을 같은 rollback gate에 연결하고, weighted-node의 point 수와 collision·state-byte를 capacity model에 반영해야 함.",
+      "korea_implication": "국내 CDN·캐시·object storage·서비스 mesh 환경도 지역별 backend capacity와 origin 회선 비용이 달라 전역 percentage rollout만으로 안전성을 판단하기 어려움. 서울 리전·엣지 POP·origin 구간을 분리해 cache churn과 egress 비용을 관측할 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Cloudflare",
+        "Pingora",
+        "Consistent Hashing",
+        "Caching",
+        "Performance",
+        "Rust",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-19 02:23",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/saving-100-tb-of-ram-with-math/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M2PFY1FZ7AH3P8JEQCDM9YWH.01M2PFY2XJ3KBV9JD78JMJK88K.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "pingora-ketama crate",
+          "url": "https://crates.io/crates/pingora-ketama"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare는 PBR에서 `pingora-ketama` consistent-hash ring의 과도한 memory 사용을 추적해 ring 표현과 rollout 방식을 바꿨음. 공개된 fleet 결과는 전 세계 사용 RAM 100TB 이상 감소 범위이며, 이전 달 DNS 팀의 100TB 절감과는 별도 변경임.",
+          "items": [
+            "효과: PBR memory 사용량을 전 세계 기준 **100TB 이상** 감축",
+            "대상: cacheable URL을 backend에 연결하는 Pingora Backend Router의 consistent-hash 경로"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "consistent hashing은 backend가 늘거나 줄어도 request 이동을 제한하는 방식임. PBR은 데이터센터에서 파일 사본을 하나로 유지하기 위해 URL 기반 routing에 사용하며, weighted backend는 disk capacity 비례의 hash point를 요구함.",
+          "items": [
+            "구조: NGINX·Pingora 기본값으로 언급된 server당 160 hash point와 weighted-node 확장 범위",
+            "제약: 많은 hash point는 분산 오차 개선 폭이 작아지는 반면 32-bit collision과 ring state memory 비용을 키우는 조건",
+            "변경: v2 ring에 compact storage·faster sorting·조절 가능한 node당 base hash 수 추가"
+          ]
+        },
+        {
+          "heading": "안전한 전환과 운영 경계",
+          "body": "Cloudflare는 새 ring으로 전체 요청을 즉시 전환하면 cached content의 backend 위치가 바뀌어 cache churn과 origin traffic이 급증할 수 있다고 설명함. 따라서 old/new ring을 동시에 두고 request hash로 선택을 고정하며, location group을 넓히는 순서로 전환함.",
+          "items": [
+            "전환: request-stable migration과 data-center scoped rollout으로 blast radius 제한",
+            "복구: anomaly 발생 시 redeploy 없이 새 요청을 old ring으로 되돌릴 수 있는 rollback 경로 유지",
+            "경계: 100TB 절감은 Cloudflare의 server 수·weight·traffic 분포 결과이며 다른 fleet의 절감률 보증 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "hash ring 최적화는 memory profiling만으로 종료할 수 없음. routing state 크기와 collision뿐 아니라 cache-hit, backend load skew, origin egress, retry, p99/p999 latency를 같은 change window에서 대조해야 함.",
+          "items": [
+            "검증: production trace replay와 small-region canary에서 key distribution·cache locality·origin request 증가율 비교",
+            "측정: ring bytes, hash collision, backend skew, cache-hit, origin egress, tail latency를 rollback gate로 연결",
+            "팀 액션: weighted-node point count와 cache invalidation 비용을 capacity·FinOps model에 함께 반영"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-497",
+      "rank": 8,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -772,7 +845,7 @@
     },
     {
       "id": "news-495",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -841,7 +914,7 @@
     },
     {
       "id": "news-494",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -925,7 +998,7 @@
     },
     {
       "id": "news-492",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -1010,7 +1083,7 @@
     },
     {
       "id": "news-493",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -1159,7 +1232,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-491",
@@ -1245,7 +1318,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-487",
@@ -1317,7 +1390,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-489",
@@ -1391,7 +1464,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-485",
@@ -1460,7 +1533,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-486",
@@ -1536,7 +1609,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-483",
@@ -1616,7 +1689,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-484",
@@ -1687,7 +1760,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-488",
@@ -1767,7 +1840,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-479",
@@ -1843,7 +1916,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-478",
@@ -1909,7 +1982,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-481",
@@ -1984,7 +2057,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-480",
@@ -2057,7 +2130,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-477",
@@ -2124,7 +2197,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-482",
@@ -2205,7 +2278,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-475",
@@ -2269,7 +2342,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-476",
@@ -2334,7 +2407,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-474",
@@ -2409,7 +2482,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "region": "Global",
@@ -2484,7 +2557,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-473",
@@ -2551,7 +2624,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "region": "Global",
@@ -2619,7 +2692,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "region": "Global",
@@ -2692,11 +2765,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-469",
-      "rank": 34,
+      "rank": 35,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -2846,7 +2919,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-464",
@@ -2931,7 +3004,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-465",
@@ -3008,7 +3081,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-462",
@@ -3084,7 +3157,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-463",
@@ -3157,7 +3230,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-461",
@@ -3234,7 +3307,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-459",
@@ -3307,7 +3380,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-458",
@@ -3418,7 +3491,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-468",
@@ -3492,7 +3565,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-455",
@@ -3574,7 +3647,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-460",
@@ -3652,7 +3725,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-457",
@@ -3729,7 +3802,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-456",
@@ -3799,7 +3872,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-454",
@@ -3876,7 +3949,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-453",
@@ -3955,97 +4028,6 @@
             "차단: vendor fixed build 적용→service restart/version evidence→management-plane ingress 제한→unused external exposure 제거 순서",
             "조사: PaperCut host의 Java/process tree·registry hive read·new scheduled task·LDAP/Kerberos·SMB/RPC·outbound connection timeline 확보",
             "팀 액션: patch와 병렬로 PaperCut service account·domain credential·API secret rotation 범위를 privilege와 log evidence로 판정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-466",
-      "title_ko": "CNCF Kubernetes 재해복구 가이드: backup 완료·GitOps 동기화·다중 PVC snapshot을 복구 증거로 분리 검증",
-      "title_original": "Kubernetes disaster recovery: Guidance from three reproducible failure scenarios",
-      "summary": "- 결론: `Completed` backup과 GitOps `Synced`·Pod `Ready` 상태는 stateful application 복구 증거가 아니며, clean recovery target에서 데이터·traffic path까지 검증 필요\n- 실험: Velero data mover가 **47,989,888 bytes** volume data 이동을 기록하고 namespace 삭제 뒤 동일 4개 row 복구; production 종료~검증 데이터까지 실험에서는 4분, rehearsal에서는 2분 미만\n- 일관성: PVC 두 개를 5초 간격 snapshot하면 `25`개 payment가 order 없이 복구될 수 있으며, Kubernetes v1.36 GA `VolumeGroupSnapshot`은 coordinated crash-consistent point를 제공\n- 팀 액션: cluster·declared state·stored state·traffic/identity를 서로 다른 recovery layer로 inventory하고 clean target restore·data invariant·cutover·failback까지 RTO/RPO drill로 측정 필요",
-      "detail": "CNCF Ambassadors의 재현 가능한 lab 가이드는 Kubernetes stateful application의 백업 보유와 실제 복구 가능성을 구분하기 위해 세 가지 failure scenario를 제시한다. 첫째, backup 완료 상태만으로는 volume byte가 외부 store로 이동했는지, application-consistent data가 복원되는지 알 수 없다. 둘째, GitOps는 manifest라는 declared state만 재구성하므로 recovery cluster에서 StatefulSet·Service·PVC가 Ready여도 새 빈 volume 위의 database가 될 수 있다. 셋째, 다중 PVC를 개별 snapshot하면 각 snapshot이 ReadyToUse여도 서로 다른 시점이 섞여 application invariant가 깨질 수 있다. source lab은 Velero data mover, 두 cluster, external S3-compatible store, GitOps controller와 PostgreSQL known data를 사용해 clean target에서 restore data를 검증한다. `VolumeGroupSnapshot`은 coordinated crash-consistent recovery point를 위한 API지만 CSI driver별 지원·feature gate/CRD enable과 application quiesce는 별도 조건이다. 따라서 DR 승인 기준은 backup job 성공이 아니라 cluster·manifest·volume data·traffic/DNS·identity를 복구한 clean environment에서 data invariant와 user path를 검증하고 detection·decision·cutover·failback을 포함한 실제 RTO/RPO를 기록하는 방식이어야 한다.",
-      "why_it_matters": "Kubernetes stateful workload의 복구 실패는 backup tool, GitOps, storage, traffic, identity가 각각 정상이어도 layer 사이의 handoff에서 발생함. green dashboard나 backup 완료 지표는 RTO/RPO와 data integrity를 대신하지 못함.",
-      "engineering_implication": "각 application에 대해 recovery target 생성 책임, Git manifest 복원 순서, PVC/CSI storage mapping, data invariant query, DNS·load balancer·certificate·identity cutover, failback owner를 하나의 drill runbook으로 고정해야 함. quarterly rehearsal에서 backup byte evidence·restore p95·invariant failure·traffic cutover·rollback 시간을 수집하고, multi-volume workload는 CSI `VolumeGroupSnapshot` 지원과 application quiesce를 별도 release gate로 관리 필요.",
-      "korea_implication": "국내 multi-AZ·secondary Region 또는 온프레미스 DR 환경도 managed Kubernetes 생성, storage class와 KMS key, private DNS·load balancer·certificate, 망분리 identity 경로가 recovery target에서 실제로 재구성되는지 확인해야 함. 백업 저장 위치와 복구 권한은 데이터 반출·보존·접근통제 정책과 함께 drill evidence로 보관 필요.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "Disaster Recovery",
-        "Backup",
-        "GitOps",
-        "Velero",
-        "CSI",
-        "VolumeGroupSnapshot",
-        "SRE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-09-10 20:37",
-      "source_name": "CNCF Blog",
-      "source_url": "https://www.cncf.io/blog/2026/09/10/kubernetes-disaster-recovery-guidance-from-three-reproducible-failure-scenarios/",
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/09/Kubernetes-disaster-recovery-scaled.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "재현 가능한 Kubernetes DR lab",
-          "url": "https://github.com/saiyam1814/kubecon-japan-dr-demo"
-        },
-        {
-          "title": "Kubernetes v1.36 VolumeGroupSnapshot GA",
-          "url": "https://kubernetes.io/blog/2026/05/08/kubernetes-v1-36-volume-group-snapshot-ga/"
-        },
-        {
-          "title": "Velero backup hooks",
-          "url": "https://velero.io/docs/v1.18/backup-hooks/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CNCF Ambassadors가 laptop에서 재현 가능한 두 Kubernetes cluster·external S3-compatible backup store·GitOps controller·PostgreSQL lab으로 stateful application DR의 세 failure scenario를 공개함. source의 목표는 backup 보유와 validated recovery의 차이를 검증하는 방법 제시임.",
-          "items": [
-            "범위: Kubernetes 위 stateful application의 backup byte·declared/stored state 분리·multi-volume consistency 검증",
-            "구성: production cluster·사전 준비된 recovery cluster·공유 object store·Git repository와 GitOps controller의 네 recovery 구성요소",
-            "경계: underlying cloud/datacenter infrastructure 자체 복구·compliance framework·product comparison은 source 범위 밖"
-          ]
-        },
-        {
-          "heading": "backup 완료와 복구 증거의 차이",
-          "body": "Kubernetes backup은 resource definition과 persistent volume data라는 별도 artifact를 다룸. source lab은 Velero data mover가 external store로 `47,989,888 bytes`를 이동한 기록 뒤 namespace와 PVC를 삭제하고 동일 4개 row 복원을 확인함.",
-          "items": [
-            "검증: backup `Completed` 상태 외에 volume byte 이동량·restore 후 expected data·user path를 함께 확인",
-            "일관성: database는 flush 또는 quiesce hook이 필요한 경우 backup tool의 volume protection만으로 application-consistent state 보장 불가",
-            "경계: backup tool은 이미 존재하는 cluster에 resource를 복원하며 cluster·node·network·load balancer·DNS 생성 책임은 IaC 또는 Cluster API 영역"
-          ]
-        },
-        {
-          "heading": "GitOps와 stored state 분리",
-          "body": "production 종료 뒤 recovery cluster에서 GitOps sync가 성공해 StatefulSet·Service·Pod가 Ready여도 Git에는 manifest만 있으므로 PVC는 새 빈 volume으로 provision될 수 있음. source lab은 `attendees` relation이 없는 빈 database를 이 경로로 재현함.",
-          "items": [
-            "복구 순서: GitOps가 만든 빈 application 제거 후 backup store에서 application과 volume을 함께 restore",
-            "측정: source lab의 production 종료부터 validated data까지 4분, rehearsal rerun은 2분 미만이라는 scripted slice 기록",
-            "RTO 경계: production RTO는 detection·decision·traffic cutover·failback을 포함하므로 lab duration을 service SLA로 환산하지 않음"
-          ]
-        },
-        {
-          "heading": "다중 PVC 일관성과 CSI 조건",
-          "body": "source lab은 두 PVC를 5초 차이로 individual snapshot해 각각 ReadyToUse인데도 25개 payment가 대응 order 없이 복구되는 결과를 제시함. Kubernetes v1.36 GA `VolumeGroupSnapshot`은 label-selected PVC를 coordinated crash-consistent point로 요청하는 API임.",
-          "items": [
-            "리스크: individual snapshot 성공이 multi-volume application invariant의 성공을 뜻하지 않는 조건",
-            "지원: ordinary `VolumeSnapshot` 지원이 CSI group RPC 지원을 보장하지 않으며 driver별 capability 확인 필요",
-            "경계: group snapshot은 cross-volume timing skew를 줄이지만 database flush·quiesce가 필요한 application-consistency를 대체하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "DR test는 Pod 삭제 후 reconciliation을 보는 작업이 아니라 never-run clean target에 complete application을 복원하고 expected data와 user path를 검증하는 exercise임. backup·GitOps·storage·cluster·traffic·identity 사이 contract와 owner를 drill 결과로 연결해야 함.",
-          "items": [
-            "측정: backup byte·restore p50/p95·data invariant·application ready·DNS/TLS/identity cutover·failback time",
-            "체크: recovery cluster IaC·storage class/KMS mapping·CSI group snapshot support·backup hook·GitOps ordering·external dependency inventory",
-            "팀 액션: backup success dashboard와 별도로 clean-target restore rehearsal 결과와 unresolved dependency를 RTO/RPO approval evidence로 운영"
           ]
         }
       ],
