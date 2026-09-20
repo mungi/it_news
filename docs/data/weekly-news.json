@@ -2,217 +2,235 @@
   "week": "2026-W39",
   "coverage_start_kst": "2026-09-14 17:00",
   "coverage_end_kst": "2026-09-21 13:00",
-  "last_updated_kst": "2026-09-20 20:03",
+  "last_updated_kst": "2026-09-21 00:15",
   "audience": "developers and engineers",
   "executive_summary": [
+    "CISA는 Linux kernel `CVE-2025-39682`·`CVE-2026-53266`·`CVE-2025-39964`를 KEV에 9월 18일 추가하고 9월 21일 조치 기한을 제시. high-risk fleet은 vendor backport·running kernel·reboot·kTLS/ebtables/AF_ALG 노출을 자산별 closure evidence로 확인 필요.",
+    "Orkes Conductor `CVE-2026-58138`은 active targeting 보도 범위에서 `3.30.2` 이상 patch 필요. workflow API 외부 노출 차단, inline expression·child process·secret egress 조사를 함께 수행 필요.",
     "Hacktron 연구는 Discourse image-processing 취약점과 OpenAI SSO 결함을 연쇄해 직원 ChatGPT·Codex 계정과 internal repository 권한을 시연. self-hosted forum은 UI patch만 보지 말고 `libheif`·container base image와 SSO client·connected-app token revoke를 같은 incident runbook으로 점검 필요.",
     "Check Point Security Management·Log Server `CVE-2026-91843`는 Trusted Clients 경로의 인증 전 stack overflow로 root code execution 가능 범위를 가짐. `sk1000155` LivePatch install 상태와 Trusted Clients known-host ACL·management-plane internet exposure를 같은 incident evidence로 확인 필요.",
-    "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`는 macOS shared workspace의 virtio-fs·Unix socket relay symlink race를 `0.42.0`에서 수정. AI coding sandbox는 VM 여부만 보지 말고 read-write mount·clone mode·forwarded socket·VMM user 권한을 함께 inventory 필요.",
-    "Unbound `CVE-2026-81642`는 `1.26.0` 이하 DNSSEC validator의 heap overflow로 malicious zone 질의에서 DoS와 possible RCE 범위를 가짐. recursive resolver version·DNSSEC·external query path 확인 후 `1.26.1` 또는 backport를 canary 적용 필요.",
-    "Plugin4Shell 연구는 marketplace plugin SHA pin 뒤 resolved `HEAD` 검증 누락으로 Claude Code·Codex·Copilot·Gemini CLI의 background auto-update가 **zero-click RCE**로 이어질 수 있는 경로를 제시. Claude Code `2.1.179`·Codex `0.146.0` update, plugin auto-update·repo host·pinned SHA/HEAD evidence inventory 필요."
+    "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`는 macOS shared workspace의 virtio-fs·Unix socket relay symlink race를 `0.42.0`에서 수정. AI coding sandbox는 VM 여부만 보지 말고 read-write mount·clone mode·forwarded socket·VMM user 권한을 함께 inventory 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Linux kernel LPE 4건 공개: kernel version만이 아닌 backport·namespace·network feature로 patch closure 확인",
-      "summary": "한 줄 결론: DirtyAH6·TUNderflow·PPPoEject·DiagSpill의 공개 PoC는 low-privilege foothold 이후 root escalation 비용을 낮춤. closure는 upstream version 비교가 아니라 배포판 backport, running kernel·reboot, unprivileged user namespace와 AH6·TUN/TAP·PPPoE·SCTP reachability를 자산별로 결합해 판단해야 함.",
-      "details": "Asim Viladi Oglu Manizada는 2026-09-18 Linux kernel local privilege escalation 취약점 4건의 기술 분석과 PoC를 공개했다. 세 결함은 이미 upstream maintainer가 수정했으며, PoC는 특정 build에서 crash를 낼 수 있어 isolated test system 목적이라고 명시됐다. DirtyAH6·TUNderflow·PPPoEject는 unprivileged user namespace를 통해 필요한 network privilege에 도달하는 조건을 가지며, DiagSpill은 SCTP와 sctp_diag가 있으면 별도 capability나 user namespace 없이 host kernel corruption 범위가 제시됐다. 원격 영향은 제한적 crash 조건과 연구자 lab의 DirtyAH6 memory-grooming 결과로 한정해야 하며, 원격 root 또는 container escape를 일반화할 근거는 없음.",
-      "why_it_matters": "공개 exploit은 CI runner, shared development host, bastion, multi-tenant container host에서 이미 획득한 저권한 계정을 root로 확장하는 후속 단계가 될 수 있음. vendor kernel은 upstream version과 다르게 fix를 backport하므로 package version·running kernel·reboot 증적이 모두 필요함.",
+      "title": "CISA KEV Linux kernel 3건: 실제 악용 신호를 package·running kernel·workload 경계로 닫는 patch 우선순위",
+      "summary": "한 줄 결론: CISA는 9월 18일 Linux kernel `CVE-2025-39682`·`CVE-2026-53266`·`CVE-2025-39964`를 KEV에 추가했고, 각 항목의 조치 기한을 9월 21일로 제시함. 단일 CVE 목록 처리 대신 vendor backport·running kernel·재부팅·kTLS/ebtables/AF_ALG 사용 경계를 asset별 증적으로 연결해야 함.",
+      "details": "CISA KEV catalog는 Linux kernel의 TLS receive path `CVE-2025-39682`, ebtables SNAT ARP rewrite `CVE-2026-53266`, AF_ALG socket race `CVE-2025-39964`를 2026-09-18에 추가했다. 세 항목은 catalog에서 active exploitation 근거로 분류되며 due date는 2026-09-21이다. KEV 자체는 개별 침해 조직·공격 체인·affected distribution을 공개하지 않는다. Red Hat CVE pages는 세 CVE에 known public exploit high-risk 문구를 표시하지만, 실제 production host의 영향은 배포판 advisory, installed package, running kernel, relevant feature 사용 여부를 함께 확인해야 결정된다.",
+      "why_it_matters": "kernel 취약점은 application patch와 달리 immutable node image, CI runner, bare-metal host, managed node pool의 reboot 누락으로 오래 남을 수 있음. KEV 등록은 local foothold 이후 escalation 가능성을 포함한 incident triage와 patch closure 증적을 같은 작업으로 올려야 하는 신호임.",
       "sources": [
-        "https://heyitsas.im/posts/lpe-quartet/"
+        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+        "https://access.redhat.com/security/cve/CVE-2025-39682",
+        "https://access.redhat.com/security/cve/CVE-2026-53266",
+        "https://access.redhat.com/security/cve/CVE-2025-39964"
       ],
-      "image_url": "",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgcKuQ4GC9r1-4fQ3Ap_CQko0y3nMI0SnATF3WNSv48uFtNskrV4PqnyW4s0L7sXcojrHoJCEZRazGJNz5JhxrTTSYZSAQeD-xwdquE3X7pJ_ylBUerrybIiaE3V-i1vXdiLr_N1KCM9GTmeAKLlgySqEr0QeCB5ckvnppiEHSZhnEqv0IfUnqCKdA1kKsN/s1600/cisa-linux.jpg",
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-09-20 03:38",
+      "refreshed_kst": "2026-09-21 00:15",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "이번 공개는 네 결함의 영향 조건을 자산 구성 단위로 점검해야 하는 patch-closure 작업임. CVE 목록을 일괄 적용 여부로 처리하지 말고 kernel build, vendor advisory, runtime feature exposure, reboot를 같은 증거로 닫아야 함.",
+          "body": "이번 변경은 Linux fleet에서 알려진 악용 신호가 있는 세 kernel 결함을 긴급 closure 대상으로 올린 사건임. package patch 완료 화면만으로 끝내지 말고 vendor backport, 실행 중인 kernel, reboot, 기능 노출을 자산별 증거로 닫아야 함.",
           "items": [
-            "변화: 2026-09-18 technical write-up과 working PoC 공개",
-            "판정: upstream release 문자열만으로 vulnerable·fixed 상태를 단정하지 않는 운영 필요"
+            "변화: CISA KEV가 세 Linux kernel CVE를 2026-09-18 추가",
+            "기한: catalog의 remediation due date는 2026-09-21",
+            "판정: CVE 수가 아니라 host role·runtime exposure·reboot 상태 기준 우선순위 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "원문은 DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`, DiagSpill `CVE-2026-74469`을 함께 다룸. 공개 일정은 affected system owner가 patch 우선순위를 정할 수 있도록 조정됐고, 모든 결함은 maintainer가 이미 수정한 상태라고 설명함.",
+          "body": "CISA catalog는 `CVE-2025-39682`를 TLS receive path의 exceptional-condition 처리 결함, `CVE-2026-53266`를 ebtables SNAT ARP rewrite의 out-of-bounds write, `CVE-2025-39964`를 AF_ALG socket 동시 write race로 설명함. 세 항목 모두 forensic triage를 요구하는 KEV metadata를 포함함.",
           "items": [
-            "범위: 특정 kernel build용 PoC이며 crash 가능성이 있는 isolated test 목적",
-            "경계: 원문에 현실 악용 또는 조직별 침해 사실 없음",
-            "기준: complete-fix upstream stable release와 배포판 advisory를 별도 대조 필요"
+            "`CVE-2025-39682`: zero-length TLS record 뒤 recvmsg record-type 처리 가정이 깨질 수 있는 범위",
+            "`CVE-2026-53266`: nonlinear socket-buffer fragment에 대한 ARP sender hardware-address rewrite 범위",
+            "`CVE-2025-39964`: 동일 AF_ALG socket의 concurrent write로 crypto operation 결과 일관성이 깨질 수 있는 범위",
+            "경계: KEV catalog는 공격자, 침해 자산, 단일 attack chain 여부를 공개하지 않음"
           ]
         },
         {
-          "heading": "도달 조건과 권한 경계",
-          "body": "세 결함은 unprivileged user namespace가 활성화된 환경에서 일반 사용자가 private network sandbox의 권한에 도달하는 흐름을 사용함. DiagSpill은 SCTP module과 `sctp_diag`가 사용 가능하면 user namespace나 별도 capability 없이 host kernel corruption이 가능하다고 원문이 구분함.",
+          "heading": "악용 신호와 증거 경계",
+          "body": "KEV 등록은 CISA가 실제 악용 근거를 기준으로 관리하는 catalog 분류임. Red Hat의 각 CVE page에는 known public exploits를 언급하는 high-risk notice가 있으나, 이를 모든 distribution·kernel build·container runtime의 즉시 compromise로 확대하면 안 됨.",
           "items": [
-            "DirtyAH6: IPv6 IPsec AH6 transport-mode 영역과 user namespace 조건",
-            "TUNderflow: TUN/TAP virtual network device 영역과 user namespace 조건",
-            "PPPoEject: PPPoE header 처리 영역과 user namespace 조건",
-            "DiagSpill: SCTP·`sctp_diag` 사용 가능 시 별도 local privilege 불필요"
+            "확인: CISA catalog의 `dateAdded` 2026-09-18과 세 항목의 `dueDate` 2026-09-21",
+            "확인: Red Hat CVE pages의 known exploit notice와 CISA catalog reference",
+            "피할 것: CVSS, KEV, public exploit 문구만으로 internet-reachable RCE 또는 container escape를 단정하는 방식",
+            "필요: vendor advisory와 installed package의 backport mapping 확인"
           ]
         },
         {
-          "heading": "원격·컨테이너 해석",
-          "body": "원문은 DirtyAH6와 DiagSpill의 network-trigger 가능성을 곧바로 remote root로 등치하지 않음. DirtyAH6는 IPv6 router/gateway와 transport-mode AH6 조건에서 remote crash/DoS, 연구자 lab의 memory grooming에서 remote root를 제시했지만 remote-only 성공은 매우 어렵다고 기술함.",
+          "heading": "AI/Infra 전문가 해석: 영향 경계",
+          "body": "세 결함의 기술 영역은 host별로 다름. kTLS workload, ebtables/bridge/NAT path, AF_ALG crypto consumer가 없는 host는 exploit precondition이 다르며, 반대로 shared CI runner·bastion·multi-user development host는 local foothold가 이미 존재할 수 있어 patch window를 앞당길 근거가 됨.",
           "items": [
-            "경계: DiagSpill의 remote crash는 default-off SCTP option 조합 조건",
-            "경계: DiagSpill에는 perfect grooming 가정에서도 full remote-root path가 없다는 연구자 평가",
-            "컨테이너: escape chain은 원문에서 구축되지 않아 host configuration inventory 대상"
+            "볼 것: `uname -r`, kernel package, vendor fixed/backport advisory, last reboot timestamp",
+            "볼 것: kTLS·TLS offload, ebtables/bridge/NAT, AF_ALG consumer·crypto workload 사용 여부",
+            "볼 것: CI runner isolation, local user, privileged workload, node-pool ownership",
+            "피할 것: managed Kubernetes라는 이유로 node OS image와 running-kernel evidence를 생략하는 방식"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "문제의 실질적 우선순위는 CVSS 또는 headline보다 attack prerequisite와 tenant model임. shared runner와 multi-user host는 low-privilege foothold가 이미 존재할 수 있으므로 kernel feature를 사용하지 않는 일반 server보다 patch window를 앞당길 근거가 됨.",
+          "heading": "아키텍처·SRE 관점",
+          "body": "kernel update는 node drain·workload rescheduling·service health·rollback을 동반함. immutable image pipeline과 autoscaling group이 old AMI를 계속 만들면 한 번의 manual patch는 closure가 아님. patch rollout은 control plane가 아닌 worker, runner, bastion, GPU host까지 asset class별로 나눠 추적해야 함.",
           "items": [
-            "볼 것: local user population·CI job isolation·privileged container·host networking·kernel module load state",
-            "피할 것: managed Kubernetes라는 이유만으로 node OS patch와 reboot 증적을 생략하는 방식",
-            "판정: platform owner와 OS owner가 node image·running kernel·workload feature를 공동 확인 필요"
+            "SRE: canary node에서 drain·reboot 뒤 daemonset, CNI, storage, GPU/accelerator health 확인",
+            "플랫폼: golden image와 launch template·node group revision을 fixed kernel 기준으로 갱신",
+            "증적: package version·running release·reboot time·health gate를 CMDB 또는 deployment record에 연결",
+            "복구: rollback image가 취약 kernel을 다시 도입하지 않는지 release pipeline에서 차단"
           ]
         },
         {
-          "heading": "보안·SRE·운영 관점",
-          "body": "patch 적용 뒤에도 old kernel로 부팅된 node, drain되지 않은 CI runner, immutable image cache가 남으면 closure가 성립하지 않음. 기능 비활성화는 interim exposure reduction일 뿐 vendor fix 또는 upstream fix의 대체가 아님.",
+          "heading": "보안·forensics 관점",
+          "body": "CISA metadata는 triage를 별도 조치로 명시함. patch 전후에 local privilege escalation 흔적, unexpected module load, suspicious process tree, CI runner job artifact, privileged namespace 사용을 보존·검토해야 함. 단, source는 특정 IOC나 침해 조직을 제공하지 않으므로 일반적인 침해 사실로 기록하면 안 됨.",
           "items": [
-            "보안: unprivileged user namespace policy, SCTP·PPP·TUN module, IPv6 AH6 사용 여부 inventory",
-            "SRE: kernel rollout의 node drain·reboot·health check·rollback window와 workload disruption 계획",
-            "증적: package version·`uname -r`·reboot timestamp·vendor advisory ID를 asset record에 연결"
+            "보안: affected host의 local account·SSH/bastion access·runner job provenance 우선 조사",
+            "보안: auditd/eBPF·EDR telemetry에서 unexpected privilege transition과 kernel module activity 확인",
+            "경계: 공개 source에 조직별 compromise·ransomware use·공격 체인 확인 없음",
+            "운영 과제: patch evidence와 forensic triage owner를 동일 ticket에 배정"
           ]
         },
         {
-          "heading": "도입·완화 로드맵",
-          "body": "먼저 asset을 distribution, kernel package, running release, role, relevant feature로 분류한 뒤 vendor advisory의 backport 상태를 매핑해야 함. 이후 high-risk shared host부터 canary reboot와 service health를 확인하고 fleet rollout으로 확장하는 순서가 필요함.",
+          "heading": "도입 로드맵",
+          "body": "첫 단계는 asset discovery와 vendor matrix임. 그 다음 high-risk host를 canary로 재부팅하고 service health를 검증한 뒤 node pool·fleet으로 확장해야 함. emergency mitigation은 기능 비활성화나 exposure reduction으로 사용할 수 있지만 vendor fix의 대체가 아님.",
           "items": [
-            "1단계: OS·kernel·running kernel·reboot·namespace/network feature inventory",
-            "2단계: vendor advisory와 installed package의 fixed/backport matrix 작성",
-            "3단계: CI runner·container host·bastion canary, workload health·module dependency 확인",
-            "4단계: fleet reboot completion과 exception owner를 incident closure에 기록"
+            "1단계: distribution·kernel package·running kernel·reboot·host role inventory",
+            "2단계: 세 CVE별 vendor advisory·backport·fixed image matrix 작성",
+            "3단계: CI runner·bastion·shared host·Kubernetes worker부터 canary rollout",
+            "4단계: drain·reboot·health·telemetry·rollback image를 evidence로 기록",
+            "5단계: failed/reboot-pending node를 exception list와 due date에 연결"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "patch 완료 기준은 package manager 성공 메시지가 아니라 취약 조건을 가진 모든 asset이 fixed running kernel로 재기동됐는지 여부임. CI image와 golden image도 다음 autoscale·rebuild에서 old kernel이 재유입되지 않도록 같이 갱신해야 함.",
+          "body": "개발팀은 workload가 kTLS, bridge/NAT, crypto socket 기능을 쓰는지와 outage window를 제공해야 함. 인프라팀은 OS와 node image를 수정하고, 보안팀은 KEV triage와 closure evidence를 검증해야 함.",
           "items": [
-            "체크리스트: user namespace, SCTP, `sctp_diag`, TUN/TAP, PPPoE, AH6/IPsec actual use",
-            "체크리스트: vendor backport advisory, package build, `uname -r`, reboot, node drain evidence",
-            "체크리스트: immutable image·AMI·container host baseline·runner template 갱신",
-            "팀 액션: exception asset에 owner·expiry·compensating control을 부여"
+            "개발팀: protocol offload·network path·cryptographic API dependency 확인",
+            "인프라팀: image, package, running kernel, reboot, autoscaling template 동기화",
+            "보안팀: KEV due date, vendor advisory, endpoint telemetry, incident exception 검토",
+            "공동: production·staging에서 동일 kernel baseline과 rollback policy 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "공개 PoC는 patch 우선순위를 높이는 신호이나, 원문이 확인하지 않은 remote root·container escape·active exploitation을 사실처럼 확장하면 안 됨. 배포판 fix와 runtime configuration을 함께 확인하는 것이 재현 가능한 대응 기준임.",
+          "body": "CISA KEV 등록 뒤 가장 위험한 상태는 patched package와 old running kernel이 공존하는 상태임. 세 CVE의 실제 노출은 host feature마다 다르지만, 9월 21일 기한 전에는 high-risk Linux host부터 vendor backport·reboot·runtime evidence를 하나의 closure record로 제출해야 함.",
           "items": [
-            "볼 것: backport, running kernel, reboot, namespace·SCTP·network feature reachability",
-            "피할 것: upstream version 비교 또는 CVE scanner 결과만으로 closure 선언",
-            "팀 액션: high-risk Linux asset부터 kernel patch와 configuration exposure를 하나의 change record로 승인"
+            "팀 액션: 오늘 안에 high-risk Linux asset owner와 reboot-pending inventory 확정",
+            "측정: fixed package 비율이 아닌 fixed running-kernel·reboot·health-check 완료율 추적"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "AWS Resilience Hub 3개 기능: EKS label·AI dependency insight·Organizations policy를 recovery drill 증적으로 연결",
-      "summary": "한 줄 결론: AWS Resilience Hub의 EKS label input, generative AI dependency insight, Organizations policy sharing은 resilience control plane의 분석 범위와 적용 대상을 코드화하는 기능임. 자동 발견·정책 공유 결과를 RTO/RPO 달성 증거로 간주하지 말고 selector, account·Region boundary, exception, recovery drill을 동일한 운영 증거로 대조해야 함.",
-      "details": "AWS는 2026-09-18 차세대 Resilience Hub에 EKS labels support for service input sources, dependency insights, AWS Organizations를 통한 resilience policy sharing을 추가했다. EKS namespace label을 기존 ownership convention에 맞춰 failure mode analysis 입력으로 사용할 수 있고, dependency discovery를 활성화한 고객에게는 new dependency·cross-Region dependency·unusual usage pattern을 표시하는 생성형 AI 기반 insight를 제공한다. 중앙 팀은 policy를 여러 account에 공유하고 service별 policy 사용 현황을 볼 수 있다. 서울을 포함한 15개 리전 제공이 발표됐지만, source는 analysis completeness·AI insight accuracy·실제 recovery success나 RTO/RPO 보장을 주장하지 않음.",
-      "why_it_matters": "Kubernetes label과 AWS Organizations attachment는 platform team이 resilience 분석 범위와 policy 적용 범위를 결정하는 control-plane 입력값임. selector drift, shared namespace, cross-account 또는 external dependency가 빠지면 자동화된 posture report와 실제 복구 범위가 달라질 수 있음.",
+      "title": "Orkes Conductor `CVE-2026-58138`: workflow API의 expression 실행을 control-plane RCE로 막는 patch·egress·forensics 순서",
+      "summary": "한 줄 결론: Fortinet telemetry를 인용한 보도는 Orkes Conductor `3.21.21`~`3.30.1`의 인증 전 workflow expression RCE가 실제 targeting 대상이라고 설명함. `3.30.2` 이상 patch와 workflow API 외부 노출 차단을 먼저 수행하고, inline JavaScript/Python submission·Conductor process child process·credential egress를 침해 조사 범위로 묶어야 함.",
+      "details": "The Hacker News는 Fortinet 관측을 인용해 Orkes Conductor `CVE-2026-58138`이 active targeting 대상이며, vulnerable evaluator의 unrestricted GraalVM host access가 inline JavaScript 또는 Python workflow expression을 OS command execution으로 연결할 수 있다고 보도했다. NVD description을 인용한 영향 범위는 `3.21.21`부터 `3.30.2` 이전이며 INLINE·LAMBDA·DO_WHILE·SWITCH task type과 workflow API endpoint가 관련됨. Fortinet telemetry의 차단 건수는 targeting 증거이지 successful compromise 또는 모든 exposed instance의 침해 증거가 아님. patch 불가 시 API network access restriction과 suspicious workflow·subprocess telemetry가 임시 통제임.",
+      "why_it_matters": "workflow engine은 secret, connector credential, queue/database access, worker network 권한을 가진 control plane가 될 수 있음. 인증 전 expression evaluation이 OS command execution으로 이어지면 단일 application patch가 아니라 deployed workflow definition, runtime process, identity credential, outbound connection을 포함한 incident closure가 필요함.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/09/resilience-hub-eks-dependency-policy/"
+        "https://www.fortiguard.com/outbreak-alert/orkes-conductor-rce",
+        "https://www.fortiguard.com/threat-signal-report/6527/orkes-conductor-evaluator-remote-code-execution",
+        "https://thehackernews.com/2026/09/critical-pre-auth-rce-in-orkes.html",
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-58138"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-09-20 03:38",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL-YeIVFaRBKvtwQKBxAilhKMaZP_x6L979d8JL60W3AEHy9o2sfL_dMrJWy_sPIV70oIbP6DYe2KVhHh-mwbB4zBvrV_jEgdRiuc_IzNyyPSfUAOGvAp7J7JO06OWUWjSwuqpU4JJ_kNy0vtW1D9_gEtQNNVmWiYzRTpYMwhe-J3Bvve3EHrAp81Wht4L/s1600/orkes.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-09-21 00:15",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Resilience Hub의 신규 기능은 assessment input과 policy distribution을 중앙화하지만 복구 능력을 자동으로 증명하지 않음. label selector·dependency evidence·account policy·drill result가 같은 service boundary를 가리키는지 확인해야 함.",
+          "body": "Orkes Conductor의 인증 전 workflow expression 경로는 application API를 runtime command execution 경계로 바꾸는 결함임. version patch만 적용하지 말고 exposed workflow API, saved/running definitions, Conductor process children, secret·egress evidence를 같은 incident record로 닫아야 함.",
           "items": [
-            "변화: EKS label input, dependency insight, Organizations policy sharing 추가",
-            "판정: control-plane coverage와 recovery outcome을 분리해 검증 필요"
+            "변화: `3.21.21`~`3.30.1` 영향 범위와 `3.30.2` fixed version 보도",
+            "우선: public workflow API 차단과 fixed-version rollout",
+            "판정: Fortinet telemetry는 active targeting 증거이며 successful compromise 일반화 근거 아님"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS는 next-generation Resilience Hub가 automated dependency discovery, generative AI-powered failure mode analysis, modular policy, resilience testing, organization-wide posture reporting을 제공한다고 설명함. 9월 18일 발표는 이 흐름에 세 가지 입력·분석·배포 기능을 추가한 내용임.",
+          "body": "보도는 NVD description과 Fortinet outbreak telemetry를 인용해 공격자가 workflow API에 crafted inline definition을 제출하고 JavaScript 또는 Python expression을 실행하는 경로를 설명함. vulnerable evaluator가 `HostAccess.ALL` 또는 `allowAllAccess(true)` 같은 unrestricted host access로 구성된 경우 OS command execution 범위가 제시됨.",
           "items": [
-            "EKS: namespace label을 service input source로 사용",
-            "Insight: new dependency·cross-Region dependency·unusual usage pattern 표시",
-            "Policy: AWS Organizations를 통해 여러 account에 resilience policy 공유",
-            "제공: 서울을 포함한 15개 AWS Region"
+            "영향: `3.21.21`부터 `3.30.2` 이전 Orkes Conductor 범위",
+            "경로: authentication 전 workflow API endpoint와 inline workflow definition",
+            "task type: INLINE·LAMBDA·DO_WHILE·SWITCH 언급 범위",
+            "수정: Conductor `3.30.2` 이상 upgrade 권고",
+            "경계: per-instance evaluator configuration과 external API exposure는 운영자가 확인할 조건"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: EKS label과 서비스 경계",
-          "body": "label은 GitOps와 Kubernetes ownership convention에 이미 존재할 수 있어 resource list를 별도로 관리하는 부담을 줄일 수 있음. 반대로 label 누락, mutable selector, shared namespace, ephemeral job은 분석 대상과 실제 production service의 차이를 만들 수 있음.",
+          "heading": "악용 관측과 증거 경계",
+          "body": "The Hacker News는 Fortinet이 September 2~9일 약 7,000건의 attempt를 차단했고, 9월 9일 기준 24시간 동안 1,290건을 관측했다고 인용함. Previdian honeypot 및 Empirical Security 관측도 기사에 인용되나, source가 특정 피해 조직·data access·지속성·actor identity를 공개하지 않음.",
           "items": [
-            "검증: namespace·label key/value·selector를 Deployment·Service·Ingress·HPA ownership과 대조",
-            "리스크: critical dependency가 label taxonomy drift로 analysis에서 제외될 가능성",
-            "운영: label schema와 selector 변경을 application release review 및 resilience evidence에 연결"
+            "확인: Fortinet telemetry가 active targeting을 언급한 보도 범위",
+            "확인: 24시간 1,290건·기간 누적 약 7,000건은 차단 attempt 수치",
+            "경계: 차단 attempt를 successful command execution 또는 tenant compromise로 등치하지 않음",
+            "경계: honeypot telemetry는 production deployment의 incident scope를 대체하지 않음"
           ]
         },
         {
-          "heading": "AI dependency insight의 해석",
-          "body": "generative AI insight는 조사 우선순위를 만드는 보조 신호이지 dependency graph의 확정 사실이 아님. cross-Region 또는 unusual usage 표시 뒤에는 trace, CloudTrail, network flow, service map, runbook으로 service-to-service path를 검증해야 함.",
+          "heading": "AI/Infra 전문가 해석: workflow control plane",
+          "body": "Conductor workflow는 task definition, worker routing, connector, queue, secret retrieval을 엮을 수 있음. 따라서 process privilege가 낮아도 execution host가 접근 가능한 metadata endpoint, database credential, CI token, internal service network가 후속 risk surface가 됨. 애플리케이션의 auth boundary와 expression sandbox boundary를 별도로 모델링해야 함.",
           "items": [
-            "볼 것: discovery 결과의 최초·최종 관측 시각, source signal, account·Region context",
-            "피할 것: insight card 하나로 data path·failover path·RTO impact를 확정하는 방식",
-            "판정: unknown dependency를 drill scenario와 architecture review backlog로 승격 필요"
+            "볼 것: workflow API ingress, auth middleware order, reverse proxy route, service mesh policy",
+            "볼 것: evaluator mode, task type allowlist, dynamic expression·subprocess capability",
+            "볼 것: worker identity, secret injection, database/queue credential, cloud workload IAM",
+            "피할 것: UI login이 있으므로 API endpoint도 안전하다고 가정하는 방식"
           ]
         },
         {
-          "heading": "Organizations policy와 거버넌스",
-          "body": "policy sharing은 중앙 팀이 여러 account의 resilience posture를 정렬하는 수단임. 그러나 account attachment가 있다고 해서 모든 workload가 policy target 또는 assessment 대상이라는 뜻은 아니며 exception과 delegated ownership이 남음.",
+          "heading": "아키텍처·운영 관점",
+          "body": "patch rollout은 API compatibility와 in-flight workflow 영향을 확인해야 하지만, attack surface가 public이면 maintenance window를 기다릴 근거가 약함. 먼저 external ingress를 allowlist 또는 internal network path로 축소하고, fixed image를 canary에 배포한 뒤 saved definition replay와 worker execution health를 검증하는 순서가 필요함.",
           "items": [
-            "검증: Organization OU·account·service·policy attachment·effective version을 inventory와 대조",
-            "거버넌스: exception owner·expiry·RTO/RPO owner·review cadence를 policy metadata에 기록",
-            "경계: external SaaS·on-premises·other-cloud dependency는 AWS account policy만으로 포괄 불가"
+            "1순위: internet-facing workflow API를 load balancer·WAF·security group·mesh authorization으로 차단",
+            "2순위: `3.30.2` 이상 image/package와 deployed version inventory 대조",
+            "3순위: canary에서 workflow submission·worker dispatch·retry·rollback health 확인",
+            "운영: old pod·drained worker·cached image가 남지 않도록 rollout completion 증적 수집"
           ]
         },
         {
-          "heading": "아키텍처·SRE 관점",
-          "body": "실제 resiliency는 database, identity, DNS, queue, network, third-party API를 포함한 recovery sequence에서 드러남. label 또는 discovery가 이를 누락하면 assessment score가 좋아도 failover 중 hidden dependency가 RTO를 지배할 수 있음.",
+          "heading": "보안·forensics 관점",
+          "body": "pre-auth RCE 조사 범위는 web access log만으로 끝나지 않음. workflow definition 생성·수정·실행 audit, evaluator error, child process, shell interpreter, outbound DNS/HTTP, cloud audit log, token issuance와 secret access를 시간 축으로 대조해야 함. 정상 automation과 공격 submission을 구분할 baseline도 필요함.",
           "items": [
-            "SRE: assessment coverage, unresolved insight, policy exception, drill completion을 service SLO dashboard에 연결",
-            "아키텍처: cross-Region data replication·DNS failover·identity path·secret availability를 failure mode에 포함",
-            "운영: application topology 변경 시 resilience input diff를 deployment gate로 확인"
+            "조사: inline JavaScript/Python, unfamiliar task type, unusual workflow name·owner·submitter 확인",
+            "조사: Conductor process의 child process·network connection·filesystem write telemetry 확인",
+            "조사: service account, worker token, database/queue credential, cloud API key rotation 필요성 판단",
+            "경계: 공개 source는 universal IOC·forensic artifact·customer compromise를 제공하지 않음"
           ]
         },
         {
-          "heading": "보안·FinOps 관점",
-          "body": "dependency discovery와 policy reporting은 control-plane metadata와 observability data에 접근할 수 있으므로 least privilege와 audit boundary가 필요함. resilience 강화는 multi-Region capacity, backup, testing 비용을 수반하므로 score 향상과 cost 증가를 별도 지표로 관리해야 함.",
+          "heading": "비용·FinOps·거버넌스 관점",
+          "body": "workflow engine의 API를 막거나 reroute하면 latency, retry, worker capacity, third-party connector 비용이 변할 수 있음. 하지만 incident 기간에 throughput을 유지하려고 broad inbound access 또는 long-lived admin token을 열어 두면 위험을 키움. break-glass access는 owner·expiry·audit를 가진 최소 범위로 운영해야 함.",
           "items": [
-            "보안: IAM delegation·CloudTrail·cross-account read scope·data classification을 review",
-            "FinOps: standby capacity·backup retention·drill 비용·inter-Region transfer를 service별 분리",
-            "통제: policy change와 recovery test 결과를 change approval·audit trail에 보존"
+            "FinOps: emergency retry·replay가 queue, compute, API 호출 비용을 증폭하는지 관측",
+            "거버넌스: workflow owner·platform owner·security owner의 patch/recovery decision 기록",
+            "통제: temporary allowlist·break-glass token·WAF exception에 expiry와 review evidence 부여",
+            "리스크: patch 이후 stale worker 또는 old image가 privilege 있는 execution path를 유지할 가능성"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 rollout은 label quality가 높은 한 EKS service와 명확한 account boundary에서 시작하는 것이 안전함. discovery result를 manual evidence와 비교하고, policy를 read-only posture review부터 적용한 뒤 scheduled recovery drill로 확대해야 함.",
+          "body": "즉시 대응은 exposure reduction과 version remediation을 병렬 처리하는 방식임. 이후 saved workflows와 code pipeline에서 dynamic expression 사용을 줄이고, task capability를 allowlist와 dedicated worker identity로 분리해야 함. 재발 방지는 control plane의 data flow와 change provenance를 운영 지표로 만드는 작업임.",
           "items": [
-            "1단계: EKS label taxonomy·service inventory·account/Region ownership 정리",
-            "2단계: representative service에서 selector coverage와 dependency insight manual verification",
-            "3단계: Organizations policy canary·exception workflow·effective attachment 확인",
-            "4단계: region/account failure scenario drill과 RTO/RPO evidence 승인"
+            "1단계: affected version·public endpoint·evaluator configuration inventory",
+            "2단계: external API restriction·network telemetry preservation·incident owner 지정",
+            "3단계: fixed version canary와 workflow/worker regression test",
+            "4단계: saved definition·secret·token·outbound connection forensic review",
+            "5단계: expression/task allowlist·least-privilege worker·change approval 정책 정착"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "완료 기준은 Resilience Hub에 service가 보이는지가 아니라 clean recovery와 owner decision이 반복 가능한지 여부임. IaC, GitOps label, account policy, runbook, drill log를 하나의 release record로 연결해야 drift를 찾을 수 있음.",
+          "body": "개발팀은 workflow DSL, dynamic expression, connector dependency와 expected retry behavior를 확인해야 함. 인프라팀은 image, ingress, runtime identity, observability를 수정하고, 보안팀은 potential command execution 이후 credential·egress 조사 범위를 승인해야 함.",
           "items": [
-            "체크리스트: label schema·selector·namespace·service inventory·critical dependency",
-            "체크리스트: account/OU policy attachment·exception·effective policy version·owner",
-            "체크리스트: cross-Region·identity·DNS·data replication·external API recovery scenario",
-            "팀 액션: release마다 topology diff와 latest drill evidence를 resilience review에 첨부"
+            "개발팀: INLINE·LAMBDA·DO_WHILE·SWITCH 사용 workflow와 expression provenance 확인",
+            "인프라팀: Conductor version·pod image digest·ingress exposure·worker identity inventory",
+            "보안팀: API log·workflow audit·process/egress telemetry·secret access timeline 검토",
+            "공동: patch completion, rollback readiness, credential rotation decision을 change record에 연결"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "자동 discovery와 generative AI는 resilience 운영의 범위를 넓히지만 recovery proof를 대체하지 않음. 서울 리전을 포함한 제공 범위도 organisation별 dependency와 drill readiness를 보장하지 않으므로 evidence-driven rollout이 필요함.",
+          "body": "이 결함의 closure 기준은 `3.30.2` 설치 로그가 아니라 인증 전 workflow submission이 막히고, old runtime이 사라졌으며, suspicious expression·process·credential egress 조사까지 완료된 상태임. public API를 가진 Conductor deployment는 patch와 access restriction을 같은 변경 창에서 종료해야 함.",
           "items": [
-            "볼 것: selector coverage, insight evidence, policy attachment, exception, drill outcome",
-            "피할 것: posture report만으로 RTO/RPO 또는 cross-Region failover 성공을 선언하는 방식",
-            "팀 액션: 플랫폼 팀이 분기별 clean-target recovery drill과 policy coverage diff를 공동 승인"
+            "팀 액션: 오늘 안에 external workflow API와 affected version inventory 확정",
+            "측정: fixed runtime 비율, public endpoint 차단율, forensic review 완료율, stale worker 0건 추적"
           ]
         }
       ]
