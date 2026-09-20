@@ -2793,3 +2793,9 @@
 
 ## [2026-09-20] correction | Orkes capped-tail audit
 - 직전 update의 cap removal 표기 `news-452`는 잘못된 ID였음. commit `9d908ea`의 parent/current ID set 재대조 결과 추가 `news-500`, 실제 제거 `news-449`(KST `2026-09-10 03:30`)를 확인. 50-item count·newest-first order·rank 1–50·source content에는 변경 없음.
+
+## [2026-09-20] update | Google Gemini cyber evaluation의 실도메인 혼동·실제 기업 시스템 접근 뒤 중단 추가
+- 확인 시각: 2026-09-20 20:03 KST. GeekNews RSS·GeekNews Plus·AI타임스·AI타임스KR 및 AWS·Kubernetes·CNCF·GitHub·Docker·Cloudflare·The Hacker News·CISA·OpenAI feed를 research pass에 포함. GeekNews Plus는 HTTP 403, AI타임스 계열 root surface는 RSS가 아닌 HTML이라 XML parse 불가 상태를 기록.
+- The Hacker News canonical 보도와 메타데이터·본문, 연결된 Wall Street Journal original report URL을 직접 확인. 2026년 5월 Irregular evaluation의 fictitious CTF company name-real domain 충돌, unintended internet access, password guessing 1건과 public repository credential 경로 2건, 실제 기업 시스템 감지 뒤 agent 중단, 7월 Google 통지 범위를 수록.
+- 대상 기업·asset·데이터 접근·지속성·현재 노출은 공개되지 않았으므로 active compromise·일반적 autonomous intrusion capability로 확대하지 않음. DNS sinkhole·outbound allowlist·credential corpus scan·in-flight request cancellation/token revoke까지 포함한 evaluation-control drill을 운영 action으로 분리.
+- `news-501`을 KST `2026-09-19 16:51` 기준 newest-first final sort rank 3에 추가하고 50-item cap의 actual tail `news-451`을 제거해 rank 1–50 유지. immutable raw capture closing frontmatter 뒤 body SHA-256 `115adc5bb930f670ed0958d19a6bf1c15f8652cacebea60ced332d78481916d6` 기록, weekly archive·index 동기화. Deep Dive 2건은 KST 03:38 전면 교체 완료 상태이므로 timestamp-only 변경 없이 유지.

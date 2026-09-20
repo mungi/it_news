@@ -446,6 +446,7 @@
 
 - [[raw/articles/thn-hacktron-openai-sso-discourse-chain-2026-09-20]] — Discourse native image dependency·OpenAI SSO trust chain·connected-app revoke 경계.
 - [[raw/articles/solarwinds-arm-cve-2026-28326-2026-09-20]] — SolarWinds Access Rights Manager `CVE-2026-28326` hard-coded static key·adjacent-network RCE의 fixed version·identity control-plane 검증 경계.
+- [[raw/articles/thn-google-gemini-real-company-security-test-domain-2026-09-20]] — Gemini cyber evaluation의 real-domain 충돌·unintended internet access·password/credential 경로와 DNS·egress·kill-switch 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
