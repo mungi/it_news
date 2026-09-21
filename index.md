@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-20 | Total pages: 361
+> Last updated: 2026-09-22 | Total pages: 363
 
 ## Entities
 
@@ -450,6 +450,9 @@
 - [[raw/articles/thn-google-gemini-real-company-security-test-domain-2026-09-20]] — Gemini cyber evaluation의 real-domain 충돌·unintended internet access·password/credential 경로와 DNS·egress·kill-switch 검증 경계.
 
 - [[raw/articles/sentinelone-jade-sleet-terraform-lockfile-devops-macos-2026-09-21]] — Jade Sleet의 조작된 Terraform lockfile 채용 미끼와 macOS DevOps endpoint·cloud credential 대응 경계.
+
+- [[raw/articles/cloudflare-python-workers-ga-2026-09-22]] — Cloudflare Python Workers GA의 WASM wheel·ASGI/WSGI·Hyperdrive·AI/MCP binding 운영 검증 경계.
+- [[raw/articles/securonix-taskstomp-powershell-backdoor-2026-09-22]] — TASK#STOMP VBS·PowerShell·scheduled task·Startup persistence와 endpoint/identity incident closure 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
