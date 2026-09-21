@@ -2819,3 +2819,10 @@
 - 100TB는 Cloudflare fleet 수치이므로 다른 proxy·cache의 동일 절감률로 일반화하지 않음. cache churn·origin egress·backend skew·tail latency를 trace replay와 canary rollback gate로 함께 검증하는 운영 action으로 분리.
 - `news-503`을 KST `2026-09-19 02:23` 기준 newest-first rank 7에 추가하고 50-item cap의 actual tail `news-466`을 제거해 rank 1–50 유지. 기존 immutable raw capture·index 항목을 재사용하고 weekly archive를 canonical JSON에서 재생성. Deep Dive 2건은 KST 00:15 전면 교체 완료 상태이므로 timestamp-only 변경 없이 유지.
 - 검증 통과: `python3 scripts/validate_weekly_news.py`, `node --check docs/app.js`, `git diff --check`.
+
+## [2026-09-21] update | Jade Sleet Terraform lockfile 기반 DevOps macOS endpoint 침해 추가
+- 확인 시각: 2026-09-21 16:35 KST. GeekNews·GeekNews Plus(각 HTTP 403), AI타임스·인공지능신문(각 HTTP 200) 필수 surface와 AWS·Cloudflare·Kubernetes·GitHub·CNCF·The Hacker News·OpenAI·Google AI feed를 research pass에 포함.
+- SentinelOne primary research와 The Hacker News 보도를 직접 대조. TraderTraitor/Jade Sleet의 인도 IT 서비스사 Apple Silicon MacBook 사례, DevOps engineer의 Terraform·Ansible 및 AWS·OVH·OpenStack 운영 조건, attacker-controlled provider를 지정한 weaponized `.terraform.lock.hcl`과 `terraform init` download·execution 경로, `FLATROOF`·`ROOFDECK`의 3월 18일 presence·3월 29일 activity 범위를 source 범위로 수록.
+- 최초 delivery method, cloud/source-control 접근 결과, 추가 피해 범위는 공개 source로 확인되지 않아 단정하지 않음. 채용 과제 격리, provider source·checksum·cache 점검, macOS endpoint telemetry와 cloud/Git audit의 timeline 대조를 운영 action으로 분리.
+- `news-504`를 date-only primary publication 기준 KST `2026-09-18 00:00`으로 final sort rank 13에 추가하고 50-item cap의 actual tail `news-453`을 제거. raw capture closing-frontmatter body SHA-256 `1857752198a61e0becd7675c9c46787482476101f6c906392d4387f4ff4983e8`, weekly archive·index 동기화.
+- 검증 통과: `python3 scripts/validate_weekly_news.py`(50 items, 2 deep dives), `node --check docs/app.js`, `git diff --check`, newest-first·rank 1–50·raw SHA-256 재대조.

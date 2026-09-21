@@ -449,6 +449,8 @@
 - [[raw/articles/solarwinds-arm-cve-2026-28326-2026-09-20]] — SolarWinds Access Rights Manager `CVE-2026-28326` hard-coded static key·adjacent-network RCE의 fixed version·identity control-plane 검증 경계.
 - [[raw/articles/thn-google-gemini-real-company-security-test-domain-2026-09-20]] — Gemini cyber evaluation의 real-domain 충돌·unintended internet access·password/credential 경로와 DNS·egress·kill-switch 검증 경계.
 
+- [[raw/articles/sentinelone-jade-sleet-terraform-lockfile-devops-macos-2026-09-21]] — Jade Sleet의 조작된 Terraform lockfile 채용 미끼와 macOS DevOps endpoint·cloud credential 대응 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
