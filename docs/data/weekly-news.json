@@ -2,14 +2,14 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-22 00:49",
+  "last_updated_kst": "2026-09-22 05:02",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare Python Workers가 GA로 전환됨. Pyodide·WASM 실행 경계 위에서 FastAPI·Django·Flask, D1·R2·Queues·Workflows·Workers AI binding을 Python 코드로 연결할 수 있으나 지원 wheel·native extension·socket 동작을 workload별로 재검증 필요.",
     "TASK#STOMP는 VBS orchestrator, scheduled task와 Startup folder 이중 persistence, 두 PowerShell collector/C2 모듈을 조합해 문서·Wi-Fi password·clipboard·screenshot을 수집하는 Windows campaign으로 공개됨. 초기 침투 경로와 피해 조직·성공 범위는 공개되지 않아 endpoint hunt와 credential 대응을 분리 필요.",
     "삼성전자는 광주에 2,400억원을 투자해 2028년 초 가동 목표의 AIDC HVAC 생산라인을 착공했다고 인공지능신문이 보도. CDU·FWU·CRAH·AHU 공급 계획은 국내 AIDC의 냉각 조달 리드타임·현장 commissioning 역량을 별도 capacity 변수로 다룰 근거.",
     "ABB의 800V DC AIDC 포트폴리오는 랙 전력밀도 증가에 대한 전력 변환·배전·보호·냉각 통합 제안임. 5% 효율·25MW IT load 등 수치는 vendor/BCG 추산이므로 보호 coordination·fault isolation·UPS·utility interconnect를 site design으로 검증 필요.",
-    "기존 50건은 최신 발행 시각 순서를 유지하되, 새 Cloudflare·Securonix/THN 후보를 추가하면서 이전 tail 2건을 제거함. Deep Dive는 서로 다른 Cloudflare와 Securonix primary-source event로 전면 교체함."
+    "가짜 LastPass Authenticator installer 후보를 추가하고 kernel-level BYOVD·credential theft 대응을 반영함. 50건 cap에서는 기존 tail 1건을 제거했으며, Deep Dive 2건은 KST 00:49에 전면 재구성 완료 상태여서 timestamp-only 변경을 하지 않음."
   ],
   "deep_dives": [
     {
@@ -206,6 +206,90 @@
   ],
   "items": [
     {
+      "id": "news-507",
+      "title_ko": "가짜 LastPass Authenticator 설치 프로그램: Microsoft 서명 driver로 AV·EDR을 종료하는 BYOVD chain 점검",
+      "title_original": "Fake LastPass Authenticator Installer Abuses Microsoft-Signed Driver to Kill Antivirus and EDR",
+      "summary": "- 유입: 검색 결과에 노출된 가짜 GitHub `LastPass-Authenticator` page가 attacker ZIP을 제공하고, `vsdbg.exe`·악성 `vsdbg.dll` DLL side-loading으로 loader 실행\n- 권한: loader가 SYSTEM 권한에서 Microsoft Hardware Compatibility Publisher chain 서명 driver `Alinubx.sys`를 service로 설치하고 **145개** AV·security process 이름 종료\n- 수집: 24개 이상 browser password, wallet file, Discord·Steam·Telegram session, Windows Credential Manager와 password·seed·recovery 이름 file을 ZIP으로 전송하는 범위\n- 조치: `NvFsFilter`·`nvfsflt64.sys`·CnCrypt/Henan Dafeng signer·`\\\\.\\Alinubx`와 driver-load 뒤 process kill을 hunt하고, 실행 endpoint는 clean device credential/session rotation과 kernel-level forensic 또는 rebuild로 closure",
+      "detail": "LastPass·Delphos Labs 조사 결과를 인용한 보도는 검색 노출 가짜 GitHub installer가 DLL side-loading과 SYSTEM privilege escalation 뒤 Microsoft signing chain의 driver를 이용해 endpoint security process를 종료하는 흐름을 설명함. LastPass system·service·customer vault 영향, victim 수, 감염 성공과 모든 exfiltration 범위는 공개 source로 확인되지 않으며, payload를 실행한 endpoint의 browser·credential·wallet·session exposure는 별도 증거로 조사 필요.",
+      "why_it_matters": "정상 서명 driver를 이용한 kernel-level process termination은 user-mode AV·EDR의 관측·복구 경로를 약화할 수 있음. browser password와 Windows Credential Manager 수집은 endpoint cleanup만으로 끝나지 않고 identity·SaaS·wallet·developer credential 대응까지 넓힐 조건.",
+      "engineering_implication": "Windows fleet에서 vulnerable-driver blocklist·WDAC/ASR·driver/service creation telemetry와 unsigned/abnormal DLL side-loading을 함께 점검해야 함. `NvFsFilter` 또는 `nvfsflt64.sys`와 security-process kill이 확인된 endpoint는 격리·volatile evidence 보존 후 clean device에서 browser·Windows Credential Manager·SaaS session·wallet credential rotation을 수행하고 rebuild 여부를 kernel compromise evidence로 결정 필요.",
+      "korea_implication": "국내 조직의 password manager 사용자도 공식 `lastpass.com`과 app store 외 GitHub download 경로를 software procurement 허용 목록에서 분리하고, endpoint·identity·helpdesk가 kernel driver incident의 account recovery 책임을 같은 runbook으로 관리할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Windows",
+        "BYOVD",
+        "EDR",
+        "Credential Theft",
+        "DLL Side-Loading"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-09-22 02:31",
+      "source_name": "The Hacker News / LastPass·Delphos Labs research",
+      "source_url": "https://thehackernews.com/2026/09/fake-lastpass-authenticator-installer.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEil-5ZV6QK7R23fL7Vtl-pdxgFYPAG9dT_cIIrXWgR70hLZRM705Ij3WuRpCL00VuDop9dTmVNf1t3QS60nqRGV9GCzsZ792yd7mFY_pjvgfufOK9D-oQJdxP4ZtrXiyeq08KNUBv3-mhQ_KCiCOMWIbeQpCAyF_h4lMZw54T0l9AcDdGf6aRptXAZJNcU/s1600/last.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Microsoft recommended driver block rules",
+          "url": "https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/design/microsoft-recommended-driver-block-rules"
+        },
+        {
+          "title": "LOLDrivers — Alinubx hash detection",
+          "url": "https://www.loldrivers.io/drivers/84a3007a-de5e-4622-bfc5-f05d927c3618/"
+        },
+        {
+          "title": "LOLDrivers — CnCrypt CcProtect.sys",
+          "url": "https://www.loldrivers.io/drivers/3e3067b0-3d74-46fe-9f57-1ae3a0293958/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "LastPass·Delphos Labs 조사 결과를 인용한 보도는 가짜 LastPass Authenticator installer가 GitHub search result를 이용해 ZIP payload를 전달하는 campaign이라고 설명함. LastPass는 자사 system·service·customer vault가 영향을 받지 않았고 공격자가 brand만 차용했다고 밝힌 범위.",
+          "items": [
+            "유입: `github.com/LastPass-Authenticator`가 official product page처럼 보이며 download click을 attacker server ZIP으로 연결",
+            "경계: victim 수, 실제 감염 성공, customer vault·service 영향, 완전한 exfiltration 범위는 공개 source에서 미확정"
+          ]
+        },
+        {
+          "heading": "실행·권한 상승·driver 경로",
+          "body": "ZIP에는 Microsoft debugging tool의 renamed copy `vsdbg.exe`와 악성 `vsdbg.dll`이 함께 들어 있어 DLL side-loading으로 loader가 실행되는 흐름임. loader는 administrator 권한 획득을 시도해 SYSTEM에 도달한 뒤 `Alinubx.sys`를 Windows service로 설치하는 범위.",
+          "items": [
+            "회피: 관측 ZIP size `148 MB`·`127.9 MB`에 scanner size-limit 회피 목적의 junk file padding 설명",
+            "driver: Microsoft Windows Hardware Compatibility Publisher chain 서명과 service install이 user-mode malware와 다른 kernel execution boundary"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트: EDR 무력화와 credential 수집",
+          "body": "`Alinubx.sys`는 145개 AV·security process 이름을 종료하는 kill list를 가지며, THN은 kernel layer에서 user-mode security tool이 이를 block·observe하기 어려운 조건을 설명함. source가 언급한 file hiding·process injection·traffic rerouting 기능은 campaign에 필요한 configuration file이 없어 실행됐다고 확인되지 않음.",
+          "items": [
+            "수집: 24개 이상 browser saved password, wallet file, Discord·Steam·Telegram session, Windows Credential Manager, password·seed·recovery file 대상",
+            "browser: Chrome·Edge app-bound encryption 우회 목적으로 browser process에 inject하고 자체 service에 decrypt 요청하는 동작 설명"
+          ]
+        },
+        {
+          "heading": "탐지·차단 목록의 증거 경계",
+          "body": "driver는 CnCrypt disk-encryption product의 `CcProtect.sys` renamed copy로 설명되며, original과 renamed file은 동일 product name·version·submitter를 공유하는 범위. Delphos의 8월 검사에서 원본·renamed file은 Microsoft vulnerable-driver blocklist에 없었고, hash-based detection은 filename 또는 rebuild 변경 뒤 우회될 수 있음.",
+          "items": [
+            "관측: known original은 약 70개 engine 중 7개 detection, renamed driver는 zero detection이라는 August 조사 수치",
+            "IOC: `NvFsFilter`, `C:\\Windows\\System32\\drivers\\nvfsflt64.sys`, Henan Dafeng Software·CnCrypt signer, `\\\\.\\Alinubx`, driver load 뒤 security-process kill"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "payload를 실행한 endpoint는 security tool 재시작만으로 clean 판정할 수 없는 kernel-level compromise 가능성임. source는 browser·credential data가 driver 작업 전 수집된다고 설명하므로, device containment와 identity/session closure를 순차가 아닌 병렬 incident track으로 운영 필요.",
+          "items": [
+            "조치: affected endpoint 격리, process·driver·service·file·network evidence 보존 후 kernel forensic 또는 rebuild 판단",
+            "조치: clean device에서 browser password·Windows Credential Manager·SaaS/Discord·Steam·Telegram session·wallet credential rotation과 account activity review 수행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-506",
       "title_ko": "TASK#STOMP PowerShell backdoor: 문서·Wi-Fi password·clipboard 수집과 이중 persistence를 Windows endpoint hunt로 전환",
       "title_original": "TASK#STOMP PowerShell Backdoor Steals Documents, Wi-Fi Passwords, and Clipboard Data",
@@ -271,7 +355,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-505",
@@ -344,11 +428,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-499",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -421,7 +505,7 @@
     },
     {
       "id": "news-500",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -505,7 +589,7 @@
     },
     {
       "id": "news-501",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -582,7 +666,7 @@
     },
     {
       "id": "news-502",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -659,7 +743,7 @@
     },
     {
       "id": "news-498",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -740,7 +824,7 @@
     },
     {
       "id": "news-496",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -813,7 +897,7 @@
     },
     {
       "id": "news-503",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -886,7 +970,7 @@
     },
     {
       "id": "news-497",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -954,7 +1038,7 @@
     },
     {
       "id": "news-495",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -1023,7 +1107,7 @@
     },
     {
       "id": "news-494",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -1107,7 +1191,7 @@
     },
     {
       "id": "news-492",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -1192,7 +1276,7 @@
     },
     {
       "id": "news-493",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -1264,7 +1348,7 @@
     },
     {
       "id": "news-504",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Jade Sleet의 DevOps 채용 미끼: 조작된 `.terraform.lock.hcl`이 Apple Silicon 개발자 endpoint를 FLATROOF·ROOFDECK으로 연결",
       "title_original": "Don’t Call Us, We’ll Call Your APIs | TraderTraitor Backdoors Resurface on Victim With No Crypto Ties",
       "summary": "- 확인: SentinelOne은 북한 연계 TraderTraitor/Jade Sleet가 인도 IT 서비스사의 Apple Silicon MacBook을 침해한 사례를 공개. 해당 endpoint는 DevOps 엔지니어가 Terraform·Ansible로 AWS·OVH·OpenStack을 운영하고 source-control 접근을 보유한 환경\n- 경로: 가짜 채용 coding project의 조작된 `.terraform.lock.hcl`이 attacker-controlled custom provider를 가리켜 `terraform init` 시 악성 module 다운로드·실행으로 이어지는 범위\n- 영향: `FLATROOF`·`ROOFDECK`이 3월 18일부터 disk에 존재하고 3월 29일부터 beaconing·host activity가 시작된 telemetry 범위\n- 조치: 채용 과제 repository도 untrusted code로 취급하고 lockfile provider 주소·checksum·registry egress·macOS developer endpoint의 cloud/source-control credential을 같은 investigation 범위로 묶어야 함",
@@ -1414,7 +1498,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-491",
@@ -1500,7 +1584,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-487",
@@ -1572,7 +1656,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-489",
@@ -1646,7 +1730,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-485",
@@ -1715,7 +1799,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-486",
@@ -1791,7 +1875,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-483",
@@ -1871,7 +1955,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-484",
@@ -1942,7 +2026,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-488",
@@ -2022,7 +2106,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-479",
@@ -2098,7 +2182,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-478",
@@ -2164,7 +2248,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-481",
@@ -2239,7 +2323,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-480",
@@ -2312,7 +2396,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-477",
@@ -2379,7 +2463,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-482",
@@ -2460,7 +2544,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-475",
@@ -2524,7 +2608,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-476",
@@ -2589,7 +2673,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-474",
@@ -2664,7 +2748,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "region": "Global",
@@ -2739,7 +2823,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-473",
@@ -2806,7 +2890,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "region": "Global",
@@ -2874,7 +2958,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "region": "Global",
@@ -2947,11 +3031,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-469",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -3101,7 +3185,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-464",
@@ -3186,7 +3270,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-465",
@@ -3263,7 +3347,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-462",
@@ -3339,7 +3423,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-463",
@@ -3412,7 +3496,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-461",
@@ -3489,7 +3573,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-459",
@@ -3562,7 +3646,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-458",
@@ -3673,7 +3757,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-468",
@@ -3747,7 +3831,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-455",
@@ -3829,7 +3913,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-460",
@@ -3904,83 +3988,6 @@
             "측정: KV bytes/token·GPU/host memory·prefill/decode p50/p95/p99·token/s·cache hit·retry·timeout·task success",
             "검증: 기존 model과 동일 corpus·context length·batch/concurrency·reasoning effort에서 isolated canary 비교",
             "팀 액션: prompt/cache policy·fallback·tool permission·trace retention·quota·rollback을 1M context enable의 change gate로 고정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-457",
-      "title_ko": "Kubernetes v1.37 in-place Pod resize scheduler preemption Alpha: Deferred resize를 동일 node의 priority·PDB로 해소",
-      "title_original": "Kubernetes v1.37: Scheduler Preemption for In-Place Pod Resize (Alpha)",
-      "summary": "- 공개: Kubernetes v1.37이 `InPlacePodVerticalScalingSchedulerPreemption` feature gate 뒤 in-place Pod resize scheduler preemption을 Alpha로 추가\n- 조건: node allocatable headroom 부족으로 Kubelet이 `Deferred`로 표시한 resize 요청을 scheduler가 active evaluation 대상으로 추적\n- 범위: 현재 배치된 **동일 node**에서 lower-priority victim Pod를 graceful eviction해 higher-priority Pod의 CPU·memory resize를 재시도하는 경로\n- 제약: v1.37 이상 control plane·worker node와 `kube-apiserver`·`kube-scheduler`·`kubelet` 전체의 gate enable이 필요한 Alpha 기능\n- 팀 액션: VPA/수동 resize의 `Deferred`·preemption·PDB block·eviction·resize completion·SLO 영향을 isolated canary node pool에서 측정 필요",
-      "detail": "Kubernetes v1.37은 running container의 CPU·memory allocation을 restart 없이 바꾸는 in-place Pod resize에서 node headroom 부족 시 Kubelet이 `Deferred`로 남기던 문제에 scheduler preemption을 Alpha로 추가했다. `InPlacePodVerticalScalingSchedulerPreemption` gate를 켜면 scheduler는 이미 `spec.nodeName`이 설정된 `Deferred` Pod도 추적하고, 해당 Pod가 있는 node에서 lower-priority Pod를 graceful eviction해 capacity를 확보할 수 있다. 일반 placement preemption과 달리 다른 node를 탐색하지 않고 current node에 한정된다. Kubelet은 local eviction을 직접 수행하지 않고 scheduler가 priority, PodDisruptionBudget(PDB), graceful termination policy를 고려해 결정한다. 기능 사용에는 Kubernetes v1.37 이상 control plane과 모든 worker node, `kube-apiserver`·`kube-scheduler`·`kubelet`의 gate enable이 필요하다. Alpha 기능이므로 cluster-wide enable을 resource shortage의 자동 해법으로 간주하지 말고, critical workload resize가 lower-priority workload의 eviction·PDB·capacity SLO에 주는 영향을 canary에서 검증해야 한다.",
-      "why_it_matters": "in-place resize는 restart 없이 resource request를 바꿀 수 있지만 headroom이 없으면 critical Pod가 `Deferred`에 멈출 수 있음. 이 기능은 resource sizing 경로에 priority와 voluntary disruption budget을 직접 연결하므로 autoscaling·SLO·tenant fairness의 운영 정책 변경임.",
-      "engineering_implication": "VPA 또는 controller가 만드는 in-place resize에 `Deferred` duration·preemption attempt·victim eviction·PDB denial·termination latency·resize success·node allocatable headroom을 같은 dashboard와 alert에 연결 필요. enable 전 priority class, PDB, eviction budget, stateful workload disruption, cluster autoscaler interaction과 rollback을 canary node pool에서 검증하고 Alpha gate의 version-skew를 release change record에 기록 필요.",
-      "korea_implication": "국내 multi-tenant Kubernetes 환경은 batch·CI·data workload와 customer-facing service가 같은 node pool을 공유할 수 있음. resize request의 priority 설정이 예기치 않은 eviction으로 이어지지 않도록 tenant별 PDB·priority class·maintenance window와 notification 경로를 사전 합의 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "Kubernetes",
-        "Scheduler",
-        "In-Place Pod Resize",
-        "Preemption",
-        "VPA",
-        "SRE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-11 03:30",
-      "source_name": "Kubernetes Blog",
-      "source_url": "https://kubernetes.io/blog/2026/09/10/kubernetes-v1-37-scheduler-preemption-for-in-place-pod-resize-alpha/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "Kubernetes in-place Pod resize documentation",
-          "url": "https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/"
-        },
-        {
-          "title": "Kubernetes Vertical Pod Autoscaling documentation",
-          "url": "https://kubernetes.io/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes v1.37이 in-place Pod resize의 resource 부족 상태를 scheduler가 처리하는 preemption 경로를 Alpha로 추가함. 기존 resize GA와 별개로 `InPlacePodVerticalScalingSchedulerPreemption` feature gate를 명시적으로 켜야 하는 범위임.",
-          "items": [
-            "배경: running container의 CPU·memory allocation은 in-place resize로 restart 없이 변경 가능한 범위",
-            "문제: node allocatable headroom 부족 시 Kubelet이 resize request를 `Deferred`로 표시하고 resource가 자연 해제될 때까지 대기하는 경로",
-            "변화: scheduler가 `Deferred` condition의 running Pod를 지속 추적해 preemption evaluation에 포함"
-          ]
-        },
-        {
-          "heading": "preemption 동작 범위",
-          "body": "scheduler는 fully utilized node에서 higher-priority Pod의 pending resize를 위해 eligible lower-priority victim Pod를 찾고 graceful eviction을 시작함. 일반 placement preemption처럼 cluster 전체 node를 재배치 후보로 찾지 않는 local scope임.",
-          "items": [
-            "범위: victim selection과 eviction은 resize 대상 Pod가 이미 배치된 동일 node에 한정",
-            "우선순위: scheduler가 global priority, PodDisruptionBudget(PDB), graceful termination policy를 고려하는 경로",
-            "분리: Kubelet admission handler는 local preemption·local eviction을 직접 수행하지 않고 scheduler에 결정을 위임"
-          ]
-        },
-        {
-          "heading": "도입 조건과 제약",
-          "body": "기능 사용에는 v1.37 이상 control plane과 모든 worker node, `kube-apiserver`·`kube-scheduler`·`kubelet` 전체에서 gate enable이 필요함. Alpha feature는 API·behavior·support policy 변경 가능성을 가진 release-preview 범위임.",
-          "items": [
-            "조건: node별 feature-gate configuration과 component version skew를 함께 확인 필요",
-            "경계: preemption은 node 부족 자체를 제거하지 않으며 capacity planning·cluster autoscaler·quota 정책을 대체하지 않음",
-            "경계: PDB 또는 higher-priority competing resize가 victim eviction과 completion time을 바꿀 수 있는 운영 변수"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "critical workload의 restart 없는 scale-up을 위한 control이지만 lower-priority workload의 interruption 비용을 동반함. production enable 전 resize request를 만드는 VPA/controller와 priority·PDB·SLO contract를 같은 change unit으로 검증해야 함.",
-          "items": [
-            "관측: `Deferred` duration·preemption attempt·victim eviction·PDB denial·termination latency·resize completion·node headroom",
-            "검증: isolated canary node pool에서 high-priority resize, PDB-protected victim, stateful workload, rollback과 alert noise를 재현",
-            "팀 액션: priority class·PDB·eviction budget·tenant notification·Alpha gate rollback을 platform runbook에 추가"
           ]
         }
       ],

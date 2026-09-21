@@ -453,6 +453,7 @@
 
 - [[raw/articles/cloudflare-python-workers-ga-2026-09-22]] — Cloudflare Python Workers GA의 WASM wheel·ASGI/WSGI·Hyperdrive·AI/MCP binding 운영 검증 경계.
 - [[raw/articles/securonix-taskstomp-powershell-backdoor-2026-09-22]] — TASK#STOMP VBS·PowerShell·scheduled task·Startup persistence와 endpoint/identity incident closure 경계.
+- [[raw/articles/thn-fake-lastpass-authenticator-byovd-2026-09-22]] — 가짜 LastPass Authenticator GitHub installer의 DLL side-loading·signed BYOVD·EDR kill·credential/session incident closure 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
