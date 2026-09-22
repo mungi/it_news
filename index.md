@@ -463,6 +463,8 @@
 - [[raw/articles/cloudflare-worker-previews-2026-09-23]] — Cloudflare Worker Previews의 branch별 URL·configuration·Durable Object state·trace 격리와 service binding·Queue·Workflow 검증 경계.
 - [[raw/articles/arista-velocloud-orchestrator-cve-2026-93952-2026-09-23]] — Arista VeloCloud Orchestrator `CVE-2026-93952` certificate-based active exploitation의 management plane patch·forensic·Edge closure 경계.
 
+- [[raw/articles/checkpoint-security-management-cve-2026-93616-2026-09-22]] — Check Point Security Management Server `CVE-2026-93616` targeted exploitation, path traversal·unauthenticated script upload·management-plane patch·forensic 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
