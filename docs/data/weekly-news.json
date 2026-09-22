@@ -2,7 +2,7 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-22 21:23",
+  "last_updated_kst": "2026-09-23 01:29",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare Python Workers가 GA로 전환됨. Pyodide·WASM 실행 경계 위에서 FastAPI·Django·Flask, D1·R2·Queues·Workflows·Workers AI binding을 Python 코드로 연결할 수 있으나 지원 wheel·native extension·socket 동작을 workload별로 재검증 필요.",
@@ -14,197 +14,315 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare Python Workers GA: Python 웹·AI workload를 WASM edge runtime으로 옮길 때 검증할 package·database·tool 권한",
-      "summary": "한 줄 결론: Cloudflare가 Python Workers를 GA로 전환해 FastAPI·Django·Flask와 D1·R2·Hyperdrive·Queues·Workflows·Workers AI binding을 Python 코드로 연결할 수 있게 함. 배포 판단은 Python 실행 성공이 아니라 WebAssembly wheel, socket/database driver, tool·secret authority, tail latency와 rollback evidence를 함께 통과하는 기준 필요.",
-      "details": "Cloudflare 원문은 Python Workers가 Pyodide/WASM 기반 runtime에서 first-class language가 되었고, framework connector와 native binding, Hyperdrive socket bridge, PyEmscripten package ecosystem, AI library integration을 제공한다고 설명함. source는 모든 PyPI package, conventional server behavior, security·cost outcome을 보장하지 않으므로 workload별 dependency와 operations validation이 필요함.",
-      "why_it_matters": "Python API·agent code의 edge 배치 경로가 넓어졌지만 native dependency와 state/network assumption을 숨긴 migration은 production failure로 이어질 수 있음.",
+      "title": "Cloudflare Worker Previews: branch별 URL·설정·상태를 격리해 agent 변경을 production 전에 검증하는 release control",
+      "summary": "한 줄 결론: Cloudflare Worker Previews는 Git branch마다 독립 URL·설정·state·observability를 제공해 agent와 개발자가 같은 production-like runtime에서 변경을 검증하도록 함. 다만 service binding, Queue consumer, Workflow는 preview 전체 경로를 자동 격리하지 않는 제약이 있어 preview 통과만으로 production release를 승인하면 안 됨.",
+      "details": "Cloudflare가 `npx wrangler preview` 기반 Worker Previews를 공개함. Preview는 branch별 Durable Object namespace와 Container application을 만들고 observability를 scope하지만, bound Worker service binding은 production deployment를 호출하며 Queue consumer와 Workflow 격리는 별도 구성 또는 미지원 범위임.",
+      "why_it_matters": "agent가 만드는 변경의 양이 늘수록 shared staging의 state collision과 production 설정 오염을 줄이는 release evidence가 필요함.",
       "sources": [
-        "https://blog.cloudflare.com/python-workers-ga/"
+        "https://blog.cloudflare.com/worker-previews/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M31JM2B4K28B7C67PCT5PB2R.01M31JM35NW9707QDHV86F68M9.png",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M31XDPCKA9WGNB1E6TT9XNFN.01M31XDQDKHJVR4XKHJ3NDFNJK.png",
       "local_image": "assets/images/fallback-cloud.svg",
-      "refreshed_kst": "2026-09-22 00:49",
+      "refreshed_kst": "2026-09-23 01:29",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Python Workers GA는 Python 웹·AI workload를 Workers runtime에 올릴 때 JavaScript glue code와 별도 web server를 줄이는 변화임. 다만 CPython native extension, WebAssembly wheel, TCP·database driver, framework lifecycle은 기존 container 배포와 동등하다고 가정하면 안 됨.",
+          "body": "Worker Previews는 branch마다 code만 분기하는 방식에서 URL·configuration·Durable Object·Container state·trace까지 분리하는 Cloudflare Workers release control임. production-like라는 표현은 runtime 검증 범위를 뜻할 뿐, 모든 dependency와 asynchronous path가 완전한 pre-production replica라는 뜻은 아님.",
           "items": [
-            "변화: Python이 Cloudflare Developer Platform의 fully supported first-class language로 GA 전환",
-            "판정: FastAPI·Django·Flask migration은 API contract와 dependency compatibility를 동시에 검증할 작업"
+            "변화: `npx wrangler preview`로 branch별 독립 Preview 생성",
+            "판정: preview evidence는 merge gate의 한 축이며 production approval의 단독 근거 아님"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 Pyodide 기반 Python Workers가 D1·R2·Hyperdrive·Durable Objects·Queues·Workflows·Workers AI binding과 연결된다고 공개함. 기존 Python-to-JavaScript RPC object conversion을 runtime·SDK가 감싸 Python dictionary 등의 직접 사용 경로를 제시함.",
+          "body": "Cloudflare는 각 Git branch가 독자 URL·variables·secrets·bindings·observability·state를 갖는다고 설명함. stable Preview URL은 같은 branch의 push마다 실행 중인 Preview를 갱신하며, dashboard에서 production과 다수 Preview를 함께 관리하는 구조임.",
           "items": [
-            "binding: Queue send 시 `pyodide.ffi.to_js` 변환 없이 Python object 사용 경로 공개",
-            "framework: `workers.asgi`와 `workers.wsgi` connector로 ASGI·WSGI application을 Workers request lifecycle에 연결",
-            "AI: `openai`·`langchain`·`mcp` library와 Workers AI·AI Gateway 결합 예시 공개"
+            "실행: branch별 Preview URL에 CI·agent·human test traffic을 보내 runtime response 확인",
+            "관측: logs·errors·metrics·traces를 Preview scope로 조회해 production signal과 분리"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: 런타임·아키텍처",
-          "body": "Workers가 connection handling과 global scaling을 맡고 ASGI/WSGI connector가 request·response를 bridge하는 구조임. Python app은 server process를 직접 띄우지 않지만, stateful connection·background work·request timeout·isolate lifecycle을 conventional VM과 동일하게 설계하면 장애 원인이 됨.",
+          "heading": "AI/Infra 전문가 해석",
+          "body": "agent-generated change는 diff review만으로 OAuth callback, permission approval, cookie, CORS, migration, stateful request 흐름을 검증하기 어려움. branch state와 trace를 묶으면 agent의 deploy→browser test→trace query→patch→redeploy loop에 재현 가능한 evidence를 남길 수 있음.",
           "items": [
-            "볼 것: request concurrency, isolate lifecycle, Durable Object state, Queue/Workflow retry ownership",
-            "볼 것: ASGI middleware, streaming response, WebSocket, background task의 Workers runtime compatibility",
-            "피할 것: `uvicorn`·`gunicorn` process model과 OS thread/socket 가정을 그대로 반입하는 방식"
+            "볼 것: PR·commit SHA·Preview URL·test run·trace ID를 같은 release record로 연결",
+            "피할 것: agent가 test 성공을 선언해도 policy·approval·negative test 증거 없이 자동 merge하는 흐름"
           ]
         },
         {
-          "heading": "패키지·데이터베이스 관점",
-          "body": "원문은 native C/C++/Rust extension이 WebAssembly cross-compilation을 요구한다고 명시함. Cloudflare는 PEP 783 PyEmscripten, Pyodide build toolchain, cibuildwheel support를 제시했지만 모든 PyPI dependency의 즉시 호환을 보장하지 않음.",
+          "heading": "아키텍처·상태 관점",
+          "body": "Preview는 Durable Object singleton이 production namespace를 공유할 때 생길 수 있는 live state mutation을 막기 위해 namespace와 Container application을 branch마다 생성함. base configuration에서 시작하고 Preview별 DB 또는 test API key override가 가능하므로 secret 값과 data plane도 분리 설계가 필요함.",
           "items": [
-            "패키지: pure Python dependency와 PyEmscripten wheel availability를 lockfile 기준으로 inventory",
-            "DB: Hyperdrive는 custom socket syscall bridge로 `aiomysql`·`asyncpg` 같은 driver 경로를 지원하는 범위",
-            "검증: TLS, connection pool, DNS, transaction retry, migration tool을 staging에서 실제 database와 시험"
+            "격리: migration·schema change·session·memory·concurrent test가 branch namespace에 남는 구조",
+            "검증: Preview DB는 synthetic 또는 sanitized data만 연결하고 production credential reuse 금지"
           ]
         },
         {
-          "heading": "AI·보안·거버넌스 관점",
-          "body": "Python agent·RAG code가 edge runtime에서 Workers AI, Vectorize, MCP server와 연결될 수 있어 application convenience와 tool authority가 함께 이동함. Python library import가 가능한 사실은 secret·egress·tenant data 권한을 자동으로 안전하게 만드는 근거가 아님.",
+          "heading": "보안·거버넌스 관점",
+          "body": "custom domain Preview는 OAuth redirect·cookie·CORS를 production과 가깝게 시험할 수 있으나 외부 노출 경로도 만듦. Cloudflare Access로 Preview URL을 보호할 수 있으므로 CI identity, reviewer access, secret scope, preview expiry를 release policy로 정해야 함.",
           "items": [
-            "보안: binding별 secret scope, outbound fetch destination, AI Gateway log retention을 workload identity와 대조",
-            "거버넌스: MCP tool allowlist, human approval, prompt·tool audit를 Python application trace와 연결",
-            "경계: GA 공지는 application security, model output safety, third-party package integrity를 보증하지 않음"
+            "통제: Preview domain에 Access policy·least-privilege secret·audit log 적용",
+            "리스크: Preview URL·test account·OAuth callback allowlist가 장기 잔존하는 configuration drift"
           ]
         },
         {
-          "heading": "비용·SRE 관점",
-          "body": "serverless scaling은 idle server 운영을 줄일 수 있지만 WASM package size, cold start, external database round trip, AI inference·queue retry가 latency와 비용을 결정함. 기존 service의 p95/p99와 request unit economics를 baseline 없이 migration하면 예상 절감 효과를 입증할 수 없음.",
+          "heading": "제약·비용·SRE 관점",
+          "body": "Cloudflare는 현재 Preview service binding이 bound Worker의 production deployment를 호출한다고 명시함. Queue는 message 전송 가능하지만 consumer 실행은 Preview에서 지원하지 않고, Workflow execution isolation도 별도 configuration이 필요함.",
           "items": [
-            "측정: deploy artifact size, cold/warm start, CPU time, memory, Hyperdrive connection reuse, AI token 비용",
-            "SRE: Queue retry·Workflow idempotency·DLQ·Durable Object recovery를 failure injection으로 확인",
-            "FinOps: Python dependency 변경 뒤 bundle size와 invocation·egress·AI model cost 변화를 release gate로 추적"
+            "경계: multi-Worker request path와 asynchronous consumer는 isolated Preview 검증 범위 밖 또는 추가 구성 대상",
+            "측정: Preview provision time·test duration·trace error·cold/warm latency·cleanup failure를 release metric으로 기록"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "migration은 small stateless API에서 시작해 dependency compatibility, data binding, observability, rollback을 순서대로 확인하는 방식이 안전함. native dependency가 많은 ML inference나 long-lived server assumption이 있는 workload는 container 또는 다른 runtime과 비용·SLO를 비교해야 함.",
+          "body": "초기에는 stateless HTTP Worker 한 개를 대상으로 Preview URL, contract test, trace correlation, Access policy를 canary로 연결한 뒤 stateful binding과 custom domain 검증으로 확대하는 순서가 안전함. production data path와 비동기 path는 별도 integration test를 유지해야 함.",
           "items": [
-            "1단계: current Python dependency·native extension·socket·framework feature inventory",
-            "2단계: FastAPI/ASGI read-only endpoint를 canary Worker로 배포하고 contract test 수행",
-            "3단계: R2/D1/Hyperdrive/Queue binding과 secret·egress policy를 least privilege로 연결",
-            "4단계: p95/p99, error, retry, cost, rollback artifact를 production gate로 운영"
+            "1단계: base configuration·secret classification·Preview cleanup owner 정의",
+            "2단계: PR마다 contract·negative·auth flow test와 trace artifact 저장",
+            "3단계: stateful resource·OAuth redirect·custom domain canary 뒤 merge gate 적용"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀은 package wheel과 framework behavior를 확인하고, 인프라팀은 binding·network·observability를 policy로 고정하며, 보안팀은 tool·secret data flow를 검토해야 함.",
+          "body": "개발팀은 branch와 test artifact의 대응 관계를 보장하고, 플랫폼팀은 Preview identity·configuration·TTL을 관리하며, 보안팀은 external Preview 노출과 secret data flow를 검토해야 함.",
           "items": [
-            "개발팀: `requirements` lock, PyEmscripten wheel, ASGI/WSGI middleware, test fixture 확인",
-            "인프라팀: Wrangler binding, Hyperdrive, Queue/Workflow retry, log/trace·rollback version 확인",
-            "보안팀: secret scope, AI/MCP tool allowlist, egress, tenant boundary, dependency provenance 검토"
+            "개발팀: commit SHA·Preview URL·test case·failure replay link를 PR에 남김",
+            "인프라팀: Access·base/override config·state cleanup·observability retention 확인",
+            "보안팀: test credential·preview domain·OAuth redirect·agent write authority 검토"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Python Workers의 GA는 Python API·AI orchestration을 edge runtime에 배치할 수 있는 선택지를 늘린 변화임. 승인 기준은 Python 코드가 실행되는지 여부가 아니라 dependency·database·tool authority·tail latency·rollback evidence가 함께 통과한 상태임.",
+          "body": "Worker Previews는 agent 개발 속도를 높이는 기능이면서 runtime evidence를 branch에 귀속하는 control plane임. approval 기준은 URL이 열리는지 여부가 아니라 sync·async dependency 경계, state isolation, auth, trace, rollback evidence가 함께 충족된 상태임.",
           "items": [
-            "팀 액션: 이번 주 후보 API 하나를 dependency matrix와 p95·error·cost baseline으로 canary 검증",
-            "측정: compatible wheel 비율, binding integration test 통과율, p99·retry·egress·token cost 변화 추적"
+            "팀 액션: 이번 주 Worker 한 개에 Preview·Access·contract test·trace ID를 묶은 PR gate canary 적용",
+            "측정: Preview test 통과율, production escape defect, stale Preview/secret 수, rollback decision time"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "TASK#STOMP PowerShell backdoor: VBS·scheduled task·Startup·mutual-watchdog를 endpoint·identity closure로 묶는 대응",
-      "summary": "한 줄 결론: Securonix 연구를 인용한 보도는 TASK#STOMP가 VBS orchestrator와 scheduled task·Startup folder·두 PowerShell module을 이용해 문서·Wi-Fi password·clipboard·screenshot을 수집하고 remote command를 수행한다고 설명함. initial access와 피해 범위는 미확정이므로 endpoint hunt, C2 containment, credential/session review를 증거 기반으로 병렬 처리 필요.",
-      "details": "공개 보도 범위에서 TASK#STOMP는 `wscript.exe`로 실행되는 encoded VBS, disguised scheduled task, `msdiag.vbs` Startup persistence, collection·secondary C2 PowerShell module, mutual watchdog, 두 C2 domain을 사용함. source는 campaign mechanics를 설명하지만 조직별 compromise, exfiltration success, initial delivery path를 확정하지 않음.",
-      "why_it_matters": "native tooling 기반 persistence는 개별 malware file detection을 피해갈 수 있으며 Wi-Fi password·clipboard·document collection은 endpoint incident를 identity와 network incident로 확대할 수 있음.",
+      "title": "Arista VeloCloud Orchestrator `CVE-2026-93952`: certificate-based Edge 인증 조건의 CVSS 10.0 active exploitation을 management plane incident로 처리",
+      "summary": "한 줄 결론: Arista가 on-premises VeloCloud Orchestrator의 `CVE-2026-93952`가 certificate-based Edge authentication 구성에서 active exploitation 중이라고 알림. 5.2·6.4는 fixed release가 나왔지만 6.1·7.0은 당시 미제공이므로 VCO web interface exposure 축소, IOC hunt, Edge·administrator credential review, trusted recovery를 patch와 병렬 처리해야 함.",
+      "details": "The Hacker News가 인용한 Arista advisory는 network-accessible VCO web interface와 Edge authentication certificate public portion 조건에서 unauthenticated remote attacker가 internal function privilege를 얻어 VCO host와 managed Edge를 침해할 수 있다고 설명함. Hosted·Dedicated VCO는 패치됐고 on-premises 5.2·6.4 fixed release가 제공됐으나 일부 supported release train은 fix 대기 상태임.",
+      "why_it_matters": "VCO는 SD-WAN Edge를 관리하는 control plane이므로 한 서버의 compromise가 branch·edge device 설정과 network trust boundary까지 확대될 수 있음.",
       "sources": [
-        "https://www.securonix.com/blog/task-stomp-powershell-backdoor-document-theft-remote-access",
-        "https://thehackernews.com/2026/09/taskstomp-powershell-backdoor-steals.html"
+        "https://thehackernews.com/2026/09/new-cvss-100-velocloud-orchestrator.html",
+        "https://www.arista.com/en/support/advisories-notices/security-advisory/24765-security-advisory-0183"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhC3vJ8DX6852JxHepz1kGmunH3ZXsStcK4LINkLBCrzS8ZacBhqL-7epmGuzSNGI-jpF4GtkM-FXUsrv3croTLimjG_SBbw-rpO8NBIHf6Wvr6BMmYYSDKxEPQI-nrSFYrc9vmojcKn50LRFbc1t3h8qFA8dE_pZ3kMvelRpBFVFe2ZmCVJhPCWlMxYZpO/s1600/stomp.jpg",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhN5Up_REU7_SnA-Ce9D8UGRsM8WbkkcjR6kjirzb-tSFejrL-qnZkXrp2gNa3OA-4PgvkUqHs59j9Qc8srbfm2JOUIOvEa1c_d8Il3kUDAGyr49FuXwq_n438Vf9txfq1fVwcpykkZAKz1o2QFGUJDLF4wnXzNWLdH1tYft3bd-vJywPppGjEfoikG22s/s1600/VeloCloud.jpg",
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-09-22 00:49",
+      "refreshed_kst": "2026-09-23 01:29",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "TASK#STOMP는 native Windows component를 조합해 단일 executable 의존을 낮춘 PowerShell backdoor campaign임. scheduled task·Startup folder·mutual watchdog·token-authenticated C2가 함께 있어 file deletion 하나로 closure를 선언하면 persistence와 credential exposure를 놓칠 수 있음.",
+          "body": "`CVE-2026-93952`는 certificate-based Edge-to-VCO authentication이 구성된 on-premises VeloCloud Orchestrator에서 active exploitation이 알려진 CVSS 10.0 결함임. patch 여부만 확인하지 말고 management interface exposure, certificate material, VCO host persistence, managed Edge state와 administrator activity를 하나의 incident closure로 다뤄야 함.",
           "items": [
-            "변화: document collection·Wi-Fi password·clipboard·screenshot·remote command 기능을 가진 PowerShell chain 공개",
-            "우선: scheduled task·Startup folder·VBS·PowerShell·C2 telemetry와 credential containment 병렬 수행"
+            "우선: affected release·certificate authentication·web interface network path를 즉시 inventory",
+            "경계: source는 공격 시작 시점·피해 규모·특정 조직 compromise를 공개하지 않음"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Securonix 연구를 인용한 The Hacker News 보도는 encoded VBS `95c9050t66.vbs`가 `wscript.exe`로 실행되고 scheduled task와 Startup folder persistence를 만든 흐름을 설명함. `sys_loader.ps1`과 `win_conn.ps1`은 각각 collection/remote access와 secondary C2 역할을 수행하는 범위임.",
+          "body": "Arista는 unauthenticated remote attacker가 VCO internal function privilege를 얻어 VCO host와 관리 data에 영향을 줄 수 있다고 설명했고 active exploitation을 명시함. 9월 22일 기준 5.2·6.4 release train은 fixed release가 제공됐고 6.1·7.0은 fix가 아직 없으며, Hosted·Dedicated VCO는 패치 완료 범위임.",
           "items": [
-            "persistence: Local Credential Manager·Network Audio Service·Windows Display Manager·Device Credential Handler 이름의 task 사용 언급",
-            "collector: business document·system metadata·Wi-Fi password·clipboard·screenshot 수집과 arbitrary PowerShell command 기능",
-            "C2: `corecloudfileshare[.]xyz`·`attachmentsharingdrive[.]xyz` 및 두 module의 mutual-watchdog 동작 언급"
+            "조건: VCO web interface network access와 Edge authentication certificate public portion이 필요한 경로",
+            "범위: Certificate Acquire 또는 Certificate Required 등 certificate-based configuration의 실제 exposure는 advisory와 configuration으로 대조 필요"
           ]
         },
         {
-          "heading": "증거 경계와 초기 침투",
-          "body": "원문은 payload delivery의 정확한 initial-access path를 확인하지 못했고 phishing 또는 social engineering 가능성만 제기함. 공개 보도는 특정 조직, 감염 규모, credential 사용 결과, C2 인프라의 현재 상태를 확정하지 않으므로 단일 campaign description을 자사 침해 사실로 기록하면 안 됨.",
+          "heading": "AI/Infra 전문가 해석: control plane",
+          "body": "VCO는 SD-WAN Edge 운영의 정책·configuration·device-management control plane이므로 host intrusion은 단일 application server 사건으로 끝나지 않을 수 있음. Edge reachability와 route·policy change, administrator session, backup artifact를 같은 time window에서 조사해야 함.",
           "items": [
-            "확인: VBS file이 desktop에 staged되고 random filename으로 filename-based detection 회피를 노린 설명",
-            "경계: initial access, victim identity, lateral movement, exfiltration 성공 범위는 공개 source에서 미확정",
-            "피할 것: IOC absence 또는 scheduled task 하나의 미발견만으로 clean 판정하는 방식"
+            "볼 것: VCO의 management role, managed Edge inventory, configuration push history, backup location",
+            "피할 것: appliance patch 완료만으로 managed Edge trust와 configuration integrity를 자동 회복됐다고 보는 판단"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석: endpoint·탐지 관점",
-          "body": "공격 chain은 `wscript.exe`→encoded VBS→PowerShell→dat decode 흐름, task creation, Startup folder, timestomp, hidden execution, cleanup을 결합함. EDR rule은 PowerShell command line 하나보다 parent-child, file write, task registration, DNS/HTTP, archive staging을 시간축으로 묶어야 함.",
+          "heading": "노출·네트워크 관점",
+          "body": "Arista의 임시 완화는 VCO web interface를 trusted administrative network로 제한하는 것임. 이는 patch 대기 train에서 risk를 낮추지만 certificate-based authentication과 reachable management plane이라는 조건을 제거하는지 ACL·VPN·proxy·DNS·NAT telemetry로 확인해야 함.",
           "items": [
-            "hunt: `wscript.exe`의 user profile VBS 실행, `sys_loader.ps1`·`win_conn.ps1`, `diag_pack.dat`·`win_conn_cfg.dat` 검색",
-            "hunt: named scheduled task, Startup `msdiag.vbs`, hidden PowerShell, timestamp alteration, `purge.bat` 실행 확인",
-            "telemetry: process tree·Script Block Logging·AMSI·Task Scheduler Operational log·DNS/proxy·file creation 보존"
+            "통제: internet·user VLAN·partner network에서 VCO management endpoint로의 path를 deny하고 exception owner 지정",
+            "관측: VCO web access log의 unusual URL-like path·encoded character·internal/local service reference·high request rate 조사"
           ]
         },
         {
-          "heading": "identity·network·data 관점",
-          "body": "Wi-Fi password와 clipboard collection은 endpoint foothold가 network access·session token·password paste로 확대될 가능성을 뜻함. C2가 token-authenticated라는 구현 설명은 defender 측 access control이 아니라 attacker operation의 인증 방식이므로 outbound domain 차단·proxy history·credential rotation 판단이 필요함.",
+          "heading": "forensic·persistence 관점",
+          "body": "원문은 IOC로 `/usr/local/sbin/.vcnode.js`, `/usr/local/sbin/vc-sysmond`, `/etc/systemd/system/vc-sysmon.service`, `vc-sysmond` MD5와 nginx `x-vc-opt` header를 제시함. 단일 IOC 부재는 clean proof가 아니므로 web access·backend application·system·database log와 filesystem timestamp를 patch 전 가능한 범위에서 보존해야 함.",
           "items": [
-            "identity: browser session·clipboard secret·Wi-Fi profile·VPN credential과 affected user account를 시간축 대조",
-            "network: listed domain의 DNS, TLS SNI, proxy, endpoint connection record와 egress allowlist 확인",
-            "data: document path·archive·upload·screenshot staging 흔적을 DLP/EDR telemetry와 교차 검토"
+            "hunt: unexpected outbound traffic, backdoor daemon, webshell, administrator configuration change를 시간축 대조",
+            "보존: VCO access·application·system·database log와 file metadata를 forensic evidence로 확보"
           ]
         },
         {
-          "heading": "incident response·복구 관점",
-          "body": "remediation은 malicious task를 지우는 작업보다 persistence, active process, script artifact, C2, credential, user session, endpoint trust를 순서대로 닫는 작업임. clean image rebuild가 필요한지는 privilege·credential theft·tampering evidence를 바탕으로 결정해야 함.",
+          "heading": "identity·Edge·복구 관점",
+          "body": "VCO compromise 의심 시 VCO administrator credential만 바꾸는 것으로 끝내지 않고 managed Edge의 state, certificate lifecycle, configuration integrity, remote-management account와 downstream network access를 검토해야 함. Arista는 upgrade 뒤 credential rotation, administrator activity review, Edge state check, trusted source restore 또는 replacement를 권고함.",
           "items": [
-            "1단계: endpoint network isolation과 volatile process·network·task·script artifact preservation",
-            "2단계: scheduled task·Startup folder·VBS/PowerShell/dat payload과 C2 indicator containment",
-            "3단계: user password·VPN/Wi-Fi·browser session·cloud/SaaS token exposure 판단과 rotation",
-            "4단계: reimage 또는 EDR remediation 뒤 persistence absence와 account/network telemetry 재검증"
+            "조치: VCO administrator·service credential·certificate·API integration의 rotate/revoke scope 결정",
+            "검증: Edge configuration baseline과 VCO backup·restore artifact의 integrity를 trusted source와 대조"
           ]
         },
         {
-          "heading": "운영·거버넌스 관점",
-          "body": "Windows native tooling은 정상 administrator workflow에도 쓰이므로 blanket block은 운영 장애를 만들 수 있음. signed script policy, constrained language mode, AppLocker/WDAC, least privilege, logging coverage를 role별로 적용하고 exception은 expiry와 owner를 가져야 함.",
+          "heading": "patch·SRE·FinOps 관점",
+          "body": "5.2·6.4 fixed release와 fix 대기 6.1·7.0을 같은 maintenance schedule로 취급하면 unsupported gap이 생김. availability-critical SD-WAN은 HA failover, Edge reconnect, policy propagation, logging continuity를 canary와 rollback plan으로 검증해야 함.",
           "items": [
-            "통제: PowerShell Script Block/Module logging, AMSI, Task Scheduler audit, attack surface reduction rule coverage 확인",
-            "통제: user-writeable path의 `wscript.exe`·PowerShell execution, Startup folder write, scheduled task creation policy 검토",
-            "운영 과제: helpdesk·endpoint·identity·network team의 incident handoff와 evidence format 통일"
+            "운영: release train별 vendor status·support contract·upgrade path·maintenance window를 asset record에 기록",
+            "측정: exposed VCO 수, fixed version 적용률, management ACL coverage, Edge post-patch health, forensic retention completeness"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀과 IT 운영팀은 legitimate automation이 쓰는 script·task baseline을 제공하고, SOC는 abnormal parent-child·C2·collection signals를 hunt해야 함. identity team은 user credential과 session revoke 판단을 endpoint evidence에 연결해야 함.",
+          "body": "네트워크팀은 VCO release·authentication mode·reachable interface·managed Edge를 확인하고, SOC는 IOC와 request pattern을 hunt하며, identity·platform팀은 credentials와 trusted recovery를 관리해야 함.",
           "items": [
-            "IT: scheduled task·Startup folder·PowerShell baseline과 unsigned script exception inventory",
-            "SOC: process/file/task/network timeline, C2 domain search, document staging·archive evidence 검토",
-            "Identity: affected user password·MFA session·VPN/Wi-Fi·SaaS/cloud token rotation scope 승인"
+            "네트워크팀: certificate authentication mode·VCO admin network ACL·Edge inventory 확인",
+            "SOC: VCO nginx·application·system·database log와 listed IOC·outbound connection search",
+            "플랫폼팀: fixed release canary·backup restore·credential/certificate rotation·Edge health validation"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "TASK#STOMP 대응의 완료 기준은 task 삭제가 아니라 VBS·PowerShell·Startup·C2 mutual-watchdog가 모두 사라지고, 문서·Wi-Fi·clipboard 수집 가능성에 대한 credential/session closure가 기록된 상태임. 공개 source의 미확정 범위는 실제 incident evidence로 보완해야 함.",
+          "body": "`CVE-2026-93952` 대응 완료 기준은 VCO version 하나가 아니라 certificate-based exposure가 닫히고, control-plane persistence·administrator activity·Edge state·credential lifecycle을 증거로 재검증한 상태임. patch 미제공 train은 network isolation과 upgrade decision을 지연 없이 기록해야 함.",
           "items": [
-            "팀 액션: endpoint hunting query를 process-tree·task·Startup·C2 domain 기준으로 즉시 배포",
-            "측정: affected endpoint triage 완료율, persistence 제거 검증률, credential/session revoke 완료율, reimage closure time"
+            "팀 액션: 24시간 내 VCO release/authentication/network path inventory와 IOC hunt 실행",
+            "측정: fixed-or-isolated VCO 비율, exposed management path 수, Edge integrity review 완료율, recovery drill time"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-513",
+      "title_ko": "Cloudflare Worker Previews: branch별 URL·설정·Durable Object state를 분리하는 agent release 검증 환경 공개",
+      "title_original": "Introducing Worker Previews: isolated preview environments for every change your agent makes",
+      "summary": "핵심: Cloudflare Worker Previews가 Git branch마다 독립 URL·variables·secrets·bindings·observability·state를 제공함. 경계: Durable Object·Container는 branch별로 격리되지만 service binding은 현재 production deployment를 호출하고 Queue consumer·Workflow execution은 preview 전체 격리 대상이 아니어서 async integration test를 별도 유지 필요.",
+      "detail": "Worker Previews는 `npx wrangler preview`로 branch별 runtime 검증과 trace evidence를 연결하는 기능임. Preview 통과를 production 승인으로 등치하지 말고 stateful binding, OAuth·CORS, async dependency, secret scope, rollback을 release gate로 분리해야 함.",
+      "why_it_matters": "agent와 병렬 개발이 shared staging을 경쟁할 때 branch-level state와 telemetry isolation은 변경 충돌과 production signal 오염을 줄이는 운영 입력임.",
+      "engineering_implication": "시사점: PR마다 commit SHA·Preview URL·contract/negative test·trace ID를 남기고, Preview domain에는 Access·test credential·TTL·cleanup owner를 적용 필요. service binding·Queue·Workflow는 production call path 또는 별도 configuration 여부를 integration test로 확인 필요.",
+      "korea_implication": "국내 서비스의 OAuth callback·cookie domain·개인정보 test data는 preview custom domain과 Access policy에 맞춰 production credential·real customer data와 분리 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Cloud",
+        "Cloudflare",
+        "Workers",
+        "DevOps",
+        "Agent",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-09-22 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/worker-previews/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M31XDPCKA9WGNB1E6TT9XNFN.01M31XDQDKHJVR4XKHJ3NDFNJK.png",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 Worker Previews를 공개함. 각 Git branch는 독립 URL·code·configuration·observability·state를 갖고, same branch push는 stable Preview URL의 실행 중인 Preview를 갱신하는 방식임.",
+          "items": [
+            "변화: `npx wrangler preview`로 branch별 Preview deployment 생성",
+            "범위: variables·secrets·bindings는 production configuration과 분리된 Preview configuration 사용"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Preview 생성 시 Durable Object namespace와 Container application을 branch별로 만들기 때문에 state mutation과 failed migration을 production namespace에서 분리하는 구조임. trace에는 fetch·binding operation·handler invocation을 Preview scope로 연결할 수 있음.",
+          "items": [
+            "상태: Durable Object·Container session·memory·migration을 branch 단위로 격리",
+            "관측: logs·errors·metrics·traces를 branch Preview에서 조회"
+          ]
+        },
+        {
+          "heading": "제약과 증거 경계",
+          "body": "Cloudflare는 service binding이 현재 bound Worker의 production deployment를 호출한다고 명시함. Queue는 message 전송이 가능하지만 consumer 실행은 Preview에서 지원하지 않고 Workflow isolation도 별도 configuration이 필요한 범위임.",
+          "items": [
+            "경계: multi-Worker·Queue consumer·Workflow는 end-to-end isolated test를 자동 보장하지 않음",
+            "리스크: Preview test success를 async production path success로 일반화하는 판단"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Preview는 branch-level release evidence를 만드는 도구임. secret·test data·external callback을 분리하고 commit·test·trace·rollback artifact를 같은 PR record에 남겨야 agent 변경도 review 가능한 deployment evidence가 됨.",
+          "items": [
+            "팀 액션: stateless Worker 한 개에 Preview URL·Access·contract test·trace artifact canary 적용",
+            "운영 과제: Preview TTL·state cleanup·custom domain·OAuth redirect·service binding integration test ownership 지정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-514",
+      "title_ko": "Arista VeloCloud Orchestrator `CVE-2026-93952`: certificate-based 구성에서 CVSS 10.0 active exploitation 대응",
+      "title_original": "New CVSS 10.0 VeloCloud Orchestrator Flaw Actively Exploited in Certificate-Based Setups",
+      "summary": "핵심: Arista VeloCloud Orchestrator `CVE-2026-93952`가 certificate-based Edge authentication 구성에서 active exploitation 중이며 CVSS 10.0으로 평가됨. 상태: on-premises 5.2·6.4는 fixed release가 제공됐지만 6.1·7.0은 당시 fix 대기여서 web interface isolation·IOC hunt·credential/Edge review를 patch와 병렬 수행 필요.",
+      "detail": "VCO control plane의 active-exploitation 결함은 appliance version update만이 아니라 network exposure, host persistence, administrator activity, managed Edge configuration과 credential lifecycle을 함께 닫아야 하는 incident임.",
+      "why_it_matters": "VCO가 관리하는 SD-WAN Edge와 configuration data가 영향을 받을 수 있어 management-plane compromise가 edge fleet와 network policy trust boundary로 확대될 수 있음.",
+      "engineering_implication": "시사점: VCO release train·certificate authentication mode·management interface path를 inventory하고 fixed release 또는 trusted admin network isolation을 즉시 적용 필요. nginx·application·system·database log와 listed IOC를 patch 전 보존하고 VCO·Edge credential/certificate·configuration integrity를 재검증 필요.",
+      "korea_implication": "국내 지사·공장·매장 SD-WAN을 중앙 VCO로 운영하는 조직은 carrier·partner·remote-admin path까지 포함해 VCO management interface의 reachable network를 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "SD-WAN",
+        "Arista",
+        "VeloCloud",
+        "Network Security",
+        "Active Exploitation"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-09-22 21:29",
+      "source_name": "Arista / The Hacker News",
+      "source_url": "https://www.arista.com/en/support/advisories-notices/security-advisory/24765-security-advisory-0183",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhN5Up_REU7_SnA-Ce9D8UGRsM8WbkkcjR6kjirzb-tSFejrL-qnZkXrp2gNa3OA-4PgvkUqHs59j9Qc8srbfm2JOUIOvEa1c_d8Il3kUDAGyr49FuXwq_n438Vf9txfq1fVwcpykkZAKz1o2QFGUJDLF4wnXzNWLdH1tYft3bd-vJywPppGjEfoikG22s/s1600/VeloCloud.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News report",
+          "url": "https://thehackernews.com/2026/09/new-cvss-100-velocloud-orchestrator.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Arista가 on-premises VeloCloud Orchestrator `CVE-2026-93952`의 active exploitation을 알림. certificate-based Edge-to-VCO authentication이 configured된 deployment에서 unauthenticated remote attacker가 internal function privilege를 얻어 VCO host에 영향을 줄 수 있는 범위임.",
+          "items": [
+            "영향: VCO host와 관리 data, managed Edge access로 확대될 수 있는 control-plane risk",
+            "상태: CVSS 3.1 10.0이며 attack start·victim scope는 공개 source에서 미확정"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "9월 22일 기준 5.2·6.4 release train은 fixed release가 제공됐고 6.1·7.0은 fix 대기 상태로 설명됨. Hosted·Dedicated VCO는 Arista가 패치한 범위이며 on-premises release train과 support status는 별도 inventory 대상임.",
+          "items": [
+            "조건: VCO web interface network access와 Edge authentication certificate public portion이 필요한 경로",
+            "완화: VCO web interface를 trusted administrative network로 제한하는 vendor guidance"
+          ]
+        },
+        {
+          "heading": "forensic과 복구",
+          "body": "원문은 `.vcnode.js`·`vc-sysmond`·`vc-sysmon.service`·nginx `x-vc-opt` header를 indicator로 제시함. IOC 부재를 clean proof로 쓰지 말고 access·application·system·database log와 filesystem timestamp를 보존하고, suspected compromise면 credential rotation·Edge review·trusted restore를 병렬 수행해야 함.",
+          "items": [
+            "hunt: unusual URL path·encoded character·internal service reference·high request rate·unexpected outbound traffic",
+            "조치: VCO administrator/service credential·certificate·managed Edge state·configuration integrity 대조"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patch closure는 version 하나가 아니라 reachable management path, certificate authentication, host persistence, administrator action, Edge configuration과 credential lifecycle을 증거로 닫는 작업임. fixed release가 없는 train은 isolation과 upgrade path를 risk acceptance 없이 기록해야 함.",
+          "items": [
+            "팀 액션: 24시간 내 VCO release/authentication/interface inventory와 IOC hunt 실행",
+            "운영 과제: fixed-or-isolated VCO 비율·Edge post-patch health·forensic retention·recovery drill time 추적"
+          ]
+        }
+      ],
+      "rank": 2
+    },
     {
       "id": "news-512",
       "title_ko": "Linux ARM64 KVM `CVE-2026-89775`: nested virtualization의 TLB invalidation 누락이 guest-to-host memory write로 이어지는 경로 패치",
@@ -282,11 +400,11 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-510",
-      "rank": 2,
+      "rank": 4,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -355,7 +473,7 @@
     },
     {
       "id": "news-509",
-      "rank": 3,
+      "rank": 5,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -427,7 +545,7 @@
     },
     {
       "id": "news-511",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -575,7 +693,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-506",
@@ -643,7 +761,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-505",
@@ -716,7 +834,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-508",
@@ -793,11 +911,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-499",
-      "rank": 9,
+      "rank": 11,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -870,7 +988,7 @@
     },
     {
       "id": "news-500",
-      "rank": 10,
+      "rank": 12,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -954,7 +1072,7 @@
     },
     {
       "id": "news-501",
-      "rank": 11,
+      "rank": 13,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -1031,7 +1149,7 @@
     },
     {
       "id": "news-502",
-      "rank": 12,
+      "rank": 14,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -1108,7 +1226,7 @@
     },
     {
       "id": "news-498",
-      "rank": 13,
+      "rank": 15,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -1189,7 +1307,7 @@
     },
     {
       "id": "news-496",
-      "rank": 14,
+      "rank": 16,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -1262,7 +1380,7 @@
     },
     {
       "id": "news-503",
-      "rank": 15,
+      "rank": 17,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -1335,7 +1453,7 @@
     },
     {
       "id": "news-497",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -1403,7 +1521,7 @@
     },
     {
       "id": "news-495",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -1472,7 +1590,7 @@
     },
     {
       "id": "news-494",
-      "rank": 18,
+      "rank": 20,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -1556,7 +1674,7 @@
     },
     {
       "id": "news-492",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -1641,7 +1759,7 @@
     },
     {
       "id": "news-493",
-      "rank": 20,
+      "rank": 22,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -1713,7 +1831,7 @@
     },
     {
       "id": "news-504",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "Jade Sleet의 DevOps 채용 미끼: 조작된 `.terraform.lock.hcl`이 Apple Silicon 개발자 endpoint를 FLATROOF·ROOFDECK으로 연결",
       "title_original": "Don’t Call Us, We’ll Call Your APIs | TraderTraitor Backdoors Resurface on Victim With No Crypto Ties",
       "summary": "- 확인: SentinelOne은 북한 연계 TraderTraitor/Jade Sleet가 인도 IT 서비스사의 Apple Silicon MacBook을 침해한 사례를 공개. 해당 endpoint는 DevOps 엔지니어가 Terraform·Ansible로 AWS·OVH·OpenStack을 운영하고 source-control 접근을 보유한 환경\n- 경로: 가짜 채용 coding project의 조작된 `.terraform.lock.hcl`이 attacker-controlled custom provider를 가리켜 `terraform init` 시 악성 module 다운로드·실행으로 이어지는 범위\n- 영향: `FLATROOF`·`ROOFDECK`이 3월 18일부터 disk에 존재하고 3월 29일부터 beaconing·host activity가 시작된 telemetry 범위\n- 조치: 채용 과제 repository도 untrusted code로 취급하고 lockfile provider 주소·checksum·registry egress·macOS developer endpoint의 cloud/source-control credential을 같은 investigation 범위로 묶어야 함",
@@ -1863,7 +1981,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-491",
@@ -1949,7 +2067,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-487",
@@ -2021,7 +2139,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-489",
@@ -2095,7 +2213,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-485",
@@ -2164,7 +2282,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-486",
@@ -2240,7 +2358,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-483",
@@ -2320,7 +2438,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-484",
@@ -2391,7 +2509,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-488",
@@ -2471,7 +2589,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-479",
@@ -2547,7 +2665,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-478",
@@ -2613,7 +2731,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-481",
@@ -2688,7 +2806,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-480",
@@ -2761,7 +2879,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-477",
@@ -2828,7 +2946,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-482",
@@ -2909,7 +3027,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-475",
@@ -2973,7 +3091,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-476",
@@ -3038,7 +3156,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-474",
@@ -3113,7 +3231,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "region": "Global",
@@ -3188,7 +3306,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-473",
@@ -3255,7 +3373,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "region": "Global",
@@ -3323,7 +3441,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "region": "Global",
@@ -3396,11 +3514,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-469",
-      "rank": 44,
+      "rank": 46,
       "title_ko": "Cilium 1.20 공개: Gateway API ExternalAuth·TCPRoute/UDPRoute와 EKS ENI IPv6를 release gate로 검증",
       "title_original": "Cilium 1.20: Gateway API ExternalAuth, TCPRoute/UDPRoute, ENI IPAM for IPv6, and more",
       "summary": "- 공개: Cilium 1.20이 Gateway API v1.4→v1.6, `ExternalAuth`·CORS·ListenerSet·`TCPRoute`/`UDPRoute`를 포함해 north-south traffic API 범위를 확장\n- AWS 네트워킹: Beta `eni` IPAM IPv6가 node ENI에 Prefix Delegation `/80`을 붙이고 Pod에 VPC-routable IPv6를 할당하는 경로 추가\n- datapath: `netkit auto`, Kubernetes `ClusterNetworkPolicy`, MCS API 등 Cilium CRD와 upstream portable API의 병행 경로 수록\n- 경계: upstream Gateway API/ENI IPv6 지원이 기존 Ingress, NetworkPolicy, security policy, EKS CNI와의 무중단 호환성을 보장하지 않음\n- 팀 액션: Gateway/Ingress migration, L4 route·ExternalAuth failure, dual-stack IPAM, policy precedence를 canary cluster와 rollback plan으로 검증 필요",
@@ -3550,7 +3668,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-464",
@@ -3635,7 +3753,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-465",
@@ -3712,7 +3830,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-462",
@@ -3785,156 +3903,6 @@
             "검증: apiserver·scheduler·kubelet target별 scrape success·sample count·remote-write bytes·dashboard/alert 결과 비교",
             "rollback: collector 측 `scrape_native_histograms: false`는 component restart 없이 적용 가능, gate disable은 component restart 필요",
             "팀 액션: query migration과 `always_scrape_classic_histograms: false` 전환을 분리한 canary change로 운영"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-463",
-      "title_ko": "SageMaker HyperPod model caching GA: local NVMe weight·image pre-pull로 inference scale-out cold start 단축",
-      "title_original": "Amazon SageMaker HyperPod now supports model caching for faster inference autoscaling and reduced cold starts",
-      "summary": "- 공개: SageMaker HyperPod Inference가 local NVMe model weight cache와 container image pre-pull cache를 GA로 제공\n- 경로: warm cache node는 S3/FSx weight pull과 ECR image download를 줄이고, miss node는 original source pull로 자동 fallback\n- 수치: AWS는 57GB~145GB model benchmark에서 약 **60%** faster scale-out, image pull 2분 이상·97% reduction을 제시\n- 설정: HyperPod Inference Operator에서 `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`로 lifecycle 관리\n- 팀 액션: cache hit/miss·NVMe pressure·artifact digest·fallback·first inference p95·GPU idle cost를 동일 canary에서 비교 필요",
-      "detail": "AWS는 SageMaker HyperPod Inference의 model caching을 GA로 공개했다. weights cache는 model weight를 node local NVMe에 보관해 S3 또는 FSx pull을 줄이고, image cache는 container image를 미리 받아 ECR download를 건너뛴다. AWS는 57GB~145GB model benchmark에서 약 60% faster scale-out을, image cache에서 2분 이상의 image pull time과 97% reduction을 제시했다. warm cache가 없는 node에 pod가 배치돼도 original source path로 자동 fallback하므로 cache miss가 pod failure로 이어지지는 않는 구조다. HyperPod Inference Operator는 `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`에서 lifecycle을 처리한다. benchmark 수치는 cluster·artifact·network 조건에 따른 provider 결과이므로 production에서는 model/image digest, node NVMe headroom, cache eviction, node replacement, autoscaler burst, source fallback, first inference p95와 GPU idle cost를 함께 검증해야 한다.",
-      "why_it_matters": "LLM inference autoscaling은 GPU 확보 뒤에도 model/image transfer 때문에 ready time이 길어질 수 있음. cache는 network wait를 줄이는 대신 local artifact capacity·freshness·node lifecycle을 운영 책임으로 추가함.",
-      "engineering_implication": "one model·one image·isolated node group에서 warm/cold/fallback 세 path의 request-to-first-inference p95를 비교 필요. node별 NVMe usable capacity·cache hit/miss·artifact digest·source egress·GPU idle second를 telemetry와 FinOps baseline으로 고정하고 cache disable/rollback drill을 release gate에 포함 필요.",
-      "korea_implication": "서울 리전 또는 hybrid inference fleet에서 model artifact가 여러 storage·registry·node pool에 분산되면 cache warm 상태와 artifact revision이 배포 간 다르게 유지될 수 있음. central ML platform이 digest·NVMe quota·fallback source access를 tenant별 deployment record로 관리 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "AWS",
-        "SageMaker",
-        "HyperPod",
-        "Inference",
-        "Autoscaling",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 92,
-      "published_kst": "2026-09-12 03:25",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/sgm-hyperpod-model-caching-inf/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "SageMaker HyperPod documentation",
-          "url": "https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 SageMaker HyperPod Inference의 model caching을 GA로 공개함. model weight를 node local NVMe에, container image를 node에 미리 배치해 autoscaling pod가 네트워크 download를 기다리지 않고 시작하도록 하는 두 capability임.",
-          "items": [
-            "weights cache: S3 또는 FSx 대신 local NVMe에서 model weight를 읽는 경로",
-            "image cache: ECR download를 건너뛰도록 container image를 pre-pull하는 경로",
-            "적용: `InferenceEndpointConfig` 또는 `JumpStartModel`의 `modelCacheConfig`로 HyperPod Inference Operator가 lifecycle 처리"
-          ]
-        },
-        {
-          "heading": "성능 주장과 경계",
-          "body": "AWS는 57GB~145GB model benchmark에서 약 60% faster scale-out을, image cache에서 2분 이상 image pull 제거와 97% reduction을 제시함. 이는 AWS가 제시한 model size·cluster·image 조건의 benchmark이며 각 조직 workload SLO 보증이 아님.",
-          "items": [
-            "cold start 원인: container image와 model weight download가 deployment·scale-out 시간을 차지하는 경로",
-            "fallback: warm cache가 없는 node에 landing해도 original source pull로 자동 fallback하는 동작",
-            "가용 범위: SageMaker HyperPod 제공 모든 region에서 GA라고 AWS가 명시한 범위"
-          ]
-        },
-        {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "cache는 download latency를 local storage와 prefetch capacity로 바꾸는 control plane 기능임. autoscaler가 빠르게 pod를 만들더라도 cache miss·NVMe capacity·node turnover·image/model revision drift를 함께 관리하지 않으면 tail latency가 남음.",
-          "items": [
-            "용량: node별 model version·image layer·NVMe headroom과 replica burst를 같은 capacity model로 산정",
-            "일관성: model artifact digest·container image digest·cache warm completion을 deployment promotion gate로 연결",
-            "관측: cache hit/miss·fallback download·pod ready latency·scale-out p95·local disk pressure를 동일 trace에서 수집"
-          ]
-        },
-        {
-          "heading": "FinOps·운영 관점",
-          "body": "network pull 시간 감소가 곧 GPU 비용 절감으로 이어지는지는 replica pattern과 idle node 비용에 좌우됨. large model을 많이 pre-stage하면 egress·storage보다 NVMe reservation과 warm fleet 비용이 지배할 수 있음.",
-          "items": [
-            "비용 baseline: scale event당 GPU idle time·download byte·node local storage·image pull duration 고정",
-            "rollout: one model/one node group canary에서 cache hit와 p95 ready time을 기존 source pull path와 비교",
-            "복구: cache disable·artifact rollback·unhealthy node drain 뒤 original source fallback이 실제로 동작하는지 drill 필요"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-461",
-      "title_ko": "GitLab repository commits API 경로 탐색 CVSS 10: 무인증 파일 읽기 probe에 self-managed 즉시 patch·secret triage",
-      "title_original": "GitLab CVSS 10 File-Read Flaw Draws In-the-Wild Probes After Disclosure",
-      "summary": "- 공개: GitLab CE/EE repository commits API의 `CVE-2026-85706`은 improper path confinement·missing authentication enforcement 조건에서 무인증 arbitrary file read 가능 범위\n- 영향: 18.7 이상 `19.1.8` 미만, 19.2 `19.2.6` 미만, 19.3 `19.3.2` 미만 self-managed CE/EE 대상이며 GitLab.com·GitLab Dedicated는 patched/no-action 범위\n- 관측: 공개 뒤 2026-09-11 06:00 UTC부터 in-the-wild probe가 관측됐다는 watchTowr 인용이며 public project 최소 1개가 exploit 조건이라는 보도 범위\n- 병행 조치: 같은 patch는 Duo Chat 접근 EE의 `CVE-2026-87719` insecure deserialization·Advanced Search configuration/credential exposure도 수정\n- 팀 액션: upgrade 전후 `/api/v4/projects/{id}/repository/commits/` POST의 `file.Path`, public project·external ingress, GitLab config/log·runner/CI variable secret rotation 범위를 incident timeline으로 대조 필요",
-      "detail": "GitLab은 9월 10일 CE/EE 19.3.2·19.2.6·19.1.8 critical patch를 배포했다. 공식 release note에 따르면 `CVE-2026-85706`은 repository commits API의 path confinement와 authentication enforcement 결함 때문에 특정 조건에서 unauthenticated user가 GitLab server의 arbitrary file을 읽을 수 있는 CVSS 10.0 취약점이다. 영향 범위는 18.7 이상 19.1.8 미만, 19.2 계열 19.2.6 미만, 19.3 계열 19.3.2 미만의 self-managed CE/EE다. GitLab.com은 patched version을 운용하고 GitLab Dedicated는 조치 대상이 아니라고 명시한다. The Hacker News는 watchTowr 관측을 인용해 9월 11일 06:00 UTC부터 public disclosure 직후 probe가 있었고, public project 하나가 exploit 조건이라고 보도했다. probe가 곧 침해 성공이나 모든 배포판의 노출을 뜻하지는 않는다. 같은 patch는 Duo Chat 접근을 가진 authenticated EE 사용자가 specially crafted GraphQL subscription argument로 Advanced Search instance configuration과 sensitive credential을 얻을 수 있는 `CVE-2026-87719`(CVSS 9.9)도 고친다. GitLab은 package type과 무관하게 affected installation을 최신 patch로 즉시 upgrade하도록 권고했다. self-managed GitLab은 source·CI/CD variable·runner token·integration secret의 control plane이므로 patch receipt만 확인하지 말고 public project/API ingress, request log, GitLab configuration/log file read 가능성, credential reuse scope를 함께 조사해야 한다.",
-      "why_it_matters": "GitLab repository commits API는 source code와 CI/CD control plane에 인접함. arbitrary file read가 configuration·log·secret material로 이어질 수 있어 public project 노출과 runner·integration credential rotation을 patch change와 분리할 수 없음.",
-      "engineering_implication": "self-managed GitLab version·deployment type·internet ingress·public project 존재를 우선 inventory화하고 fixed release 적용을 emergency change로 추적 필요. access log의 commits API POST와 `file.Path`, config/log access, runner registration token·PAT·deploy key·CI variable의 reuse를 같은 incident timeline에서 대조하고 evidence에 따라 rotation 범위를 확정 필요.",
-      "korea_implication": "국내 조직의 on-premises·private cloud GitLab이 외부 협력 repository와 내부 CI runner를 함께 운영하면 public project 한 건의 노출 조건이 build credential·artifact path와 연결될 수 있음. 운영 대행·계열사 instance를 포함한 version/ingress/secret owner matrix로 patch와 조사 책임을 고정 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "GitLab",
-        "CI/CD",
-        "DevSecOps",
-        "Active Exploitation",
-        "Patch Management",
-        "Secrets"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-09-12 01:30",
-      "source_name": "GitLab / The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/gitlab-cvss-10-file-read-flaw-draws-in.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEioFH6aWhF9NgRW1O3yFExc7paTA9akN5-3IUQF8mvEiSTaFJjKvm6YQzFX6MP2uimYplHe1MJXz6eZtPtnxaLy25jJBhU6KuhsWFpIlnqhbn6OI6QTcfp6Olp1-VDUEF4KEYFF7hQDBdmgtxibsg9MkvbcOJIlR8Of2Flyw2m9zYfXC6gUm-TV8XA6vU43/s1600/gitlab-wild.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "GitLab Critical Patch Release: 19.3.2, 19.2.6, 19.1.8",
-          "url": "https://docs.gitlab.com/releases/patches/patch-release-gitlab-19-3-2-released/"
-        },
-        {
-          "title": "GitLab release notes",
-          "url": "https://docs.gitlab.com/releases/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitLab이 2026-09-10 self-managed CE/EE용 critical patch 19.3.2·19.2.6·19.1.8을 배포함. `CVE-2026-85706`은 repository commits API의 path traversal로 특정 조건에서 무인증 arbitrary file read가 가능한 CVSS 10.0 결함임.",
-          "items": [
-            "영향 release: 18.7 이상 `19.1.8` 미만·19.2 `19.2.6` 미만·19.3 `19.3.2` 미만 CE/EE 범위",
-            "배포 경계: GitLab.com은 patched version 운용, GitLab Dedicated는 no-action으로 명시된 범위",
-            "원인: repository commits API의 improper path confinement와 missing authentication enforcement 조합"
-          ]
-        },
-        {
-          "heading": "공개 뒤 관측과 영향 경계",
-          "body": "The Hacker News는 watchTowr 관측을 인용해 2026-09-11 06:00 UTC부터 in-the-wild probe가 확인됐다고 보도함. 공개된 probe는 각 instance의 침해 성공·secret 유출·공격자 attribution을 확정하는 증거가 아님.",
-          "items": [
-            "조건: public project 최소 1개가 exploit requirement라는 watchTowr 인용 범위",
-            "가능 영향: GitLab server의 log·configuration file 접근을 통해 credential·secret·sensitive information 획득 가능성",
-            "우선 telemetry: `/api/v4/projects/{id}/repository/commits/` POST와 `file.Path` parameter를 log hunt 대상으로 대조"
-          ]
-        },
-        {
-          "heading": "동일 patch의 보안 범위",
-          "body": "공식 release note는 같은 fixed release에서 `CVE-2026-87719`도 remediation했다고 명시함. 이는 Duo Chat 접근 권한을 가진 authenticated EE 사용자가 crafted GraphQL subscription argument로 serialization을 우회해 Advanced Search configuration과 sensitive credential을 얻을 수 있는 CVSS 9.9 범위임.",
-          "items": [
-            "`CVE-2026-87719`: EE 18.3 이상 `19.1.8` 미만·19.2 `19.2.6` 미만·19.3 `19.3.2` 미만 영향 범위",
-            "경계: 두 CVE의 precondition·authentication requirement·affected edition이 다르므로 하나의 exposure assumption으로 합치지 않는 분류",
-            "패치 방식: GitLab은 deployment type 구분 없이 affected installation의 latest patch upgrade 권고"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "GitLab은 source·CI/CD variable·runner·integration credential이 만나는 control plane임. fixed build 적용 뒤에도 public API request·config/log exposure·reused secret을 조사하지 않으면 post-patch closure가 불완전할 수 있음.",
-          "items": [
-            "점검: version·deployment type·internet ingress·public project·reverse proxy/WAF log·fixed build receipt",
-            "조사: commits API request·`file.Path`·configuration/log read·unknown token·runner/CI job/integration activity의 시간 상관",
-            "팀 액션: PAT·deploy key·runner registration token·CI variable·integration secret을 evidence 기반 rotation queue로 분리하고 patch/forensic closure 기준 고정"
           ]
         }
       ],

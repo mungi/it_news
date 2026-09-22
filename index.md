@@ -460,6 +460,8 @@
 - [[raw/articles/thn-wordpress-comment2shell-cve-2026-93485-2026-09-22]] — WordPress Comment2Shell의 public comment stored XSS·admin session plugin upload RCE chain과 fixed release·forensic 대응 경계.
 - [[raw/articles/kubernetes-v1-37-pvc-last-used-time-2026-09-22]] — Kubernetes PVC last-used time Beta의 stale storage cleanup·backup/retention·restore evidence 운영 경계.
 - [[raw/articles/thn-linux-arm64-kvm-cve-2026-89775-2026-09-22]] — ARM64 KVM `CVE-2026-89775`의 nested virtualization TLB invalidation 누락·guest-to-host memory isolation·kernel/reboot inventory 경계.
+- [[raw/articles/cloudflare-worker-previews-2026-09-23]] — Cloudflare Worker Previews의 branch별 URL·configuration·Durable Object state·trace 격리와 service binding·Queue·Workflow 검증 경계.
+- [[raw/articles/arista-velocloud-orchestrator-cve-2026-93952-2026-09-23]] — Arista VeloCloud Orchestrator `CVE-2026-93952` certificate-based active exploitation의 management plane patch·forensic·Edge closure 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
