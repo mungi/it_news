@@ -457,6 +457,8 @@
 - [[raw/articles/cisa-zyxel-gs1900-cve-2026-7273-kev-2026-09-22]] — CISA KEV 등록 Zyxel GS1900 `CVE-2026-7273`의 LAN 기반 무인증 CGI command execution·firmware patch·management-plane forensic 경계.
 
 - [[raw/articles/aws-ecs-console-deployment-observability-2026-09-22]] — ECS Console 실시간 deployment timeline·traffic shift·circuit breaker·CloudTrail 진단을 release evidence로 결합하는 운영 경계.
+- [[raw/articles/thn-wordpress-comment2shell-cve-2026-93485-2026-09-22]] — WordPress Comment2Shell의 public comment stored XSS·admin session plugin upload RCE chain과 fixed release·forensic 대응 경계.
+- [[raw/articles/kubernetes-v1-37-pvc-last-used-time-2026-09-22]] — Kubernetes PVC last-used time Beta의 stale storage cleanup·backup/retention·restore evidence 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
