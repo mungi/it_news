@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-22 | Total pages: 364
+> Last updated: 2026-09-22 | Total pages: 365
 
 ## Entities
 
@@ -455,6 +455,8 @@
 - [[raw/articles/securonix-taskstomp-powershell-backdoor-2026-09-22]] — TASK#STOMP VBS·PowerShell·scheduled task·Startup persistence와 endpoint/identity incident closure 경계.
 - [[raw/articles/thn-fake-lastpass-authenticator-byovd-2026-09-22]] — 가짜 LastPass Authenticator GitHub installer의 DLL side-loading·signed BYOVD·EDR kill·credential/session incident closure 경계.
 - [[raw/articles/cisa-zyxel-gs1900-cve-2026-7273-kev-2026-09-22]] — CISA KEV 등록 Zyxel GS1900 `CVE-2026-7273`의 LAN 기반 무인증 CGI command execution·firmware patch·management-plane forensic 경계.
+
+- [[raw/articles/aws-ecs-console-deployment-observability-2026-09-22]] — ECS Console 실시간 deployment timeline·traffic shift·circuit breaker·CloudTrail 진단을 release evidence로 결합하는 운영 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
