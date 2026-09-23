@@ -467,6 +467,7 @@
 - [[raw/articles/jfrog-bifrost-cve-2026-90898-mcp-stdio-rce-2026-09-23]] — Bifrost `CVE-2026-90898`의 기본 비활성 management auth·MCP stdio client 인증 전 RCE, listener exposure·provider key rotation 경계.
 - [[raw/articles/wordpress-cve-2026-87902-template-resolution-lfi-rce-2026-09-23]] — WordPress `CVE-2026-87902` 인증 전 template resolution local PHP inclusion과 조건부 RCE, fixed branch·template/file forensic 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-6-sol-luna-ga-2026-09-23]] — Bedrock GPT-6 Sol·Luna GA의 1M context·workload routing·quality/latency/token FinOps 검증 경계.
+- [[raw/articles/anthropic-claude-opus-5-5-2026-09-22]] — Claude Opus 5.5의 cache-read 중심 가격·출력 속도·vendor benchmark·안전성 claim과 agent routing canary 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
