@@ -2,7 +2,7 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-23 13:49",
+  "last_updated_kst": "2026-09-23 17:54",
   "audience": "developers and engineers",
   "executive_summary": [
     "Anthropic Claude Opus 5.5는 Opus 5 대비 default workload 비용 40% 절감, input/output $4/$20 per 1M token, cache read $0.20, output 30% 이상 빠른 속도를 제시함. agent·coding route는 cache-hit·task success·p95 latency·retry·human correction으로 canary 비교 필요.",
@@ -193,6 +193,94 @@
   ],
   "items": [
     {
+      "id": "news-520",
+      "title_ko": "F5 BIG-IP APM `CVE-2026-94127`: OAuth authorization server virtual server의 인증 전 RCE active exploitation",
+      "title_original": "F5 Patches Critical BIG-IP APM Zero-Day Exploited for Unauthenticated RCE on OAuth Servers",
+      "summary": "핵심: F5 BIG-IP APM이 OAuth authorization server 역할을 수행하는 virtual server의 `CVE-2026-94127`이 active exploitation 중인 CVSS 9.8 heap-based buffer overflow임. management interface ACL만으로 막히지 않는 data-plane 경로이므로 OAuth profile·APM access policy·virtual server 조합을 inventory하고 iRule/hotfix·forensic을 병렬 처리 필요.",
+      "detail": "F5는 APM이 OAuth client 또는 resource server 역할만 하는 구성은 영향이 없다고 정정했으며, 17.1·17.5·21.1 affected branch에는 engineering hotfix를 제공함. CISA KEV는 9월 22일 추가됐으나 피해 조직·공격자·침해 규모와 hotfix 이전 access 지속 여부는 공개 source에서 확인되지 않음.",
+      "why_it_matters": "APM OAuth authorization server virtual server는 access token을 발급하는 internet-facing authentication path일 수 있어, management plane 제한과 별개로 unauthenticated RCE·identity boundary 침해를 다뤄야 함.",
+      "engineering_implication": "시사점: BIG-IP release·APM OAuth authorization server profile·access profile 연결·virtual server exposure를 우선 대조하고, vendor hotfix 또는 support-issued iRule 적용 뒤 OAuth failure·`/var/log/audit` command·TMM SIGABRT·configuration change를 same-window hunt 필요.",
+      "korea_implication": "국내 SSO·B2B portal·VPN 연동 환경도 BIG-IP management VLAN만 점검하지 말고 public OAuth token endpoint와 APM policy 연결을 service owner·IdP owner·network team이 함께 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "F5",
+        "BIG-IP",
+        "OAuth",
+        "RCE",
+        "CISA KEV",
+        "Active Exploitation",
+        "Identity"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-09-23 17:29",
+      "source_name": "F5 Security Advisory / CISA KEV / The Hacker News",
+      "source_url": "https://my.f5.com/manage/s/article/K000162605",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News 분석",
+          "url": "https://thehackernews.com/2026/09/f5-patches-critical-big-ip-apm-zero-day.html"
+        },
+        {
+          "title": "CISA KEV catalog",
+          "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+        },
+        {
+          "title": "F5 APM OAuth authorization server 구성 문서",
+          "url": "https://techdocs.f5.com/en-us/bigip-17-1-0/big-ip-access-policy-manager-oauth-configuration/using-apm-as-an-oauth-2-server.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "F5가 BIG-IP Access Policy Manager `CVE-2026-94127`의 active exploitation과 engineering hotfix를 공지함. APM이 OAuth authorization server로 access token을 발급하고 access policy와 OAuth authorization server profile이 같은 virtual server에 연결된 구성이 인증 전 remote code execution 영향 범위임.",
+          "items": [
+            "영향: specific malicious traffic으로 유발 가능한 heap-based buffer overflow, CVSS `9.8` v3.1·`9.3` v4.0",
+            "경계: APM이 OAuth client 또는 resource server 역할만 하고 authorization server profile이 없는 구성은 F5가 비영향으로 정정"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공격 traffic은 BIG-IP management interface가 아니라 OAuth traffic을 수신하는 affected virtual server로 향함. 따라서 management network ACL 축소는 필요한 통제이나 이 취약점의 차단 근거가 아니며 Appliance mode도 영향 범위에 포함됨.",
+          "items": [
+            "범위: OAuth authorization server APM role과 virtual server binding을 configuration으로 확인",
+            "우선순위: CISA KEV가 9월 22일 추가한 active-exploitation vulnerability로 asset owner·patch window 즉시 지정"
+          ]
+        },
+        {
+          "heading": "수정·완화 범위",
+          "body": "공개 보도 기준 affected train은 `21.1.0`, `17.5.0`~`17.5.1`, `17.1.0`~`17.1.3`의 hotfix 이전 release임. End of Technical Support version은 F5가 평가하지 않아 non-affected로 간주할 수 없으며, hotfix를 즉시 적용할 수 없을 때 vendor support가 제공하는 affected virtual server용 iRule mitigation이 임시 수단임.",
+          "items": [
+            "수정: release train별 engineering hotfix와 installed artifact를 대조",
+            "검증: 기존 `17.1.3` 또는 `17.5.1.3` 수준의 과거 APM fix만으로 이번 hotfix 적용을 대체할 수 없는 범위",
+            "운영 과제: iRule 적용, final hotfix, rollback/HA parity를 release evidence로 보존"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "OAuth authorization server는 application access token 발급 경로이며 APM virtual server 침해는 identity authentication flow와 BIG-IP traffic policy를 함께 조사해야 하는 사건임. 공개 source는 target·attacker·피해 규모와 patch 뒤 attacker access 제거 여부를 밝히지 않았으므로 local evidence 없이 조직 침해로 일반화할 수 없음.",
+          "items": [
+            "리스크: internet-facing authorization endpoint와 token issuance path의 data-plane RCE",
+            "조사 경계: configuration export·administrator change·OAuth client/redirect URI·session/token lifecycle을 같은 시간축으로 검토"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "F5가 제시한 hunting signal은 반복 failed UserInfo request, OAuth `total_failed` 증가, 같은 시점의 suspicious command와 TMM SIGABRT임. signal 하나만으로 compromise를 확정하지 말고 patch 전 log·core·audit evidence를 보존하고, hotfix/iRule 뒤 traffic·HA·OAuth login·application SLO를 canary로 확인해야 함.",
+          "items": [
+            "팀 액션: 24시간 내 BIG-IP version·APM authorization-server profile·virtual server exposure·hotfix status inventory",
+            "팀 액션: `/var/log/apm`, `/var/log/audit`, `tmctl global_oauth_stat -s total_requests,total_userinfo_requests,total_failed`, TMM core를 time-window hunt",
+            "완료 기준: affected virtual server fixed-or-mitigated 비율, OAuth flow canary 결과, forensic evidence 보존, HA peer patch parity"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-515",
       "title_ko": "Check Point Security Management Server `CVE-2026-93616`: 7월 targeted attack 뒤 공개된 인증 전 script upload·execution 결함 패치",
       "title_original": "Check Point Warns of Management Server Zero-Day Exploited in Targeted Attacks",
@@ -262,7 +350,7 @@
           ]
         }
       ],
-      "rank": 1,
+      "rank": 2,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -337,7 +425,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-517",
@@ -410,7 +498,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-518",
@@ -485,7 +573,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-513",
@@ -548,7 +636,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-514",
@@ -616,7 +704,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-512",
@@ -695,11 +783,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-510",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -768,7 +856,7 @@
     },
     {
       "id": "news-509",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -840,7 +928,7 @@
     },
     {
       "id": "news-511",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -985,82 +1073,6 @@
           "items": [
             "조치: affected endpoint 격리, process·driver·service·file·network evidence 보존 후 kernel forensic 또는 rebuild 판단",
             "조치: clean device에서 browser password·Windows Credential Manager·SaaS/Discord·Steam·Telegram session·wallet credential rotation과 account activity review 수행"
-          ]
-        }
-      ],
-      "rank": 11
-    },
-    {
-      "id": "news-519",
-      "title_ko": "Anthropic Claude Opus 5.5 공개: Opus 5 대비 40% 낮은 기본 workload 비용과 30% 이상 빠른 출력",
-      "title_original": "Introducing Claude Opus 5.5",
-      "summary": "핵심: Anthropic이 Claude Opus 5.5를 공개하며 Opus 5 대비 typical workload 기본 설정 비용 40% 절감, input/output $4/$20 per 1M token, cache read $0.20 per 1M token, 출력 30% 이상 빠른 속도를 제시함. agent·coding workload는 벤치마크 점수보다 cache-hit·tool success·p95 latency·실제 token mix로 migration economics를 재측정할 대상임.",
-      "detail": "Anthropic 공식 발표의 Opus 5.5는 새 Claude 5.5 family의 첫 모델이며, Fable 5.1과 대부분 작업에서 비슷한 수준이라는 vendor claim과 함께 제공됨. 가격·속도·안전성 수치는 Anthropic의 평가와 default setting 기준이므로, 조직의 prompt distribution·cache reuse·tool permission·region/serving 조건을 account-level canary로 검증해야 함.",
-      "why_it_matters": "고비용 coding agent의 총비용은 input/output 가격만이 아니라 cache read 비중, long-running task의 retry, tool failure와 human review에서 결정됨. 모델 교체는 단순 단가 변경이 아니라 routing·budget·safety guardrail의 release change임.",
-      "engineering_implication": "시사점: 기존 Opus path에서 representative task를 shadow route하고, task success·tool-call error·p95 latency·input/output/cache token·retry·human correction을 함께 비교 필요. hard-to-reverse action과 prompt injection resistance는 vendor claim이므로 approval boundary·least-privilege tool policy·audit trace를 기존 수준 이상으로 유지 필요.",
-      "korea_implication": "국내 API 사용 조직은 달러 token pricing을 환율·계약 할인·cache read 비율과 함께 FinOps forecast에 반영하고, 데이터 경로·region·enterprise access는 tenant 계약과 console에서 별도 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Anthropic",
-        "Claude",
-        "Foundation Model",
-        "Agent",
-        "Coding",
-        "Inference",
-        "FinOps",
-        "AI Safety"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "source_name": "Anthropic",
-      "source_url": "https://www.anthropic.com/claude-opus-5-5",
-      "image_url": "https://www-cdn.anthropic.com/images/4zrzovbb/website/f4d37a1d1f582f53f4e89440062b649b6273a093-1200x630.jpg",
-      "related_links": [
-        {
-          "title": "Anthropic Opus 5.5 System Card",
-          "url": "https://www.anthropic.com/claude-opus-5-5-system-card"
-        },
-        {
-          "title": "Anthropic Newsroom",
-          "url": "https://www.anthropic.com/news"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Anthropic이 2026년 9월 22일 `Claude Opus 5.5`를 새 Claude 5.5 family의 첫 모델로 공개함. 공식 발표는 대부분 작업에서 Claude Fable 5.1 수준의 성능이라는 vendor claim과 Opus 5 대비 serving compute 감소를 함께 제시함.",
-          "items": [
-            "공개: Claude 5.5 family 첫 모델 `Claude Opus 5.5`",
-            "경계: Fable 5.1 수준이라는 평가는 Anthropic 발표 범위이며 조직 workload의 보장 수치 아님"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Anthropic은 default settings의 typical workload에서 Opus 5.5 비용이 Opus 5보다 40% 낮다고 설명함. API 가격은 input token $4, output token $20, cache read token $0.20 per 1M이며, 각각 Opus 5 대비 20%, 20%, 60% 낮은 값으로 제시됨.",
-          "items": [
-            "가격: input/output `$/1M token`은 $4/$20, cache read는 $0.20",
-            "속도: Opus 5 대비 output generation 30% 이상 빠르다는 Anthropic test 결과",
-            "비용 변수: agent·coding workload의 cache read 비중, retry, long context와 output length"
-          ]
-        },
-        {
-          "heading": "성능·안전성 증거 경계",
-          "body": "공식 사례에는 68만 줄 코드 migration을 하루 미만에 완료한 early tester와 web application 전 페이지 load-time 개선 40회 중 39회 성공 결과가 포함됨. Anthropic의 automated behavioral audit·external evaluator 결과는 release evidence지만 customer repository, tool permission, test oracle, deployment SLO를 대체하지 않음.",
-          "items": [
-            "성능: Terminal-Bench 4.0 agentic coding 66.4% 등 vendor-published benchmark 수치",
-            "안전: hard-to-reverse action·given boundary 이탈·prompt injection 저항성 개선이라는 vendor claim",
-            "검증: benchmark margin보다 production task success·regression·human correction 비교 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "모델 migration은 모델명 교체가 아니라 economic·security release임. representative prompt와 tool-call path를 shadow traffic으로 비교하고, token class별 비용·p95 latency·fallback·approval bypass·trace completeness가 기준을 충족한 뒤 route 비율을 단계적으로 올려야 함.",
-          "items": [
-            "팀 액션: 기존 Opus workload에서 cache-hit, success, p95 latency, retry, human review cost baseline 수집",
-            "팀 액션: read-only tool부터 canary 적용하고 write action은 approval·rollback·audit trace 유지",
-            "운영 과제: model version, pricing assumption, region/access, fallback rule을 change record로 보존"
           ]
         }
       ],
