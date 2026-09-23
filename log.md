@@ -2903,3 +2903,9 @@
 - AWS canonical announcement와 feed `2026-09-23T00:06:00Z`를 대조. CloudWatch Omni GA의 OpenTelemetry, AWS account·Region/Azure telemetry, service·dependency discovery, agent evaluation framework와 GA 리전 범위를 수록.
 - The Hacker News canonical body·RSS를 직접 대조. cPanel `CVE-2026-87899` authenticated root code execution 및 fixed release, Ubuntu AF_UNIX `CVE-2026-80521` public exploit·upstream fix·Ubuntu LTS patch 상태를 source 범위로 수록. Debian CVE record도 기술 원인 대조에 사용. 양 결함의 active exploitation은 source가 확인하지 않아 단정하지 않음.
 - `news-521`·`news-522`·`news-523`을 KST `09:06`·`21:16`·`20:12` 기준 newest-first final sort에 추가하고 50-item cap의 actual tail `news-473`·`news-470`·`news-471`을 제거. raw capture 3건·`index.md`·`weekly/2026-W40.md`를 canonical JSON과 동기화. Deep Dive 2건은 KST 01:29 전면 재구성 완료 상태이므로 timestamp-only 변경 없이 유지.
+
+## [2026-09-24] update | F5 BIG-IP APM·CloudWatch Omni Deep Dive 일일 전면 교체
+- 확인 시각: 2026-09-24 02:05 KST. KST 첫 실행 정책에 따라 GeekNews RSS(HTTP 200), GeekNews Plus(HTTP 403), AI타임스KR·AI타임스 root surface(HTTP 200), AWS·F5·Cloudflare·The Hacker News를 research pass에 포함.
+- F5 primary advisory·CISA KEV·OAuth configuration 문서와 AWS CloudWatch Omni canonical announcement·제품/문서를 현재 run에서 재확인. 기존 Worker Previews·VeloCloud source set과 겹치지 않는 F5와 AWS primary URL을 선정.
+- Deep Dive 2건을 timestamp-only 변경 없이 전면 교체. F5 항목은 OAuth authorization server virtual-server 조건·hotfix/iRule·HA·OAuth/host forensic closure를, CloudWatch Omni 항목은 OTel·cross-account/Azure telemetry·agent evaluation·IAM/redaction/retention·SRE/FinOps canary를 각각 9개 expert section으로 재구성. `refreshed_kst`와 site `last_updated_kst`를 실제 write time으로 기록.
+- 정규 뉴스 50건과 rank는 유지하고 canonical weekly archive를 재생성. source에 없는 피해 규모·tenant access·Seoul 제공 범위는 확정하지 않음.
