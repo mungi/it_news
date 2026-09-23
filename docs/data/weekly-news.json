@@ -2,14 +2,14 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-23 17:54",
+  "last_updated_kst": "2026-09-23 22:03",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Anthropic Claude Opus 5.5는 Opus 5 대비 default workload 비용 40% 절감, input/output $4/$20 per 1M token, cache read $0.20, output 30% 이상 빠른 속도를 제시함. agent·coding route는 cache-hit·task success·p95 latency·retry·human correction으로 canary 비교 필요.",
-    "Bifrost HTTP transport `<2.1.0`의 `CVE-2026-90898`은 기본 비활성 management authentication에서 `/api/mcp/client` 단일 인증 전 POST로 stdio command를 실행하는 CVSS 9.8 결함임. `2.1.0+` 적용, auth·listener exposure 확인, provider/virtual key rotation을 같은 closure로 처리 필요.",
-    "WordPress `CVE-2026-87902`는 인증 전 local PHP file inclusion 경로이며 server environment·active theme 조건에 따라 RCE로 확대될 수 있음. `4.7.0`~`7.1.1`은 supported branch fixed release로 갱신하고 template·PHP file·web access evidence를 대조 필요.",
-    "Amazon Bedrock에서 GPT-6 Sol·Luna가 GA로 전환됨. 두 모델은 최대 1M token context를 지원하며, complex coding·multistep task와 high-volume extraction·routing을 실제 quality·latency·token cost 기준으로 분리 평가 필요.",
-    "Check Point는 Security Management Server `CVE-2026-93616`이 7월 targeted attack에 악용됐고 9월 22일 수정 사항을 배포했다고 공지. path traversal을 통한 인증 전 script upload·execution 경로이므로 fixed build 확인과 policy·administrator·host activity forensic을 같은 incident closure로 처리 필요."
+    "Linux AF_UNIX `CVE-2026-80521`은 container에서 host root로 escape할 수 있는 경로로 보도됐고 Ubuntu 26.04 target exploit code가 공개됨. Ubuntu LTS package·running kernel·reboot·seccomp/runtime·untrusted workload를 inventory하고 fixed package canary를 우선 처리 필요.",
+    "cPanel `CVE-2026-87899`은 authenticated cPanel account가 CalDAV·CardDAV 경로에서 root code execution에 이를 수 있는 결함으로 보도됨. shared-hosting은 fixed build와 enabled service·root process·tenant database audit evidence를 함께 점검 필요.",
+    "Amazon CloudWatch Omni가 GA로 공개돼 AWS account·Region·Azure telemetry와 agent evaluation을 central space에서 연결함. OTel trace·prompt/tool evaluation·SLO·human escalation·telemetry data boundary를 canary로 고정 필요.",
+    "F5 BIG-IP APM `CVE-2026-94127`은 OAuth authorization server virtual server의 active exploitation 중인 CVSS 9.8 RCE임. OAuth profile·APM access policy·virtual server exposure inventory, hotfix/iRule, same-window forensic을 병렬 처리 필요.",
+    "Bifrost HTTP transport `<2.1.0`의 `CVE-2026-90898`은 기본 비활성 management authentication에서 MCP stdio command를 인증 전 실행하는 CVSS 9.8 결함임. `2.1.0+`, listener exposure, provider/virtual key rotation을 같은 closure로 처리 필요."
   ],
   "deep_dives": [
     {
@@ -193,6 +193,143 @@
   ],
   "items": [
     {
+      "id": "news-522",
+      "title_ko": "cPanel `CVE-2026-87899`: authenticated hosting account의 CalDAV·CardDAV root code execution 수정",
+      "title_original": "New cPanel Flaw Lets a Hosting Account Run Code as Root, Take Full Server Control",
+      "summary": "핵심: cPanel & WHM 120 이상 CalDAV·CardDAV의 `CVE-2026-87899`은 logged-in cPanel account holder가 root로 code를 실행할 수 있는 결함으로 보도됨. shared-hosting은 fixed build 적용과 함께 enabled service·account boundary·root process·web/database audit evidence를 점검 필요.",
+      "detail": "보도는 `CVE-2026-87899`의 fixed release를 11.134.0.57·11.136.0.41·11.138.0.8 이상, WP Squared 11.138.1.11 이상으로 제시함. WP Toolkit의 cross-account database modification `CVE-2026-87900`과 CalDAV·CardDAV local cross-account calendar/contact read `CVE-2026-68490`도 함께 수정됐으며 active exploitation은 공개 source에서 확인되지 않음.",
+      "why_it_matters": "hosting control panel은 tenant account와 root·database·web service 경계를 연결하므로 authenticated user 결함도 host-wide incident와 multi-tenant integrity risk로 확대될 수 있음.",
+      "engineering_implication": "시사점: cPanel/WHM·WP Toolkit version과 CalDAV/CardDAV enablement를 inventory하고 fixed build 적용 전후 root command·web service·database 변경 로그를 보존해 tenant별 forensic과 rollback 판단 필요.",
+      "korea_implication": "국내 shared hosting·managed WordPress 운영 조직은 reseller/customer account와 운영자 account를 구분해 maintenance notice만으로 closure하지 말고 tenant database·root activity evidence를 함께 검토 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "cPanel",
+        "CalDAV",
+        "CardDAV",
+        "WP Toolkit",
+        "Multi-tenant",
+        "Privilege Escalation"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-23 21:16",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/new-cpanel-flaw-lets-hosting-account_0272795595.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhT5quc0dmRWhh6WOC80Gx9QoHTMYyq5srnXBXjybOKZk_qoUn1Q2nKLE9MifqCEyRIha_NFvRsyr8Nx5EyxGIREXaTb5Fh59cz4Ln8yZj9Zv7piqM49wmm7rfmchW1cVlss1wn47qNypaYarZUVNHBO8rzXaYTvRMi9u1phgfXVd8OZx8_Vjxm34684BE/s1600/cpanel-0day.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 cPanel이 세 결함을 수정했으며 `CVE-2026-87899`가 logged-in cPanel account holder의 root code execution을 허용할 수 있다고 보도함. affected scope는 cPanel & WHM 120 이상 CalDAV·CardDAV임.",
+          "items": [
+            "영향: authenticated cPanel account holder가 root 권한으로 code 실행 가능한 범위",
+            "경계: active exploitation·침해 판별 방법은 공개 source에서 확인되지 않음"
+          ]
+        },
+        {
+          "heading": "수정 버전과 연계 결함",
+          "body": "보도 기준 `CVE-2026-87899`·`CVE-2026-68490`은 11.134.0.57·11.136.0.41·11.138.0.8 이상에서 수정됐고 WP Squared fixed version은 11.138.1.11 이상임. `CVE-2026-87900`은 WP Toolkit 6.11.2-10794 이하의 cross-account database modification 범위임.",
+          "items": [
+            "패치: release train과 installed build를 control panel inventory로 대조",
+            "연계: WP Toolkit 6.11.3 이상 적용 여부와 tenant database 변경 이력 확인"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "shared-hosting control plane에서 customer·reseller·operator account는 같은 host·service·database infrastructure를 공유할 수 있음. authenticated tenant boundary 결함은 단일 account abuse를 host integrity와 다른 tenant data integrity 조사로 확장함.",
+          "items": [
+            "조사: root process·web server·CalDAV/CardDAV·database audit를 tenant activity 시간축과 대조",
+            "피할 것: login이 필요하다는 이유로 low priority로 분류하는 판단"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "patch 적용만으로 prior access 부재를 증명할 수 없음. enabled module, local account, root command, database change evidence를 patch window 전후에 보존하고 managed provider의 responsibility boundary를 명확히 해야 함.",
+          "items": [
+            "팀 액션: version·service enablement·account role·root/web/database audit inventory",
+            "검증: fixed build 적용률, enabled service 수, suspicious root command, cross-tenant DB change"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-523",
+      "title_ko": "Linux AF_UNIX `CVE-2026-80521`: Ubuntu LTS 미패치 container escape·host-root exploit 공개 보도",
+      "title_original": "Exploit Released for Unpatched Ubuntu Linux Flaw Enabling Host-Root Container Escape",
+      "summary": "핵심: Linux AF_UNIX garbage collector use-after-free `CVE-2026-80521`은 container에서 host root로 escape할 수 있는 경로로 보도됐고 Ubuntu 26.04 target exploit code가 공개됨. Ubuntu 26.04·24.04·22.04 LTS의 fix 배포 상태와 running kernel·container seccomp·untrusted workload를 즉시 대조 필요.",
+      "detail": "보도는 upstream fix가 8월 6일 반영됐으나 Ubuntu LTS에 fix가 배포되지 않았고, AF_UNIX socket은 Docker·Kubernetes seccomp profile에서 기본 허용된다고 설명함. CISA KEV 등재와 실제 exploitation은 source에서 확인되지 않아 active exploitation으로 단정하지 않음.",
+      "why_it_matters": "AF_UNIX와 SCM_RIGHTS는 local IPC·container runtime에 널리 쓰이며, kernel memory safety 결함은 untrusted container workload가 host privilege boundary를 넘는 조건으로 이어질 수 있음.",
+      "engineering_implication": "시사점: Ubuntu host의 package tracker·running kernel·reboot pending·seccomp/runtime·privileged workload·`/dev/kvm`/host socket access를 inventory하고 fixed package 뒤 workload canary와 host forensic을 closure 조건으로 설정 필요.",
+      "korea_implication": "국내 managed Kubernetes와 self-managed Ubuntu worker node 모두 package version과 vendor image baseline이 다를 수 있어 cloud provider service boundary만으로 non-impact를 가정하지 말고 node image·kernel 상태를 확인 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Linux",
+        "Ubuntu",
+        "Container",
+        "Kubernetes",
+        "AF_UNIX",
+        "CVE-2026-80521"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 95,
+      "published_kst": "2026-09-23 20:12",
+      "source_name": "The Hacker News / Debian Security Tracker",
+      "source_url": "https://thehackernews.com/2026/09/exploit-released-for-unpatched-ubuntu.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjZjw_aCdQxMfwTv_-KFLK5KRCd96MoivCQPTAZcAWJal5_84FgCny9Um8csMgDDqta40CUGMPDO14hdbUo9CRk-FMJwY70MsDfV25AC8VmL-8_yDO_UWHYXbmeJ9jZANptIeHqJX9axqzxxn68AHEj8zFhYbh8coIbxWAVC9XbtG9CjxMBpQqclG14QuM/s1600/linux.gif",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Debian Security Tracker CVE record",
+          "url": "https://security-tracker.debian.org/tracker/CVE-2026-80521"
+        },
+        {
+          "title": "Ubuntu CVE record",
+          "url": "https://ubuntu.com/security/CVE-2026-80521"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 Linux kernel AF_UNIX socket subsystem use-after-free `CVE-2026-80521`이 container escape와 host root 경로가 될 수 있고 DepthFirst가 Ubuntu 26.04 target exploit code를 공개했다고 보도함.",
+          "items": [
+            "공개: public exploit code는 Ubuntu 26.04 target 범위",
+            "경계: CISA KEV 등재와 실제 공격 사용은 source에서 확인되지 않음"
+          ]
+        },
+        {
+          "heading": "기술 원인",
+          "body": "AF_UNIX garbage collector는 SCM_RIGHTS로 전달된 file descriptor를 정리함. socket edge가 GC에 공개된 뒤 skb queue 이전에 concurrent close와 GC가 일어나면 linked socket group 일부 해제와 stale pointer가 남을 수 있는 race가 CVE description에 설명됨.",
+          "items": [
+            "원인: AF_UNIX SCC garbage collection의 edge publication·queue ordering race",
+            "영향 조건: local IPC와 affected kernel path·attacker controlled process의 결합"
+          ]
+        },
+        {
+          "heading": "Ubuntu·container 운영 범위",
+          "body": "보도는 upstream fix가 8월 6일 반영됐으나 Ubuntu 26.04·24.04·22.04 LTS에는 fix가 배포되지 않았다고 설명함. Docker·Kubernetes seccomp profile에서 AF_UNIX socket이 기본 허용된다는 점이 container reachability 조건임.",
+          "items": [
+            "inventory: distribution package status와 running kernel·reboot pending을 별도 확인",
+            "경계: privileged container 여부만으로 AF_UNIX reachability를 판단하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "kernel package update만 예약하고 node reboot·workload validation을 생략하면 host가 vulnerable kernel로 남음. untrusted workload, host mount, socket·capability access, runtime profile을 우선순위로 묶어 remediation 필요.",
+          "items": [
+            "팀 액션: Ubuntu node image·kernel·seccomp/runtime·untrusted workload inventory",
+            "검증: fixed-and-rebooted node 비율, canary failure, exposed workload 수, exception expiry"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-520",
       "title_ko": "F5 BIG-IP APM `CVE-2026-94127`: OAuth authorization server virtual server의 인증 전 RCE active exploitation",
       "title_original": "F5 Patches Critical BIG-IP APM Zero-Day Exploited for Unauthenticated RCE on OAuth Servers",
@@ -278,7 +415,80 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
+    },
+    {
+      "id": "news-521",
+      "title_ko": "Amazon CloudWatch Omni GA: agent·application telemetry를 OpenTelemetry·AI 분석으로 묶는 cross-account observability",
+      "title_original": "Amazon CloudWatch Omni: AI-first observability for agents and applications",
+      "summary": "핵심: AWS가 CloudWatch Omni를 GA로 공개해 여러 AWS account·Region과 Azure workload의 telemetry를 central account space에서 조회하도록 구성함. OpenTelemetry 기반 agent trace·evaluation과 AI-assisted root-cause를 제공하지만, supported Region·telemetry access·retention·AI 분석 결과의 escalation 기준을 canary로 검증 필요.",
+      "detail": "CloudWatch Omni는 service·dependency 자동 발견, golden metric, natural-language chat·console·AWS Agent Toolkit 기반 telemetry query를 제공함. LangGraph·CrewAI·OpenAI Agents SDK·Vercel AI SDK·Strands의 prompt·model call·tool invocation 평가와 VS Code·Cursor·Kiro local extension을 포함하며 GA는 US East (N. Virginia)·US West (Oregon)·Europe (Ireland)에서 시작됨.",
+      "why_it_matters": "agent workload의 trace·quality evaluation·application telemetry가 계정·리전·tool별로 분리되면 incident triage와 cost attribution이 느려지므로, cross-account observability의 identity·data boundary를 운영 설계에 포함해야 함.",
+      "engineering_implication": "시사점: 한 agent service를 대상으로 OTel span·prompt/tool trace·evaluation·SLO·runbook owner를 연결하고, telemetry access·retention·redaction·AI diagnosis human escalation·query 비용을 canary 지표로 고정 필요.",
+      "korea_implication": "국내 리전은 GA announcement의 제공 리전에 포함되지 않으므로, Seoul workload는 cross-region telemetry·data residency·support scope를 계약과 console availability로 별도 확인 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Cloud",
+        "AWS",
+        "CloudWatch",
+        "Observability",
+        "OpenTelemetry",
+        "AI Agent",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 91,
+      "published_kst": "2026-09-23 09:06",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-cloudwatch-omni-ai/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "CloudWatch Omni 제품 페이지",
+          "url": "https://aws.amazon.com/cloudwatch/omni/"
+        },
+        {
+          "title": "CloudWatch Omni 문서",
+          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-omni.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 CloudWatch Omni를 CloudWatch의 발전형으로 GA 공개함. central account의 space에서 AWS account·Region과 Azure workload telemetry를 보고 application·agent를 함께 observe·troubleshoot하는 범위임.",
+          "items": [
+            "공개: OpenTelemetry 상호운용성과 CloudWatch 운영 범위를 결합한 observability experience",
+            "범위: US East (N. Virginia)·US West (Oregon)·Europe (Ireland) GA 시작"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Omni는 service·dependency를 자동 발견하고 golden metric을 표시하며 chat·console guided path·AWS Agent Toolkit으로 telemetry를 탐색함. AWS DevOps Agent 기반 root-cause 지원은 source가 설명한 기능 범위임.",
+          "items": [
+            "관측: account·Region·Azure workload signal을 central space에서 조회",
+            "분석: 자연어 query와 dynamic view로 trace·metric·evaluation을 연결"
+          ]
+        },
+        {
+          "heading": "agent 운영 범위",
+          "body": "LangGraph·CrewAI·OpenAI Agents SDK·Vercel AI SDK·Strands workload에서 prompt·model call·tool invocation별 quality evaluation과 experiment workflow를 지원함. VS Code·Cursor·Kiro extension은 local instrumentation·debug·evaluation 대상임.",
+          "items": [
+            "검증: prompt·model·tool call별 trace와 quality evaluation을 같은 release record에 연결",
+            "경계: AWS account 없이 local extension 사용 가능하더라도 production telemetry access policy는 별도 설계"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI-assisted diagnosis는 incident commander·SLO owner·human escalation을 대체하지 않음. telemetry cross-account aggregation은 data classification·role·retention·query cost를 포함한 control plane으로 운영 필요.",
+          "items": [
+            "팀 액션: agent 한 개에 OTel span·evaluation·SLO·runbook link를 붙여 canary",
+            "측정: trace completeness, root-cause time, false-positive escalation, telemetry query 비용"
+          ]
+        }
+      ],
+      "rank": 4
     },
     {
       "id": "news-515",
@@ -350,7 +560,7 @@
           ]
         }
       ],
-      "rank": 2,
+      "rank": 5,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -425,7 +635,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-517",
@@ -498,7 +708,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-518",
@@ -573,7 +783,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-513",
@@ -636,7 +846,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-514",
@@ -704,7 +914,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-512",
@@ -783,11 +993,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 11
     },
     {
       "id": "news-510",
-      "rank": 9,
+      "rank": 12,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -856,7 +1066,7 @@
     },
     {
       "id": "news-509",
-      "rank": 10,
+      "rank": 13,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -928,7 +1138,7 @@
     },
     {
       "id": "news-511",
-      "rank": 11,
+      "rank": 14,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -1076,7 +1286,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 15
     },
     {
       "id": "news-506",
@@ -1144,7 +1354,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 16
     },
     {
       "id": "news-505",
@@ -1217,7 +1427,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 17
     },
     {
       "id": "news-508",
@@ -1294,11 +1504,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 18
     },
     {
       "id": "news-499",
-      "rank": 16,
+      "rank": 19,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -1371,7 +1581,7 @@
     },
     {
       "id": "news-500",
-      "rank": 17,
+      "rank": 20,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -1455,7 +1665,7 @@
     },
     {
       "id": "news-501",
-      "rank": 18,
+      "rank": 21,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -1532,7 +1742,7 @@
     },
     {
       "id": "news-502",
-      "rank": 19,
+      "rank": 22,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -1609,7 +1819,7 @@
     },
     {
       "id": "news-498",
-      "rank": 20,
+      "rank": 23,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -1690,7 +1900,7 @@
     },
     {
       "id": "news-496",
-      "rank": 21,
+      "rank": 24,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -1763,7 +1973,7 @@
     },
     {
       "id": "news-503",
-      "rank": 22,
+      "rank": 25,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -1836,7 +2046,7 @@
     },
     {
       "id": "news-497",
-      "rank": 23,
+      "rank": 26,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -1904,7 +2114,7 @@
     },
     {
       "id": "news-495",
-      "rank": 24,
+      "rank": 27,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -1973,7 +2183,7 @@
     },
     {
       "id": "news-494",
-      "rank": 25,
+      "rank": 28,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -2057,7 +2267,7 @@
     },
     {
       "id": "news-492",
-      "rank": 26,
+      "rank": 29,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -2142,7 +2352,7 @@
     },
     {
       "id": "news-493",
-      "rank": 27,
+      "rank": 30,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -2214,7 +2424,7 @@
     },
     {
       "id": "news-504",
-      "rank": 28,
+      "rank": 31,
       "title_ko": "Jade Sleet의 DevOps 채용 미끼: 조작된 `.terraform.lock.hcl`이 Apple Silicon 개발자 endpoint를 FLATROOF·ROOFDECK으로 연결",
       "title_original": "Don’t Call Us, We’ll Call Your APIs | TraderTraitor Backdoors Resurface on Victim With No Crypto Ties",
       "summary": "- 확인: SentinelOne은 북한 연계 TraderTraitor/Jade Sleet가 인도 IT 서비스사의 Apple Silicon MacBook을 침해한 사례를 공개. 해당 endpoint는 DevOps 엔지니어가 Terraform·Ansible로 AWS·OVH·OpenStack을 운영하고 source-control 접근을 보유한 환경\n- 경로: 가짜 채용 coding project의 조작된 `.terraform.lock.hcl`이 attacker-controlled custom provider를 가리켜 `terraform init` 시 악성 module 다운로드·실행으로 이어지는 범위\n- 영향: `FLATROOF`·`ROOFDECK`이 3월 18일부터 disk에 존재하고 3월 29일부터 beaconing·host activity가 시작된 telemetry 범위\n- 조치: 채용 과제 repository도 untrusted code로 취급하고 lockfile provider 주소·checksum·registry egress·macOS developer endpoint의 cloud/source-control credential을 같은 investigation 범위로 묶어야 함",
@@ -2364,7 +2574,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 32
     },
     {
       "id": "news-491",
@@ -2450,7 +2660,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 33
     },
     {
       "id": "news-487",
@@ -2522,7 +2732,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 34
     },
     {
       "id": "news-489",
@@ -2596,7 +2806,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 35
     },
     {
       "id": "news-485",
@@ -2665,7 +2875,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 36
     },
     {
       "id": "news-486",
@@ -2741,7 +2951,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 37
     },
     {
       "id": "news-483",
@@ -2821,7 +3031,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 38
     },
     {
       "id": "news-484",
@@ -2892,7 +3102,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 39
     },
     {
       "id": "news-488",
@@ -2972,7 +3182,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 40
     },
     {
       "id": "news-479",
@@ -3048,7 +3258,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 41
     },
     {
       "id": "news-478",
@@ -3114,7 +3324,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 42
     },
     {
       "id": "news-481",
@@ -3189,7 +3399,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 43
     },
     {
       "id": "news-480",
@@ -3262,7 +3472,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 44
     },
     {
       "id": "news-477",
@@ -3329,7 +3539,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 45
     },
     {
       "id": "news-482",
@@ -3410,7 +3620,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 46
     },
     {
       "id": "news-475",
@@ -3474,7 +3684,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 47
     },
     {
       "id": "news-476",
@@ -3539,7 +3749,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 48
     },
     {
       "id": "news-474",
@@ -3614,7 +3824,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 49
     },
     {
       "region": "Global",
@@ -3686,214 +3896,6 @@
             "검증: `GetMetadataAllocated`·`GetMetadataDelta` client response와 snapshot/restore 결과를 pre/post migration 비교",
             "운영: CSI driver·sidecar·Kubernetes version matrix, RBAC, GitOps rollback, retention chain을 하나의 change record로 관리",
             "팀 액션: representative block-volume workload에서 full backup·incremental backup·restore와 controller rollback drill 수행"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-473",
-      "title_ko": "Kubernetes v1.37 Memory QoS Beta: default-on feature gate와 opt-in `memory.high`·tiered reservation 운영 경계",
-      "title_original": "Kubernetes v1.37: Memory QoS Graduates to Beta",
-      "summary": "- 공개: Kubernetes v1.37에서 `MemoryQoS`가 Beta·default-on으로 승격\n- 기본 동작: Linux `cgroup v2` node에서 feature gate는 켜지지만 기본 kubelet 설정은 `memory.high`·`memory.min`·`memory.low`를 쓰지 않음\n- opt-in: `memoryThrottlingFactor`로 Burstable/BestEffort `memory.high` throttling, `memoryReservationPolicy: TieredReservation`으로 tiered memory protection 활성화\n- 변경: Alpha 기본값 `memoryThrottlingFactor: 0.9`을 `null`로 바꿔 기존 workload의 자동 throttling 위험을 제거\n- 팀 액션: cgroup v2 node·kubelet config·QoS class·OOM/PSI·latency SLO를 inventory한 뒤 representative workload에서 throttling/reservation canary 필요",
-      "detail": "Kubernetes v1.37에서 Memory QoS가 Beta가 되고 feature gate가 모든 kubelet에서 기본 활성화된다. 다만 기본 kubelet configuration은 memory throttling과 reservation을 활성화하지 않아 `memory.high`, `memory.min`, `memory.low` cgroup 값이 자동으로 기록되지 않는다. Burstable·BestEffort container의 `memory.high` throttling은 `memoryThrottlingFactor`를 명시해야 하며, tiered reservation은 `memoryReservationPolicy: TieredReservation`을 명시해야 한다. Alpha 단계의 기본 throttling factor `0.9`은 default-on 전환 시 기존 workload를 예상치 않게 throttle할 수 있어 v1.37에서 `null`로 변경됐다. 이 기능은 Linux cgroup v2 memory controller를 전제로 하므로 node OS/cgroup mode와 QoS별 behavior, memory pressure·PSI·OOM·tail latency를 workload canary에서 검증해야 한다.",
-      "why_it_matters": "Memory QoS의 default-on은 kubelet feature-gate 상태와 실제 cgroup enforcement를 분리함. upgrade만으로 memory limit behavior가 바뀐다고 가정하거나, 명시 opt-in 뒤 workload latency·reclaim·OOM risk를 측정하지 않으면 capacity와 SLO 판단이 왜곡될 수 있음.",
-      "engineering_implication": "v1.37 도입 전 node별 cgroup v2 여부와 kubelet config drift를 확인하고, `memoryThrottlingFactor`·`TieredReservation`을 별도 change로 rollout 필요. Burstable/BestEffort별 `memory.events`, PSI, OOM, throttled time, request p95/p99, reclaim를 baseline·canary·rollback 기준으로 기록 필요.",
-      "korea_implication": "국내 managed Kubernetes와 자체 node image 환경은 provider node OS의 cgroup v2 지원과 managed kubelet setting 노출 범위를 확인한 뒤, multi-tenant workload의 QoS·capacity policy에 반영 필요.",
-      "category": "Infra",
-      "tags": [
-        "Kubernetes",
-        "Memory QoS",
-        "cgroup v2",
-        "Kubelet",
-        "SRE",
-        "Resource Management",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-09-15 03:30",
-      "source_name": "Kubernetes Blog / SIG Node",
-      "source_url": "https://kubernetes.io/blog/2026/09/14/kubernetes-v1-37-memory-qos-graduates-to-beta/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes v1.37에서 `MemoryQoS` feature gate가 Beta로 승격되고 기본 활성화됨. 대상 node는 Linux `cgroup v2` memory controller를 사용하는 kubelet 환경임.",
-          "items": [
-            "변경: 모든 v1.37 kubelet에서 `MemoryQoS` gate가 기본 활성화",
-            "경계: feature gate default-on만으로 memory throttling·reservation enforcement가 자동 활성화되지는 않음"
-          ]
-        },
-        {
-          "heading": "기본값과 opt-in 설정",
-          "body": "기본 kubelet configuration은 `memory.high`·`memory.min`·`memory.low`를 cgroup에 쓰지 않음. 실제 behavior 변경은 명시적인 kubelet configuration에서 시작됨.",
-          "items": [
-            "throttling: `memoryThrottlingFactor`를 설정하면 Burstable·BestEffort container에 `memory.high` 적용",
-            "reservation: `memoryReservationPolicy: TieredReservation` 설정으로 `memory.min`·`memory.low` 기반 tiered protection 활성화",
-            "기본값: `memoryThrottlingFactor` 기본 `null`, `memoryReservationPolicy` 기본 `None`"
-          ]
-        },
-        {
-          "heading": "Alpha 대비 migration 경계",
-          "body": "Alpha에서는 `memoryThrottlingFactor` 기본값이 `0.9`였음. v1.37에서는 feature gate가 기본 활성화되는 조건에서 기존 workload의 의도하지 않은 throttling을 피하기 위해 기본값을 `null`로 변경함.",
-          "items": [
-            "영향: 기존 Alpha experiment가 kubelet configuration 또는 manifest automation에 남아 있는지 inventory 필요",
-            "경계: feature gate enabled·`memory.high` enforcement·tiered reservation은 서로 다른 상태이므로 node configuration과 cgroup runtime 값을 함께 확인",
-            "호환성: Linux cgroup v2 전제이며 cgroup v1 또는 non-Linux node behavior로 확대 해석 금지"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Memory QoS는 capacity isolation과 latency trade-off를 바꾸는 kubelet control임. config apply 성공이 아닌 workload별 memory pressure와 SLO evidence로 promotion을 판정해야 함.",
-          "items": [
-            "측정: QoS class별 `memory.events`, PSI, OOM kill, reclaim, `memory.high` throttling, request p95/p99",
-            "canary: memory-heavy service와 batch workload에서 baseline 대비 throughput·tail latency·eviction behavior 비교",
-            "팀 액션: platform·SRE·application owner가 opt-in scope, alert threshold, rollback trigger를 동일 change record로 승인"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "region": "Global",
-      "importance": "must-know",
-      "local_image": "",
-      "id": "news-470",
-      "title_ko": "DDrop: Intel TDX·SGX와 AMD SEV-SNP의 DDR5 freshness 공백을 write-drop으로 악용하는 confidential computing 연구",
-      "title_original": "New DDRop Attack Breaks Intel TDX and AMD SEV-SNP Confidential Computing",
-      "summary": "- 공개: DDR5 interposer가 메모리 write를 조용히 drop해 이전 암호문을 최신 값처럼 재사용시키는 `DDrop` 연구 공개\n- 대상: Intel TDX·Scalable SGX·AMD SEV-SNP의 memory encryption이 freshness를 보장하지 않는 설계 경계\n- 전제: server software control과 짧은 물리 접근, 약 **$159** 부품의 interposer가 모두 필요한 laboratory attack\n- 영향 경계: TDX에서는 protected VM memory read·debug mode·attestation measurement 위조를 연구자가 시연했고, AMD 결과는 page relocation 중 victim page copy로 한정\n- 팀 액션: confidential VM을 물리 접근까지 막는 완전한 trust boundary로 간주하지 말고 host custody·attestation policy·sensitive workload placement를 재검토 필요",
-      "detail": "The Hacker News가 KU Leuven·ETH Zurich·Durham University·Google 연구진의 DDRop 연구를 보도했다. 공격은 processor와 DDR5 DIMM 사이 interposer가 write command에 오류를 유발한 뒤 DIMM의 error report line을 차단해, processor가 write 실패를 알지 못한 채 이전 encrypted value를 읽게 만드는 방식이다. 대상은 Intel TDX, Intel Scalable SGX, AMD SEV-SNP이며 세 기술 모두 대용량 server memory를 위해 encryption은 제공하지만 memory freshness는 보장하지 않는다는 연구 설명을 전제로 한다. 연구진은 Intel TDX logical-integrity mode에서 page-table 초기화 write를 drop해 protected VM memory read, debug mode 전환, launch measurement 변경을 시연했다고 밝혔다. AMD SEV-SNP에서는 page relocation 중 한 victim page 내용을 다른 page로 복제하는 결과를 제시했다. 이는 cloud provider나 특정 tenant 침해 증거가 아니며, server software control·brief physical access·hardware insertion을 함께 요구하는 laboratory attack이다. software patch 하나로 해소되는 CVE가 아니라 future memory-encryption design과 physical custody·attestation trust model의 검토 대상이다.",
-      "why_it_matters": "Confidential computing은 cloud operator·host OS로부터 사용 중 메모리를 보호하는 control로 쓰이지만, DDRop은 physical memory path를 장악한 공격자가 encryption만으로 freshness·integrity가 자동 보장되지 않는 경계를 제시함.",
-      "engineering_implication": "TDX·SEV-SNP workload는 hardware attestation만을 data freshness 증거로 처리하지 말고 bare-metal custody, supply-chain tamper control, host access approval, sensitive workload placement, integrity mode availability를 threat model과 exception register에 반영 필요.",
-      "korea_implication": "국내 regulated workload가 confidential VM을 물리 위협까지 제거하는 control로 설명할 경우 hosting provider access·rack custody·hardware maintenance·attestation policy를 계약과 risk assessment에서 분리 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Confidential Computing",
-        "Intel TDX",
-        "AMD SEV-SNP",
-        "DDR5",
-        "Hardware Security",
-        "Cloud"
-      ],
-      "score": 95,
-      "published_kst": "2026-09-15 03:02",
-      "source_name": "The Hacker News / DDRop researchers",
-      "source_url": "https://thehackernews.com/2026/09/new-ddrop-attack-breaks-intel-tdx-and.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi4IfzHWVZbbX-Jlw_WME4viVgnupLfVdkxzfZ0skzjQpB5I32f-nua5-Gt6UJGJ9-cwTyrHqaCxBFndtNkIFx_Tj9sf3LnxfrqlecJ0zh0N83i5YRdukZRTpTiUP-kVrkpF4gMJZN-tONZy7jjk2gqdq87ELsUHDlyjQDFCIX6Rioz3ljHItZ2IeLDqb-w/s1600/DDRop.gif",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "DDrop은 DDR5 memory bus의 active interposer attack 연구임. write를 drop해 old encrypted data가 그대로 남도록 만들고, processor가 command failure를 인식하지 못하도록 DIMM error report를 차단하는 경로를 제시함.",
-          "items": [
-            "전제: attacker의 server software control과 짧은 physical access, CPU-DIMM 사이 interposer 삽입 조건",
-            "비용: 연구진이 부품 약 **$159**으로 산정한 hardware proof-of-concept",
-            "대상: Intel TDX·Scalable SGX·AMD SEV-SNP의 scalable memory-encryption freshness 경계"
-          ]
-        },
-        {
-          "heading": "연구가 시연한 영향",
-          "body": "Intel TDX logical-integrity mode에서 page-table initialization write drop을 이용해 protected VM memory와 debug state를 조작하는 결과를 제시함. AMD SEV-SNP 결과는 page relocation 중 victim page content copy 범위로 구분됨.",
-          "items": [
-            "TDX: victim VM private memory read와 debug mode 전환을 연구 환경에서 시연한 범위",
-            "TDX: launch measurement overwrite로 controlled VM이 trusted state처럼 attestation을 통과할 수 있다는 연구 주장",
-            "경계: stronger cryptographic-integrity mode의 일부 결과는 test system 미지원으로 직접 검증되지 않은 범위"
-          ]
-        },
-        {
-          "heading": "위협 모델과 증거 경계",
-          "body": "이 연구는 AWS·Azure·Google Cloud customer workload를 대상으로 한 실제 침해나 active exploitation 증거가 아님. home PC·phone 대상도 아니며, server software control과 physical memory path 접근이 동시에 필요한 data-center threat model임.",
-          "items": [
-            "미확정: 특정 cloud service compromise·tenant data theft·in-the-wild use evidence 없음",
-            "제외: NVIDIA confidential-computing GPU memory는 chip package 내부여서 interposer 삽입 범위 밖",
-            "경계: Intel Client SGX는 integrity tree를 사용해 stale-data condition이 다르다는 source 설명"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "memory encryption과 remote attestation은 workload isolation의 유효한 control이지만 physical host custody까지 대체하지 않음. data-center operator, hardware supply chain, break-glass access, sensitive workload placement를 combined assurance로 관리해야 함.",
-          "items": [
-            "점검: confidential VM별 provider·host·rack maintenance·physical access threat assumption 문서화",
-            "점검: TDX integrity mode availability와 attestation verifier가 measurement·policy exception을 처리하는 방식 확인",
-            "팀 액션: high-value key·credential·regulated data workload의 confidential-compute reliance를 threat-model review에 등록"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "region": "Global",
-      "importance": "must-know",
-      "local_image": "",
-      "id": "news-471",
-      "title_ko": "Red Heron의 Gitea RCE 악용: 13개 조직 침해 보도에서 repository·secret·Proxmox lateral movement를 함께 조사",
-      "title_original": "Red Heron Exploits Gitea RCE to Compromise 13 Organizations Across Six Countries",
-      "summary": "- 보도: Red Heron으로 추적되는 China-linked actor가 `CVE-2026-60004` Gitea RCE를 신속 악용한 다국적 campaign 분석 공개\n- 관측: 7개국 Gitea **1,386개** scan, 6개국 13개 조직 confirmed compromise라는 Acronis TRU 인용 범위\n- 침해 경로: repository theft 뒤 configuration secret·token·SSH host key 수집, JITTERLY implant·SIXZUT LD_PRELOAD rootkit·internal pivoting 관측\n- 확장: Taiwan environment에서 3-node Proxmox cluster root access까지 진행한 사례를 보도가 수록\n- 팀 액션: internet-facing Gitea는 fixed version뿐 아니라 repo clone·account·token·SSH key·runner·host/virtualization telemetry를 같은 incident scope로 조사 필요",
-      "detail": "The Hacker News는 Acronis Threat Research Unit 분석을 인용해 Red Heron으로 추적되는 actor가 Gitea critical RCE `CVE-2026-60004`를 July disclosure 직후 weaponize했다고 보도했다. 보도 범위에서 actor는 7개국 Gitea instance 1,386개와 Taiwan-based system 477개를 scan했으며 Canada·Argentina·Taiwan·United States·Qatar·Sri Lanka의 13개 조직 침해가 확인됐다. 공개 PoC는 account registration, vulnerable server exploitation, repository theft, trace removal을 자동화하는 Python framework로 확장됐다고 한다. staging server에서는 shell execution, file transfer, process termination, tunnel, interactive terminal, internal pivoting 기능 30개 이상을 가진 C++ Linux implant JITTERLY와, 15개 Linux function patch로 file·process·network connection을 숨기고 재실행하는 SIXZUT LD_PRELOAD rootkit이 관측됐다. Taiwan 사례는 Gitea에서 3-node Proxmox cluster root access로 진행한 범위다. attribution은 Simplified Chinese label·Taiwan classification·targeting pattern을 근거로 한 Acronis moderate-confidence assessment이며, 모든 exposed Gitea instance의 침해나 동일 actor attribution을 뜻하지 않는다. self-hosted code forge의 patch closure는 version update뿐 아니라 repository·CI secret·host/virtualization credential과 persistence evidence를 포함해야 한다.",
-      "why_it_matters": "Self-hosted Gitea는 source code, deploy key, CI credential, webhook, runner와 연결됨. RCE 뒤 repository clone을 단순 data loss로 끝내면 token·SSH key·configuration secret과 connected infrastructure lateral movement를 놓칠 수 있음.",
-      "engineering_implication": "Gitea asset inventory와 fixed build 확인 뒤 internet exposure·new account·admin/API·repository clone/archive·webhook·access token·SSH host key·runner secret을 incident timeline으로 보존하고, host process·LD_PRELOAD·outbound tunnel·Proxmox credential을 parallel hunt 필요.",
-      "korea_implication": "국내 조직의 self-hosted forge가 SI·affiliate·manufacturing repository와 shared virtualization에 연결된 경우 source-code incident owner와 platform owner가 나뉠 수 있음. patch completion, secret rotation, backup validation, hypervisor access review를 하나의 closure gate로 운영 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Gitea",
-        "CVE-2026-60004",
-        "Software Supply Chain",
-        "CI/CD",
-        "Linux",
-        "Proxmox"
-      ],
-      "score": 97,
-      "published_kst": "2026-09-15 01:56",
-      "source_name": "The Hacker News / Acronis TRU",
-      "source_url": "https://thehackernews.com/2026/09/red-heron-exploits-gitea-rce-to.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEijvj2lBIP05rWNCbhHf0wzhfJ35HBSL0rrr99VOwBa-AzBrvlz0hpopABC1zCHMLj6mqJTNSiij7cFcocgbHUyRbh1QV3V7OCWDLXn3fJ_fRJQxaj63BC8UOjjNlcBdwZ0jdD3zWDA6XpA3Xt2an-6vAE-kyo3sPOpjNa5tzWnntDxaeia-0zzKa-PuywC/s1600/gitea-hacked.jpg",
-      "related_links": [
-        {
-          "title": "The Hacker News: Gitea critical RCE active exploitation report",
-          "url": "https://thehackernews.com/2026/08/critical-gitea-rce-actively-exploited.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Acronis TRU 분석을 인용한 보도는 Red Heron이 Gitea `CVE-2026-60004` 공개 뒤 수일 안에 public PoC를 automated exploitation framework로 바꿨다고 설명함.",
-          "items": [
-            "scan: 7개국 Gitea instance **1,386개**와 Taiwan-based system 477개라는 Acronis 인용 범위",
-            "confirmed compromise: Canada·Argentina·Taiwan·United States·Qatar·Sri Lanka의 13개 조직이라는 보도 범위",
-            "automation: account registration·RCE exploitation·repository theft·selected trace removal 기능을 Python framework에 결합"
-          ]
-        },
-        {
-          "heading": "repository theft 이후의 침해 범위",
-          "body": "보도는 source-code clone 이후 credential collection·persistence·internal pivoting까지 이어진 사례를 수록함. repository와 CI configuration은 token·SSH host key·internal application boundary와 분리해 조사할 수 없음.",
-          "items": [
-            "Taiwan industrial automation target: SCADA/HMI·IoT integration·network sniffer·server configuration repository exfiltration 인용 범위",
-            "Canadian renewable-energy target: configuration secret·internal token·SSH host key·internal application collection 인용 범위",
-            "Taiwan 사례: vulnerable Gitea server에서 three-node Proxmox cluster root-level access로 진행한 보도 범위"
-          ]
-        },
-        {
-          "heading": "persistence·host telemetry",
-          "body": "staging server에서 JITTERLY C++ Linux implant와 SIXZUT LD_PRELOAD rootkit이 관측됐다는 Acronis 인용을 포함함. 해당 malware가 모든 victim environment에 deployed됐다는 뜻은 아니므로 host evidence로 개별 판정 필요.",
-          "items": [
-            "JITTERLY: shell·file transfer·process termination·network tunnel·interactive terminal·internal pivoting 등 30개 이상 post-exploitation command 지원",
-            "SIXZUT: file·process·network connection을 숨기기 위해 15개 Linux function을 patch하고 terminate/remove 뒤 relaunch 기능을 가진 보도 범위",
-            "경계: China-linked attribution은 language·target classification·targeting footprint 기반 moderate-confidence assessment"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Gitea RCE 대응은 web application patch와 code-secret incident response를 동시에 수행하는 작업임. exposed code forge의 closure는 fixed version screen-shot이 아니라 access·clone·secret·host·hypervisor evidence의 reconciliation으로 판정해야 함.",
-          "items": [
-            "점검: public ingress, affected version, new account/admin/API event, repository clone/archive, deploy key·access token·webhook audit",
-            "점검: runner/CI secret, SSH host key, service account, `LD_PRELOAD`, unknown process, outbound tunnel, Proxmox credential evidence",
-            "팀 액션: repository owner·platform·SOC·virtualization owner가 patch, containment, secret rotation, backup restore validation을 같은 incident record로 승인"
           ]
         }
       ],

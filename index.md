@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-22 | Total pages: 365
+> Last updated: 2026-09-23 | Total pages: 368
 
 ## Entities
 
@@ -35,6 +35,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-cloudwatch-omni-ai-observability-2026-09-23]] — Amazon CloudWatch Omni GA의 OpenTelemetry·cross-account/Azure telemetry·agent evaluation·SRE 운영 경계.
+- [[raw/articles/thn-cpanel-cve-2026-87899-root-code-execution-2026-09-23]] — cPanel CalDAV/CardDAV `CVE-2026-87899` authenticated root code execution과 shared-hosting tenant·forensic 대응 경계.
+- [[raw/articles/thn-ubuntu-linux-cve-2026-80521-container-escape-2026-09-23]] — Linux AF_UNIX `CVE-2026-80521` Ubuntu LTS container escape·host-root exploit 공개와 kernel·runtime 대응 경계.
 - [[raw/articles/crowdsec-tanstack-supply-chain-private-repository-leak-2026-09-21]] — TanStack npm 공급망 침해 뒤 전 직원 OAuth token으로 CrowdSec private repository 약 170개 복사, offboarding·token·secret rotation 대응 경계.
 - [[raw/articles/thn-orkes-conductor-cve-2026-58138-active-exploitation-2026-09-20]] — Orkes Conductor `CVE-2026-58138` 인증 전 workflow expression RCE active targeting·GraalVM host access·API control-plane patch 경계.
 - [[raw/articles/msrc-azure-ai-foundry-cve-2026-85889-2026-09-19]] — Azure AI Foundry `CVE-2026-85889`의 service-side mitigation, tenant control-plane·identity audit 경계.

@@ -2897,3 +2897,9 @@
 - APM OAuth client/resource server-only 구성은 F5가 비영향으로 정정했으며, End of Technical Support release status·공격자·피해 조직·규모·hotfix 뒤 access 제거 여부는 공개 source에서 확인되지 않아 단정하지 않음. OAuth failure·audit command·TMM SIGABRT/core와 configuration change를 patch와 병렬 hunt하는 action으로 분리.
 - `news-520`을 KST `2026-09-23 17:29` 기준 newest-first rank 1에 추가하고 50-item cap의 actual tail `news-519`을 제거. raw capture body SHA-256 `623212ba6d6177981cfd31ac55d6b16a0301e151550a88c9eac557078ebe0d2f`, `index.md`, `weekly/2026-W40.md`를 canonical JSON으로 동기화. Deep Dive 2건은 KST 01:29 전면 재구성 완료 상태여서 timestamp-only 변경을 하지 않음.
 - 검증 통과: `python3 scripts/validate_weekly_news.py`(50 items, 2 deep dives), `node --check docs/app.js`, `git diff --check`, raw body SHA-256 및 newest-first rank 1–50 재대조.
+
+## [2026-09-23] update | CloudWatch Omni·cPanel root execution·Ubuntu AF_UNIX container escape 추가
+- 확인 시각: 2026-09-23 22:03 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스와 AWS·Cloudflare·Kubernetes·GitHub·CNCF·The Hacker News·OpenAI·Google AI feed를 research pass에 포함.
+- AWS canonical announcement와 feed `2026-09-23T00:06:00Z`를 대조. CloudWatch Omni GA의 OpenTelemetry, AWS account·Region/Azure telemetry, service·dependency discovery, agent evaluation framework와 GA 리전 범위를 수록.
+- The Hacker News canonical body·RSS를 직접 대조. cPanel `CVE-2026-87899` authenticated root code execution 및 fixed release, Ubuntu AF_UNIX `CVE-2026-80521` public exploit·upstream fix·Ubuntu LTS patch 상태를 source 범위로 수록. Debian CVE record도 기술 원인 대조에 사용. 양 결함의 active exploitation은 source가 확인하지 않아 단정하지 않음.
+- `news-521`·`news-522`·`news-523`을 KST `09:06`·`21:16`·`20:12` 기준 newest-first final sort에 추가하고 50-item cap의 actual tail `news-473`·`news-470`·`news-471`을 제거. raw capture 3건·`index.md`·`weekly/2026-W40.md`를 canonical JSON과 동기화. Deep Dive 2건은 KST 01:29 전면 재구성 완료 상태이므로 timestamp-only 변경 없이 유지.
