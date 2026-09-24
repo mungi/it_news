@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-23 | Total pages: 368
+> Last updated: 2026-09-24 | Total pages: 371
 
 ## Entities
 
@@ -35,6 +35,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-terraform-registry-malicous-provider-graphalgo-2026-09-24]] — HashiCorp Registry Terraform provider·Go module malware 보도와 provider checksum·runner egress 공급망 통제 경계.
+- [[raw/articles/thn-gitlab-incoming-email-token-ci-impersonation-2026-09-24]] — GitLab incoming email token의 account 권한 commit·CI 실행 경로와 rotation·protected branch·runner 대응 경계.
+- [[raw/articles/aws-bedrock-kb-salesforce-zendesk-connectors-2026-09-24]] — Bedrock Knowledge Bases Salesforce·Zendesk native connector의 incremental sync·source ACL·RAG freshness 검증 경계.
 - [[raw/articles/aws-cloudwatch-omni-ai-observability-2026-09-23]] — Amazon CloudWatch Omni GA의 OpenTelemetry·cross-account/Azure telemetry·agent evaluation·SRE 운영 경계.
 - [[raw/articles/thn-cpanel-cve-2026-87899-root-code-execution-2026-09-23]] — cPanel CalDAV/CardDAV `CVE-2026-87899` authenticated root code execution과 shared-hosting tenant·forensic 대응 경계.
 - [[raw/articles/thn-ubuntu-linux-cve-2026-80521-container-escape-2026-09-23]] — Linux AF_UNIX `CVE-2026-80521` Ubuntu LTS container escape·host-root exploit 공개와 kernel·runtime 대응 경계.
@@ -253,7 +256,7 @@
 - [[raw/articles/upstage-solar-open-2-2026-07-23]] — Solar Open 2의 250B-A15B MoE·1M context와 공식 H200 4/8장 배포 baseline·양자화 artifact 경계.
 - [[raw/articles/aws-nlb-listener-rules-dual-stack-2026-07-23]] — AWS NLB listener rule의 dual-stack IPv4·IPv6 target routing과 원본 client IP 보존 운영 경계.
 - [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
-- `raw/articles/` — 197건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 200건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.

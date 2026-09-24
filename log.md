@@ -2909,3 +2909,10 @@
 - F5 primary advisory·CISA KEV·OAuth configuration 문서와 AWS CloudWatch Omni canonical announcement·제품/문서를 현재 run에서 재확인. 기존 Worker Previews·VeloCloud source set과 겹치지 않는 F5와 AWS primary URL을 선정.
 - Deep Dive 2건을 timestamp-only 변경 없이 전면 교체. F5 항목은 OAuth authorization server virtual-server 조건·hotfix/iRule·HA·OAuth/host forensic closure를, CloudWatch Omni 항목은 OTel·cross-account/Azure telemetry·agent evaluation·IAM/redaction/retention·SRE/FinOps canary를 각각 9개 expert section으로 재구성. `refreshed_kst`와 site `last_updated_kst`를 실제 write time으로 기록.
 - 정규 뉴스 50건과 rank는 유지하고 canonical weekly archive를 재생성. source에 없는 피해 규모·tenant access·Seoul 제공 범위는 확정하지 않음.
+
+## [2026-09-24] update | GitLab incoming email token·Terraform Registry malware·Bedrock Salesforce/Zendesk connector 추가
+- 확인 시각: 2026-09-24 12:06 KST. GeekNews RSS는 HTTP 200, GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스 root surface는 HTTP 200으로 확인. AWS·Cloudflare·Kubernetes·GitHub·CNCF·The Hacker News feed를 research pass에 포함했고 4개 신규 후보를 직접 검토해 3건을 선별.
+- The Hacker News canonical 본문·RSS·Open Graph image를 직접 대조. GitLab incoming email token의 account-scoped·non-expiring 동작, patch attachment 기반 commit/CI 조건, sender verification·IP restriction·2FA 경계, role·project path/ID 제한을 source 범위로 수록. GitLab Dedicated 영향과 실제 악용은 source가 확정하지 않아 단정하지 않음.
+- The Hacker News가 인용한 Aikido 조사에서 HashiCorp Registry Terraform provider 2개와 Go module 2개의 Go malware distribution, Graphalgo overlap·Slack/blockchain C2를 확인. package download·DPRK 귀속·피해 조직·후속 payload 실행은 확정하지 않고 provider checksum·private mirror·runner egress 통제로 분리.
+- AWS canonical announcement와 feed `Wed, 23 Sep 2026 17:41:00 GMT`를 대조. Bedrock Managed Knowledge Bases의 Salesforce knowledge article, Zendesk article/community post connector, crawling·metadata extraction·incremental sync 자동화만 수록하고 source ACL mapping·삭제 전파·tenant authorization은 별도 canary 검증 항목으로 유지.
+- `news-524`·`news-525`·`news-526`을 KST `12:06`·`10:53`·`02:41` 기준 newest-first rank 1–3에 추가하고 final cap tail `news-476`·`news-474`·`news-472`를 제거해 50-item cap·rank 1–50 유지. raw capture 3건, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 KST 02:05 전면 재구성 완료 상태여서 timestamp-only 변경 없이 유지.
