@@ -2,14 +2,14 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-24 14:22",
+  "last_updated_kst": "2026-09-24 18:26",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitLab incoming email token은 유출 시 권한 범위 내 branch commit과 CI/CD job 실행으로 이어질 수 있는 credential 경로로 보도됨. Maintainer token rotation·email exposure·protected branch·runner/secret boundary를 함께 점검 필요.",
     "Terraform Registry 악성 provider·Go module 사례는 IaC dependency가 CI runner·cloud credential과 직접 만나는 공급망 경로임을 확인함. provider namespace·version·SHA-256 lock file·private mirror·runner egress allowlist를 같은 change control로 운영 필요.",
     "Linux AF_UNIX `CVE-2026-80521`은 container에서 host root로 escape할 수 있는 경로로 보도됐고 Ubuntu 26.04 target exploit code가 공개됨. Ubuntu LTS package·running kernel·reboot·seccomp/runtime·untrusted workload를 inventory하고 fixed package canary를 우선 처리 필요.",
     "F5 BIG-IP APM `CVE-2026-94127`은 OAuth authorization server virtual server의 active exploitation 중인 CVSS 9.8 RCE임. OAuth profile·APM access policy·virtual server exposure inventory, hotfix/iRule, same-window forensic을 병렬 처리 필요.",
-    "Bedrock Managed Knowledge Bases가 Salesforce·Zendesk native connector와 incremental sync를 추가함. connector credential·source ACL·삭제 전파·sync lag·retrieval authorization·citation 정확도를 RAG canary로 검증 필요."
+    "WordPress `CVE-2026-87902`은 patch 공개 당일 exploitation attempt가 관측된 conditional unauthenticated RCE 경로임. fixed core version뿐 아니라 `page-` theme directory·readable PHP path·`pearcmd.php`·temporary PHP file-write log를 patch window로 hunt 필요."
   ],
   "deep_dives": [
     {
@@ -197,6 +197,79 @@
   ],
   "items": [
     {
+      "id": "news-517",
+      "title_ko": "WordPress `CVE-2026-87902`: 패치 공개 당일 active exploitation telemetry 확인",
+      "title_original": "Attackers Exploit WordPress CVE-2026-87902 Within Hours of Disclosure",
+      "summary": "핵심: WordPress `CVE-2026-87902`를 노린 exploitation attempt가 패치 공개 당일인 9월 22일 11:49 UTC부터 관측됐으며, Previdian honeypot telemetry는 9월 23일부터 68건을 기록함. `page-` theme directory와 web-server가 읽는 local PHP file이라는 조건을 inventory하고, fixed core 적용 뒤 `pearcmd.php`·`/tmp`·`/var/tmp` file-write 흔적을 patch window로 hunt 필요.",
+      "detail": "WordPress GHSA는 인증 전 page-template resolution이 active theme 밖의 chosen readable local PHP file을 include할 수 있고, server environment·active theme precondition 충족 때 조건부 RCE가 가능하다고 명시함. The Hacker News가 인용한 Previdian·Patchstack telemetry는 `pearcmd.php` inclusion과 temporary directory PHP write를 포함한 시도를 보고했지만, 실제 compromise·피해 조직·CISA KEV 등재는 이 source set에서 확인되지 않음.",
+      "why_it_matters": "public CMS의 조건부 LFI/RCE가 공개 직후 scan·write 시도로 전환되면 automatic update 상태만으로 closure할 수 없음. core version, theme layout, readable PHP path, access log와 file integrity를 같은 incident timeline에서 대조해야 함.",
+      "engineering_implication": "시사점: `wp core version`으로 branch별 fixed release를 확인하고, child/parent theme의 `page-*` directory와 readable local PHP path를 inventory 필요. patch 전후 web log의 `pearcmd.php`·template traversal 요청, `/tmp`·`/var/tmp` unexpected PHP, modified plugin/theme·admin session을 보존·hunt 필요.",
+      "korea_implication": "국내 마케팅·커뮤니티 WordPress 운영자는 agency/plugin vendor가 관리하는 site도 branch별 update owner와 fixed version evidence를 확보하고, admin·hosting log retention을 patch window와 맞춰야 함.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "WordPress",
+        "CVE",
+        "PHP",
+        "Web Security",
+        "Patch Management",
+        "Open Source"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-09-24 14:36",
+      "source_name": "WordPress GHSA / The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/attackers-exploit-wordpress-cve-2026.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizoRcyQE1N3fGUKa2FY_q_T7EG_CyjTpMGGk1oFUF-XpBZa0zCA6V2yEuv3_Z1OrEjMmhbHdaVmo6NMrwb98U9VFGXDpRcItboVuZH7qc9QgPd5ZLDudfJPWoaSDbtkoXJeLTZw-6JDbq5F6YEp4AkeoJd10Nb_H9tuU0fYdgqkLrP6BTpAPOYwO6WdmkN/s1700-nu-rw-lo-l85-e365/wordpress-exploits.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "WordPress GHSA-7hp8-65ch-5whp",
+          "url": "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp"
+        },
+        {
+          "title": "WordPress 7.1.2 release",
+          "url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News가 인용한 Previdian honeypot telemetry는 `CVE-2026-87902` exploitation attempt가 2026-09-22 11:49 UTC부터 시작됐고 9월 23일부터 68건을 기록했다고 설명함. WordPress GHSA의 인증 전 local PHP inclusion 결함이 patch 공개 직후 scan·write 시도로 전환된 관측 범위임.",
+          "items": [
+            "상태: active exploitation attempt telemetry 확인, 실제 compromise·피해 조직·CISA KEV 등록은 source 미확인",
+            "시간: 최초 관측 2026-09-22 11:49 UTC, KST 2026-09-22 20:49"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "WordPress GHSA는 `get_page_template()` resolution이 active theme directory 밖의 chosen readable local `.php` file을 include할 수 있다고 명시함. RCE는 모든 affected site에서 자동 성립하지 않으며, active child/parent theme의 `page-` prefix top-level directory와 web-server account가 읽을 수 있는 local PHP target이라는 precondition이 필요함.",
+          "items": [
+            "영향: WordPress `4.7.0`~`7.1.1`, account·user interaction 없이 도달 가능한 path",
+            "조건: `page-` directory와 readable local PHP file이 함께 존재할 때 conditional RCE chain 가능"
+          ]
+        },
+        {
+          "heading": "관측된 공격 행위와 경계",
+          "body": "보도된 request는 `/usr/local/lib/php/pearcmd.php`를 include한 뒤 `/tmp` 또는 `/var/tmp`에 PHP file을 쓰고 GitHub-hosted uploader를 include하는 sequence를 포함함. IP·filename은 hunt seed일 수 있으나, honeypot telemetry를 전체 노출 fleet의 침해율이나 해당 site compromise 증거로 일반화할 수 없음.",
+          "items": [
+            "hunt: `pearcmd.php`·template traversal request, temporary directory PHP write, unexpected uploader/webshell file",
+            "경계: IP·filename만으로 blocking 또는 compromise 판정을 끝내지 않고 host·web·CMS evidence와 상관 분석 필요"
+          ]
+        },
+        {
+          "heading": "수정 버전과 시사점",
+          "body": "WordPress는 `7.1.2`, `7.0.6`, `6.9.9`, `6.8.10` 및 4.7까지 backport fixed release를 제시함. 별도 workaround가 확인되지 않아 running version evidence와 fixed release 적용이 우선이며, custom theme·template override와 filesystem integrity 확인이 patch closure의 일부임.",
+          "items": [
+            "팀 액션: fleet branch·`wp core version`·automatic update 결과와 child/parent theme precondition inventory",
+            "검증: patch window 전후 access log, modified plugin/theme, `/tmp`·`/var/tmp`, admin session·outbound request 보존·대조"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-524",
       "title_ko": "Terraform Registry 악성 provider·Go module: Graphalgo 계열 malware의 IaC 공급망 유입 보도",
       "title_original": "Attackers Use Malicious Terraform Providers to Deliver Go Malware via HashiCorp Registry",
@@ -258,7 +331,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-525",
@@ -322,11 +395,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-527",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Amazon Kinesis Data Streams: On-Demand stream의 service-managed partition key로 producer 분산 로직 제거",
       "title_original": "Amazon Kinesis Data Streams announces Service-Managed Partition Keys for simplified data ingestion",
       "summary": "핵심: Kinesis Data Streams On-Demand Standard·Advantage stream이 partition key 없이 record를 받아 warm capacity 기준으로 shard에 분산하는 service-managed partition key를 추가함. 순서 보장이 필요 없는 log·metric·IoT ingestion은 random UUID 분산과 hot partition 대응 코드를 줄일 수 있으나 ordering·idempotency·retry·consumer lag는 workload별 canary 필요.",
@@ -451,7 +524,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-522",
@@ -515,7 +588,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-523",
@@ -588,7 +661,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-520",
@@ -676,7 +749,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-521",
@@ -749,7 +822,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-515",
@@ -821,7 +894,7 @@
           ]
         }
       ],
-      "rank": 9,
+      "rank": 10,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -893,79 +966,6 @@
           "items": [
             "팀 액션: representative prompt·tool call·long-context case로 offline eval와 shadow traffic 실행",
             "운영 과제: input/output/cache token 비용·p95 latency·success/fallback rate·model-version change log 추적"
-          ]
-        }
-      ],
-      "rank": 10
-    },
-    {
-      "id": "news-517",
-      "title_ko": "WordPress `CVE-2026-87902`: 인증 전 template resolution local PHP inclusion, 조건부 RCE 수정",
-      "title_original": "WordPress 7.1.2 Release",
-      "summary": "핵심: WordPress `CVE-2026-87902`는 인증 전 공격자가 active theme 밖의 readable local PHP file을 template resolution에 include할 수 있는 CVSS 9.2 결함임. RCE는 server environment와 active theme의 추가 조건이 필요하지만 4.7.0~7.1.1 전 범위가 영향권이며 9월 17일 7.1.1로 갱신한 site도 재패치 필요.",
-      "detail": "WordPress는 9월 22일 7.1.2와 supported branch fixed release를 공지함. 별도 workaround가 없어 fixed release 적용을 우선하고, template override·unexpected PHP file·web access log를 patch 전후 change/incident evidence로 대조해야 함.",
-      "why_it_matters": "public CMS의 unauthenticated local file inclusion은 theme·server 조합에 따라 code execution으로 확대될 수 있어, version 하나가 아니라 PHP runtime·template customization·webshell/file integrity를 함께 점검해야 하는 patch 사건임.",
-      "engineering_implication": "시사점: `wp core version`과 fleet branch를 inventory해 fixed release를 적용하고, automatic update 완료 여부를 running version으로 확인 필요. custom theme·template loader·readable PHP path·recent template change·unexpected PHP file과 web request를 timeline으로 보존·대조 필요.",
-      "korea_implication": "국내 마케팅·커뮤니티 WordPress 운영자는 agency/plugin vendor가 관리하는 site도 branch별 update owner와 fixed version evidence를 확보하고, admin·hosting log retention을 patch window와 맞춰야 함.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "WordPress",
-        "CVE",
-        "PHP",
-        "Web Security",
-        "Patch Management",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-23 03:03",
-      "source_name": "WordPress / The Hacker News",
-      "source_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgcFso-nJC2Re_gThOMTjPhyphenhyphenaOti1Mpn2_nb6NYGitzjVHTtvHN_q4oKg_FGa4IrTt81BAuA4qWzeJJZkxdV7F0-iSBR3ZwSUmqfBhvBX2ArxLTZqYjbtCPhu2Gw7PLSmOS5kOGQ9f0I46xPwhp5VCflFSN8YEm-z8VXdk1XRJwCvbqbljSZqorD4MpbQc/s1600/wp-update.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "WordPress GHSA-7hp8-65ch-5whp",
-          "url": "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp"
-        },
-        {
-          "title": "The Hacker News report",
-          "url": "https://thehackernews.com/2026/09/wordpress-issues-patch-for-critical.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "WordPress가 `CVE-2026-87902`를 수정한 `7.1.2` security release를 공지함. 인증 전 공격자가 page template resolution에서 active theme directory 밖의 chosen readable local PHP file을 include할 수 있는 결함 범위임.",
-          "items": [
-            "영향: WordPress `4.7.0`~`7.1.1`과 account·logged-in user interaction이 필요 없는 local file inclusion 경로",
-            "상태: CVSS `9.2`, active exploitation·CISA KEV 등재·피해 조직은 공개 source에서 미확정"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "local PHP inclusion은 해당 file이 수행하는 동작을 실행할 수 있으나, attacker-controlled code execution은 모든 site에서 자동 성립하지 않음. WordPress는 server environment와 active theme의 relevant precondition이 함께 충족되면 RCE로 이어질 수 있다고 설명함.",
-          "items": [
-            "조건: server environment·active theme 조합에 relevant precondition이 있을 때 RCE 가능성",
-            "경계: inclusion 결함을 모든 affected site의 confirmed RCE로 일반화 불가"
-          ]
-        },
-        {
-          "heading": "수정 버전과 운영 범위",
-          "body": "WordPress는 `7.1.x→7.1.2`, `7.0.x→7.0.6`, `6.9.x→6.9.9`, `6.8.x→6.8.10`, `6.7.x→6.7.9`, `6.6.x→6.6.9`를 제시함. security-fix eligible branch에는 `4.7`까지 courtesy backport가 진행 중이며, 9월 17일 `7.1.1` 적용 site도 다시 update가 필요한 범위임.",
-          "items": [
-            "조치: branch별 fixed target과 running `wp core version`을 deployment evidence로 수집",
-            "경계: vendor가 별도 workaround를 제시하지 않아 fixed release 적용이 우선"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "CMS patch closure는 core version 표시만으로 끝나지 않음. template override와 custom theme, readable local PHP file, unexpected plugin/theme/file write, web access request를 같은 시간축에서 점검하면 RCE precondition과 post-patch persistence를 구분할 수 있음.",
-          "items": [
-            "팀 액션: fleet update 뒤 WordPress core·plugin/theme inventory와 backup/rollback restore test 실행",
-            "운영 과제: template change·PHP file integrity·admin session·web request retention을 patch closure record에 결합"
           ]
         }
       ],
