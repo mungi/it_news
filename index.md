@@ -480,6 +480,11 @@
 
 - [[raw/articles/f5-bigip-apm-cve-2026-94127-active-exploitation-2026-09-23]] — F5 BIG-IP APM `CVE-2026-94127` OAuth authorization server virtual server의 인증 전 RCE active exploitation·hotfix·iRule·forensic 경계.
 
+- [[raw/articles/cloudflare-containers-cross-tenant-data-exposure-2026-09-24]] — Cloudflare Containers·Sandboxes: dm-thin 잔존 블록으로 발생한 cross-tenant data exposure 수정 공개
+- [[raw/articles/github-security-lab-taskflow-agent-fuzzing-2026-09-24]] — GitHub Security Lab Taskflow Agent: LLM이 build command까지 선택하는 autonomous fuzzing pipeline 공개
+- [[raw/articles/docker-sandbox-kit-spec-cncf-2026-09-24]] — Docker Sandbox Kit Spec: OCI image에 agent·tool·요청 권한을 함께 담는 CNCF 공개 명세 제안
+- [[raw/articles/aws-rds-postgresql-pq-tls-key-exchange-2026-09-24]] — Amazon RDS for PostgreSQL: 18 이상에서 PQ-TLS key exchange와 `ssl_groups` 선택 지원
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.

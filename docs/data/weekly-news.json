@@ -2,7 +2,7 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-25 02:39",
+  "last_updated_kst": "2026-09-25 06:46",
   "audience": "developers and engineers",
   "executive_summary": [
     "GitLab incoming email token은 유출 시 권한 범위 내 branch commit과 CI/CD job 실행으로 이어질 수 있는 credential 경로로 보도됨. Maintainer token rotation·email exposure·protected branch·runner/secret boundary를 함께 점검 필요.",
@@ -202,6 +202,277 @@
   ],
   "items": [
     {
+      "id": "news-530",
+      "title_ko": "GitHub Security Lab Taskflow Agent: LLM이 build command까지 선택하는 autonomous fuzzing pipeline 공개",
+      "title_original": "AI-powered fuzzing with the GitHub Security Lab Taskflow Agent",
+      "summary": "핵심: GitHub Security Lab은 C/C++ repository에서 entrypoint 탐색·build 분석·harness 작성·AFL++ 실행·coverage 개선·crash triage·취약점 report 생성을 수행하는 Fuzzing Taskflow를 공개함. LLM이 선택한 arbitrary build command를 host에서 실행하므로 disposable Codespace/VM·non-privileged identity·network/secret isolation을 전제해야 함.",
+      "detail": "공식 안내는 GitHub repository slug를 입력으로 taskflow를 실행하고, 기본 모델로 Claude Sonnet 5를 사용한다고 설명함. tool이 `afl-fuzz`, `clang`, LLM-selected build command를 container 없이 host에서 실행하며 prompt-injected agent가 user 권한 범위에서 동작할 수 있다고 명시함.",
+      "why_it_matters": "agentic security automation은 coverage와 triage의 병목을 줄일 수 있지만, untrusted repository와 LLM tool selection을 결합하면 fuzzing environment가 code execution boundary가 됨. productivity tool과 CI runner를 같은 trust level로 두면 안 됨.",
+      "engineering_implication": "시사점: fuzzing agent는 disposable VM·unprivileged account·no production credential·egress allowlist·artifact quarantine에서 실행하고, model/tool trace·build command·network event·crash reproduction bundle을 함께 보존 필요.",
+      "korea_implication": "국내 OSS·금융·공공 개발 조직은 외부 repository 대상으로 agentic fuzzing을 도입할 때 개발자 workstation이나 shared CI runner 대신 전용 격리 account와 비용·로그 보존 정책을 먼저 마련 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "GitHub",
+        "Fuzzing",
+        "AI Agent",
+        "DevTools",
+        "Supply Chain",
+        "CI/CD"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-09-25 03:26",
+      "source_name": "GitHub Security Lab",
+      "source_url": "https://github.blog/security/application-security/ai-powered-fuzzing-with-the-github-security-lab-taskflow-agent/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "GitHubSecurityLab/seclab-taskflows-fuzzing",
+          "url": "https://github.com/GitHubSecurityLab/seclab-taskflows-fuzzing"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub Security Lab은 C/C++ project용 Fuzzing Taskflow를 공개함. repository를 지정하면 agent가 entrypoint·build system을 분석하고 fuzz target과 harness를 만들며 AFL++ 실행, coverage 개선, crash triage, unique bug report 생성을 수행하는 구조임.",
+          "items": [
+            "실행 입력: GitHub `owner/repo` slug로 fuzzing taskflow 시작",
+            "범위: continuous fuzzing의 coverage·harness·crash triage 작업을 LLM taskflow로 자동화하는 공개 workflow"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공식 안내는 tool이 AFL·compiler 설치와 repository clone, relevant function 식별, fuzz target 생성을 수행한다고 설명함. 기본 model configuration은 Claude Sonnet 5이며 다른 model은 configuration file로 변경 가능함.",
+          "items": [
+            "구성: shell driver·agent taskflow·fuzzing/coverage/crash report loop 결합",
+            "산출물: coverage report와 unique crash별 vulnerability report를 포함하는 automation path"
+          ]
+        },
+        {
+          "heading": "실행 경계",
+          "body": "GitHub는 LLM이 고른 arbitrary build command를 host에서 container 없이 실행한다고 명시함. prompt injection이 성공하면 agent는 실행 user 권한 내에서 임의 동작을 할 수 있어 source repository 자체가 untrusted input boundary가 됨.",
+          "items": [
+            "리스크: build script·dependency fetch·generated command가 workstation 또는 shared runner의 credential·network에 접근하는 경로",
+            "필요: disposable environment와 elevated privilege 부재를 공식 실행 전제로 적용"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "fuzzing quality 지표와 execution safety 지표를 분리해 운영해야 함. crash 수나 coverage만 보고 rollout하지 말고 command provenance·egress·secret absence·reproduction evidence를 release gate로 관리 필요.",
+          "items": [
+            "팀 액션: dedicated VM/account, no production secret, egress allowlist, artifact quarantine, time/cost quota 적용",
+            "검증: prompt·model/tool version·selected command·network event·crash reproducer를 run ID로 연결"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-531",
+      "title_ko": "Docker Sandbox Kit Spec: OCI image에 agent·tool·요청 권한을 함께 담는 CNCF 공개 명세 제안",
+      "title_original": "Docker and CNCF partner on an open spec for agent permissions",
+      "summary": "핵심: Docker는 Sandbox Kit Spec을 Apache 2.0으로 공개하고 CNCF에 제안함. Kit는 OCI image 안에 agent·tool·host/credential/volume 접근 요청의 typed list를 함께 담아 image pinning·signing·scanning과 권한 diff를 같은 artifact lifecycle로 처리하려는 구조임.",
+      "detail": "Docker 설명 기준 Kit는 새 artifact type이나 OCI fork가 아니라 OCI extension point를 사용하며, 일반 image처럼 build·push·pull·sign·scan 가능함. Docker Sandboxes가 첫 enforcing runtime이지만 다른 conforming runtime의 실제 구현·enforcement semantics·ecosystem adoption은 아직 검증 대상임.",
+      "why_it_matters": "agent의 network·credential·volume 권한이 dashboard·shell history·개별 configuration에 흩어지면 review와 rollback이 어려움. OCI provenance에 권한 요청을 결합하면 supply-chain policy와 workload identity review를 같은 change set으로 만들 수 있음.",
+      "engineering_implication": "시사점: spec 채택 전 agent capability manifest를 image digest·SBOM·signature·policy-as-code와 연결하고, added host/credential/volume request를 protected review·runtime deny-by-default·audit/rollback 기준으로 canary 필요.",
+      "korea_implication": "국내 기업의 coding agent·MCP 도입은 tool manifest만 허용하는 방식에서 벗어나 container image, registry, credential broker, network policy의 승인 책임을 하나의 release record로 묶는 설계가 필요.",
+      "category": "DevTools",
+      "tags": [
+        "DevTools",
+        "Docker",
+        "CNCF",
+        "OCI",
+        "AI Agent",
+        "Permissions",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-09-25 01:00",
+      "source_name": "Docker",
+      "source_url": "https://www.docker.com/blog/docker-sandbox-kit-spec-cncf/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "Docker Sandbox Kit Spec repository",
+          "url": "https://github.com/docker/sandboxes-kit-spec"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Docker는 9월 24일 Sandbox Kit Spec을 Apache 2.0으로 공개하고 CNCF neutral governance에 제안했다고 발표함. Kit는 agent, tools, requested host·credential·volume access를 하나의 OCI image에 담는 형식임.",
+          "items": [
+            "범위: agent가 수행할 수 있는 권한 요청을 portable artifact로 표현하는 proposal",
+            "경계: CNCF governance 제안과 Docker Sandboxes의 first enforcing runtime이 곧 다중 runtime 표준 채택을 뜻하지 않음"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Kit는 새 artifact type이나 OCI fork가 아니라 OCI extension point를 이용함. Docker는 일반 OCI image와 같이 build·push·pull·sign·scan할 수 있고, image를 pin하면 agent와 요청 목록을 함께 pin할 수 있다고 설명함.",
+          "items": [
+            "구성: agent binary·tooling·typed access request를 image lifecycle에 결합",
+            "변화: 새 version이 더 넓은 요청을 하면 manifest diff에서 added line으로 review 가능한 구조"
+          ]
+        },
+        {
+          "heading": "보안·운영 경계",
+          "body": "manifest가 권한 요청을 표현해도 runtime enforcement와 credential issuance는 별도 control plane임. image signature가 유효해도 broad network, long-lived credential, writable volume을 승인하면 least privilege가 자동으로 성립하지 않음.",
+          "items": [
+            "리스크: portable manifest를 실제 allow decision과 동일시해 runtime deny·audit·revocation을 생략하는 구성",
+            "확인: runtime별 request interpretation, unsupported field behavior, policy conflict, rollback semantics 검증 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "기존 container supply-chain 통제를 agent authority review까지 확장할 기회이나, proposal 단계의 claim과 production interoperability를 구분해야 함.",
+          "items": [
+            "팀 액션: image digest·SBOM·signature·capability manifest·credential broker grant를 하나의 release evidence로 결합",
+            "검증: added host/credential/volume request protected review, default deny, runtime audit, revoke/rollback canary"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-532",
+      "title_ko": "Amazon RDS for PostgreSQL: 18 이상에서 PQ-TLS key exchange와 `ssl_groups` 선택 지원",
+      "title_original": "Amazon RDS for PostgreSQL now supports post-quantum TLS key exchange",
+      "summary": "핵심: AWS는 RDS for PostgreSQL 18 이상에서 post-quantum TLS key exchange와 `ssl_groups` parameter 기반 cryptographic group 선택을 지원한다고 발표함. database version·client TLS library·connection pool·certificate/handshake compatibility를 분리해 canary하고, data-in-transit encryption policy의 승인 기준을 갱신 필요.",
+      "detail": "AWS는 console 또는 CLI로 managed RDS deployment를 생성·업데이트할 수 있고 allow list에서 cryptographic group을 선택한다고 안내함. announcement는 region availability, specific group, client compatibility, handshake latency, existing connection behavior를 보장하지 않으므로 production cutover 전에 조직별 검증이 필요함.",
+      "why_it_matters": "PQ migration은 server parameter 하나가 아니라 database client·proxy·JDBC/driver·connection pool·observability가 함께 변하는 protocol change임. version 18 이상이라는 gate가 fleet upgrade와 crypto policy 변경을 동시에 요구할 수 있음.",
+      "engineering_implication": "시사점: RDS engine version·client library·TLS termination/proxy·driver별 `ssl_groups` canary matrix를 만들고 handshake failure·connect p95·pool churn·fallback·certificate rotation을 rollback 조건으로 운영 필요.",
+      "korea_implication": "국내 규제 산업의 RDS PostgreSQL workload는 PQC 요구사항을 공급자 기능 지원과 동일시하지 말고 KMS·network path·client crypto inventory·감사 증적을 조직 정책에 맞춰 별도 확인 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "RDS",
+        "PostgreSQL",
+        "PQC",
+        "TLS",
+        "Cloud Security",
+        "Database"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-09-25 01:00",
+      "source_name": "AWS",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/postgresql-post-quantum-tls-key-exchange/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon RDS for PostgreSQL documentation — cryptographic groups",
+          "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS는 RDS for PostgreSQL이 post-quantum TLS key exchange를 지원한다고 발표함. 대상은 PostgreSQL engine version 18 이상이며, 조직 security standard에 맞춰 `ssl_groups` parameter의 allow list에서 cryptographic group을 선택하는 방식임.",
+          "items": [
+            "기능: data-in-transit encryption을 위한 PQ-TLS key exchange option 추가",
+            "버전 조건: RDS for PostgreSQL 18 이상에서 `ssl_groups` 변경 지원"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "설정은 RDS Management Console 또는 AWS CLI로 managed database 생성·업데이트 과정에서 적용 가능하다고 안내됨. announcement는 cryptographic group의 구체 목록이나 client-side automatic negotiation behavior를 설명하지 않음.",
+          "items": [
+            "변화: database server의 TLS group selection을 managed parameter로 조정 가능한 범위",
+            "경계: region availability·specific group·default behavior·client compatibility는 source에서 별도 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "호환성·운영 경계",
+          "body": "TLS key exchange 변경은 JDBC/ODBC/libpq, connection pool, proxy, TLS termination, monitoring agent의 crypto stack과 함께 검증해야 함. server가 option을 제공해도 오래된 client 또는 middlebox가 handshake failure·fallback·connection churn을 일으킬 수 있음.",
+          "items": [
+            "리스크: RDS version upgrade와 crypto policy change를 한 번에 fleet-wide 적용해 fault domain을 넓히는 방식",
+            "필요: client library/version·TLS path·pool retry·certificate rotation을 포함한 compatibility matrix"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "PQC 기능은 migration 완료 증거가 아니라 controlled protocol canary의 시작점임. connect latency와 failure mode를 기존 TLS baseline과 함께 측정하고 rollback 가능한 parameter change로 운영 필요.",
+          "items": [
+            "팀 액션: engine 18 readiness, client TLS inventory, `ssl_groups` canary, proxy/driver test, policy owner 지정",
+            "검증: handshake success/failure, connect p95, pool churn, fallback, error log, rollback time 측정"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
+      "id": "news-529",
+      "title_ko": "Cloudflare Containers·Sandboxes: dm-thin 잔존 블록으로 발생한 cross-tenant data exposure 수정 공개",
+      "title_original": "How Cloudflare addressed a cross-tenant data exposure vulnerability in Containers",
+      "summary": "핵심: Cloudflare는 Containers·Sandboxes의 multi-tenant dm-thin pool에서 `skip_block_zeroing`으로 재할당된 64 KiB block의 미기록 영역에 이전 tenant 데이터가 남을 수 있었던 취약점을 수정함. customer 설정 변경은 필요 없고 악용 증거는 없다고 밝혔지만, managed container 이용 조직은 secret·temporary file의 disk persistence와 provider incident notice 절차를 함께 점검 필요.",
+      "detail": "Cloudflare 설명 기준 Workers Paid account로 생성한 container가 특정 host·tenant를 표적화할 수는 없었고 데이터 잔존도 보장되지 않았음. 64 KiB thin block에 4 KiB만 기록한 뒤 raw device를 읽는 controlled PoC가 residual byte를 관측할 수 있었으며, Cloudflare는 fleet-wide fix와 historical disk-I/O telemetry 검토를 완료했다고 밝힘.",
+      "why_it_matters": "multi-tenant container의 VM isolation만으로 storage remanence가 사라지지 않음. provider remediation 이후에도 고객은 ephemeral disk에 남기는 credential·build artifact·debug dump의 보존 경로와 incident communication 책임을 분리해 관리해야 함.",
+      "engineering_implication": "시사점: Cloudflare Containers·Sandboxes workload에서 filesystem에 쓰는 secret·token·source archive·core dump를 inventory하고, startup-time secret fetch·short-lived credential·explicit cleanup·provider security notice review를 운영 기준으로 설정 필요.",
+      "korea_implication": "국내 SaaS·agent workload가 해외 multi-tenant container를 사용할 때 데이터 위치만이 아니라 ephemeral storage 처리·incident notice 수신·secret rotation owner를 공급자 계약과 runbook에 명시 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Cloudflare",
+        "Containers",
+        "Multi-tenant",
+        "Data Exposure",
+        "dm-thin",
+        "Cloud Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-09-25 00:00",
+      "source_name": "Cloudflare",
+      "source_url": "https://blog.cloudflare.com/containers-cross-tenant-vulnerability/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare는 9월 4일 bug bounty로 Containers와 Containers 기반 Sandboxes의 cross-tenant residual data exposure를 보고받았고, fleet 전체 수정과 조사 완료를 공개함.",
+          "items": [
+            "상태: customer-side configuration 변경 없이 fleet remediation 완료",
+            "경계: Cloudflare는 historical disk-I/O telemetry에서 malicious exploitation 또는 customer data compromise 증거를 찾지 못한 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Containers는 Firecracker VM의 writable root disk에 Linux `dm-thin`을 사용함. 영향을 받은 pool은 64 KiB thin-block과 `skip_block_zeroing` 설정을 사용해 삭제 volume의 physical block을 여러 customer account에 재할당할 수 있었음.",
+          "items": [
+            "조건: 새 tenant가 재할당된 64 KiB block 중 일부만 기록할 때 미기록 영역의 이전 byte 잔존 가능성",
+            "PoC: ext4 free-space에 align된 64 KiB region마다 4 KiB write 후 raw-device read로 남은 영역 관측"
+          ]
+        },
+        {
+          "heading": "영향과 경계",
+          "body": "공개된 technique은 특정 customer·workload·host·data를 지정할 수 없고 residual data 존재도 보장하지 않음. unmapped region의 단순 read는 allocation 없이 zero를 반환하므로 write-then-read sequence가 필요했음.",
+          "items": [
+            "영향: VM boundary를 넘는 실행이 아니라 shared thin-pool block remanence 경로",
+            "경계: provider의 no-evidence 결과를 개별 고객 workload에 secret 미기록 증명으로 확대할 수 없음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "ephemeral disk를 무해한 임시 공간으로 가정하지 않고 secret lifecycle과 storage cleanup을 deployment design에 포함해야 함. provider fix 확인과 별도로 credential exposure window를 줄이는 통제가 필요.",
+          "items": [
+            "팀 액션: filesystem secret·debug dump·build cache·uploaded artifact와 TTL/cleanup owner inventory",
+            "검증: startup secret injection·short-lived credential·workload termination cleanup·provider notice escalation runbook 확인"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-517",
       "title_ko": "WordPress `CVE-2026-87902`: 패치 공개 당일 active exploitation telemetry 확인",
       "title_original": "Attackers Exploit WordPress CVE-2026-87902 Within Hours of Disclosure",
@@ -272,7 +543,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 5
     },
     {
       "id": "news-524",
@@ -336,7 +607,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 6
     },
     {
       "id": "news-525",
@@ -400,7 +671,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-528",
@@ -473,11 +744,11 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-527",
-      "rank": 5,
+      "rank": 9,
       "title_ko": "Amazon Kinesis Data Streams: On-Demand stream의 service-managed partition key로 producer 분산 로직 제거",
       "title_original": "Amazon Kinesis Data Streams announces Service-Managed Partition Keys for simplified data ingestion",
       "summary": "핵심: Kinesis Data Streams On-Demand Standard·Advantage stream이 partition key 없이 record를 받아 warm capacity 기준으로 shard에 분산하는 service-managed partition key를 추가함. 순서 보장이 필요 없는 log·metric·IoT ingestion은 random UUID 분산과 hot partition 대응 코드를 줄일 수 있으나 ordering·idempotency·retry·consumer lag는 workload별 canary 필요.",
@@ -602,7 +873,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-522",
@@ -666,7 +937,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-523",
@@ -739,7 +1010,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-520",
@@ -827,7 +1098,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-521",
@@ -900,7 +1171,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-515",
@@ -972,7 +1243,7 @@
           ]
         }
       ],
-      "rank": 11,
+      "rank": 15,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -1047,7 +1318,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-518",
@@ -1122,7 +1393,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-513",
@@ -1185,7 +1456,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-514",
@@ -1253,7 +1524,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 19
     },
     {
       "id": "news-512",
@@ -1332,11 +1603,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-510",
-      "rank": 17,
+      "rank": 21,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -1405,7 +1676,7 @@
     },
     {
       "id": "news-509",
-      "rank": 18,
+      "rank": 22,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -1477,7 +1748,7 @@
     },
     {
       "id": "news-511",
-      "rank": 19,
+      "rank": 23,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -1625,7 +1896,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "id": "news-506",
@@ -1693,7 +1964,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-505",
@@ -1766,7 +2037,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-508",
@@ -1843,11 +2114,11 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-499",
-      "rank": 24,
+      "rank": 28,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -1920,7 +2191,7 @@
     },
     {
       "id": "news-500",
-      "rank": 25,
+      "rank": 29,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -2004,7 +2275,7 @@
     },
     {
       "id": "news-501",
-      "rank": 26,
+      "rank": 30,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -2081,7 +2352,7 @@
     },
     {
       "id": "news-502",
-      "rank": 27,
+      "rank": 31,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -2158,7 +2429,7 @@
     },
     {
       "id": "news-498",
-      "rank": 28,
+      "rank": 32,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -2239,7 +2510,7 @@
     },
     {
       "id": "news-496",
-      "rank": 29,
+      "rank": 33,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -2312,7 +2583,7 @@
     },
     {
       "id": "news-503",
-      "rank": 30,
+      "rank": 34,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -2385,7 +2656,7 @@
     },
     {
       "id": "news-497",
-      "rank": 31,
+      "rank": 35,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -2453,7 +2724,7 @@
     },
     {
       "id": "news-495",
-      "rank": 32,
+      "rank": 36,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -2522,7 +2793,7 @@
     },
     {
       "id": "news-494",
-      "rank": 33,
+      "rank": 37,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -2606,7 +2877,7 @@
     },
     {
       "id": "news-492",
-      "rank": 34,
+      "rank": 38,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -2691,7 +2962,7 @@
     },
     {
       "id": "news-493",
-      "rank": 35,
+      "rank": 39,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -2763,7 +3034,7 @@
     },
     {
       "id": "news-504",
-      "rank": 36,
+      "rank": 40,
       "title_ko": "Jade Sleet의 DevOps 채용 미끼: 조작된 `.terraform.lock.hcl`이 Apple Silicon 개발자 endpoint를 FLATROOF·ROOFDECK으로 연결",
       "title_original": "Don’t Call Us, We’ll Call Your APIs | TraderTraitor Backdoors Resurface on Victim With No Crypto Ties",
       "summary": "- 확인: SentinelOne은 북한 연계 TraderTraitor/Jade Sleet가 인도 IT 서비스사의 Apple Silicon MacBook을 침해한 사례를 공개. 해당 endpoint는 DevOps 엔지니어가 Terraform·Ansible로 AWS·OVH·OpenStack을 운영하고 source-control 접근을 보유한 환경\n- 경로: 가짜 채용 coding project의 조작된 `.terraform.lock.hcl`이 attacker-controlled custom provider를 가리켜 `terraform init` 시 악성 module 다운로드·실행으로 이어지는 범위\n- 영향: `FLATROOF`·`ROOFDECK`이 3월 18일부터 disk에 존재하고 3월 29일부터 beaconing·host activity가 시작된 telemetry 범위\n- 조치: 채용 과제 repository도 untrusted code로 취급하고 lockfile provider 주소·checksum·registry egress·macOS developer endpoint의 cloud/source-control credential을 같은 investigation 범위로 묶어야 함",
@@ -2913,7 +3184,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 41
     },
     {
       "id": "news-491",
@@ -2999,7 +3270,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 42
     },
     {
       "id": "news-487",
@@ -3071,7 +3342,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 43
     },
     {
       "id": "news-489",
@@ -3145,7 +3416,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 44
     },
     {
       "id": "news-485",
@@ -3214,7 +3485,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 45
     },
     {
       "id": "news-486",
@@ -3290,7 +3561,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 46
     },
     {
       "id": "news-483",
@@ -3370,7 +3641,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 47
     },
     {
       "id": "news-484",
@@ -3441,7 +3712,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 48
     },
     {
       "id": "news-488",
@@ -3521,7 +3792,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 49
     },
     {
       "id": "news-479",
@@ -3594,287 +3865,6 @@
             "점검: WSO2 version·deployment exposure·JWT algorithm allowlist·admin account·audit retention",
             "검증: unsupported algorithm token reject와 normal issuer/key rotation flow를 staging에서 negative test",
             "팀 액션: fixed update, privileged log hunt, application secret/consumer key review·rotation, backend access review를 one closure record로 승인"
-          ]
-        }
-      ],
-      "rank": 46
-    },
-    {
-      "id": "news-478",
-      "title_ko": "베슬AI·네오AI 포항 40MW 수냉식 AIDC 협력: GPU 플랫폼과 데이터센터 운영 경계 분리",
-      "title_original": "VESSL AI to operate GPU platform for Pohang AI data center",
-      "summary": "- 협력: 베슬AI와 네오AI가 포항 AIDC 1·2센터의 GPU 플랫폼·인프라 사업 협력 MOU 체결\n- 규모: 경북이 40억원을 출자한 지역활성화 투자펀드 제9호 프로젝트로, 총사업비 **6,000억원·40MW** 수냉식 GPU AIDC 조성 목표\n- 역할: 베슬AI는 GPU 할당·모니터링·스케줄링 플랫폼, 네오AI는 설계·시공·인허가와 전력·냉각·통신·보안 기반시설 담당\n- 경계: 보도는 MOU와 목표 규모를 다루며 실제 준공일·GPU 수량·가용 용량·SLA는 공개하지 않음\n- 팀 액션: GPU control plane과 DC facility control plane의 책임·telemetry·incident handoff를 설계 단계에서 분리 필요",
-      "detail": "베슬AI와 네오AI는 포항에서 추진되는 AIDC 1·2센터를 대상으로 GPU 플랫폼과 데이터센터 인프라 협력 MOU를 체결했다. AI타임스 보도에 따르면 포항 AIDC는 경북이 40억원을 출자한 지역활성화 투자펀드 제9호 프로젝트이며, 총사업비 6,000억원과 40MW 규모의 GPU 기반 수냉식 AIDC 조성을 목표로 한다. 베슬AI는 베슬 클라우드를 통한 GPU 플랫폼 구축·운영, GPU 할당·모니터링·스케줄링을 맡고, 네오AI는 DC 설계·시공·인허가 및 전력·냉각·통신·보안 기반 시설과 GPU 인프라 운영을 맡는다. 이는 계획·협력 발표이며 실제 GPU SKU·가용 용량·PUE·상용 개시일·SLA는 source에서 확인되지 않았다. procurement나 서비스 capacity로 해석하기 전에 facility commissioning과 platform admission-control의 책임 경계를 검증해야 한다.",
-      "why_it_matters": "AIDC에서 GPU scheduler와 data-center power·cooling·network·security 운영은 서로 다른 failure domain임. 시설 목표와 플랫폼 운영 계약을 분리하면 capacity 약속, 장애 대응, tenant isolation, change approval의 책임 소재를 사전에 명확히 할 수 있음.",
-      "engineering_implication": "설계 단계에서 rack/cluster capacity, power·cooling telemetry, GPU allocation quota, scheduler drain, network/security change, facility incident의 owner·SLO·handoff를 하나의 운영 계약으로 문서화 필요. MOU 발표 수치를 가용 GPU capacity나 production SLA로 사용하지 말고 commissioning evidence와 capacity acceptance test를 별도 확보 필요.",
-      "korea_implication": "국내 지역 AIDC 사업은 GPU 플랫폼 사업자와 시설 사업자의 운영 경계가 곧 고객 capacity·장애 대응·보안 책임 경계가 됨. 공공·기업 수요자는 전력·냉각·통신과 GPU tenant control의 검증 책임을 계약·RFP에 분리 반영 필요.",
-      "category": "Korea",
-      "tags": [
-        "Korea",
-        "AI Infrastructure",
-        "GPU Cloud",
-        "Data Center",
-        "Cooling",
-        "Scheduling",
-        "Capacity Planning"
-      ],
-      "region": "Korea",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-09-16 12:15",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=215327",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/215327_219132_2528.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "베슬AI와 네오AI가 포항 AIDC 1·2센터의 GPU 플랫폼과 인프라 사업 협력 MOU를 체결함. 보도는 포항시 남구 광명일반산업단지의 GPU 기반 수냉식 AIDC 조성 계획을 다룸.",
-          "items": [
-            "사업: 경상북도 40억원 출자·지역활성화 투자펀드 제9호 프로젝트로 소개",
-            "목표: 총사업비 6,000억원·40MW 규모의 GPU 기반 수냉식 AIDC 조성 계획"
-          ]
-        },
-        {
-          "heading": "역할 분담과 control plane",
-          "body": "베슬AI는 베슬 클라우드 기반 GPU 플랫폼 구축·운영과 GPU 할당·모니터링·스케줄링을 맡고, 네오AI는 설계·시공·인허가와 전력·냉각·통신·보안 기반 시설 및 GPU 인프라 운영을 맡는다고 밝힘.",
-          "items": [
-            "플랫폼: tenant별 GPU allocation·scheduler·monitoring의 운영 책임",
-            "시설: 전력·냉각·통신·보안 기반시설과 data-center lifecycle의 운영 책임",
-            "사업화: 베슬AI의 고객 발굴과 네오AI의 시설 정보·기술 검토 지원 협력"
-          ]
-        },
-        {
-          "heading": "source가 확인한 범위",
-          "body": "이 발표는 협력 MOU와 목표 시설 규모를 근거로 함. 실제 GPU 모델·수량, 전력 인입 일정, 냉각 방식의 성능, 상용 가용 용량, PUE, 고객별 SLA와 예약 조건은 공개하지 않음.",
-          "items": [
-            "경계: 40MW 목표를 즉시 사용 가능한 GPU capacity 또는 tenant quota로 환산 불가",
-            "경계: MOU 체결만으로 준공·commissioning·network/security readiness 완료를 의미하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AIDC에서 facility plane과 GPU control plane의 장애·변경·capacity 책임은 독립적으로 관리돼야 함. 고객 온보딩 이전에 rack power·cooling headroom, GPU scheduler quota, cluster drain, network segmentation, security event handoff를 같은 acceptance gate로 검증해야 함.",
-          "items": [
-            "점검: facility telemetry와 GPU utilization·queue·allocation telemetry의 owner 및 incident escalation path",
-            "점검: planned maintenance의 scheduler drain·tenant notification·capacity reservation·rollback 절차",
-            "팀 액션: commissioning evidence, capacity acceptance test, service SLO를 MOU·사업 목표와 분리한 release gate로 운영"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-481",
-      "title_ko": "AWS Direct Connect 10G·100G 전용 연결 정액제: DTO 변동비와 이중 연결 비용을 설계·FinOps 모델에 반영",
-      "title_original": "AWS Direct Connect announces flat-rate pricing for dedicated connections",
-      "summary": "- 공개: AWS Direct Connect **10Gbps·100Gbps Dedicated Connection**에 월 정액제 추가\n- 요금: 선택한 geographic tier 안에서는 DTO(data transfer out) 과금이 없는 단일 월 요금\n- 범위: same-metro~global의 5개 geographic tier, commercial AWS Region의 Direct Connect location 대상·China Region 제외\n- 복원력: 같은 대역폭·지리 범위의 서로 다른 device/location 두 연결을 묶는 port-pair에서 standby 연결 비용 포함\n- 팀 액션: 현재 DTO·connection port·geographic path·failure-domain을 기준으로 pay-as-you-go 대비 정액제와 port-pair TCO를 재산정 필요",
-      "detail": "AWS가 10Gbps와 100Gbps Dedicated Connection용 flat-rate pricing을 발표했다. 기존 pay-as-you-go는 port hour와 DTO를 사용량만큼 과금하지만, 대규모·지속적인 DTO에서는 월별 비용 예측이 어려웠다. 새 모델은 connection bandwidth와 connectivity geographic scope에 따라 단일 월 요금을 적용하고 선택 tier 안의 DTO charge를 없앤다. same-metro부터 global까지 5개 tier를 제공하며, port-pair는 서로 다른 device 또는 location의 두 dedicated connection을 같은 bandwidth·geographic scope로 묶고 active/standby 구성에서 두 번째 연결을 추가 요금 없이 포함한다. 정액제는 commercial AWS Region의 모든 Direct Connect location에서 Dedicated Connection에만 적용되고 China Region은 제외된다. connection별 billing mode 변경은 가능하지만, 실제 비용 절감은 traffic direction·DTO profile·tier eligibility·기존 resiliency topology에 따라 달라지므로 invoice와 회선 설계를 함께 검증해야 함.",
-      "why_it_matters": "하이브리드·데이터 전송 집약 workload에서 network egress 변동비는 cloud bill과 capacity 계획을 흔듦. 10G·100G 회선의 요금 모델과 이중화 방식이 함께 바뀌므로 network architecture와 FinOps의 결정 단위가 connection·traffic path·failure domain으로 결합됨.",
-      "engineering_implication": "Direct Connect별 bandwidth·DTO·region/metro path·LAG/port-pair·active/standby traffic을 inventory하고, tier별 고정비와 기존 port hour·DTO invoice를 동일 기간으로 비교 필요. port-pair를 채택할 때는 서로 다른 device/location 조건, BGP failover·route preference·실제 standby 전환과 billing mode rollback을 change gate로 검증 필요.",
-      "korea_implication": "국내 온프레미스-클라우드 대용량 전송 조직은 서울 Direct Connect location과 사용 AWS Region 간 실제 geographic tier·China Region 제외 조건·상용 회선 계약을 확인한 뒤, 정액제 전환을 egress 예산과 DR 연결 설계에 반영 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloud",
-        "AWS",
-        "AWS Direct Connect",
-        "Networking",
-        "Hybrid Cloud",
-        "FinOps",
-        "Resilience"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-09-16 04:00",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/aws-direct-connect-announces-flat-rate-pricing/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "AWS Direct Connect Flat-Rate Pricing",
-          "url": "https://aws.amazon.com/directconnect/pricing/"
-        },
-        {
-          "title": "AWS Direct Connect User Guide",
-          "url": "https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 10Gbps·100Gbps Dedicated Connection에 flat-rate pricing을 추가함. 기존 모델은 port hour와 DTO 사용량 과금이며, 정액제는 선택한 pricing tier 안의 DTO charge를 제외한 단일 월 요금 구조임.",
-          "items": [
-            "대상: 10Gbps와 100Gbps Dedicated Connection 한정",
-            "변화: 대규모·지속 DTO의 월별 per-gigabyte 변동비를 connection 단위 고정비로 전환"
-          ]
-        },
-        {
-          "heading": "요금 범위와 적용 조건",
-          "body": "요금은 connection bandwidth와 connectivity geographic scope로 결정됨. AWS는 same-metro에서 global까지 5개 geographic tier를 제공하며, tier 안의 데이터량과 무관하게 일관된 월 요금을 제시함.",
-          "items": [
-            "범위: commercial AWS Region의 모든 Direct Connect location 제공, China Region 제외",
-            "경계: Dedicated Connection에만 적용되며 Hosted Connection 또는 모든 network charge의 면제를 뜻하지 않음",
-            "운영: pricing model은 connection별 설정이며 언제든 billing mode 변경 가능"
-          ]
-        },
-        {
-          "heading": "복원력 구성의 변화",
-          "body": "port-pair는 서로 다른 device 또는 location의 두 Dedicated Connection을 같은 bandwidth와 geographic scope로 묶는 방식임. 한 회선이 traffic을 전달하고 다른 회선이 redundancy를 담당하며, AWS는 두 번째 connection을 추가 요금 없이 포함한다고 설명함.",
-          "items": [
-            "설계: port-pair는 권장 사항이며 의무 구성 아님",
-            "검증: 실제 device/location diversity, BGP failover, route preference, standby traffic 전환을 별도 시험 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "정액제가 자동 절감을 보장하지 않음. DTO volume·traffic direction·geographic tier·기존 active/active 또는 active/standby topology·계약 조건을 같은 비용 모델로 계산해야 함. 비용 예측성의 이점과 commitment-free pay-as-you-go의 유연성을 workload별로 비교하는 작업 필요.",
-          "items": [
-            "점검: 최근 invoice의 port hour·DTO, connection bandwidth, geographic path, peak/steady traffic profile",
-            "점검: port-pair 전환 시 redundancy requirement와 DR runbook·monitoring·failover test의 변경 범위",
-            "팀 액션: representative connection에서 tier별 월 비용·DTO baseline·failover evidence를 승인 기준으로 설정"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-480",
-      "title_ko": "Kubernetes v1.37 Pod-Level Resource Managers Beta: NUMA 정렬 primary workload와 sidecar shared pool 분리",
-      "title_original": "Kubernetes v1.37: Pod-Level Resource Managers graduated to Beta",
-      "summary": "- 공개: Kubernetes v1.37에서 Pod-Level Resource Managers가 **Beta·default disabled**로 전환\n- 변화: Kubelet Topology Manager·CPU Manager·Memory Manager가 `.spec.resources` pod-level declaration으로 hardware placement 결정\n- 배치: primary container에는 exclusive NUMA-aligned resource, non-Guaranteed sidecar에는 pod-isolated shared pool 배치 가능\n- 관측: `v1` PodResources gRPC가 top-level `cpu_ids`·`memory`를 반환해 pod-level exclusive assignment 조회 지원\n- 팀 액션: latency-sensitive workload에서 feature gate·NUMA placement·device plugin/monitoring parser·rollback을 canary로 검증 필요",
-      "detail": "Kubernetes는 v1.37에서 Pod-Level Resource Managers를 Beta로 승격했으며 `PodLevelResourceManagers` feature gate로 opt-in해야 한다고 발표했다. Kubelet의 Topology Manager, CPU Manager, Memory Manager가 `.spec.resources`의 pod-level resource declaration을 직접 사용해 hardware placement를 결정한다. source가 제시한 목표는 primary application에는 exclusive NUMA-aligned CPU·memory를 주고, logging/telemetry 같은 non-Guaranteed sidecar는 dedicated physical core를 쓰지 않는 pod-isolated shared pool에 두는 hybrid allocation이다. `v1` PodResources gRPC `PodResourcesLister`는 top-level `cpu_ids`, `memory` field를 추가해 monitoring tool과 device plugin이 container allocation을 double-counting하지 않고 pod-level assignment를 조회하도록 한다. Beta이자 disabled-by-default이므로 managed distribution 노출 여부, existing resource manager configuration, performance/SLO 개선은 cluster별 canary로 검증해야 함.",
-      "why_it_matters": "NUMA-sensitive inference·database·network workload에서 sidecar까지 integer resource request를 강제하면 reserved core 낭비가 생김. pod-level manager는 primary workload isolation과 sidecar placement를 분리하지만 kubelet resource-management behavior를 바꾸는 opt-in control임.",
-      "engineering_implication": "node pool별 cgroup·NUMA topology·CPU/Memory/Topology Manager policy와 `.spec.resources` manifest를 inventory한 뒤 canary workload의 p95/p99 latency, CPU throttling, memory locality, PodResources gRPC consumer compatibility를 baseline과 비교 필요. device plugin·monitoring parser가 top-level field를 double-count하지 않는지 확인하고 feature gate rollback을 runbook에 포함 필요.",
-      "korea_implication": "국내 managed Kubernetes 사용 조직은 upstream Beta availability가 곧 provider support를 뜻하지 않으므로 cluster version, node OS, kubelet flag 노출, SLA 지원 범위를 별도 확인 필요.",
-      "category": "Infra",
-      "tags": [
-        "Infra",
-        "Kubernetes",
-        "Kubernetes v1.37",
-        "Kubelet",
-        "NUMA",
-        "CPU Manager",
-        "Memory Manager",
-        "Observability"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-09-16 02:30",
-      "source_name": "Kubernetes Blog / SIG Node",
-      "source_url": "https://kubernetes.io/blog/2026/09/15/kubernetes-v1-37-pod-level-resource-managers-beta/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "Pod-level resource managers documentation",
-          "url": "https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Kubernetes v1.37에서 Pod-Level Resource Managers가 Beta로 승격됨. `PodLevelResourceManagers` feature gate로 opt-in하는 default-disabled 기능이며 Kubelet의 Topology·CPU·Memory Manager가 `.spec.resources`를 placement input으로 사용함.",
-          "items": [
-            "상태: v1.36 Alpha 뒤 v1.37 Beta 전환, default enable 상태가 아닌 opt-in gate",
-            "구성: Kubelet Topology Manager·CPU Manager·Memory Manager가 pod-level declaration을 직접 해석"
-          ]
-        },
-        {
-          "heading": "배치 모델의 변화",
-          "body": "기존 NUMA-aligned exclusive resource는 pod의 모든 container에 integer request를 주거나 포기하는 양자택일이었음. 새 model은 primary application과 auxiliary sidecar를 서로 다른 allocation 방식으로 배치할 수 있게 설계됨.",
-          "items": [
-            "primary: latency-critical application에 exclusive NUMA-aligned CPU·memory reservation 가능",
-            "sidecar: logging agent·telemetry exporter 같은 non-Guaranteed container를 pod-isolated shared pool에 배치",
-            "경계: sidecar가 dedicated physical core를 소비하지 않는 대신 workload별 performance proof는 별도 필요"
-          ]
-        },
-        {
-          "heading": "API와 관측 경계",
-          "body": "`v1` PodResources gRPC의 `PodResourcesLister` response에 top-level `cpu_ids`, `memory` field가 추가됨. monitoring tool과 device plugin은 pod-level exclusive assignment를 조회할 수 있으나 parser와 accounting model의 version compatibility를 확인해야 함.",
-          "items": [
-            "관측: container allocation 합산 대신 pod-level exclusive assignment direct query 가능",
-            "검증: device plugin·exporter·capacity dashboard가 top-level resource를 container value와 double-count하지 않는지 확인",
-            "경계: source는 특정 plugin·managed service·SLO의 호환성을 보장하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Beta opt-in은 workload placement와 observability semantics를 함께 바꾸는 node-level change임. latency-sensitive workload부터 isolated node pool canary를 적용하고 placement·latency·resource accounting·rollback evidence를 release gate로 관리해야 함.",
-          "items": [
-            "점검: Kubernetes version·feature gate·kubelet manager policy·NUMA topology·pod-level manifest",
-            "측정: p95/p99 latency·CPU utilization/throttling·memory locality·pending/scheduling event baseline 비교",
-            "팀 액션: feature gate disable·manifest rollback·PodResources consumer compatibility를 포함한 canary exit criteria 정의"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-477",
-      "title_ko": "Cloudflare Workers 세분화 권한: Worker별 4개 역할·API token으로 CI·agent blast radius 축소",
-      "title_original": "Give every teammate and agent the right level of access to your Workers",
-      "summary": "- 공개: Cloudflare가 모든 고객에게 individual Worker scope와 **4개 Developer Platform 역할** 제공\n- 권한: observability만 보는 Metadata Read-Only, code/data read-only, create/delete 없는 Editor, full-control Admin으로 분리\n- 적용: user policy 또는 Worker별 API token을 teammate·CI/CD·agent에 부여 가능\n- 제약: route·Custom Domain 변경은 Worker Editor 외에 zone의 Workers Routes permission도 별도 요구\n- 팀 액션: shared account token을 Worker별 CI token으로 분해하고 deploy·route·delete 권한을 분리 필요",
-      "detail": "Cloudflare는 Worker 하나에만 적용되는 resource-level access control과 Metadata Read-Only·Content Read-Only·Editor·Admin 역할을 발표했다. 권한은 Developer Platform, product, individual resource의 세 범위에서 적용되며 Worker별 API token을 CI나 agent에 줄 수 있다. Metadata Read-Only는 metrics·logs·traces를 볼 수 있지만 source code나 product content에는 접근하지 못하고, Editor는 code/settings 변경은 가능하지만 resource create/delete는 할 수 없다. route 또는 Custom Domain 변경은 Worker 권한만으로 충분하지 않고 zone의 Workers Routes permission이 추가로 필요하다. 기능은 dashboard·API·Terraform에서 구성할 수 있으며 legacy role은 당장 폐기되지 않는다. CI token 또는 agent credential 유출 시 영향 범위를 한 Worker로 제한하려면 token scope와 deployment topology를 함께 점검해야 한다.",
-      "why_it_matters": "CI/CD와 coding agent에 account-wide token을 주는 관행은 deploy credential 유출·오작동 시 다른 Worker와 resource까지 영향을 넓힘. resource-level scope는 observability, code review, deployment, deletion을 분리하는 least-privilege control임.",
-      "engineering_implication": "Worker별 CI/API token inventory를 만들고 Metadata Read-Only·Content Read-Only·Editor·Admin을 workflow별로 재매핑 필요. route/domain 변경 job은 별도 approval·zone permission으로 분리하고 token scope negative test·403 audit·rotation/rollback을 release gate로 운영 필요.",
-      "korea_implication": "국내 서비스 조직도 Cloudflare account 공용 API token을 Worker·environment·pipeline 단위로 분리하고, 외주·운영 agent에 production route나 다른 application 접근권이 섞이지 않도록 권한 review 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Cloudflare Workers",
-        "IAM",
-        "CI/CD",
-        "API Token",
-        "Agent Security",
-        "Least Privilege"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-15 22:00",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/workers-granular-authorization/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M2JP2F2X9DAN7BQHMYF2AJP0.01M2JP2G17WMXA2AVHYHFD8Y99.png",
-      "local_image": "assets/images/news-477.png",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 Worker 하나에만 권한을 적용할 수 있는 resource-level access control을 공개함. dashboard user policy와 API token 모두에 같은 scope를 적용할 수 있는 구조임.",
-          "items": [
-            "공개: Worker별 access control과 **4개 역할**을 모든 customer에 제공",
-            "범위: Developer Platform·product·individual Worker의 세 scope에서 policy 부여 가능"
-          ]
-        },
-        {
-          "heading": "권한 모델과 실제 동작",
-          "body": "Metadata Read-Only는 resource list·setting·metrics·logs·traces를 보고 product content에는 접근하지 못함. Content Read-Only는 Worker code 또는 D1 content를 읽되 변경할 수 없고, Editor는 content/settings를 변경하되 create/delete는 할 수 없음.",
-          "items": [
-            "관측: scoped Metadata Read-Only는 허용된 Worker의 analytics·logs·traces만 조회 가능",
-            "배포: Worker별 Editor token은 해당 Worker deploy는 가능하지만 delete와 다른 application 변경은 불가",
-            "관리: Admin은 create·rename·delete·access grant까지 가능하지만 individual Worker로 범위 제한 가능"
-          ]
-        },
-        {
-          "heading": "CI·agent와 network binding 경계",
-          "body": "CI/CD workflow는 deploy 대상 Worker만 다룰 수 있도록 Editor token을 분리하는 사용 사례가 제시됨. route 또는 Custom Domain은 production traffic을 바꿀 수 있어 Worker Editor와 zone의 Workers Routes permission을 함께 요구함.",
-          "items": [
-            "분리: deployment token과 route/domain 변경 권한을 같은 credential에 합치지 않는 설계 필요",
-            "경계: configured route를 바꾸지 않는 version deploy는 connected zone/resource 권한 없이 계속 가능",
-            "연결: Durable Object access는 implementing Worker 권한을 따르며 Data Studio 수정에는 Editor 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "새 역할은 account-wide API token을 자동으로 안전하게 바꾸지 않음. 현재 token·Terraform provider·CI secret·agent tool permission을 inventory하고 최소 scope로 재발급한 뒤 denied action과 emergency rollback을 시험해야 함.",
-          "items": [
-            "점검: Worker별 human·CI·agent principal, token expiry, role, scope, recent API audit event",
-            "검증: one-Worker Editor token으로 다른 Worker·delete·route change가 거부되는 negative test 수행",
-            "운영: API의 permission-documentation link와 403 event를 privilege escalation request review에 연결"
           ]
         }
       ],
