@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/anthropic-claude-art-enzyme-system-2026-09-24]] — Claude agent의 ART 신규 효소 시스템 후보 탐색·human lab 검증과 provenance·재현성 경계.
 - [[raw/articles/aws-kinesis-service-managed-partition-keys-2026-09-24]] — Kinesis On-Demand stream의 service-managed partition key, unordered ingestion·shard throttling·ordering contract canary 경계.
 - [[raw/articles/thn-terraform-registry-malicous-provider-graphalgo-2026-09-24]] — HashiCorp Registry Terraform provider·Go module malware 보도와 provider checksum·runner egress 공급망 통제 경계.
 - [[raw/articles/thn-gitlab-incoming-email-token-ci-impersonation-2026-09-24]] — GitLab incoming email token의 account 권한 commit·CI 실행 경로와 rotation·protected branch·runner 대응 경계.
