@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-25 | Total pages: 373
+> Last updated: 2026-09-25 | Total pages: 374
 
 ## Entities
 
@@ -489,6 +489,7 @@
 
 - [[raw/articles/aws-sagemaker-hyperpod-inference-gateway-2026-09-25]] — SageMaker HyperPod Inference Gateway의 6개 inference signal·GPU-aware routing·TTFT canary 경계.
 - [[raw/articles/aws-billing-context-api-2026-09-25]] — AWS Billing `ListBillingViewSegments` API의 payer·rate context time segment와 FinOps reconciliation 경계.
+- [[raw/articles/cloudflare-turnstile-spin-agent-mediated-validation-2026-09-25]] — Cloudflare Turnstile Spin의 agent-mediated widget·`Siteverify` 구현과 backend validation·secret·release evidence 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
