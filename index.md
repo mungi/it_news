@@ -484,6 +484,8 @@
 - [[raw/articles/github-security-lab-taskflow-agent-fuzzing-2026-09-24]] — GitHub Security Lab Taskflow Agent: LLM이 build command까지 선택하는 autonomous fuzzing pipeline 공개
 - [[raw/articles/docker-sandbox-kit-spec-cncf-2026-09-24]] — Docker Sandbox Kit Spec: OCI image에 agent·tool·요청 권한을 함께 담는 CNCF 공개 명세 제안
 - [[raw/articles/aws-rds-postgresql-pq-tls-key-exchange-2026-09-24]] — Amazon RDS for PostgreSQL: 18 이상에서 PQ-TLS key exchange와 `ssl_groups` 선택 지원
+- [[raw/articles/aws-eventbridge-enhanced-custom-event-bus-2026-09-25]] — EventBridge enhanced Custom event bus의 cross-account·strict ordering·CloudEvents·retention·data-transfer pricing 운영 경계.
+- [[raw/articles/thn-third-party-com-placeholder-clickfix-2026-09-25]] — `third-party[.]com` placeholder ClickFix 악용과 agent skill·MCP 문서·test fixture의 reserved-domain 교체 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.

@@ -2,13 +2,13 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-25 06:46",
+  "last_updated_kst": "2026-09-25 10:48",
   "audience": "developers and engineers",
   "executive_summary": [
+    "문서 placeholder `third-party[.]com`이 Windows ClickFix·remote PowerShell payload 경로로 악용된 사례가 확인됨. code뿐 아니라 agent skill·MCP 문서·wiki·test fixture의 non-reserved domain을 inventory하고 `example.com` 계열 또는 조직 소유 test zone으로 교체 필요.",
+    "AWS EventBridge enhanced Custom event bus는 cross-account 공유, strict ordering, CloudEvents/JSON schema preservation, 최대 1년 retention과 data-transfer 과금을 추가함. classic/enhanced bus·ordering/idempotency·replay·retention·GB당 비용을 같은 canary contract로 검증 필요.",
     "GitLab incoming email token은 유출 시 권한 범위 내 branch commit과 CI/CD job 실행으로 이어질 수 있는 credential 경로로 보도됨. Maintainer token rotation·email exposure·protected branch·runner/secret boundary를 함께 점검 필요.",
     "Terraform Registry 악성 provider·Go module 사례는 IaC dependency가 CI runner·cloud credential과 직접 만나는 공급망 경로임을 확인함. provider namespace·version·SHA-256 lock file·private mirror·runner egress allowlist를 같은 change control로 운영 필요.",
-    "Linux AF_UNIX `CVE-2026-80521`은 container에서 host root로 escape할 수 있는 경로로 보도됐고 Ubuntu 26.04 target exploit code가 공개됨. Ubuntu LTS package·running kernel·reboot·seccomp/runtime·untrusted workload를 inventory하고 fixed package canary를 우선 처리 필요.",
-    "F5 BIG-IP APM `CVE-2026-94127`은 OAuth authorization server virtual server의 active exploitation 중인 CVSS 9.8 RCE임. OAuth profile·APM access policy·virtual server exposure inventory, hotfix/iRule, same-window forensic을 병렬 처리 필요.",
     "WordPress `CVE-2026-87902`은 patch 공개 당일 exploitation attempt가 관측된 conditional unauthenticated RCE 경로임. fixed core version뿐 아니라 `page-` theme directory·readable PHP path·`pearcmd.php`·temporary PHP file-write log를 patch window로 hunt 필요."
   ],
   "deep_dives": [
@@ -202,6 +202,79 @@
   ],
   "items": [
     {
+      "id": "news-533",
+      "title_ko": "AWS EventBridge enhanced Custom event bus: strict ordering·CloudEvents·최대 1년 retention을 enterprise event broker에 추가",
+      "title_original": "Amazon EventBridge relaunches event buses for enterprise scale",
+      "summary": "핵심: AWS는 기존 Custom event bus를 `Custom event bus - classic`으로 이름 바꾸고, 계정 간 공유·strict ordering·수정 없는 CloudEvents/JSON format·24시간 기본/최대 1년 retention·250개 이상 AWS service delivery를 갖춘 enhanced Custom event bus를 출시함. ordering·deduplication·retention·event-data 전송 과금은 producer/consumer contract와 replay·FinOps 기준을 함께 바꾸므로 classic bus와 동일 동작으로 가정하면 안 됨.",
+      "detail": "AWS 발표 기준 enhanced Custom event bus는 RAM으로 여러 account가 중앙 bus에 publish할 수 있고, 새 publishing API가 CloudEvents 등 JSON event format schema를 수정 없이 수용함. Subscriber resource가 filter와 250개 이상 AWS service delivery를 제공하며, strict ordering·content-based deduplication·24시간 기본 retention과 최대 1년 extension을 지원함. 기존 API는 유지되지만 기존 bus는 classic으로 분리되고, launch region은 Tokyo를 포함한 14개 Region이며 새 과금은 event 수가 아닌 data transferred 기준임.",
+      "why_it_matters": "event bus의 ordering·replay·deduplication은 단순 routing option이 아니라 idempotency key, partitioning, consumer lag, data retention, incident recovery contract를 결정함. cross-account central bus와 data-based billing은 platform team의 IAM boundary와 cost allocation에도 직접 연결됨.",
+      "engineering_implication": "시사점: classic/enhanced bus를 asset inventory에서 분리하고, event ordering key·deduplication behavior·CloudEvents schema preservation·replay horizon·Subscriber delivery failure·GB당 비용을 workload별 canary로 검증 필요.",
+      "korea_implication": "한국 리전은 launch list에 포함되지 않아 Tokyo 등 제공 Region 사용 시 data residency·cross-Region latency·egress·운영 ownership을 별도 검토 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "EventBridge",
+        "Event-driven",
+        "CloudEvents",
+        "Serverless",
+        "Multi-account",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-09-25 06:00",
+      "source_name": "AWS",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/eventbridge-relaunches-custom-event-buses/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon EventBridge user guide",
+          "url": "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html"
+        },
+        {
+          "title": "Amazon EventBridge product page",
+          "url": "https://aws.amazon.com/eventbridge/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS는 enterprise scale용 enhanced Custom event bus를 출시하고 기존 Custom event bus 경험을 `Custom event bus - classic`으로 구분함. enhanced bus는 event-driven application의 producer·consumer 분리를 대상으로 하며, AWS Resource Access Manager를 통해 하나 이상의 account가 central event bus를 공유하는 구성을 지원함.",
+          "items": [
+            "변화: 기존 Custom event bus API는 유지하면서 enhanced와 classic을 별도 운영 대상으로 구분",
+            "범위: account 간 publisher가 중앙 bus에 직접 event를 전송하는 multi-account event-routing 경로 추가"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "새 publishing API는 CloudEvents를 포함한 널리 쓰이는 JSON 기반 event format을 schema 수정 없이 publish할 수 있다고 안내됨. Custom event bus에는 24시간 기본 retention과 최대 1년 extension, filter 후 250개 이상 AWS service로 전달하는 Subscriber resource, received order 그대로 처리하는 strict ordering, content-based automatic deduplication이 포함됨.",
+          "items": [
+            "보존: application error 복구 또는 신규 component의 historical event hydration에 쓸 수 있는 retention window",
+            "전달: Subscriber filter와 AWS service delivery를 결합한 consumer routing 경로"
+          ]
+        },
+        {
+          "heading": "호환성·운영 경계",
+          "body": "ordering과 deduplication의 사용 가능 여부가 모든 기존 producer·consumer의 exactly-once 처리를 보장하는 것은 아님. producer retry, event identifier, consumer idempotency store, downstream side effect, dead-letter/retry behavior는 source가 자동 처리한다고 설명하지 않으므로 application contract로 별도 검증해야 함. 기존 classic bus와 enhanced bus의 feature·quota·migration semantics도 동일하다고 가정하지 않아야 함.",
+          "items": [
+            "리스크: strict ordering 기능을 consumer side effect의 exactly-once 보장으로 해석하는 설계",
+            "검증: duplicate·out-of-order·retry·Subscriber delivery failure·replay 시나리오별 idempotency와 recovery test 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "enhanced bus는 event schema·ordering·retention·account boundary·비용 모델을 한꺼번에 바꾸는 platform capability임. launch region은 Tokyo를 포함한 14개 Region이며, AWS는 event count가 아니라 transferred data 기준의 새 가격 모델을 안내함. regional availability, cross-Region path, payload size와 retention 기간을 production rollout 전에 SLO·FinOps 기준으로 측정해야 함.",
+          "items": [
+            "팀 액션: classic/enhanced inventory, schema registry·ordering key·IAM resource policy·retention owner·replay runbook 작성",
+            "측정: publish/delivery p95, duplicate·ordering violation, consumer lag, retained GB, cross-account failure, GB당 event-platform 비용"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-530",
       "title_ko": "GitHub Security Lab Taskflow Agent: LLM이 build command까지 선택하는 autonomous fuzzing pipeline 공개",
       "title_original": "AI-powered fuzzing with the GitHub Security Lab Taskflow Agent",
@@ -268,7 +341,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-531",
@@ -337,7 +410,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-532",
@@ -406,7 +479,80 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
+    },
+    {
+      "id": "news-534",
+      "title_ko": "문서 placeholder `third-party[.]com`의 ClickFix 악용: 1,700개 이상 공개 저장소·agent skill endpoint를 reserved domain으로 교체 필요",
+      "title_original": "Placeholder third-party[.]com Referenced Across 1,700+ Repositories Now Serves Malicious Content",
+      "summary": "핵심: The Hacker News는 IANA reserved domain이 아닌 documentation placeholder `third-party[.]com`이 Windows browser에 clipboard-poisoning ClickFix lure와 remote PowerShell payload 실행 경로를 제공한다고 보도함. GitHub 검색상 1,700개 이상 공개 repository와 AI agent skill·MCP server 문서가 해당 endpoint를 예시로 포함하므로 docs·test·skill을 executable/trusted input으로 취급하고 `example.com` 계열 reserved domain으로 교체 필요.",
+      "detail": "보도는 Manifold Security 관측을 인용해 해당 domain이 적어도 2026년 6월부터 lure를 제공했고 Windows 사용자에게 fake Cloudflare check와 Run dialog paste 실행을 유도했다고 설명함. macOS에는 다른 decoy를 보였고, VirusTotal·Google Safe Browsing이 unsafe/malicious 상태로 표시했다고 전함. repository 수와 agent skill 내 사용은 public GitHub search 기반이며, 각 repository의 실제 방문·실행·침해를 뜻하지 않음.",
+      "why_it_matters": "agent skill, MCP guide, runbook, test fixture의 URL은 사람이 클릭하지 않아도 browser automation·crawler·agent tool·copy-paste workflow로 해석될 수 있음. control하지 않는 plausible domain을 placeholder로 쓰면 documentation dependency가 runtime supply-chain entry point가 될 수 있음.",
+      "engineering_implication": "시사점: repository·wiki·skill·MCP configuration·test fixture에서 non-reserved placeholder URL을 검색하고 `example.com`/`.org`/`.net` 또는 조직 소유 test domain으로 교체 필요. link resolution, browser open, shell invocation은 allowlist·approval·OS별 rendering test로 분리 필요.",
+      "korea_implication": "국내 개발 조직의 사내 위키·agent skill catalog·교육 예제도 public code와 별개로 같은 string reuse가 가능하므로 source repository뿐 아니라 docs publishing·RAG corpus·template repository를 함께 inventory할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Supply Chain",
+        "Documentation",
+        "AI Agent",
+        "MCP",
+        "ClickFix",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-09-25 00:27",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/placeholder-third-partycom-referenced.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhy4aXDWSC5cKzOZO8lRbk8o5I1fHPlCGbfxxYL6tyJxauEL-8EVj7-AypDhYt_Wg6bDLqlj0UK4LrGJdeI4ChsksaB6tTZxo8ikCLdwC0wjRfJPE_Z1qM_CVUg7s1ORdmWW2XTDtlPPDcI8JvelrbmJhcjVthnqYWQrZ7ySnIMMPRZfa_VzgaBCWyWc_JJ/s1600/third.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Manifold Security analysis",
+          "url": "https://www.manifold.security/blog/third-party-com-placeholder-clickfix"
+        },
+        {
+          "title": "IANA reserved domains",
+          "url": "https://www.iana.org/domains/reserved"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "The Hacker News는 documentation placeholder로 널리 쓰인 `third-party[.]com`이 Windows browser에 ClickFix lure를 제공한다고 보도함. Manifold Security 관측을 인용한 보도에 따르면 해당 domain은 IANA reserved domain이 아니어서 제3자가 등록할 수 있었고, 현재 live attacker infrastructure를 가리키는 문서·test·skill reference가 된 상태임.",
+          "items": [
+            "관측: Windows browser에서 fake Cloudflare check와 clipboard poisoning을 결합한 social-engineering 흐름",
+            "경계: placeholder 문자열이 있는 모든 repository가 악성 payload 실행 또는 침해 상태라는 뜻은 아님"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "보도는 해당 domain이 적어도 2026년 6월부터 lure를 제공했다고 설명함. Windows 방문자에게 clipboard에 command를 넣고 Windows Run dialog에서 paste·실행하도록 유도하며, pasted command는 remote PowerShell payload를 추출·실행하도록 설계됐다고 전함. macOS 방문자에게는 macOS unsupported error라는 다른 decoy를 표시했다고 설명됨.",
+          "items": [
+            "노출: GitHub search 기준 1,700개 이상 public repository가 domain을 reference하며 AI agent skill·MCP-server docs도 포함",
+            "상태: 보도 시점 VirusTotal·Google Safe Browsing이 domain을 malicious 또는 unsafe로 표시한 범위"
+          ]
+        },
+        {
+          "heading": "공급망·agent 경계",
+          "body": "문서의 URL은 단순 text가 아니라 browser automation, agent tool, RAG retrieval, copy-paste runbook에서 resolution 또는 navigation input이 될 수 있음. OS와 user-agent별로 다른 content를 주는 domain은 static text review만으로 위험을 판단하기 어렵게 함. placeholder domain을 external dependency처럼 version·ownership·allowlist 관점에서 다뤄야 함.",
+          "items": [
+            "리스크: skill·MCP guide의 example endpoint를 agent가 browse하거나 operator가 verification 절차로 실행하는 경로",
+            "피할 것: plausible-looking domain이 public documentation에 반복됐다는 사실을 domain ownership 또는 안전성 증거로 사용하는 판단"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "조직은 source code뿐 아니라 docs site, wiki export, agent skill catalog, MCP configuration, test fixture, prompt template에서 control하지 않는 placeholder domain을 inventory해야 함. IANA reserved `example.com`, `example.org`, `example.net` 또는 조직이 명확히 통제하는 test zone으로 바꾸고, link open·shell execute·browser automation을 permission boundary로 분리해야 함.",
+          "items": [
+            "팀 액션: `third-party.com`과 plausible placeholder pattern search, owner·consumer·public exposure 분류, reserved-domain replacement PR 생성",
+            "검증: OS/user-agent별 URL resolution, browser/agent navigation allowlist, clipboard·shell invocation approval, RAG corpus republish 후 stale reference scan"
+          ]
+        }
+      ],
+      "rank": 5
     },
     {
       "id": "news-529",
@@ -470,7 +616,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-517",
@@ -543,7 +689,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-524",
@@ -607,7 +753,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-525",
@@ -671,7 +817,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-528",
@@ -744,11 +890,11 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-527",
-      "rank": 9,
+      "rank": 11,
       "title_ko": "Amazon Kinesis Data Streams: On-Demand stream의 service-managed partition key로 producer 분산 로직 제거",
       "title_original": "Amazon Kinesis Data Streams announces Service-Managed Partition Keys for simplified data ingestion",
       "summary": "핵심: Kinesis Data Streams On-Demand Standard·Advantage stream이 partition key 없이 record를 받아 warm capacity 기준으로 shard에 분산하는 service-managed partition key를 추가함. 순서 보장이 필요 없는 log·metric·IoT ingestion은 random UUID 분산과 hot partition 대응 코드를 줄일 수 있으나 ordering·idempotency·retry·consumer lag는 workload별 canary 필요.",
@@ -873,7 +1019,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-522",
@@ -937,7 +1083,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-523",
@@ -1010,7 +1156,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-520",
@@ -1098,7 +1244,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-521",
@@ -1171,7 +1317,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-515",
@@ -1243,7 +1389,7 @@
           ]
         }
       ],
-      "rank": 15,
+      "rank": 17,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -1318,7 +1464,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-518",
@@ -1393,7 +1539,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-513",
@@ -1456,7 +1602,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-514",
@@ -1524,7 +1670,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-512",
@@ -1603,11 +1749,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-510",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -1676,7 +1822,7 @@
     },
     {
       "id": "news-509",
-      "rank": 22,
+      "rank": 24,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -1748,7 +1894,7 @@
     },
     {
       "id": "news-511",
-      "rank": 23,
+      "rank": 25,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -1896,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-506",
@@ -1964,7 +2110,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-505",
@@ -2037,7 +2183,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-508",
@@ -2114,11 +2260,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-499",
-      "rank": 28,
+      "rank": 30,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -2191,7 +2337,7 @@
     },
     {
       "id": "news-500",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -2275,7 +2421,7 @@
     },
     {
       "id": "news-501",
-      "rank": 30,
+      "rank": 32,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -2352,7 +2498,7 @@
     },
     {
       "id": "news-502",
-      "rank": 31,
+      "rank": 33,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -2429,7 +2575,7 @@
     },
     {
       "id": "news-498",
-      "rank": 32,
+      "rank": 34,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -2510,7 +2656,7 @@
     },
     {
       "id": "news-496",
-      "rank": 33,
+      "rank": 35,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -2583,7 +2729,7 @@
     },
     {
       "id": "news-503",
-      "rank": 34,
+      "rank": 36,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -2656,7 +2802,7 @@
     },
     {
       "id": "news-497",
-      "rank": 35,
+      "rank": 37,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -2724,7 +2870,7 @@
     },
     {
       "id": "news-495",
-      "rank": 36,
+      "rank": 38,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -2793,7 +2939,7 @@
     },
     {
       "id": "news-494",
-      "rank": 37,
+      "rank": 39,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -2877,7 +3023,7 @@
     },
     {
       "id": "news-492",
-      "rank": 38,
+      "rank": 40,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -2962,7 +3108,7 @@
     },
     {
       "id": "news-493",
-      "rank": 39,
+      "rank": 41,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -3034,7 +3180,7 @@
     },
     {
       "id": "news-504",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "Jade Sleet의 DevOps 채용 미끼: 조작된 `.terraform.lock.hcl`이 Apple Silicon 개발자 endpoint를 FLATROOF·ROOFDECK으로 연결",
       "title_original": "Don’t Call Us, We’ll Call Your APIs | TraderTraitor Backdoors Resurface on Victim With No Crypto Ties",
       "summary": "- 확인: SentinelOne은 북한 연계 TraderTraitor/Jade Sleet가 인도 IT 서비스사의 Apple Silicon MacBook을 침해한 사례를 공개. 해당 endpoint는 DevOps 엔지니어가 Terraform·Ansible로 AWS·OVH·OpenStack을 운영하고 source-control 접근을 보유한 환경\n- 경로: 가짜 채용 coding project의 조작된 `.terraform.lock.hcl`이 attacker-controlled custom provider를 가리켜 `terraform init` 시 악성 module 다운로드·실행으로 이어지는 범위\n- 영향: `FLATROOF`·`ROOFDECK`이 3월 18일부터 disk에 존재하고 3월 29일부터 beaconing·host activity가 시작된 telemetry 범위\n- 조치: 채용 과제 repository도 untrusted code로 취급하고 lockfile provider 주소·checksum·registry egress·macOS developer endpoint의 cloud/source-control credential을 같은 investigation 범위로 묶어야 함",
@@ -3184,7 +3330,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-491",
@@ -3270,7 +3416,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-487",
@@ -3342,7 +3488,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-489",
@@ -3416,7 +3562,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-485",
@@ -3485,7 +3631,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-486",
@@ -3561,7 +3707,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-483",
@@ -3641,7 +3787,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-484",
@@ -3709,162 +3855,6 @@
           "items": [
             "팀 액션: internal mirror·lockfile integrity·publisher approval을 CI와 local development 모두에 적용",
             "팀 액션: short-lived OAuth·credential broker·extension permission review와 repository publish audit을 incident runbook에 포함"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-488",
-      "title_ko": "브라우저 확장 하나로 Chromium AI assistant 제어 가능성: Chrome·Comet·Edge·Opera Neon·Claude in Chrome 연구 공개",
-      "title_original": "One Extension Could Hijack AI Assistants Across Chrome, Comet, Edge, Opera Neon and Claude",
-      "summary": "- 연구: Forever Security가 일반 browser extension 하나로 Chromium 기반 AI 기능 5종을 제어하는 demonstration 공개\n- 권한: page modification과 `declarativeNetRequest` 두 일반 extension permission으로 trusted AI page에 code injection하는 경로 제시\n- 영향: Comet·Edge·Opera Neon·Claude in Chrome agent action 제어, Chrome·Comet local file read, Chrome camera·microphone 접근 demonstration\n- 수정: Chrome `CVE-2026-0628`은 143.0.7499.192에서, Edge `CVE-2026-55945`는 150.0.4078.48에서 수정된 범위\n- 팀 액션: managed browser extension allowlist·permission review·browser fleet version·AI action audit을 endpoint control plane으로 함께 운영 필요",
-      "detail": "The Hacker News는 Forever Security가 이미 설치된 일반 browser extension이 Chrome Gemini Live, Perplexity Comet, Microsoft Edge, Opera Neon, Claude in Chrome의 built-in AI 기능을 제어할 수 있음을 demonstration했다고 보도했다. 연구는 page content 변경 권한과 `declarativeNetRequest`로 trusted AI web page에 code를 주입해 browser 내부 AI body에 vendor처럼 command를 전달하는 흐름을 설명한다. Chrome과 Comet에서는 local file read, Chrome에서는 camera·microphone activation, Comet·Edge·Opera Neon·Claude in Chrome에서는 agent action control demonstration이 포함됐다. source는 in-the-wild attack이 아니라 extension이 먼저 victim browser에 실행 중이어야 하는 researcher demonstration이라고 명시한다. Chrome GlicJack `CVE-2026-0628`과 Edge `CVE-2026-55945`의 fixed version 외 Comet·Opera Neon·Claude finding은 CVE가 없고 researcher account 범위임.",
-      "why_it_matters": "browser AI assistant는 trusted web origin, extension permission, local device/file access, agent action을 한 session에 결합함. extension allowlist만으로는 content/network modification permission이 AI control plane에 미치는 영향이 드러나지 않으므로 managed browser와 AI assistant governance를 함께 점검해야 함.",
-      "engineering_implication": "enterprise browser extension inventory에서 host permission, content-script injection, `declarativeNetRequest`, AI-enabled browser/product scope를 교차 조회하고 fixed version compliance를 확인 필요. AI assistant가 file·camera·microphone·enterprise web action에 접근하는 경우 extension install event, policy exception, agent action log, sensitive-origin visit을 time-correlated audit 대상으로 운영 필요.",
-      "korea_implication": "국내 기업의 browser-based AI 도입은 SaaS 승인만으로 끝나지 않음. endpoint management의 extension publishing source·permission change·browser update SLA와 AI assistant data/action scope를 동일 보안 검토에 포함 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI",
-        "Browser Security",
-        "Extensions",
-        "Chromium",
-        "Claude",
-        "CVE-2026-0628"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-09-16 23:36",
-      "source_name": "The Hacker News / Forever Security",
-      "source_url": "https://thehackernews.com/2026/09/one-extension-could-hijack-ai.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjnDFTLauyvgkyhmqrKcQ3QI3yCM1vbu_L8iwQK997zJz25tL7Gkm50y5S_wiSVF7hSJ7sLUMJEwXzxaubfjQc9JTdwttimIg5POxADfGNPLZEWbplFqzlKn2SZPvPuAyN0BhFtsc8PCzV2bZdBtx3z6qnRdRfw9tj-zk3aWL3t4TufGwksVdAjBuhVdO0/s1700-nu-rw-lo-l85-e365/jack.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Forever Security: GlicJack",
-          "url": "https://www.forever-security.com/blog/glicjack"
-        },
-        {
-          "title": "CVE Record: CVE-2026-0628",
-          "url": "https://www.cve.org/CVERecord?id=CVE-2026-0628"
-        },
-        {
-          "title": "CVE Record: CVE-2026-55945",
-          "url": "https://www.cve.org/CVERecord?id=CVE-2026-55945"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Forever Security가 one ordinary browser extension으로 Chromium 기반 AI assistant 다섯 제품을 제어할 수 있는 demonstration을 공개했고 THN이 2026-09-16 보도로 정리함. source는 실제 악용 관측이 아닌 researcher demonstration이며 malicious extension이 victim browser에 이미 실행 중이어야 한다고 한정함.",
-          "items": [
-            "대상: Chrome Gemini Live·Perplexity Comet·Microsoft Edge·Opera Neon·Claude in Chrome",
-            "전제: 공격자 extension의 사전 설치·실행이 필요한 browser-local attack path"
-          ]
-        },
-        {
-          "heading": "공격 경로와 권한",
-          "body": "연구가 제시한 extension은 web page 변경 권한과 `declarativeNetRequest`를 이용해 trusted AI page에 code를 넣고, browser 내부 AI body가 신뢰 origin에서 온 command로 인식하도록 유도하는 흐름임.",
-          "items": [
-            "권한: content/page modification과 network request 변경 권한 두 가지가 source의 전제",
-            "경로: extension이 browser 자체를 직접 제어하는 대신 AI body가 듣는 trusted page를 장악하는 구조",
-            "경계: permission 명칭만으로 AI agent·device capability에 대한 effective reach를 판단하기 어려운 조건"
-          ]
-        },
-        {
-          "heading": "관측된 capability와 수정 상태",
-          "body": "source table은 product별 capability 차이를 구분함. Chrome·Comet에서는 local file read가, Chrome에서는 camera·microphone access가, Comet·Edge·Opera Neon·Claude in Chrome에서는 AI agent action control이 demonstration 범위임.",
-          "items": [
-            "수정: Chrome GlicJack `CVE-2026-0628`은 Chrome 143.0.7499.192에서 fixed로 기록",
-            "수정: Edge `CVE-2026-55945`는 Edge 150.0.4078.48에서 fixed로 기록",
-            "경계: Comet·Opera Neon·Claude finding은 CVE 없이 Forever Security own account에 근거한 범위"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "browser AI assistant의 policy는 model account access뿐 아니라 extension supply chain·browser patch·local capability·agent action audit을 포함해야 함. local compromise나 data theft를 source보다 넓게 단정하지 말고 installation evidence와 action trace로 scope를 확정해야 함.",
-          "items": [
-            "점검: managed extension allowlist, publisher provenance, host permission, `declarativeNetRequest`, content-script policy",
-            "점검: Chrome·Edge fixed version, auto-update compliance, AI file/device/action permission, enterprise origin access",
-            "팀 액션: extension install/change event와 AI agent action·file/device permission audit을 endpoint incident timeline으로 결합"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-479",
-      "title_ko": "WSO2 API Manager `CVE-2026-5430` 활성 악용: forged JWT admin token으로 API backend·secret 접근 경로 노출",
-      "title_original": "Active Exploitation Attempts Target WSO2 API Manager JWT Bypass With Forged Admin Tokens",
-      "summary": "- 경보: watchTowr honeypot이 **2026-09-13** administrator privilege가 baked-in된 forged JWT 수신을 관측\n- 결함: unsupported signing algorithm JWT를 인증이 승인하는 cryptographic signature verification 결함, `CVE-2026-5430`·CVSS 9.8로 기록\n- 범위: API Manager 4.1.0~4.6.0, API Control Plane·Traffic Manager·Universal Gateway의 listed version 영향\n- 영향: administrative account takeover와 registered application의 API backend·credential·consumer key·secret 접근 가능성\n- 팀 액션: fixed update level 적용, external gateway exposure와 JWT auth log·admin account·backend credential을 같은 incident scope로 조사 필요",
-      "detail": "watchTowr가 WSO2 API Manager `CVE-2026-5430`의 active exploitation attempt를 관측했다고 The Hacker News가 보도했다. source에 따르면 unsupported algorithm으로 signed JWT가 승인되는 signature-verification 결함이며, honeypot에는 administrator privilege가 baked-in된 token이 2026년 9월 13일 도착했다. listed affected products는 API Manager 4.1.0~4.6.0, API Control Plane·Traffic Manager·Universal Gateway의 4.5.0·4.6.0이다. community user용 fix pull request와 support subscription update level이 공개됐다. 실제 credential theft·internal-service access·조직별 compromise는 local evidence 없이 확정할 수 없으므로, update와 함께 JWT authentication log, admin principal, API backend routing, registered application secret의 forensic을 병행해야 함.",
-      "why_it_matters": "API Manager는 client JWT 검증과 internal backend traffic을 중개하는 control plane임. forged administrator token은 management account뿐 아니라 API consumer key·backend credential·internal service reachability로 영향 범위가 확장될 수 있음.",
-      "engineering_implication": "WSO2 product/version과 subscription update level을 inventory하고 fixed build 적용 전후 JWT algorithm reject·admin API·backend access를 negative test로 검증 필요. 2026-09-13 이후 JWT validation failure/success, privileged API call, application credential read·rotate, unexpected backend route를 time-correlated hunt로 묶어야 함.",
-      "korea_implication": "국내 API gateway 운영 조직은 public API endpoint patch를 application team에만 위임하지 말고 IAM·platform·backend owner가 JWT signing algorithm allowlist, admin audit, consumer secret rotation을 하나의 closure record로 승인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "WSO2",
-        "API Management",
-        "JWT",
-        "CVE-2026-5430",
-        "Active Exploitation",
-        "IAM"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 98,
-      "published_kst": "2026-09-16 14:18",
-      "source_name": "The Hacker News / watchTowr / WSO2",
-      "source_url": "https://thehackernews.com/2026/09/active-exploitation-attempts-target.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjenXPNzZ8-fnZOSWlAtRwfZVCV0iy-vnK86gK4vmTGsWSjSS7x9a3k80NLsiEZUym2AjBaYj7pLtxyQju7Hiyl6ttQPyXEPMy7Gwn_bQTTTaUOB-8HbhJfYxl54Z3WE5yqKEoW1vvkCBukKwea-6DlpBiO6i08Zo0GhBoqgRsGGXadsOYy8COPUPQ7rn2w/s1600/jwt-api.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "WSO2 community fix pull request 13752",
-          "url": "https://github.com/wso2/carbon-apimgt/pull/13752"
-        },
-        {
-          "title": "CVE Record: CVE-2026-5430",
-          "url": "https://www.cve.org/CVERecord?id=CVE-2026-5430"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "watchTowr honeypot이 WSO2 API Manager JWT bypass의 active exploitation attempt를 포착했고 The Hacker News가 2026-09-16 보도로 공개함. source는 2026-09-13 administrator privilege가 baked-in된 forged token 수신을 명시함.",
-          "items": [
-            "결함: `CVE-2026-5430`은 unsupported algorithm JWT를 인증이 승인하는 cryptographic signature verification 결함",
-            "위험도: THN은 CVSS 9.8/10.0을 기록하며 WSO2 advisory의 account takeover 가능성 인용"
-          ]
-        },
-        {
-          "heading": "영향 제품과 수정 경로",
-          "body": "THN이 인용한 WSO2 범위는 API Manager 4.1.0~4.6.0, API Control Plane·Traffic Manager·Universal Gateway의 listed version임. community fix pull request와 support subscription별 update level이 함께 제시됨.",
-          "items": [
-            "대상: API Manager 4.1.0·4.2.0·4.3.0·4.4.0·4.5.0·4.6.0의 listed release",
-            "대상: API Control Plane·Traffic Manager·Universal Gateway 4.5.0·4.6.0의 listed release",
-            "조치: local product/version과 WSO2 fixed update level을 대조하고 community build provenance를 검증"
-          ]
-        },
-        {
-          "heading": "공격 경로와 증거 경계",
-          "body": "watchTowr 설명은 forged token이 administrator access를 얻어 registered application의 API backend endpoint·credential·consumer key·secret에 닿을 수 있는 경로를 제시함. honeypot observation은 exploitation attempt 근거이며 개별 조직의 successful takeover·data theft 증명은 아님.",
-          "items": [
-            "조사: JWT algorithm·issuer·subject·key ID·signature validation result와 privileged admin API call correlation",
-            "조사: registered application credential read·consumer key issuance·backend route 변경·unusual internal API request 확인",
-            "경계: local audit evidence 없이 credential theft·lateral movement·backend compromise를 단정하지 않는 원칙"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "API gateway는 authentication과 internal service routing이 맞물린 control plane임. update만으로 prior forged-token use 또는 credential exposure 부재를 증명할 수 없으므로 auth·admin·backend·secret owner가 동일 incident scope를 가져야 함.",
-          "items": [
-            "점검: WSO2 version·deployment exposure·JWT algorithm allowlist·admin account·audit retention",
-            "검증: unsupported algorithm token reject와 normal issuer/key rotation flow를 staging에서 negative test",
-            "팀 액션: fixed update, privileged log hunt, application secret/consumer key review·rotation, backend access review를 one closure record로 승인"
           ]
         }
       ],
