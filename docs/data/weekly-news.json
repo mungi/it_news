@@ -2,205 +2,252 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-25 23:05",
+  "last_updated_kst": "2026-09-26 03:07",
   "audience": "developers and engineers",
   "executive_summary": [
+    "재활성화된 `actions-cool` GitHub Action은 workflow YAML 변경 없이 mutable tag가 기존 악성 commit을 다시 resolve할 수 있음을 확인함. org-wide full-SHA pin·scheduled run history·OIDC/secret·runner egress를 같은 incident closure로 확인 필요.",
+    "Canadian Centre는 Roundcube `CVE-2026-48842`의 active exploitation을 알림. `virtuser_query` plugin의 인증 전 SQL injection은 fixed build 적용과 plugin/exposure inventory·database/mailbox telemetry hunt를 병렬 운영 필요.",
     "AWS SageMaker HyperPod Inference Gateway는 request model name과 KV cache·queue·LoRA/prefix cache 등 6개 실시간 signal로 GPU pod를 선택하는 EKS managed add-on을 추가함. vendor TTFT 수치를 production SLO로 전환하기 전 cache warmness·traffic burst·GPU topology·retry 조건별 canary 필요.",
     "AWS `ListBillingViewSegments` API는 payer·account hierarchy·billable/pro forma rate context를 effective date segment로 반환함. Organizations 이동과 Billing Conductor 변경 뒤 CUR·allocation rule·change event를 시간 기준으로 조인해 FinOps attribution evidence를 보존 필요.",
-    "GitLab incoming email token은 유출 시 권한 범위 내 branch commit과 CI/CD job 실행으로 이어질 수 있는 credential 경로로 보도됨. Maintainer token rotation·email exposure·protected branch·runner/secret boundary를 함께 점검 필요.",
-    "Terraform Registry 악성 provider·Go module 사례는 IaC dependency가 CI runner·cloud credential과 직접 만나는 공급망 경로임을 확인함. provider namespace·version·SHA-256 lock file·private mirror·runner egress allowlist를 같은 change control로 운영 필요.",
-    "WordPress `CVE-2026-87902`은 patch 공개 당일 exploitation attempt가 관측된 conditional unauthenticated RCE 경로임. fixed core version뿐 아니라 `page-` theme directory·readable PHP path·`pearcmd.php`·temporary PHP file-write log를 patch window로 hunt 필요."
+    "GitLab incoming email token은 유출 시 권한 범위 내 branch commit과 CI/CD job 실행으로 이어질 수 있는 credential 경로로 보도됨. Maintainer token rotation·email exposure·protected branch·runner/secret boundary를 함께 점검 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "WordPress `CVE-2026-87902`: 공개 직후 exploitation telemetry를 patch·theme·filesystem closure로 묶는 방법",
-      "summary": "한 줄 결론: `CVE-2026-87902`은 인증 전 page-template resolution이 active theme 밖의 readable local PHP를 include할 수 있는 조건부 RCE이며, 공개 당일 exploitation attempt가 관측됨. fixed core 적용만으로 닫지 말고 `page-` theme precondition, web request, temporary PHP write, 관리자·plugin 변경을 같은 patch window에서 확인 필요.",
-      "details": "WordPress GitHub Security Advisory는 4.7.0부터 7.1.1까지의 영향 branch와 backport fixed release를 명시함. The Hacker News가 인용한 Previdian telemetry는 9월 22일 11:49 UTC부터의 attempt와 `pearcmd.php`·temporary directory PHP write sequence를 보도했으나, 실제 compromise·피해 조직·KEV 등록은 확인되지 않음.",
-      "why_it_matters": "public CMS의 unauthenticated path가 patch 공개 직후 scan과 file-write 시도로 전환된 상황에서는 version compliance와 host integrity를 분리할 수 없음. hosting, theme, CMS, SOC owner가 같은 closure evidence를 공유해야 함.",
+      "title": "재활성화된 GitHub Action: mutable tag를 CI dependency integrity·permission·execution evidence로 닫는 방법",
+      "summary": "한 줄 결론: disabled됐던 `actions-cool` Action이 다시 reachable해졌을 때 unchanged workflow의 mutable tag가 May 악성 commit을 다시 실행할 수 있었음. CI 공급망 통제는 tag 이름이 아니라 resolved SHA·workflow permission·runner egress·run trace·secret rotation이 결합된 release evidence여야 함.",
+      "details": "Socket은 2026년 9월 16일의 re-enable 뒤 May 18 악성 content를 가리킨 release tag 때문에 downstream workflow가 다음 실행에서 payload를 다운로드할 수 있었다고 기록함. repository page는 현재 disabled 상태이나, re-enable 이유·org별 affected run·secret access는 공개 source만으로 확정할 수 없음.",
+      "why_it_matters": "CI dependency의 upstream availability와 ref resolution 변화는 application source diff가 없는 code execution event임.",
       "sources": [
-        "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp",
-        "https://thehackernews.com/2026/09/attackers-exploit-wordpress-cve-2026.html"
+        "https://socket.dev/blog/mini-shai-hulud-actions",
+        "https://github.com/actions-cool/issues-helper"
       ],
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizoRcyQE1N3fGUKa2FY_q_T7EG_CyjTpMGGk1oFUF-XpBZa0zCA6V2yEuv3_Z1OrEjMmhbHdaVmo6NMrwb98U9VFGXDpRcItboVuZH7qc9QgPd5ZLDudfJPWoaSDbtkoXJeLTZw-6JDbq5F6YEp4AkeoJd10Nb_H9tuU0fYdgqkLrP6BTpAPOYwO6WdmkN/s1700-nu-rw-lo-l85-e365/wordpress-exploits.jpg",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjJFMIQ6v0uJDRoxyIhqsoqsYoXN00dcDH4IvkdQAkRBRj6ha5LIu2-2yzzvQk1OZTc-7tK1fjeqyIh8xvRNvz_CotOtGNsYnejlbHED7cI-bmZFP80JIdxk_0D9I6Zo10-6b4x4euCTaRtz8c6ncYKykDsW7Bt4oFEVYWTe3AHJdiUxM32R6hGP9C0Y0Xf/s1600/github-shai.jpg",
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-09-25 02:39",
+      "refreshed_kst": "2026-09-26 03:07",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "인증 없이 reachable한 template-resolution path가 selected readable local PHP를 active theme directory 밖에서 include할 수 있으며, server environment와 active theme 조건이 충족될 때 RCE로 이어질 수 있음. 적용 증거는 core fixed version 하나가 아니라 theme precondition·request telemetry·filesystem integrity·administrator action을 결합한 closure record여야 함.",
+          "body": "`actions-cool/issues-helper`와 `actions-cool/maintain-one-comment`는 May compromise 뒤 disabled 상태였다가 9월 16일 다시 reachable해졌고, mutable release tag가 악성 May 18 commit을 그대로 가리켜 downstream workflow가 다음 실행에서 payload를 다시 다운로드할 수 있었음. third-party action의 availability 변화도 source-code diff 없는 deployment event로 감시해야 함.",
           "items": [
-            "우선순위: CVSS v4 `9.2`, network attack vector, privileges·user interaction 없음",
-            "완료 기준: branch별 fixed version과 precondition inventory, patch-window hunt 결과 동시 확인"
+            "우선순위: mutable tag reference와 scheduled/PR-triggered CI 실행을 결합한 credential exposure 경로",
+            "완료 기준: affected reference 제거·clean commit SHA pin·run history review·secret rotation evidence 동시 확인"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "WordPress GHSA는 `4.7.0`부터 `7.1.1`까지 affected branch와 `7.1.2`, `7.0.6` 및 4.7까지의 backport patched release를 열거함. 결함은 chosen readable local `.php` file inclusion이며, active child 또는 parent theme의 `page-` top-level directory와 web-server read access라는 precondition이 필요함.",
+          "body": "Socket은 두 action이 5월 Mini Shai-Hulud campaign에서 compromise돼 May 19 GitHub가 disable했다고 기록함. September 16 re-enable 뒤 release tag가 May 18 악성 content를 계속 가리켰고, `issues-helper` dependency graph에는 약 15,000 dependent repository가 나타났다고 설명함. 현재 GitHub page는 repository disabled 상태를 표시함.",
           "items": [
-            "범위: 모든 WordPress site에 자동으로 RCE가 성립하는 결함이 아닌 조건부 chain",
-            "경계: GHSA는 실제 침해 규모·active exploitation·CISA KEV 등재를 확인하지 않음"
+            "재활성화: Socket은 re-enable 이유를 확인하지 못했으며 maintainer request 가능성도 미확정",
+            "안전 범위: May 18 이전 known-clean full commit SHA를 pin한 workflow는 tag reactivation 영향에서 제외된다고 설명"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "CMS fleet에서는 core package version과 theme filesystem layout, hosting account privilege, web-server PHP runtime이 서로 다른 inventory에 있을 수 있음. 따라서 update dashboard의 green 상태는 affected condition 부재 또는 post-patch integrity를 입증하지 못하며, site별 theme·path·PHP permission evidence를 보안 운영 데이터로 승격해야 함.",
+          "body": "CI workflow의 `uses: owner/action@vX`는 source snapshot이 아니라 upstream ref resolution을 매 실행 시점에 받아오는 dependency contract임. repository를 disable한 incident response가 tag·release object·fork·cache·downstream execution state까지 cleanup했다는 뜻은 아니므로, external action은 package registry dependency처럼 immutable digest와 provenance로 관리해야 함.",
           "items": [
-            "볼 것: parent/child theme의 `page-*` directory, readable PHP path, shared-hosting filesystem boundary",
-            "피할 것: automatic update 성공을 webshell·uploader 부재의 증거로 사용하는 판단"
-          ]
-        },
-        {
-          "heading": "공격 관측·forensic 관점",
-          "body": "The Hacker News가 인용한 Previdian honeypot telemetry는 2026-09-22 11:49 UTC부터 attempt를 관측했고 9월 23일부터 68건을 기록했다고 설명함. report의 `pearcmd.php` inclusion, `/tmp`·`/var/tmp` PHP write, GitHub-hosted uploader sequence는 hunt seed이지만 honeypot 수치를 조직의 compromise 사실이나 internet-wide 침해율로 일반화할 수 없음.",
-          "items": [
-            "hunt: template traversal·`pearcmd.php` request, temporary directory의 unexpected PHP, plugin/theme modification",
-            "보존: patch 전후 access/error log, file mtime/hash, admin login·plugin upload·outbound request evidence"
+            "볼 것: mutable tag·branch·SHA reference, action cache, scheduled trigger, `pull_request_target` 권한 경계",
+            "피할 것: workflow YAML이 unchanged이면 third-party action risk도 unchanged라고 보는 판단"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "patch 배포는 WordPress core, PHP runtime, cache/CDN, theme repository, managed-hosting control plane을 지나므로 rollback과 cache invalidation이 함께 작동해야 함. 운영 중인 multi-site는 site owner와 agency가 분리될 수 있어 branch·theme·log retention·incident escalation owner를 asset record에 명시해야 함.",
+          "body": "GitHub Actions는 repository workflow, runner image, action checkout, token/secret scope, artifact, egress, cache를 연결하는 control plane임. action reference를 SHA로 pin해도 update process와 verification owner가 없으면 stale version이 남을 수 있으므로 allowlist·renovation PR·attestation·exception expiry를 platform policy로 운영해야 함.",
           "items": [
-            "검증: canary site에서 fixed version, page rendering, comment/template regression, WAF false-positive 확인",
-            "운영 과제: managed hosting·agency·internal team의 patch approval과 evidence handoff 시간 정렬"
+            "설계: organization action allowlist와 full SHA pin, verified update PR, review owner, expiry exception record",
+            "검증: clean SHA 변경 전 sandbox run·permission diff·network egress·artifact output과 rollback path 확인"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "template path traversal은 web tier file-read 권한과 PHP runtime의 실행 가능 파일을 이어 붙이는 경로임. WAF rule은 exploit noise를 낮출 수 있으나 fixed release를 대체하지 않으며, shared host에서 같은 account 또는 mount를 공유하는 site는 blast radius를 별도 조사해야 함.",
+          "heading": "보안·forensic 관점",
+          "body": "Socket은 issue/comment maintenance action이 daily schedule 또는 issue·PR event에서 실행돼 user action 없이 payload가 재개될 수 있다고 설명함. compromised run의 실제 비밀값 접근 범위는 workflow permissions, repository secrets, OIDC trust, runner location에 따라 다르므로 action list만으로 compromise를 단정하지 말고 execution history와 downstream identity event를 조사해야 함.",
           "items": [
-            "통제: document root·temporary directory no-exec 정책, least-privilege filesystem ACL, plugin upload approval",
-            "리스크: writable temp path와 느슨한 PHP handler가 patch 뒤 persistence를 허용하는 상태"
+            "hunt: September 16 이후 newly successful run, unexpected outbound domain, workflow token/OIDC use, secret access",
+            "보존: resolved action commit, workflow run log, runner network event, artifact, cloud audit, repository commit history"
           ]
         },
         {
-          "heading": "SRE·FinOps 관점",
-          "body": "emergency patch의 비용은 update 자체보다 rendering regression, cache purge, agency support, forensic log 보존에서 발생함. 운영 지표는 patched percentage만이 아니라 vulnerable-theme condition coverage, log collection completeness, time-to-hunt, rollback time으로 구성해야 함.",
+          "heading": "FinOps·SRE 관점",
+          "body": "dependency reactivation은 build failure와 malicious execution이라는 두 운영 결과를 모두 만들 수 있음. emergency replacement는 CI queue, cache miss, action rewrite, secret rotation, release delay 비용을 동반하므로 pin coverage·mean time to revoke·workflow failure recovery·unapproved egress를 reliability와 security 공동 지표로 추적해야 함.",
           "items": [
-            "측정: branch별 fixed-version coverage, `page-*` inventory coverage, suspicious request-to-triage time",
-            "비용 변수: managed-hosting change window, log retention, multi-site regression test, incident response labor"
-          ]
-        },
-        {
-          "heading": "도입·대응 로드맵",
-          "body": "첫 단계는 external exposure와 running branch를 기준으로 affected asset을 좁히는 작업임. 다음으로 fixed release를 canary와 fleet에 적용하고 template/function regression을 확인함. 마지막으로 patch window를 기준으로 web·filesystem·admin telemetry를 hunt해 remediation과 incident response를 분리하지 않는 순서가 필요함.",
-          "items": [
-            "1단계: `wp core version`, public URL, theme precondition, PHP handler·filesystem permission inventory",
-            "2단계: fixed branch rollout·cache purge·rendering canary와 WAF/edge telemetry 검증",
-            "3단계: request·file·admin evidence로 compromise 여부와 credential/session review 범위 결정"
+            "측정: full-SHA pin coverage, external action inventory age, revoked-action detection time, rerun/rollback duration",
+            "비용 변수: runner isolation, cache invalidation, secret rotation, incident review, delayed deployment"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀의 theme code knowledge와 인프라팀의 filesystem·runtime inventory, SOC의 telemetry가 하나의 incident ticket에서 교차 검증돼야 함. theme 이름만이 아니라 실제 deployed commit과 active parent/child relationship을 기록해야 false closure를 줄일 수 있음.",
+          "body": "개발팀은 workflow reference와 trigger, 플랫폼팀은 runner·permission·egress policy, 보안팀은 IoC와 credential response를 나눠 소유해야 함. action author와 repository owner가 동일하다는 사실만으로 current content integrity를 보장하지 않으므로 resolved SHA를 release evidence로 남겨야 함.",
           "items": [
-            "개발팀: active theme·template override·release commit과 page rendering regression 확인",
-            "인프라팀: PHP runtime·temporary path·file ACL·backup/rollback과 fixed version evidence 확인",
-            "SOC: access/error log·admin session·file write·outbound request hunt와 evidence preservation"
+            "개발팀: `actions-cool` reference 제거 또는 known-clean immutable SHA replacement와 PR review 확인",
+            "플랫폼팀: org-wide code search·runner egress·cache purge·allowed-actions policy와 exception expiry 점검",
+            "보안팀: affected run·token/OIDC·cloud audit·secret rotation·repository history forensic 수행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "이번 사건의 판단 단위는 “WordPress를 업데이트했는가”가 아니라 untrusted request가 readable PHP와 executable runtime을 결합할 조건이 제거됐고, 공개 직후 patch window에 persistence 흔적이 없다는 증거임. CMS patch는 package lifecycle과 web-shell forensic을 동시에 닫는 운영 작업임.",
+          "body": "이번 사건은 악성 코드가 새로 publish되지 않아도 upstream repository가 다시 다운로드 가능해지는 순간 기존 mutable tag consumer가 재실행될 수 있음을 드러냄. CI 공급망의 안전 단위는 workflow file이 아니라 resolved commit, permission, execution trace, egress evidence가 결합된 release record임.",
           "items": [
-            "팀 액션: 24시간 내 exposed site의 fixed branch·`page-*` precondition·temporary PHP hunt 결과를 한 closure record로 제출",
-            "발표 메세지: 조건부 RCE의 우선순위는 CVE 점수와 실제 theme/runtime condition을 함께 계산해야 함"
+            "팀 액션: 24시간 내 org-wide mutable third-party action inventory와 full-SHA pin migration plan을 작성",
+            "발표 메세지: disable·restore 같은 upstream availability event도 dependency integrity alert로 취급 필요"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Anthropic Claude ART 발견: 연구 agent를 재현 가능한 hypothesis-to-validation control plane으로 운영하는 방법",
-      "summary": "한 줄 결론: Anthropic은 약 950개 Claude agent가 21시간·약 2억1천만 token으로 DNA database를 탐색해 ART 후보를 찾고 human lab test로 시스템 존재를 확인한 초기 결과를 공개함. 과학 agent의 운영 지표는 candidate 수가 아니라 dataset·prompt·tool trajectory·실험 검증·biosafety·재현 패키지가 연결된 evidence chain이어야 함.",
-      "details": "Anthropic은 initial prompt와 laboratory work 외에는 agent가 RT family와 후보를 조사·판단했다고 설명함. ART는 bacteriophage에서 주로 발견되며 RT, 인접 partner gene, DNA repeat array로 구성되고, 반복 배열이 distinct short RNA로 발현된다는 초기 실험 결과가 공개됨. 정확한 기능과 programmable biotechnology 활용성은 확정되지 않음.",
-      "why_it_matters": "agent가 대규모 후보 탐색을 수행해 human wet-lab 검증 대상으로 연결한 사례지만, token 소비·후보 수·모델의 자율성만으로 과학적 유용성이나 재현성을 입증하지 못함. R&D platform은 discovery를 production claim으로 올리기 전 검증과 책임 경계를 모델 실행 로그에 결합해야 함.",
+      "title": "Roundcube `CVE-2026-48842` active exploitation: webmail patch를 plugin·database·identity forensic closure로 운영하는 방법",
+      "summary": "한 줄 결론: Canadian Centre가 active exploitation을 알린 Roundcube `CVE-2026-48842`은 `virtuser_query` plugin의 인증 전 SQL injection임. `1.6.16`·`1.7.1` fixed build만 적용하지 말고 public route·plugin state·database audit·mailbox/IdP telemetry를 같은 patch window에서 확인 필요.",
+      "details": "Canadian Centre는 2026년 9월 21일 open-source reporting에 근거한 active exploitation을 알렸고, Roundcube는 5월 fixed release에서 preg_replace backslash escape bypass 수정 사실을 공개함. 공격자·payload·피해 조직은 source에서 확인되지 않아 incident scope를 runtime evidence로 판정해야 함.",
+      "why_it_matters": "public webmail의 인증 전 database path는 patch compliance와 data/identity integrity를 분리할 수 없는 운영 대상임.",
       "sources": [
-        "https://www.anthropic.com/news/claude-discovers-novel-enzyme-system"
+        "https://www.cyber.gc.ca/en/alerts-advisories/roundcube-security-advisory-av26-503",
+        "https://roundcube.net/news/2026/05/24/security-updates-1.6.16-and-1.7.1"
       ],
-      "image_url": "https://www-cdn.anthropic.com/images/4zrzovbb/website/394de337d8a5d8db93a1c048fa1cb53e16a09625-2048x1240.jpg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-09-25 02:39",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh8MACS_IO_gIvzTjppTIaHyXZKPha3ZR13_sXQS7u9Ajphpz-FRL5GNIQzhpbveUPPLuMCq72MYNtdX5o6gF-9MZZg4rPF7mbOP_pjSXyTVOFy3XtzlQiMH6sIdTdsqgZpgQf-yZmk688M6BiOWdUNYZswJVQETAInFkZVZCl99ZoYoGhhgtpJZ0hs9JmV/s1600/roundcube.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-09-26 03:07",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "연구 agent의 성과는 모델이 흥미로운 pattern을 말한 사실이 아니라 raw dataset에서 candidate selection, human review, laboratory validation, replication까지 추적 가능한지를 기준으로 판단해야 함. ART 사례는 large-scale search와 wet-lab verification을 연결한 초기 evidence이며, ART의 function·programmability·product value는 아직 결론 낼 수 없음.",
+          "body": "Roundcube `virtuser_query` plugin의 인증 전 SQL injection `CVE-2026-48842`은 2026년 5월 fixed release가 배포됐지만 Canadian Centre가 9월 21일 active exploitation을 알린 결함임. 버전 업데이트와 plugin enablement·internet exposure·mail database credential·webmail session forensic을 같은 incident closure로 묶어야 함.",
           "items": [
-            "변화: AI agent exploration과 human laboratory validation이 같은 research workflow에 연결",
-            "판정: candidate volume·token usage가 아니라 validation rate·provenance·safety review로 도입 판단"
+            "우선순위: 인증 전 SQL injection과 active-exploitation notice를 함께 반영한 긴급 patch 대상",
+            "완료 기준: running version·plugin 상태·public exposure·patch-window telemetry를 하나의 asset record로 확인"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Anthropic은 약 950개 agent가 21시간 동안 약 2억1천만 token으로 DNA database를 검색했다고 공개함. source 설명은 20만 개 이상 RT를 수집하고 3,500개 신규 후보 시스템을 추린 뒤 20개를 집중 분석한 과정을 포함함. agent가 발견한 ART는 mainly bacteriophage에 존재하며 RT, adjacent partner gene, long array of evenly spaced DNA repeats로 구성됨.",
+          "body": "Canadian Centre Update 1은 open-source reporting을 근거로 active exploitation을 알렸고 필요한 update 적용을 권고함. Roundcube의 2026-05-24 release는 `preg_replace` backslash escape bypass를 통한 `virtuser_query` plugin의 pre-auth SQL injection 수정과 `1.6.16`·`1.7.1` release를 명시함.",
           "items": [
-            "검증: human scientist의 lab test로 ART system 존재를 확인한 범위",
-            "경계: original page는 model version·full agent trajectory·automated experiment·clinical application을 공개하지 않음"
+            "영향 범위: THN 보도 기준 `1.6.x`의 `1.6.16` 이전과 `1.7.x`의 `1.7.1` 이전",
+            "경계: Canadian advisory는 공격자·침해 조직·payload·exploitation technique를 공개하지 않음"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "이 workflow의 병목은 search token이 아니라 candidate ranking과 experimental validation capacity임. agent가 hypothesis space를 넓힐수록 false-positive와 novelty bias가 증가할 수 있으므로, query corpus snapshot·tool version·filter rule·intermediate evidence를 immutable run record로 남기고 human scientist가 decision owner가 되는 구조가 필요함.",
+          "body": "메일 시스템은 web tier, Roundcube application, plugin configuration, database, IMAP/SMTP credential, reverse proxy와 IdP session이 분리된 운영 단위임. package inventory의 fixed-version green 상태만으로 exposed `virtuser_query` instance와 database query 흔적을 판정할 수 없으므로 runtime configuration과 security telemetry를 합쳐야 함.",
           "items": [
-            "볼 것: dataset version, prompt, agent/tool call, candidate score, reviewer decision, experiment ID 연결",
-            "피할 것: 모델 output을 independent validation 이전에 biological discovery·product capability로 확정하는 발표"
+            "볼 것: `virtuser_query` enablement, public login route, deployed image digest, database account privilege",
+            "피할 것: update 완료를 credential·mailbox access와 session abuse가 없었다는 증거로 간주하는 판단"
           ]
         },
         {
-          "heading": "데이터·아키텍처 관점",
-          "body": "DNA search workflow는 large corpus index, sequence retrieval, model context, agent orchestration, candidate store, lab information management system을 연결함. 각 단계에서 identifier가 끊기면 재현 실험과 IP review가 어려워지므로 dataset checksum·query version·tool container digest·experiment sample ID를 event lineage로 조인해야 함.",
+          "heading": "아키텍처·운영 관점",
+          "body": "패치는 upstream package, custom plugin, container image, load balancer, WAF/cache, database migration과 backup/rollback 경로를 거침. 조직이 multiple domain 또는 managed mail provider를 운영하면 service owner, image owner, DB owner, SOC owner가 나뉘므로 각 instance의 exact build와 plugin state를 CMDB 또는 incident ticket에 붙여야 함.",
           "items": [
-            "설계: candidate마다 corpus snapshot·search parameter·trace ID·reviewer·sample/assay identifier 부여",
-            "검증: 동일 input으로 ranking stability와 independent lab replication path를 재실행"
+            "검증: staging에서 login·virtual-user lookup·IMAP/SMTP integration·custom plugin regression 확인",
+            "운영 과제: image rebuild와 immutable deployment, old pod termination, cache/WAF exception rollback 동시 관리"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "life-sciences agent에는 sequence data, proprietary protocol, experimental result, model prompt가 동시에 들어갈 수 있음. data classification, access separation, export approval, retention, dual-use screening을 agent platform 외부의 policy로 두지 말고 dataset retrieval·tool invocation·result export에 집행해야 함.",
+          "heading": "보안·forensic 관점",
+          "body": "SQL injection의 영향은 database engine·connection privilege·stored credential format·outbound capability에 따라 달라짐. source는 credential·stored message 노출 가능성을 보도했으나 조직별 data access는 확인되지 않았으므로, query error·web access·database audit·admin login·mail forwarding rule을 patch window 기준으로 조사해야 함.",
           "items": [
-            "통제: project별 dataset allowlist, least-privilege tool role, sensitive output redaction, immutable audit log",
-            "리스크: research convenience를 이유로 broad corpus·lab system write access를 단일 agent identity에 부여하는 구성"
+            "hunt: anomalous login parameter·SQL syntax error·DB slow/error log·unexpected mailbox/forwarding rule",
+            "보존: reverse-proxy/WAF·application·database audit·IdP session·admin configuration change evidence"
           ]
         },
         {
-          "heading": "비용·검증 관점",
-          "body": "약 2억1천만 token이라는 공개 수치는 compute usage의 한 단면일 뿐, discovery efficiency를 뜻하지 않음. cost model은 token·storage·retrieval·human review·lab assay·failed candidate를 함께 포함하고, baseline 대비 validated candidate per cost와 turnaround time으로 평가해야 함.",
+          "heading": "비용·SRE 관점",
+          "body": "긴급 업데이트 비용은 package replacement보다 mail flow regression, tenant communication, database log retention, credential reset과 failover rehearsal에서 커짐. 운영 지표는 patched percentage만이 아니라 exposed-plugin inventory coverage, deployment lead time, suspicious request triage time, mail service rollback time으로 잡아야 함.",
           "items": [
-            "측정: validated candidate rate, false-positive rate, assay turnaround, token·lab cost per validated result",
-            "비용 변수: corpus indexing, long-running agent retry, human review queue, wet-lab capacity와 replication"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "처음부터 autonomous discovery programme로 확장하지 말고 bounded dataset과 reversible read-only tools를 갖춘 one-question pilot으로 시작함. 이후 independent reviewer와 laboratory validation gate를 통과한 결과만 next phase에 넘기고, data/IP/biosafety review와 reproducibility package를 갖춘 뒤 corpus와 agent autonomy 범위를 넓혀야 함.",
-          "items": [
-            "1단계: known benchmark 또는 historical dataset에서 retrieval·ranking provenance canary",
-            "2단계: human review·negative control·lab validation과 cost/latency baseline 비교",
-            "3단계: access expansion 전 data residency·IP·biosafety·independent replication evidence review"
+            "측정: fixed-build coverage, exposed instance count, log collection completeness, time-to-containment",
+            "비용 변수: managed hosting change window, mailbox recovery, database audit retention, help-desk reset volume"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "ML platform team은 run lineage와 access boundary를, research owner는 hypothesis와 validation criteria를, security/governance owner는 dataset·export·dual-use control을 소유해야 함. model provider claim과 internal validation result를 동일 metric으로 합산하지 않는 것이 필요함.",
+          "body": "개발팀은 plugin 및 custom template 영향, 인프라팀은 image·network·database control, SOC는 exploitation evidence를 소유해야 함. plugin 이름이나 package version만 기록하지 말고 deployed build digest와 virtual-user query route를 연결해야 재배포 뒤에도 동일한 판정을 재현할 수 있음.",
           "items": [
-            "개발팀: prompt/tool/version·agent trajectory·candidate ranking을 reproducibility bundle에 포함",
-            "플랫폼팀: dataset snapshot·orchestrator identity·audit·cost attribution과 environment isolation 확인",
-            "연구·보안팀: lab validation·negative control·biosafety/IP review·publication approval owner 지정"
+            "개발팀: `virtuser_query` 필요성·customization·login regression과 fixed release compatibility 확인",
+            "인프라팀: public route·image digest·DB role·secret rotation·backup/rollback evidence 확인",
+            "SOC: access/error·DB audit·IdP·mail forwarding telemetry hunt와 evidence retention"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "ART 발표는 agent가 research search space를 넓힐 수 있음을 보여주는 초기 source evidence이며, 인간 과학자의 laboratory work가 validation boundary를 제공함. 조직의 실행 과제는 더 많은 agent를 투입하는 것이 아니라 hypothesis-to-validation evidence chain과 access control을 먼저 설계하는 것임.",
+          "body": "이번 update의 판단 단위는 “Roundcube를 업데이트했는가”가 아니라 active-exploitation notice가 나온 인증 전 query path를 제거했고, 그 이전 patch gap에서 database·mailbox·credential abuse가 없다는 증거를 확보했는가임. webmail patch는 application lifecycle과 identity/data forensic을 동시에 닫는 작업임.",
           "items": [
-            "팀 액션: 다음 R&D agent pilot에 dataset checksum·trace ID·review gate·assay result·cost tag를 의무 연결",
-            "발표 메세지: 과학 agent의 신뢰도는 자율성의 크기가 아니라 재현·검증·거버넌스가 닫힌 workflow에서 결정됨"
+            "팀 액션: 24시간 내 exposed instance의 version·plugin·route·DB audit hunt 결과를 closure record로 제출",
+            "발표 메세지: active exploitation notice는 CVE 목록 우선순위를 runtime exposure와 log evidence로 바꾸는 trigger임"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-539",
+      "title_ko": "재활성화된 `actions-cool` GitHub Action: mutable tag가 May 악성 commit을 다시 실행한 공급망 재노출",
+      "title_original": "Compromised GitHub Actions Came Back Online and Resumed Executing Mini Shai-Hulud Malware",
+      "summary": "핵심: May에 compromise 후 disabled됐던 `actions-cool` Action 2개가 9월 16일 다시 reachable해졌고, mutable release tag가 May 18 악성 content를 유지해 downstream workflow가 다음 실행에서 payload를 재다운로드할 수 있었음. full commit SHA pin과 run-history forensic이 필요한 CI supply-chain incident임.",
+      "detail": "Socket은 `issues-helper` dependency graph에 약 15,000 dependent repository가 있고 issue/comment action이 daily schedule 또는 issue·PR event에서 자주 실행된다고 설명함. GitHub page는 현재 repository disabled 상태를 표시함. re-enable 이유와 실제 피해 범위는 확인되지 않아, September 16 이후 run·token/OIDC·egress·secret access를 repository별로 조사해야 함.",
+      "why_it_matters": "workflow YAML에 변경이 없어도 upstream mutable tag의 resolved content와 repository availability가 바뀌면 CI runner가 새 code execution 경로가 됨. disable event만으로 release tag·cache·downstream run이 정리됐다고 볼 수 없음.",
+      "engineering_implication": "시사점: org-wide third-party Action을 full SHA 기준으로 inventory화하고, allowed-actions·egress·least-privilege token·scheduled run review·action update PR을 하나의 change control로 운영 필요.",
+      "korea_implication": "국내 개발 조직은 shared runner와 cloud OIDC를 사용하는 open-source Action에서 mutable tag ban 또는 expiry-managed exception, external action pin evidence를 release gate에 포함할 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub Actions",
+        "Supply Chain",
+        "CI/CD",
+        "Mini Shai-Hulud",
+        "SHA Pinning",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-09-25 23:44",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/compromised-github-actions-came-back.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjJFMIQ6v0uJDRoxyIhqsoqsYoXN00dcDH4IvkdQAkRBRj6ha5LIu2-2yzzvQk1OZTc-7tK1fjeqyIh8xvRNvz_CotOtGNsYnejlbHED7cI-bmZFP80JIdxk_0D9I6Zo10-6b4x4euCTaRtz8c6ncYKykDsW7Bt4oFEVYWTe3AHJdiUxM32R6hGP9C0Y0Xf/s1600/github-shai.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Socket research: Re-Enabled GitHub Actions Expose Thousands of Repositories",
+          "url": "https://socket.dev/blog/mini-shai-hulud-actions"
+        },
+        {
+          "title": "Affected repository: actions-cool/issues-helper",
+          "url": "https://github.com/actions-cool/issues-helper"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "한 줄 결론",
+          "body": "`actions-cool/issues-helper`와 `actions-cool/maintain-one-comment`는 May compromise 뒤 disabled 상태였다가 9월 16일 다시 reachable해졌고, mutable release tag가 악성 May 18 commit을 그대로 가리켜 downstream workflow가 다음 실행에서 payload를 다시 다운로드할 수 있었음. third-party action의 availability 변화도 source-code diff 없는 deployment event로 감시해야 함.",
+          "items": [
+            "우선순위: mutable tag reference와 scheduled/PR-triggered CI 실행을 결합한 credential exposure 경로",
+            "완료 기준: affected reference 제거·clean commit SHA pin·run history review·secret rotation evidence 동시 확인"
+          ]
+        },
+        {
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "Socket은 두 action이 5월 Mini Shai-Hulud campaign에서 compromise돼 May 19 GitHub가 disable했다고 기록함. September 16 re-enable 뒤 release tag가 May 18 악성 content를 계속 가리켰고, `issues-helper` dependency graph에는 약 15,000 dependent repository가 나타났다고 설명함. 현재 GitHub page는 repository disabled 상태를 표시함.",
+          "items": [
+            "재활성화: Socket은 re-enable 이유를 확인하지 못했으며 maintainer request 가능성도 미확정",
+            "안전 범위: May 18 이전 known-clean full commit SHA를 pin한 workflow는 tag reactivation 영향에서 제외된다고 설명"
+          ]
+        },
+        {
+          "heading": "AI/Infra 전문가 해석",
+          "body": "CI workflow의 `uses: owner/action@vX`는 source snapshot이 아니라 upstream ref resolution을 매 실행 시점에 받아오는 dependency contract임. repository를 disable한 incident response가 tag·release object·fork·cache·downstream execution state까지 cleanup했다는 뜻은 아니므로, external action은 package registry dependency처럼 immutable digest와 provenance로 관리해야 함.",
+          "items": [
+            "볼 것: mutable tag·branch·SHA reference, action cache, scheduled trigger, `pull_request_target` 권한 경계",
+            "피할 것: workflow YAML이 unchanged이면 third-party action risk도 unchanged라고 보는 판단"
+          ]
+        },
+        {
+          "heading": "아키텍처·운영 관점",
+          "body": "GitHub Actions는 repository workflow, runner image, action checkout, token/secret scope, artifact, egress, cache를 연결하는 control plane임. action reference를 SHA로 pin해도 update process와 verification owner가 없으면 stale version이 남을 수 있으므로 allowlist·renovation PR·attestation·exception expiry를 platform policy로 운영해야 함.",
+          "items": [
+            "설계: organization action allowlist와 full SHA pin, verified update PR, review owner, expiry exception record",
+            "검증: clean SHA 변경 전 sandbox run·permission diff·network egress·artifact output과 rollback path 확인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-537",
       "title_ko": "Cloudflare Turnstile Spin: coding agent가 widget·Siteverify를 함께 연결하는 bot-protection 구현 경로",
@@ -272,7 +319,79 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-538",
+      "title_ko": "Roundcube `CVE-2026-48842`: Canadian Cyber Centre가 active exploitation을 알린 인증 전 SQL injection",
+      "title_original": "Roundcube Pre-Auth SQL Injection Flaw Actively Exploited in the Wild",
+      "summary": "핵심: Canadian Centre for Cyber Security가 Roundcube `CVE-2026-48842`의 active exploitation을 알림. `virtuser_query` plugin의 `preg_replace` backslash escape bypass에 따른 인증 전 SQL injection이며, Roundcube는 5월 `1.6.16`·`1.7.1`에서 수정함.",
+      "detail": "THN은 영향 범위를 `1.6.16` 이전 1.6.x와 `1.7.1` 이전 1.7.x로 보도함. Canadian advisory는 open-source reporting을 근거로 exploitation을 알렸지만 공격자·피해 조직·payload는 공개하지 않음. version patch와 plugin enablement·public exposure·database audit·mailbox/credential forensic을 같은 closure record로 운영 필요.",
+      "why_it_matters": "인증 전 webmail SQL injection은 mail database, stored message, account credential 경계에 닿을 수 있음. fixed version inventory만으로 runtime plugin 상태와 patch-gap exploitation 여부를 판정할 수 없음.",
+      "engineering_implication": "시사점: public Roundcube instance에서 `virtuser_query` enablement·deployed image·DB role을 inventory화하고, fixed build rollout 뒤 access/error·DB audit·IdP·mail forwarding telemetry를 patch window로 hunt 필요.",
+      "korea_implication": "국내 대학·공공·기업 webmail 운영 조직은 appliance·managed hosting·custom plugin별 버전과 DB audit retention owner를 분리하지 않는 incident record 필요.",
+      "category": "Security",
+      "tags": [
+        "Roundcube",
+        "Webmail",
+        "SQL Injection",
+        "CVE-2026-48842",
+        "Email Security",
+        "Patch Management"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-09-25 19:14",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/09/roundcube-pre-auth-sql-injection-flaw.html",
+      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh8MACS_IO_gIvzTjppTIaHyXZKPha3ZR13_sXQS7u9Ajphpz-FRL5GNIQzhpbveUPPLuMCq72MYNtdX5o6gF-9MZZg4rPF7mbOP_pjSXyTVOFy3XtzlQiMH6sIdTdsqgZpgQf-yZmk688M6BiOWdUNYZswJVQETAInFkZVZCl99ZoYoGhhgtpJZ0hs9JmV/s1600/roundcube.jpg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Canadian Centre Roundcube advisory AV26-503",
+          "url": "https://www.cyber.gc.ca/en/alerts-advisories/roundcube-security-advisory-av26-503"
+        },
+        {
+          "title": "Roundcube 1.6.16 / 1.7.1 security release",
+          "url": "https://roundcube.net/news/2026/05/24/security-updates-1.6.16-and-1.7.1"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "한 줄 결론",
+          "body": "Roundcube `virtuser_query` plugin의 인증 전 SQL injection `CVE-2026-48842`은 2026년 5월 fixed release가 배포됐지만 Canadian Centre가 9월 21일 active exploitation을 알린 결함임. 버전 업데이트와 plugin enablement·internet exposure·mail database credential·webmail session forensic을 같은 incident closure로 묶어야 함.",
+          "items": [
+            "우선순위: 인증 전 SQL injection과 active-exploitation notice를 함께 반영한 긴급 patch 대상",
+            "완료 기준: running version·plugin 상태·public exposure·patch-window telemetry를 하나의 asset record로 확인"
+          ]
+        },
+        {
+          "heading": "원문과 관련 뉴스의 핵심 내용",
+          "body": "Canadian Centre Update 1은 open-source reporting을 근거로 active exploitation을 알렸고 필요한 update 적용을 권고함. Roundcube의 2026-05-24 release는 `preg_replace` backslash escape bypass를 통한 `virtuser_query` plugin의 pre-auth SQL injection 수정과 `1.6.16`·`1.7.1` release를 명시함.",
+          "items": [
+            "영향 범위: THN 보도 기준 `1.6.x`의 `1.6.16` 이전과 `1.7.x`의 `1.7.1` 이전",
+            "경계: Canadian advisory는 공격자·침해 조직·payload·exploitation technique를 공개하지 않음"
+          ]
+        },
+        {
+          "heading": "AI/Infra 전문가 해석",
+          "body": "메일 시스템은 web tier, Roundcube application, plugin configuration, database, IMAP/SMTP credential, reverse proxy와 IdP session이 분리된 운영 단위임. package inventory의 fixed-version green 상태만으로 exposed `virtuser_query` instance와 database query 흔적을 판정할 수 없으므로 runtime configuration과 security telemetry를 합쳐야 함.",
+          "items": [
+            "볼 것: `virtuser_query` enablement, public login route, deployed image digest, database account privilege",
+            "피할 것: update 완료를 credential·mailbox access와 session abuse가 없었다는 증거로 간주하는 판단"
+          ]
+        },
+        {
+          "heading": "아키텍처·운영 관점",
+          "body": "패치는 upstream package, custom plugin, container image, load balancer, WAF/cache, database migration과 backup/rollback 경로를 거침. 조직이 multiple domain 또는 managed mail provider를 운영하면 service owner, image owner, DB owner, SOC owner가 나뉘므로 각 instance의 exact build와 plugin state를 CMDB 또는 incident ticket에 붙여야 함.",
+          "items": [
+            "검증: staging에서 login·virtual-user lookup·IMAP/SMTP integration·custom plugin regression 확인",
+            "운영 과제: image rebuild와 immutable deployment, old pod termination, cache/WAF exception rollback 동시 관리"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-536",
@@ -336,7 +455,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-533",
@@ -409,7 +528,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-530",
@@ -478,7 +597,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-535",
@@ -544,7 +663,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-531",
@@ -613,7 +732,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-532",
@@ -682,7 +801,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-534",
@@ -755,7 +874,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-529",
@@ -819,7 +938,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-517",
@@ -892,7 +1011,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-524",
@@ -956,7 +1075,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-525",
@@ -1020,144 +1139,7 @@
           ]
         }
       ],
-      "rank": 12
-    },
-    {
-      "id": "news-528",
-      "title_ko": "Anthropic Claude: 950개 agent가 21시간 DNA 탐색 뒤 CRISPR 유사 반복서열의 신규 효소 시스템 후보 발견",
-      "title_original": "Claude discovers a novel enzyme system with CRISPR-like repeats",
-      "summary": "핵심: Anthropic은 Claude agent 약 950개가 21시간 동안 2억1천만 token으로 DNA 데이터베이스를 탐색해 ART(array-associated reverse transcriptases)라는 신규 효소 시스템을 찾고, 인간 연구진의 실험으로 존재를 확인했다고 공개함. ART의 기능·유전자편집 활용성은 아직 미확정이므로, 연구 agent의 가치 평가는 discovery 후보 수가 아니라 실험 검증률·데이터 provenance·생물안전 review까지 포함해 운영 필요.",
-      "detail": "Anthropic의 공식 발표는 Claude가 광범위한 RT 탐색 지시 뒤 20만 개 이상 후보를 수집하고 3,500개 신규 후보 시스템을 추린 뒤 20개를 집중 분석해 RT 인접 반복 DNA와 accessory protein을 가진 ART를 발견한 과정을 설명함. primary page는 날짜만 제공하므로 ordering 시각은 직접 읽은 인공지능신문의 기사 시각(2026-09-24 09:58 KST)을 사용하며, 원문이 말하지 않는 model version·agent autonomy 범위·실험 자동화·ART 기능·임상/제품 적용은 확정하지 않음.",
-      "why_it_matters": "대규모 agent 탐색이 연구 가설 생성에서 실험 검증 가능한 후보 선별로 이어진 사례이나, 생성 결과를 과학적 발견으로 취급하려면 데이터·도구·prompt·candidate ranking·실험 결과의 재현 가능한 evidence chain이 필요함.",
-      "engineering_implication": "시사점: 과학·R&D agent 도입 시 dataset snapshot·tool version·prompt·agent trajectory·candidate filter·human review·wet-lab result를 같은 run record에 남기고, false-positive rate·실험 turnaround·비용·biosafety approval을 rollout gate로 설정 필요.",
-      "korea_implication": "국내 바이오AI·대학·연구소는 모델 사용량 수치만으로 연구 성과를 판단하지 말고 데이터 반출·IP·IRB/생물안전·실험 책임자와 재현 패키지의 소유권을 연구 계약과 platform control에 함께 반영 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "Agent",
-        "Life Sciences",
-        "Research",
-        "Claude",
-        "Evaluation",
-        "Data Provenance"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-09-24 09:58",
-      "source_name": "Anthropic",
-      "source_url": "https://www.anthropic.com/news/claude-discovers-novel-enzyme-system",
-      "image_url": "https://www-cdn.anthropic.com/images/4zrzovbb/website/394de337d8a5d8db93a1c048fa1cb53e16a09625-2048x1240.jpg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "Anthropic ART preprint",
-          "url": "https://www-cdn.anthropic.com/22573675ada52a8ca8a97a1a4b4326b2f208a071.pdf"
-        },
-        {
-          "title": "인공지능신문 보도 — 2026-09-24 09:58 KST ordering provenance",
-          "url": "https://www.aitimes.kr/news/articleView.html?idxno=42061"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Anthropic이 생명과학 연구그룹·실험실의 초기 결과로 Claude가 ART라는 미특성 효소 시스템을 찾았다고 공개함. 인간 연구진은 초기 탐색 방향과 후속 lab work를 담당했고, 시스템 존재는 실험으로 확인한 범위임.",
-          "items": [
-            "발견: RT 인접 non-coding DNA repeat array와 기능 미상의 accessory protein을 가진 ART 후보 확인",
-            "경계: ART의 primary biological function과 유전자편집 도구 활용성은 추가 연구 대상"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Claude agent 약 950개가 21시간 동안 약 2억1천만 token을 사용해 RT 관련 DNA 데이터를 탐색함. source는 agent가 20만 개 이상 RT를 수집하고 3,500개 신규 후보 시스템을 선별한 뒤 가장 유망한 20개를 집중 분석했다고 설명함.",
-          "items": [
-            "탐색: broad RT search prompt 뒤 agent가 RT family·후보를 자율적으로 조사한 workflow",
-            "검증: preprint 공개와 human laboratory testing을 거친 ART 존재 확인"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "대규모 모델 agent는 후보 발굴 속도를 높일 수 있지만, candidate 수·token 사용량은 biological utility 또는 재현성을 보장하지 않음. discovery claim은 raw dataset, filtering rule, tool call, intermediate evidence, independent experiment를 연결해야 검증 가능함.",
-          "items": [
-            "리스크: 모델이 제시한 흥미로운 패턴을 functional validation 이전에 연구 성과·제품 가능성으로 과장하는 판단",
-            "필요: dataset snapshot·prompt·agent trajectory·candidate ranking·wet-lab result의 provenance 유지"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "연구 agent platform은 task completion이 아니라 hypothesis-to-validation loop를 운영 단위로 측정해야 함. AI가 실험을 직접 수행한 사실은 source에서 확인되지 않았고, Anthropic은 모든 lab work를 human scientist가 수행한다고 명시함.",
-          "items": [
-            "팀 액션: 실험 검증률·false-positive·turnaround·token/compute cost·biosafety approval을 canary metric으로 정의",
-            "검증: human review owner, data/IP boundary, reproducibility package, independent replication plan을 release gate로 지정"
-          ]
-        }
-      ],
-      "rank": 13
-    },
-    {
-      "id": "news-527",
-      "rank": 14,
-      "title_ko": "Amazon Kinesis Data Streams: On-Demand stream의 service-managed partition key로 producer 분산 로직 제거",
-      "title_original": "Amazon Kinesis Data Streams announces Service-Managed Partition Keys for simplified data ingestion",
-      "summary": "핵심: Kinesis Data Streams On-Demand Standard·Advantage stream이 partition key 없이 record를 받아 warm capacity 기준으로 shard에 분산하는 service-managed partition key를 추가함. 순서 보장이 필요 없는 log·metric·IoT ingestion은 random UUID 분산과 hot partition 대응 코드를 줄일 수 있으나 ordering·idempotency·retry·consumer lag는 workload별 canary 필요.",
-      "detail": "AWS는 기존 random partition key가 aggregate capacity가 충분해도 shard별 uneven throughput과 throttling을 만들 수 있다고 설명함. 최신 AWS SDK 또는 Kinesis Producer Library(KPL)로 upgrade하면 producer가 partition key를 만들지 않아도 되며, 모든 AWS commercial Region에서 추가 비용 없이 제공됨. source는 ordering 보장, region별 quota, end-to-end latency·consumer 처리량을 보장하지 않으므로 기존 key semantics를 제거하기 전 producer·consumer 계약을 검증해야 함.",
-      "why_it_matters": "streaming producer의 partition key는 ordering·shard hot spot·retry·consumer ordering을 함께 결정하는 data-plane contract임. service-managed 분산은 ingestion 운영 부담을 낮추지만 business key ordering이나 per-key serialization이 필요한 pipeline에 그대로 적용하면 downstream correctness가 바뀔 수 있음.",
-      "engineering_implication": "시사점: ordering 불필요 workload부터 producer SDK/KPL upgrade와 no-key publish canary를 적용하고, throttling·put latency·consumer lag·duplicate 처리·ordering invariant를 기존 random-key path와 비교한 뒤 rollout 필요.",
-      "korea_implication": "서울 리전은 AWS commercial Region에 포함되지만 account quota·cross-region consumer·data residency와 실제 workload throughput은 source에서 별도 수치가 없어 조직별 사전 검증 필요.",
-      "category": "Data",
-      "tags": [
-        "AWS",
-        "Kinesis",
-        "Streaming",
-        "Data",
-        "Serverless",
-        "Partition Key",
-        "IoT"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 86,
-      "published_kst": "2026-09-24 07:51",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/kinesis/service-managed-partition-keys/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Amazon Kinesis Data Streams가 On-Demand Standard와 On-Demand Advantage stream에서 producer가 partition key를 보내지 않아도 되는 service-managed partition key를 추가함. service가 available warm capacity를 기준으로 record를 shard에 분산하는 범위임.",
-          "items": [
-            "대상: ordering guarantee가 필요 없는 stream ingestion workload",
-            "제공: 모든 AWS commercial Region, 추가 비용 없음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "AWS는 log aggregation·metrics collection·IoT telemetry를 대표 use case로 제시함. 기존에는 UUID 같은 random key를 producer가 생성했지만 random distribution도 shard별 throughput 편차를 남겨 일부 key throttling을 만들 수 있었다고 설명함.",
-          "items": [
-            "변화: producer-side partition-key generation과 distribution logic 축소",
-            "시작 조건: 최신 AWS SDK 또는 Kinesis Producer Library(KPL) upgrade 필요"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "partition key는 shard assignment뿐 아니라 record ordering과 consumer의 per-key 처리 가정을 결정함. managed distribution은 hot partition 회피에 유리하지만 business key의 순서 보장·same-key serialization이 필요한 event pipeline을 동일 방식으로 바꾸는 근거는 아님.",
-          "items": [
-            "리스크: ordering requirement를 확인하지 않은 no-key publish 전환",
-            "경계: source는 region별 quota, end-to-end latency, consumer processing SLO를 보장하지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "producer와 consumer를 함께 canary하여 throttling 감소가 correctness·lag·retry 비용을 악화시키지 않는지 확인해야 함. keyless path는 telemetry·log·IoT 같은 unordered record부터 시작하고, ordering workload는 기존 key path를 보존하는 분리 운영이 필요.",
-          "items": [
-            "팀 액션: put latency·throttling·consumer lag·duplicate rate·ordering invariant baseline 수집",
-            "검증: SDK/KPL version, retry/idempotency, downstream aggregation·checkpoint behavior를 rollout gate로 설정"
-          ]
-        }
-      ]
+      "rank": 14
     },
     {
       "id": "news-526",

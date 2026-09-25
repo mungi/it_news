@@ -2960,3 +2960,10 @@
 - 확인 시각: 2026-09-25 23:05 KST. GeekNews root·Plus는 HTTP 403으로 직접 content inspection 불가였고, GeekNews RSS·AI타임스KR·AI타임스 root surface와 AWS·Cloudflare·Kubernetes·GitHub·CNCF·Docker·OpenAI·Anthropic feed를 current research pass에 포함.
 - Cloudflare canonical post와 RSS `Fri, 25 Sep 2026 13:00:00 GMT`를 직접 대조. Turnstile Spin의 dashboard·Wrangler·public skill URL 진입점, frontend widget과 backend `Siteverify` 2단계 구현, incomplete setup repair·CAPTCHA migration 범위를 수록. typical weekday 약 30억 verification·최근 1주 2만3천 개 이상 신규 widget account는 source가 공개한 운영량이며, framework coverage·production abuse 감소·agent 생성 code correctness는 별도 검증 대상으로 유지.
 - `news-537`을 KST `2026-09-25 22:00` 기준 newest-first rank 1에 추가하고 cap actual tail `news-486`을 제거해 50-item cap·rank 1–50 유지. immutable raw capture SHA-256 `96b24dcc67c98458a3ce662e512b2d3ef135f2272bd5afacc0ae6c3c1bc29ea4`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 KST 02:39 일일 전면 교체 완료 상태여서 timestamp-only 변경 없이 유지.
+
+
+## [2026-09-26] update | GitHub Actions mutable-tag 재활성화·Roundcube active exploitation 반영 및 Deep Dive 일일 전면 교체
+- 확인 시각: 2026-09-26 03:07 KST. GeekNews RSS(HTTP 200)·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 root(HTTP 200) 필수 surface와 AWS·Cloudflare·GitHub·Kubernetes·CNCF·Docker·Anthropic·OpenAI·Google AI·The Hacker News research surface를 확인.
+- Socket primary research와 GitHub disabled repository page를 대조. `actions-cool/issues-helper`·`maintain-one-comment`가 9월 16일 re-enable됐을 때 May 18 악성 tag가 tag-referenced workflow에서 재실행 가능한 경로, `issues-helper` 약 15,000 dependent repository, re-enable 이유·actual affected run 미확정 범위를 수록.
+- Canadian Centre AV26-503 Update 1과 Roundcube primary May release를 대조. `CVE-2026-48842` active exploitation notice, `virtuser_query` plugin pre-auth SQL injection, `1.6.16`·`1.7.1` fixed release를 수록하고 공격자·payload·피해 조직은 source 미확정으로 유지.
+- KST 첫 실행 정책에 따라 기존 WordPress·Anthropic Deep Dive를 유지하지 않고, non-overlapping primary source를 가진 GitHub Actions·Roundcube current event 2건으로 title·summary·sources·image·8개 expert section·`refreshed_kst`를 전면 재구성. `news-538`·`news-539` 추가 뒤 oldest `news-527`·`news-528`을 제거하고 50-item cap·newest-first rank 1–50, raw capture·index·weekly archive를 동기화.
