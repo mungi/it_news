@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-24 | Total pages: 371
+> Last updated: 2026-09-25 | Total pages: 373
 
 ## Entities
 
@@ -486,6 +486,9 @@
 - [[raw/articles/aws-rds-postgresql-pq-tls-key-exchange-2026-09-24]] — Amazon RDS for PostgreSQL: 18 이상에서 PQ-TLS key exchange와 `ssl_groups` 선택 지원
 - [[raw/articles/aws-eventbridge-enhanced-custom-event-bus-2026-09-25]] — EventBridge enhanced Custom event bus의 cross-account·strict ordering·CloudEvents·retention·data-transfer pricing 운영 경계.
 - [[raw/articles/thn-third-party-com-placeholder-clickfix-2026-09-25]] — `third-party[.]com` placeholder ClickFix 악용과 agent skill·MCP 문서·test fixture의 reserved-domain 교체 경계.
+
+- [[raw/articles/aws-sagemaker-hyperpod-inference-gateway-2026-09-25]] — SageMaker HyperPod Inference Gateway의 6개 inference signal·GPU-aware routing·TTFT canary 경계.
+- [[raw/articles/aws-billing-context-api-2026-09-25]] — AWS Billing `ListBillingViewSegments` API의 payer·rate context time segment와 FinOps reconciliation 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
