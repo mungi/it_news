@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-26 | Total pages: 376
+> Last updated: 2026-09-26 | Total pages: 377
 
 ## Entities
 
@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/jamf-pamstealer-wavel-macos-infostealer-2026-09-22]] — PamStealer Wavel macOS 변종의 server-side payload 복호화·JXA/zsh·Git hook 지속성과 developer endpoint forensic 경계.
 - [[raw/articles/anthropic-claude-art-enzyme-system-2026-09-24]] — Claude agent의 ART 신규 효소 시스템 후보 탐색·human lab 검증과 provenance·재현성 경계.
 - [[raw/articles/aws-kinesis-service-managed-partition-keys-2026-09-24]] — Kinesis On-Demand stream의 service-managed partition key, unordered ingestion·shard throttling·ordering contract canary 경계.
 - [[raw/articles/thn-terraform-registry-malicous-provider-graphalgo-2026-09-24]] — HashiCorp Registry Terraform provider·Go module malware 보도와 provider checksum·runner egress 공급망 통제 경계.
