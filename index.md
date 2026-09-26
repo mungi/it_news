@@ -495,6 +495,8 @@
 - [[raw/articles/socket-mini-shai-hulud-actions-2026-09-25]] — 재활성화된 `actions-cool` mutable tag의 May 악성 commit 재실행과 full-SHA pin·CI forensic 경계.
 - [[raw/articles/roundcube-cve-2026-48842-active-exploitation-2026-09-25]] — Canadian Centre Roundcube active-exploitation advisory와 `virtuser_query` SQL injection patch·database/identity closure 경계.
 
+- [[raw/articles/aws-iam-outbound-federation-vpc-oidc-2026-09-26]] — AWS IAM outbound federation의 PrivateLink OIDC discovery·JWKS 경로와 private VPC workload identity 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
