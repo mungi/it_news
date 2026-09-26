@@ -2,10 +2,10 @@
   "week": "2026-W40",
   "coverage_start_kst": "2026-09-21 17:00",
   "coverage_end_kst": "2026-09-28 13:00",
-  "last_updated_kst": "2026-09-26 19:23",
+  "last_updated_kst": "2026-09-26 23:30",
   "audience": "developers and engineers",
   "executive_summary": [
-    "재활성화된 `actions-cool` GitHub Action은 workflow YAML 변경 없이 mutable tag가 기존 악성 commit을 다시 resolve할 수 있음을 확인함. org-wide full-SHA pin·scheduled run history·OIDC/secret·runner egress를 같은 incident closure로 확인 필요.",
+    "Oracle PeopleSoft `CVE-2026-35273` 재악용은 URL 인코딩 `/%50SEMHUB/`로 literal WAF rule을 우회해 PSEMHUB servlet에 도달한 사례임. Oracle patch·EMHub exposure 제거·normalized-path enforcement·all-node web shell forensic을 같은 incident closure로 운영 필요.",
     "Canadian Centre는 Roundcube `CVE-2026-48842`의 active exploitation을 알림. `virtuser_query` plugin의 인증 전 SQL injection은 fixed build 적용과 plugin/exposure inventory·database/mailbox telemetry hunt를 병렬 운영 필요.",
     "AWS SageMaker HyperPod Inference Gateway는 request model name과 KV cache·queue·LoRA/prefix cache 등 6개 실시간 signal로 GPU pod를 선택하는 EKS managed add-on을 추가함. vendor TTFT 수치를 production SLO로 전환하기 전 cache warmness·traffic burst·GPU topology·retry 조건별 canary 필요.",
     "AWS IAM outbound identity federation은 OIDC discovery metadata·JWKS endpoint를 interface VPC endpoint로 제공함. internet egress 없는 VPC에서도 short-lived JWT verification path를 private network로 유지할 수 있으나 issuer/audience·private DNS·key rotation·PrivateLink 비용 canary가 필요.",
@@ -177,6 +177,91 @@
   ],
   "items": [
     {
+      "id": "news-543",
+      "title_ko": "Oracle PeopleSoft `CVE-2026-35273` 재확산: URL 인코딩으로 WAF 규칙을 우회한 뒤 PSEMHUB web shell을 배포",
+      "title_original": "ShinyHunters Renewed Mass Exploitation Campaign Targeting Oracle PeopleSoft",
+      "summary": "핵심: Google Threat Intelligence Group은 UNC6240(ShinyHunters)이 Oracle PeopleSoft `CVE-2026-35273`을 다시 대량 악용하며 `/PSEMHUB/`의 `P`를 URL 인코딩한 `/%50SEMHUB/` 경로로 문자열 기반 WAF 규칙을 우회한 사실을 공개함.\n변화: 최신 campaign은 전 세계 다수 조직에 JSP web shell을 배포했고, 고등교육·기술·IT 서비스·의료·농업·운송·정부 분야가 관측 범위에 포함됨.\n영향: WAF 경로 차단만 적용하고 Oracle security alert를 패치하지 않은 PeopleSoft Environment Management Hub가 직접 노출됨.\n팀 액션: fixed PeopleTools 적용·EMHub 비활성화 또는 PSEMHUB 제거·normalized path 차단·전체 WebLogic node와 host forensic을 하나의 긴급 closure로 운영 필요",
+      "detail": "Google Threat Intelligence Group은 UNC6240(ShinyHunters)이 Oracle PeopleSoft `CVE-2026-35273`을 재차 대량 악용하며, literal `/PSEMHUB/` 문자열만 검사하는 WAF·reverse proxy 규칙을 `/%50SEMHUB/` URL 인코딩으로 우회했다고 공개했다. PeopleSoft application server가 인코딩된 경로를 decode해 취약 servlet으로 라우팅하는 반면 일부 중간 장비는 decode 전 문자열로만 rule을 매칭하는 차이에서 발생한 경로다. GTIG는 최신 campaign에서 세계 여러 분야의 수십 개 시스템에 web shell이 배포된 사실을 확인했다. Oracle security alert 적용과 supported PeopleTools 유지, EMHub 비활성화 또는 single-server 구성의 PSEMHUB 제거, encoded·mixed-case path를 포함한 normalized-path 차단을 우선 수행하고, PSEMHUB.war·PORTAL.war·WebLogic access log·MeshAgent·service account 접근을 patch와 병렬 조사 필요.",
+      "why_it_matters": "공개 웹 tier의 WAF rule이 존재해도 application server와 proxy의 URL normalization semantics가 다르면 virtual patch가 실제 servlet 도달을 막지 못할 수 있음. PeopleSoft는 HR·재무·학생·공급망 등 고가치 업무 데이터와 directory·database·internal management path를 연결할 수 있어 web shell 이후 scope를 server patch만으로 축소할 수 없음.",
+      "engineering_implication": "PeopleSoft asset마다 exact PeopleTools build·EMHub/PSEMHUB enablement·public route·load balancer node·WAF decode/normalization order를 inventory 필요. `/%50SEMHUB/`와 다른 percent-encoded·mixed-case variant, external POST `/hub`, unexpected JSP/JSPX/EXE, WebLogic Java가 spawn한 shell·`curl`·`base64 -d`, MeshAgent·outbound domain을 hunt하고 발견 host는 evidence 보존 후 accessible credential rotation까지 수행 필요.",
+      "korea_implication": "국내 대학·공공기관·대기업의 PeopleSoft 운영 환경도 reverse proxy·WAF와 WebLogic cluster를 분리 운용할 수 있음. 외부 PIA session과 administrative EMHub path를 같은 exposure policy로 두지 말고, patch window에서 업무 owner·DBA·identity·SOC가 node별 조사와 credential response 범위를 함께 확정 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "Oracle",
+        "PeopleSoft",
+        "CVE-2026-35273",
+        "WebLogic",
+        "WAF",
+        "Active Exploitation",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 98,
+      "published_kst": "2026-09-26 20:46",
+      "source_name": "Google Cloud Threat Intelligence / Mandiant",
+      "source_url": "https://cloud.google.com/blog/topics/threat-intelligence/shinyhunters-renewed-mass-exploitation-campaign-targeting-oracle-peoplesoft/",
+      "image_url": "https://storage.googleapis.com/gweb-cloudblog-publish/images/03_ThreatIntelligenceWebsiteBannerIdeas_BA.max-2600x2600.png",
+      "local_image": "assets/images/news-543.png",
+      "related_links": [
+        {
+          "title": "The Hacker News: PeopleSoft WAF 우회·web shell 보도 (RSS 발행 시각 근거)",
+          "url": "https://thehackernews.com/2026/09/attackers-bypass-wafs-to-exploit-oracle.html"
+        },
+        {
+          "title": "Oracle Security Alert: CVE-2026-35273",
+          "url": "https://www.oracle.com/security-alerts/alert-cve-2026-35273.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Google Threat Intelligence Group은 UNC6240(ShinyHunters)이 Oracle PeopleSoft `CVE-2026-35273`을 다시 대량 악용한 campaign을 공개함. 6월에는 주로 교육 기관을 대상으로 한 zero-day 악용이었고 Oracle은 6월 10일 out-of-band security alert를 배포한 상태임.",
+          "items": [
+            "취약점: `CVE-2026-35273`은 unauthenticated remote code execution 가능 범위와 CVSS `9.8`로 공개",
+            "확산: 최신 관측에서 고등교육·기술·IT 서비스·의료·농업·운송·정부 분야의 수십 개 시스템에 web shell 배포 확인"
+          ]
+        },
+        {
+          "heading": "WAF 우회 경로",
+          "body": "공격자는 PSEMHUB endpoint의 문자열을 그대로 찾는 WAF·reverse proxy rule을 피해 `/%50SEMHUB/`를 요청함. `%50`은 `P`의 URL-encoded form이며, PeopleSoft application server는 decode 뒤 취약 servlet으로 라우팅하는 반면 일부 intermediary rule은 decode 전 path만 비교하는 차이 발생.",
+          "items": [
+            "우회: `/PSEMHUB/` literal match 대신 `/%50SEMHUB/` request로 servlet 도달",
+            "검증: percent-encoded·mixed-case·비정규 path를 decode·normalize한 결과 기준으로 block 여부 확인 필요"
+          ]
+        },
+        {
+          "heading": "침해 후 행위와 조사 범위",
+          "body": "GTIG는 load-balanced environment에서 모든 WebLogic node에 shell을 배포하려는 반복 POST, `PSEMHUB.war` 아래의 JSP web shell, Windows의 `Ple64.exe`, Linux의 MeshAgent persistence를 관측함. 관측 목록은 조직별 침해 성공이나 data theft를 확정하는 증거가 아니므로 local telemetry로 scope 판정 필요.",
+          "items": [
+            "web tier: external source의 `/hub` POST와 unexpected `.jsp`·`.jspx` request를 access log에서 탐색",
+            "host: `PSEMHUB.war`·`PORTAL.war`의 비정상 JSP/JSPX/EXE, WebLogic Java child shell, MeshAgent와 outbound connection 조사",
+            "cluster: first affected node만 확인하지 말고 load balancer 뒤 모든 WebLogic node의 artifact·process·log 비교 필요"
+          ]
+        },
+        {
+          "heading": "차단·복구 우선순위",
+          "body": "Google은 Oracle security alert 적용과 supported PeopleTools 유지, multi-server 구성의 EMHub disable 또는 single-server 구성의 PSEMHUB removal을 권고함. EMHub와 Integration Broker listening connector는 administrative/system-to-system component이므로 standard PIA user session과 다른 public exposure 정책으로 분리 가능.",
+          "items": [
+            "patch: Oracle security alert와 deployed PeopleTools build·container/image·node restart evidence 대조",
+            "exposure: EMHub/PSEMHUB public route 제거 또는 normalized-path enforcement와 WAF rule을 방어 심층화로 병행",
+            "closure: web shell 발견 host는 compromised로 취급하고 evidence 보존·credential rotation·lateral movement investigation 수행"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이번 campaign은 virtual patch가 URL canonicalization contract를 정확히 모델링하지 않으면 fixed application을 대체하지 못한다는 사례임. application, WAF, proxy, load balancer의 decode 순서와 route normalization을 security test case로 관리해야 함.",
+          "items": [
+            "검증: raw·decoded·double-encoded path, case variation, POST body inspection을 representative staging route에서 canary",
+            "지표: exposed EMHub count, fixed-build coverage, all-node forensic completion, suspicious encoded-path triage time",
+            "팀 액션: PeopleSoft owner·network/WAF owner·WebLogic/DB owner·SOC가 asset별 patch와 hunt evidence를 같은 incident record에 연결 필요"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-542",
       "title_ko": "CISA KEV: SharePoint RCE·MikroTik RouterOS MikroTrick 활성 악용을 patch와 management-plane forensic으로 함께 처리",
       "title_original": "SharePoint RCE and MikroTik RouterOS Flaws Actively Exploited in the Wild",
@@ -248,7 +333,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-541",
@@ -324,7 +409,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-539",
@@ -396,7 +481,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-540",
@@ -469,7 +554,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-537",
@@ -542,7 +627,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-538",
@@ -614,7 +699,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-536",
@@ -678,7 +763,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-533",
@@ -751,7 +836,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-530",
@@ -820,7 +905,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-535",
@@ -886,7 +971,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-531",
@@ -955,7 +1040,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-532",
@@ -1024,7 +1109,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-534",
@@ -1097,7 +1182,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-529",
@@ -1161,7 +1246,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-517",
@@ -1234,7 +1319,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-524",
@@ -1298,7 +1383,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-525",
@@ -1362,7 +1447,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-526",
@@ -1427,7 +1512,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-522",
@@ -1491,7 +1576,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-523",
@@ -1564,7 +1649,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-520",
@@ -1652,7 +1737,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-521",
@@ -1725,7 +1810,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-515",
@@ -1797,7 +1882,7 @@
           ]
         }
       ],
-      "rank": 23,
+      "rank": 24,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -1872,7 +1957,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-518",
@@ -1947,7 +2032,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-513",
@@ -2010,7 +2095,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-514",
@@ -2078,7 +2163,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-512",
@@ -2157,11 +2242,11 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-510",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -2230,7 +2315,7 @@
     },
     {
       "id": "news-509",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -2302,7 +2387,7 @@
     },
     {
       "id": "news-511",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -2450,7 +2535,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-506",
@@ -2518,7 +2603,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-505",
@@ -2591,7 +2676,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-508",
@@ -2668,11 +2753,11 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-499",
-      "rank": 36,
+      "rank": 37,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -2745,7 +2830,7 @@
     },
     {
       "id": "news-500",
-      "rank": 37,
+      "rank": 38,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -2829,7 +2914,7 @@
     },
     {
       "id": "news-501",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -2906,7 +2991,7 @@
     },
     {
       "id": "news-502",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -2983,7 +3068,7 @@
     },
     {
       "id": "news-498",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -3064,7 +3149,7 @@
     },
     {
       "id": "news-496",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -3137,7 +3222,7 @@
     },
     {
       "id": "news-503",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -3210,7 +3295,7 @@
     },
     {
       "id": "news-497",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -3278,7 +3363,7 @@
     },
     {
       "id": "news-495",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -3347,7 +3432,7 @@
     },
     {
       "id": "news-494",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
       "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
       "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
@@ -3431,7 +3516,7 @@
     },
     {
       "id": "news-492",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Check Point Security Management·Log Server `CVE-2026-91843`: Trusted Clients 경로의 unauthenticated root code execution을 LivePatch로 차단",
       "title_original": "Critical Check Point Management Flaw Lets Unauthenticated Attackers Run Code as Root",
       "summary": "- 공개: Check Point Security Management·Log Server login process의 stack overflow `CVE-2026-91843`가 **CVSS 9.8**로 공개\n- 경로: Trusted Clients에서 허용한 host가 긴 username login request를 보내면 인증 전 root code execution 가능 범위\n- 영향: R82.10·R82·R81.20·R81.10 및 EOL branch와 R82.20, standalone·Log Server·Multi-Domain deployment를 보도·vendor 응답 범위로 열거\n- 수정: `sk1000155` LivePatch 적용 또는 automatic update 설치 상태를 `cplp list`로 확인, Trusted Clients를 known host로 제한\n- 경계: Check Point·CISA·Censys는 보도 시점 active exploitation·public PoC를 확인하지 않았으며 exposed host 수는 취약 확정 수가 아님",
@@ -3516,7 +3601,7 @@
     },
     {
       "id": "news-493",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Docker Sandboxes `CVE-2026-77179`·`CVE-2026-79994`: macOS shared workspace symlink race를 0.42.0 이상으로 차단",
       "title_original": "Docker Sandboxes 0.42.0 security update: CVE-2026-77179 and CVE-2026-79994",
       "summary": "- 수정: Docker가 Sandboxes `0.42.0`에서 macOS virtio-fs와 guest-to-host Unix socket relay의 **2개 symlink race**를 수정\n- critical: `CVE-2026-77179`은 macOS `0.28.0`~`<0.42.0`에서 guest가 shared workspace 밖 arbitrary host file을 VMM user 권한으로 read·modify할 수 있는 범위\n- high: `CVE-2026-79994`은 `0.37.0`~`<0.42.0`에서 authorized workspace path 검증 뒤 reconnect 사이 directory 교체로 arbitrary AF_UNIX socket 연결 가능 범위\n- 완화: upgrade 전에는 clone mode 사용과 read-write host mount 추가 회피를 Docker가 안내\n- 팀 액션: macOS developer endpoint의 Sandboxes version·`sbx run` workspace mount·clone mode·agent tool 권한을 inventory하고 host file·socket exposure를 재검토 필요",
@@ -3588,7 +3673,7 @@
     },
     {
       "id": "news-504",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "Jade Sleet의 DevOps 채용 미끼: 조작된 `.terraform.lock.hcl`이 Apple Silicon 개발자 endpoint를 FLATROOF·ROOFDECK으로 연결",
       "title_original": "Don’t Call Us, We’ll Call Your APIs | TraderTraitor Backdoors Resurface on Victim With No Crypto Ties",
       "summary": "- 확인: SentinelOne은 북한 연계 TraderTraitor/Jade Sleet가 인도 IT 서비스사의 Apple Silicon MacBook을 침해한 사례를 공개. 해당 endpoint는 DevOps 엔지니어가 Terraform·Ansible로 AWS·OVH·OpenStack을 운영하고 source-control 접근을 보유한 환경\n- 경로: 가짜 채용 coding project의 조작된 `.terraform.lock.hcl`이 attacker-controlled custom provider를 가리켜 `terraform init` 시 악성 module 다운로드·실행으로 이어지는 범위\n- 영향: `FLATROOF`·`ROOFDECK`이 3월 18일부터 disk에 존재하고 3월 29일부터 beaconing·host activity가 시작된 telemetry 범위\n- 조치: 채용 과제 repository도 untrusted code로 취급하고 lockfile provider 주소·checksum·registry egress·macOS developer endpoint의 cloud/source-control credential을 같은 investigation 범위로 묶어야 함",
@@ -3735,92 +3820,6 @@
             "통제: version·DNSSEC enablement·listen interface·ACL·external query exposure inventory",
             "관측: crash·core dump·SERVFAIL·validation error·query latency와 unusual zone query telemetry",
             "팀 액션: resolver fleet patch 완료 전 egress DNS path·restart ownership·incident evidence retention을 runbook에 반영"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-491",
-      "title_ko": "ISC BIND 9 보안 업데이트: DoH SIG(0) 무인증 crash를 포함한 14개 결함을 9.20.29·9.21.26으로 수정",
-      "title_original": "BIND 9 Update Fixes 14 Flaws, Including an Unauthenticated Crash Over DNS-over-HTTPS",
-      "summary": "- 수정: ISC가 BIND `9.20.29`·`9.21.26`을 공개해 9월 16일 공지한 **14개 보안 결함** 수정\n- DoH: invalid `SIG(0)` request 뒤 client가 connection을 조기 종료하면 `named`가 crash할 수 있는 `CVE-2026-77692` 수정\n- resolver: crafted negative response·DNSSEC proof·HTTPS/SVCB alias가 default recursive resolver의 crash 또는 CPU·cache memory exhaustion을 유발할 수 있는 범위\n- 무결성: unrelated zone의 NSEC/NSEC3 proof를 통한 forged DNSSEC answer acceptance와 TSIG zone transfer 처리 경계 수정\n- 팀 액션: authoritative·recursive·DoH·DNSSEC validation·DNS64·SVCB/HTTPS workload와 package backport를 inventory하고 fixed build·restart·query failure canary 필요",
-      "detail": "ISC는 BIND 9의 보안 결함 14건을 수정한 `9.20.29`과 `9.21.26`을 공개했다. 가장 직접적인 노출 경로 중 하나인 `CVE-2026-77692`는 DoH를 응답하는 서버에서 invalid `SIG(0)` request를 보낸 client가 signature 검증 전 연결을 닫으면 `named`가 crash할 수 있는 문제다. release notes는 recursive resolver가 crafted negative response, DNSSEC proof, HTTPS/SVCB alias data를 처리할 때 crash 또는 CPU·cache memory exhaustion에 이를 수 있는 여러 결함도 수정한다. ISC는 14건의 active exploitation을 인지하지 못한다고 밝혔고 workaround는 제시하지 않았다. `9.18`은 2026년 6월 지원이 끝난 branch이므로 EOL image·OS package의 backport 여부를 release number만으로 추정하지 말고 vendor advisory와 deployed binary를 함께 확인해야 함.",
-      "why_it_matters": "BIND는 authoritative DNS, recursive resolver, DNSSEC validation, DoH endpoint 역할을 겸할 수 있어 하나의 package patch가 public query surface와 내부 name-resolution control plane에 동시에 영향. DoH·recursive path는 unauthenticated client 또는 attacker-controlled authoritative response 조건을 분리해 위험도를 판단해야 함.",
-      "engineering_implication": "`named -v`, package changelog, container image digest, vendor security tracker로 `9.20.29`·`9.21.26` 또는 backport 적용 여부를 대조 필요. DoH listener·recursion ACL·DNSSEC validation·DNS64 `break-dnssec`·SVCB/HTTPS response path를 inventory하고 canary에서 `named` restart, SERVFAIL, query latency, cache memory, CPU, zone-transfer failure를 기존 baseline과 비교 필요.",
-      "korea_implication": "국내 조직도 ISP·enterprise DNS, Kubernetes/CoreDNS upstream, public DoH, appliance 또는 Linux distribution package로 BIND를 운영할 수 있음. EOL `9.18` 기반 image와 managed appliance의 fixed build·maintenance window는 upstream version과 별도 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "DNS",
-        "BIND",
-        "DoH",
-        "DNSSEC",
-        "Open Source",
-        "Infrastructure"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-09-17 17:00",
-      "source_name": "ISC BIND 9 Release Notes",
-      "source_url": "https://bind9.readthedocs.io/en/stable/notes.html#notes-for-bind-9-20-29",
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News: BIND 9 14개 결함 분석",
-          "url": "https://thehackernews.com/2026/09/bind-9-update-fixes-14-flaws-including.html"
-        },
-        {
-          "title": "ISC BIND 9 download",
-          "url": "https://www.isc.org/download/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "ISC가 9월 16일 공개한 BIND 9 보안 결함 14건을 `9.20.29` stable branch와 `9.21.26` development branch에서 수정함. source와 보도 기준 `9.20.29`은 14건 전체를, `9.21.26`은 `CVE-2026-19662`를 제외한 13건을 수정함.",
-          "items": [
-            "수정: `9.20.29`·`9.21.26` release에 14개 security fix 포함",
-            "경계: ISC는 14개 결함의 active exploitation을 인지하지 못한다고 공지",
-            "수명: `9.18` branch는 2026년 6월 지원 종료 상태이며 fixed upstream release 부재"
-          ]
-        },
-        {
-          "heading": "직접 query로 가능한 crash 경로",
-          "body": "`CVE-2026-77692`는 DoH를 응답하는 `named`가 invalid `SIG(0)` authentication request를 검증하기 전에 client connection이 닫히면 crash할 수 있는 결함임. `CVE-2026-76163`은 global `options` block이 없는 configuration에서 remote TKEY query가 `named` termination을 유발할 수 있는 범위임.",
-          "items": [
-            "DoH: unauthenticated sender의 malformed `SIG(0)` request와 early connection close 조건",
-            "TKEY: global options block이 없는 `named.conf` configuration 조건",
-            "우선순위: internet-facing DoH listener와 external query ACL을 package update 전에 식별 필요"
-          ]
-        },
-        {
-          "heading": "recursive resolver·DNSSEC 영향",
-          "body": "release notes는 default recursive resolver의 crafted oversized negative cache response assertion failure `CVE-2026-19667`, cached DNSSEC NOQNAME proof 경쟁 조건 `CVE-2026-19662`, DNS64 `break-dnssec yes` 조건의 assertion failure `CVE-2026-19666`를 수정함. validating resolver는 unrelated zone proof로 forged DNSSEC answer를 accept할 수 있는 결함도 수정 대상임.",
-          "items": [
-            "crash: attacker-controlled authoritative response가 recursive resolver에 도달하는 query path 조건",
-            "무결성: unrelated signed NSEC proof의 forged NXDOMAIN acceptance `CVE-2026-19941` 수정",
-            "운영: DNSSEC validation·DNS64·forwarder·untrusted recursive client path를 patch scope에 포함 필요"
-          ]
-        },
-        {
-          "heading": "HTTPS·SVCB와 운영 자원 경계",
-          "body": "HTTPS/SVCB alias record 처리도 resolver resource exhaustion 범위에 포함됨. `CVE-2026-81563`은 alias target record가 cache에서 적절히 release되지 않아 configured cache limit을 넘어 unrelated name resolution failure로 이어질 수 있는 조건을, `CVE-2026-81736`은 cached interlinked alias response assembly의 CPU 과다 사용 조건을 수정함.",
-          "items": [
-            "메모리: fresh alias name을 반복 처리할 때 cache growth와 resolution failure 가능성",
-            "CPU: cached HTTPS/SVCB alias를 따라 additional section을 구성하는 excessive work 조건",
-            "검증: canary에서 query latency·SERVFAIL·cache memory·CPU와 SVCB/HTTPS response behavior 비교 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "DNS patch closure는 CVE 목록과 binary version만으로 끝나지 않음. authoritative, recursive, DoH, DNSSEC, zone-transfer 역할과 OS package backport·container image·appliance maintenance channel을 asset별로 연결해야 fixed build와 restart 증거가 일치함.",
-          "items": [
-            "확인: `named -v`, package advisory, image digest, listener·recursion ACL, DNSSEC·DNS64·DoH configuration",
-            "검증: representative resolution, DNSSEC validation, DoH request, zone transfer, restart·SERVFAIL·resource telemetry",
-            "팀 액션: EOL `9.18` 및 vendor backport 미확인 asset을 exception register와 replacement plan으로 분리"
           ]
         }
       ],

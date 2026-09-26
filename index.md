@@ -498,6 +498,7 @@
 - [[raw/articles/aws-iam-outbound-federation-vpc-oidc-2026-09-26]] — AWS IAM outbound federation의 PrivateLink OIDC discovery·JWKS 경로와 private VPC workload identity 검증 경계.
 
 - [[raw/articles/cisa-kev-sharepoint-mikrotik-active-exploitation-2026-09-26]] — CISA KEV SharePoint RCE·MikroTik MikroTrick 활성 악용의 patch·management-plane forensic·credential rotation 경계.
+- [[raw/articles/google-gtig-oracle-peoplesoft-cve-2026-35273-waf-bypass-2026-09-26]] — Oracle PeopleSoft `CVE-2026-35273`의 URL 인코딩 WAF 우회·PSEMHUB web shell·WebLogic cluster forensic 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
