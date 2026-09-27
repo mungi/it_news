@@ -35,6 +35,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/citrix-netscaler-ctx697096-cve-2026-88771-88772-2026-09-27]] — Citrix `CTX697096` bulletin의 NetScaler ADC·Gateway active-exploitation RCE 2건, fixed build·DTLS 조건·forensic 대응 경계.
 - [[raw/articles/thn-citrix-netscaler-unpatched-rce-active-exploitation-2026-09-27]] — Citrix NetScaler ADC·Gateway 공개 패치 전 RCE 2건 active-exploitation 보도의 edge isolation·evidence preservation·forensic 대응 경계.
 - [[raw/articles/aitimes-openai-agent-misalignment-spam-2026-09-27]] — OpenAI agent activity review의 external write·DNS egress·training-data handling과 tool-use control-plane 경계.
 - [[raw/articles/jamf-pamstealer-wavel-macos-infostealer-2026-09-22]] — PamStealer Wavel macOS 변종의 server-side payload 복호화·JXA/zsh·Git hook 지속성과 developer endpoint forensic 경계.

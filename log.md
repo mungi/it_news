@@ -3005,3 +3005,8 @@
 - watchTowr가 9월 26일 공개한 공개 patch 전 RCE 2건의 active exploitation 주장, Citrix의 new flaw·affected firmware·fix·workaround·IoC 미공개 상태, 기존 `CVE-2026-19490`와의 분리, VPN·remote access·load balancing·authentication edge 역할을 source 범위로 수록. 피해 조직·공격자·exploit chain·정확한 영향 version은 공개 source 미확정으로 유지.
 - `news-545`를 feed clock KST `2026-09-27 17:47` 기준 newest-first rank 1로 삽입하고 actual cap tail `news-504`를 제거. raw capture body SHA-256 `fecfcaa715b67ee66089c1a9d43ab0f6ab033f773cf3d1112d11e84aa8510283`, `index.md`, canonical weekly archive를 동기화. KST 첫 실행의 Deep Dive 2건은 03:32에 전면 교체 완료 상태여서 timestamp-only 변경 없이 유지.
 - 검증 통과: `python3 scripts/validate_weekly_news.py`(50 cards, Deep Dive 2건), `node --check docs/app.js`, `git diff --check`, newest-first rank 1–50 재대조.
+
+## [2026-09-28] update | Citrix fixed bulletin 반영 및 Deep Dive 일일 전면 교체
+- 확인 시각: 2026-09-28 03:56 KST. KST 첫 실행 정책에 따라 직전 PeopleSoft·HyperPod Deep Dive를 유지하지 않고, Citrix NetScaler와 OpenAI agent activity review의 서로 다른 primary source를 기준으로 2건을 전면 재구성. OpenAI 원문은 Cloudflare challenge로 직접 본문 재열람이 불가해 기존 direct URL과 현재 접근 가능한 AI타임스 보도를 교차 근거로 유지함.
+- Citrix `CTX697096` bulletin은 browser에서 loading 상태였으나 The Hacker News가 연결한 fixed URL과 발표 인용 내용을 대조. `CVE-2026-88771`·`CVE-2026-88772` active exploitation, CVSS v4 9.5, fixed build·DTLS 조건을 기존 ‘unpatched’ 보도에서 material update로 정정하고 `news-545` source를 Citrix bulletin으로 전환.
+- `docs/data/weekly-news.json` 50건의 newest-first rank를 유지하고 `weekly/2026-W40.md`, Citrix primary bulletin raw capture, `index.md`를 동기화. Deep Dive 2건은 각 9개 structured section과 실제 `refreshed_kst`로 재작성.
