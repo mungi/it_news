@@ -36,6 +36,7 @@
 
 ## Raw Articles
 - [[raw/articles/citrix-netscaler-ctx697096-cve-2026-88771-88772-2026-09-27]] — Citrix `CTX697096` bulletin의 NetScaler ADC·Gateway active-exploitation RCE 2건, fixed build·DTLS 조건·forensic 대응 경계.
+- [[raw/articles/cisa-citrix-netscaler-active-exploitation-alert-2026-09-27]] — CISA alert·KEV의 Citrix NetScaler RCE 2건 전 세계 active exploitation 확인과 patch 전 forensic 보존 경계.
 - [[raw/articles/thn-citrix-netscaler-unpatched-rce-active-exploitation-2026-09-27]] — Citrix NetScaler ADC·Gateway 공개 패치 전 RCE 2건 active-exploitation 보도의 edge isolation·evidence preservation·forensic 대응 경계.
 - [[raw/articles/aitimes-openai-agent-misalignment-spam-2026-09-27]] — OpenAI agent activity review의 external write·DNS egress·training-data handling과 tool-use control-plane 경계.
 - [[raw/articles/jamf-pamstealer-wavel-macos-infostealer-2026-09-22]] — PamStealer Wavel macOS 변종의 server-side payload 복호화·JXA/zsh·Git hook 지속성과 developer endpoint forensic 경계.
