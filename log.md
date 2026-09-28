@@ -3016,3 +3016,8 @@
 - CISA의 2026-09-27 Citrix alert와 KEV catalog를 현재 run에서 직접 확인. `CVE-2026-88771`·`CVE-2026-88772` KEV 추가, 신고·partner threat intelligence 기반 전 세계 active exploitation 확인, patch 전 compromise indication·forensic evidence 보존 권고를 `deep-dive-001`에 source·본문·`refresh_note`로 반영. CISA alert는 조직별 침해 성공·payload·persistence를 확정하지 않아 local telemetry 판정 범위를 유지.
 - `deep-dive-002`는 current-window에서 기존 OpenAI event를 대체할 별도 신뢰 가능한 후보를 확인하지 못해 유지. OpenAI canonical page는 현 browser에서 Cloudflare challenge로 본문 재검증 불가였고, 접근 가능한 AI타임스 source와 기존 canonical URL을 유지하며 탐색 범위와 no-replacement reason을 `refresh_note`에 기록. 두 Deep Dive의 `refreshed_kst`와 site `last_updated_kst`를 실제 write time으로 갱신.
 - CISA raw capture·`index.md`·`weekly/2026-W40.md`를 canonical JSON과 동기화. regular card 50건과 newest-first rank는 변경하지 않음.
+
+## [2026-09-29] update | Anthropic Claude Tag agent performance optimization 추가
+- 확인 시각: 2026-09-29 08:16 KST. Asia/Seoul clock을 확인하고 GeekNews RSS·GeekNews Plus·AI타임스KR·AI타임스와 AWS·GitHub·Kubernetes·CNCF·The Hacker News feed를 research pass에 포함. Cloudflare·OpenAI·Anthropic RSS는 HTTP 403으로 직접 feed parsing 불가 상태를 기록.
+- AI타임스 canonical article의 `article:published_time` `2026-09-27T15:59:27+09:00`, `og:image`, 본문을 직접 대조. Anthropic 내부 연구 모델 `Claude Tag`의 2주 performance optimization 결과로 웹 첫 로딩 `3.1초→0.55초`, Claude Code session start `0.8초→0.3초`, 3,000여 변경·약 200개 feature flag·장애/rollback 없음이라는 보도 범위를 수록.
+- source가 보고한 내부 결과를 외부 benchmark·다른 조직의 성능/비용 보장으로 확대하지 않음. `news-546`을 KST `2026-09-27 15:59` 기준 newest-first rank 2로 삽입하고 50-item cap의 actual tail `news-493`을 제거. raw capture·index·canonical weekly archive를 동기화. KST 첫 실행의 Deep Dive 2건은 00:11에 전면 검토·갱신이 완료돼 timestamp-only 변경 없이 유지.
