@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-26 | Total pages: 377
+> Last updated: 2026-09-30 | Total pages: 378
 
 ## Entities
 
@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/thn-spectre-v2-btr-linux-jit-2026-09-30]] — Spectre-v2 BTR의 Linux·browser·runtime JIT stale branch target 재사용과 kernel·runtime·isolation patch 경계.
 - [[raw/articles/github-security-lab-android-taskflow-agent-2026-09-29]] — GitHub Security Lab Taskflow Agent의 Android entry point·vulnerability class 기반 AI 감사 workflow와 human triage·격리 운영 경계.
 - [[raw/articles/anthropic-claude-sonnet-5-5-2026-09-28]] — Claude Sonnet 5.5 공식 발표의 속도·작업당 비용·benchmark·safeguard·migration 운영 경계.
 - [[raw/articles/aitimes-anthropic-claude-tag-performance-optimization-2026-09-27]] — Anthropic Claude Tag의 2주 성능 최적화, test·feature flag·human approval 기반 agent release control.
