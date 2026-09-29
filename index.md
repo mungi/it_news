@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/github-security-lab-android-taskflow-agent-2026-09-29]] — GitHub Security Lab Taskflow Agent의 Android entry point·vulnerability class 기반 AI 감사 workflow와 human triage·격리 운영 경계.
 - [[raw/articles/anthropic-claude-sonnet-5-5-2026-09-28]] — Claude Sonnet 5.5 공식 발표의 속도·작업당 비용·benchmark·safeguard·migration 운영 경계.
 - [[raw/articles/aitimes-anthropic-claude-tag-performance-optimization-2026-09-27]] — Anthropic Claude Tag의 2주 성능 최적화, test·feature flag·human approval 기반 agent release control.
 - [[raw/articles/citrix-netscaler-ctx697096-cve-2026-88771-88772-2026-09-27]] — Citrix `CTX697096` bulletin의 NetScaler ADC·Gateway active-exploitation RCE 2건, fixed build·DTLS 조건·forensic 대응 경계.

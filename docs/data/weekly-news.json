@@ -2,11 +2,12 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-09-29 12:23",
+  "last_updated_kst": "2026-09-29 20:28",
   "audience": "developers and engineers",
   "executive_summary": [
+    "GitHub Security Lab은 `seclab-taskflows` Android audit workflow로 현재까지 24건의 취약점을 보고했다고 공개함. entry point·component·vulnerability class를 반복 검토하는 보조 도구이므로 candidate finding은 reproducer·영향 판정·human disclosure gate를 통과한 뒤 집계 필요.",
     "Anthropic은 `Claude Sonnet 5.5`를 Sonnet 5 대비 출력 속도 30% 이상, 작업당 비용 최대 30% 절감으로 공개함. `Terminal-Bench 4.0` 70.6%와 `CursorBench 4.0` 55.5%는 vendor 평가 수치이므로 task success·tail latency·token/tool call·retry·safeguard fallback을 현재 workload로 canary 비교 필요.",
-    "새 커버리지 창은 2026-09-28 17:00 KST~2026-10-05 13:00 KST이며, 현재 목록의 49건은 직전 창에서 유지한 provisional carry-over임. 새 창의 source-verified 카드가 확보되는 대로 newest-first 정렬과 50-item cap 기준으로 교체 예정.",
+    "새 커버리지 창은 2026-09-28 17:00 KST~2026-10-05 13:00 KST이며, 현재 목록의 48건은 직전 창에서 유지한 provisional carry-over임. 새 창의 source-verified 카드가 확보되는 대로 newest-first 정렬과 50-item cap 기준으로 교체 예정.",
     "기존 Citrix·PeopleSoft·Roundcube 등 edge·enterprise control-plane 보안 카드는 새 창의 patch·active-exploitation 후속 정보가 확인될 때까지 대응 문맥으로 유지함. 신규 telemetry가 없으면 prior incident를 신규 사실처럼 재서술하지 않음.",
     "Claude Sonnet 5.5 도입은 model ID 변경뿐 아니라 thinking-off의 `between_tools` migration, provider·region·quota·data-retention 조건, budget·quality rollback gate를 같은 release record에서 검증 필요."
   ],
@@ -271,8 +272,82 @@
       ]
     },
     {
+      "id": "news-548",
+      "title_ko": "GitHub Security Lab Taskflow Agent: Android 앱 취약점 24건을 찾은 AI 감사 workflow 공개",
+      "title_original": "How we found 24 Android vulnerabilities using our open source AI security agent",
+      "summary": "핵심: GitHub Security Lab이 `seclab-taskflows`의 Android 감사 workflow로 현재까지 24건의 취약점을 보고했다고 공개함. mobile entry point 분리와 vulnerability class별 반복 taskflow를 결합해 exported component·intent 기반 attack surface를 좁히는 방식임.\n운영: 실행에는 GitHub Copilot license와 premium model request가 필요하고 medium-sized repository는 1~2시간, 다수 tool call이 들 수 있음. 결과 행의 취약점 표시는 triage 시작점일 뿐이므로 재현·영향 판정·responsible disclosure를 별도 gate로 운영 필요.",
+      "detail": "GitHub Security Lab은 오픈소스 `seclab-taskflows`에 Android application audit workflow를 추가해 24건의 취약점을 보고했다고 공개했다. workflow는 repository의 mobile/non-mobile entry point를 구분하고, intent entry point에는 confused deputy·insecure broadcast 같은 mobile-specific class를 반복적으로 검토하도록 prompt를 구성한다. 공개 사례에서 OsmAnd의 exported `MapActivity`는 외부 앱이 intent extras를 조작해 settings import를 제어하고 map tile request를 공격자 domain으로 보낼 수 있었던 조건이 설명됐다. GitHub는 이 흐름을 vulnerability finding 보조 도구로 소개했으며, reported count는 해당 taskflow의 vendor disclosure 결과이지 모든 Android app의 탐지율이나 자동 수정 정확도를 보장하는 benchmark가 아님.",
+      "why_it_matters": "LLM 기반 security audit은 broad code review보다 entry point·component·vulnerability class를 분리한 반복 workflow에서 재현 가능한 검토 범위를 만들 수 있다. 반면 Copilot premium request, 장시간 tool execution, repository source exposure, false positive triage가 실제 도입 비용과 보안 경계를 결정한다.",
+      "engineering_implication": "시사점: Android audit agent는 production repository write 권한 없이 disposable Codespace 또는 isolated VM에서 실행하고, source access·network egress·tool call budget·artifact retention을 task별로 제한 필요. candidate finding은 reproducer, affected version, exploit precondition, security owner review, disclosure/patch ticket을 통과한 뒤에만 취약점으로 집계 필요.",
+      "korea_implication": "국내 모바일 서비스 조직도 exported activity·intent·deep link·content provider를 CI 보안 점검에 넣을 수 있으나, proprietary source와 premium model request의 data handling·비용·보존 조건을 vendor 계약과 내부 정책에서 먼저 확정 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "AI Agent",
+        "Application Security",
+        "Android",
+        "Fuzzing",
+        "DevSecOps",
+        "Open Source"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-09-29 04:00",
+      "source_name": "GitHub Security Lab",
+      "source_url": "https://github.blog/security/how-we-found-24-android-vulnerabilities-using-our-open-source-ai-security-agent/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-security-invertocat-blocks-copilot.png?fit=1920%2C1080",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "GitHub Security Lab Taskflow Agent repository",
+          "url": "https://github.com/github/securitylab-taskflows"
+        },
+        {
+          "title": "GitHub Advisory Database",
+          "url": "https://github.com/advisories"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub Security Lab은 AI prompt와 workflow를 security research에 재사용·공유하기 위한 `seclab-taskflows`의 Android audit taskflow를 공개함. 원문은 이 workflow로 보고한 Android 취약점이 현재 24건이며, 이미 공개된 사례를 포함한다고 설명함.",
+          "items": [
+            "대상: Android repository의 attacker-controlled entry point와 component interaction 분석",
+            "실행: GitHub Copilot license·premium model request 필요, 중간 규모 repository는 약 1~2시간 소요 가능"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "workflow는 `gather_mobile_entry_point_info.yaml`로 mobile과 non-mobile entry point를 분리하고, `classify_application_local.yaml`에서 entry point별 vulnerability class를 검토하도록 구성됨. 같은 repository를 반복 실행해 strict checklist와 broad exploration을 함께 쓰는 구조임.",
+          "items": [
+            "intent entry point: confused deputy·insecure broadcast 등 Android-specific class를 명시적으로 점검",
+            "결과 확인: `./scripts/audit/run_mobile.sh myorg/myrepo` 실행 뒤 SQLite `audit_results`의 `has_vulnerability` 행을 triage 대상으로 확인"
+          ]
+        },
+        {
+          "heading": "공개 사례와 증거 경계",
+          "body": "OsmAnd 사례에서 exported `MapActivity`는 외부 component가 호출할 수 있고, intent extras는 외부 caller가 임의로 설정할 수 있는 조건임. 원문은 settings import 관련 extra가 silent import·replace·confirmation bypass에 연결되고, tile URL을 바꾸면 위치 tile coordinate가 외부 domain으로 전송될 수 있음을 설명함.",
+          "items": [
+            "영향 조건: exported activity와 attacker-controlled intent extra가 같은 settings import path에 연결된 경우",
+            "경계: 24건은 GitHub Security Lab이 보고한 disclosure 수이며 일반 Android app의 recall·precision 또는 자동 remediation 성공률 미확정"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agent output은 vulnerability verdict가 아니라 security review queue로 다뤄야 함. deterministic check와 LLM exploration을 분리하고, finding마다 reproducer·affected version·permission·data flow·false-positive 사유를 evidence로 남겨야 CI gate가 과도한 alert와 누락을 함께 줄일 수 있음.",
+          "items": [
+            "격리: disposable Codespace 또는 throwaway VM, production secret·write token·broad network egress 미부여",
+            "검증: exported component·intent/deep link·content provider별 test corpus와 human exploitability review 연결",
+            "비용 통제: premium request·tool call·runtime·artifact storage를 repository와 run ID 단위로 계측"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-545",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -355,7 +430,7 @@
     },
     {
       "id": "news-546",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -488,7 +563,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-543",
@@ -573,7 +648,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-542",
@@ -647,7 +722,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-541",
@@ -723,7 +798,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-539",
@@ -795,7 +870,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-540",
@@ -868,7 +943,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-537",
@@ -941,7 +1016,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-538",
@@ -1013,7 +1088,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-536",
@@ -1077,7 +1152,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-533",
@@ -1150,7 +1225,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-530",
@@ -1219,7 +1294,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-535",
@@ -1285,7 +1360,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-531",
@@ -1354,7 +1429,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-532",
@@ -1423,7 +1498,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-534",
@@ -1496,7 +1571,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-529",
@@ -1560,7 +1635,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-517",
@@ -1633,7 +1708,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-524",
@@ -1697,7 +1772,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-525",
@@ -1761,7 +1836,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-526",
@@ -1826,7 +1901,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-522",
@@ -1890,7 +1965,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-523",
@@ -1963,7 +2038,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-520",
@@ -2051,7 +2126,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-521",
@@ -2124,7 +2199,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-515",
@@ -2196,7 +2271,7 @@
           ]
         }
       ],
-      "rank": 28,
+      "rank": 29,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -2271,7 +2346,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-518",
@@ -2346,7 +2421,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-513",
@@ -2409,7 +2484,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-514",
@@ -2477,7 +2552,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-512",
@@ -2556,11 +2631,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-510",
-      "rank": 34,
+      "rank": 35,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -2629,7 +2704,7 @@
     },
     {
       "id": "news-509",
-      "rank": 35,
+      "rank": 36,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -2701,7 +2776,7 @@
     },
     {
       "id": "news-511",
-      "rank": 36,
+      "rank": 37,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -2849,7 +2924,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-506",
@@ -2917,7 +2992,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-505",
@@ -2990,7 +3065,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-508",
@@ -3067,11 +3142,11 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-499",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -3144,7 +3219,7 @@
     },
     {
       "id": "news-500",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -3228,7 +3303,7 @@
     },
     {
       "id": "news-501",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -3305,7 +3380,7 @@
     },
     {
       "id": "news-502",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -3382,7 +3457,7 @@
     },
     {
       "id": "news-498",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -3463,7 +3538,7 @@
     },
     {
       "id": "news-496",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
       "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
       "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
@@ -3536,7 +3611,7 @@
     },
     {
       "id": "news-503",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Cloudflare Pingora Backend Router: compact consistent-hash ring과 단계적 전환으로 전 세계 RAM 100TB 이상 회수",
       "title_original": "Saving another 100TB of RAM with math (and Rust)",
       "summary": "- 공개: Cloudflare가 Pingora Backend Router(PBR)의 `pingora-ketama` consistent-hash 구조를 최적화해 전 세계 사용 RAM을 **100TB 이상** 줄였다고 9월 19일 공개\n- 원인: storage weight를 hash point 수로 반영하는 ring에서 hash 수 증가의 분산 개선 효과가 작아지고 32-bit collision·ring state가 memory 비용을 키운 범위\n- 전환: v1·v2 ring을 동시에 유지하고 request hash·data center 단위로 새 ring 비율을 조정해 cache churn과 origin traffic blast radius를 제한\n- 적용: `pingora-ketama` v2는 compact storage·faster sorting·base hash 수 조정 기능을 제공하며, 자체 fleet에는 key skew·backend churn·cache hit·origin retry·tail latency canary 검증 필요",
@@ -3609,7 +3684,7 @@
     },
     {
       "id": "news-497",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "AWS Resilience Hub: EKS label 기반 분석·AI dependency insight·Organizations policy 공유로 복구 범위를 제어",
       "title_original": "AWS Resilience Hub adds three new capabilities",
       "summary": "- 공개: AWS가 EKS namespace label을 service input source로 쓰는 기능, 생성형 AI 기반 dependency insight, AWS Organizations policy 공유를 9월 18일 추가\n- 범위: label로 failure mode analysis 대상 리소스를 기존 Kubernetes ownership convention에 맞춰 선택하고, insight가 새 의존성·cross-Region path·unusual usage pattern을 표시\n- 운영: 중앙 팀은 policy를 여러 account에 공유하고 service별 적용 현황을 확인 가능, 차세대 Resilience Hub는 서울을 포함한 15개 리전 제공\n- 조치: AI insight를 dependency graph의 확정 사실로 취급하지 말고 EKS label selector·account boundary·cross-Region dependency·RTO/RPO owner를 inventory와 recovery drill로 대조 필요",
@@ -3677,7 +3752,7 @@
     },
     {
       "id": "news-495",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "Azure AI Foundry `CVE-2026-85889`: CVSS 10.0 인증 누락 privilege escalation을 Microsoft가 서비스 측 완화",
       "title_original": "Microsoft Patches CVSS 10.0 Azure AI Foundry Flaw Enabling Unauthorized Privilege Escalation",
       "summary": "- 공개: Microsoft Azure AI Foundry의 critical function 인증 누락 `CVE-2026-85889`가 **CVSS 10.0** network privilege escalation 범위로 공개\n- 조치: Microsoft는 cloud service 측 완화 완료와 고객 조치 불필요를 안내, THN 보도 시점 in-the-wild exploitation evidence는 없음\n- 범위: Foundry에서 생성형 AI 애플리케이션·agent를 build·deploy·manage하는 service plane 관련 CVE로 기록\n- 운영: tenant별 incident 여부를 CVSS만으로 추정하지 말고 Microsoft service health·support notice·Foundry audit·Entra sign-in·privileged role 변경을 같은 evidence로 확인 필요",
@@ -3740,90 +3815,6 @@
           "items": [
             "통제: Foundry RBAC·managed identity scope·private endpoint·egress·connection secret의 최소 권한 재확인",
             "팀 액션: threat hunting 결과와 Microsoft mitigation notice를 incident tracker에 연결하고 exception·owner·review date 기록"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-494",
-      "rank": 50,
-      "title_ko": "Plugin4Shell: SHA pin 우회로 Claude Code·Codex·Copilot·Gemini CLI plugin 자동 업데이트가 zero-click RCE로 이어지는 공급망 결함",
-      "title_original": "Plugin4Shell - Zero Click RCE Vulnerability found in top 4 most popular coding agents, millions of agents affected",
-      "summary": "- 공개: AIR Security가 plugin marketplace의 pinned commit checkout 뒤 실제 `HEAD` 일치 검증 누락으로 **zero-click RCE**가 가능한 Plugin4Shell을 9월 17일 공개\n- 범위: Claude Code·OpenAI Codex·GitHub Copilot·Gemini CLI의 설치 plugin이 repo takeover 또는 malicious update 뒤 background auto-update로 교체될 수 있다는 연구 결과\n- 기법: SHA와 같은 이름의 default branch를 만들어 Git ref가 object ID보다 우선 해석되는 조건을 악용, reviewed commit과 다른 working tree를 checkout하는 경로\n- 수정: Claude Code `2.1.179`, Codex `0.146.0`은 수정 확인; AIR 원문은 Copilot fix 미출시, deprecated Gemini CLI는 수정 계획 없음으로 기술\n- 팀 액션: coding-agent plugin inventory·version·repo host·auto-update·commit provenance를 확인하고 fixed agent로 update 또는 plugin execution을 중단 필요",
-      "detail": "AIR Security는 2026년 9월 17일 Plugin4Shell 연구를 공개했다. 연구는 Claude Code, OpenAI Codex, GitHub Copilot, Gemini CLI가 marketplace가 pin한 plugin commit을 checkout한 뒤 실제 working tree `HEAD`가 pinned SHA와 같은지 확인하지 않는 설계 결함을 지적한다. 공격자가 plugin repository를 제어하면 40-hex SHA와 같은 이름의 default branch를 만들어 Git ref 해석 우선순위로 malicious branch를 checkout하게 할 수 있으며, Claude Code와 Codex의 background auto-update는 기존 설치 plugin에도 사용자 상호작용 없이 경로를 재실행할 수 있다는 설명이다. Gemini CLI는 `FETCH_HEAD`를 가져온 뒤 default branch 이름 충돌로 다른 ref를 checkout하는 별도 변형이 제시됐다. AIR는 Claude Code `2.1.179`, Codex `0.146.0` 수정 확인, Copilot 미출시, deprecated Gemini CLI 미수정 계획을 기술한다. 이는 연구사 공개 범위이므로 조직별 exploit·영향 agent 수는 inventory와 telemetry로 확인해야 함.",
-      "why_it_matters": "coding agent plugin은 개발자의 repository·shell·cloud credential·internal system 접근 권한을 상속할 수 있음. commit pin을 검토 통제로 사용해도 checkout 결과 검증이 없으면 plugin marketplace 검토, repository provenance, endpoint trust boundary가 동시에 무력화될 수 있음.",
-      "engineering_implication": "Claude Code는 `2.1.179` 이상, Codex는 `0.146.0` 이상 여부를 endpoint별 확인 필요. Copilot·Gemini CLI plugin 사용 환경은 vendor fix 상태를 별도 추적하고, 해결 전 third-party plugin auto-update 중단·allowlist·repo host 제한·checkout 뒤 `git rev-parse HEAD`와 pinned SHA 대조를 deployment gate로 적용 필요.",
-      "korea_implication": "국내 개발 조직의 coding agent pilot도 public marketplace plugin과 self-hosted Git을 함께 사용할 수 있음. endpoint MDM, developer tool package inventory, internal Git host ref-name policy, CI runner credential scope를 하나의 공급망 점검 범위로 묶을 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Agent",
-        "Supply Chain",
-        "Claude Code",
-        "OpenAI Codex",
-        "GitHub Copilot",
-        "Gemini CLI",
-        "Git"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-18 20:01",
-      "source_name": "AIR Security research / The Hacker News",
-      "source_url": "https://www.air.security/blog-posts/plugin4shell",
-      "image_url": "",
-      "local_image": "assets/images/news-494.png",
-      "related_links": [
-        {
-          "title": "The Hacker News report",
-          "url": "https://thehackernews.com/2026/09/plugin4shell-lets-repository-owners.html"
-        },
-        {
-          "title": "Claude Code 2.1.179 release",
-          "url": "https://github.com/anthropics/claude-code/releases/tag/v2.1.179"
-        },
-        {
-          "title": "OpenAI Codex rust-v0.146.0 release",
-          "url": "https://github.com/openai/codex/releases/tag/rust-v0.146.0"
-        },
-        {
-          "title": "GitHub Copilot CLI plugin reference",
-          "url": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AIR Security는 plugin marketplace가 기록한 commit SHA를 agent가 checkout한 뒤 실제 working tree commit으로 재확인하지 않는 결함을 공개함. 원문은 Claude Code·Codex·GitHub Copilot·Gemini CLI의 plugin install path에 zero-click RCE 범위가 있다고 기술함.",
-          "items": [
-            "대상: marketplace에서 plugin을 설치하고 repository clone·checkout을 수행하는 coding-agent client",
-            "경계: 연구가 공개한 exploit chain이며 각 조직의 plugin 설치 수·침해 여부·실제 악용은 inventory와 telemetry 미확인 범위"
-          ]
-        },
-        {
-          "heading": "SHA pin 우회 경로",
-          "body": "Claude Code·Codex·Copilot 변형은 pinned SHA와 같은 40-hex 이름의 branch를 default branch로 만들고 Git이 ambiguous name에서 ref를 object ID보다 먼저 해석하는 조건을 이용함. agent는 요청한 SHA가 아니라 attacker-controlled branch를 checkout해도 install 성공으로 처리할 수 있다는 설명임.",
-          "items": [
-            "조건: attacker가 plugin upstream repository를 publish 뒤 변경하거나 legitimate author repository를 takeover할 수 있는 상황",
-            "기법: pinned SHA와 동일한 branch name·default branch 설정 뒤 checkout 결과 `HEAD`가 pin과 다른 상태",
-            "검증: checkout 뒤 `git rev-parse HEAD` 값과 marketplace pinned SHA를 비교하지 않는 경로"
-          ]
-        },
-        {
-          "heading": "자동 업데이트와 Gemini CLI 변형",
-          "body": "원문은 Claude Code와 Codex에서 background auto-update가 default여서 기존 설치 plugin도 user click 없이 변경된 pin을 따라 재설치될 수 있다고 설명함. Gemini CLI는 shallow clone·SHA fetch 뒤 `FETCH_HEAD` checkout에서 default branch name 충돌로 branch를 선택할 수 있는 별도 흐름을 제시함.",
-          "items": [
-            "영향: 이미 검토·설치된 plugin도 repository control 상실 뒤 auto-update 경로가 공격 surface가 되는 범위",
-            "Gemini: requested SHA를 fetch해도 resolved `HEAD`를 assertion하지 않으면 fetched object와 working tree가 달라질 수 있는 조건"
-          ]
-        },
-        {
-          "heading": "수정 상태와 시사점",
-          "body": "AIR 원문은 coordinated disclosure 뒤 Claude Code `2.1.179`와 Codex `0.146.0`의 수정 확인을 기술함. Copilot은 fix 미출시, Google은 deprecated Gemini CLI를 수정하지 않고 Antigravity migration을 안내했다고 원문이 설명하므로 vendor release 상태를 같은 날짜의 advisory로 재검증해야 함.",
-          "items": [
-            "조치: Claude Code·Codex fixed version을 endpoint·CI image·developer workstation별 확인",
-            "통제: third-party plugin auto-update 중단 또는 allowlist, repository host·default-branch·ref-name policy 검토",
-            "팀 액션: plugin name·source repository·pinned SHA·resolved HEAD·update timestamp·execution permission을 change record에 보존"
           ]
         }
       ]
