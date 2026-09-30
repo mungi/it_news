@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-managed-agents-openai-preview-2026-09-30]] — Bedrock Managed Agents preview의 durable session·MCP·IAM·human approval·CloudTrail 및 agent control-plane 검증 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-6-1-sol-2026-09-30]] — Amazon Bedrock GPT-6.1 Sol GA의 prompt cache·IAM/CloudTrail/PrivateLink·data retention·agent canary 검증 경계.
 - [[raw/articles/thn-spectre-v2-btr-linux-jit-2026-09-30]] — Spectre-v2 BTR의 Linux·browser·runtime JIT stale branch target 재사용과 kernel·runtime·isolation patch 경계.
 - [[raw/articles/github-security-lab-android-taskflow-agent-2026-09-29]] — GitHub Security Lab Taskflow Agent의 Android entry point·vulnerability class 기반 AI 감사 workflow와 human triage·격리 운영 경계.
