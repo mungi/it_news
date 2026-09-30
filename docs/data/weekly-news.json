@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-09-30 12:48",
+  "last_updated_kst": "2026-09-30 16:56",
   "audience": "developers and engineers",
   "executive_summary": [
     "Amazon Bedrock Managed Agents는 OpenAI Agents API를 AWS-native control plane에 결합한 preview임. durable session·MCP/tool·code execution을 사용하면 IAM role·approval·CloudTrail만이 아니라 session retention·egress·tool side effect·rollback을 동일 canary에서 검증 필요.",
     "Amazon Bedrock은 OpenAI `GPT-6.1 Sol`을 정식 제공함. AWS blog의 `DeepSWE v1.1` Astra 근접·작업당 약 5분의 1 비용·GPT-6 Sol 대비 6.4%p 수치는 vendor 평가이므로 completed-task quality·p95/p99·cache·tool retry·fallback canary로 재검증 필요.",
     "GitHub Security Lab은 `seclab-taskflows` Android audit workflow로 현재까지 24건의 취약점을 보고했다고 공개함. 결과는 자동 verdict가 아니라 entry point·component·vulnerability class 기반 review queue이므로 reproducer·영향 조건·human disclosure를 release gate로 연결 필요.",
     "Anthropic은 `Claude Sonnet 5.5`를 Sonnet 5 대비 출력 속도 30% 이상, 작업당 최대 30% 비용 절감으로 공개함. `Terminal-Bench 4.0` 70.6%와 `CursorBench 4.0` 55.5%는 vendor 평가 수치이므로 workload별 completed-task quality·p99·token/tool call·retry·fallback canary 검증 필요.",
-    "Spectre-v2 `Branch Target Reuse(BTR)` 연구는 Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT의 stale branch prediction 재사용 조건을 공개함. Linux kernel `CVE-2026-64507`·`CVE-2026-64508`의 vendor backport·reboot와 browser/runtime isolation을 JIT 사용 자산별로 함께 검증 필요."
+    "Amazon Bedrock은 서울 `ap-northeast-2`에서 Claude Opus 5·Sonnet 5 in-Region inference를 제공함. AWS가 inference request·data의 호출 리전 내 처리를 명시했지만, account별 model access·routing·log/retention·tool egress·failover는 tenant trace와 policy로 별도 검증 필요."
   ],
   "deep_dives": [
     {
@@ -459,8 +459,79 @@
       ]
     },
     {
-      "id": "news-547",
+      "id": "news-552",
       "rank": 4,
+      "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
+      "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
+      "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
+      "detail": "AWS는 9월 29일 UTC Amazon Bedrock에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5`를 서울 `ap-northeast-2` 리전의 `bedrock-runtime` endpoint로 in-Region inference할 수 있다고 발표했다. AWS는 호출한 리전 안에서 inference request와 data를 처리하며 해당 리전을 벗어나지 않는다고 명시했다. 이 공지는 금융·의료·공공 등 특정 지리 내 데이터 처리 요구가 있는 고객의 사용 사례를 언급한다. 비교하면 인도는 Mumbai·Hyderabad 리전의 geographic cross-Region inference이고, 싱가포르는 Claude Sonnet 5만 in-Region inference 범위다. 공지는 계정별 model access, quota, 가격, feature parity, 정확한 model ID, inference profile 선택, 서비스 약관을 확정하지 않는다. 서울 리전 사용 여부만으로 기존 global 또는 cross-Region 경로의 data path·로그 보존·tool egress·failover가 자동으로 국내에 한정된다고 가정하지 말고, tenant 설정과 실제 request trace로 확인해야 한다.",
+      "why_it_matters": "서울 리전 Claude in-Region inference는 데이터 처리 위치를 architecture와 compliance control에 명시적으로 반영할 수 있는 선택지다. 모델 접근성 확대와 data residency 보장은 별개이므로 application endpoint·routing·logging·retention을 함께 검증해야 한다.",
+      "engineering_implication": "시사점: 서울 endpoint를 사용하는 representative request로 actual model access·inference profile·streaming·tool use·p95/p99·quota·failover를 확인하고, CloudTrail·application trace·provider retention·network egress가 내부 데이터 처리 정책과 맞는지 change record로 대조 필요.",
+      "korea_implication": "서울 리전에서 Claude Opus 5·Sonnet 5의 in-Region inference를 명시한 공지임. 국내 규제·계약 요건은 조직별로 다르므로 AWS 공지의 inference 범위와 로그·backup·support·cross-Region DR 처리 조건을 계약 및 tenant 설정에서 별도 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "Anthropic",
+        "Claude",
+        "Seoul Region",
+        "Data Residency",
+        "In-Region Inference"
+      ],
+      "region": "Korea",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-09-30 00:41",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-in-sk/",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [
+        {
+          "title": "Amazon Bedrock Anthropic model regional availability",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/models-region-compatibility.html#model-regions-anthropic"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Bedrock에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5`를 서울 `ap-northeast-2` 리전의 `bedrock-runtime` endpoint로 in-Region inference할 수 있다고 공개함. 대상 모델과 리전의 조합이 명시된 availability 변경이며, 기존 model access나 호출 경로의 자동 전환 공지는 아님.",
+          "items": [
+            "제공 범위: 서울 리전에서 `Claude Opus 5`·`Claude Sonnet 5` in-Region inference",
+            "대상 endpoint: `bedrock-runtime` endpoint 사용 범위"
+          ]
+        },
+        {
+          "heading": "데이터 처리 경계",
+          "body": "AWS는 inference request와 data를 호출한 리전 안에서 처리하고 해당 리전을 벗어나지 않는다고 명시함. 이 문구는 inference processing 범위이며 application log, prompt archive, tool call, network egress, backup, support access의 전체 data lifecycle을 별도 확정하지 않음.",
+          "items": [
+            "확정: 호출 리전 내 inference request·data processing이라는 AWS 공지 범위",
+            "검증 필요: application telemetry·tool payload·audit log·artifact·backup·support data의 저장과 전송 경로"
+          ]
+        },
+        {
+          "heading": "리전별 제공 방식 비교",
+          "body": "같은 공지는 인도에서 Claude Opus 5·Sonnet 5·Haiku 4.5를 Mumbai·Hyderabad의 geographic cross-Region inference로, 싱가포르에서 Claude Sonnet 5를 in-Region inference로 제공한다고 구분함. 리전명만 같거나 모델명이 같아도 routing 방식과 모델 조합이 동일하지 않음.",
+          "items": [
+            "서울: Opus 5·Sonnet 5 in-Region inference 범위",
+            "인도: Mumbai·Hyderabad geographic cross-Region inference 범위",
+            "싱가포르: Sonnet 5 in-Region inference 범위"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "국내 데이터 처리 요건이 있는 agent·RAG·coding workload는 서울 endpoint 호출만으로 승인하지 말고 account별 model access, inference profile, quota, streaming, tool use, failover와 data-path telemetry를 canary에서 비교해야 함. 오류 발생 시 global 또는 cross-Region fallback이 어떤 경로를 사용하는지도 release gate에 포함 필요.",
+          "items": [
+            "canary: representative prompt·RAG retrieval·tool call에서 model access·p95/p99·quota·streaming·error/fallback trace 확인",
+            "거버넌스: CloudTrail·application trace·provider retention·network egress와 내부 data residency policy 대조",
+            "운영: cross-Region fallback 또는 DR 경로는 enable 여부·owner·approval·rollback 조건을 명시"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-547",
+      "rank": 5,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -606,11 +677,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-545",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -693,7 +764,7 @@
     },
     {
       "id": "news-546",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -826,7 +897,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-543",
@@ -911,7 +982,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-542",
@@ -985,7 +1056,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-541",
@@ -1061,7 +1132,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-539",
@@ -1133,7 +1204,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-540",
@@ -1206,7 +1277,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-537",
@@ -1279,7 +1350,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-538",
@@ -1351,7 +1422,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-536",
@@ -1415,7 +1486,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-533",
@@ -1488,7 +1559,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-530",
@@ -1557,7 +1628,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-535",
@@ -1623,7 +1694,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-531",
@@ -1692,7 +1763,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-532",
@@ -1761,7 +1832,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-534",
@@ -1834,7 +1905,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-529",
@@ -1898,7 +1969,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-517",
@@ -1971,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-524",
@@ -2035,7 +2106,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-525",
@@ -2099,7 +2170,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-526",
@@ -2164,7 +2235,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-522",
@@ -2228,7 +2299,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-523",
@@ -2301,7 +2372,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-520",
@@ -2389,7 +2460,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-521",
@@ -2462,7 +2533,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-515",
@@ -2534,7 +2605,7 @@
           ]
         }
       ],
-      "rank": 32,
+      "rank": 33,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -2609,7 +2680,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-518",
@@ -2684,7 +2755,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-513",
@@ -2747,7 +2818,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-514",
@@ -2815,7 +2886,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-512",
@@ -2894,11 +2965,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-510",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -2967,7 +3038,7 @@
     },
     {
       "id": "news-509",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -3039,7 +3110,7 @@
     },
     {
       "id": "news-511",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -3187,7 +3258,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-506",
@@ -3255,7 +3326,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-505",
@@ -3328,7 +3399,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-508",
@@ -3405,11 +3476,11 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-499",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -3482,7 +3553,7 @@
     },
     {
       "id": "news-500",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -3566,7 +3637,7 @@
     },
     {
       "id": "news-501",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
       "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
       "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
@@ -3643,7 +3714,7 @@
     },
     {
       "id": "news-502",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
       "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
       "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
@@ -3720,7 +3791,7 @@
     },
     {
       "id": "news-498",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "Hacktron 연구: Discourse 이미지 처리 결함과 OpenAI SSO 결함 연쇄로 직원 ChatGPT·Codex 계정 및 내부 저장소 접근 시연",
       "title_original": "Claude Opus 5 Helped Researchers Take Over OpenAI Staff Accounts via Chained Flaws",
       "summary": "- 공개: Hacktron이 Discourse forum의 image-processing 취약점과 OpenAI SSO 결함을 연쇄해 여러 직원의 ChatGPT·Codex 계정과 내부 repository 접근을 72시간 이내 시연\n- 검증: 실제 source code·customer data·merge·deployment는 건드리지 않고 내부 monorepo에 harmless pull request 1건으로 권한만 증명, OpenAI 측 finding은 신고 약 14시간 뒤 수정·9월 1일 $6,500 bounty 지급\n- 공급망 조건: Debian 12 forum image의 `libheif 1.19.7`이 upstream `1.22.0` 수정 뒤에도 남아 HEIC/HEIF 처리 경로의 memory disclosure를 ASLR 우회와 server RCE chain에 사용했다는 연구자 설명\n- 조치: self-hosted Discourse는 web UI update만으로 image-library patch를 가정하지 말고 container base image·`libheif` build·fixed Discourse release를 확인하고, forum·third-party SSO client의 issuer·redirect URI·session binding·connected-app scope를 identity review 범위로 묶어야 함",
@@ -3795,79 +3866,6 @@
             "inventory: self-hosted Discourse release·container digest·`libheif` build·HEIC/HEIF upload enablement 확인",
             "drill: public forum RCE 가정에서 IdP session·GitHub/Slack/email connector·privileged repository 접근의 revoke와 forensic log 보존 확인",
             "팀 액션: application security와 identity engineering이 release·SSO client·connected-app scope를 하나의 change record로 공동 승인"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-496",
-      "rank": 50,
-      "title_ko": "Linux kernel DirtyAH6·TUNderflow·PPPoEject·DiagSpill: 공개 exploit 뒤 배포판 backport와 user namespace·SCTP 노출을 함께 점검",
-      "title_original": "Public Exploits Released for Four Linux Kernel Flaws That Enable Local Root",
-      "summary": "- 공개: 연구자가 Linux kernel local root 취약점 4건의 working exploit를 9월 18일 공개, source는 active exploitation 보고 없음으로 한정\n- 범위: `CVE-2026-80844` DirtyAH6·`CVE-2026-81000` TUNderflow·`CVE-2026-68121` PPPoEject는 unprivileged user namespace 조건, `CVE-2026-74469` DiagSpill은 SCTP module만 있으면 별도 권한 불필요\n- 원격 경계: DirtyAH6·DiagSpill은 좁은 구성에서 crash 가능성이 언급됐으나 remote root는 DirtyAH6 lab memory shaping 외 실증 없고 DiagSpill 경로는 없음\n- 조치: stable upstream complete-fix baseline과 배포판 security advisory를 대조하고, patch 전에는 user namespace·AH6·TUN/TAP·PPPoE·SCTP 사용 여부를 asset별 inventory 필요",
-      "detail": "The Hacker News는 Asim Manizada가 DirtyAH6, TUNderflow, PPPoEject, DiagSpill 네 Linux kernel 결함의 working exploit를 2026년 9월 18일 공개했다고 보도했다. source 기준 모든 결함은 이미 kernel maintainer가 수정했고 현실 악용 보고는 없으며, exploit은 특정 kernel build용이고 crash를 일으킬 수 있어 isolated test system을 대상으로 한다. DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`은 unprivileged user namespace가 있어야 일반 사용자가 필요한 network privilege에 도달할 수 있다. DiagSpill `CVE-2026-74469`은 `sctp_diag`와 SCTP module이 있을 때 user namespace나 특별 권한 없이 local root 범위가 제시됐다. source는 DirtyAH6와 DiagSpill의 network trigger를 제한적 crash 조건으로만 설명하며, remote root는 DirtyAH6의 lab memory shaping 외 매우 어렵다는 연구자 평가와 DiagSpill의 경로 없음으로 한정한다. upstream complete-fix stable release는 `5.10.270`, `5.15.221`, `6.1.188`, `6.6.157`, `6.12.109`, `6.18.50`, `7.2.4`로 열거됐지만, 실제 운영 판단은 Ubuntu·Debian·RHEL·SUSE 등 배포판 advisory의 backport 포함 여부와 reboot evidence로 닫아야 함.",
-      "why_it_matters": "public exploit 공개는 이미 low-privilege shell·CI runner·shared developer host·container foothold를 가진 공격자의 local privilege escalation 비용을 낮춤. upstream kernel version 숫자만 비교하면 vendor backport와 reboot 누락을 놓칠 수 있음.",
-      "engineering_implication": "kernel package·running kernel·reboot 상태와 배포판 advisory를 asset별 대조하고, unprivileged user namespace, `sctp`, `ppp`, `tun`, AH6/IPsec 기능이 필요한 workload만 남겨야 함. container host와 multi-user runner는 namespace 정책·privileged workload·SCTP exposure를 patch 증적과 함께 검토 필요.",
-      "korea_implication": "국내 조직의 managed Kubernetes node, self-hosted CI runner, VDI·개발 서버도 배포판 kernel과 cloud image가 서로 다를 수 있음. OS patch 완료 보고에 running-kernel·reboot·user namespace 정책 증적을 포함할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Linux Kernel",
-        "Local Privilege Escalation",
-        "Container Security",
-        "User Namespace",
-        "SCTP",
-        "Patch Management"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-09-19 03:02",
-      "source_name": "The Hacker News / Asim Manizada research",
-      "source_url": "https://thehackernews.com/2026/09/public-exploits-released-for-four-linux.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEixfmcEQbMRp9dJbUmuhA3LSquz7yG3lph_Nbh6NqiVGOPOiOoKYcWbspSqEDBpeyUMH-KK_DHWoBSFmaZPE_BlWRjy4swhpEPCBJ-p2NCJRTceTeDx84tDToap0VrFW304zxv0nKsRSVOMM3GPhFyJ7GZkGPG92N3aKvW3edGBBdoAJl0_fH6IehDA0I8/s1600/linux-kernel.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Asim Manizada technical write-up",
-          "url": "https://heyitsas.im/posts/lpe-quartet/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Asim Manizada가 Linux kernel local privilege escalation 결함 4건의 technical write-up과 working exploit를 2026년 9월 18일 공개함. source는 kernel maintainer가 앞선 몇 주 동안 모두 수정했고, 현실 공격 사용 보고는 없다고 명시함.",
-          "items": [
-            "대상: DirtyAH6 `CVE-2026-80844`, TUNderflow `CVE-2026-81000`, PPPoEject `CVE-2026-68121`, DiagSpill `CVE-2026-74469`",
-            "경계: 공개 exploit은 특정 kernel build용이며 crash 가능성이 있어 isolated test system 목적이라는 연구자 설명"
-          ]
-        },
-        {
-          "heading": "도달 조건과 영향 범위",
-          "body": "세 결함은 unprivileged user namespace가 켜진 일반 사용자가 private sandbox에서 필요한 network privilege를 얻는 조건을 사용함. DiagSpill은 예외로 SCTP networking module과 `sctp_diag`가 있으면 user namespace나 특수 권한이 필요 없다고 source가 설명함.",
-          "items": [
-            "DirtyAH6: IPv6 IPsec AH6 영역, unprivileged user namespace 조건",
-            "TUNderflow: TUN/TAP virtual network device 영역, unprivileged user namespace 조건",
-            "PPPoEject: PPPoE 영역, unprivileged user namespace 조건",
-            "DiagSpill: SCTP `sctp_diag` 영역, SCTP module 존재 시 별도 local privilege 불필요"
-          ]
-        },
-        {
-          "heading": "원격·컨테이너 경계",
-          "body": "source는 DirtyAH6와 DiagSpill의 network trigger를 매우 좁은 crash 조건으로 구분함. DirtyAH6는 IPv6 router/gateway가 transport-mode Authentication Header를 추가할 때, DiagSpill은 default-off SCTP option을 켠 경우에만 remote crash 가능성을 기술함.",
-          "items": [
-            "경계: DirtyAH6 remote root은 연구자 lab의 target memory shaping 조건 외 remote-only 실증이 없고 매우 어렵다는 평가",
-            "경계: DiagSpill에는 perfect memory shaping에도 remote root 경로가 없다는 연구자 평가",
-            "컨테이너: escape 가능성은 이론 범위로 언급됐으며 source가 exploit chain을 구축하지 않음"
-          ]
-        },
-        {
-          "heading": "패치와 시사점",
-          "body": "upstream complete-fix stable baseline은 `5.10.270`, `5.15.221`, `6.1.188`, `6.6.157`, `6.12.109`, `6.18.50`, `7.2.4`로 열거됨. 대부분의 운영 환경은 배포판 kernel을 사용하므로 upstream 문자열이 아니라 vendor security advisory·installed package·running kernel·reboot를 같은 closure evidence로 확인해야 함.",
-          "items": [
-            "조치: 배포판 advisory에서 4개 fix backport 포함 여부와 running kernel을 asset별 대조",
-            "완화: patch 전 unprivileged user namespace와 미사용 AH6·TUN/TAP·PPPoE·SCTP 기능을 최소화",
-            "팀 액션: shared CI runner·container host·multi-user server를 우선순위로 patch와 reboot evidence를 incident tracker에 기록"
           ]
         }
       ]
