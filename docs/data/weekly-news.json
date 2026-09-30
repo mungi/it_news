@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-01 01:04",
+  "last_updated_kst": "2026-10-01 05:11",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하고 Cisco가 9월 active exploitation 인지를 명시함. fixed build만이 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
+    "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하고 Cisco가 9월 active exploitation 인지를 명시함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
     "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
-    "Amazon Bedrock Managed Agents는 OpenAI Agents API를 AWS-native control plane에 결합한 preview임. durable session·MCP/tool·code execution을 사용하면 IAM role·approval·CloudTrail뿐 아니라 session retention·egress·tool side effect·rollback canary가 필요.",
-    "Amazon Bedrock은 OpenAI `GPT-6.1 Sol`을 정식 제공함. AWS blog의 benchmark·cost 수치는 vendor 평가이므로 completed-task quality·p95/p99·cache·tool retry·fallback canary로 production 검증 필요.",
-    "Amazon Bedrock은 서울 `ap-northeast-2`에서 Claude Opus 5·Sonnet 5 in-Region inference를 제공함. account별 model access·routing·log/retention·tool egress·failover는 tenant trace와 policy로 별도 검증 필요."
+    "Amazon Bedrock의 OpenAI `GPT-6 Astra UltraFast`는 최대 6배·300 tokens/s provider 주장 기반 premium latency tier임. Region·quota·가격을 확인하고 quality·p95/p99·retry·fallback·completed-task cost canary로 기본 route 편입 여부 판단 필요.",
+    "Google RRSI는 model 재학습 대신 agent harness를 반복 개선하는 연구 framework임. 보도된 OOD 최대 22.9% 개선은 benchmark 조건이므로 holdout·side effect·rollback·token budget을 release gate로 묶어야 함.",
+    "Amazon Bedrock Managed Agents는 OpenAI Agents API를 AWS-native control plane에 결합한 preview임. durable session·MCP/tool·code execution을 사용하면 IAM role·approval·CloudTrail뿐 아니라 session retention·egress·tool side effect·rollback canary가 필요."
   ],
   "deep_dives": [
     {
@@ -221,6 +221,72 @@
   ],
   "items": [
     {
+      "id": "news-556",
+      "title_ko": "Amazon Bedrock GPT-6 Astra UltraFast: 최대 6배·300 tokens/s 주장, latency·가격·fallback canary 분리 필요",
+      "title_original": "OpenAI GPT-6 Astra now supports UltraFast mode on Amazon Bedrock",
+      "summary": "- 제공: AWS가 Amazon Bedrock에서 OpenAI `GPT-6 Astra`의 `UltraFast` premium speed tier를 제공함. real-time coding assistant·interactive agent·customer-facing workload 대상 범위\n- 성능 경계: OpenAI 기준 API inference 최대 `6배`, 최대 `300 tokens/s` 처리 주장임. tenant workload의 quality·p95/p99·SLA 또는 비용 절감 보장은 아님\n- 운영: supported Region·endpoint·inference profile·quota·가격을 account에서 확인하고, normal tier 대비 completion quality·tail latency·retry·fallback·completed-task cost로 canary 검증 필요",
+      "detail": "AWS는 2026-09-30 19:00 UTC Amazon Bedrock에서 OpenAI GPT-6 Astra의 UltraFast mode 제공을 공지했다. UltraFast는 속도가 중요한 workload용 premium speed tier이며 OpenAI는 API에서 최대 6배 빠른 inference와 초당 최대 300 token을 주장한다. AWS는 real-time coding assistant, interactive agent, customer-facing experience를 예시로 들고 Bedrock API와 기존 AWS access governance·model invocation audit control을 사용할 수 있다고 설명한다. 공지는 supported Region, endpoint, inference profile, feature availability, quota와 pricing을 Bedrock documentation에서 확인하도록 안내하지만 구체 값은 확정하지 않는다. 따라서 latency tier 채택은 benchmark 수치만으로 결정하지 말고 normal tier와 함께 output quality, streaming first-token·p95/p99, timeout·retry, fallback, token·request 단가를 completed task 기준으로 canary 비교해야 한다.",
+      "why_it_matters": "속도 tier는 agent의 interaction 설계와 비용 구조를 함께 바꾼다. 토큰 처리량이 높아도 tool wait·network·queue·human approval이 전체 latency를 지배할 수 있으며, tier별 quota·pricing·fallback이 없는 rollout은 사용자 경로를 불안정하게 만들 수 있다.",
+      "engineering_implication": "시사점: read-only interactive workflow에서 UltraFast와 baseline tier의 first-token·p95/p99·completion quality·tool retry·timeout·fallback·completed-task cost를 같은 trace로 비교 필요. region/model access·quota·budget guard·degradation policy를 확인한 뒤 latency-sensitive path만 점진 적용 필요.",
+      "korea_implication": "국내 조직은 서울 리전 제공 여부를 공지가 확정하지 않으므로 Bedrock account의 model access·inference profile·cross-Region route·data path·가격을 실제 tenant에서 확인한 뒤 customer-facing workload에 연결 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "OpenAI",
+        "GPT-6 Astra",
+        "Inference",
+        "Latency",
+        "AI Agent",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-01 04:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-astra-ultrafast-on-amazon-bedrock/",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Bedrock에서 OpenAI `GPT-6 Astra`의 `UltraFast` mode를 제공함. 속도에 민감한 workload용 premium speed tier이며 Bedrock console 또는 supported API로 사용할 수 있는 범위임.",
+          "items": [
+            "공개 시각: AWS What’s New `2026-09-30 19:00 UTC`, KST `2026-10-01 04:00`",
+            "대상 예시: real-time coding assistant·interactive agent·customer-facing experience 범위"
+          ]
+        },
+        {
+          "heading": "성능 수치와 증거 경계",
+          "body": "AWS 공지는 OpenAI 기준 API inference 최대 6배, 최대 초당 300 token을 제시함. 이 값은 provider 주장이고 고객 workload의 response quality·first-token·p95/p99·SLA·단가를 보장하는 수치가 아님.",
+          "items": [
+            "성능 주장: `up to 6x faster`와 `up to 300 tokens/s`의 OpenAI 제공 수치",
+            "제외 범위: prompt 길이·streaming·tool wait·queue·network·retry가 포함된 end-to-end latency 미확정"
+          ]
+        },
+        {
+          "heading": "제공 범위와 통제",
+          "body": "AWS는 Bedrock API와 established AWS controls로 access governance와 model invocation activity audit을 지원한다고 안내함. Region·endpoint·inference profile·feature·pricing은 Bedrock documentation에서 확인하도록 명시함.",
+          "items": [
+            "권한: model access와 application IAM policy를 latency tier rollout 전에 분리 확인",
+            "감사: invocation trace·request ID·model routing·budget event를 서비스 audit과 연결 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "tier 선택은 throughput 수치가 아니라 user journey와 failure mode의 release 결정임. fast model route가 quota·timeout·fallback 없이 기본 경로가 되면 burst traffic에서 품질·비용·availability가 함께 흔들릴 수 있음.",
+          "items": [
+            "canary: baseline 대비 first-token·p95/p99·completion quality·tool retry·timeout·fallback success 비교",
+            "FinOps: token·request·tier price와 cache·retry·tool wait를 completed task 비용으로 계측",
+            "팀 액션: account별 Region·quota·가격·degradation policy를 확인한 뒤 latency-sensitive read-only flow부터 점진 적용"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-554",
       "title_ko": "Cisco Catalyst SD-WAN Manager 인증 우회 `CVE-2026-76504`: active exploitation 인지, fixed release·forensic 병렬 대응 필요",
       "title_original": "Cisco Catalyst SD-WAN Manager API Authentication Bypass Vulnerability",
@@ -287,7 +353,82 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-557",
+      "title_ko": "Google RRSI 연구: 모델 재학습 대신 agent harness를 반복 개선, holdout·비용·rollback gate 필요",
+      "title_original": "Regularized Recursive Self-Improvement of Agent Harnesses",
+      "summary": "- 연구 공개: Google Cloud AI Research 등이 `RRSI`를 공개함. model weight 재학습 대신 prompt·tool·control flow·memory/context·sub-agent를 포함한 harness를 반복 변경·평가하는 framework\n- 방법·결과: Proposal/Selection 이중 regularization으로 탐색과 채택을 분리함. AI타임스 보도 기준 Terminal-Bench 2.1 `74.2%→80.2%`, SWE-bench Verified `82.0%→83.8%`; OOD에서 기존 harness evolution 대비 최대 `22.9%` 개선\n- 운영 경계: research benchmark와 242만 policy token 실험 수치는 production quality·latency·cost·safety 보장이 아님. harness 변경을 versioned release artifact로 관리하고 holdout·side effect·rollback·token budget을 gate로 적용 필요",
+      "detail": "AI타임스는 Google Cloud AI Research, Stanford University, University of Washington 연구진이 RRSI(Regularized Recursive Self-Improvement of Agent Harnesses)를 arXiv와 GitHub로 공개했다고 보도했다. RRSI는 모델 가중치를 재학습하지 않고 prompt, tool use, control flow, memory/context management, technical module, sub-agent 등 agent harness를 반복적으로 변경하고 평가한다. Proposal 단계는 이전 history를 이용해 실패 아이디어 반복과 탐색 자원을 제어하며, Selection 단계는 평가 잡음과 추가 추론 비용 대비 실질 성능 향상을 걸러낸다. 보도된 8개 benchmark에서 Terminal-Bench 2.1은 74.2%에서 80.2%, SWE-bench Verified는 82.0%에서 83.8%, JobBench는 36.0%에서 40.7%로 올랐다. 직접 최적화하지 않은 외부 평가 5개에서 최대 4.7%p, OOD에서 기존 harness evolution 대비 최대 22.9% 개선도 보고됐다. Gemini 3.5 Flash 실험의 policy token은 242만개로 비정규화 방법의 380만개보다 30% 이상 적었다는 설명이다. 이 수치는 연구 benchmark 조건의 결과이므로 운영 환경에서는 hidden holdout, cost, tail latency, tool side effect, security review, rollback을 함께 검증해야 한다.",
+      "why_it_matters": "agent 성능은 모델 교체만으로 결정되지 않는다. prompt·tool·memory·workflow 변경이 누적되면 benchmark 과적합, 비용 증가, permission drift, 재현 불가능한 failure가 생길 수 있어 harness를 소프트웨어 release artifact로 다뤄야 한다.",
+      "engineering_implication": "시사점: harness change마다 dataset split·change diff·evaluation trace·token/tool cost·p95/p99·write side effect·rollback을 남기고, hidden holdout과 production canary를 통과한 변경만 승격 필요. optimization agent에는 production credential과 unrestricted write 권한을 부여하지 않는 것이 우선.",
+      "korea_implication": "국내 개발 조직은 외부 benchmark 개선을 procurement 또는 production KPI로 환산하지 말고, 한국어 업무 data·내부 tool·security policy를 포함한 holdout과 sandbox에서 재현성·비용·권한 경계를 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "Google",
+        "AI Agent",
+        "Agent Harness",
+        "Evaluation",
+        "Benchmark",
+        "Prompt Engineering",
+        "Tool Use",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-09-30 18:09",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=215802",
+      "image_url": "https://cdn.aitimes.com/news/photo/202609/215802_219763_1921.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "arXiv: Regularized Recursive Self-Improvement of Agent Harnesses",
+          "url": "https://arxiv.org/abs/2609.22056"
+        },
+        {
+          "title": "RRSI GitHub repository",
+          "url": "https://github.com/google-research/rrsi"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Google Cloud AI Research·Stanford·University of Washington 연구진이 `RRSI`를 공개함. 모델 weight 재학습 대신 agent의 prompt·tool use·control flow·memory/context·technical module·sub-agent를 포함한 harness를 반복 개선하는 research framework임.",
+          "items": [
+            "공개 경로: AI타임스 보도 기준 arXiv와 Apache 2.0 GitHub code 공개",
+            "적용 단위: foundation model 자체가 아닌 model을 둘러싼 execution harness 변경 범위"
+          ]
+        },
+        {
+          "heading": "Proposal·Selection 이중 정규화",
+          "body": "Proposal 단계는 이전 history를 반영해 실패한 아이디어 반복을 줄이고 탐색 자원을 제어함. Selection 단계는 evaluation noise와 추가 inference cost 대비 성능 향상을 걸러 검증된 변경만 유지하는 구조임.",
+          "items": [
+            "과적합 방지: 특정 benchmark 문제·답을 사실상 외우는 harness change를 줄이려는 설계",
+            "변경 전략: 초기 다중 요소 탐색 뒤 후반 단일 변경 집중과 효과 없는 component 제거 범위"
+          ]
+        },
+        {
+          "heading": "보도된 평가 결과와 경계",
+          "body": "보도는 8개 benchmark에서 Terminal-Bench 2.1 `74.2%→80.2%`, SWE-bench Verified `82.0%→83.8%`, JobBench `36.0%→40.7%` 등을 제시함. 외부 평가 최대 4.7%p와 OOD 최대 22.9% 개선도 연구 결과 범위임.",
+          "items": [
+            "비용 결과: 한 workspace experiment의 policy token `242만`개, 비정규화 방법 `380만`개 대비 30% 이상 절감 보도",
+            "증거 경계: benchmark score·token 수치를 production completion rate·SLA·security 또는 다른 model의 개선 보장으로 확대 금지"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "harness 자기개선은 prompt만 바꾸는 실험이 아니라 tool permission·memory retention·control flow·cost를 바꾸는 software release임. hidden holdout과 production canary가 없으면 benchmark gain이 operational regression으로 바뀔 수 있음.",
+          "items": [
+            "검증: versioned diff·dataset split·evaluation trace·quality·p95/p99·token/tool cost·write side effect를 change record에 연결",
+            "보안: optimization agent는 sandbox·scoped credential·read-only tool로 시작하고 unrestricted production write 차단",
+            "팀 액션: holdout·budget·rollback·human approval을 통과한 harness change만 production promotion 대상으로 관리"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-555",
@@ -356,11 +497,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-553",
-      "rank": 3,
+      "rank": 5,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -446,7 +587,7 @@
     },
     {
       "id": "news-551",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -520,7 +661,7 @@
     },
     {
       "id": "news-550",
-      "rank": 5,
+      "rank": 7,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -602,7 +743,7 @@
     },
     {
       "id": "news-549",
-      "rank": 6,
+      "rank": 8,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -693,7 +834,7 @@
     },
     {
       "id": "news-552",
-      "rank": 7,
+      "rank": 9,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -764,7 +905,7 @@
     },
     {
       "id": "news-547",
-      "rank": 8,
+      "rank": 10,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -910,11 +1051,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-545",
-      "rank": 10,
+      "rank": 12,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -997,7 +1138,7 @@
     },
     {
       "id": "news-546",
-      "rank": 11,
+      "rank": 13,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -1130,7 +1271,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-543",
@@ -1215,7 +1356,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-542",
@@ -1289,7 +1430,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-541",
@@ -1365,7 +1506,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-539",
@@ -1437,7 +1578,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-540",
@@ -1510,7 +1651,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-537",
@@ -1583,7 +1724,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-538",
@@ -1655,7 +1796,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-536",
@@ -1719,7 +1860,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-533",
@@ -1792,7 +1933,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-530",
@@ -1861,7 +2002,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-535",
@@ -1927,7 +2068,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-531",
@@ -1996,7 +2137,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-532",
@@ -2065,7 +2206,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-534",
@@ -2138,7 +2279,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-529",
@@ -2202,7 +2343,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-517",
@@ -2275,7 +2416,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-524",
@@ -2339,7 +2480,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-525",
@@ -2403,7 +2544,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-526",
@@ -2468,7 +2609,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-522",
@@ -2532,7 +2673,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-523",
@@ -2605,7 +2746,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-520",
@@ -2693,7 +2834,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-521",
@@ -2766,7 +2907,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-515",
@@ -2838,7 +2979,7 @@
           ]
         }
       ],
-      "rank": 36,
+      "rank": 38,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -2913,7 +3054,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-518",
@@ -2988,7 +3129,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-513",
@@ -3051,7 +3192,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-514",
@@ -3119,7 +3260,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-512",
@@ -3198,11 +3339,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-510",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -3271,7 +3412,7 @@
     },
     {
       "id": "news-509",
-      "rank": 43,
+      "rank": 45,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -3343,7 +3484,7 @@
     },
     {
       "id": "news-511",
-      "rank": 44,
+      "rank": 46,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -3491,7 +3632,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-506",
@@ -3559,7 +3700,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-505",
@@ -3632,7 +3773,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-508",
@@ -3709,164 +3850,7 @@
           ]
         }
       ],
-      "rank": 48
-    },
-    {
-      "id": "news-499",
-      "rank": 49,
-      "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
-      "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
-      "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
-      "detail": "SolarWinds는 2026년 9월 17일 Access Rights Manager(ARM)의 `CVE-2026-28326`을 공개했다. vendor advisory는 hard-coded static key에서 비롯된 unauthenticated remote code execution 취약점으로 분류하고 ARM `2026.2` 및 모든 이전 버전을 영향 범위, `2026.2.1`을 fixed release로 명시한다. CVSS 3.1 vector는 `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`로 adjacent-network 조건을 포함하므로 public internet RCE로 과장하면 안 된다. The Hacker News 보도도 active exploitation을 언급하지 않는다. ARM은 Active Directory 권한·파일 서버 access governance를 다루는 관리 제품이므로, 패치는 binary version만이 아니라 ARM server가 접속하는 network segment, admin access path, service account와 directory privilege, audit log를 함께 점검하는 change로 처리해야 함.",
-      "why_it_matters": "ARM은 directory 권한과 파일 접근 관리의 control plane에 놓일 수 있어, 인접 네트워크에서의 무인증 코드 실행 가능성은 identity·file-service 권한 경계와 연결될 수 있음. CVSS의 `AV:A` 조건을 확인하지 않고 internet exposure 또는 조직 침해로 확대하지 않는 판단이 필요함.",
-      "engineering_implication": "ARM inventory에서 installed version·server role·reachable VLAN/VPN·management ACL·service account·AD delegation을 묶어 확인하고, `2026.2.1` canary 뒤 service health와 scheduled task·connector·audit continuity를 검증해야 함. patch 전후 ARM host process, administrator activity, AD privilege와 file-share permission 변경을 보존하고 exception asset에는 owner·expiry·network compensating control을 기록 필요.",
-      "korea_implication": "국내 AD 기반 파일 서버와 권한관리 시스템에서 ARM을 운영하면 본사·지사·협력사 VPN과 관리망의 adjacent reachability가 다를 수 있음. 중앙 보안팀의 version report와 현장 네트워크팀의 ACL 증적을 같은 patch closure record로 결합할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "SolarWinds",
-        "Access Rights Manager",
-        "Identity Security",
-        "Active Directory",
-        "Patch Management"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-09-19 18:31",
-      "source_name": "SolarWinds Security Advisory / The Hacker News",
-      "source_url": "https://www.solarwinds.com/trust-center/security-advisories/cve-2026-28326",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjXW-SaTg898BaxxlrDjSCrcm6ZYDgxoeuYCBY4QNWs6Nt5RhyphenhyphenCf4iSIyodz-7jk8rTqUT8hjlMT74dIf6ZjL_pD5NmiNbAHhsZwzw2rakJUDaU1tVeEvKw7Az3tMf34Xwh3ffToJeI1tpTQ8rAR8AvVn2XTupFgfhehb9sHClHDDGeDd4Y9z4oUf5CYPoS/s1600/solar.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "The Hacker News report",
-          "url": "https://thehackernews.com/2026/09/solarwinds-patches-arm-hard-coded-key.html"
-        },
-        {
-          "title": "ARM 2026.2.1 release notes",
-          "url": "https://documentation.solarwinds.com/en/success_center/arm/content/release_notes/arm_2026-2-1_release_notes.htm"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "SolarWinds advisory는 Access Rights Manager의 `CVE-2026-28326`을 hard-coded static key에서 비롯된 unauthenticated RCE로 분류함. advisory의 first-published date는 2026-09-17이며 THN 보도 RSS 시각은 KST 2026-09-19 18:31로 확인됨.",
-          "items": [
-            "영향: ARM `2026.2` 및 모든 이전 버전",
-            "수정: `ARM 2026.2.1` fixed release 공개"
-          ]
-        },
-        {
-          "heading": "영향 조건과 경계",
-          "body": "vendor CVSS 3.1 vector는 `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`임. 인증과 사용자 상호작용은 필요 없지만 attack vector는 adjacent network이므로 management interface의 실제 reachability가 우선 확인 대상임.",
-          "items": [
-            "조건: attacker와 ARM service 사이의 adjacent-network reachability 확인",
-            "경계: public internet 노출, active exploitation, public PoC는 vendor·보도 원문에서 확인되지 않음"
-          ]
-        },
-        {
-          "heading": "identity·관리 plane 영향",
-          "body": "ARM은 Active Directory 및 file-system 권한을 관리하는 제품이므로 server code execution 가능성은 단일 application host보다 넓은 identity governance 경계에 닿을 수 있음. 다만 tenant별 directory 권한·service account 범위는 public advisory만으로 확정 불가함.",
-          "items": [
-            "inventory: ARM server role, service account, AD delegation, managed file-share와 connector 목록 확인",
-            "분리: ARM application compromise 가능성과 domain compromise·data access를 같은 사실로 단정하지 않는 조사 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "patch closure는 installed package가 아니라 fixed version으로 실행 중인 ARM server와 접근 경로가 검증된 상태임. `2026.2.1` 배포는 maintenance window·connector health·audit continuity를 확인하는 canary부터 진행해야 함.",
-          "items": [
-            "조치: version·reachable VLAN/VPN·management ACL·host firewall을 asset record에서 대조",
-            "관측: patch 전후 administrator activity, service process, AD privilege·file-share permission 변경 로그 보존",
-            "팀 액션: unpatched exception에 owner·expiry·network isolation 또는 ACL compensating control 기록"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-500",
-      "rank": 50,
-      "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
-      "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
-      "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
-      "detail": "인증 전 workflow definition 처리와 GraalVM host access가 결합된 RCE임. 패치만 적용하지 말고 API 접근 경로, evaluator 설정, process privilege, workflow submission·subprocess telemetry를 같은 incident evidence로 검증 필요.",
-      "why_it_matters": "workflow orchestration control plane의 인증 전 expression 실행은 CI/CD·data pipeline·agent workflow에서 service-account 권한으로 이어질 수 있음. Fortinet·honeypot telemetry가 active targeting을 보고한 만큼 노출된 Conductor는 patch와 forensic을 병행할 우선순위 대상.",
-      "engineering_implication": "`3.30.2` 이상 fixed version과 running process를 확인하고, 임시로 workflow API를 allowlist·VPN·reverse proxy 뒤로 제한. INLINE·LAMBDA·DO_WHILE·SWITCH task와 GraalVM host access, unexpected command·child process·workflow payload 로그를 우선 점검.",
-      "korea_implication": "국내 self-hosted workflow·agent orchestration 환경도 public API, SSO·VPN 경유 API, service account 권한을 분리해 inventory하고 patch/restart·로그 보존을 change record로 남길 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Workflow",
-        "RCE",
-        "GraalVM",
-        "DevOps"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-19 17:18",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/critical-pre-auth-rce-in-orkes.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjL-YeIVFaRBKvtwQKBxAilhKMaZP_x6L979d8JL60W3AEHy9o2sfL_dMrJWy_sPIV70oIbP6DYe2KVhHh-mwbB4zBvrV_jEgdRiuc_IzNyyPSfUAOGvAp7J7JO06OWUWjSwuqpU4JJ_kNy0vtW1D9_gEtQNNVmWiYzRTpYMwhe-J3Bvve3EHrAp81Wht4L/s1700-nu-rw-lo-l85-e365/orkes.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "NVD CVE-2026-58138",
-          "url": "https://nvd.nist.gov/vuln/detail/cve-2026-58138"
-        },
-        {
-          "title": "Conductor v3.30.2 release",
-          "url": "https://github.com/conductor-oss/conductor/releases/tag/v3.30.2"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Fortinet이 Orkes Conductor의 인증 전 RCE를 노린 active targeting을 관측한 상황.",
-          "items": [
-            "`CVE-2026-58138`: Orkes Conductor `3.21.21`부터 `3.30.1` 이전 버전에 영향",
-            "인증 전 workflow API에 inline workflow definition을 제출하는 경로에서 arbitrary OS command 실행 가능",
-            "CVSS v3.1 9.8·v4 9.3으로 표기된 critical 취약점"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "GraalVM evaluator의 unrestricted host access와 workflow expression task가 공격 경로를 구성.",
-          "items": [
-            "`HostAccess.ALL` 또는 `allowAllAccess(true)` 설정의 unsandboxed GraalVM evaluator가 조건",
-            "`INLINE`·`LAMBDA`·`DO_WHILE`·`SWITCH` task type에서 Java reflection·direct subprocess call 가능 범위",
-            "Fortinet은 crafted JavaScript·Python expression을 workflow API로 제출하는 targeting을 관측"
-          ]
-        },
-        {
-          "heading": "관측 범위와 증거 경계",
-          "body": "보고된 telemetry는 targeting 신호이며 개별 조직 침해·data access를 자동으로 뜻하지 않음.",
-          "items": [
-            "Fortinet은 2026-09-02~09 사이 약 7,000건, 9월 9일 24시간 1,290건 blocked attempt를 보고",
-            "Previdian honeypot은 7월 24일 이후 2개 IP의 3건 exploitation attempt를 관측",
-            "attempt·honeypot telemetry는 successful compromise, actor identity, customer data access의 증거가 아님"
-          ]
-        },
-        {
-          "heading": "패치와 노출 축소",
-          "body": "fixed release 적용과 API control-plane 접근 경로 축소를 동시에 수행할 필요.",
-          "items": [
-            "공식 release `3.30.2` 이상으로 upgrade하고 deployed artifact·running process version을 재확인",
-            "즉시 패치가 어렵다면 external workflow API endpoint를 network access control 뒤로 제한",
-            "workflow submission, evaluator error, unexpected child process·OS command execution 로그 보존 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "workflow engine은 code execution surface이므로 일반 application patch보다 service identity·workflow payload·egress까지 closure 범위를 넓혀야 함.",
-          "items": [
-            "Conductor process user·cloud credential·secret mount·network egress를 asset별로 inventory",
-            "patch canary 뒤 정상 workflow, retry, scheduled execution, worker compatibility와 rollback을 검증",
-            "exception에는 owner·expiry·API isolation·enhanced logging을 change record로 기록"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }

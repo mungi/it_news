@@ -3071,3 +3071,9 @@
 - Cisco Security Advisory를 직접 대조해 `CVE-2026-76504`의 URI encoding authentication bypass, remote unauthenticated admin API access, CVSS 9.8, workaround 없음, Cisco PSIRT의 2026년 9월 active exploitation 인지, fixed release matrix를 확인. OpenSSL 2026-09-29 security advisory를 직접 대조해 `CVE-2026-84782`의 DTLS suspended-write/retransmission stale buffer offset, plaintext heap disclosure 또는 crash·DoS, fixed release `4.0.3`·`3.6.5`·`3.5.9`·`3.4.8` 범위를 확인.
 - KST 첫 실행 정책에 따라 기존 GitHub Android Taskflow·Claude Sonnet 5.5 Deep Dive를 유지하지 않고 Cisco와 OpenSSL의 non-overlapping primary source로 2건을 전면 재구성. 각 entry에 actual `refreshed_kst`, source-grounded expert section, architecture·security·SRE checklist를 기록.
 - `news-554` Cisco와 `news-555` OpenSSL을 KST 최신순으로 삽입하고 oldest tail 2건을 제거해 50-item cap·rank 1–50 유지. raw capture, `index.md`, canonical weekly archive를 동기화. 피해 조직·active exploitation attribution·remote trigger practicality는 source 미확정 범위로 유지.
+
+## [2026-10-01] update | Bedrock GPT-6 Astra UltraFast·Google RRSI agent harness 연구 추가
+- 확인 시각: 2026-10-01 05:11 KST. Asia/Seoul clock과 GeekNews·GeekNews Plus root(각 HTTP 403), AI타임스KR·AI타임스 root(각 HTTP 200), AWS·GitHub·CNCF·Kubernetes·Cloudflare·OpenAI·The Hacker News current feed를 research pass에 포함.
+- AWS canonical announcement와 RSS `Wed, 30 Sep 2026 19:00:00 GMT`를 직접 대조해 Bedrock GPT-6 Astra `UltraFast` premium speed tier, OpenAI 기준 최대 6배·300 tokens/s 주장, latency-sensitive use case 및 Region·endpoint·profile·pricing 확인 경계를 수록.
+- AI타임스 canonical article의 `article:published_time` `2026-09-30T18:09:48+09:00`, OG image와 본문을 직접 대조해 Google RRSI의 harness 반복 변경·Proposal/Selection regularization·8개 benchmark 결과·OOD 최대 22.9%·policy token 실험 범위를 수록. 연구 수치를 production SLO·비용·안전 보장으로 확대하지 않음.
+- `news-556`·`news-557`을 KST newest-first로 삽입하고 actual oldest tail `news-499`·`news-500`을 제거해 50-item cap·rank 1–50 유지. KST 01:04에 전면 재구성한 Deep Dive 2건은 timestamp-only 변경 없이 유지. raw capture·index·canonical weekly archive를 동기화.

@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-09-30 | Total pages: 380
+> Last updated: 2026-10-01 | Total pages: 382
 
 ## Entities
 
@@ -271,6 +271,8 @@
 - [[raw/articles/upstage-solar-open-2-2026-07-23]] — Solar Open 2의 250B-A15B MoE·1M context와 공식 H200 4/8장 배포 baseline·양자화 artifact 경계.
 - [[raw/articles/aws-nlb-listener-rules-dual-stack-2026-07-23]] — AWS NLB listener rule의 dual-stack IPv4·IPv6 target routing과 원본 client IP 보존 운영 경계.
 - [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
+- [[raw/articles/aws-bedrock-gpt-6-astra-ultrafast-2026-10-01]] — Bedrock GPT-6 Astra UltraFast의 최대 6배·300 tokens/s provider 주장과 latency·quota·fallback·FinOps canary 경계.
+- [[raw/articles/aitimes-google-rrsi-agent-harness-2026-10-01]] — Google RRSI의 agent harness 자기개선, holdout·cost·side effect·rollback release gate 경계.
 - `raw/articles/` — 200건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
