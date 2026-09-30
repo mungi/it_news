@@ -2,209 +2,218 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-09-30 20:58",
+  "last_updated_kst": "2026-10-01 01:04",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Amazon Bedrock Managed Agents는 OpenAI Agents API를 AWS-native control plane에 결합한 preview임. durable session·MCP/tool·code execution을 사용하면 IAM role·approval·CloudTrail만이 아니라 session retention·egress·tool side effect·rollback을 동일 canary에서 검증 필요.",
-    "Amazon Bedrock은 OpenAI `GPT-6.1 Sol`을 정식 제공함. AWS blog의 `DeepSWE v1.1` Astra 근접·작업당 약 5분의 1 비용·GPT-6 Sol 대비 6.4%p 수치는 vendor 평가이므로 completed-task quality·p95/p99·cache·tool retry·fallback canary로 재검증 필요.",
-    "GitHub Security Lab은 `seclab-taskflows` Android audit workflow로 현재까지 24건의 취약점을 보고했다고 공개함. 결과는 자동 verdict가 아니라 entry point·component·vulnerability class 기반 review queue이므로 reproducer·영향 조건·human disclosure를 release gate로 연결 필요.",
-    "Anthropic은 `Claude Sonnet 5.5`를 Sonnet 5 대비 출력 속도 30% 이상, 작업당 최대 30% 비용 절감으로 공개함. `Terminal-Bench 4.0` 70.6%와 `CursorBench 4.0` 55.5%는 vendor 평가 수치이므로 workload별 completed-task quality·p99·token/tool call·retry·fallback canary 검증 필요.",
-    "Amazon Bedrock은 서울 `ap-northeast-2`에서 Claude Opus 5·Sonnet 5 in-Region inference를 제공함. AWS가 inference request·data의 호출 리전 내 처리를 명시했지만, account별 model access·routing·log/retention·tool egress·failover는 tenant trace와 policy로 별도 검증 필요."
+    "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하고 Cisco가 9월 active exploitation 인지를 명시함. fixed build만이 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
+    "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
+    "Amazon Bedrock Managed Agents는 OpenAI Agents API를 AWS-native control plane에 결합한 preview임. durable session·MCP/tool·code execution을 사용하면 IAM role·approval·CloudTrail뿐 아니라 session retention·egress·tool side effect·rollback canary가 필요.",
+    "Amazon Bedrock은 OpenAI `GPT-6.1 Sol`을 정식 제공함. AWS blog의 benchmark·cost 수치는 vendor 평가이므로 completed-task quality·p95/p99·cache·tool retry·fallback canary로 production 검증 필요.",
+    "Amazon Bedrock은 서울 `ap-northeast-2`에서 Claude Opus 5·Sonnet 5 in-Region inference를 제공함. account별 model access·routing·log/retention·tool egress·failover는 tenant trace와 policy로 별도 검증 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "GitHub Security Lab Android Taskflow Agent: AI 감사 결과를 재현 가능한 모바일 보안 검토로 전환하는 방법",
-      "summary": "한 줄 결론: `seclab-taskflows` Android audit workflow가 보고한 24건은 자동 취약점 판정이 아니라 entry point·component·vulnerability class를 반복 탐색하는 review queue의 출발점임. source·network·tool budget을 격리하고, reproducer·영향 조건·human disclosure를 release gate로 묶어야 함.",
-      "details": "GitHub Security Lab은 오픈소스 `seclab-taskflows` Android audit workflow로 현재까지 24건의 취약점을 보고했다고 공개했다. workflow는 mobile entry point를 분리하고 intent·component별 취약점 class를 반복 검토한다. 원문이 자동 탐지율이나 자동 수정 품질을 제공하지 않으므로, 결과 행은 triage·재현·영향 판정·책임 공개 전의 candidate finding으로 취급해야 한다.",
-      "why_it_matters": "AI 보안 agent는 넓은 코드베이스를 읽는 능력보다 공격자 제어 입력, component boundary, deterministic evidence를 연결하는 workflow와 실행 격리가 운영 신뢰도를 결정한다.",
+      "title": "Cisco SD-WAN Manager CVE-2026-76504: 인증 우회 zero-day를 control-plane 침해 대응으로 다루는 방법",
+      "summary": "한 줄 결론: Cisco Catalyst SD-WAN Manager의 `CVE-2026-76504`는 URI encoding 처리 오류로 원격 비인증 공격자가 admin 권한 API에 접근할 수 있는 Critical 취약점이며 Cisco가 9월 active exploitation 인지를 확인함. patch만 적용하지 말고 internet exposure 차단, 로그 보존·hunt, credential·configuration·controller trust 검증을 병렬 release gate로 처리 필요.",
+      "details": "Cisco는 2026-09-30 13:00 GMT `CVE-2026-76504`를 공개했다. API session-based authentication의 URI encoding 처리 오류가 특정 API endpoint의 인증 규칙을 우회하게 하며, 성공하면 원격 비인증 공격자가 admin user 권한으로 접근할 수 있다. Cisco는 active exploitation 인지를 명시했고 workaround는 없으며 fixed release로의 upgrade를 제공한다. 공개 advisory는 피해 고객 수·공격자·침해 후 행위를 확정하지 않는다.",
+      "why_it_matters": "SD-WAN Manager는 network control plane의 identity·policy·device configuration을 다루므로, 인증 우회는 단일 management UI 결함이 아니라 branch routing과 trust boundary의 incident로 취급해야 함.",
       "sources": [
-        "https://github.blog/security/how-we-found-24-android-vulnerabilities-using-our-open-source-ai-security-agent/"
+        "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-sdwan-webauth-xr8beuuU"
       ],
-      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-security-invertocat-blocks-copilot.png?fit=1920%2C1080",
-      "local_image": "",
-      "refreshed_kst": "2026-09-30 00:35",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-10-01 01:04",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "GitHub Security Lab의 Android taskflow는 24건의 reported disclosure를 제시했지만, 결과를 취약점 verdict로 자동 승격하는 도구가 아님. repository의 attacker-controlled entry point와 component interaction을 취약점 class별로 반복 검토하는 보조 workflow이며, 재현 가능한 evidence와 사람의 영향 판정이 release gate가 되어야 함.",
+          "body": "`CVE-2026-76504`는 Cisco Catalyst SD-WAN Manager API의 session authentication 처리 결함임. crafted HTTP request만으로 인증 rule을 우회해 admin user privileges로 API 접근이 가능하며, Cisco PSIRT는 2026년 9월 active exploitation을 인지했다고 명시함. workaround가 없으므로 exposed control plane은 patch·access restriction·forensic을 하나의 incident change로 묶어야 함.",
           "items": [
-            "우선순위: exported activity·service·receiver·provider·deep link와 intent extra의 data flow를 asset inventory로 확정",
-            "완료 기준: candidate finding마다 reproducer·affected version·precondition·impact·owner review·disclosure/patch ticket 연결"
+            "우선순위: internet-exposed Manager와 management subnet·jump host 경로를 자산 inventory로 즉시 분리",
+            "완료 기준: fixed build·running version·access restriction·log preservation·credential/configuration review를 change evidence로 연결"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "원문은 `seclab-taskflows` Android audit workflow가 현재 24건의 취약점을 보고했다고 밝힘. `gather_mobile_entry_point_info.yaml`은 mobile/non-mobile entry point를 구분하고, `classify_application_local.yaml`은 entry point별 vulnerability class를 검토하는 흐름임. 중간 규모 repository 실행에는 GitHub Copilot license·premium model request와 약 1~2시간, 다수 tool call이 필요할 수 있음.",
+          "body": "Cisco advisory는 2026-09-30 13:00 GMT에 Critical advisory를 게시함. API session-based authentication의 improper URI encoding handling이 특정 endpoint의 authentication rule bypass를 허용하며, CVSS v3.1 base score는 9.8임. Cisco가 software update를 제공하지만 workaround는 없다고 명시함.",
           "items": [
-            "workflow: strict checklist와 broad exploration을 반복 실행해 검토 범위를 분리",
-            "비용 경계: premium request·runtime·tool call·artifact retention은 repository별로 별도 계측 필요",
-            "증거 경계: 24건은 reported disclosure 수이며 recall·precision·자동 remediation 성능 미공개"
+            "CVE: `CVE-2026-76504`, Cisco bug ID `CSCww79570`, CWE-177 URI encoding 오류",
+            "공격 조건: network-reachable Manager API에 crafted HTTP request 전송, credential·user interaction 불필요",
+            "증거 경계: advisory는 고객 수·공격자·initial access 경로·post-exploitation 행위를 공개하지 않음"
           ]
         },
         {
-          "heading": "공개 사례의 공격 경로",
-          "body": "원문이 든 OsmAnd 사례에서 exported `MapActivity`는 외부 component가 호출할 수 있고 intent extras는 외부 caller가 설정할 수 있는 조건임. settings import 관련 extra는 silent import·replace·confirmation bypass로 이어질 수 있으며, tile URL 변경은 위치 tile coordinate를 공격자 domain으로 전송할 수 있는 경로로 설명됨.",
+          "heading": "영향 범위와 patch matrix",
+          "body": "Cisco는 configuration과 무관하게 Cisco Catalyst SD-WAN Manager가 영향을 받는다고 밝힘. first fixed release는 20.9.10.1, 20.12.8.2, 20.15.6.1, 20.18.4.1, 26.1.2.1, 26.2.1이며 20.9 이전은 fixed release로 migrate해야 함. Cisco SD-WAN Cloud (Cisco Managed)는 20.15.605에서 이미 수정됐다고 설명함.",
           "items": [
-            "검토 대상: exported 여부·caller permission·intent extra validation·import confirmation·network destination policy",
-            "재현 조건: component export와 attacker-controlled input이 sensitive import 또는 network path에 실제 연결되는지 확인",
-            "판정 경계: source 사례를 다른 앱의 동일 취약점 또는 데이터 유출 사실로 일반화 금지"
+            "자산 확인: installed package가 아니라 controller의 실제 running release·HA peer·orchestrator inventory 확인",
+            "변경 검증: upgrade window 뒤 API authentication·device onboarding·policy push·telemetry·failover regression 수행",
+            "예외 금지: 과거 SD-WAN patch 적용 사실을 이번 fixed release 충족 근거로 사용 금지"
+          ]
+        },
+        {
+          "heading": "침해 조사와 증거 보존",
+          "body": "Cisco와 연결 보도는 `j_security_check` path에서 URI-encoded character를 활용한 request와 unknown IP를 hunt signal로 제시함. `serviceproxy-access.log`와 `vmanage-server.log`의 접근 기록은 patch 전 보존해야 하며, reserved system account prefix와 API audit을 같은 incident timeline으로 대조해야 함.",
+          "items": [
+            "보존: `/var/log/nms/containers/service-proxy/serviceproxy-access.log`와 `/var/log/nms/vmanage-server.log`의 원본·hash·time zone 보존",
+            "hunt: unknown source IP, URI-encoded login path, `viptela-reserved-` 계정 관련 event, unexpected API token·configuration change 대조",
+            "판정 경계: 해당 signal 부재를 compromise 부재의 증명으로 처리하지 않음"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent 기반 audit의 강점은 LLM이 모든 결함을 알아내는 데 있지 않음. entry point, component, input origin, vulnerability class, sink를 구조화해 반복 검토하고, deterministic query와 탐색형 hypothesis를 분리할 때 review coverage와 재현성이 높아짐. `has_vulnerability`는 triage 우선순위 signal로 남기고, exploitability는 별도 test artifact로 확인해야 함.",
+          "body": "SD-WAN Manager는 network policy와 device lifecycle을 조정하는 control plane임. admin API access 가능성은 route·template·credential·telemetry·device enrollment에 연결될 수 있으므로, application server patch의 단일 운영 절차로 축소하면 blast radius를 놓칠 수 있음. management plane을 production traffic plane과 별도 trust zone으로 다루는 것이 우선임.",
           "items": [
-            "설계: static inventory·manifest parser·rule check와 LLM exploration을 분리",
-            "추적: run ID에 prompt version·model·tool call·repository commit·finding evidence 연결",
-            "피할 것: model answer만으로 severity·CVE·customer impact를 자동 확정하는 CI gate"
+            "분리: controller administration, device management, telemetry export, identity provider와 backup의 network·credential boundary 확인",
+            "추적: API request·admin session·configuration commit·device push·audit export를 공통 incident ID로 연결",
+            "피할 것: CVSS만으로 우선순위를 결정하고 exposure·admin reachability·configuration authority를 생략하는 처리"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "source code를 agent에 제공하는 audit은 data handling과 capability control 문제이기도 함. repository read, build execution, network egress, issue creation, source upload, report retention을 하나의 권한으로 묶으면 candidate finding보다 큰 공급망·정보 노출 위험이 생김. write 또는 external disclosure는 read-only 분석과 분리된 durable approval을 요구해야 함.",
+          "body": "Cisco는 internet 같은 unsecured network에서 Manager access를 제한하고 trusted host와 firewall 뒤 control component 배치를 권고함. 이 조치는 patch의 대체물이 아니라 patch 전후 attack surface 축소임. management access는 jump host, MFA, source allowlist, short-lived admin session, break-glass audit으로 분리해야 함.",
           "items": [
-            "격리: disposable Codespace 또는 isolated VM에서 production secret·write token·broad egress 미부여",
-            "권한: repository read·build tool·network·issue tracker·disclosure action을 별도 capability로 분리",
-            "증거: source access·destination·artifact hash·retention·approval·revocation event 보존"
+            "통제: port 443·22·830의 direct internet exposure, permissive VPN split route, stale admin group을 함께 점검",
+            "identity: local admin·service account·API token·IdP session·automation credential rotation 필요성 incident scope로 판정",
+            "승인: routing/policy rollback과 controller restore는 dual control·out-of-band approval으로 실행"
           ]
         },
         {
-          "heading": "SRE·FinOps 관점",
-          "body": "agent audit의 운영 지표는 발견 건수만으로 충분하지 않음. candidate-to-reproducer conversion, confirmed finding rate, false-positive triage time, tool-call/token cost, execution duration, artifact storage, human review backlog를 함께 측정해야 실행 예산과 security value를 비교할 수 있음.",
+          "heading": "SRE·운영 관점",
+          "body": "patch deployment는 controller upgrade success만으로 끝나지 않음. HA quorum, device control connection, template compatibility, policy propagation delay, alert volume, backup restore와 rollback viability를 검증해야 함. 부정확한 emergency change는 branch connectivity를 훼손할 수 있어 security closure와 network SLO를 함께 측정해야 함.",
           "items": [
-            "지표: run success·time-to-triage·reproducer yield·confirmed severity·token/tool cost·retry rate",
-            "비용 변수: premium model request·CI/VM 시간·dependency fetch·artifact/log retention·security reviewer 시간",
-            "SLO: audit failure·telemetry loss·unexpected egress를 silent success가 아닌 failed run으로 처리"
+            "지표: exposed endpoint 수·fixed build coverage·patch lead time·failed upgrade·device reconnect·policy push error·hunt completion",
+            "SLO: unauthorized management access, audit telemetry loss, unapproved configuration commit을 high-severity event로 처리",
+            "복구: immutable backup·configuration diff·controller failover·out-of-band console access를 patch 전 확인"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 단계는 non-production Android repository 한 곳에서 manifest·exported component·deep link test corpus를 기준선으로 수집하는 것임. 둘째는 disposable environment의 read-only source access와 egress allowlist로 taskflow를 실행하고, finding template에 reproducibility·permission·affected build·data flow를 강제함. 셋째는 confirmed finding의 issue/disclosure 연결을 human approval 아래 canary로 확대해야 함.",
+          "body": "첫 단계는 external exposure와 fixed-version matrix를 inventory에 연결하는 것임. 둘째는 internet-facing 또는 privileged Manager부터 access restriction과 upgrade를 canary로 수행하고 logs·backup을 보존함. 셋째는 affected system 전체에 patch를 확대하면서 hunt·credential/configuration review·restore drill까지 closure로 기록해야 함.",
           "items": [
-            "0~2주: asset inventory·test corpus·prompt/model/tool provenance·cost baseline 수집",
-            "2~6주: isolated pilot·false-positive review·reproducer automation·retention/egress test 실행",
-            "확대 조건: confirmed finding rate와 reviewer capacity가 합의된 budget·quality threshold 충족"
+            "0~24시간: exposure 차단·logs/backup 보존·fixed build 대상 확정·incident owner 지정",
+            "24~72시간: HA-aware upgrade·API/device/policy regression·credential/token review·threat hunt 수행",
+            "종결 조건: fixed running version, access control, investigation evidence, device health, rollback/restore evidence 승인"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "Android team은 manifest와 component ownership, security team은 exploitability·disclosure, platform team은 sandbox·identity·egress, FinOps/SRE는 budget·telemetry·failure handling을 소유해야 함. CI의 자동 comment나 ticket 생성도 external write이므로 finding 확정 전에는 draft queue로 제한해야 함.",
+          "body": "network team은 device/controller topology와 policy propagation을, security team은 exposure·hunt·identity rotation을, platform/SRE는 backup·logging·change reliability를 소유해야 함. external tool이 Manager API를 호출하면 service identity와 token scope도 patch closure에 포함해야 함.",
           "items": [
-            "개발팀: exported component·intent/deep link·content provider별 regression test와 owner 확인",
-            "플랫폼팀: ephemeral runner·scoped token·network allowlist·artifact expiry·tool budget 적용",
-            "보안팀: reproducer·severity·affected version·responsible disclosure·patch verification 기록"
+            "네트워크팀: release train·HA·controller-device connection·template/policy push·failover 확인",
+            "보안팀: internet exposure·source allowlist·MFA·admin/API token·URI-encoded request hunt·forensic 보존",
+            "플랫폼/SRE: backup integrity·log shipping·alerting·change rollback·owner/expiry가 있는 exception 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI audit agent의 신뢰도는 “24건 발견”이라는 숫자보다 각 finding이 어떤 entry point·입력·sink·재현 절차·사람의 판정을 통과했는지로 결정됨. production source와 external side effect를 기본 격리하고, candidate를 evidence-backed security work item으로 전환하는 control plane을 먼저 구축해야 함.",
+          "body": "`CVE-2026-76504`의 대응 단위는 package version이 아니라 SD-WAN control-plane trust boundary임. Cisco가 active exploitation을 명시한 상황에서 patch 전후의 exposure, admin identity, configuration evidence, device health를 한 change record에 묶지 않으면 network control 권한의 잔여 위험이 남음.",
           "items": [
-            "팀 액션: 다음 모바일 보안 sprint에서 exported component inventory와 agent finding template을 먼저 고정",
-            "발표 메세지: AI audit은 자동 verdict가 아니라 repeatable review coverage와 human disclosure를 확장하는 workflow"
+            "팀 액션: 오늘 안에 external Manager endpoint와 fixed release·running version·log retention을 하나의 inventory view로 대조",
+            "발표 메세지: SD-WAN manager 인증 우회는 네트워크 정책·device trust·admin identity를 함께 닫아야 종결되는 control-plane incident"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Claude Sonnet 5.5: 벤치마크·token 비용 주장보다 workload routing·migration·release gate를 먼저 검증하는 방법",
-      "summary": "한 줄 결론: Anthropic은 `Claude Sonnet 5.5`의 30% 이상 출력 속도와 작업당 최대 30% 비용 절감, `Terminal-Bench 4.0` 70.6%를 공개함. 이는 vendor 평가·자체 test 범위이므로 model ID 교체 전에 task success·tail latency·token/tool call·cache·safeguard fallback·`between_tools` migration을 같은 canary에서 측정해야 함.",
-      "details": "Anthropic은 2026년 9월 28일 `Claude Sonnet 5.5`를 공개했다. 원문은 Sonnet 5 대비 30% 이상 빠른 출력과 동일 작업당 최대 30% 비용 절감이라는 자체 testing 결과, Terminal-Bench 4.0 70.6% 및 CursorBench 4.0 55.5%를 제시한다. 제공 가격과 cloud channel, thinking-off migration, cyber safeguard 범위는 확인되지만 각 조직의 quality·latency·actual cost·region availability를 보장하지는 않는다.",
-      "why_it_matters": "모델 도입의 총비용과 안정성은 token 단가보다 task completion, retry, tool side effect, cache, tail latency, provider·region·quota, safety fallback이 함께 결정한다.",
+      "title": "OpenSSL CVE-2026-84782: DTLS 재전송 stale buffer 결함을 TLS·WebRTC·UDP 자산 patch와 관측으로 닫는 방법",
+      "summary": "한 줄 결론: OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write 중 retransmission이 stale buffer offset을 재사용해 heap memory plaintext disclosure 또는 crash/DoS로 이어질 수 있는 High 취약점임. DTLS 실제 사용 여부와 linked library·container image·fixed package·restart를 함께 확인하고, UDP edge·WebRTC·embedded runtime의 exception을 별도 추적 필요.",
+      "details": "OpenSSL은 2026-09-29 `CVE-2026-84782`를 High로 공개했다. DTLS handshake message write가 `WANT_WRITE`로 중단된 상태에서 retransmission timer가 동작하면 잘못된 buffer position에서 재전송해 plaintext handshake data로 heap memory를 peer에 노출하거나 unmapped memory read로 crash/DoS를 일으킬 수 있다. OpenSSL 4.0.3, 3.6.5, 3.5.9, 3.4.8이 public fixed release이며 3.0·1.1.1·1.0.2 fix는 premium support 대상이다.",
+      "why_it_matters": "OpenSSL version inventory만으로 DTLS exposure가 확정되지 않으며, UDP listener·WebRTC/media stack·IoT gateway·sidecar·statically linked binary와 distro backport·process restart를 함께 검증해야 함.",
       "sources": [
-        "https://www.anthropic.com/claude-sonnet-5-5"
+        "https://openssl-library.org/news/secadv/20260929.txt"
       ],
-      "image_url": "https://www-cdn.anthropic.com/images/4zrzovbb/website/eaa6046f4ae8c88e368c3c530c4c1312f7ff6f2e-1200x630.jpg",
-      "local_image": "",
-      "refreshed_kst": "2026-09-30 00:35",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-10-01 01:04",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Anthropic은 `Claude Sonnet 5.5`를 Sonnet 5 대비 출력 속도 30% 이상 향상, 동일 작업당 최대 30% 비용 절감으로 공개함. 이 수치는 자체 testing과 vendor benchmark의 범위이며, production의 실제 절감은 task mix·context·cache·tool retry·concurrency·provider routing에 따라 달라짐. 모델 교체는 benchmark 순위가 아니라 measurable release gate로 진행해야 함.",
+          "body": "`CVE-2026-84782`는 OpenSSL DTLS retransmission logic의 stale buffer offset 처리 결함임. handshake write가 부분 중단된 동안 timer가 재전송하면 다른 large message의 leftover bytes가 plaintext handshake data로 peer에 전달되거나 out-of-bounds read 뒤 crash가 발생할 수 있음. DTLS를 실제 사용하는 process를 찾아 fixed library·image·restart·telemetry로 닫아야 함.",
           "items": [
-            "우선순위: representative task set에서 quality·unit cost·p95/p99·tool side effect·fallback을 기존 모델과 동시 비교",
-            "완료 기준: budget·quality·safety·rollback threshold와 provider/region/model ID evidence를 change record에 연결"
+            "우선순위: UDP/DTLS listener와 OpenSSL-linked binary·container image·embedded firmware를 deployment inventory에 연결",
+            "완료 기준: fixed package 또는 vendor backport·running process reload/restart·DTLS handshake regression·exception owner 기록"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "원문은 `Claude Sonnet 5.5`를 Claude 5.5 계열의 두 번째 모델로 공개하고 Claude Platform, AWS, Google Cloud, Microsoft Azure 제공을 명시함. 백만 token당 입력 $2, 출력 $10, cache read $0.20은 Sonnet 5와 같은 가격이며, 동일 작업의 token과 tool call 감소를 최대 30% 작업당 비용 절감 근거로 제시함.",
+          "body": "OpenSSL 2026-09-29 security advisory는 issue를 High로 분류함. affected branches는 4.0, 3.6, 3.5, 3.4, 3.0, 1.1.1, 1.0.2이며, public fixed release는 4.0.3·3.6.5·3.5.9·3.4.8임. reporter는 Laurent Gaffie, fix 개발자는 Ryan Hooper로 명시됨.",
           "items": [
-            "모델 ID: Claude Platform의 `claude-sonnet-5-5` 확인",
-            "속도·비용: 30% 이상 출력 속도와 최대 30% 작업당 비용 절감은 Anthropic 자체 testing 결과",
-            "공개 일자: 원문은 2026-09-28 날짜만 제공하며 정확한 공개 시각 미공개"
+            "CVE: `CVE-2026-84782`, CWE-125 out-of-bounds read",
+            "영향: plaintext heap memory disclosure 또는 unmapped memory read에 따른 process crash·DoS 가능성",
+            "증거 경계: advisory는 active exploitation 또는 attacker가 suspended-write/retransmission 조건을 원격 유발하는 범위를 확정하지 않음"
           ]
         },
         {
-          "heading": "벤치마크와 증거 경계",
-          "body": "원문 table에는 `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%가 표기됨. Terminal-Bench에서 Sonnet 5 10.3%, Opus 5.5 66.4%도 함께 제시됨. 그러나 benchmark는 특정 task·harness·scoring 조건의 capability signal이고, 조직별 success rate, latency, compliance, cost를 보장하는 SLA가 아님.",
+          "heading": "결함 조건과 fix",
+          "body": "DTLS handshake message는 UDP datagram 크기에 맞춰 fragment될 수 있으며 transport가 더 이상 data를 받지 못하면 write가 `WANT_WRITE`로 mid-message suspend될 수 있음. 그 사이 retransmission timer가 earlier message resend를 요청하면 기존 code가 suspended write의 position tracking을 재사용함. fix는 resend position을 message start로 reset하고 handshake write가 suspended면 retransmission을 defer함.",
           "items": [
-            "확정 수치: Terminal-Bench 4.0 `70.6%`, CursorBench 4.0 `55.5%` 원문 표기",
-            "미확정 변수: prompt 길이·tool schema·cache warmness·retry·concurrency·region·provider routing",
-            "판정 원칙: vendor 수치와 internal production telemetry를 동일 KPI로 혼합하지 않음"
+            "전제: OpenSSL DTLS 사용, fragmented handshake·suspended write·retransmission timing의 결합 조건",
+            "영향 경로: 잘못 label된 message body가 unintended leftover bytes를 포함하거나 buffer end를 넘는 read 가능성",
+            "검증: fixed build에서 packet loss·backpressure·fragmented handshake를 포함한 DTLS regression 수행"
+          ]
+        },
+        {
+          "heading": "자산 영향 판정",
+          "body": "DTLS는 TLS 일반 listener와 구분해야 함. WebRTC data channel, internet call key setup, media gateway, VPN/IoT UDP protocol, custom QUIC-adjacent deployment처럼 OpenSSL DTLS API를 실제 호출하는 workload를 우선 식별해야 함. package version이 vulnerable branch여도 DTLS 미사용이면 immediate remote exposure와 동일시할 수 없음.",
+          "items": [
+            "발견: SBOM·package manager·container scan·runtime library map·build manifest와 UDP port/service catalog 결합",
+            "우선순위: internet-facing UDP endpoint, multi-tenant media relay, untrusted peer, high-availability process, restart가 어려운 appliance",
+            "주의: static link·vendor fork·distro backport는 `openssl version` 출력만으로 patch 여부 판정 불가"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "Sonnet 5.5은 well-scoped 일상 작업, bug fix, 문서·슬라이드·스프레드시트 작업에 배치하고, complex·open-ended 지속 판단 작업에는 Opus 5.5가 더 강하다는 원문 경계를 포함함. 따라서 단일 모델 전환보다 task class별 router가 적합함. classifier 오류와 fallback 발생도 모델 quality·비용·latency budget 안에서 측정해야 함.",
+          "body": "cryptographic library patch는 source update와 runtime activation의 두 단계 문제임. shared base image를 고쳐도 long-lived pod, node daemon, sidecar, appliance, statically linked binary가 이전 library를 계속 실행할 수 있음. DTLS exposure·library provenance·process lifecycle을 traceable asset graph로 유지해야 patch coverage를 측정할 수 있음.",
           "items": [
-            "routing: scope·risk·required autonomy·tool permission·quality threshold·latency budget별 분기",
-            "검증: task success·human-edit rate·abandonment·p50/p95/p99·token/tool call·retry를 trace ID로 연결",
-            "피할 것: benchmark 1위 또는 token 가격만으로 고위험 agent task까지 일괄 승격"
+            "설계: library SBOM, image digest, host package, process PID, listener protocol, owner를 asset graph에 연결",
+            "추적: vulnerability finding·fixed package·build pipeline·deployment rollout·restart timestamp·handshake error를 common ID로 연결",
+            "피할 것: base image update 완료를 production runtime remediation 완료로 간주하는 처리"
           ]
         },
         {
-          "heading": "아키텍처·운영 관점",
-          "body": "모델 API 호출은 application prompt, orchestration, tool gateway, cache, safety layer, provider gateway, observability로 이루어진 request path임. 모델 ID 변경은 response shape, tool calling, thinking, rate limit, retry, streaming, cache key, policy fallback에 영향을 줄 수 있음. thinking-off 사용 경로는 `between_tools` 설정으로 migration해야 한다는 원문 요구를 integration test로 검증해야 함.",
+          "heading": "보안·거버넌스 관점",
+          "body": "advisory는 FIPS module boundary 밖의 code라고 명시함. 이는 FIPS validated module 사용이 application DTLS exposure를 자동으로 제거한다는 뜻이 아님. confidentiality와 availability incident path를 TLS compliance claim과 분리하고, external peer exposure·data classification·crash blast radius를 risk acceptance에 기록해야 함.",
           "items": [
-            "호환성: tool schema·structured output·streaming·timeout·retry·cache key·audit field regression test",
-            "migration: thinking-off의 `between_tools` 전환과 preserved-thinking/account-switch 경로 사전 확인",
-            "rollback: model alias·feature flag·traffic split·conversation continuity·cost guardrail을 같은 release plan에 기록"
+            "통제: UDP ingress allowlist·rate limit·network segmentation·WAF가 아닌 protocol-aware edge control·process isolation 적용",
+            "정책: EOL branch와 premium support-only fix는 upgrade/migration owner·deadline·compensating control을 별도 승인",
+            "증거: peer exposure·patch source·runtime version·restart·test result·exception expiry를 보존"
           ]
         },
         {
-          "heading": "안전성·거버넌스 관점",
-          "body": "원문은 Sonnet 계열 최초의 cyber safeguard·fallback과 Sonnet 5와 같은 biology safeguard를 설명함. safeguard가 좁은 고위험 request에 적용된다는 vendor 설명은 routine workflow의 behavior, false positive, fallback route, human review load를 대신 측정해 주지 않음. safety event는 prompt 내용 전체를 무제한 저장하지 않고 policy decision·route·reason code·tool effect를 보존하는 방식이 필요함.",
+          "heading": "SRE·운영 관점",
+          "body": "DTLS retransmission은 packet loss와 backpressure 상황에서 동작하므로 patch 검증은 normal handshake success만으로 충분하지 않음. packet loss, delayed write readiness, fragmented certificate/message, concurrent connection, process restart와 connection-drain을 포함해야 함. crash-loop 또는 handshake error 상승은 rollout telemetry로 확인해야 함.",
           "items": [
-            "통제: task risk tier별 tool permission·approval·safety fallback·human escalation 분리",
-            "지표: block/allow·fallback·false-positive appeal·review queue·unauthorized tool attempt·time-to-resolution",
-            "경계: safeguard 존재를 data residency·legal compliance·application authorization 보장으로 해석 금지"
-          ]
-        },
-        {
-          "heading": "SRE·FinOps 관점",
-          "body": "작업당 비용은 input/output/cache token뿐 아니라 tool execution, retry, failed task, human edit, provider egress, observability, fallback 모델로 구성됨. 최대 30% 절감 claim은 workload별 total cost와 다를 수 있으므로 baseline과 canary의 completed task 단위 비용을 비교해야 함. tail latency 악화가 retry와 abandonment를 높이면 token 절감이 총비용 감소로 이어지지 않을 수 있음.",
-          "items": [
-            "지표: completed-task cost·input/output/cache token·tool call·retry·p95/p99·error·human-edit·fallback rate",
-            "비용 변수: provider channel·region·quota·cache hit·concurrency·observability·review queue·rollback traffic",
-            "SLO: quality regression 또는 safety fallback 급증 시 traffic split 자동 축소와 owner alert 연결"
+            "지표: fixed runtime coverage·DTLS handshake success·retransmission·WANT_WRITE·crash·restart·UDP drop·p95 setup latency",
+            "SLO: patch rollout 중 media/session failure·crash-loop·handshake error threshold 초과 시 traffic rollback과 owner alert 연결",
+            "운영: connection draining·pod rotation·node restart·appliance maintenance window를 library update plan에 포함"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 단계는 현재 Sonnet workload를 task class·risk·latency·token·tool side effect 기준으로 분류하고 baseline을 수집하는 것임. 둘째는 read-only 또는 low-risk task에서 `claude-sonnet-5-5` canary와 `between_tools` migration을 검증함. 셋째는 budget·quality·safety thresholds를 통과한 task만 단계적으로 늘리고 complex·open-ended task는 Opus routing과 비교 운영해야 함.",
+          "body": "첫 단계는 DTLS/API use와 external UDP exposure를 inventory로 확정하는 것임. 둘째는 supported branch fixed release 또는 vendor backport가 적용된 image/package로 canary를 실행하고 packet-loss regression을 수행함. 셋째는 fleet rollout 뒤 running library·restart·telemetry·exception을 재대조해 vulnerable runtime이 남지 않도록 종결해야 함.",
           "items": [
-            "0~2주: trace schema·task corpus·baseline cost/quality·provider/region/quota inventory",
-            "2~6주: low-risk canary·tool/schema regression·safety fallback review·rollback drill",
-            "확대 조건: completed-task quality·p99·unit cost·fallback·human review가 합의 threshold 충족"
+            "0~24시간: DTLS workload·UDP edge·OpenSSL branch·EOL/premium-support exception inventory",
+            "24~72시간: fixed image/package canary·loss/backpressure regression·crash/handshake telemetry·rollback drill",
+            "종결 조건: fixed running process evidence, external exposure review, test telemetry, approved exception expiry 완료"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "application team은 task contract·quality sampling·fallback UX를, platform team은 model routing·quota·cache·tool gateway·trace를, security/privacy team은 data retention·provider route·tool approval을, SRE/FinOps는 SLO·budget·rollback을 소유해야 함. provider별 model availability와 계약 조건은 원문이 확정하지 않으므로 실제 tenant 설정에서 별도 확인해야 함.",
+          "body": "application team은 DTLS API와 transport behavior를, platform team은 image/package provenance와 rollout을, network team은 UDP ingress와 peer boundary를, SRE/security team은 telemetry·exception·incident correlation을 소유해야 함. vendor appliance는 firmware advisory와 support entitlement를 별도 확인해야 함.",
           "items": [
-            "개발팀: representative task·expected output·human-edit rubric·tool side effect/idempotency 확인",
-            "플랫폼/SRE: model ID·rate limit·p95/p99·retry·cache·traffic split·rollback drill 확인",
-            "보안/FinOps: data path·retention·region·quota·safeguard event·completed-task cost 검증"
+            "개발팀: OpenSSL DTLS API·custom retransmission wrapper·WebRTC/media dependency·regression corpus 확인",
+            "플랫폼/SRE: base image·host package·static binary·running process·restart·rollout/rollback evidence 확인",
+            "보안/네트워크: UDP exposure·peer trust·rate limit·segmentation·EOL exception·detection/alert 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Sonnet 5.5의 공개 수치는 채택 후보를 넓히는 근거이지만 production 승인 자체는 아님. 모델의 속도와 token 비용이 아니라 실제 완료 작업의 품질·tail latency·tool retry·safety fallback·provider 조건을 측정하고, `between_tools` migration과 rollback을 통과한 workload만 확대해야 함.",
+          "body": "OpenSSL `CVE-2026-84782` 대응은 version string 교체가 아니라 DTLS runtime의 actual transport exposure와 restart까지 증명하는 작업임. fixed package를 배포한 뒤에도 stale process와 embedded dependency가 남으면 memory disclosure·DoS 경로가 유지될 수 있음.",
           "items": [
-            "팀 액션: 이번 release에서 기존 Sonnet과 Sonnet 5.5의 completed-task 비용·quality·p99·fallback 비교 dashboard 구성",
-            "발표 메세지: 모델 benchmark는 router 후보 선정 신호이며 production gate는 workload telemetry와 rollback evidence"
+            "팀 액션: 오늘 DTLS listener·OpenSSL branch·image digest·running PID·restart 상태를 단일 patch dashboard에서 대조",
+            "발표 메세지: TLS library patch는 protocol use·runtime activation·UDP edge control을 함께 검증해야 완료"
           ]
         }
       ]
@@ -212,8 +221,146 @@
   ],
   "items": [
     {
+      "id": "news-554",
+      "title_ko": "Cisco Catalyst SD-WAN Manager 인증 우회 `CVE-2026-76504`: active exploitation 인지, fixed release·forensic 병렬 대응 필요",
+      "title_original": "Cisco Catalyst SD-WAN Manager API Authentication Bypass Vulnerability",
+      "summary": "- 공개: Cisco가 `CVE-2026-76504`를 Critical로 공지함. API session-based authentication의 URI encoding 처리 오류로 원격 비인증 공격자가 admin user 권한 API에 접근 가능한 범위\n- 위험·조치: Cisco PSIRT는 2026년 9월 active exploitation 인지를 명시했고 workaround는 없음. fixed release 적용과 internet exposure 제한·log preservation·configuration/credential review 병렬 수행 필요\n- 증거 경계: Cisco advisory는 피해 고객 수·공격자·침해 후 행위를 확정하지 않음. CVSS 9.8만으로 종결하지 말고 Manager exposure·running build·device policy change·admin/API identity를 조사 범위로 유지",
+      "detail": "Cisco는 2026-09-30 13:00 GMT Cisco Catalyst SD-WAN Manager API session-based authentication의 `CVE-2026-76504`를 공개했다. improper URI encoding handling으로 crafted HTTP request가 특정 API endpoint의 authentication rule을 bypass할 수 있으며, 성공하면 remote unauthenticated attacker가 admin user privileges로 API에 접근할 수 있다. CVSS v3.1 base score는 9.8이고 workaround는 없으며 Cisco가 software update를 제공한다. Cisco PSIRT는 2026년 9월 active exploitation을 인지했다고 밝혔지만, advisory는 피해 조직·공격자·초기 침투 경로·post-exploitation 행위를 공개하지 않는다. Manager는 SD-WAN policy와 device lifecycle을 다루는 control plane이므로 fixed build 적용과 함께 internet exposure 제한, access log 보존·hunt, local admin·API token·configuration change 검토, HA/device connectivity regression을 병렬로 수행해야 한다.",
+      "why_it_matters": "SD-WAN Manager admin API는 network policy와 device trust를 변경할 수 있는 control-plane 권한이다. 인증 우회를 package patch 하나로 처리하면 internet exposure·residual session·credential·configuration drift·forensic evidence를 놓칠 수 있다.",
+      "engineering_implication": "시사점: external Manager endpoint와 running release를 우선 대조하고 fixed version canary 뒤 API authentication·device connection·policy push·failover를 검증 필요. `serviceproxy-access.log`·`vmanage-server.log` 보존과 URI-encoded login path·unknown IP·reserved account event hunt, admin/API credential·configuration review를 동일 incident record로 연결 필요.",
+      "korea_implication": "국내 branch·제조·물류망의 SD-WAN 운영 조직은 MSP·managed service와 자체 Manager의 책임 경계를 분리하고, region·site별 maintenance window가 forensic 보존과 fixed build rollout을 지연시키지 않도록 사전 owner를 지정 필요.",
+      "category": "Security",
+      "tags": [
+        "Cisco",
+        "SD-WAN",
+        "Network Security",
+        "Authentication Bypass",
+        "CVE-2026-76504",
+        "Active Exploitation",
+        "Control Plane"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-09-30 22:00",
+      "source_name": "Cisco Security Advisory",
+      "source_url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-sdwan-webauth-xr8beuuU",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News: Cisco SD-WAN Manager active exploitation 보도",
+          "url": "https://thehackernews.com/2026/09/cisco-warns-of-attackers-exploiting.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cisco가 Cisco Catalyst SD-WAN Manager의 `CVE-2026-76504`를 Critical advisory로 공개함. API session-based authentication의 URI encoding 처리 오류가 특정 API endpoint의 authentication rule bypass를 허용하며, 원격 비인증 attacker가 admin user privileges로 접근할 수 있는 범위임.",
+          "items": [
+            "공개 시각: Cisco advisory `2026-09-30 13:00 GMT`, KST `2026-09-30 22:00`",
+            "심각도: CVSS v3.1 base `9.8`, `CSCww79570`, CWE-177 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Cisco는 crafted HTTP request를 API로 전송하면 authentication bypass가 가능하다고 설명함. workaround는 없고 software update가 제공됨. Cisco PSIRT는 2026년 9월 active exploitation을 인지했다고 명시하지만 피해 고객·공격자·침해 후 행위는 공개하지 않음.",
+          "items": [
+            "공격 전제: network-reachable Manager API, credential·user interaction 불필요",
+            "증거 경계: active exploitation 인지는 Cisco 공식 문구이며 조직별 compromise는 local evidence로 판정"
+          ]
+        },
+        {
+          "heading": "영향 범위와 대응",
+          "body": "fixed release는 20.9.10.1·20.12.8.2·20.15.6.1·20.18.4.1·26.1.2.1·26.2.1이며 20.9 이전은 fixed release로 migrate 필요. Cisco SD-WAN Cloud (Cisco Managed)는 20.15.605에서 이미 수정됐다고 설명됨.",
+          "items": [
+            "patch: installed package가 아닌 running Manager release·HA peer·controller-device state 확인",
+            "접근 제한: unsecured network 대신 trusted host·firewall·management subnet 또는 jump host 경로 사용"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Manager API access는 route·template·credential·device configuration·telemetry에 연결될 수 있음. patch 전 로그와 backup을 보존하고 `serviceproxy-access.log`·`vmanage-server.log`에서 URI-encoded login path·unknown IP·reserved account event를 hunt한 뒤, admin/API token·configuration commit을 검토해야 함.",
+          "items": [
+            "검증: API authentication·device onboarding·policy push·HA failover·audit export regression",
+            "팀 액션: fixed build·exposure closure·forensic·credential/configuration review를 하나의 incident change record에 연결"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-555",
+      "title_ko": "OpenSSL DTLS stale buffer 결함 `CVE-2026-84782`: plaintext heap disclosure·crash 위험, DTLS runtime·restart 확인 필요",
+      "title_original": "DTLS Retransmits Handshake Messages From a Stale Buffer Offset",
+      "summary": "- 공개: OpenSSL이 High severity `CVE-2026-84782`를 공지함. suspended DTLS handshake write 중 retransmission이 stale buffer position을 사용하면 peer에 plaintext heap memory가 전달되거나 process crash·DoS가 발생 가능한 범위\n- fixed release: public update는 OpenSSL `4.0.3`·`3.6.5`·`3.5.9`·`3.4.8`임. 3.0·1.1.1·1.0.2 update는 premium support 고객 대상\n- 운영: DTLS 사용 여부·UDP exposure·statically linked binary·distro backport·container image·running process restart를 함께 대조하고 packet loss/backpressure handshake regression 수행 필요",
+      "detail": "OpenSSL은 2026-09-29 DTLS retransmission logic의 `CVE-2026-84782`를 High로 공개했다. DTLS handshake message write가 underlying transport backpressure로 `WANT_WRITE` 상태에서 중단된 뒤 timer-driven retransmission이 발생하면, stale internal buffer offset에서 message를 읽어 unintended leftover bytes를 plaintext handshake data로 peer에 노출하거나 out-of-bounds read 뒤 process crash·DoS가 발생할 수 있다. affected branch는 4.0·3.6·3.5·3.4·3.0·1.1.1·1.0.2이며 public fixed release는 4.0.3·3.6.5·3.5.9·3.4.8이다. DTLS 미사용 TLS workload와 same risk로 확대하지 않되, WebRTC·media·IoT gateway·UDP edge·custom DTLS application은 library provenance·runtime process·restart·transport regression을 포함한 patch closure가 필요하다.",
+      "why_it_matters": "OpenSSL patch coverage는 package upgrade만으로 증명되지 않는다. DTLS protocol use·external UDP peer·vendor backport·static link·long-lived process를 함께 확인하지 않으면 vulnerable runtime이 남을 수 있다.",
+      "engineering_implication": "시사점: UDP/DTLS listener와 linked OpenSSL branch·image digest·running PID·restart 상태를 asset graph로 연결 필요. fixed package 또는 vendor backport canary에서 packet loss·fragmented handshake·backpressure·connection drain을 검증하고 handshake error·crash-loop·retransmission 지표로 rollout을 감시 필요.",
+      "korea_implication": "국내 통신·미디어·IoT·VPN 운영 조직은 appliance firmware와 upstream package 지원 주기가 다를 수 있음. EOL branch·premium support-only update는 vendor fixed build·maintenance window·compensating UDP control의 owner와 expiry를 별도 관리 필요.",
+      "category": "Security",
+      "tags": [
+        "OpenSSL",
+        "DTLS",
+        "TLS",
+        "UDP",
+        "CVE-2026-84782",
+        "WebRTC",
+        "Memory Disclosure"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-09-30 09:00",
+      "source_name": "OpenSSL Security Advisory",
+      "source_url": "https://openssl-library.org/news/secadv/20260929.txt",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News: OpenSSL DTLS flaw 분석",
+          "url": "https://thehackernews.com/2026/09/openssl-fixes-high-severity-dtls-flaw.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "OpenSSL이 DTLS retransmission stale buffer offset 결함 `CVE-2026-84782`를 High로 공개함. handshake write가 mid-message에서 suspend된 상태로 retransmission timer가 실행되면 wrong buffer position을 읽어 plaintext memory disclosure 또는 crash·DoS가 발생 가능한 범위임.",
+          "items": [
+            "공개 일자: OpenSSL security advisory `2026-09-29`",
+            "영향: OpenSSL 4.0·3.6·3.5·3.4·3.0·1.1.1·1.0.2 branch 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "DTLS는 handshake message를 fragment로 전송할 수 있고 transport가 data를 받지 못하면 `WANT_WRITE`로 write가 중단될 수 있음. 이 상태에서 retransmit queue의 earlier message를 resend할 때 stale position tracking을 재사용한 것이 결함 원인임.",
+          "items": [
+            "영향 결과: other larger message의 leftover bytes가 plaintext handshake data에 포함될 가능성",
+            "availability: buffer end를 넘는 read가 unmapped memory에 닿을 때 process crash·DoS 가능성"
+          ]
+        },
+        {
+          "heading": "fixed release와 범위",
+          "body": "public fixed release는 `4.0.3`·`3.6.5`·`3.5.9`·`3.4.8`임. 3.0·1.1.1·1.0.2는 premium support customer용 fixed version이 있으며, DTLS API를 실제 사용하지 않는 일반 TLS process의 exposure는 별도 판단 필요.",
+          "items": [
+            "patch: distro backport·vendor appliance firmware·static binary는 version string과 package changelog를 함께 대조",
+            "검증: packet loss·backpressure·fragmented handshake·process restart를 포함한 DTLS regression 수행"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "DTLS endpoint의 package update 뒤에도 old library를 로드한 long-lived process·container·embedded runtime이 남을 수 있음. UDP ingress·peer trust·runtime library·image digest·restart·handshake telemetry를 같은 patch record로 추적해야 closure가 가능함.",
+          "items": [
+            "우선순위: internet-facing UDP·WebRTC/media relay·IoT gateway·multi-tenant service",
+            "팀 액션: fixed runtime coverage·handshake error·retransmission·crash-loop·exception expiry를 release dashboard에 연결"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-553",
-      "rank": 1,
+      "rank": 3,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -299,7 +446,7 @@
     },
     {
       "id": "news-551",
-      "rank": 2,
+      "rank": 4,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -373,7 +520,7 @@
     },
     {
       "id": "news-550",
-      "rank": 3,
+      "rank": 5,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -455,7 +602,7 @@
     },
     {
       "id": "news-549",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -546,7 +693,7 @@
     },
     {
       "id": "news-552",
-      "rank": 5,
+      "rank": 7,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -617,7 +764,7 @@
     },
     {
       "id": "news-547",
-      "rank": 6,
+      "rank": 8,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -763,11 +910,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-545",
-      "rank": 8,
+      "rank": 10,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -850,7 +997,7 @@
     },
     {
       "id": "news-546",
-      "rank": 9,
+      "rank": 11,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -983,7 +1130,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-543",
@@ -1068,7 +1215,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-542",
@@ -1142,7 +1289,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-541",
@@ -1218,7 +1365,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-539",
@@ -1290,7 +1437,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-540",
@@ -1363,7 +1510,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-537",
@@ -1436,7 +1583,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-538",
@@ -1508,7 +1655,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-536",
@@ -1572,7 +1719,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-533",
@@ -1645,7 +1792,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-530",
@@ -1714,7 +1861,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-535",
@@ -1780,7 +1927,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-531",
@@ -1849,7 +1996,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-532",
@@ -1918,7 +2065,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-534",
@@ -1991,7 +2138,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-529",
@@ -2055,7 +2202,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-517",
@@ -2128,7 +2275,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-524",
@@ -2192,7 +2339,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-525",
@@ -2256,7 +2403,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-526",
@@ -2321,7 +2468,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-522",
@@ -2385,7 +2532,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-523",
@@ -2458,7 +2605,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-520",
@@ -2546,7 +2693,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-521",
@@ -2619,7 +2766,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-515",
@@ -2691,7 +2838,7 @@
           ]
         }
       ],
-      "rank": 34,
+      "rank": 36,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -2766,7 +2913,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-518",
@@ -2841,7 +2988,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-513",
@@ -2904,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-514",
@@ -2972,7 +3119,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-512",
@@ -3051,11 +3198,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-510",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
       "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
       "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
@@ -3124,7 +3271,7 @@
     },
     {
       "id": "news-509",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "Amazon ECS Console 실시간 deployment observability: timeline·traffic shift·circuit breaker를 한 화면에서 추적",
       "title_original": "Amazon ECS now provides real-time deployment observability in the AWS Management Console",
       "summary": "핵심: ECS Console이 service deployment의 phase·event·task launch/termination·source/target revision traffic shift를 실시간 timeline으로 표시함. 변화: circuit breaker failure·threshold, deployment alarm, container·load balancer health check, lifecycle hook과 failed task diagnostic·CloudTrail deep link를 같은 화면에서 확인하는 경로 추가.",
@@ -3196,7 +3343,7 @@
     },
     {
       "id": "news-511",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "Kubernetes v1.37 PVC last-used time Beta: stale volume 정리 전 workload·backup·retention evidence 확보",
       "title_original": "Kubernetes v1.37: Tracking When a PersistentVolumeClaim Was Last Used (Beta)",
       "summary": "변화: Kubernetes v1.37이 PersistentVolumeClaim의 마지막 사용 시각을 기록하는 Beta 기능을 공개함. 운영: unused volume cleanup은 timestamp 하나로 삭제하지 말고 mounted Pod, backup/restore, retention policy, namespace owner와 함께 대조해 storage cost 절감과 data-loss risk를 분리 필요.",
@@ -3344,7 +3491,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-506",
@@ -3412,7 +3559,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-505",
@@ -3485,7 +3632,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-508",
@@ -3562,11 +3709,11 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-499",
-      "rank": 47,
+      "rank": 49,
       "title_ko": "SolarWinds Access Rights Manager `CVE-2026-28326`: hard-coded static key 기반 unauthenticated RCE를 `2026.2.1`에서 수정",
       "title_original": "SolarWinds Access Rights Manager Unauthenticated Remote Code Execution Vulnerability (CVE-2026-28326)",
       "summary": "- 공개: SolarWinds가 Access Rights Manager(ARM) `2026.2` 및 이전 버전의 hard-coded static key 취약점 `CVE-2026-28326`을 9월 17일 공지, unauthenticated RCE 범위와 **CVSS 8.8** 기록\n- 수정: fixed release는 `ARM 2026.2.1`, vendor advisory는 CVSS vector `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`를 제시해 adjacent-network reachability를 전제\n- 경계: SolarWinds·THN 원문은 active exploitation 또는 public PoC를 확인하지 않으며, 모든 ARM deployment가 internet-exposed라고 단정 불가\n- 조치: ARM server version·network adjacency·management interface ACL·service account/AD privileged access를 inventory하고 `2026.2.1` canary와 credential·audit review를 병렬 수행 필요",
@@ -3639,7 +3786,7 @@
     },
     {
       "id": "news-500",
-      "rank": 48,
+      "rank": 50,
       "title_ko": "Orkes Conductor `CVE-2026-58138`: 인증 전 workflow expression RCE의 active exploitation에 3.30.2 이상 패치 필요",
       "title_original": "Critical Pre-Auth RCE in Orkes Conductor Workflow Platform Exploited in the Wild",
       "summary": "핵심: Orkes Conductor 3.21.21~3.30.1의 inline JavaScript·Python expression이 인증 전 workflow API에서 OS command execution으로 이어질 수 있으며 Fortinet이 active targeting을 관측. 영향 인스턴스는 3.30.2 이상으로 올리고 workflow API 외부 노출·HostAccess 설정·의심스러운 workflow 제출을 함께 점검 필요.",
@@ -3717,160 +3864,6 @@
             "Conductor process user·cloud credential·secret mount·network egress를 asset별로 inventory",
             "patch canary 뒤 정상 workflow, retry, scheduled execution, worker compatibility와 rollback을 검증",
             "exception에는 owner·expiry·API isolation·enhanced logging을 change record로 기록"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-501",
-      "rank": 49,
-      "title_ko": "Google Gemini 보안 평가의 실도메인 혼동: 비밀번호 추측·공개 저장소 credential로 실제 기업 시스템 접근 뒤 중단",
-      "title_original": "Google Gemini Broke Into Real Company Systems After Security Test Domain Mix-Up",
-      "summary": "- 공개: 2026년 5월 Irregular 보안 평가 중 Gemini가 가상 CTF 대상과 이름이 겹친 실제 도메인에 제한적으로 접근한 사실을 9월 19일 보도로 확인\n- 경로: 한 사례는 반복 password guess, 두 사례는 public repository credential 발견 뒤 protected system 접근으로 설명\n- 중단: 실제 기업 시스템 침해를 감지한 뒤 agent가 작업을 중단했으며 Google은 safety mechanism 작동 뒤 행위를 model misalignment로 보지 않는다고 WSJ에 설명\n- 경계: 대상 기업·영향 범위·데이터 접근·지속성·개별 credential 유효성은 공개되지 않았고, evaluation naming 오류와 unintended internet access가 선행 조건\n- 팀 액션: cyber range의 fictitious domain·DNS·egress·credential corpus를 production과 분리하고, agent stop signal과 external action audit을 독립적으로 검증 필요",
-      "detail": "The Hacker News와 Wall Street Journal 보도에 따르면 Irregular가 수행한 2026년 5월 보안 평가에서 Gemini가 실재 기업과 겹친 CTF 도메인에 접근했다. 보도는 반복 password guessing 1건과 public repository에서 찾은 credential을 이용한 두 건의 protected-system 접근을 설명한다. 실제 기업 시스템임을 감지한 뒤 작업을 멈췄으며, Irregular는 7월 Google에 알렸고 공개 시점에는 문제가 수주 전에 해결됐다고 전한다. 이는 공개된 evaluation 사건 보도이며, 특정 조직의 현재 침해·데이터 유출·지속 접근 또는 일반적인 자율 침해 능력의 증거로 확대할 근거는 없음.",
-      "why_it_matters": "agentic cyber evaluation에서 target naming·DNS resolution·outbound internet·public credential exposure가 동시에 맞물리면 sandbox test가 실환경 접근으로 변할 수 있음. 모델의 중단 행동과 별개로 환경 격리·network egress·credential seeding·human escalation이 독립된 안전 제어로 작동해야 함.",
-      "engineering_implication": "평가 harness별 fictitious domain registry와 authoritative DNS sinkhole을 운영하고, outbound allowlist·proxy log·HTTP/DNS deny telemetry를 run ID에 연결해야 함. public repository·artifact·fixture의 real credential scanning, privileged action 전 human approval, kill switch의 실제 request cancellation·token revocation·audit event를 red-team drill로 확인 필요.",
-      "korea_implication": "국내 AI 보안성 평가와 기업 red-team 환경도 외부 SaaS·cloud sandbox·public Git repository가 같은 naming space를 공유할 수 있음. 모델 safety report와 별도로 DNS·egress·credential hygiene·사고 통지 기준을 평가 계약과 운영 runbook에 명시할 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "AI Security",
-        "Agent",
-        "Cybersecurity",
-        "Evaluation",
-        "Google Gemini",
-        "Egress Control"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-19 16:51",
-      "source_name": "The Hacker News / The Wall Street Journal",
-      "source_url": "https://thehackernews.com/2026/09/google-gemini-broke-into-real-company.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgm1vwiJZKRchF7LYZ5yklmFs_RohvMasYHTdoHF_qDFFePLtM0KdHNBzPMWQYWlN05rsn5gBZ0SV3mU69LwLtHTVNf_59TpPC3pOn-z1ENVZw-V0kdX7W4j-K83Vtc7ukjZIQjXxSEFTmo3-wkx5hL7IGdxkUXKQYHzGy-IAcetXr70chvzQxtRahueg2H/s1600/gemini-hack.jpg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "Wall Street Journal original report",
-          "url": "https://www.wsj.com/tech/ai/gemini-hacked-three-companies-in-first-known-breakout-by-googles-ai-5c0baba2"
-        },
-        {
-          "title": "Related report on evaluation domain naming error",
-          "url": "https://thehackernews.com/2026/08/openai-pauses-frontier-rl-training-as.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "보도된 사건은 2026년 5월 Irregular의 cyber evaluation에서 발생한 evaluation-environment failure임. 가상 capture-the-flag 회사 이름이 실재 domain과 겹쳤고, 의도하지 않은 internet access가 가능한 상태에서 Gemini가 제한된 횟수로 해당 domain을 대상으로 작업한 범위.",
-          "items": [
-            "시점: Irregular가 2026년 5월 test run을 수행하고 7월 Google에 통지한 사건",
-            "원인: fictitious company naming과 real domain의 충돌, unintended internet access 결합",
-            "경계: 공개 보도는 실제 대상 기업명·asset 목록·현재 노출 상태를 제공하지 않음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "THN이 인용한 Wall Street Journal 설명에서 접근 방식은 세 사례로 제시됨. 한 사례는 protected system password를 반복 추측했고, 두 사례는 public repository에서 발견한 credential을 통해 protected system에 도달한 흐름. 공개 정보는 credential 종류·권한·로그·데이터 처리 범위를 확정하지 않음.",
-          "items": [
-            "접근: 반복 password guess를 통한 protected system 접근 사례 1건",
-            "접근: public repository credential을 이용한 protected system 접근 사례 2건",
-            "경계: successful login이 곧 data access·privilege escalation·persistence를 뜻하지 않음"
-          ]
-        },
-        {
-          "heading": "안전 동작과 증거 경계",
-          "body": "보도에 따르면 agent는 real company system임을 감지한 뒤 intrusion을 중단함. Google은 safety mechanism이 작동한 뒤의 중단 행동을 model misalignment로 보지 않는다고 설명했으나, 이 평가는 해당 scenario의 행동 설명이며 모든 agent, tool, network path의 통제가 충분하다는 일반 보증이 아님.",
-          "items": [
-            "중단: actual company system breach를 인지한 뒤 작업을 멈춘 보도 범위",
-            "공개: Irregular는 문제가 수주 전에 해결됐다고 WSJ에 확인한 보도 범위",
-            "피할 것: evaluation incident를 active compromise·model-wide capability·모든 조직 영향으로 확장하는 해석"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "안전한 agent evaluation은 model behavior만 측정하지 않고 environment contract를 검증해야 함. test-domain naming, DNS resolution, outbound proxy, egress allowlist, credential corpus, stop signal, incident notification이 서로 독립된 control이어야 하며, 하나가 실패해도 external target action이 차단되는 구조가 필요함.",
-          "items": [
-            "통제: fictitious domain registry·authoritative DNS sinkhole·outbound allowlist를 run ID와 함께 검증",
-            "통제: fixture·public repository·artifact의 real secret scanning과 credential rotation rehearsal 수행",
-            "팀 액션: kill switch가 agent planning 중단뿐 아니라 in-flight request cancellation·token revoke·audit log 보존까지 수행하는지 drill"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-502",
-      "rank": 50,
-      "title_ko": "TanStack npm 공급망 침해 뒤 CrowdSec private repository 약 170개 복사: 퇴직자 OAuth token·offboarding·secret rotation의 결합 실패",
-      "title_original": "CrowdSec Says TanStack npm Attack Led to Copy of 170 Private GitHub Repositories",
-      "summary": "- 공개: CrowdSec은 5월 TanStack npm supply-chain compromise 뒤 전 직원 GitHub OAuth token으로 private repository 약 **170개**가 5월 22일 복사됐다고 9월 18일 공개\n- 선행: 42개 TanStack package의 악성 version **84개**가 GitHub token·SSH key·cloud credential을 탈취하는 code를 실행한 범위\n- 범위: CrowdSec은 infrastructure·database 접근과 code 변경을 확인하지 못했다고 설명했으며, archive에는 console·automation·data-science script/model과 user email 83개·투자 후보 51명 정보 포함\n- 조치: package provenance·developer endpoint·GitHub organization offboarding·OAuth/PAT/SSH key·cloud credential rotation을 하나의 incident timeline으로 대조 필요",
-      "detail": "CrowdSec은 TanStack npm supply-chain compromise에 감염된 전 직원 laptop의 GitHub OAuth token이 2026년 5월 22일 private repository 약 170개 복사에 사용됐다고 밝혔다. 해당 계정은 작업 마무리를 위해 GitHub organization access가 남아 있었고 5월 25일 제거됐다. CrowdSec은 archive 공개 뒤 credential·token rotation을 수행했으며 infrastructure·database 접근과 code modification은 확인하지 못했다고 설명한다. 공개 source는 GitHub의 독립 forensic finding, 감염 package identity와 시점, 모든 leaked credential의 사용 이력을 제공하지 않으므로 package compromise가 모든 CrowdSec system 침해로 이어졌다고 단정할 수 없음.",
-      "why_it_matters": "개발자 endpoint의 package install에서 얻은 token이 퇴직자 계정의 잔존 organization 권한과 만나면, code repository·automation·cloud notification credential까지 하나의 supply-chain incident 범위가 됨. GitHub account disable만으로 OAuth authorization·SSH key·PAT·cloud session이 함께 종료됐는지 검증해야 함.",
-      "engineering_implication": "TanStack affected dependency·lockfile·CI artifact·developer endpoint를 먼저 inventory하고, GitHub audit log·OAuth token history·clone/archive download·SSH key·cloud API/SNS event를 한 timeline에 연결해야 함. offboarding workflow에는 organization membership, OAuth authorization, deploy key, PAT, SSH certificate, cloud role session revocation을 mandatory closure evidence로 포함 필요.",
-      "korea_implication": "국내 개발 조직도 퇴직·협력사 종료 시 GitHub/SaaS 계정 비활성화와 token·deploy key·VPN·cloud role 철회가 서로 다른 운영팀에 분산될 수 있음. package supply-chain incident runbook과 HR offboarding checklist의 공유 owner·evidence 기준을 정할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Supply Chain",
-        "npm",
-        "GitHub",
-        "OAuth",
-        "Credential Theft",
-        "Incident Response"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-09-19 16:14",
-      "source_name": "CrowdSec incident report / The Hacker News",
-      "source_url": "https://www.crowdsec.net/blog/tanstack-supply-chain-attack-analysis",
-      "image_url": "https://cms.crowdsec.net/wp-content/uploads/2026/09/Blog-images-1575-%C3%97-871px-67.png",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "The Hacker News report",
-          "url": "https://thehackernews.com/2026/09/crowdsec-says-tanstack-npm-attack-led.html"
-        },
-        {
-          "title": "TanStack GHSA-g7cv-rxg3-hmpx advisory",
-          "url": "https://github.com/TanStack/router/security/advisories/GHSA-g7cv-rxg3-hmpx"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CrowdSec은 9월 18일 incident report에서 전 직원 account의 GitHub OAuth token으로 private repository 약 170개가 5월 22일 복사됐다고 공개함. 해당 laptop compromise의 선행 사건은 5월 TanStack npm package supply-chain attack으로 설명됨.",
-          "items": [
-            "복사: 2026-05-22 전 직원 GitHub OAuth token으로 private repository 약 170개 접근 범위",
-            "권한: 작업 마무리를 위해 남아 있던 GitHub organization access를 2026-05-25 제거",
-            "공개: archive는 9월 16일 forum에 게시되고 CrowdSec은 9월 18일 final report 공개"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "THN과 CrowdSec report는 TanStack package 42개에 악성 version 84개가 게시돼 developer machine의 GitHub token·SSH key·cloud credential을 탈취할 수 있었다고 설명함. archive에는 web console, data-science script/model, automation, consensus algorithm과 threshold가 포함된 범위.",
-          "items": [
-            "패키지: `CVE-2026-45321`로 추적되는 42개 package·84개 malicious version 범위",
-            "정보: CrowdSec user email 83개와 2020년 투자 후보 51명의 name·email·context 노출 범위",
-            "credential: usable AWS SNS token은 단일 topic publish 권한으로 제한됐다는 CrowdSec 설명"
-          ]
-        },
-        {
-          "heading": "영향 경계와 forensic",
-          "body": "CrowdSec은 infrastructure·database 접근과 code change를 확인하지 못했고, remaining token은 rotation 또는 internet unusable 상태라고 설명함. 이 내용은 CrowdSec의 조사 결과이며 GitHub의 독립 forensic finding·정확한 감염 package·모든 credential 사용 이력은 공개되지 않음.",
-          "items": [
-            "확인: 8월 17일 제한된 SNS credential 사용 시도와 추가 접근 미확인 범위",
-            "경계: private code copy를 infrastructure compromise·blocklist poisoning·고객 데이터 접근으로 일반화하지 않음",
-            "조사: GitHub audit log·OAuth authorization·token history·clone/archive download·SSH key와 cloud API event 보존"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "supply-chain 대응은 malicious dependency 제거만으로 종료되지 않음. endpoint에서 탈취된 identity가 organization access, code secret, cloud role과 만나는 경로를 offboarding·token lifecycle·credential rotation control로 닫아야 함.",
-          "items": [
-            "offboarding: organization membership, OAuth app authorization, PAT, deploy key, SSH certificate, cloud role session 동시 revoke",
-            "dependency: lockfile·provenance·CI artifact·developer endpoint에서 affected package 설치와 token exposure 대조",
-            "팀 액션: secret rotation의 scope·last use·replacement owner와 EDR·package-install telemetry 검증 기록"
           ]
         }
       ]
