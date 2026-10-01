@@ -3082,3 +3082,8 @@
 - 확인 시각: 2026-10-01 09:18 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스와 AWS·GitHub·Kubernetes·CNCF·The Hacker News·CISA feed를 research pass에 포함. 새 AWS What’s New와 The Hacker News 후보는 canonical page를 검토했으나 기존 50건의 교체 기준을 넘지 않아 추가하지 않음.
 - CISA 2026-09-30 alert를 직접 대조해 `CVE-2026-76504`가 active exploitation evidence를 근거로 KEV Catalog에 추가된 사실과 risk-based rapid remediation 권고 범위를 확인. 피해 조직·공격자·침투 경로·payload·persistence·개별 조직 침해 여부는 CISA alert가 확정하지 않아 기존 evidence boundary를 유지.
 - `news-554`와 Cisco Deep Dive에 CISA source·KEV 근거·rapid remediation/patch 전 compromise 확인 조치를 보강하고, Deep Dive `refreshed_kst`·`refresh_note`에 material update를 기록. CISA raw capture SHA-256 `1edb6e45012847796caa5b51398163f722c6b9fdcb303ace3f66b3cd508fd888`, `index.md`, canonical weekly archive를 동기화. regular card 50건·newest-first rank 1–50은 유지.
+
+## [2026-10-01] update | OpenAI Decisions API 제한 프리뷰 카드 추가
+- 확인 시각: 2026-10-01 13:24 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스와 AWS·Cloudflare·GitHub·Kubernetes·CISA research surface를 재점검. AWS의 2026-10-01 새 항목은 canonical feed 시각·내용을 검토했으나 기존 50건 교체 기준을 넘지 않아 추가하지 않음.
+- AI타임스 canonical article의 `article:published_time` `2026-10-01T13:08:23+09:00`, OG image, 본문과 포함된 OpenAI Developers 발표 인용을 직접 대조. `GPT-6 Luna` 기반 Decisions API의 defined-choice 반환, text/image input, classification·routing·agent next action, limited preview 및 OpenAI 내부 agent control 적용 보도 범위를 수록.
+- 공식 schema·choice limit·confidence/abstention·rate limit·pricing·region·SLA·GA 일정은 확인 source에서 미확정으로 유지. `news-558`을 KST 최신순 rank 1에 삽입하고 actual cap tail `news-508`을 제거. raw capture SHA-256 `b43cc1779d860e431de68b5dd55e8e609eb95cc032b79bab472e89fbb12afa17`, `index.md`, canonical weekly archive를 동기화. 당일 전면 재구성된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
