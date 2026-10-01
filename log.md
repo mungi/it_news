@@ -3087,3 +3087,8 @@
 - 확인 시각: 2026-10-01 13:24 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스와 AWS·Cloudflare·GitHub·Kubernetes·CISA research surface를 재점검. AWS의 2026-10-01 새 항목은 canonical feed 시각·내용을 검토했으나 기존 50건 교체 기준을 넘지 않아 추가하지 않음.
 - AI타임스 canonical article의 `article:published_time` `2026-10-01T13:08:23+09:00`, OG image, 본문과 포함된 OpenAI Developers 발표 인용을 직접 대조. `GPT-6 Luna` 기반 Decisions API의 defined-choice 반환, text/image input, classification·routing·agent next action, limited preview 및 OpenAI 내부 agent control 적용 보도 범위를 수록.
 - 공식 schema·choice limit·confidence/abstention·rate limit·pricing·region·SLA·GA 일정은 확인 source에서 미확정으로 유지. `news-558`을 KST 최신순 rank 1에 삽입하고 actual cap tail `news-508`을 제거. raw capture SHA-256 `b43cc1779d860e431de68b5dd55e8e609eb95cc032b79bab472e89fbb12afa17`, `index.md`, canonical weekly archive를 동기화. 당일 전면 재구성된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-01] update | 네이버 웨일 AI 챗 정식 출시 추가
+- 확인 시각: 2026-10-01 17:29 KST. Asia/Seoul clock과 GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS·GitHub·Kubernetes·CNCF·Cloudflare·OpenAI·The Hacker News·CISA research surface를 재점검. GeekNews의 Gemini 4 Argon·Netlify Edge Functions 항목은 원문을 현재 run에서 직접 열람하지 못해 후보로만 유지.
+- AI타임스 canonical article의 `article:published_time` `2026-10-01T17:15:19+09:00`, OG image와 본문을 직접 대조. 네이버 웨일 sidebar `AI 챗`의 정식 출시, 현재 페이지·지정 탭 기반 질의·요약·번역, 후속 대화·스크랩북 저장, 비공개 기반 모델과 타 AI 서비스 도입 검토 범위를 수록.
+- API·enterprise admin control·data retention·region·가격·모델 provider·SDK 제공 여부는 source에서 미확정으로 유지. `news-559`를 최신순 rank 1에 삽입하고 actual cap tail `news-506`을 제거해 50-item cap·rank 1–50을 유지. raw capture body SHA-256 `9c9d5e70e10fb1ca35644a2a5139fe9cdd79c8567ab5fea5fdde95b626d8a87e`, `index.md`, canonical weekly archive를 동기화. 당일 전면 재구성된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
