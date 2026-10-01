@@ -3077,3 +3077,8 @@
 - AWS canonical announcement와 RSS `Wed, 30 Sep 2026 19:00:00 GMT`를 직접 대조해 Bedrock GPT-6 Astra `UltraFast` premium speed tier, OpenAI 기준 최대 6배·300 tokens/s 주장, latency-sensitive use case 및 Region·endpoint·profile·pricing 확인 경계를 수록.
 - AI타임스 canonical article의 `article:published_time` `2026-09-30T18:09:48+09:00`, OG image와 본문을 직접 대조해 Google RRSI의 harness 반복 변경·Proposal/Selection regularization·8개 benchmark 결과·OOD 최대 22.9%·policy token 실험 범위를 수록. 연구 수치를 production SLO·비용·안전 보장으로 확대하지 않음.
 - `news-556`·`news-557`을 KST newest-first로 삽입하고 actual oldest tail `news-499`·`news-500`을 제거해 50-item cap·rank 1–50 유지. KST 01:04에 전면 재구성한 Deep Dive 2건은 timestamp-only 변경 없이 유지. raw capture·index·canonical weekly archive를 동기화.
+
+## [2026-10-01] update | CISA KEV의 Cisco SD-WAN Manager active-exploitation 근거 반영
+- 확인 시각: 2026-10-01 09:18 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스와 AWS·GitHub·Kubernetes·CNCF·The Hacker News·CISA feed를 research pass에 포함. 새 AWS What’s New와 The Hacker News 후보는 canonical page를 검토했으나 기존 50건의 교체 기준을 넘지 않아 추가하지 않음.
+- CISA 2026-09-30 alert를 직접 대조해 `CVE-2026-76504`가 active exploitation evidence를 근거로 KEV Catalog에 추가된 사실과 risk-based rapid remediation 권고 범위를 확인. 피해 조직·공격자·침투 경로·payload·persistence·개별 조직 침해 여부는 CISA alert가 확정하지 않아 기존 evidence boundary를 유지.
+- `news-554`와 Cisco Deep Dive에 CISA source·KEV 근거·rapid remediation/patch 전 compromise 확인 조치를 보강하고, Deep Dive `refreshed_kst`·`refresh_note`에 material update를 기록. CISA raw capture SHA-256 `1edb6e45012847796caa5b51398163f722c6b9fdcb303ace3f66b3cd508fd888`, `index.md`, canonical weekly archive를 동기화. regular card 50건·newest-first rank 1–50은 유지.

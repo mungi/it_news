@@ -516,6 +516,7 @@
 - [[raw/articles/aws-bedrock-claude-seoul-in-region-2026-09-30]] — Amazon Bedrock 서울 리전 Claude Opus 5·Sonnet 5 in-Region inference와 data residency·routing 검증 경계.
 
 - [[raw/articles/cisco-sdwan-manager-cve-2026-76504-active-exploitation-2026-10-01]] — Cisco Catalyst SD-WAN Manager `CVE-2026-76504` URI encoding 인증 우회·active exploitation·fixed release·control-plane forensic 경계.
+- [[raw/articles/cisa-kev-cisco-sdwan-cve-2026-76504-2026-10-01]] — CISA KEV의 Cisco SD-WAN Manager `CVE-2026-76504` active-exploitation 근거·rapid remediation·control-plane forensic 경계.
 - [[raw/articles/openssl-dtls-cve-2026-84782-2026-10-01]] — OpenSSL DTLS retransmission stale buffer offset `CVE-2026-84782`의 plaintext heap disclosure·crash·runtime patch 검증 경계.
 
 ## Static Website

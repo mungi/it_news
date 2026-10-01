@@ -2,10 +2,10 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-01 05:11",
+  "last_updated_kst": "2026-10-01 09:18",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하고 Cisco가 9월 active exploitation 인지를 명시함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
+    "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하며, Cisco와 CISA KEV가 active exploitation 근거를 각각 공개함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
     "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
     "Amazon Bedrock의 OpenAI `GPT-6 Astra UltraFast`는 최대 6배·300 tokens/s provider 주장 기반 premium latency tier임. Region·quota·가격을 확인하고 quality·p95/p99·retry·fallback·completed-task cost canary로 기본 route 편입 여부 판단 필요.",
     "Google RRSI는 model 재학습 대신 agent harness를 반복 개선하는 연구 framework임. 보도된 OOD 최대 22.9% 개선은 benchmark 조건이므로 holdout·side effect·rollback·token budget을 release gate로 묶어야 함.",
@@ -15,15 +15,16 @@
     {
       "id": "deep-dive-001",
       "title": "Cisco SD-WAN Manager CVE-2026-76504: 인증 우회 zero-day를 control-plane 침해 대응으로 다루는 방법",
-      "summary": "한 줄 결론: Cisco Catalyst SD-WAN Manager의 `CVE-2026-76504`는 URI encoding 처리 오류로 원격 비인증 공격자가 admin 권한 API에 접근할 수 있는 Critical 취약점이며 Cisco가 9월 active exploitation 인지를 확인함. patch만 적용하지 말고 internet exposure 차단, 로그 보존·hunt, credential·configuration·controller trust 검증을 병렬 release gate로 처리 필요.",
-      "details": "Cisco는 2026-09-30 13:00 GMT `CVE-2026-76504`를 공개했다. API session-based authentication의 URI encoding 처리 오류가 특정 API endpoint의 인증 규칙을 우회하게 하며, 성공하면 원격 비인증 공격자가 admin user 권한으로 접근할 수 있다. Cisco는 active exploitation 인지를 명시했고 workaround는 없으며 fixed release로의 upgrade를 제공한다. 공개 advisory는 피해 고객 수·공격자·침해 후 행위를 확정하지 않는다.",
+      "summary": "한 줄 결론: Cisco Catalyst SD-WAN Manager의 `CVE-2026-76504`는 URI encoding 처리 오류로 원격 비인증 공격자가 admin 권한 API에 접근할 수 있는 Critical 취약점임. Cisco의 9월 active exploitation 인지에 이어 CISA가 9월 30일 KEV에 추가했으므로, patch만 적용하지 말고 internet exposure 차단, 로그 보존·hunt, credential·configuration·controller trust 검증을 병렬 release gate로 처리 필요.",
+      "details": "Cisco는 2026-09-30 13:00 GMT `CVE-2026-76504`를 공개했다. API session-based authentication의 URI encoding 처리 오류가 특정 API endpoint의 인증 규칙을 우회하게 하며, 성공하면 원격 비인증 공격자가 admin user 권한으로 접근할 수 있다. Cisco는 active exploitation 인지를 명시했고 workaround는 없으며 fixed release로의 upgrade를 제공한다. CISA는 2026-09-30 이 CVE를 KEV Catalog에 추가하며 active exploitation evidence를 근거로 들었다. 두 공지는 피해 고객 수·공격자·침해 후 행위를 확정하지 않는다.",
       "why_it_matters": "SD-WAN Manager는 network control plane의 identity·policy·device configuration을 다루므로, 인증 우회는 단일 management UI 결함이 아니라 branch routing과 trust boundary의 incident로 취급해야 함.",
       "sources": [
-        "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-sdwan-webauth-xr8beuuU"
+        "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-sdwan-webauth-xr8beuuU",
+        "https://www.cisa.gov/news-events/alerts/2026/09/30/cisa-adds-one-known-exploited-vulnerability-catalog"
       ],
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-10-01 01:04",
+      "refreshed_kst": "2026-10-01 09:18",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
@@ -35,11 +36,12 @@
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cisco advisory는 2026-09-30 13:00 GMT에 Critical advisory를 게시함. API session-based authentication의 improper URI encoding handling이 특정 endpoint의 authentication rule bypass를 허용하며, CVSS v3.1 base score는 9.8임. Cisco가 software update를 제공하지만 workaround는 없다고 명시함.",
+          "body": "Cisco advisory는 2026-09-30 13:00 GMT에 Critical advisory를 게시함. API session-based authentication의 improper URI encoding handling이 특정 endpoint의 authentication rule bypass를 허용하며, CVSS v3.1 base score는 9.8임. Cisco가 software update를 제공하지만 workaround는 없다고 명시함. CISA는 2026-09-30 active exploitation evidence를 근거로 이 CVE를 KEV Catalog에 추가함.",
           "items": [
             "CVE: `CVE-2026-76504`, Cisco bug ID `CSCww79570`, CWE-177 URI encoding 오류",
             "공격 조건: network-reachable Manager API에 crafted HTTP request 전송, credential·user interaction 불필요",
-            "증거 경계: advisory는 고객 수·공격자·initial access 경로·post-exploitation 행위를 공개하지 않음"
+            "CISA KEV: active exploitation evidence 기반 추가 확인, 연방기관 외 조직에도 risk-based rapid remediation 권고",
+            "증거 경계: Cisco·CISA 공지는 고객 수·공격자·initial access 경로·post-exploitation 행위를 공개하지 않음"
           ]
         },
         {
@@ -113,7 +115,8 @@
             "발표 메세지: SD-WAN manager 인증 우회는 네트워크 정책·device trust·admin identity를 함께 닫아야 종결되는 control-plane incident"
           ]
         }
-      ]
+      ],
+      "refresh_note": "CISA가 2026-09-30 `CVE-2026-76504`를 active exploitation evidence 기반 KEV Catalog에 추가한 material update를 반영함."
     },
     {
       "id": "deep-dive-002",
@@ -288,10 +291,10 @@
     },
     {
       "id": "news-554",
-      "title_ko": "Cisco Catalyst SD-WAN Manager 인증 우회 `CVE-2026-76504`: active exploitation 인지, fixed release·forensic 병렬 대응 필요",
+      "title_ko": "Cisco Catalyst SD-WAN Manager 인증 우회 `CVE-2026-76504`: CISA KEV 등록, fixed release·forensic 병렬 대응 필요",
       "title_original": "Cisco Catalyst SD-WAN Manager API Authentication Bypass Vulnerability",
-      "summary": "- 공개: Cisco가 `CVE-2026-76504`를 Critical로 공지함. API session-based authentication의 URI encoding 처리 오류로 원격 비인증 공격자가 admin user 권한 API에 접근 가능한 범위\n- 위험·조치: Cisco PSIRT는 2026년 9월 active exploitation 인지를 명시했고 workaround는 없음. fixed release 적용과 internet exposure 제한·log preservation·configuration/credential review 병렬 수행 필요\n- 증거 경계: Cisco advisory는 피해 고객 수·공격자·침해 후 행위를 확정하지 않음. CVSS 9.8만으로 종결하지 말고 Manager exposure·running build·device policy change·admin/API identity를 조사 범위로 유지",
-      "detail": "Cisco는 2026-09-30 13:00 GMT Cisco Catalyst SD-WAN Manager API session-based authentication의 `CVE-2026-76504`를 공개했다. improper URI encoding handling으로 crafted HTTP request가 특정 API endpoint의 authentication rule을 bypass할 수 있으며, 성공하면 remote unauthenticated attacker가 admin user privileges로 API에 접근할 수 있다. CVSS v3.1 base score는 9.8이고 workaround는 없으며 Cisco가 software update를 제공한다. Cisco PSIRT는 2026년 9월 active exploitation을 인지했다고 밝혔지만, advisory는 피해 조직·공격자·초기 침투 경로·post-exploitation 행위를 공개하지 않는다. Manager는 SD-WAN policy와 device lifecycle을 다루는 control plane이므로 fixed build 적용과 함께 internet exposure 제한, access log 보존·hunt, local admin·API token·configuration change 검토, HA/device connectivity regression을 병렬로 수행해야 한다.",
+      "summary": "- 공개: Cisco가 `CVE-2026-76504`를 Critical로 공지함. API session-based authentication의 URI encoding 처리 오류로 원격 비인증 공격자가 admin user 권한 API에 접근 가능한 범위\n- 위험·조치: Cisco PSIRT의 2026년 9월 active exploitation 인지에 이어 CISA가 9월 30일 KEV Catalog에 추가함. workaround는 없으므로 fixed release와 internet exposure 제한·log preservation·configuration/credential review 병렬 수행 필요\n- 증거 경계: Cisco·CISA 공지는 피해 고객 수·공격자·침해 후 행위를 확정하지 않음. CVSS 9.8·KEV 등록만으로 종결하지 말고 Manager exposure·running build·device policy change·admin/API identity를 조사 범위로 유지",
+      "detail": "Cisco는 2026-09-30 13:00 GMT Cisco Catalyst SD-WAN Manager API session-based authentication의 `CVE-2026-76504`를 공개했다. improper URI encoding handling으로 crafted HTTP request가 특정 API endpoint의 authentication rule을 bypass할 수 있으며, 성공하면 remote unauthenticated attacker가 admin user privileges로 API에 접근할 수 있다. CVSS v3.1 base score는 9.8이고 workaround는 없으며 Cisco가 software update를 제공한다. Cisco PSIRT는 2026년 9월 active exploitation 인지를 명시했고, CISA는 2026-09-30 active exploitation evidence를 근거로 이 CVE를 KEV Catalog에 추가했다. 두 공지는 피해 조직·공격자·초기 침투 경로·post-exploitation 행위를 공개하지 않는다. Manager는 SD-WAN policy와 device lifecycle을 다루는 control plane이므로 fixed build 적용과 함께 internet exposure 제한, access log 보존·hunt, local admin·API token·configuration change 검토, HA/device connectivity regression을 병렬로 수행해야 한다.",
       "why_it_matters": "SD-WAN Manager admin API는 network policy와 device trust를 변경할 수 있는 control-plane 권한이다. 인증 우회를 package patch 하나로 처리하면 internet exposure·residual session·credential·configuration drift·forensic evidence를 놓칠 수 있다.",
       "engineering_implication": "시사점: external Manager endpoint와 running release를 우선 대조하고 fixed version canary 뒤 API authentication·device connection·policy push·failover를 검증 필요. `serviceproxy-access.log`·`vmanage-server.log` 보존과 URI-encoded login path·unknown IP·reserved account event hunt, admin/API credential·configuration review를 동일 incident record로 연결 필요.",
       "korea_implication": "국내 branch·제조·물류망의 SD-WAN 운영 조직은 MSP·managed service와 자체 Manager의 책임 경계를 분리하고, region·site별 maintenance window가 forensic 보존과 fixed build rollout을 지연시키지 않도록 사전 owner를 지정 필요.",
@@ -315,6 +318,10 @@
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [
         {
+          "title": "CISA: CVE-2026-76504 KEV Catalog 추가",
+          "url": "https://www.cisa.gov/news-events/alerts/2026/09/30/cisa-adds-one-known-exploited-vulnerability-catalog"
+        },
+        {
           "title": "The Hacker News: Cisco SD-WAN Manager active exploitation 보도",
           "url": "https://thehackernews.com/2026/09/cisco-warns-of-attackers-exploiting.html"
         }
@@ -330,10 +337,11 @@
         },
         {
           "heading": "본문 핵심 포인트",
-          "body": "Cisco는 crafted HTTP request를 API로 전송하면 authentication bypass가 가능하다고 설명함. workaround는 없고 software update가 제공됨. Cisco PSIRT는 2026년 9월 active exploitation을 인지했다고 명시하지만 피해 고객·공격자·침해 후 행위는 공개하지 않음.",
+          "body": "Cisco는 crafted HTTP request를 API로 전송하면 authentication bypass가 가능하다고 설명함. workaround는 없고 software update가 제공됨. Cisco PSIRT는 2026년 9월 active exploitation을 인지했다고 명시함. CISA는 2026-09-30 active exploitation evidence를 근거로 `CVE-2026-76504`를 KEV Catalog에 추가했지만 피해 고객·공격자·침해 후 행위는 공개하지 않음.",
           "items": [
             "공격 전제: network-reachable Manager API, credential·user interaction 불필요",
-            "증거 경계: active exploitation 인지는 Cisco 공식 문구이며 조직별 compromise는 local evidence로 판정"
+            "증거 경계: active exploitation 인지는 Cisco·CISA 공식 문구이며 조직별 compromise는 local evidence로 판정",
+            "우선순위: CISA KEV 등록에 따라 internet-exposed asset의 rapid remediation과 patch 전 compromise 확인을 같은 incident 흐름으로 처리"
           ]
         },
         {
