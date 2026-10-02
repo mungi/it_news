@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-02 13:53",
+  "last_updated_kst": "2026-10-02 17:57",
   "audience": "developers and engineers",
   "executive_summary": [
+    "FortiMail `CVE-2026-104286`은 무인증 HTTP/HTTPS arbitrary file write가 가능한 Critical 결함이며 Fortinet이 active exploitation, CISA가 KEV 등록을 확인함. fixed build·IBE 비활성화·management interface 노출 차단과 IoC 기반 file/configuration·credential 조사를 병렬 incident gate로 처리 필요.",
     "GuardDuty Runtime Monitoring이 AWS Security Hub Threat Analytics plan에 포함돼 EC2·EKS·Fargate runtime coverage의 별도 GuardDuty 청구가 Security Hub 단일 usage type으로 이동함. 탐지 coverage·finding type·security agent는 유지되므로 Cost Explorer·Security Hub usage·agent health를 account·region·workload tag로 교차 검증하고 budget·chargeback rule을 갱신 필요.",
     "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하며, Cisco와 CISA KEV가 active exploitation 근거를 각각 공개함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
     "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
-    "Amazon Bedrock의 OpenAI `GPT-6 Astra UltraFast`는 최대 6배·300 tokens/s provider 주장 기반 premium latency tier임. Region·quota·가격을 확인하고 quality·p95/p99·retry·fallback·completed-task cost canary로 기본 route 편입 여부 판단 필요.",
-    "Google RRSI는 model 재학습 대신 agent harness를 반복 개선하는 연구 framework임. 보도된 OOD 최대 22.9% 개선은 benchmark 조건이므로 holdout·side effect·rollback·token budget을 release gate로 묶어야 함."
+    "Amazon Bedrock의 OpenAI `GPT-6 Astra UltraFast`는 최대 6배·300 tokens/s provider 주장 기반 premium latency tier임. Region·quota·가격을 확인하고 quality·p95/p99·retry·fallback·completed-task cost canary로 기본 route 편입 여부 판단 필요."
   ],
   "deep_dives": [
     {
@@ -193,6 +193,86 @@
   ],
   "items": [
     {
+      "id": "news-564",
+      "title_ko": "FortiMail `CVE-2026-104286` 활성 악용: 무인증 arbitrary file write를 patch·IBE 차단·침해 조사로 병렬 대응",
+      "title_original": "Critical FortiMail Zero-Day Flaw Exploited in Attacks Allows Unauthenticated Arbitrary File Writes",
+      "summary": "- 위협: Fortinet FortiMail `CVE-2026-104286`은 crafted HTTP/HTTPS 요청으로 무인증 arbitrary file write가 가능한 Critical 결함이며, Fortinet이 active exploitation을 확인하고 CISA KEV가 `2026-10-01` 추가됨\n- 영향·수정: FortiMail 8.0.0~8.0.1·7.6.0~7.6.6·7.4.0~7.4.8·7.2.0~7.2.9가 대상임. 각각 8.0.2·7.6.7·7.4.9 이상 또는 7.4 branch로 올려야 하며 일부 fixed build는 upcoming 상태임\n- 운영: 즉시 수정 불가 시 `IBE` 기능 비활성화와 internet management interface 차단/신뢰 private network 제한을 적용하고, Fortinet IoC·admin/logout/config·cron log를 보존한 뒤 file·credential·configuration 변경을 병렬 조사 필요",
+      "detail": "Fortinet은 2026년 10월 1일 FortiMail GUI의 `CVE-2026-104286`을 Critical(CVSS 9.8), Known Exploited, unauthenticated attack으로 공개했다. path traversal(CWE-22)과 NULL byte/character neutralization(CWE-158) 결함으로 crafted HTTP 또는 HTTPS 요청을 통해 underlying system에 arbitrary file을 쓸 수 있으며, Fortinet은 unauthorized code or command 실행 영향을 명시한다. 영향을 받는 버전은 FortiMail 8.0.0~8.0.1, 7.6.0~7.6.6, 7.4.0~7.4.8, 7.2.0~7.2.9다. 8.0.2, 7.6.7, 7.4.9는 당시 upcoming fix로 안내됐고 7.2는 7.4 branch 이상 업그레이드가 필요하다. 패치 전에는 IBE 지원을 disable하거나 management interface의 인터넷 접근을 끄고 trusted private network로 제한해야 한다. Fortinet이 제공한 추가·변조 파일, IP, admin/configuration·cron·IBE error log IoC는 patch와 별개로 compromise assessment에 사용해야 한다. CISA KEV는 2026년 10월 1일 이 결함을 추가하고 applicable BOD 26-04 및 forensics triage guidance에 따른 mitigation을 요구했다.",
+      "why_it_matters": "메일 보안 gateway의 management GUI에서 무인증 file write가 active exploitation 상태로 확인됨. fixed build 적용만으로 이전 file write·persistence·configuration 변경이 사라지지 않으므로 exposure closure, patch, forensic triage를 같은 incident workstream으로 처리해야 함.",
+      "engineering_implication": "시사점: CMDB에서 FortiMail version·management interface exposure·IBE enablement·HA node·backup/rollback 상태를 즉시 대조하고, fixed build 또는 workaround 적용 증거와 IoC hunt 결과를 asset별 closure record로 남길 필요. 공개된 IoC는 탐지 보조 수단이므로 부재만으로 침해 없음으로 판정하지 않는 운영 과제.",
+      "korea_implication": "국내 메일 보안 gateway와 managed security 서비스는 internet-exposed management plane·원격 운영 계정·로그 보존 위치를 우선 확인할 범위. 고객별 device ownership과 emergency change approval 경로를 분리해 patch 지연을 줄일 필요.",
+      "category": "Security",
+      "tags": [
+        "Fortinet",
+        "FortiMail",
+        "CVE-2026-104286",
+        "KEV",
+        "Active Exploitation",
+        "Path Traversal",
+        "Email Security",
+        "Incident Response"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 97,
+      "published_kst": "2026-10-02 14:49",
+      "source_name": "The Hacker News",
+      "source_url": "https://thehackernews.com/2026/10/critical-fortimail-zero-day-flaw.html",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Fortinet PSIRT FG-IR-26-175",
+          "url": "https://fortiguard.fortinet.com/psirt/FG-IR-26-175"
+        },
+        {
+          "title": "CISA Known Exploited Vulnerabilities Catalog",
+          "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Fortinet은 `CVE-2026-104286`을 FortiMail GUI의 Critical 결함으로 공개함. CISA KEV는 `2026-10-01`에 이 CVE를 추가했으며, The Hacker News는 `2026-10-02 14:49 KST`에 Fortinet의 active exploitation 확인을 보도함.",
+          "items": [
+            "결함: crafted HTTP/HTTPS request의 path traversal·NULL byte/character 처리 결함으로 unauthenticated arbitrary file write 가능",
+            "심각도: Fortinet advisory 기준 `CVSS 9.8`, attack type `Unauthenticated`, known exploited `Yes`",
+            "영향: Fortinet이 unauthorized code 또는 command 실행 영향을 명시한 mail-security management-plane 위험"
+          ]
+        },
+        {
+          "heading": "영향 버전과 수정 경계",
+          "body": "Fortinet advisory는 제품 branch별 영향 범위와 목표 fixed version을 구분함. 일부 target build는 advisory 게시 시점에 upcoming으로 표시돼, 단순 version target 확인이 아니라 실제 배포 가능 build와 HA·rollback 절차를 함께 확인해야 함.",
+          "items": [
+            "FortiMail 8.0: `8.0.0`~`8.0.1` 영향, `8.0.2` 이상 upgrade 대상",
+            "FortiMail 7.6·7.4: 각각 `7.6.0`~`7.6.6`·`7.4.0`~`7.4.8` 영향, `7.6.7`·`7.4.9` 이상 upgrade 대상",
+            "FortiMail 7.2: `7.2.0`~`7.2.9` 영향, `7.4` branch 이상 upgrade 대상",
+            "검증: appliance·VM·HA peer·DR standby·managed-service tenant의 build number와 support availability 대조 필요"
+          ]
+        },
+        {
+          "heading": "즉시 완화와 노출 차단",
+          "body": "Fortinet은 fixed release가 없는 영향을 받는 version에 IBE 기능 비활성화와 management interface 인터넷 차단 또는 trusted private network 제한을 workaround로 제시함. 이는 patch를 대체하는 영구 통제가 아니라 exposure를 줄이는 임시 경계임.",
+          "items": [
+            "CLI workaround: `config system encryption ibe` → `set status disable` → `end` 적용 대상 확인",
+            "network control: management interface의 public ingress 제거 또는 trusted private network allowlist 제한",
+            "change control: IBE 비활성화가 메일 encryption workflow에 미치는 영향과 rollback 조건을 service owner와 사전 확인"
+          ]
+        },
+        {
+          "heading": "침해 조사와 시사점",
+          "body": "Fortinet advisory는 추가·변조된 binary·configuration file, IP, cron·admin/logout·configuration·IBE error log 예시를 IoC로 제공함. CISA는 mitigation과 forensic triage를 함께 요구하므로 patch success만으로 closure하지 말고 변경 흔적·credential·outbound connection을 보존·조사해야 함.",
+          "items": [
+            "hunt: `/data/lib/liblog.so`, `/data/bin/webconsole`, `/data/bin/mailservice`, `/data/etc/ld.so.preload` 및 `/bin/smit`·`/data/etc/httpd.conf` 변경 여부 확인",
+            "log: cron root command, admin logout/configuration event, remote archive destination, IBE decode error를 time window로 보존",
+            "network: Fortinet advisory의 `79[.]141.169.187`·`45[.]129.0.192` 접속 흔적을 보조 IoC로 검색",
+            "closure: version/fix evidence, workaround state, exposure scan, file integrity, credential rotation 필요성, HA node parity를 asset별 incident record로 연결"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-563",
       "title_ko": "GuardDuty Runtime Monitoring, Security Hub Threat Analytics 요금제로 통합: 탐지 범위 유지와 비용 기준 변경",
       "title_original": "GuardDuty Runtime Monitoring is now included in the AWS Security Hub Threat Analytics plan",
@@ -273,7 +353,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-562",
@@ -347,7 +427,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-561",
@@ -420,7 +500,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-559",
@@ -488,7 +568,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-558",
@@ -554,7 +634,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-556",
@@ -620,7 +700,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-554",
@@ -694,7 +774,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-560",
@@ -759,7 +839,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-557",
@@ -834,7 +914,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-555",
@@ -903,11 +983,11 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-553",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -993,7 +1073,7 @@
     },
     {
       "id": "news-551",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -1067,7 +1147,7 @@
     },
     {
       "id": "news-550",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -1149,7 +1229,7 @@
     },
     {
       "id": "news-549",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -1240,7 +1320,7 @@
     },
     {
       "id": "news-552",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -1311,7 +1391,7 @@
     },
     {
       "id": "news-547",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -1457,11 +1537,11 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-545",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -1544,7 +1624,7 @@
     },
     {
       "id": "news-546",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -1677,7 +1757,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-543",
@@ -1762,7 +1842,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-542",
@@ -1836,7 +1916,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-541",
@@ -1912,7 +1992,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-539",
@@ -1984,7 +2064,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-540",
@@ -2057,7 +2137,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-537",
@@ -2130,7 +2210,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-538",
@@ -2202,7 +2282,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-536",
@@ -2266,7 +2346,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-533",
@@ -2339,7 +2419,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-530",
@@ -2408,7 +2488,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-535",
@@ -2474,7 +2554,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-531",
@@ -2543,7 +2623,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-532",
@@ -2612,7 +2692,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-534",
@@ -2685,7 +2765,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-529",
@@ -2749,7 +2829,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-517",
@@ -2822,7 +2902,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-524",
@@ -2886,7 +2966,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-525",
@@ -2950,7 +3030,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-526",
@@ -3015,7 +3095,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-522",
@@ -3079,7 +3159,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-523",
@@ -3152,7 +3232,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-520",
@@ -3240,7 +3320,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-521",
@@ -3313,7 +3393,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-515",
@@ -3385,7 +3465,7 @@
           ]
         }
       ],
-      "rank": 44,
+      "rank": 45,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -3460,7 +3540,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-518",
@@ -3535,7 +3615,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-513",
@@ -3598,7 +3678,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-514",
@@ -3666,7 +3746,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-512",
@@ -3745,76 +3825,7 @@
           ]
         }
       ],
-      "rank": 49
-    },
-    {
-      "id": "news-510",
-      "rank": 50,
-      "title_ko": "WordPress Comment2Shell `CVE-2026-93485`: 익명 comment XSS가 admin session 경유 server RCE로 이어지는 chain 패치",
-      "title_original": "WordPress Comment2Shell Flaw Can Turn Anonymous Comment XSS Into RCE via Admin Session",
-      "summary": "핵심: WordPress core의 `CVE-2026-93485`는 crafted comment의 허용 HTML attribute 안 줄바꿈이 display-time reformatting 뒤 자동 실행 event handler로 바뀌는 XSS 경로임. 조건: block theme 또는 comment block에서 page에 표시된 comment를 logged-in administrator가 열면 admin session으로 web-shell plugin upload까지 연결 가능하며, WordPress는 7.1.1과 지원 branch fixed release를 배포함.",
-      "detail": "Comment2Shell은 comment save-time HTML 검증과 display-time reformatting 사이의 처리 차이를 이용하는 stored XSS임. 공개 연구는 end-to-end chain을 확인했으나 active exploitation과 KEV 등재는 확인되지 않았으며, patch와 comment surface·admin session·unknown plugin/file forensic을 함께 처리해야 함.",
-      "why_it_matters": "공개 comment는 unauthenticated input이지만 administrator browser session과 plugin management 권한을 결합하면 server-side code execution으로 확대될 수 있음. comment moderation이 보안 통제가 아니라는 조건을 운영 설계에 반영할 사례.",
-      "engineering_implication": "시사점: WordPress 4.7~7.1 inventory를 fixed branch release로 올리고, patch 전에는 comments를 닫거나 WAF rule을 임시 완화로 사용해야 함. patch 후에도 최근 comment·administrator page view·plugin/theme/file write·web-shell 흔적을 audit log와 file integrity 기준으로 대조 필요.",
-      "korea_implication": "외부 comment를 받는 국내 WordPress 운영 조직은 CMS patch window와 marketing/admin 계정의 관리자 세션 분리를 같은 변경 절차로 관리 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "WordPress",
-        "XSS",
-        "RCE",
-        "Web Security",
-        "Patch Management"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-09-22 15:03",
-      "source_name": "The Hacker News / WordPress security release",
-      "source_url": "https://thehackernews.com/2026/09/wordpress-comment2shell-flaw-can-turn.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiPBWV1XNsTGB5ImLNRGJTygk0-82k7xTHmuOr7lTivRRDcF83ddu4jLOpdkQYMq7VB3j5SMpA9zBRvM3-SUkDLBhN5-j-Z6UltcTnVfXOxHDzfBYWiw_fRiRefAYa1XSiFu5JMzb06dwqV4PhKaZkPt3vKZFHQjdVFUgbr2B3nOEoFs_qHe6zwGayHM2I/s1600/wordpress-comment.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "WordPress Releases",
-          "url": "https://wordpress.org/download/releases/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News가 9월 22일 공개한 연구는 WordPress core `CVE-2026-93485`(Comment2Shell)가 익명 comment에서 stored XSS를 만들고 administrator session을 경유해 server code execution으로 이어질 수 있다고 설명함. WordPress는 9월 17일 7.1.1 security release에서 수정한 범위.",
-          "items": [
-            "영향: WordPress `4.7`~`7.1` branch의 comment rendering 경로 대상",
-            "상태: researcher는 active exploitation을 알지 못하며 CISA KEV 미등재 상태"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "comment 저장 시 dangerous HTML을 검사한 뒤 page display에서 reformatting하는 두 단계 사이에 parsing 차이가 존재함. 허용 HTML tag attribute 안 line break가 display 시 tag를 분리하고 attacker text를 live event handler 위치로 옮겨 page load만으로 script 실행되는 흐름.",
-          "items": [
-            "조건: block theme 또는 classic theme의 comment block에서 comment가 page에 표시되는 경우",
-            "확대: logged-in administrator가 해당 page를 열면 administrator 권한으로 web-shell plugin upload 가능한 chain",
-            "경계: comment가 page에 노출되어야 하며, source는 실제 피해 조직·침해 성공을 확인하지 않음"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "comment moderation은 first-time commenter 보류를 우회할 수 있고 default setting도 moderation off이므로 security boundary로 취급할 수 없음. browser XSS는 administrator가 가진 plugin installation 권한을 사용하므로 server log에서 외부 exploit process가 아닌 정상 admin action처럼 보일 가능성.",
-          "items": [
-            "영향: public input·admin browser·CMS extension 권한이 결합되는 cross-layer attack surface",
-            "리스크: patch만으로 과거 admin session의 malicious plugin·web shell·file write를 되돌리지 못하는 조건"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "우선 fixed release로 업데이트하고, 즉시 patch할 수 없는 site는 comments disable과 WAF/security plugin을 임시 방어로 적용해야 함. target 의심 site는 recent comments, administrator page views, plugin/theme install, unknown PHP file과 outbound request를 incident timeline으로 대조 필요.",
-          "items": [
-            "조치: supported branch fixed release와 `wp core version` inventory를 deployment evidence로 보존",
-            "조치: administrator 계정 session revoke·MFA review와 plugin/file integrity scan을 patch closure에 결합"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }
