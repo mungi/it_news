@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-02 | Total pages: 384
+> Last updated: 2026-10-02 | Total pages: 385
 
 ## Entities
 
@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-well-architected-agent-preview-2026-10-02]] — AWS Well-Architected Agent preview의 topology·metric·IaC 분석, SSM remediation과 change-control 검증 경계.
 - [[raw/articles/cloudflare-clef-decision-models-2026-10-02]] — Cloudflare Clef·Clef-flash 오픈소스 decision model과 Workers AI·RL fine-tuning, typed probability routing·policy gate 검증 경계.
 - [[raw/articles/cloudflare-containers-agent-sandboxes-2026-09-30]] — Cloudflare Containers의 `durable_object` scheduling·runtime image/instance 선택·648ms startup·snapshot beta와 sandbox provenance·egress·cleanup 검증 경계.
 - [[raw/articles/aitimes-openai-dots-enterprise-background-agent-2026-09-30]] — OpenAI `dots` 공개 보도의 24시간 background B2B agent·격리 VM·전용 ID·승인·data/FinOps 검증 경계.
