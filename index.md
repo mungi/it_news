@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-security-hub-guardduty-runtime-monitoring-2026-10-02]] — GuardDuty Runtime Monitoring의 Security Hub Threat Analytics 요금 통합, EC2·EKS·Fargate 탐지 범위 유지와 FinOps 검증 경계.
 - [[raw/articles/aws-well-architected-agent-preview-2026-10-02]] — AWS Well-Architected Agent preview의 topology·metric·IaC 분석, SSM remediation과 change-control 검증 경계.
 - [[raw/articles/cloudflare-clef-decision-models-2026-10-02]] — Cloudflare Clef·Clef-flash 오픈소스 decision model과 Workers AI·RL fine-tuning, typed probability routing·policy gate 검증 경계.
 - [[raw/articles/cloudflare-containers-agent-sandboxes-2026-09-30]] — Cloudflare Containers의 `durable_object` scheduling·runtime image/instance 선택·648ms startup·snapshot beta와 sandbox provenance·egress·cleanup 검증 경계.
