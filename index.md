@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-02 | Total pages: 385
+> Last updated: 2026-10-03 | Total pages: 389
 
 ## Entities
 
@@ -36,6 +36,10 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-ai-gateway-web-search-api-2026-10-02]] — Introducing Web Search API via AI Gateway.
+- [[raw/articles/cloudflare-traces-open-beta-2026-10-02]] — Introducing Cloudflare Traces: follow requests through our entire platform.
+- [[raw/articles/aws-mcp-server-six-additional-regions-2026-10-02]] — The AWS MCP Server is now available in six additional AWS Regions.
+- [[raw/articles/aws-agentcore-gateway-private-tls-vpc-2026-10-02]] — AgentCore Gateway supports private TLS certificates for VPC endpoints.
 - [[raw/articles/fortinet-fortimail-cve-2026-104286-active-exploitation-2026-10-02]] — FortiMail `CVE-2026-104286` 활성 악용의 무인증 arbitrary file write, fixed build·IBE workaround·IoC 기반 incident 대응 경계.
 - [[raw/articles/aws-security-hub-guardduty-runtime-monitoring-2026-10-02]] — GuardDuty Runtime Monitoring의 Security Hub Threat Analytics 요금 통합, EC2·EKS·Fargate 탐지 범위 유지와 FinOps 검증 경계.
 - [[raw/articles/aws-well-architected-agent-preview-2026-10-02]] — AWS Well-Architected Agent preview의 topology·metric·IaC 분석, SSM remediation과 change-control 검증 경계.

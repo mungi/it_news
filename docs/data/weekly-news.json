@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-03 02:07",
+  "last_updated_kst": "2026-10-03 06:10",
   "audience": "developers and engineers",
   "executive_summary": [
     "FortiMail `CVE-2026-104286`은 무인증 HTTP/HTTPS arbitrary file write가 가능한 Critical 결함이며 Fortinet이 active exploitation, CISA가 KEV 등록을 확인함. fixed build·IBE 비활성화·management interface 노출 차단과 IoC 기반 file/configuration·credential 조사를 병렬 incident gate로 처리 필요.",
-    "GuardDuty Runtime Monitoring이 AWS Security Hub Threat Analytics plan에 포함돼 EC2·EKS·Fargate runtime coverage의 별도 GuardDuty 청구가 Security Hub 단일 usage type으로 이동함. 탐지 coverage·finding type·security agent는 유지되므로 Cost Explorer·Security Hub usage·agent health를 account·region·workload tag로 교차 검증하고 budget·chargeback rule을 갱신 필요.",
+    "Cloudflare Traces open beta는 edge security rule·cache·routing·Workers·origin을 W3C `traceparent`와 OTLP로 연결함. 12월 ingest·retention 기반 과금 전환 전에 sampling·redaction·OTLP egress·GB/day budget을 representative traffic으로 계측 필요.",
     "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하며, Cisco와 CISA KEV가 active exploitation 근거를 각각 공개함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
     "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
-    "Amazon Bedrock의 OpenAI `GPT-6 Astra UltraFast`는 최대 6배·300 tokens/s provider 주장 기반 premium latency tier임. Region·quota·가격을 확인하고 quality·p95/p99·retry·fallback·completed-task cost canary로 기본 route 편입 여부 판단 필요."
+    "AWS MCP Server가 Tokyo 등 6개 리전으로 확대되고 AgentCore Gateway가 private CA TLS target을 지원함. endpoint 위치나 private trust는 tool 권한을 대체하지 않으므로 IAM·target allowlist·CA rotation·CloudTrail trace를 deployment gate로 유지 필요."
   ],
   "deep_dives": [
     {
@@ -189,6 +189,262 @@
   ],
   "items": [
     {
+      "id": "news-565",
+      "title_ko": "Cloudflare AI Gateway Web Search API: Ceramic.ai·Exa·Linkup 검색 결과를 agent inference context에 연결",
+      "title_original": "Introducing Web Search API via AI Gateway",
+      "summary": "- 공개: Cloudflare AI Gateway가 `Ceramic.ai`·`Exa`·`Linkup`과 연계한 Web Search API를 지원하며, 최신 웹 snippet을 model inference context에 주입하는 범위\n- 인터페이스: AI Gateway·REST API·Workers binding을 통해 provider를 지정해 검색 결과를 받으며, BYOK와 partner pricing 무가산 정책을 공지함\n- 운영: 검색 결과는 untrusted external input임. citation·URL allowlist·prompt-injection filtering·tool 권한 분리·cache/retention·provider별 비용 측정을 agent release gate에 연결 필요",
+      "detail": "Cloudflare는 2026년 10월 2일 AI Gateway의 Web Search API를 공개했다. Ceramic.ai·Exa·Linkup의 검색 provider를 통해 fresh structured snippet을 inference context에 넣는 방식이며 AI Gateway, 표준 REST endpoint, Workers binding을 지원한다. 공지는 provider pricing에 별도 markup을 더하지 않으며 기존 조직 설정을 쓰는 BYOK도 지원한다고 설명한다. 검색 결과의 최신성은 answer 정확성이나 안전성을 보장하지 않는다. 웹 문서는 prompt injection·오염된 인용·비정상 URL을 포함할 수 있으므로 retrieval과 downstream tool execution을 동일 신뢰 경계로 취급하면 안 된다.",
+      "why_it_matters": "검색 기능을 inference API 호출에 결합하면 agent의 외부 입력 경로·데이터 보존·비용 귀속이 한 번에 바뀜. provider 선택과 search snippet의 provenance를 trace로 남겨야 incident 및 품질 회귀를 재현할 수 있음.",
+      "engineering_implication": "시사점: read-only answer grounding에서 provider·query·returned URL·citation adoption·prompt-injection reject·p95·search/inference 합산 비용을 기록하고, write tool 앞에는 별도 policy·human approval을 유지할 필요.",
+      "korea_implication": "국내 조직도 리전·데이터 경계·권한·비용 조건은 실제 account 설정과 운영 trace로 확인할 범위.",
+      "category": "AI",
+      "tags": [
+        "Cloudflare",
+        "AI Gateway",
+        "Web Search",
+        "RAG",
+        "AI Agent",
+        "BYOK",
+        "Prompt Injection"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-02 22:28",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/introducing-web-search-api/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M3XMD1R3RKTSPGW4TNF59S9D.01M3XMD2FKJAHHSQP0E10VYFXD.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 AI Gateway에 native Web Search API를 추가함. 초기 partner는 `Ceramic.ai`·`Exa`·`Linkup`이며 최신 웹 snippet을 agent/model context에 제공하는 구조임.",
+          "items": [
+            "발행: `2026-10-02T13:28:10.018Z`, KST `2026-10-02 22:28` 확인",
+            "접근: AI Gateway·REST API·Workers binding에서 provider를 지정하는 범위"
+          ]
+        },
+        {
+          "heading": "입력·비용 경계",
+          "body": "공지는 provider pricing에 추가 markup이 없고 BYOK를 지원한다고 설명함. 단, provider별 rate limit·검색 범위·보존·지역·실제 invoice는 tenant 설정과 계약 확인 대상임.",
+          "items": [
+            "비용: search 호출·inference token·retry·cache hit를 completed-task cost로 함께 계량",
+            "계약: query와 result의 처리 위치·보존·학습 사용 여부를 provider별 문서로 분리 확인"
+          ]
+        },
+        {
+          "heading": "보안·품질 통제",
+          "body": "웹 검색 result는 신뢰할 수 없는 외부 입력임. citation 존재는 사실성 또는 safe instruction을 뜻하지 않으며, retrieval context와 tool 권한을 분리해야 함.",
+          "items": [
+            "통제: URL/domain allowlist·content sanitization·prompt-injection classifier·citation display를 retrieval 단계에 적용",
+            "피할 것: 검색 snippet의 지시를 database write·배포·data export tool 호출 근거로 직접 승격"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입은 read-only research 또는 고객지원 grounding 한 route에서 시작하고 provider fallback과 reject 동작을 관측하는 방식이 적절함.",
+          "items": [
+            "canary: citation adoption·unsupported claim·injection reject·p95·검색/추론 합산 비용 비교",
+            "팀 액션: query·provider·returned URL·policy decision·tool call을 동일 trace ID로 연결"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-566",
+      "title_ko": "Cloudflare Traces open beta: edge 보안·cache·Workers·origin 경로를 W3C traceparent·OTLP로 연결",
+      "title_original": "Introducing Cloudflare Traces: follow requests through our entire platform",
+      "summary": "- 공개: Cloudflare Traces open beta가 security rule·transformation·cache·routing·Worker·origin 처리의 request timeline을 dashboard와 OTLP export로 제공함\n- 제어: baseline sampling과 `Trace Rules` override, W3C `traceparent` 수신·전달을 지원해 edge와 외부 service trace를 연결하는 범위\n- 비용: unified Observability 요금은 `2026-12-01`부터 span 수가 아닌 ingest·retention 기준으로 전환 예정임. sampling·PII/secret 처리·trace volume budget을 먼저 설계 필요",
+      "detail": "Cloudflare는 2026년 10월 2일 Cloudflare Traces open beta를 공개했다. 지원되는 security rule, transformation, cache decision, routing, Worker execution, origin handling을 한 request-level timeline에서 볼 수 있고 W3C traceparent header를 수신·전달한다. Trace Rules로 traffic별 sampling을 조정하며 OTLP endpoint로 span을 export할 수 있다. 공지는 2026년 12월 1일부터 unified Observability pricing을 적용하고 span/event 수 대신 ingestion과 retention을 기준으로 청구한다고 밝혔다. Free plan은 일 0.5GB·7일 retention, paid/enterprise는 billing cycle 50GB ingestion·10GB-month storage가 포함되고 초과분은 GB 기준 청구 예정이라는 공지 범위다.",
+      "why_it_matters": "edge에서 발생한 cache·WAF·routing decision을 application trace와 잇는 기능이지만 trace payload 자체가 개인정보·토큰·고카디널리티 데이터를 늘릴 수 있음. observability rollout은 보안·비용·sampling 설계를 함께 변경하는 작업임.",
+      "engineering_implication": "시사점: service별 trace propagation·sample rate·redaction·retention·OTLP egress·ingestion budget을 policy로 관리하고, 12월 가격 전환 전에 representative traffic으로 GB/day와 incident investigation 효용을 계측할 필요.",
+      "korea_implication": "국내 조직도 리전·데이터 경계·권한·비용 조건은 실제 account 설정과 운영 trace로 확인할 범위.",
+      "category": "Infra",
+      "tags": [
+        "Cloudflare",
+        "Observability",
+        "Tracing",
+        "OpenTelemetry",
+        "OTLP",
+        "W3C Trace Context",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-02 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/cloudflare-tracing/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M3XERG2M3W0AF6DR6E14218A.01M3XERHCQTS14NJ390N327RG1.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare Traces가 open beta로 공개됨. 지원되는 edge 처리와 origin까지의 request timeline을 dashboard에서 보며 OTLP export도 가능한 범위임.",
+          "items": [
+            "발행: `2026-10-02T13:00:00Z`, KST `2026-10-02 22:00` 확인",
+            "범위: security rule·transformation·cache·routing·Worker·origin handling trace"
+          ]
+        },
+        {
+          "heading": "전파와 sampling",
+          "body": "W3C `traceparent`를 수신·전달하고 baseline sampling과 `Trace Rules` override를 제공함. trace completeness는 upstream/downstream service의 propagation 설정에 좌우됨.",
+          "items": [
+            "설계: edge·gateway·application·queue worker의 trace context propagation을 하나의 contract로 관리",
+            "관측: sample rate·missing parent·export failure·span volume·high-cardinality key를 dashboard와 collector에서 확인"
+          ]
+        },
+        {
+          "heading": "가격·데이터 경계",
+          "body": "Cloudflare는 unified Observability pricing을 `2026-12-01`부터 적용 예정이라고 공지함. 과금 기준은 span 수가 아니라 ingestion과 retention이며 plan별 포함량과 초과 단가가 제시됨.",
+          "items": [
+            "Free: 일 `0.5 GB` ingestion·`7일` retention 공지 범위",
+            "통제: request header·query·token·PII의 capture/redaction과 OTLP egress destination을 사전 검토"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "open beta는 전체 traffic enablement보다 incident-prone route의 sampled canary가 적절함. trace가 원인 분석 시간을 줄이는지와 데이터·비용이 증가하는지를 같은 SLO로 판단해야 함.",
+          "items": [
+            "canary: incident MTTD/MTTR·GB/day·sampling bias·export error·trace completeness 비교",
+            "팀 액션: retention·redaction·sampling·budget breach owner를 observability policy에 명시"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-567",
+      "title_ko": "AWS MCP Server, 도쿄 등 6개 리전 추가: coding agent의 AWS API 경로를 로컬 endpoint·IAM audit로 재검증",
+      "title_original": "The AWS MCP Server is now available in six additional AWS Regions",
+      "summary": "- 확대: AWS MCP Server가 Singapore·Sydney·Tokyo·Ireland·London·Oregon에 추가돼 총 8개 제공 리전으로 확대됨\n- 기능: Agent Toolkit for AWS의 managed MCP server가 AI coding agent에 AWS API 단일 interface를 제공하며, commercial Region service access와 MCP server 실행 리전은 별도 경계임\n- 운영: 가까운 endpoint는 latency·residency 설계에 영향을 주지만 tool scope·IAM identity·CloudTrail·prompt injection 방어를 대체하지 않음. 도쿄 endpoint에서 account별 quota·data path·권한을 canary로 검증 필요",
+      "detail": "AWS는 2026년 10월 2일 AWS MCP Server를 Singapore, Sydney, Tokyo, Ireland, London, Oregon 여섯 리전에 추가했다고 발표했다. AWS MCP Server는 Agent Toolkit for AWS의 managed Model Context Protocol server로 AI coding agent가 서비스별 integration을 따로 만들지 않고 AWS API를 discover·call하는 단일 interface를 제공한다. AWS는 server가 commercial AWS Regions의 서비스에 접근할 수 있지만 server 자체는 제공 리전에서 실행된다고 설명한다. 공지 기준 제공 리전은 N. Virginia, Oregon, Singapore, Sydney, Tokyo, Frankfurt, Ireland, London이다. 지역 endpoint는 request data residency 요구에 도움이 될 수 있으나, agent tool call의 실제 resource account·role·network path·log retention을 자동으로 보장하지 않는다.",
+      "why_it_matters": "MCP endpoint의 위치가 가까워져도 coding agent에는 cloud control-plane 권한이 남음. endpoint 선택은 latency 설정이 아니라 identity·tool scope·audit evidence를 포함한 deployment 변경으로 취급해야 함.",
+      "engineering_implication": "시사점: 도쿄 리전 pilot에서 allowed AWS API·role session·resource account·CloudTrail event·MCP request trace·denied action을 대조하고, production write는 least privilege와 approval gate를 유지할 필요.",
+      "korea_implication": "국내 조직도 리전·데이터 경계·권한·비용 조건은 실제 account 설정과 운영 trace로 확인할 범위.",
+      "category": "DevTools",
+      "tags": [
+        "AWS",
+        "MCP",
+        "AI Coding Agent",
+        "Agent Toolkit",
+        "IAM",
+        "CloudTrail",
+        "Data Residency"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-02 17:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-mcp-server-six-additional-regions/",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS MCP Server가 6개 리전에 추가됨. Tokyo가 포함돼 Asia Pacific에서 Singapore·Sydney·Tokyo endpoint를 선택할 수 있는 범위임.",
+          "items": [
+            "feed: `Fri, 02 Oct 2026 08:00:00 GMT`, KST `2026-10-02 17:00` 확인",
+            "제공 리전: N. Virginia·Oregon·Singapore·Sydney·Tokyo·Frankfurt·Ireland·London"
+          ]
+        },
+        {
+          "heading": "기능과 리전 경계",
+          "body": "AWS MCP Server는 AI coding agent의 AWS API discovery·call interface임. 공지는 commercial Region service access와 MCP Server가 실행되는 리전을 구분함.",
+          "items": [
+            "기능: 서비스별 integration 유지보수 대신 managed MCP interface 제공",
+            "경계: local endpoint 사용이 target resource의 data path·IAM role·network route를 자동 변경하지 않음"
+          ]
+        },
+        {
+          "heading": "권한·감사 통제",
+          "body": "MCP request는 prompt injection 또는 잘못된 agent planning을 AWS control-plane call로 바꿀 수 있음. endpoint expansion 뒤에도 tool allowlist와 human approval은 유지해야 함.",
+          "items": [
+            "통제: read-only discovery와 write action의 role·approval·session duration·resource tag condition 분리",
+            "감사: MCP request·assumed role·AWS API·CloudTrail event·denied action을 trace ID로 상관"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Tokyo endpoint는 한국·일본 개발 조직의 latency와 residency pilot 후보이나 quota·endpoint policy·지원 기능은 account에서 검증해야 함.",
+          "items": [
+            "canary: read-only inventory/debug workflow에서 p95·denied action·CloudTrail completeness·data path 확인",
+            "팀 액션: MCP endpoint region·allowed action·role boundary·break-glass revoke 절차를 runbook에 기록"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
+      "id": "news-568",
+      "title_ko": "Amazon Bedrock AgentCore Gateway, private CA TLS 지원: VPC Lattice MCP·OpenAPI·HTTP proxy의 trust anchor를 S3·Secrets Manager에서 로드",
+      "title_original": "AgentCore Gateway supports private TLS certificates for VPC endpoints",
+      "summary": "- 공개: Amazon Bedrock AgentCore Gateway가 private CA가 서명한 TLS certificate를 MCP·OpenAPI·HTTP proxy target에서 지원함\n- 연결: VPC Lattice private endpoint target에 PEM CA certificate를 등록하고 Gateway가 S3 또는 Secrets Manager에서 trust anchor를 읽어 outbound TLS를 검증하는 구조\n- 운영: private CA 지원은 private endpoint 접근 허용이 아님. CA rotation·S3/secret read 권한·target allowlist·TLS failure telemetry·revocation 경계를 production rollout 전에 검증 필요",
+      "detail": "AWS는 2026년 10월 2일 Amazon Bedrock AgentCore Gateway가 private certificate authority가 서명한 TLS certificate를 MCP, OpenAPI, HTTP proxy target에 지원한다고 공지했다. VPC Lattice 기반 private endpoint target에 private CA certificate를 등록하면 Gateway가 Amazon S3 또는 AWS Secrets Manager에서 PEM-encoded CA certificate를 가져와 outbound TLS connection의 trust anchor로 사용한다. 이 지원은 AgentCore Gateway와 Amazon VPC Lattice가 모두 제공되는 리전에 한정된다. 공지는 private CA trust, source 위치, 지원 target type을 설명하지만 certificate rotation 방식, revocation handling, TLS version/cipher, S3·Secrets Manager 접근 정책의 세부 동작은 확정하지 않는다.",
+      "why_it_matters": "agent gateway가 내부 API·MCP server에 연결되는 trust boundary를 바꾸는 기능임. private CA 관리 실패나 지나치게 넓은 trust anchor는 tool 호출 대상 위조·운영 중단·감사 공백으로 이어질 수 있음.",
+      "engineering_implication": "시사점: CA별 target scope·issuer/subject·expiry·S3/secret version·Gateway fetch 권한·TLS handshake failure를 inventory화하고, rotation과 rollback을 staging에서 replay한 뒤 production target을 단계적으로 등록할 필요.",
+      "korea_implication": "국내 조직도 리전·데이터 경계·권한·비용 조건은 실제 account 설정과 운영 trace로 확인할 범위.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock AgentCore",
+        "MCP",
+        "Private CA",
+        "TLS",
+        "VPC Lattice",
+        "Secrets Manager"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-02 17:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/agentcore-gateway-private-tls-vpc/",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Bedrock AgentCore Gateway가 private CA TLS certificate를 지원함. 대상은 MCP server·OpenAPI·HTTP proxy passthrough target임.",
+          "items": [
+            "feed: `Fri, 02 Oct 2026 08:00:00 GMT`, KST `2026-10-02 17:00` 확인",
+            "범위: AgentCore Gateway와 Amazon VPC Lattice가 모두 제공되는 리전에서 지원"
+          ]
+        },
+        {
+          "heading": "신뢰 체인",
+          "body": "VPC Lattice private endpoint target에 PEM-encoded CA certificate를 등록하며 Gateway가 S3 또는 Secrets Manager에서 CA를 읽어 outbound TLS trust anchor로 사용함.",
+          "items": [
+            "구성: target별 issuer·subject·SAN·expiry와 CA source object/secret version을 inventory화",
+            "경계: private CA 등록은 target authorization·network reachability·tool permission을 대체하지 않음"
+          ]
+        },
+        {
+          "heading": "보안·운영 통제",
+          "body": "CA rotation·revocation·fetch failure가 agent tool availability에 영향을 줄 수 있음. broad CA trust 또는 과도한 S3/secret read 권한은 private endpoint trust boundary를 넓힘.",
+          "items": [
+            "통제: Gateway identity에 CA artifact read 최소 권한과 target allowlist·environment 분리 적용",
+            "관측: TLS handshake error·CA expiry·secret/object version change·target connection failure를 alert와 audit trail에 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "production 전 staging target에서 leaf certificate 교체·CA rollover·S3/secret version rollback·network failure를 replay해야 함.",
+          "items": [
+            "canary: trusted/untrusted issuer·expired cert·wrong SAN·revoked/removed CA의 deny behavior 검증",
+            "팀 액션: CA owner·rotation window·rollback·exception expiry를 MCP/OpenAPI target onboarding checklist에 추가"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-564",
       "title_ko": "FortiMail `CVE-2026-104286` 활성 악용: 무인증 arbitrary file write를 patch·IBE 차단·침해 조사로 병렬 대응",
       "title_original": "Critical FortiMail Zero-Day Flaw Exploited in Attacks Allows Unauthenticated Arbitrary File Writes",
@@ -266,7 +522,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 5
     },
     {
       "id": "news-563",
@@ -349,7 +605,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 6
     },
     {
       "id": "news-562",
@@ -423,7 +679,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-561",
@@ -496,7 +752,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-559",
@@ -564,7 +820,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-558",
@@ -630,7 +886,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-556",
@@ -696,7 +952,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-554",
@@ -770,7 +1026,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-560",
@@ -835,7 +1091,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-557",
@@ -910,7 +1166,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-555",
@@ -979,11 +1235,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-553",
-      "rank": 12,
+      "rank": 16,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -1069,7 +1325,7 @@
     },
     {
       "id": "news-551",
-      "rank": 13,
+      "rank": 17,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -1143,7 +1399,7 @@
     },
     {
       "id": "news-550",
-      "rank": 14,
+      "rank": 18,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -1225,7 +1481,7 @@
     },
     {
       "id": "news-549",
-      "rank": 15,
+      "rank": 19,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -1316,7 +1572,7 @@
     },
     {
       "id": "news-552",
-      "rank": 16,
+      "rank": 20,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -1387,7 +1643,7 @@
     },
     {
       "id": "news-547",
-      "rank": 17,
+      "rank": 21,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -1533,11 +1789,11 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 22
     },
     {
       "id": "news-545",
-      "rank": 19,
+      "rank": 23,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -1620,7 +1876,7 @@
     },
     {
       "id": "news-546",
-      "rank": 20,
+      "rank": 24,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -1753,7 +2009,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-543",
@@ -1838,7 +2094,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-542",
@@ -1912,7 +2168,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-541",
@@ -1988,7 +2244,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 28
     },
     {
       "id": "news-539",
@@ -2060,7 +2316,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 29
     },
     {
       "id": "news-540",
@@ -2133,7 +2389,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 30
     },
     {
       "id": "news-537",
@@ -2206,7 +2462,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 31
     },
     {
       "id": "news-538",
@@ -2278,7 +2534,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 32
     },
     {
       "id": "news-536",
@@ -2342,7 +2598,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 33
     },
     {
       "id": "news-533",
@@ -2415,7 +2671,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 34
     },
     {
       "id": "news-530",
@@ -2484,7 +2740,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 35
     },
     {
       "id": "news-535",
@@ -2550,7 +2806,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 36
     },
     {
       "id": "news-531",
@@ -2619,7 +2875,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 37
     },
     {
       "id": "news-532",
@@ -2688,7 +2944,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 38
     },
     {
       "id": "news-534",
@@ -2761,7 +3017,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 39
     },
     {
       "id": "news-529",
@@ -2825,7 +3081,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 40
     },
     {
       "id": "news-517",
@@ -2898,7 +3154,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 41
     },
     {
       "id": "news-524",
@@ -2962,7 +3218,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 42
     },
     {
       "id": "news-525",
@@ -3026,7 +3282,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 43
     },
     {
       "id": "news-526",
@@ -3091,7 +3347,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 44
     },
     {
       "id": "news-522",
@@ -3155,7 +3411,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 45
     },
     {
       "id": "news-523",
@@ -3228,7 +3484,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 46
     },
     {
       "id": "news-520",
@@ -3316,7 +3572,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 47
     },
     {
       "id": "news-521",
@@ -3389,7 +3645,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 48
     },
     {
       "id": "news-515",
@@ -3461,7 +3717,7 @@
           ]
         }
       ],
-      "rank": 45,
+      "rank": 49,
       "published_kst": "2026-09-23 03:29"
     },
     {
@@ -3533,291 +3789,6 @@
           "items": [
             "팀 액션: representative prompt·tool call·long-context case로 offline eval와 shadow traffic 실행",
             "운영 과제: input/output/cache token 비용·p95 latency·success/fallback rate·model-version change log 추적"
-          ]
-        }
-      ],
-      "rank": 46
-    },
-    {
-      "id": "news-518",
-      "title_ko": "Bifrost AI Gateway `CVE-2026-90898`: 기본 비활성 management auth에서 MCP stdio client 인증 전 RCE",
-      "title_original": "Bifrost is vulnerable to Unauthenticated Remote Code Execution via MCP Stdio Client Registration",
-      "summary": "핵심: Bifrost HTTP transport `<2.1.0`은 기본 비활성 management authentication 상태에서 `/api/mcp/client`에 인증 전 POST 한 번으로 stdio command를 gateway process user로 실행할 수 있는 CVSS 9.8 결함임. official Docker image의 management API가 `0.0.0.0`에 bind하므로 port publish 구성은 외부 도달성을 별도 확인해야 하며 `transports/v2.1.0` 이상 적용 필요.",
-      "detail": "`CVE-2026-90898`은 MCP handshake 전 stdio client command를 실행하는 management API 설계 경로임. auth-disabled 상태에서 reachable management API를 실행한 instance는 compromised로 취급하고 virtual key·provider API credential rotation, listener exposure·process/file/network forensic을 patch와 병렬 수행해야 함.",
-      "why_it_matters": "AI gateway는 다수 LLM provider API key와 routing policy를 보유할 수 있어 한 management-plane RCE가 model provider credential·agent tool path·downstream service access로 확대될 수 있음.",
-      "engineering_implication": "시사점: Bifrost transport version·`governance.auth_config.is_enabled`·management listener bind/published port·ingress/ACL·provider virtual key를 즉시 inventory 필요. `2.0.0`과 `1.6.x`도 MCP fix 범위 밖이므로 `2.1.0+` 실행 artifact와 unauthenticated registration `403` test를 closure evidence로 남겨야 함.",
-      "korea_implication": "국내 AI gateway self-hosting 조직은 Kubernetes Service/Ingress·Docker port publish·VPN/bastion 경로와 provider key rotation owner를 함께 확인해 localhost assumptions가 cluster 외부 exposure로 바뀌지 않게 해야 함.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "AI Gateway",
-        "Bifrost",
-        "MCP",
-        "RCE",
-        "API Security",
-        "Agent Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 96,
-      "published_kst": "2026-09-23 01:41",
-      "source_name": "JFrog Security Research",
-      "source_url": "https://research.jfrog.com/vulnerabilities/bifrost-is-vulnerable-to-unauthenticated-remote-code-execution-via-mcp-stdio-client-registration-cve-2026-90898/",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEieRvfWKvxkIOajVIJ1qC7l54ZBCtHMwZTfUHGqSZ_35vGzAl23py6GfaqrxYkcfWZ_K75t9BGC6btqJQiS9jwaV7O4kJsCSIIQxmn9VnZrBbdjxSN4AzQ05K9G-ES82qV1G6IUcsBetsb0mVO5e5IHTr2FyAA3gtCN8Vne5N1H5Swgd2FLLlwi0GXFQ0o/s1600/bifrost.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News report",
-          "url": "https://thehackernews.com/2026/09/critical-bifrost-ai-gateway-flaw-lets.html"
-        },
-        {
-          "title": "Bifrost fix pull request",
-          "url": "https://github.com/maximhq/bifrost/pull/6757"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "JFrog는 Bifrost HTTP transport의 `CVE-2026-90898`을 공개함. management authentication이 disabled 또는 unconfigured된 상태에서 unauthenticated caller가 `/api/mcp/client`로 stdio-type MCP client를 등록하면 gateway가 MCP handshake 전 command를 process user로 시작하는 경로임.",
-          "items": [
-            "영향: Bifrost HTTP transport `<2.1.0`, CVSS `9.8`의 unauthenticated command execution",
-            "실행: official Docker image에서 command는 `appuser` 권한으로 시작되는 source 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Bifrost의 management auth default는 `governance.auth_config.is_enabled=false`임. stock binary는 management API를 localhost에 bind하지만 official Docker image는 `0.0.0.0` bind이므로 published port·Service·Ingress·ACL에 따라 container 외부의 attack path가 생길 수 있음.",
-          "items": [
-            "노출: local bind 여부와 Docker published port·Kubernetes Service/Ingress를 별도 inventory",
-            "리스크: gateway가 보유한 provider API key와 virtual key가 process command execution 뒤 노출될 수 있는 범위"
-          ]
-        },
-        {
-          "heading": "수정·완화와 증거 경계",
-          "body": "`transports/v2.1.0`은 unauthenticated stdio client registration에 `403`을 반환함. `transports/v2.0.0`은 이전 plugin issue 수정만 포함해 이 MCP 결함 영향이 남고, `1.6.x`~`1.6.11`에도 수정이 없음. JFrog는 auth-disabled reachable instance를 compromised로 취급하라고 권고함.",
-          "items": [
-            "수정: `2.1.0+` artifact 적용과 unauthenticated registration `403` negative test",
-            "완화: auth enable·강한 admin credential·management listener의 untrusted network 차단",
-            "경계: active exploitation·CISA KEV 등재·피해 조직은 source에서 확인되지 않음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI gateway RCE 대응은 image update로 끝나지 않음. management API exposure와 process execution, provider credential·virtual key·MCP client configuration, outbound connection·file/process artifact를 같은 incident boundary로 다루면 patch 이전 access와 post-patch key reuse를 확인할 수 있음.",
-          "items": [
-            "팀 액션: version·auth flag·bind/published port·ingress/ACL·provider key owner를 24시간 내 수집",
-            "팀 액션: exposed auth-disabled instance의 provider/virtual key rotate와 MCP client·process·network forensic 실행",
-            "운영 과제: fixed version coverage·unauthenticated `403` test·reachable management endpoint·credential rotation completion 추적"
-          ]
-        }
-      ],
-      "rank": 47
-    },
-    {
-      "id": "news-513",
-      "title_ko": "Cloudflare Worker Previews: branch별 URL·설정·Durable Object state를 분리하는 agent release 검증 환경 공개",
-      "title_original": "Introducing Worker Previews: isolated preview environments for every change your agent makes",
-      "summary": "핵심: Cloudflare Worker Previews가 Git branch마다 독립 URL·variables·secrets·bindings·observability·state를 제공함. 경계: Durable Object·Container는 branch별로 격리되지만 service binding은 현재 production deployment를 호출하고 Queue consumer·Workflow execution은 preview 전체 격리 대상이 아니어서 async integration test를 별도 유지 필요.",
-      "detail": "Worker Previews는 `npx wrangler preview`로 branch별 runtime 검증과 trace evidence를 연결하는 기능임. Preview 통과를 production 승인으로 등치하지 말고 stateful binding, OAuth·CORS, async dependency, secret scope, rollback을 release gate로 분리해야 함.",
-      "why_it_matters": "agent와 병렬 개발이 shared staging을 경쟁할 때 branch-level state와 telemetry isolation은 변경 충돌과 production signal 오염을 줄이는 운영 입력임.",
-      "engineering_implication": "시사점: PR마다 commit SHA·Preview URL·contract/negative test·trace ID를 남기고, Preview domain에는 Access·test credential·TTL·cleanup owner를 적용 필요. service binding·Queue·Workflow는 production call path 또는 별도 configuration 여부를 integration test로 확인 필요.",
-      "korea_implication": "국내 서비스의 OAuth callback·cookie domain·개인정보 test data는 preview custom domain과 Access policy에 맞춰 production credential·real customer data와 분리 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloud",
-        "Cloudflare",
-        "Workers",
-        "DevOps",
-        "Agent",
-        "Observability"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 87,
-      "published_kst": "2026-09-22 22:00",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/worker-previews/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M31XDPCKA9WGNB1E6TT9XNFN.01M31XDQDKHJVR4XKHJ3NDFNJK.png",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 Worker Previews를 공개함. 각 Git branch는 독립 URL·code·configuration·observability·state를 갖고, same branch push는 stable Preview URL의 실행 중인 Preview를 갱신하는 방식임.",
-          "items": [
-            "변화: `npx wrangler preview`로 branch별 Preview deployment 생성",
-            "범위: variables·secrets·bindings는 production configuration과 분리된 Preview configuration 사용"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Preview 생성 시 Durable Object namespace와 Container application을 branch별로 만들기 때문에 state mutation과 failed migration을 production namespace에서 분리하는 구조임. trace에는 fetch·binding operation·handler invocation을 Preview scope로 연결할 수 있음.",
-          "items": [
-            "상태: Durable Object·Container session·memory·migration을 branch 단위로 격리",
-            "관측: logs·errors·metrics·traces를 branch Preview에서 조회"
-          ]
-        },
-        {
-          "heading": "제약과 증거 경계",
-          "body": "Cloudflare는 service binding이 현재 bound Worker의 production deployment를 호출한다고 명시함. Queue는 message 전송이 가능하지만 consumer 실행은 Preview에서 지원하지 않고 Workflow isolation도 별도 configuration이 필요한 범위임.",
-          "items": [
-            "경계: multi-Worker·Queue consumer·Workflow는 end-to-end isolated test를 자동 보장하지 않음",
-            "리스크: Preview test success를 async production path success로 일반화하는 판단"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Preview는 branch-level release evidence를 만드는 도구임. secret·test data·external callback을 분리하고 commit·test·trace·rollback artifact를 같은 PR record에 남겨야 agent 변경도 review 가능한 deployment evidence가 됨.",
-          "items": [
-            "팀 액션: stateless Worker 한 개에 Preview URL·Access·contract test·trace artifact canary 적용",
-            "운영 과제: Preview TTL·state cleanup·custom domain·OAuth redirect·service binding integration test ownership 지정"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-514",
-      "title_ko": "Arista VeloCloud Orchestrator `CVE-2026-93952`: certificate-based 구성에서 CVSS 10.0 active exploitation 대응",
-      "title_original": "New CVSS 10.0 VeloCloud Orchestrator Flaw Actively Exploited in Certificate-Based Setups",
-      "summary": "핵심: Arista VeloCloud Orchestrator `CVE-2026-93952`가 certificate-based Edge authentication 구성에서 active exploitation 중이며 CVSS 10.0으로 평가됨. 상태: on-premises 5.2·6.4는 fixed release가 제공됐지만 6.1·7.0은 당시 fix 대기여서 web interface isolation·IOC hunt·credential/Edge review를 patch와 병렬 수행 필요.",
-      "detail": "VCO control plane의 active-exploitation 결함은 appliance version update만이 아니라 network exposure, host persistence, administrator activity, managed Edge configuration과 credential lifecycle을 함께 닫아야 하는 incident임.",
-      "why_it_matters": "VCO가 관리하는 SD-WAN Edge와 configuration data가 영향을 받을 수 있어 management-plane compromise가 edge fleet와 network policy trust boundary로 확대될 수 있음.",
-      "engineering_implication": "시사점: VCO release train·certificate authentication mode·management interface path를 inventory하고 fixed release 또는 trusted admin network isolation을 즉시 적용 필요. nginx·application·system·database log와 listed IOC를 patch 전 보존하고 VCO·Edge credential/certificate·configuration integrity를 재검증 필요.",
-      "korea_implication": "국내 지사·공장·매장 SD-WAN을 중앙 VCO로 운영하는 조직은 carrier·partner·remote-admin path까지 포함해 VCO management interface의 reachable network를 확인 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "SD-WAN",
-        "Arista",
-        "VeloCloud",
-        "Network Security",
-        "Active Exploitation"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "published_kst": "2026-09-22 21:29",
-      "source_name": "Arista / The Hacker News",
-      "source_url": "https://www.arista.com/en/support/advisories-notices/security-advisory/24765-security-advisory-0183",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhN5Up_REU7_SnA-Ce9D8UGRsM8WbkkcjR6kjirzb-tSFejrL-qnZkXrp2gNa3OA-4PgvkUqHs59j9Qc8srbfm2JOUIOvEa1c_d8Il3kUDAGyr49FuXwq_n438Vf9txfq1fVwcpykkZAKz1o2QFGUJDLF4wnXzNWLdH1tYft3bd-vJywPppGjEfoikG22s/s1600/VeloCloud.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News report",
-          "url": "https://thehackernews.com/2026/09/new-cvss-100-velocloud-orchestrator.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Arista가 on-premises VeloCloud Orchestrator `CVE-2026-93952`의 active exploitation을 알림. certificate-based Edge-to-VCO authentication이 configured된 deployment에서 unauthenticated remote attacker가 internal function privilege를 얻어 VCO host에 영향을 줄 수 있는 범위임.",
-          "items": [
-            "영향: VCO host와 관리 data, managed Edge access로 확대될 수 있는 control-plane risk",
-            "상태: CVSS 3.1 10.0이며 attack start·victim scope는 공개 source에서 미확정"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "9월 22일 기준 5.2·6.4 release train은 fixed release가 제공됐고 6.1·7.0은 fix 대기 상태로 설명됨. Hosted·Dedicated VCO는 Arista가 패치한 범위이며 on-premises release train과 support status는 별도 inventory 대상임.",
-          "items": [
-            "조건: VCO web interface network access와 Edge authentication certificate public portion이 필요한 경로",
-            "완화: VCO web interface를 trusted administrative network로 제한하는 vendor guidance"
-          ]
-        },
-        {
-          "heading": "forensic과 복구",
-          "body": "원문은 `.vcnode.js`·`vc-sysmond`·`vc-sysmon.service`·nginx `x-vc-opt` header를 indicator로 제시함. IOC 부재를 clean proof로 쓰지 말고 access·application·system·database log와 filesystem timestamp를 보존하고, suspected compromise면 credential rotation·Edge review·trusted restore를 병렬 수행해야 함.",
-          "items": [
-            "hunt: unusual URL path·encoded character·internal service reference·high request rate·unexpected outbound traffic",
-            "조치: VCO administrator/service credential·certificate·managed Edge state·configuration integrity 대조"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "patch closure는 version 하나가 아니라 reachable management path, certificate authentication, host persistence, administrator action, Edge configuration과 credential lifecycle을 증거로 닫는 작업임. fixed release가 없는 train은 isolation과 upgrade path를 risk acceptance 없이 기록해야 함.",
-          "items": [
-            "팀 액션: 24시간 내 VCO release/authentication/interface inventory와 IOC hunt 실행",
-            "운영 과제: fixed-or-isolated VCO 비율·Edge post-patch health·forensic retention·recovery drill time 추적"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-512",
-      "title_ko": "Linux ARM64 KVM `CVE-2026-89775`: nested virtualization의 TLB invalidation 누락이 guest-to-host memory write로 이어지는 경로 패치",
-      "title_original": "New Linux Kernel Flaw Gives ARM64 KVM Guests Read-Write Access to Host Memory",
-      "summary": "핵심: ARM64 KVM nested virtualization에서 MMU가 꺼진 VNCR S1 mapping의 음수 level이 TLB invalidation size `0`으로 계산돼 freed host memory mapping이 guest에 남을 수 있는 결함임. 조건: ARMv8.4 FEAT_NV2와 boot-time nested virtualization이 필요하며 기본 비활성 상태이지만, 해당 구성이면 guest가 host kernel memory를 read/write하고 host code execution까지 도달할 수 있다는 연구자 설명.",
-      "detail": "`CVE-2026-89775`는 ARM64 KVM nested virtualization의 TLB invalidation 처리 결함임. affected host와 enabled configuration을 구분해 patch·reboot를 우선 처리하고, `/dev/kvm` access·nested virtualization 설정·guest trust boundary를 함께 inventory해야 함.",
-      "why_it_matters": "guest isolation을 깨는 KVM 결함은 cloud tenant, internal virtualization, CI·test VM의 trust boundary를 host compromise 가능성으로 바꿀 수 있음. 다만 ARM64 nested virtualization은 기본 비활성이며 standard AWS·Google Cloud ARM offering의 해당 경로는 source가 노출되지 않는다고 설명함.",
-      "engineering_implication": "시사점: ARM64 KVM host는 kernel package와 running kernel·reboot 상태를 확인하고 nested virtualization·FEAT_NV2·`/dev/kvm` permission·untrusted guest workload를 같은 patch priority evidence로 묶어야 함. patch 전 mitigation을 일반화하지 말고 affected VM scheduling 제한 또는 isolation 조치를 vendor guidance와 운영 위험 기준으로 결정 필요.",
-      "korea_implication": "국내 private cloud·telco edge·CI farm에서 ARM64 KVM을 사용하는 조직은 public-cloud ARM VM 여부와 self-managed host configuration을 구분해 asset owner·patch window·guest workload를 확인할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Linux",
-        "KVM",
-        "ARM64",
-        "Virtualization",
-        "Cloud Security"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 90,
-      "published_kst": "2026-09-22 21:08",
-      "source_name": "The Hacker News / Ubuntu / Red Hat advisories",
-      "source_url": "https://thehackernews.com/2026/09/new-linux-kernel-flaw-gives-arm64-kvm.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhCjDxUEx5QKzby2TlrL6Swi0MV7BdrkgjM6Y5Xby9IU8L9JSdG09pwRemVtrYQtUrvp8QIDduyiDuojZVzZ6GrpzUJIVrThvC4CZ_kd8kckdhBt0MLWDLXD_QwN2wciIA9bqLee51246mEpWx0ZnlcOfXD2U3QWpvmpKZyxx75T7MXK-b8zBMmrouCZJc/s1600/linux-kvm.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Ubuntu CVE-2026-89775 status",
-          "url": "https://ubuntu.com/security/CVE-2026-89775"
-        },
-        {
-          "title": "Red Hat CVE-2026-89775 status",
-          "url": "https://access.redhat.com/security/cve/cve-2026-89775"
-        },
-        {
-          "title": "AWS nested virtualization documentation",
-          "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/amazon-ec2-nested-virtualization.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 ARM64 Linux KVM의 `CVE-2026-89775`가 nested virtualization enabled host에서 freed host memory를 guest mapping으로 남길 수 있다고 공개함. Ubuntu와 Red Hat advisory는 KVM arm64의 negative S1 walk level·TLB invalidation 처리 결함을 확인하며, Red Hat은 RHEL 10 kernel을 affected로 표시한 범위.",
-          "items": [
-            "영향: ARM64 KVM nested virtualization에서 guest isolation을 host kernel memory read/write 경로로 확장할 수 있는 결함",
-            "상태: public disclosure는 2026-09-16이며 active exploitation·public exploit code·CISA KEV 등재는 source에서 확인되지 않음"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "MMU가 비활성인 VNCR S1 mapping은 level `-127`로 표시되지만, TLB size calculation이 negative level을 처리하지 못해 invalidation size를 `0`으로 만들 수 있음. stale TLB entry가 제거되지 않으면 freed host page가 guest에 mapped·writable로 남는 흐름이며, 연구자는 64-bit read/write와 host escape 가능성을 설명함.",
-          "items": [
-            "원인: negative S1 walk level의 unsigned conversion과 zero-sized TLB invalidation 경로",
-            "영향: guest memory layout 조건에서 stale host mapping을 유지해 hardware trap 없이 host memory 접근 가능한 조건",
-            "수정: upstream fixed version은 `6.18.51`, `7.2.5`, `7.3-rc1`이며 distribution backport와 package release는 별도 확인 대상"
-          ]
-        },
-        {
-          "heading": "도달 조건과 증거 경계",
-          "body": "이 경로는 ARMv8.4 FEAT_NV2 지원 hardware와 boot-time ARM64 nested virtualization enablement를 요구하며 기본값은 off임. 따라서 일반 ARM64 KVM host 전체나 모든 cloud ARM instance에 동일하게 적용하면 안 되며, source는 AWS가 nested virtualization을 Intel instance에만 제공하고 Google Cloud도 ARM VM을 제외한다고 설명함.",
-          "items": [
-            "조건: ARM64 nested virtualization enabled, affected kernel path, attacker-controlled 또는 untrusted guest workload의 결합",
-            "경계: remote network exploit가 아니라 local guest-to-host 또는 `/dev/kvm` access에서 VM을 만든 local user 경로",
-            "경계: standard public-cloud ARM offering의 노출 부재는 self-managed ARM64 KVM host 안전 보장의 근거가 아님"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "패치 closure는 package version 확인만으로 끝나지 않음. host별 running kernel과 reboot state, nested virtualization boot parameter, FEAT_NV2 hardware, `/dev/kvm` group membership, guest workload trust level을 묶어 우선순위를 정하고, vendor-specific affected status를 기준으로 maintenance를 실행해야 함.",
-          "items": [
-            "팀 액션: ARM64 KVM host inventory에 kernel package·`uname -r`·reboot pending·nested virtualization·guest owner를 함께 수집",
-            "팀 액션: untrusted CI/test guest와 `/dev/kvm` access를 patch 완료 전 dedicated host 또는 scheduling control로 분리 검토",
-            "운영 과제: Ubuntu·RHEL·Amazon Linux·Debian advisory의 affected/fixed state와 custom kernel backport를 change record로 대조"
           ]
         }
       ],
