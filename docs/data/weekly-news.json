@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-03 10:18",
+  "last_updated_kst": "2026-10-03 14:21",
   "audience": "developers and engineers",
   "executive_summary": [
     "FortiMail `CVE-2026-104286`은 무인증 HTTP/HTTPS arbitrary file write가 가능한 Critical 결함이며 Fortinet이 active exploitation, CISA가 KEV 등록을 확인함. fixed build·IBE 비활성화·management interface 노출 차단과 IoC 기반 file/configuration·credential 조사를 병렬 incident gate로 처리 필요.",
     "Cloudflare Traces open beta는 edge security rule·cache·routing·Workers·origin을 W3C `traceparent`와 OTLP로 연결함. 12월 ingest·retention 기반 과금 전환 전에 sampling·redaction·OTLP egress·GB/day budget을 representative traffic으로 계측 필요.",
     "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하며, Cisco와 CISA KEV가 active exploitation 근거를 각각 공개함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
     "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
-    "GitLab AI Gateway `CVE-2026-90970`은 self-hosted Duo Agent custom flow의 prompt template sandbox escape가 gateway command execution으로 이어질 수 있는 Critical 결함임. fixed gateway image/Helm tag, GitLab minor compatibility, JWT·provider credential·gateway log를 같은 change/incident gate로 확인 필요."
+    "Zammad `CVE-2026-102489`·`CVE-2026-102490`은 CISA KEV에 추가된 결함 체인임. vendor는 전자의 exploit 범위를 EOL `6.5` 이하로, `7.0+` 비영향과 `7.2.0` hardening으로 설명했으나 후자는 기술 세부 미수령 상태임. self-hosted asset의 version·runtime·노출·privilege·로그를 분리해 triage 필요."
   ],
   "deep_dives": [
     {
@@ -891,6 +891,76 @@
       "rank": 10
     },
     {
+      "id": "news-571",
+      "rank": 11,
+      "title_ko": "Zammad `CVE-2026-102489`·`CVE-2026-102490` KEV 등록: EOL 6.5 session fixation과 local privilege escalation 주장을 vendor 범위로 분리",
+      "title_original": "Zammad statement on vulnerability reports in DIVD case DIVD-2026-00015",
+      "summary": "- 경보: CISA KEV가 Zammad `CVE-2026-102489` session fixation과 `CVE-2026-102490` improper privilege management를 10월 2일 추가하고, 두 결함의 chaining 가능성과 forensic triage를 명시함\n- vendor 범위: Zammad는 `CVE-2026-102489`이 EOL `6.5` 이하의 runtime 환경에서만 exploit 가능하고 `7.0+`은 영향을 받지 않으며 hardening을 `7.2.0`에 포함했다고 밝힘\n- 불확실성: `CVE-2026-102490`은 vendor가 DIVD에서 기술 세부사항을 받지 못했다고 밝혀 영향 버전·exploit 조건·완화책을 독립 확인할 수 없음. self-hosted inventory와 exposed/EOL instance 우선 분리, log·privilege 변경 증거 보존 필요",
+      "detail": "CISA KEV는 2026년 10월 2일 Zammad의 `CVE-2026-102489`과 `CVE-2026-102490`을 추가했다. KEV는 전자가 session fixation을 통해 `zammad` 사용자 권한의 remote code execution으로 이어질 수 있고, 후자가 local `zammad` 사용자의 root privilege escalation으로 이어질 수 있으며 두 결함을 연결할 수 있다고 설명한다. CISA는 vendor 지침에 따른 완화, internet exposure 평가, forensic triage를 요구하며 due date를 10월 5일로 제시한다. Zammad의 10월 1일 공식 커뮤니티 성명은 `CVE-2026-102489`의 exploit이 EOL 6.5 이하 runtime에 한정되고 7.0 이상은 영향을 받지 않는다는 vendor 분석과 7.2.0 hardening을 제시한다. 반면 `CVE-2026-102490`은 DIVD로부터 기술 세부사항을 받지 못해 vendor가 독립 평가하지 못했다고 명시한다. 따라서 KEV 상태를 무시하지 않되, 모든 버전이 동일하게 취약하거나 vendor가 active exploitation을 확인했다는 식으로 확대하지 않아야 한다.",
+      "why_it_matters": "helpdesk/ticketing service는 agent·메일·SSO·customer data와 연결될 수 있음. EOL runtime과 root escalation 가능성의 조합은 patch inventory만이 아니라 host privilege·session·integration credential·audit log를 함께 점검하는 incident triage 대상임.",
+      "engineering_implication": "시사점: self-hosted Zammad의 version·package/runtime·hosting mode·internet exposure·`zammad` OS account privilege·SSO/session configuration을 inventory화하고, EOL 6.5은 지원 버전 migration을 우선 결정할 필요. `CVE-2026-102490`의 조건은 source 미확정이므로 vendor update와 CISA 지침을 추적하며 privilege change·service/process·authentication log를 보존할 필요.",
+      "korea_implication": "국내 self-hosted 고객지원 시스템도 managed/SaaS와 self-hosted 책임 경계를 분리하고, EOL instance의 vendor support·로그 보존·개인정보 접근 권한을 asset별로 확인할 범위.",
+      "category": "Security",
+      "tags": [
+        "Zammad",
+        "CVE-2026-102489",
+        "CVE-2026-102490",
+        "CISA KEV",
+        "Session Fixation",
+        "Privilege Escalation",
+        "Helpdesk Security",
+        "EOL"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "",
+      "source_name": "CISA KEV / Zammad Community",
+      "source_url": "https://community.zammad.org/t/take-care-local-privilege-escalation-cve-2026-102490-is-reported-as-being-actively-exploited/21297/2",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "CISA Known Exploited Vulnerabilities Catalog",
+          "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CISA KEV가 Zammad `CVE-2026-102489`과 `CVE-2026-102490`을 `2026-10-02`에 추가함. KEV 설명은 session fixation으로 `zammad` 사용자 권한의 remote code execution이 가능할 수 있고, improper privilege management로 local `zammad` 사용자의 root escalation이 가능할 수 있으며 두 결함의 chaining 가능성을 명시함.",
+          "items": [
+            "CISA 조치: vendor 지침에 따른 mitigation·asset internet exposure 평가·forensic triage 요구",
+            "CISA due date: 미국 연방 민간기관 기준 `2026-10-05`, 다른 조직의 동일한 법적 기한으로 확대 불가"
+          ]
+        },
+        {
+          "heading": "vendor가 확인한 범위",
+          "body": "Zammad의 `2026-10-01` 공식 커뮤니티 성명은 `CVE-2026-102489`을 먼저 분석한 결과를 제시함. vendor는 exploit이 EOL `6.5` 이하의 runtime 환경에서만 가능하고 `7.0` 이상은 영향을 받지 않는다고 밝히며, 해당 code hardening을 `7.2.0`에 포함했다고 설명함.",
+          "items": [
+            "확인: `6.5` 이하와 `7.0+`을 동일 위험군으로 취급하지 않는 version/runtime inventory 필요",
+            "경계: vendor 성명은 `CVE-2026-102489`의 source 범위이며, 모든 deployment의 실제 package·custom runtime 상태를 자동 판정하지 않음"
+          ]
+        },
+        {
+          "heading": "확정되지 않은 범위",
+          "body": "Zammad는 `CVE-2026-102490`에 관해 DIVD가 기술 세부사항을 제공하지 않았고 vendor가 독립적으로 평가할 수 없었다고 명시함. KEV의 active-exploitation catalog 상태와 vendor의 세부 조건 부재를 함께 기록해야 하며, exploit path·영향 버전·개별 침해 여부를 추정하면 안 됨.",
+          "items": [
+            "피할 것: `CVE-2026-102490`의 영향 버전·remote trigger·persistence를 source 없이 확정하는 대응",
+            "추적: Zammad release/advisory·DIVD case·CISA KEV 변경을 evidence record에 연결"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "self-hosted ticketing service는 public ingress, SSO/session, mailbox·directory integration, OS service account와 맞물릴 수 있음. EOL 6.5 또는 version 불명 asset은 외부 노출과 support 상태를 먼저 분류하고, update 전에 authentication·privilege·process·configuration log를 보존해야 함.",
+          "items": [
+            "우선순위: self-hosted·EOL·internet-exposed asset, privileged integration credential, host root boundary를 같은 triage queue에 배치",
+            "팀 액션: version/runtime·`zammad` account privilege·session/SSO setting·vendor supportability·log retention을 asset별 closure record로 확인"
+          ]
+        }
+      ]
+    },
+    {
       "id": "news-559",
       "title_ko": "네이버 웨일 `AI 챗` 정식 출시: 페이지·탭 문맥 사용 전 data path·관리 정책 확인 필요",
       "title_original": "Naver Whale AI Chat",
@@ -956,7 +1026,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-558",
@@ -1022,7 +1092,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-556",
@@ -1088,7 +1158,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-554",
@@ -1162,7 +1232,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-560",
@@ -1227,7 +1297,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-557",
@@ -1302,7 +1372,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-555",
@@ -1371,11 +1441,11 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-553",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -1461,7 +1531,7 @@
     },
     {
       "id": "news-551",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -1535,7 +1605,7 @@
     },
     {
       "id": "news-550",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -1617,7 +1687,7 @@
     },
     {
       "id": "news-549",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -1708,7 +1778,7 @@
     },
     {
       "id": "news-552",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -1779,7 +1849,7 @@
     },
     {
       "id": "news-547",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -1925,11 +1995,11 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-545",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -2012,7 +2082,7 @@
     },
     {
       "id": "news-546",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -2145,7 +2215,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-543",
@@ -2230,7 +2300,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-542",
@@ -2304,7 +2374,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-541",
@@ -2380,7 +2450,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-539",
@@ -2452,7 +2522,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-540",
@@ -2525,7 +2595,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-537",
@@ -2598,7 +2668,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-538",
@@ -2670,7 +2740,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-536",
@@ -2734,7 +2804,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-533",
@@ -2807,7 +2877,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-530",
@@ -2876,7 +2946,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-535",
@@ -2942,7 +3012,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-531",
@@ -3011,7 +3081,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-532",
@@ -3080,7 +3150,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-534",
@@ -3153,7 +3223,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-529",
@@ -3217,7 +3287,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-517",
@@ -3290,7 +3360,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-524",
@@ -3354,7 +3424,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-525",
@@ -3418,7 +3488,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-526",
@@ -3483,7 +3553,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-522",
@@ -3547,7 +3617,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-523",
@@ -3620,7 +3690,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-520",
@@ -3705,79 +3775,6 @@
             "팀 액션: 24시간 내 BIG-IP version·APM authorization-server profile·virtual server exposure·hotfix status inventory",
             "팀 액션: `/var/log/apm`, `/var/log/audit`, `tmctl global_oauth_stat -s total_requests,total_userinfo_requests,total_failed`, TMM core를 time-window hunt",
             "완료 기준: affected virtual server fixed-or-mitigated 비율, OAuth flow canary 결과, forensic evidence 보존, HA peer patch parity"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-521",
-      "title_ko": "Amazon CloudWatch Omni GA: agent·application telemetry를 OpenTelemetry·AI 분석으로 묶는 cross-account observability",
-      "title_original": "Amazon CloudWatch Omni: AI-first observability for agents and applications",
-      "summary": "핵심: AWS가 CloudWatch Omni를 GA로 공개해 여러 AWS account·Region과 Azure workload의 telemetry를 central account space에서 조회하도록 구성함. OpenTelemetry 기반 agent trace·evaluation과 AI-assisted root-cause를 제공하지만, supported Region·telemetry access·retention·AI 분석 결과의 escalation 기준을 canary로 검증 필요.",
-      "detail": "CloudWatch Omni는 service·dependency 자동 발견, golden metric, natural-language chat·console·AWS Agent Toolkit 기반 telemetry query를 제공함. LangGraph·CrewAI·OpenAI Agents SDK·Vercel AI SDK·Strands의 prompt·model call·tool invocation 평가와 VS Code·Cursor·Kiro local extension을 포함하며 GA는 US East (N. Virginia)·US West (Oregon)·Europe (Ireland)에서 시작됨.",
-      "why_it_matters": "agent workload의 trace·quality evaluation·application telemetry가 계정·리전·tool별로 분리되면 incident triage와 cost attribution이 느려지므로, cross-account observability의 identity·data boundary를 운영 설계에 포함해야 함.",
-      "engineering_implication": "시사점: 한 agent service를 대상으로 OTel span·prompt/tool trace·evaluation·SLO·runbook owner를 연결하고, telemetry access·retention·redaction·AI diagnosis human escalation·query 비용을 canary 지표로 고정 필요.",
-      "korea_implication": "국내 리전은 GA announcement의 제공 리전에 포함되지 않으므로, Seoul workload는 cross-region telemetry·data residency·support scope를 계약과 console availability로 별도 확인 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloud",
-        "AWS",
-        "CloudWatch",
-        "Observability",
-        "OpenTelemetry",
-        "AI Agent",
-        "SRE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 91,
-      "published_kst": "2026-09-23 09:06",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/amazon-cloudwatch-omni-ai/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "CloudWatch Omni 제품 페이지",
-          "url": "https://aws.amazon.com/cloudwatch/omni/"
-        },
-        {
-          "title": "CloudWatch Omni 문서",
-          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-omni.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 CloudWatch Omni를 CloudWatch의 발전형으로 GA 공개함. central account의 space에서 AWS account·Region과 Azure workload telemetry를 보고 application·agent를 함께 observe·troubleshoot하는 범위임.",
-          "items": [
-            "공개: OpenTelemetry 상호운용성과 CloudWatch 운영 범위를 결합한 observability experience",
-            "범위: US East (N. Virginia)·US West (Oregon)·Europe (Ireland) GA 시작"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Omni는 service·dependency를 자동 발견하고 golden metric을 표시하며 chat·console guided path·AWS Agent Toolkit으로 telemetry를 탐색함. AWS DevOps Agent 기반 root-cause 지원은 source가 설명한 기능 범위임.",
-          "items": [
-            "관측: account·Region·Azure workload signal을 central space에서 조회",
-            "분석: 자연어 query와 dynamic view로 trace·metric·evaluation을 연결"
-          ]
-        },
-        {
-          "heading": "agent 운영 범위",
-          "body": "LangGraph·CrewAI·OpenAI Agents SDK·Vercel AI SDK·Strands workload에서 prompt·model call·tool invocation별 quality evaluation과 experiment workflow를 지원함. VS Code·Cursor·Kiro extension은 local instrumentation·debug·evaluation 대상임.",
-          "items": [
-            "검증: prompt·model·tool call별 trace와 quality evaluation을 같은 release record에 연결",
-            "경계: AWS account 없이 local extension 사용 가능하더라도 production telemetry access policy는 별도 설계"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI-assisted diagnosis는 incident commander·SLO owner·human escalation을 대체하지 않음. telemetry cross-account aggregation은 data classification·role·retention·query cost를 포함한 control plane으로 운영 필요.",
-          "items": [
-            "팀 액션: agent 한 개에 OTel span·evaluation·SLO·runbook link를 붙여 canary",
-            "측정: trace completeness, root-cause time, false-positive escalation, telemetry query 비용"
           ]
         }
       ],
