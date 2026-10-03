@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-apple-macos-full-disk-access-ai-agents-2026-10-03]] — Apple의 macOS Full Disk Access 추가 제어 보도와 AI agent endpoint·TCC 권한 검증 경계.
 - [[raw/articles/aitimes-deepseek-harness-v02-desktop-plugin-automation-2026-10-03]] — DeepSeek Harness v0.2 desktop workspace의 plugin·automation·local execution과 provenance·permission·egress 검증 경계.
 - [[raw/articles/thn-dell-csm-critical-cves-kubernetes-storage-2026-10-03]] — Dell CSM critical 6건의 unauthenticated storage-admin·JWT token forge·Kubernetes node-root 및 storage control-plane 대응 경계.
 - [[raw/articles/zammad-cve-2026-102489-102490-kev-2026-10-03]] — CISA KEV 등록 Zammad `CVE-2026-102489`·`CVE-2026-102490`의 EOL runtime·vendor 미확정 범위·self-hosted triage 경계.
