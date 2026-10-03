@@ -36,6 +36,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-deepseek-harness-v02-desktop-plugin-automation-2026-10-03]] — DeepSeek Harness v0.2 desktop workspace의 plugin·automation·local execution과 provenance·permission·egress 검증 경계.
+- [[raw/articles/thn-dell-csm-critical-cves-kubernetes-storage-2026-10-03]] — Dell CSM critical 6건의 unauthenticated storage-admin·JWT token forge·Kubernetes node-root 및 storage control-plane 대응 경계.
 - [[raw/articles/zammad-cve-2026-102489-102490-kev-2026-10-03]] — CISA KEV 등록 Zammad `CVE-2026-102489`·`CVE-2026-102490`의 EOL runtime·vendor 미확정 범위·self-hosted triage 경계.
 - [[raw/articles/aws-ecs-vpc-lattice-blue-green-deployments-2026-10-03]] — Amazon ECS VPC Lattice blue/green·linear·canary traffic shift, lifecycle hook·alarm·circuit breaker·rollback 검증 경계.
 - [[raw/articles/gitlab-ai-gateway-cve-2026-90970-2026-10-03]] — GitLab AI Gateway `CVE-2026-90970` self-hosted command execution, fixed image·Helm·JWT credential·gateway audit 검증 경계.
