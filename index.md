@@ -36,6 +36,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-ecs-vpc-lattice-blue-green-deployments-2026-10-03]] — Amazon ECS VPC Lattice blue/green·linear·canary traffic shift, lifecycle hook·alarm·circuit breaker·rollback 검증 경계.
+- [[raw/articles/gitlab-ai-gateway-cve-2026-90970-2026-10-03]] — GitLab AI Gateway `CVE-2026-90970` self-hosted command execution, fixed image·Helm·JWT credential·gateway audit 검증 경계.
 - [[raw/articles/cloudflare-ai-gateway-web-search-api-2026-10-02]] — Introducing Web Search API via AI Gateway.
 - [[raw/articles/cloudflare-traces-open-beta-2026-10-02]] — Introducing Cloudflare Traces: follow requests through our entire platform.
 - [[raw/articles/aws-mcp-server-six-additional-regions-2026-10-02]] — The AWS MCP Server is now available in six additional AWS Regions.

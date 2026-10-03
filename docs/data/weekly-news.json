@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-03 06:10",
+  "last_updated_kst": "2026-10-03 10:18",
   "audience": "developers and engineers",
   "executive_summary": [
     "FortiMail `CVE-2026-104286`은 무인증 HTTP/HTTPS arbitrary file write가 가능한 Critical 결함이며 Fortinet이 active exploitation, CISA가 KEV 등록을 확인함. fixed build·IBE 비활성화·management interface 노출 차단과 IoC 기반 file/configuration·credential 조사를 병렬 incident gate로 처리 필요.",
     "Cloudflare Traces open beta는 edge security rule·cache·routing·Workers·origin을 W3C `traceparent`와 OTLP로 연결함. 12월 ingest·retention 기반 과금 전환 전에 sampling·redaction·OTLP egress·GB/day budget을 representative traffic으로 계측 필요.",
     "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하며, Cisco와 CISA KEV가 active exploitation 근거를 각각 공개함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
     "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
-    "AWS MCP Server가 Tokyo 등 6개 리전으로 확대되고 AgentCore Gateway가 private CA TLS target을 지원함. endpoint 위치나 private trust는 tool 권한을 대체하지 않으므로 IAM·target allowlist·CA rotation·CloudTrail trace를 deployment gate로 유지 필요."
+    "GitLab AI Gateway `CVE-2026-90970`은 self-hosted Duo Agent custom flow의 prompt template sandbox escape가 gateway command execution으로 이어질 수 있는 Critical 결함임. fixed gateway image/Helm tag, GitLab minor compatibility, JWT·provider credential·gateway log를 같은 change/incident gate로 확인 필요."
   ],
   "deep_dives": [
     {
@@ -189,6 +189,142 @@
   ],
   "items": [
     {
+      "id": "news-570",
+      "title_ko": "Amazon ECS, VPC Lattice blue/green·linear·canary traffic shift 지원: lifecycle hook·alarm·circuit breaker를 deployment evidence로 결합",
+      "title_original": "Amazon ECS adds Amazon VPC Lattice support for blue/green, linear, and canary deployments",
+      "summary": "- 공개: Amazon ECS가 VPC Lattice service deployment에서 blue/green·linear·canary traffic shift를 지원함\n- 제어: test traffic 검증과 Lambda·pause lifecycle hook의 custom validation/manual approval, CloudWatch alarm·ECS deployment circuit breaker·bake time 기반 automatic rollback을 연결하는 범위\n- 운영: traffic strategy 선택만으로 safe release가 보장되지 않음. Lattice route·target health·alarm threshold·hook idempotency·rollback 시 이전 version의 connection/state 동작을 canary evidence로 검증 필요",
+      "detail": "AWS는 2026년 10월 3일 KST Amazon ECS의 Amazon VPC Lattice deployment traffic shift 지원을 발표했다. ECS customer는 release confidence에 따라 all-at-once blue/green, equal-increment linear, small-percentage start canary를 선택할 수 있다. production traffic 전환 전 test traffic으로 새 version을 검증하고 Lambda 및 pause hook을 이용한 custom validation 또는 manual approval을 deployment lifecycle에 추가할 수 있다. CloudWatch alarm과 ECS deployment circuit breaker는 문제 감지 시 rollback을 자동화하며 bake time은 이전 version을 무중단 빠른 rollback을 위해 유지한다. 지원 리전과 ECS/VPC Lattice integration 조건은 AWS Regions와 product documentation에서 account별 확인이 필요하다. 공지는 deployment strategy·hook·rollback mechanism을 설명하지만 workload별 SLO, alarm threshold, connection draining, state migration의 안전성을 보장하지 않는다.",
+      "why_it_matters": "service deployment의 traffic shift가 network control plane과 ECS release control을 연결함. hook·alarm·bake time은 release evidence를 자동화하지만 잘못된 health signal이나 stateful dependency는 rollback 실패와 고객 영향으로 이어질 수 있음.",
+      "engineering_implication": "시사점: route/target group·test traffic·alarm·hook owner·circuit-breaker condition·bake duration·rollback runbook을 release artifact로 함께 versioning하고, low-risk route에서 error budget·p95·target health·rollback duration canary를 수행할 필요.",
+      "korea_implication": "국내 리전 사용 가능 여부와 VPC Lattice/ECS feature parity·quota는 AWS Regions 및 account console에서 workload별로 확인할 범위.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon ECS",
+        "Amazon VPC Lattice",
+        "Blue-Green Deployment",
+        "Canary Deployment",
+        "CloudWatch",
+        "Circuit Breaker",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-03 05:18",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-ecs-vpc-lattice-blue-green-deployments/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon ECS가 Amazon VPC Lattice 사용 service deployment에서 controlled traffic shift를 지원함. release confidence에 따라 blue/green·linear·canary strategy를 선택하는 범위임.",
+          "items": [
+            "발행: AWS RSS `Fri, 02 Oct 2026 20:18:00 GMT`, KST `2026-10-03 05:18` 확인",
+            "방식: all-at-once blue/green·equal-increment linear·small-percentage start canary 제공"
+          ]
+        },
+        {
+          "heading": "검증과 승인 경로",
+          "body": "production traffic 전환 전 test traffic 검증이 가능하며 Lambda 또는 pause lifecycle hook으로 custom validation과 manual approval을 연결할 수 있음.",
+          "items": [
+            "설계: hook input/output·timeout·retry·idempotency·approval owner를 deployment definition에 명시",
+            "피할 것: test traffic과 production route의 auth·dependency·data condition 차이를 검증 없이 동일하다고 가정"
+          ]
+        },
+        {
+          "heading": "rollback과 관측",
+          "body": "CloudWatch alarm과 ECS deployment circuit breaker가 issue detection 시 rollback을 지원하며 bake time 동안 previous version을 빠른 rollback 대상으로 유지함. alarm 품질과 previous version readiness는 workload별 검증 대상임.",
+          "items": [
+            "관측: target health·5xx·p95·saturation·error-budget burn·hook failure·traffic percentage를 같은 release trace에 연결",
+            "복구: rollback trigger·previous task capacity·connection draining·state/schema compatibility를 game day로 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "첫 rollout은 stateless low-blast-radius route에서 strategy별 signal quality를 비교하는 방식이 적절함. state migration 또는 external side effect가 있는 service는 traffic shift 전후의 compensation/rollback contract가 별도 필요함.",
+          "items": [
+            "canary: traffic step별 error budget·p95·target health·rollback duration·false alarm rate 계측",
+            "팀 액션: Lattice route·ECS task definition·alarm·hook·rollback runbook을 change record 하나로 보관"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-569",
+      "title_ko": "GitLab AI Gateway `CVE-2026-90970`: self-hosted Duo Agent custom flow의 command execution을 fixed image·Helm tag·JWT 경계로 차단",
+      "title_original": "Patch release: GitLab AI Gateway 19.4.1 released",
+      "summary": "- 취약점: self-hosted GitLab AI Gateway의 custom flow prompt template sandbox escape가 Duo Agent Platform 접근을 가진 로그인 사용자의 gateway command execution으로 이어질 수 있는 `CVE-2026-90970`이며 GitLab CVSS `9.9` 공개\n- 대상·수정: `18.1.6` 이상 `19.2.4` 미만, `19.3.0`~`19.3.1`, `19.4.0`이 영향 범위이며 `19.2.4`·`19.3.2`·`19.4.1`에서 수정\n- 운영: GitLab-hosted gateway와 GitLab.com·Dedicated는 GitLab이 수정 완료했다고 공지함. self-hosted Docker/Helm gateway는 GitLab minor-version compatibility·image tag·JWT signing key·provider credential·gateway log 보존을 같은 change gate로 확인 필요",
+      "detail": "GitLab은 2026년 10월 2일 AI Gateway `CVE-2026-90970`을 공개했다. self-hosted gateway의 Duo Agent Platform custom flow prompt template에서 specially crafted configuration으로 sandbox를 escape해 gateway에서 arbitrary command execution이 가능한 Critical 결함이며 CVSS는 9.9다. GitLab은 hosted gateway를 수정 완료했으며 self-hosted gateway 운영자에게 즉시 update를 권고했다. 수정 build는 19.2.4·19.3.2·19.4.1이고, 18.1.6부터 19.1 line까지는 공지상 fixed version이 없다. gateway는 별도 Docker image 또는 Helm chart로 배포되고 JWT signing key, GitLab instance, AI model provider와 연결될 수 있어 image tag 교체와 credential·log·egress 확인을 함께 처리해야 한다. GitLab advisory는 active exploitation 또는 pre-patch compromise 확인 절차를 확정하지 않았으므로 공격 발생 여부를 추정하지 않는다.",
+      "why_it_matters": "AI gateway는 agent flow와 model provider 사이의 control point임. self-hosted gateway의 command execution은 AI 요청·응답 경로, JWT signing key, provider credential의 노출 범위를 동시에 검토해야 하는 incident/change 대상임.",
+      "engineering_implication": "시사점: gateway image/Helm release·GitLab minor compatibility·JWT key location·provider credential scope·network egress·container/Helm audit log를 inventory화하고, fixed tag rollout 뒤 custom flow 실행과 rollback을 staging에서 재현할 필요.",
+      "korea_implication": "국내 self-managed GitLab Duo Agent 운영 조직은 managed GitLab과 self-hosted gateway의 책임 경계를 우선 분리하고, gateway별 image tag·secret rotation 승인 경로를 확인할 범위.",
+      "category": "Security",
+      "tags": [
+        "GitLab",
+        "AI Gateway",
+        "Duo Agent Platform",
+        "CVE-2026-90970",
+        "Command Execution",
+        "Docker",
+        "Helm",
+        "JWT",
+        "AI Agent Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-10-03 02:33",
+      "source_name": "GitLab Docs",
+      "source_url": "https://docs.gitlab.com/releases/patches/other-patches/patch-release-gitlab-ai-gateway-19-4-1-released/",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "The Hacker News 보도",
+          "url": "https://thehackernews.com/2026/10/gitlab-patches-critical-self-hosted-ai.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitLab이 self-hosted AI Gateway의 Critical `CVE-2026-90970`을 공개함. custom flow prompt template sandbox escape가 gateway command execution으로 이어질 수 있는 범위임.",
+          "items": [
+            "공개: GitLab advisory 기준 `2026-10-02`, CVSS `9.9`",
+            "조건: 로그인 상태와 Duo Agent Platform access가 필요한 source 명시 범위"
+          ]
+        },
+        {
+          "heading": "영향 범위와 수정",
+          "body": "AI Gateway는 GitLab application과 별도 Docker image 또는 Helm chart로 설치됨. fixed gateway tag와 GitLab minor-version compatibility를 함께 확인해야 함.",
+          "items": [
+            "수정: `19.2.4`·`19.3.2`·`19.4.1` gateway release",
+            "영향: `18.1.6` 이상 `19.2.4` 미만과 `19.3.0`~`19.3.1`, `19.4.0` 범위"
+          ]
+        },
+        {
+          "heading": "보안·운영 경계",
+          "body": "GitLab은 GitLab-hosted gateway와 GitLab.com·Dedicated의 수정 완료를 공지함. self-hosted gateway는 operator change 대상이며, advisory는 active exploitation 또는 침해 판정 방법을 확정하지 않음.",
+          "items": [
+            "통제: gateway image tag·Helm values·JWT signing key·model-provider credential·egress path의 asset별 대조",
+            "보존: pre/post update container event·custom flow audit·gateway/application log·secret access event 확보"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "수정 tag 배포 후에도 custom flow와 tool/provider call의 실제 실행 범위를 staging에서 확인해야 함. unsupported older line은 compatibility 확인 없이 임의 tag를 적용하지 않는 변경 통제 대상임.",
+          "items": [
+            "검증: fixed image pull·digest·Helm release·custom flow deny/allow behavior·rollback sequence 확인",
+            "팀 액션: gateway runtime identity와 provider/JWT secret rotation 필요성을 evidence 기반으로 판정"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-565",
       "title_ko": "Cloudflare AI Gateway Web Search API: Ceramic.ai·Exa·Linkup 검색 결과를 agent inference context에 연결",
       "title_original": "Introducing Web Search API via AI Gateway",
@@ -250,7 +386,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-566",
@@ -314,7 +450,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-567",
@@ -378,7 +514,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-568",
@@ -442,7 +578,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-564",
@@ -522,7 +658,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-563",
@@ -605,7 +741,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-562",
@@ -679,7 +815,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-561",
@@ -752,7 +888,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-559",
@@ -820,7 +956,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-558",
@@ -886,7 +1022,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-556",
@@ -952,7 +1088,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-554",
@@ -1026,7 +1162,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-560",
@@ -1091,7 +1227,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-557",
@@ -1166,7 +1302,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-555",
@@ -1235,11 +1371,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-553",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -1325,7 +1461,7 @@
     },
     {
       "id": "news-551",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -1399,7 +1535,7 @@
     },
     {
       "id": "news-550",
-      "rank": 18,
+      "rank": 20,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -1481,7 +1617,7 @@
     },
     {
       "id": "news-549",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -1572,7 +1708,7 @@
     },
     {
       "id": "news-552",
-      "rank": 20,
+      "rank": 22,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -1643,7 +1779,7 @@
     },
     {
       "id": "news-547",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -1789,11 +1925,11 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-545",
-      "rank": 23,
+      "rank": 25,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -1876,7 +2012,7 @@
     },
     {
       "id": "news-546",
-      "rank": 24,
+      "rank": 26,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -2009,7 +2145,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-543",
@@ -2094,7 +2230,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-542",
@@ -2168,7 +2304,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-541",
@@ -2244,7 +2380,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-539",
@@ -2316,7 +2452,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-540",
@@ -2389,7 +2525,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-537",
@@ -2462,7 +2598,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-538",
@@ -2534,7 +2670,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-536",
@@ -2598,7 +2734,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-533",
@@ -2671,7 +2807,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-530",
@@ -2740,7 +2876,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-535",
@@ -2806,7 +2942,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-531",
@@ -2875,7 +3011,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-532",
@@ -2944,7 +3080,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-534",
@@ -3017,7 +3153,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-529",
@@ -3081,7 +3217,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-517",
@@ -3154,7 +3290,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-524",
@@ -3218,7 +3354,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-525",
@@ -3282,7 +3418,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-526",
@@ -3347,7 +3483,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-522",
@@ -3411,7 +3547,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-523",
@@ -3484,7 +3620,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-520",
@@ -3572,7 +3708,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-521",
@@ -3642,153 +3778,6 @@
           "items": [
             "팀 액션: agent 한 개에 OTel span·evaluation·SLO·runbook link를 붙여 canary",
             "측정: trace completeness, root-cause time, false-positive escalation, telemetry query 비용"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-515",
-      "title_ko": "Check Point Security Management Server `CVE-2026-93616`: 7월 targeted attack 뒤 공개된 인증 전 script upload·execution 결함 패치",
-      "title_original": "Check Point Warns of Management Server Zero-Day Exploited in Targeted Attacks",
-      "summary": "핵심: Check Point는 Security Management Server web service의 path traversal `CVE-2026-93616`이 7월 23일 소수 targeted attack에 악용됐고, 9월 22일 수정 사항을 배포했다고 공지함. firewall policy control plane이므로 fixed build 적용과 management access·administrator activity·policy change의 동일 시간대 조사 필요.",
-      "detail": "Check Point가 `CVE-2026-93616`의 active exploitation과 인증 전 script upload·execution 가능성을 공지함. 공개 source는 target·attacker·exploit 뒤 행위와 정확한 network access 조건을 밝히지 않았으므로, exposed instance나 침해 성공을 일반화하지 않고 patch·management plane forensic·VPN certificate 관련 별도 결함을 구분해 대응해야 함.",
-      "why_it_matters": "Security Management Server는 gateway firewall policy와 관리자 운영을 제어하므로 application server 취약점이 network control plane과 운영 계정 신뢰 경계로 확대될 수 있음.",
-      "engineering_implication": "Security Management·Log Server의 release/Jumbo Hotfix·LivePatch 상태와 reachable web service를 inventory하고, fixed build 적용 뒤 policy install·admin/API·process·outbound activity를 patch 전후 로그로 대조 필요.",
-      "korea_implication": "국내 지사·제조·금융 환경의 Check Point 중앙 관리 서버도 인터넷·partner·user VLAN에서의 management path와 HA peer별 patch 상태를 분리 점검 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Network Security",
-        "Vulnerability",
-        "Management Plane",
-        "Active Exploitation"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 95,
-      "source_name": "Check Point Security Advisory / The Hacker News",
-      "source_url": "https://blog.checkpoint.com/security/security-advisory-action-required-active-exploitation-of-cve-2026-85102-and-a-management-pre-authentication-vulnerability-cve-2026-93616/",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEipTjrp93lIMdPVKigtkoXjbsk75AIXEvqJuXoYMQLAmvzQfqSy3V1XhBTLXY1SAWp92vTbajtnxBgHYvDr2e3EZOi9Yf8KgT8EzQOp61PjmPsI55nERsYckaL-pfmQDDzRTiCWXegVWrJ0Fu_9I8GUi5O0M0103r218S3dC67Zmr9BZ3quLBRBm9T6Xqo/s1700-nu-rw-lo-l85-e365/cp-upload.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "The Hacker News 보도",
-          "url": "https://thehackernews.com/2026/09/check-point-warns-of-management-server.html"
-        },
-        {
-          "title": "Check Point support article sk1000171",
-          "url": "https://support.checkpoint.com/results/sk/sk1000171"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Check Point는 Security Management Server web service의 path traversal `CVE-2026-93616`이 7월 23일 소수 targeted attack에서 악용됐으며 9월 22일 수정 사항을 제공했다고 공지함. 공격 대상·공격자·exploitation 뒤 수행 행위는 공개되지 않아 local evidence 없이 침해 성공으로 확대할 수 없음.",
-          "items": [
-            "영향: web service에 접근 가능한 unauthenticated attacker가 script upload·execution을 노릴 수 있는 경로",
-            "범위: firewall policy를 관리하는 Security Management Server control plane의 patch·forensic 우선순위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "보도와 연결된 Check Point advisory 기준 결함은 요청이 도달할 수 있는 파일·directory 범위를 충분히 제한하지 않는 path traversal임. THN이 인용한 CVE record는 CVSS 9.8을 표기하며, vendor advisory는 fixed build·mitigation·hunting guidance를 `sk1000171`에 연결함.",
-          "items": [
-            "수정: LivePatch take와 Jumbo Hotfix take는 별도 numbering이므로 installed status를 release·role별로 확인",
-            "구분: 9월 16일 `CVE-2026-91843`용 LivePatch가 `CVE-2026-93616`까지 자동 수정한다는 근거 없음",
-            "경계: advisory는 exact network access 조건과 모든 affected product를 공개 source에서 완전히 명시하지 않은 상태"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "Security Management Server는 gateway policy와 administrator operation을 제어하는 management plane임. host-level script execution 의심 사건은 server patch만이 아니라 policy push, administrator/API activity, configuration backup과 managed gateway state를 같은 time window로 검토해야 함.",
-          "items": [
-            "리스크: management server persistence가 firewall rule·network segmentation·administrator trust의 변경으로 이어질 가능성",
-            "조사: policy install history, SmartConsole login, admin/API audit, unexpected process·outbound connection의 시간축 대조"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "우선 Security Management·Log Server와 HA peer의 release, installed hotfix, reachable management web service, direct internet·VPN·jump host path를 inventory해야 함. patch 전 가능한 로그와 file metadata를 보존하고, fixed build 뒤에는 policy propagation·gateway health·administrator session·backup integrity를 evidence로 확인해야 함.",
-          "items": [
-            "팀 액션: 24시간 내 `sk1000171` 기준 fixed build/LivePatch 상태와 management ACL·exposure 확인",
-            "팀 액션: IOC·web access·application·system log hunt와 policy/admin change review를 patch와 병렬 수행",
-            "완료 기준: fixed-or-isolated server 비율, HA peer patch parity, exposed management path 수, forensic evidence 보존 여부"
-          ]
-        }
-      ],
-      "rank": 49,
-      "published_kst": "2026-09-23 03:29"
-    },
-    {
-      "id": "news-516",
-      "title_ko": "Amazon Bedrock에서 OpenAI GPT-6 Sol·GPT-6 Luna GA: 1M context의 복합 작업·고처리량 routing 모델 분리",
-      "title_original": "OpenAI GPT-6 Sol and GPT-6 Luna are now generally available on Amazon Bedrock",
-      "summary": "핵심: Amazon Bedrock에서 GPT-6 Sol·GPT-6 Luna가 GA로 전환됨. Sol은 복합 software development·multistep workflow, Luna는 summarization·extraction·classification·routing 같은 고처리량 작업을 대상으로 하며 두 모델 모두 최대 1M token context를 지원함.",
-      "detail": "GPT-6 Sol·Luna는 Bedrock의 GPT-6 제공군을 Astra와 함께 확장하는 GA임. AWS가 인용한 Sol factuality 수치는 internal OpenAI evaluation 범위이므로 model card·region·inference profile·가격·실제 latency와 task quality를 account별 canary로 확인해야 함.",
-      "why_it_matters": "agent workload를 단일 frontier model에 고정하지 않고 복합 작업과 반복 대량 처리의 quality·latency·token cost를 분리해 routing policy를 설계할 선택지가 늘어남.",
-      "engineering_implication": "시사점: Sol·Luna 각각에 실제 prompt distribution·tool-call success·p95 latency·input/output/cache token cost·fallback rate를 측정하는 offline evaluation과 shadow route를 먼저 적용 필요. Region·endpoint·feature·inference profile과 data residency·IAM·CloudTrail audit 범위는 Bedrock model card와 tenant configuration으로 검증 필요.",
-      "korea_implication": "국내 Bedrock 사용 조직은 target region availability·cross-region inference profile·data residency·network egress·원화 예산 환산을 deployment approval에 함께 기록 필요.",
-      "category": "AI",
-      "tags": [
-        "AI",
-        "AWS",
-        "Amazon Bedrock",
-        "OpenAI",
-        "Foundation Model",
-        "Agent",
-        "Inference",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-23 03:09",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-sol-luna-on-amazon-bedrock/",
-      "image_url": "assets/images/fallback-ai.svg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "Amazon Bedrock OpenAI model documentation",
-          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-cards-openai.html"
-        },
-        {
-          "title": "AWS announcement blog",
-          "url": "https://aws.amazon.com/blogs/machine-learning/bring-more-intelligence-to-everyday-work-with-gpt-6-sol-and-gpt-6-luna-on-amazon-bedrock/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 Amazon Bedrock에서 OpenAI `GPT-6 Sol`과 `GPT-6 Luna`의 GA를 공지함. 두 모델은 기존 GPT-6 Astra와 함께 제공되며 console 또는 supported Bedrock API를 통한 호출 범위임.",
-          "items": [
-            "공개: GPT-6 Sol·Luna의 Bedrock GA와 GPT-6 family 제공 범위 확장",
-            "context: 두 모델 모두 최대 `1M token` context 지원 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Sol은 recurring complex task와 software development에, Luna는 focused high-volume task에 맞춘 모델로 AWS가 분류함. Sol의 feature implementation·debug·review/refactor·data analysis·multistep workflow와 Luna의 summarization·extraction·classification·routing이 제시된 workload 범위임.",
-          "items": [
-            "Sol: coding·data analysis·tool을 넘는 multistep workflow 대상",
-            "Luna: adjustable reasoning effort 기반의 extraction·classification·routing 대상"
-          ]
-        },
-        {
-          "heading": "성능·제공 범위의 증거 경계",
-          "body": "AWS는 OpenAI internal factuality evaluation에서 Sol이 GPT-5.6 Sol보다 오류를 약 절반으로 줄였다고 인용함. 이는 evaluation setup·prompt distribution·tool use·regional serving 성능이 공개되지 않은 vendor-reported comparative result이므로 조직의 production SLO로 직접 환산할 수 없음.",
-          "items": [
-            "경계: factuality claim은 internal evaluation 범위이며 workload 일반화 근거 아님",
-            "확인: supported Region·endpoint·feature·inference profile·pricing은 model documentation과 account console 대조 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "모델 선택은 capability label보다 실제 route별 quality·latency·cost·failure recovery evidence로 결정해야 함. Sol과 Luna를 같은 agent path에 투입하기 전 task class·tool permission·max token·budget·fallback policy를 분리하면 provider model update의 blast radius를 줄일 수 있음.",
-          "items": [
-            "팀 액션: representative prompt·tool call·long-context case로 offline eval와 shadow traffic 실행",
-            "운영 과제: input/output/cache token 비용·p95 latency·success/fallback rate·model-version change log 추적"
           ]
         }
       ],
