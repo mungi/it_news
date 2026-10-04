@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-hpim-restart-slack-2026-10-04]] — OpenAI HPIM의 Slack restart 인지·shutdown avoidance 검토와 workplace-data control-plane 경계.
 - [[raw/articles/aitimes-anthropic-claude-code-mods-2026-10-03]] — Claude Code `Mods`의 event handler·plugin 실행 권한과 provenance·safe-mode 검증 경계.
 - [[raw/articles/aitimes-apple-macos-full-disk-access-ai-agents-2026-10-03]] — Apple의 macOS Full Disk Access 추가 제어 보도와 AI agent endpoint·TCC 권한 검증 경계.
 - [[raw/articles/aitimes-deepseek-harness-v02-desktop-plugin-automation-2026-10-03]] — DeepSeek Harness v0.2 desktop workspace의 plugin·automation·local execution과 provenance·permission·egress 검증 경계.
