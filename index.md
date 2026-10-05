@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-03 | Total pages: 390
+> Last updated: 2026-10-05 | Total pages: 391
 
 ## Entities
 
@@ -36,6 +36,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimeskr-kaist-conda-dynamic-vector-index-2026-10-05]] — KAIST CONDA 동적 벡터 인덱스의 RAG retrieval freshness·연결성 운영 경계.
 - [[raw/articles/cisa-citrix-netscaler-cve-2026-88779-kev-2026-10-04]] — CISA KEV 등록 Citrix NetScaler `CVE-2026-88779`의 active exploitation·영향 build·forensic triage·edge appliance 긴급 대응 경계.
 - [[raw/articles/aitimes-google-gemini-plan-model-access-2026-10-04]] — Google Gemini 무료·AI Plus의 Pro 접근 축소, AI Pro Deep Think 상향과 model entitlement·quota·fallback·FinOps 검증 경계.
 - [[raw/articles/aitimes-anthropic-claude-code-you-should-know-2026-10-04]] — Claude Code `You should know` 보조 agent plugin의 main-output 감시·명시적 활성화·observability 운영 경계.

@@ -2,7 +2,7 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-05 11:14",
+  "last_updated_kst": "2026-10-05 19:23",
   "audience": "developers and engineers",
   "executive_summary": [
     "Citrix NetScaler `CVE-2026-88779`는 CISA KEV에 active exploitation 근거로 추가됐으며 10월 7일 remediation·forensic triage 기한이 지정됨. ADC/Gateway build·FIPS·public VIP·VPN/management exposure·HA pair를 inventory로 묶고 fixed build·evidence preservation·failover 검증을 같은 긴급 변경 gate로 처리 필요.",
@@ -210,6 +210,73 @@
   ],
   "items": [
     {
+      "id": "news-580",
+      "title_ko": "KAIST CONDA: 데이터 추가·삭제 중에도 RAG 검색 경로를 유지하는 동적 벡터 인덱스",
+      "title_original": "CONDA: A Connectivity-Aware Dynamic Index for Approximate Nearest Neighbor Search over Evolving Data",
+      "summary": "- 공개: KAIST 연구팀이 데이터 추가·삭제가 반복되는 환경에서 검색 그래프의 연결성을 함께 관리하는 `CONDA` 동적 벡터 인덱스를 공개함\n- 성능: 기사 기준 기존 최신 기술 대비 검색 정확도 최대 `24.5%` 향상, 데이터 처리 속도 최대 `1.90배` 향상이며 1억 건 데이터에서 6시간 동안 검색·update 동시 수행 결과를 제시함\n- 운영: RAG corpus의 freshness는 embedding 재생성만으로 닫히지 않음. delete·upsert·compaction 뒤 recall@k·p95 latency·orphan 비율·index rebuild 비용을 workload별로 계측하고 versioned retrieval evaluation을 release gate로 연결 필요",
+      "detail": "KAIST 전산학부 김민수 교수 연구팀은 데이터가 계속 추가·삭제되는 환경에서 검색 정확도를 안정적으로 유지하기 위한 동적 벡터 검색 기술 `CONDA(Connectivity-Aware Dynamic Index)`를 공개했다. 보도에 따르면 기존 벡터 검색은 update가 누적되면 데이터 간 연결망이 끊겨 필요한 항목이 존재해도 탐색 경로가 닿지 않는 연결성 붕괴를 겪을 수 있다. CONDA는 거리뿐 아니라 검색 경로의 연결 상태를 함께 고려해 새 데이터 삽입과 기존 데이터 삭제 뒤에도 중요한 연결을 유지하는 방식이다. 연구팀은 기존 최신 기술 대비 정확도 최대 24.5%, 처리 속도 최대 1.90배 향상을 제시했고, 1억 건 데이터에서 6시간 동안 query와 update를 동시 수행한 실험을 설명했다. 논문은 VLDB 2026에서 발표됐으며, 기사는 GraphAI의 AkasicDB에 올해 4분기 상용 적용 계획을 언급한다. 데이터셋 구성·hardware·recall 정의·제품 적용 성능은 보도만으로 독립 검증되지 않았으므로 도입 판단은 원 논문과 자체 corpus benchmark로 대조해야 함.",
+      "why_it_matters": "사내 문서·정책·상품·뉴스처럼 update와 delete가 지속되는 RAG corpus에서는 vector index의 graph health가 retrieval quality와 답변 freshness를 좌우함. document count나 embedding job 성공률만으로는 stale result·missed retrieval·tail latency를 발견하기 어려움.",
+      "engineering_implication": "시사점: production RAG에 insert·update·delete 비율별 replay corpus를 만들고, recall@k·MRR·p95/p99 latency·index size·compaction/rebuild duration·deleted-vector visibility를 version별로 기록 필요. vendor benchmark 수치를 capacity 또는 accuracy SLA로 전환하기 전 source corpus·embedding model·filter·hardware·concurrency를 같은 조건에서 재현할 것.",
+      "korea_implication": "국내 기업의 규정·업무지식 RAG는 문서 교체·삭제의 반영 여부가 compliance와 운영 답변 품질에 직접 연결되므로, ingestion 완료 신호와 retrieval freshness SLA를 별도 지표로 관리할 범위.",
+      "category": "Data",
+      "tags": [
+        "KAIST",
+        "RAG",
+        "Vector Search",
+        "Approximate Nearest Neighbor",
+        "Vector Database",
+        "Data Infrastructure",
+        "Korea"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 83,
+      "published_kst": "2026-10-05 12:00",
+      "source_name": "인공지능신문",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=42172",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202610/42172_63420_826_v150.jpg",
+      "local_image": "assets/images/news-580.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "KAIST 전산학부 김민수 교수 연구팀이 데이터 추가·삭제가 반복되는 환경용 동적 벡터 검색 기술 `CONDA`를 개발했다고 10월 5일 공개함. 논문 제목은 `CONDA: A Connectivity-Aware Dynamic Index for Approximate Nearest Neighbor Search over Evolving Data`이며 보도는 VLDB 2026 발표를 명시함.",
+          "items": [
+            "대상: 최신 뉴스·사내 문서·상품 정보처럼 ingestion과 삭제가 동시에 일어나는 RAG·semantic search corpus",
+            "목표: 데이터 자체가 존재해도 search graph의 경로 단절로 retrieval이 실패하는 연결성 붕괴 완화"
+          ]
+        },
+        {
+          "heading": "기술 접근과 실험 범위",
+          "body": "기존 vector search는 문서나 이미지를 vector로 바꾸고 유사한 항목 사이 연결을 따라 탐색함. 보도에 따르면 CONDA는 vector 간 거리뿐 아니라 필요한 항목까지 갈 수 있는 경로의 연결 상태를 함께 고려해 insert·delete 뒤 중요한 연결을 유지하는 방식임.",
+          "items": [
+            "성능 주장: 기존 최신 기술 대비 검색 정확도 최대 `24.5%` 향상, 데이터 처리 속도 최대 `1.90배` 향상",
+            "부하 조건: 1억 개 데이터에서 6시간 동안 search와 data update를 동시 수행한 실험",
+            "경계: 데이터셋·hardware·metric 정의·concurrency·filter 조건은 기사만으로 완전 확인 불가"
+          ]
+        },
+        {
+          "heading": "RAG·데이터 운영 영향",
+          "body": "RAG에서 최신 문서가 embed됐다는 사실은 해당 문서가 실제 top-k 후보로 안정적으로 검색된다는 보장이 아님. update churn이 큰 corpus는 graph connectivity, tombstone 처리, compaction, rebuild와 query tail latency를 함께 관측해야 함.",
+          "items": [
+            "관측: recall@k·MRR·fresh-document hit rate·p95/p99 latency·deleted-vector visibility·orphan rate를 ingest revision과 연결",
+            "검증: policy 문서 변경·삭제·rollback을 섞은 replay query set으로 stale answer와 retrieval miss를 분리",
+            "비용: index update throughput·storage amplification·compaction/rebuild window·CPU/GPU resource를 FinOps 지표로 기록"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "연구 결과는 dynamic ANN index의 방향성과 실험 수치를 제시하지만, 제품별 retrieval quality·SLA를 보장하지 않음. 보도는 GraphAI `AkasicDB`에 올해 4분기 상용 적용 계획을 언급하며, 일반화된 제품 성능과 support 조건은 별도 검증 대상임.",
+          "items": [
+            "팀 액션: 현재 RAG corpus의 daily insert·update·delete 비율과 query distribution을 먼저 추출",
+            "도입 전: 동일 embedding·chunking·metadata filter·hardware 조건에서 baseline index와 recall·tail latency·rebuild cost 비교",
+            "피할 것: 벤치마크의 최대 향상치를 production accuracy 또는 freshness SLA로 바로 전환하는 판단"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-579",
       "title_ko": "CISA KEV 추가 Citrix NetScaler `CVE-2026-88779`: 메모리 경계 결함과 10월 7일 완화·forensic triage 기한",
       "title_original": "Citrix NetScaler Improper Restriction of Operations within the Bounds of a Memory Buffer Vulnerability",
@@ -287,7 +354,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-577",
@@ -359,7 +426,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-578",
@@ -426,7 +493,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-576",
@@ -499,7 +566,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-575",
@@ -575,7 +642,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-572",
@@ -647,7 +714,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-574",
@@ -710,7 +777,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-570",
@@ -775,7 +842,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-569",
@@ -846,7 +913,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-573",
@@ -913,7 +980,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-565",
@@ -977,7 +1044,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-566",
@@ -1041,7 +1108,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-567",
@@ -1105,7 +1172,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-568",
@@ -1169,7 +1236,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-564",
@@ -1249,7 +1316,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-563",
@@ -1332,7 +1399,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-562",
@@ -1406,7 +1473,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-561",
@@ -1479,7 +1546,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-559",
@@ -1547,7 +1614,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-558",
@@ -1613,7 +1680,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-556",
@@ -1679,7 +1746,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-554",
@@ -1753,7 +1820,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-560",
@@ -1818,7 +1885,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-557",
@@ -1893,7 +1960,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-555",
@@ -1962,11 +2029,11 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-553",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -2052,7 +2119,7 @@
     },
     {
       "id": "news-551",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -2126,7 +2193,7 @@
     },
     {
       "id": "news-550",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -2208,7 +2275,7 @@
     },
     {
       "id": "news-549",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -2299,7 +2366,7 @@
     },
     {
       "id": "news-552",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -2370,7 +2437,7 @@
     },
     {
       "id": "news-547",
-      "rank": 31,
+      "rank": 32,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -2516,11 +2583,11 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-545",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -2603,7 +2670,7 @@
     },
     {
       "id": "news-546",
-      "rank": 34,
+      "rank": 35,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -2736,7 +2803,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-543",
@@ -2821,7 +2888,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-542",
@@ -2895,7 +2962,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-541",
@@ -2971,7 +3038,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-539",
@@ -3043,7 +3110,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-540",
@@ -3116,7 +3183,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-537",
@@ -3189,7 +3256,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-538",
@@ -3261,7 +3328,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-536",
@@ -3325,7 +3392,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-533",
@@ -3398,7 +3465,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-530",
@@ -3467,7 +3534,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-535",
@@ -3533,7 +3600,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-531",
@@ -3602,7 +3669,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-532",
@@ -3671,7 +3738,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-534",
@@ -3741,70 +3808,6 @@
           "items": [
             "팀 액션: `third-party.com`과 plausible placeholder pattern search, owner·consumer·public exposure 분류, reserved-domain replacement PR 생성",
             "검증: OS/user-agent별 URL resolution, browser/agent navigation allowlist, clipboard·shell invocation approval, RAG corpus republish 후 stale reference scan"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-529",
-      "title_ko": "Cloudflare Containers·Sandboxes: dm-thin 잔존 블록으로 발생한 cross-tenant data exposure 수정 공개",
-      "title_original": "How Cloudflare addressed a cross-tenant data exposure vulnerability in Containers",
-      "summary": "핵심: Cloudflare는 Containers·Sandboxes의 multi-tenant dm-thin pool에서 `skip_block_zeroing`으로 재할당된 64 KiB block의 미기록 영역에 이전 tenant 데이터가 남을 수 있었던 취약점을 수정함. customer 설정 변경은 필요 없고 악용 증거는 없다고 밝혔지만, managed container 이용 조직은 secret·temporary file의 disk persistence와 provider incident notice 절차를 함께 점검 필요.",
-      "detail": "Cloudflare 설명 기준 Workers Paid account로 생성한 container가 특정 host·tenant를 표적화할 수는 없었고 데이터 잔존도 보장되지 않았음. 64 KiB thin block에 4 KiB만 기록한 뒤 raw device를 읽는 controlled PoC가 residual byte를 관측할 수 있었으며, Cloudflare는 fleet-wide fix와 historical disk-I/O telemetry 검토를 완료했다고 밝힘.",
-      "why_it_matters": "multi-tenant container의 VM isolation만으로 storage remanence가 사라지지 않음. provider remediation 이후에도 고객은 ephemeral disk에 남기는 credential·build artifact·debug dump의 보존 경로와 incident communication 책임을 분리해 관리해야 함.",
-      "engineering_implication": "시사점: Cloudflare Containers·Sandboxes workload에서 filesystem에 쓰는 secret·token·source archive·core dump를 inventory하고, startup-time secret fetch·short-lived credential·explicit cleanup·provider security notice review를 운영 기준으로 설정 필요.",
-      "korea_implication": "국내 SaaS·agent workload가 해외 multi-tenant container를 사용할 때 데이터 위치만이 아니라 ephemeral storage 처리·incident notice 수신·secret rotation owner를 공급자 계약과 runbook에 명시 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Cloudflare",
-        "Containers",
-        "Multi-tenant",
-        "Data Exposure",
-        "dm-thin",
-        "Cloud Security"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-25 00:00",
-      "source_name": "Cloudflare",
-      "source_url": "https://blog.cloudflare.com/containers-cross-tenant-vulnerability/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare는 9월 4일 bug bounty로 Containers와 Containers 기반 Sandboxes의 cross-tenant residual data exposure를 보고받았고, fleet 전체 수정과 조사 완료를 공개함.",
-          "items": [
-            "상태: customer-side configuration 변경 없이 fleet remediation 완료",
-            "경계: Cloudflare는 historical disk-I/O telemetry에서 malicious exploitation 또는 customer data compromise 증거를 찾지 못한 범위"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "Containers는 Firecracker VM의 writable root disk에 Linux `dm-thin`을 사용함. 영향을 받은 pool은 64 KiB thin-block과 `skip_block_zeroing` 설정을 사용해 삭제 volume의 physical block을 여러 customer account에 재할당할 수 있었음.",
-          "items": [
-            "조건: 새 tenant가 재할당된 64 KiB block 중 일부만 기록할 때 미기록 영역의 이전 byte 잔존 가능성",
-            "PoC: ext4 free-space에 align된 64 KiB region마다 4 KiB write 후 raw-device read로 남은 영역 관측"
-          ]
-        },
-        {
-          "heading": "영향과 경계",
-          "body": "공개된 technique은 특정 customer·workload·host·data를 지정할 수 없고 residual data 존재도 보장하지 않음. unmapped region의 단순 read는 allocation 없이 zero를 반환하므로 write-then-read sequence가 필요했음.",
-          "items": [
-            "영향: VM boundary를 넘는 실행이 아니라 shared thin-pool block remanence 경로",
-            "경계: provider의 no-evidence 결과를 개별 고객 workload에 secret 미기록 증명으로 확대할 수 없음"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "ephemeral disk를 무해한 임시 공간으로 가정하지 않고 secret lifecycle과 storage cleanup을 deployment design에 포함해야 함. provider fix 확인과 별도로 credential exposure window를 줄이는 통제가 필요.",
-          "items": [
-            "팀 액션: filesystem secret·debug dump·build cache·uploaded artifact와 TTL/cleanup owner inventory",
-            "검증: startup secret injection·short-lived credential·workload termination cleanup·provider notice escalation runbook 확인"
           ]
         }
       ],
