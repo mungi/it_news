@@ -2,14 +2,14 @@
   "week": "2026-W41",
   "coverage_start_kst": "2026-09-28 17:00",
   "coverage_end_kst": "2026-10-05 13:00",
-  "last_updated_kst": "2026-10-05 07:09",
+  "last_updated_kst": "2026-10-05 11:14",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Citrix NetScaler `CVE-2026-88779`는 CISA KEV에 active exploitation 근거로 추가됐으며 10월 7일 remediation·forensic triage 기한이 지정됨. ADC/Gateway build·FIPS·public VIP·VPN/management exposure·HA pair를 inventory로 묶고 fixed build·evidence preservation·failover 검증을 같은 긴급 변경 gate로 처리 필요.",
     "FortiMail `CVE-2026-104286`은 무인증 HTTP/HTTPS arbitrary file write가 가능한 Critical 결함이며 Fortinet이 active exploitation, CISA가 KEV 등록을 확인함. fixed build·IBE 비활성화·management interface 노출 차단과 IoC 기반 file/configuration·credential 조사를 병렬 incident gate로 처리 필요.",
     "Cloudflare Traces open beta는 edge security rule·cache·routing·Workers·origin을 W3C `traceparent`와 OTLP로 연결함. 12월 ingest·retention 기반 과금 전환 전에 sampling·redaction·OTLP egress·GB/day budget을 representative traffic으로 계측 필요.",
     "Cisco Catalyst SD-WAN Manager `CVE-2026-76504`는 URI encoding 인증 우회로 admin API 접근이 가능하며, Cisco와 CISA KEV가 active exploitation 근거를 각각 공개함. fixed build뿐 아니라 external exposure 차단·log preservation·credential/configuration hunt·device policy regression을 동일 incident gate로 처리 필요.",
-    "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요.",
-    "OpenAI HPIM incident report는 agent가 Slack의 API key·restart·instance 종료 계획을 runtime-control signal로 해석할 수 있음을 기록함. tool allowlist 외에 workplace-data ACL·context exclusion·external write approval·scheduled-task/egress audit를 agent release gate로 분리 필요."
+    "OpenSSL `CVE-2026-84782`는 suspended DTLS handshake write와 retransmission의 stale buffer offset 결함으로 plaintext heap disclosure 또는 crash·DoS가 가능한 High 취약점임. DTLS use·UDP edge·static link·distro backport·running process restart를 patch inventory에 연결 필요."
   ],
   "deep_dives": [
     {
@@ -210,6 +210,86 @@
   ],
   "items": [
     {
+      "id": "news-579",
+      "title_ko": "CISA KEV 추가 Citrix NetScaler `CVE-2026-88779`: 메모리 경계 결함과 10월 7일 완화·forensic triage 기한",
+      "title_original": "Citrix NetScaler Improper Restriction of Operations within the Bounds of a Memory Buffer Vulnerability",
+      "summary": "- 추가: CISA가 10월 4일 Citrix NetScaler ADC·Gateway의 `CVE-2026-88779`를 active exploitation 근거로 KEV에 추가함\n- 범위: NVD는 ADC `14.1-73.41`·`13.1-64.28`·FIPS `14.1-73.41`·`13.1-37.282` 및 Gateway `14.1-73.41`·`13.1-64.28` 이전을 영향 범위로 열거함\n- 대응: CISA는 vendor mitigation·internet exposure 평가와 forensic triage를 요구하며 due date를 10월 7일로 지정함. edge appliance inventory·fixed build·HA failover·management/VPN exposure·configuration/credential evidence 보존을 같은 incident gate로 처리 필요",
+      "detail": "CISA는 2026년 10월 4일 Citrix NetScaler ADC와 Gateway의 `CVE-2026-88779`를 KEV Catalog에 추가하며 active exploitation evidence가 있다고 밝혔다. KEV 항목은 buffer bounds 내 operation restriction 문제로 denial of service가 가능하다고 설명하고, vendor 지침에 따른 mitigation·asset internet exposure 평가·forensic triage를 요구한다. NVD는 NetScaler source 기준으로 ADC `14.1-73.41`, `13.1-64.28`, FIPS `14.1-73.41`, `13.1-37.282` 이전 및 Gateway `14.1-73.41`, `13.1-64.28` 이전을 영향으로 열거한다. NVD의 CVSS 평가는 아직 제공되지 않았고, 공개 source는 RCE·data exposure·specific attack vector·침해 조직·IoC를 확정하지 않는다. 따라서 이 항목은 severity 추정이 아니라 active-exploitation KEV와 edge control-plane exposure를 기준으로 우선 처리해야 하며, appliance별 build·mode·role·public VIP·VPN/management exposure·HA pair·config backup을 확인하고 Citrix fixed build와 vendor guidance를 직접 대조해야 함.",
+      "why_it_matters": "NetScaler ADC·Gateway는 application delivery, VPN, authentication edge에 놓이는 경우가 많아 service availability 결함도 외부 노출·HA failover·management-plane 변경과 결합해 운영 영향을 크게 만들 수 있음. KEV 등록은 실제 악용 근거와 forensic triage 요구가 있는 우선순위 signal이며, CVSS 미평가를 patch 보류 근거로 사용하면 안 됨.",
+      "engineering_implication": "시사점: 10월 7일 전까지 appliance inventory에서 product role·build·FIPS 여부·public VIP·VPN/management interface·HA pair를 매핑하고, Citrix fixed build/mitigation 적용 전후 health·failover·authentication·traffic policy를 canary로 확인 필요. patch 전 configuration backup·auth/VPN·admin audit·crash/restart·WAF/load-balancer log를 보존하고, 공개 source가 확정하지 않은 exploit impact를 RCE나 data breach로 단정하지 말 것.",
+      "korea_implication": "국내 인터넷 경계와 원격접속에 NetScaler를 쓰는 조직은 장비 소유팀과 VPN·IAM·SOC·서비스 owner를 분리하지 말고 public exposure와 HA 변경 승인, forensic evidence 보존을 하나의 긴급 변경 record로 연결할 범위.",
+      "category": "Security",
+      "tags": [
+        "Citrix",
+        "NetScaler",
+        "CISA KEV",
+        "Active Exploitation",
+        "Edge Security",
+        "Vulnerability Management",
+        "Forensics"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-10-04 21:00",
+      "source_name": "CISA KEV / NVD",
+      "source_url": "https://www.cisa.gov/news-events/alerts/2026/10/04/cisa-adds-one-known-exploited-vulnerability-catalog",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "NVD CVE-2026-88779 상세",
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-88779"
+        },
+        {
+          "title": "CISA KEV Catalog 항목",
+          "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-88779"
+        },
+        {
+          "title": "Citrix CTX697174 vendor bulletin",
+          "url": "https://support.citrix.com/support-home/kbsearch/article?articleNumber=CTX697174"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CISA는 `2026-10-04` Citrix NetScaler `CVE-2026-88779`를 KEV Catalog에 추가함. alert는 active exploitation evidence를 근거로 들며, Federal Civilian Executive Branch에는 BOD 26-04에 따른 신속 remediation·forensic triage를 요구하고 다른 조직에도 risk-based prioritization을 권고하는 범위임.",
+          "items": [
+            "식별: `CVE-2026-88779`, Citrix NetScaler ADC·Gateway의 memory-buffer bounds restriction 결함",
+            "우선순위: CISA KEV date added `2026-10-04`, due date `2026-10-07`, forensic triage `Yes`로 표시"
+          ]
+        },
+        {
+          "heading": "영향 범위와 확정 사실",
+          "body": "NVD는 NetScaler가 제공한 affected product 정보를 인용해 ADC와 Gateway의 fixed build 경계를 열거함. CISA KEV short description은 denial of service 가능성을 언급하고, NVD의 CVSS 3.x assessment는 아직 `N/A` 상태임. 공개 페이지에서 RCE, credential theft, data exposure, precise network precondition은 확인되지 않은 범위임.",
+          "items": [
+            "ADC: `14.1-73.41`, `13.1-64.28`, FIPS `14.1-73.41`, `13.1-37.282` 이전 build 영향 범위",
+            "Gateway: `14.1-73.41`, `13.1-64.28` 이전 build 영향 범위",
+            "경계: NVD CVSS assessment 미제공, exploit chain·IoC·피해 조직을 source 밖에서 확대하지 않는 원칙"
+          ]
+        },
+        {
+          "heading": "우선 대응·forensic 관점",
+          "body": "CISA required action은 vendor instructions에 따른 mitigation, asset별 internet exposure 평가, BOD 26-04 및 Forensics Triage Requirements 준수를 요구함. appliance patch만 단독 실행하면 장애·failover·로그 유실 가능성이 있으므로, network edge와 authentication path의 evidence preservation 및 change validation을 병렬 작업으로 처리해야 함.",
+          "items": [
+            "inventory: ADC/Gateway role·software build·FIPS mode·public VIP·VPN·management interface·HA pair·service owner 매핑",
+            "보존: configuration backup·admin/authentication/VPN audit·system crash/restart·load-balancer/WAF log를 patch 전 immutable storage로 보관",
+            "완화: Citrix bulletin의 fixed build·mitigation을 appliance별로 대조하고, internet exposure와 management access를 최소화"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "KEV 등록은 generic vulnerability backlog가 아니라 active exploitation evidence를 반영한 risk signal임. CVSS가 아직 없거나 DoS로만 기술됐더라도 internet-facing ADC/Gateway의 availability와 remote-access dependency를 기준으로 긴급 변경 우선순위를 정해야 함. vendor bulletin은 browser에서 직접 본문을 재열람하지 못했으므로 실제 적용 build와 procedure는 변경 전 Citrix 원문에서 재확인 필요.",
+          "items": [
+            "검증: fixed build 적용 뒤 HA failover·VPN/login·TLS handshake·routing/policy·health check·rollback을 representative traffic으로 확인",
+            "판정: patch 성공만 기록하지 않고 public exposure 감소·forensic collection 완료·service SLO·fallback state를 closure evidence로 보관",
+            "피할 것: source 미확정 RCE·data theft·침해 범위를 확정 사실처럼 incident communication에 쓰는 운영"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-577",
       "title_ko": "Anthropic Claude Code `You should know`: main agent 출력을 감시하는 built-in 보조 agent plugin과 사용자 제어 경계",
       "title_original": "You should know",
@@ -279,7 +359,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-578",
@@ -346,7 +426,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-576",
@@ -419,7 +499,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-575",
@@ -495,7 +575,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-572",
@@ -567,7 +647,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-574",
@@ -630,7 +710,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-570",
@@ -695,7 +775,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-569",
@@ -766,7 +846,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-573",
@@ -833,7 +913,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-565",
@@ -897,7 +977,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-566",
@@ -961,7 +1041,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-567",
@@ -1025,7 +1105,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-568",
@@ -1089,7 +1169,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-564",
@@ -1169,7 +1249,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-563",
@@ -1252,7 +1332,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-562",
@@ -1326,7 +1406,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-561",
@@ -1399,7 +1479,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-559",
@@ -1467,7 +1547,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-558",
@@ -1533,7 +1613,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-556",
@@ -1599,7 +1679,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-554",
@@ -1673,7 +1753,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-560",
@@ -1738,7 +1818,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-557",
@@ -1813,7 +1893,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-555",
@@ -1882,11 +1962,11 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-553",
-      "rank": 25,
+      "rank": 26,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -1972,7 +2052,7 @@
     },
     {
       "id": "news-551",
-      "rank": 26,
+      "rank": 27,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -2046,7 +2126,7 @@
     },
     {
       "id": "news-550",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -2128,7 +2208,7 @@
     },
     {
       "id": "news-549",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -2219,7 +2299,7 @@
     },
     {
       "id": "news-552",
-      "rank": 29,
+      "rank": 30,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -2290,7 +2370,7 @@
     },
     {
       "id": "news-547",
-      "rank": 30,
+      "rank": 31,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -2436,11 +2516,11 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-545",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -2523,7 +2603,7 @@
     },
     {
       "id": "news-546",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -2656,7 +2736,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-543",
@@ -2741,7 +2821,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-542",
@@ -2815,7 +2895,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-541",
@@ -2891,7 +2971,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-539",
@@ -2963,7 +3043,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-540",
@@ -3036,7 +3116,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-537",
@@ -3109,7 +3189,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-538",
@@ -3181,7 +3261,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-536",
@@ -3245,7 +3325,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-533",
@@ -3318,7 +3398,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-530",
@@ -3387,7 +3467,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-535",
@@ -3453,7 +3533,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-531",
@@ -3522,7 +3602,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-532",
@@ -3591,7 +3671,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-534",
@@ -3664,7 +3744,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-529",
@@ -3725,79 +3805,6 @@
           "items": [
             "팀 액션: filesystem secret·debug dump·build cache·uploaded artifact와 TTL/cleanup owner inventory",
             "검증: startup secret injection·short-lived credential·workload termination cleanup·provider notice escalation runbook 확인"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-517",
-      "title_ko": "WordPress `CVE-2026-87902`: 패치 공개 당일 active exploitation telemetry 확인",
-      "title_original": "Attackers Exploit WordPress CVE-2026-87902 Within Hours of Disclosure",
-      "summary": "핵심: WordPress `CVE-2026-87902`를 노린 exploitation attempt가 패치 공개 당일인 9월 22일 11:49 UTC부터 관측됐으며, Previdian honeypot telemetry는 9월 23일부터 68건을 기록함. `page-` theme directory와 web-server가 읽는 local PHP file이라는 조건을 inventory하고, fixed core 적용 뒤 `pearcmd.php`·`/tmp`·`/var/tmp` file-write 흔적을 patch window로 hunt 필요.",
-      "detail": "WordPress GHSA는 인증 전 page-template resolution이 active theme 밖의 chosen readable local PHP file을 include할 수 있고, server environment·active theme precondition 충족 때 조건부 RCE가 가능하다고 명시함. The Hacker News가 인용한 Previdian·Patchstack telemetry는 `pearcmd.php` inclusion과 temporary directory PHP write를 포함한 시도를 보고했지만, 실제 compromise·피해 조직·CISA KEV 등재는 이 source set에서 확인되지 않음.",
-      "why_it_matters": "public CMS의 조건부 LFI/RCE가 공개 직후 scan·write 시도로 전환되면 automatic update 상태만으로 closure할 수 없음. core version, theme layout, readable PHP path, access log와 file integrity를 같은 incident timeline에서 대조해야 함.",
-      "engineering_implication": "시사점: `wp core version`으로 branch별 fixed release를 확인하고, child/parent theme의 `page-*` directory와 readable local PHP path를 inventory 필요. patch 전후 web log의 `pearcmd.php`·template traversal 요청, `/tmp`·`/var/tmp` unexpected PHP, modified plugin/theme·admin session을 보존·hunt 필요.",
-      "korea_implication": "국내 마케팅·커뮤니티 WordPress 운영자는 agency/plugin vendor가 관리하는 site도 branch별 update owner와 fixed version evidence를 확보하고, admin·hosting log retention을 patch window와 맞춰야 함.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "WordPress",
-        "CVE",
-        "PHP",
-        "Web Security",
-        "Patch Management",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 97,
-      "published_kst": "2026-09-24 14:36",
-      "source_name": "WordPress GHSA / The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/attackers-exploit-wordpress-cve-2026.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEizoRcyQE1N3fGUKa2FY_q_T7EG_CyjTpMGGk1oFUF-XpBZa0zCA6V2yEuv3_Z1OrEjMmhbHdaVmo6NMrwb98U9VFGXDpRcItboVuZH7qc9QgPd5ZLDudfJPWoaSDbtkoXJeLTZw-6JDbq5F6YEp4AkeoJd10Nb_H9tuU0fYdgqkLrP6BTpAPOYwO6WdmkN/s1700-nu-rw-lo-l85-e365/wordpress-exploits.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "WordPress GHSA-7hp8-65ch-5whp",
-          "url": "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp"
-        },
-        {
-          "title": "WordPress 7.1.2 release",
-          "url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News가 인용한 Previdian honeypot telemetry는 `CVE-2026-87902` exploitation attempt가 2026-09-22 11:49 UTC부터 시작됐고 9월 23일부터 68건을 기록했다고 설명함. WordPress GHSA의 인증 전 local PHP inclusion 결함이 patch 공개 직후 scan·write 시도로 전환된 관측 범위임.",
-          "items": [
-            "상태: active exploitation attempt telemetry 확인, 실제 compromise·피해 조직·CISA KEV 등록은 source 미확인",
-            "시간: 최초 관측 2026-09-22 11:49 UTC, KST 2026-09-22 20:49"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "WordPress GHSA는 `get_page_template()` resolution이 active theme directory 밖의 chosen readable local `.php` file을 include할 수 있다고 명시함. RCE는 모든 affected site에서 자동 성립하지 않으며, active child/parent theme의 `page-` prefix top-level directory와 web-server account가 읽을 수 있는 local PHP target이라는 precondition이 필요함.",
-          "items": [
-            "영향: WordPress `4.7.0`~`7.1.1`, account·user interaction 없이 도달 가능한 path",
-            "조건: `page-` directory와 readable local PHP file이 함께 존재할 때 conditional RCE chain 가능"
-          ]
-        },
-        {
-          "heading": "관측된 공격 행위와 경계",
-          "body": "보도된 request는 `/usr/local/lib/php/pearcmd.php`를 include한 뒤 `/tmp` 또는 `/var/tmp`에 PHP file을 쓰고 GitHub-hosted uploader를 include하는 sequence를 포함함. IP·filename은 hunt seed일 수 있으나, honeypot telemetry를 전체 노출 fleet의 침해율이나 해당 site compromise 증거로 일반화할 수 없음.",
-          "items": [
-            "hunt: `pearcmd.php`·template traversal request, temporary directory PHP write, unexpected uploader/webshell file",
-            "경계: IP·filename만으로 blocking 또는 compromise 판정을 끝내지 않고 host·web·CMS evidence와 상관 분석 필요"
-          ]
-        },
-        {
-          "heading": "수정 버전과 시사점",
-          "body": "WordPress는 `7.1.2`, `7.0.6`, `6.9.9`, `6.8.10` 및 4.7까지 backport fixed release를 제시함. 별도 workaround가 확인되지 않아 running version evidence와 fixed release 적용이 우선이며, custom theme·template override와 filesystem integrity 확인이 patch closure의 일부임.",
-          "items": [
-            "팀 액션: fleet branch·`wp core version`·automatic update 결과와 child/parent theme precondition inventory",
-            "검증: patch window 전후 access log, modified plugin/theme, `/tmp`·`/var/tmp`, admin session·outbound request 보존·대조"
           ]
         }
       ],
