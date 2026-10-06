@@ -2,10 +2,11 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-06 19:45",
+  "last_updated_kst": "2026-10-06 23:48",
   "audience": "developers and engineers",
   "executive_summary": [
-    "2026-W42 커버리지 창이 10월 5일 17:00 KST에 시작됨. 현재 정규 카드 50건과 Deep Dive 2건은 직전 창에서 검증된 carry-over이며, 새 창의 source-verified 후보가 확보되는 순서로 교체 예정."
+    "새 커버리지 창에 Amazon Bedrock `GLM 5.3` GA와 Kubernetes node swap benchmark를 반영함. 장기 context·reasoning·prompt cache와 NVMe-backed memory overcommit 모두 model/runtime 설정만이 아니라 token·I/O·SLO·rollback telemetry로 검증할 운영 항목임.",
+    "정규 카드 50건은 발행 시각 최신순으로 유지하며, 새 후보 2건 추가에 따라 이전 창의 가장 오래된 `news-532`·`news-534`를 제거함."
   ],
   "deep_dives": [
     {
@@ -197,6 +198,142 @@
   ],
   "items": [
     {
+      "id": "news-581",
+      "title_ko": "Amazon Bedrock, Z.ai `GLM 5.3` GA: 100만 토큰 문맥·128K 출력·명시적 prompt cache 제공",
+      "title_original": "GLM 5.3 by Z.ai is now generally available on Amazon Bedrock",
+      "summary": "- 공개: Amazon Bedrock이 Z.ai `GLM 5.3`을 GA로 제공하며 agentic coding·long-horizon software engineering 용도를 제시함\n- 범위: `753B` total·약 `40B` active MoE, 100만 token context, 최대 `128K` output, always-on reasoning과 effort level 선택, system prompt·message cache point를 지원함\n- 운영: US·Global cross-Region inference profile의 eligible enterprise 고객 범위임. context·reasoning·cache hit와 output 상한을 같은 workload telemetry로 측정하고 model access·region·가격·fallback을 tenant별로 검증 필요",
+      "detail": "AWS는 2026년 10월 6일 KST Amazon Bedrock에서 Z.ai GLM 5.3을 정식 제공한다고 공개했다. 원문은 agentic coding과 장기 소프트웨어 엔지니어링 작업을 대상으로, 753B total parameter와 token당 약 40B active parameter의 MoE 구조, 100만 token context와 최대 128K output을 명시한다. reasoning은 항상 활성화되고 effort level로 latency·token consumption·task performance 간 trade-off를 선택할 수 있다. Bedrock은 system prompt와 message에 cache point를 두는 explicit prompt caching을 지원해 반복 context의 input cost와 latency를 줄일 수 있다고 설명한다. 제공은 eligible enterprise customer의 US 및 Global cross-Region inference profile 범위이며, 계정별 model access, endpoint, quota, pricing, feature·region availability는 Bedrock documentation과 console에서 직접 확인해야 함.",
+      "why_it_matters": "긴 repository·specification·agent state를 반복 전달하는 workflow에서는 context window만큼 cache hit, reasoning effort, output 길이, cross-region routing이 latency와 비용을 함께 좌우함. 모델 ID 교체를 단순 품질 변경으로 취급하면 token budget과 data path가 예측 불가능해짐.",
+      "engineering_implication": "시사점: 대표 coding task별 input/output token, cache read/write, effort level, p95 latency, completion quality, cross-region endpoint와 unit cost를 기록할 것. 100만 context와 128K output을 기본 capacity 보장으로 가정하지 말고 account quota·region·payload limit·fallback을 canary로 검증 필요.",
+      "korea_implication": "한국 리전 직접 제공 여부는 원문에 명시되지 않음. 국내 조직은 Global 또는 US cross-Region profile 사용 전 data residency·network path·계약상 data handling과 latency budget을 tenant 설정으로 재확인할 범위.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "Z.ai",
+        "GLM 5.3",
+        "MoE",
+        "Agentic Coding",
+        "Prompt Caching",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-06 06:42",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-glm-5-3/",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Bedrock이 Z.ai `GLM 5.3`을 GA로 제공함. 원문은 agentic coding과 long-horizon software engineering을 대상 workload로 제시하며, AWS security·compliance posture 안에서 open-weight model을 사용할 수 있는 범위를 설명함.",
+          "items": [
+            "제공: eligible enterprise customer가 Bedrock console 또는 지원 API로 접근하는 GA 범위",
+            "배포: US 및 Global cross-Region inference profile로 접근하는 범위"
+          ]
+        },
+        {
+          "heading": "모델·추론 범위",
+          "body": "원문은 GLM 5.3을 GLM 5.2와 같은 base model 위에서 scaled post-training 개선을 적용한 flagship MoE 모델로 설명함. `753B` total parameter 중 token당 약 `40B`가 active이며, context와 output 상한 및 reasoning control이 같이 제시됨.",
+          "items": [
+            "문맥: 최대 `1 million token` context와 최대 `128K token` output 범위",
+            "추론: reasoning always-on 구조와 selectable effort level로 latency·token consumption·task performance을 조절하는 선택지",
+            "경계: benchmark, 실제 throughput, account quota, regional capacity와 SLA는 이번 원문에서 확정하지 않은 항목"
+          ]
+        },
+        {
+          "heading": "cache·비용·성능 영향",
+          "body": "Bedrock support는 system prompt와 message에 cache point를 두는 explicit prompt caching을 포함함. 반복 repository context나 policy prompt가 있는 agent workflow에서는 전체 input token보다 cache read/write 비율과 cacheable segment 경계가 실제 비용·latency를 결정함.",
+          "items": [
+            "관측: input/output token·cache read/write·effort level·p95 latency·retry·completion quality를 task ID와 연결",
+            "비용 변수: 긴 context 재사용 빈도, output cap, reasoning effort, cross-Region routing과 model fallback",
+            "피할 것: 100만 context 또는 cache 지원을 모든 request의 동일한 latency·비용 보장으로 해석하는 판단"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 model name이 아니라 실제 task 계약으로 내려야 함. source가 model access, supported region, endpoint, feature, inference profile과 pricing을 Bedrock documentation에서 별도 확인하도록 안내하므로, production rollout 전에 tenant configuration과 representative workload를 함께 검증해야 함.",
+          "items": [
+            "팀 액션: codebase·ticket·tool trace를 포함한 representative prompt set으로 quality·latency·token cost baseline 작성",
+            "검증: model access·inference profile·quota error·cache hit·fallback·data path를 account별 canary로 확인",
+            "운영 과제: effort level과 maximum output을 service configuration으로 versioning하고 budget guardrail·rollback model을 지정"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-582",
+      "title_ko": "Kubernetes node swap: NVMe-backed swap으로 idle agent workload pod density 최대 3배 실험",
+      "title_original": "Scaling Kubernetes Workloads with Node Swap",
+      "summary": "- 공개: Kubernetes blog가 v1.34에서 GA가 된 node swap과 fast NVMe SSD 조합의 workload density benchmark를 공개함\n- 결과: CI/CD kernel build, sandboxed headless browser, isolated Python runtime 3종에서 dormant memory를 swap으로 page out해 pod density 최대 `3배` 향상과 작은 또는 없는 latency 비용을 보고함\n- 운영: memory pressure 해소가 OOM·tail latency·node I/O·eviction 위험을 없애지는 않음. swap policy·NVMe endurance·PSI·page fault·disk saturation·SLO를 workload class별 release gate로 검증 필요",
+      "detail": "Kubernetes 블로그는 2026년 10월 6일 KST node swap 기반 workload scaling 실험을 공개했다. Kubernetes에서 swap enabled node 지원은 v1.34에 GA가 됐으며, 빠른 NVMe SSD를 backing device로 사용하면 idle하지만 resident인 memory를 page out해 node당 pod 수를 늘릴 수 있다고 설명한다. 실험 대상은 CI/CD kernel build, sandboxed headless browser, isolated Python runtime이며, agentic AI workload가 large memory footprint로 시작한 뒤 다음 prompt를 기다리며 idle 상태를 유지하는 특성을 배경으로 든다. 원문은 세 workload에서 pod density가 최대 3배로 늘고 latency 비용이 작거나 없었다고 보고하지만, 이는 해당 benchmark 조건의 결과다. storage class·swap configuration·kernel·cgroup·node type·working-set locality·IO contention·SLO가 다른 production cluster에 그대로 일반화할 수 없으므로 workload별 canary와 rollback 조건이 필요함.",
+      "why_it_matters": "agent sandbox, browser automation, CI runner처럼 idle resident memory가 큰 workload는 CPU utilization보다 memory가 먼저 node packing을 제한할 수 있음. fast local SSD swap은 capacity option이지만 memory control과 storage reliability의 failure domain을 함께 늘림.",
+      "engineering_implication": "시사점: node pool 하나에서 swap-on/off를 비교하고 pod density, startup·p95/p99 latency, major/minor page fault, memory PSI, swap in/out, NVMe latency·queue depth·wear, OOM/eviction, cost per completed job을 같은 dashboard로 검증할 것. latency-sensitive 또는 working set이 큰 service는 workload class별 제외·rollback 기준을 먼저 정의 필요.",
+      "korea_implication": "국내 managed Kubernetes와 bare-metal/VM node는 local NVMe 종류·ephemeral storage policy·node replacement 조건이 다름. provider default와 cluster version만으로 swap runtime 동작을 추정하지 말고 node pool별 benchmark와 support boundary를 확인할 범위.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "Node Swap",
+        "NVMe",
+        "Agent Sandbox",
+        "CI/CD",
+        "Memory Management",
+        "SRE",
+        "Capacity Planning"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-10-06 03:00",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/10/05/scaling-kubernetes-workloads-with-node-swap/",
+      "image_url": "https://kubernetes.io/blog/2026/10/05/scaling-kubernetes-workloads-with-node-swap/node-swap-chart.svg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes Blog가 node swap으로 workload density를 높이는 benchmark 결과를 공개함. Kubernetes의 swap-enabled node support는 `v1.34`에서 GA에 도달했으며, fast NVMe SSD를 backing device로 사용해 dormant memory를 disk로 page out하는 접근임.",
+          "items": [
+            "배경: node는 CPU보다 RAM이 먼저 소진될 수 있고, agentic AI workload는 큰 memory footprint 뒤 idle resident memory를 남기는 특성",
+            "대상: CI/CD kernel build, sandboxed headless browser, isolated Python runtime 세 workload"
+          ]
+        },
+        {
+          "heading": "실험 결과와 적용 경계",
+          "body": "원문은 세 workload에서 fast NVMe-backed swap을 사용해 pod density가 최대 `3배` 늘었고 latency 비용이 작거나 없었다고 설명함. 이는 idle memory가 reclaim 가능하고 storage latency가 충분히 낮은 benchmark 조건의 관측이며 모든 service class의 보장이 아님.",
+          "items": [
+            "효과: dormant memory를 page out해 node가 더 많은 pod를 수용하는 capacity 개선",
+            "경계: workload working set, NVMe 성능·contention, kernel·cgroup setting, node type과 benchmark method가 달라지면 결과가 변하는 범위",
+            "피할 것: density 결과만으로 latency-sensitive workload 또는 memory-intensive database에 동일 policy를 적용하는 판단"
+          ]
+        },
+        {
+          "heading": "SRE·storage 운영 영향",
+          "body": "swap은 memory shortage를 storage I/O와 reclaim behavior로 옮기는 선택임. production에서는 OOM과 eviction만 보지 말고 memory PSI, major fault, swap in/out, disk queue, NVMe latency·wear와 application tail latency를 함께 봐야 contention과 thrashing을 구분 가능함.",
+          "items": [
+            "관측: pod density·startup time·p95/p99 latency·major/minor page fault·memory PSI·swap in/out·NVMe queue depth를 동일 time series로 수집",
+            "보호: node disk saturation·wear threshold·PSI·tail latency·OOM/eviction에 alert와 rollback trigger 설정",
+            "복구: swap disable 또는 affected workload drain이 job state·local ephemeral data·capacity headroom에 미치는 영향을 game day로 확인"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "node swap은 agent sandbox·CI runner처럼 idle resident memory가 큰 batch 또는 interactive workload에서 capacity lever가 될 수 있음. rollout은 node pool과 workload class를 분리하고, density 이득이 storage 비용·endurance·tail latency risk보다 큰지를 completed-job 기준으로 검증해야 함.",
+          "items": [
+            "팀 액션: representative workload에서 swap-on/off A/B node pool을 만들고 same concurrency로 baseline 수집",
+            "검증: local NVMe provisioning·ephemeral storage reservation·cgroup/memory policy·autoscaler·node replacement와의 interaction 확인",
+            "운영 과제: latency-sensitive service 제외 기준, pressure·I/O·SLO rollback threshold, cost per completed job을 platform contract로 문서화"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-580",
       "title_ko": "KAIST CONDA: 데이터 추가·삭제 중에도 RAG 검색 경로를 유지하는 동적 벡터 인덱스",
       "title_original": "CONDA: A Connectivity-Aware Dynamic Index for Approximate Nearest Neighbor Search over Evolving Data",
@@ -261,7 +398,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-579",
@@ -341,7 +478,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-577",
@@ -413,7 +550,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-578",
@@ -480,7 +617,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-576",
@@ -553,7 +690,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-575",
@@ -629,7 +766,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-572",
@@ -701,7 +838,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-574",
@@ -764,7 +901,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-570",
@@ -829,7 +966,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-569",
@@ -900,7 +1037,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-573",
@@ -967,7 +1104,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-565",
@@ -1031,7 +1168,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-566",
@@ -1095,7 +1232,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-567",
@@ -1159,7 +1296,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-568",
@@ -1223,7 +1360,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-564",
@@ -1303,7 +1440,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-563",
@@ -1386,7 +1523,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-562",
@@ -1460,7 +1597,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-561",
@@ -1533,7 +1670,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-559",
@@ -1601,7 +1738,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-558",
@@ -1667,7 +1804,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-556",
@@ -1733,7 +1870,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-554",
@@ -1807,7 +1944,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-560",
@@ -1872,7 +2009,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-557",
@@ -1947,7 +2084,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-555",
@@ -2016,11 +2153,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-553",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -2106,7 +2243,7 @@
     },
     {
       "id": "news-551",
-      "rank": 28,
+      "rank": 30,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -2180,7 +2317,7 @@
     },
     {
       "id": "news-550",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -2262,7 +2399,7 @@
     },
     {
       "id": "news-549",
-      "rank": 30,
+      "rank": 32,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -2353,7 +2490,7 @@
     },
     {
       "id": "news-552",
-      "rank": 31,
+      "rank": 33,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -2424,7 +2561,7 @@
     },
     {
       "id": "news-547",
-      "rank": 32,
+      "rank": 34,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -2570,11 +2707,11 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-545",
-      "rank": 34,
+      "rank": 36,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -2657,7 +2794,7 @@
     },
     {
       "id": "news-546",
-      "rank": 35,
+      "rank": 37,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -2790,7 +2927,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-543",
@@ -2875,7 +3012,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-542",
@@ -2949,7 +3086,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-541",
@@ -3025,7 +3162,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-539",
@@ -3097,7 +3234,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-540",
@@ -3170,7 +3307,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 43
     },
     {
       "id": "news-537",
@@ -3243,7 +3380,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-538",
@@ -3315,7 +3452,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-536",
@@ -3379,7 +3516,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-533",
@@ -3452,7 +3589,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-530",
@@ -3521,7 +3658,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-535",
@@ -3587,7 +3724,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-531",
@@ -3653,148 +3790,6 @@
           "items": [
             "팀 액션: image digest·SBOM·signature·capability manifest·credential broker grant를 하나의 release evidence로 결합",
             "검증: added host/credential/volume request protected review, default deny, runtime audit, revoke/rollback canary"
-          ]
-        }
-      ],
-      "rank": 48
-    },
-    {
-      "id": "news-532",
-      "title_ko": "Amazon RDS for PostgreSQL: 18 이상에서 PQ-TLS key exchange와 `ssl_groups` 선택 지원",
-      "title_original": "Amazon RDS for PostgreSQL now supports post-quantum TLS key exchange",
-      "summary": "핵심: AWS는 RDS for PostgreSQL 18 이상에서 post-quantum TLS key exchange와 `ssl_groups` parameter 기반 cryptographic group 선택을 지원한다고 발표함. database version·client TLS library·connection pool·certificate/handshake compatibility를 분리해 canary하고, data-in-transit encryption policy의 승인 기준을 갱신 필요.",
-      "detail": "AWS는 console 또는 CLI로 managed RDS deployment를 생성·업데이트할 수 있고 allow list에서 cryptographic group을 선택한다고 안내함. announcement는 region availability, specific group, client compatibility, handshake latency, existing connection behavior를 보장하지 않으므로 production cutover 전에 조직별 검증이 필요함.",
-      "why_it_matters": "PQ migration은 server parameter 하나가 아니라 database client·proxy·JDBC/driver·connection pool·observability가 함께 변하는 protocol change임. version 18 이상이라는 gate가 fleet upgrade와 crypto policy 변경을 동시에 요구할 수 있음.",
-      "engineering_implication": "시사점: RDS engine version·client library·TLS termination/proxy·driver별 `ssl_groups` canary matrix를 만들고 handshake failure·connect p95·pool churn·fallback·certificate rotation을 rollback 조건으로 운영 필요.",
-      "korea_implication": "국내 규제 산업의 RDS PostgreSQL workload는 PQC 요구사항을 공급자 기능 지원과 동일시하지 말고 KMS·network path·client crypto inventory·감사 증적을 조직 정책에 맞춰 별도 확인 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "RDS",
-        "PostgreSQL",
-        "PQC",
-        "TLS",
-        "Cloud Security",
-        "Database"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-09-25 01:00",
-      "source_name": "AWS",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/postgresql-post-quantum-tls-key-exchange/",
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "Amazon RDS for PostgreSQL documentation — cryptographic groups",
-          "url": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/PostgreSQL.Concepts.General.FeatureSupport.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS는 RDS for PostgreSQL이 post-quantum TLS key exchange를 지원한다고 발표함. 대상은 PostgreSQL engine version 18 이상이며, 조직 security standard에 맞춰 `ssl_groups` parameter의 allow list에서 cryptographic group을 선택하는 방식임.",
-          "items": [
-            "기능: data-in-transit encryption을 위한 PQ-TLS key exchange option 추가",
-            "버전 조건: RDS for PostgreSQL 18 이상에서 `ssl_groups` 변경 지원"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "설정은 RDS Management Console 또는 AWS CLI로 managed database 생성·업데이트 과정에서 적용 가능하다고 안내됨. announcement는 cryptographic group의 구체 목록이나 client-side automatic negotiation behavior를 설명하지 않음.",
-          "items": [
-            "변화: database server의 TLS group selection을 managed parameter로 조정 가능한 범위",
-            "경계: region availability·specific group·default behavior·client compatibility는 source에서 별도 보장하지 않음"
-          ]
-        },
-        {
-          "heading": "호환성·운영 경계",
-          "body": "TLS key exchange 변경은 JDBC/ODBC/libpq, connection pool, proxy, TLS termination, monitoring agent의 crypto stack과 함께 검증해야 함. server가 option을 제공해도 오래된 client 또는 middlebox가 handshake failure·fallback·connection churn을 일으킬 수 있음.",
-          "items": [
-            "리스크: RDS version upgrade와 crypto policy change를 한 번에 fleet-wide 적용해 fault domain을 넓히는 방식",
-            "필요: client library/version·TLS path·pool retry·certificate rotation을 포함한 compatibility matrix"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "PQC 기능은 migration 완료 증거가 아니라 controlled protocol canary의 시작점임. connect latency와 failure mode를 기존 TLS baseline과 함께 측정하고 rollback 가능한 parameter change로 운영 필요.",
-          "items": [
-            "팀 액션: engine 18 readiness, client TLS inventory, `ssl_groups` canary, proxy/driver test, policy owner 지정",
-            "검증: handshake success/failure, connect p95, pool churn, fallback, error log, rollback time 측정"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-534",
-      "title_ko": "문서 placeholder `third-party[.]com`의 ClickFix 악용: 1,700개 이상 공개 저장소·agent skill endpoint를 reserved domain으로 교체 필요",
-      "title_original": "Placeholder third-party[.]com Referenced Across 1,700+ Repositories Now Serves Malicious Content",
-      "summary": "핵심: The Hacker News는 IANA reserved domain이 아닌 documentation placeholder `third-party[.]com`이 Windows browser에 clipboard-poisoning ClickFix lure와 remote PowerShell payload 실행 경로를 제공한다고 보도함. GitHub 검색상 1,700개 이상 공개 repository와 AI agent skill·MCP server 문서가 해당 endpoint를 예시로 포함하므로 docs·test·skill을 executable/trusted input으로 취급하고 `example.com` 계열 reserved domain으로 교체 필요.",
-      "detail": "보도는 Manifold Security 관측을 인용해 해당 domain이 적어도 2026년 6월부터 lure를 제공했고 Windows 사용자에게 fake Cloudflare check와 Run dialog paste 실행을 유도했다고 설명함. macOS에는 다른 decoy를 보였고, VirusTotal·Google Safe Browsing이 unsafe/malicious 상태로 표시했다고 전함. repository 수와 agent skill 내 사용은 public GitHub search 기반이며, 각 repository의 실제 방문·실행·침해를 뜻하지 않음.",
-      "why_it_matters": "agent skill, MCP guide, runbook, test fixture의 URL은 사람이 클릭하지 않아도 browser automation·crawler·agent tool·copy-paste workflow로 해석될 수 있음. control하지 않는 plausible domain을 placeholder로 쓰면 documentation dependency가 runtime supply-chain entry point가 될 수 있음.",
-      "engineering_implication": "시사점: repository·wiki·skill·MCP configuration·test fixture에서 non-reserved placeholder URL을 검색하고 `example.com`/`.org`/`.net` 또는 조직 소유 test domain으로 교체 필요. link resolution, browser open, shell invocation은 allowlist·approval·OS별 rendering test로 분리 필요.",
-      "korea_implication": "국내 개발 조직의 사내 위키·agent skill catalog·교육 예제도 public code와 별개로 같은 string reuse가 가능하므로 source repository뿐 아니라 docs publishing·RAG corpus·template repository를 함께 inventory할 필요.",
-      "category": "Security",
-      "tags": [
-        "Security",
-        "Supply Chain",
-        "Documentation",
-        "AI Agent",
-        "MCP",
-        "ClickFix",
-        "Developer Tools"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-09-25 00:27",
-      "source_name": "The Hacker News",
-      "source_url": "https://thehackernews.com/2026/09/placeholder-third-partycom-referenced.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhy4aXDWSC5cKzOZO8lRbk8o5I1fHPlCGbfxxYL6tyJxauEL-8EVj7-AypDhYt_Wg6bDLqlj0UK4LrGJdeI4ChsksaB6tTZxo8ikCLdwC0wjRfJPE_Z1qM_CVUg7s1ORdmWW2XTDtlPPDcI8JvelrbmJhcjVthnqYWQrZ7ySnIMMPRZfa_VzgaBCWyWc_JJ/s1600/third.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Manifold Security analysis",
-          "url": "https://www.manifold.security/blog/third-party-com-placeholder-clickfix"
-        },
-        {
-          "title": "IANA reserved domains",
-          "url": "https://www.iana.org/domains/reserved"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "The Hacker News는 documentation placeholder로 널리 쓰인 `third-party[.]com`이 Windows browser에 ClickFix lure를 제공한다고 보도함. Manifold Security 관측을 인용한 보도에 따르면 해당 domain은 IANA reserved domain이 아니어서 제3자가 등록할 수 있었고, 현재 live attacker infrastructure를 가리키는 문서·test·skill reference가 된 상태임.",
-          "items": [
-            "관측: Windows browser에서 fake Cloudflare check와 clipboard poisoning을 결합한 social-engineering 흐름",
-            "경계: placeholder 문자열이 있는 모든 repository가 악성 payload 실행 또는 침해 상태라는 뜻은 아님"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "보도는 해당 domain이 적어도 2026년 6월부터 lure를 제공했다고 설명함. Windows 방문자에게 clipboard에 command를 넣고 Windows Run dialog에서 paste·실행하도록 유도하며, pasted command는 remote PowerShell payload를 추출·실행하도록 설계됐다고 전함. macOS 방문자에게는 macOS unsupported error라는 다른 decoy를 표시했다고 설명됨.",
-          "items": [
-            "노출: GitHub search 기준 1,700개 이상 public repository가 domain을 reference하며 AI agent skill·MCP-server docs도 포함",
-            "상태: 보도 시점 VirusTotal·Google Safe Browsing이 domain을 malicious 또는 unsafe로 표시한 범위"
-          ]
-        },
-        {
-          "heading": "공급망·agent 경계",
-          "body": "문서의 URL은 단순 text가 아니라 browser automation, agent tool, RAG retrieval, copy-paste runbook에서 resolution 또는 navigation input이 될 수 있음. OS와 user-agent별로 다른 content를 주는 domain은 static text review만으로 위험을 판단하기 어렵게 함. placeholder domain을 external dependency처럼 version·ownership·allowlist 관점에서 다뤄야 함.",
-          "items": [
-            "리스크: skill·MCP guide의 example endpoint를 agent가 browse하거나 operator가 verification 절차로 실행하는 경로",
-            "피할 것: plausible-looking domain이 public documentation에 반복됐다는 사실을 domain ownership 또는 안전성 증거로 사용하는 판단"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "조직은 source code뿐 아니라 docs site, wiki export, agent skill catalog, MCP configuration, test fixture, prompt template에서 control하지 않는 placeholder domain을 inventory해야 함. IANA reserved `example.com`, `example.org`, `example.net` 또는 조직이 명확히 통제하는 test zone으로 바꾸고, link open·shell execute·browser automation을 permission boundary로 분리해야 함.",
-          "items": [
-            "팀 액션: `third-party.com`과 plausible placeholder pattern search, owner·consumer·public exposure 분류, reserved-domain replacement PR 생성",
-            "검증: OS/user-agent별 URL resolution, browser/agent navigation allowlist, clipboard·shell invocation approval, RAG corpus republish 후 stale reference scan"
           ]
         }
       ],

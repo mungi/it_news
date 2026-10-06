@@ -3213,3 +3213,9 @@
 - 확인 시각: 2026-10-06 19:45 KST. 이전 창 `2026-W41`의 coverage end `2026-10-05 13:00 KST`가 종료되어, metadata를 `2026-W42`·`2026-10-05 17:00`~`2026-10-12 13:00 KST`로 전환. GeekNews·GeekNews Plus는 browser에서 빈 응답으로 current content inspection 불가였고, AI타임스KR·AI타임스 HTML surface는 직접 점검함.
 - 새 창의 직접 검증된 고가치 후보가 아직 충분하지 않아 정규 카드 50건과 Deep Dive 2건을 직전 창의 source-verified carry-over로 보존. Executive Summary에 이 상태를 명시하고, 새 후보 확인 시 canonical list를 교체할 예정. `weekly/2026-W42.md` 생성 및 `index.md` weekly index 동기화.
 - 검증 통과: `python3 scripts/validate_weekly_news.py`(50 cards, Deep Dive 2건), `node --check docs/app.js`, `git diff --check`. Local render에서 card 50건·Deep Dive 2건·최종 업데이트 `2026-10-06 19:45 KST`를 확인. Cloudflare Traces Deep Dive modal은 `aria-hidden=false`, source link, rich section 9개를 DOM으로 확인.
+
+## [2026-10-06] update | Amazon Bedrock GLM 5.3 GA·Kubernetes node swap density benchmark 추가
+- 확인 시각: 2026-10-06 23:48 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·CISA·The Hacker News RSS를 current research pass에 포함.
+- AWS What’s New 원문과 RSS `Mon, 05 Oct 2026 21:42:00 GMT`를 직접 대조해 Bedrock `GLM 5.3` GA의 `753B` total/약 `40B` active MoE, 100만 token context·최대 `128K` output, always-on reasoning effort, explicit prompt cache, US·Global cross-Region profile 범위를 수록. quota·pricing·region·endpoint·feature 가용성은 account별 검증 범위로 유지.
+- Kubernetes Blog 원문과 `2026-10-05T10:00:00-08:00` metadata를 직접 대조해 v1.34 GA node swap·fast NVMe backing, CI/CD kernel build·sandboxed headless browser·isolated Python runtime 3종, pod density 최대 3배와 작은 또는 없는 latency 비용이라는 benchmark 범위를 수록. production 일반화 대신 PSI·page fault·swap I/O·NVMe saturation·SLO rollback canary를 명시.
+- `news-581`·`news-582`를 KST newest-first 위치에 삽입하고 actual cap tail `news-532`·`news-534`를 제거해 50-item cap·rank 1–50 유지. raw capture·index·canonical `weekly/2026-W42.md`를 동기화. 당일 03:31에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
