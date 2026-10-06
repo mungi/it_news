@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-05 | Total pages: 391
+> Last updated: 2026-10-07 | Total pages: 393
 
 ## Entities
 
@@ -37,6 +37,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-root-ksk-2024-rollover-2026-10-07]] — DNS root `KSK-2024` rollover의 RFC 8509 readiness·validating resolver trust anchor·SERVFAIL 대응 경계.
+- [[raw/articles/aws-acm-acme-privatelink-2026-10-07]] — ACM ACME public certificate PrivateLink의 Private DNS·endpoint policy·renewal SLO·audit 검증 경계.
 - [[raw/articles/aws-bedrock-glm-5-3-ga-2026-10-06]] — Amazon Bedrock `GLM 5.3` GA의 100만 token context·128K output·reasoning effort·prompt cache와 tenant별 quota·FinOps 검증 경계.
 - [[raw/articles/kubernetes-node-swap-workload-density-2026-10-06]] — Kubernetes node swap과 NVMe backing의 pod density 최대 3배 benchmark, PSI·I/O·tail latency·rollback 검증 경계.
 - [[raw/articles/aitimeskr-kaist-conda-dynamic-vector-index-2026-10-05]] — KAIST CONDA 동적 벡터 인덱스의 RAG retrieval freshness·연결성 운영 경계.
