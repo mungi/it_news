@@ -3208,3 +3208,8 @@
 - Cloudflare 공식 원문을 직접 재확인해 Traces open beta의 security rule·transformation·cache·routing·Workers·origin request timeline, baseline sampling·Trace Rules, W3C `traceparent`, OTLP export, 2026-12-01 ingestion·retention pricing 전환 범위를 수록. account별 availability·attribute schema·SLA·pricing은 tenant canary 확인 범위로 유지.
 - AWS What’s New 원문을 직접 재확인해 ECS VPC Lattice의 blue/green·linear·canary shift, test traffic, Lambda/pause hook, CloudWatch alarm·deployment circuit breaker·bake-time rollback 범위를 수록. region·quota·alarm threshold·connection draining·state migration·workload SLO는 원문 미확정으로 유지.
 - KST 첫 실행 정책에 따라 전일 OpenAI HPIM·GitHub Android Taskflow topic을 유지하지 않고, primary source가 겹치지 않는 Cloudflare·AWS event로 두 Deep Dive의 title·summary·details·source·image·9개 expert section을 전면 재구성하고 actual `refreshed_kst`를 기록. 정규 카드 50건·newest-first rank 1–50은 변경하지 않고 canonical `weekly/2026-W41.md`를 재생성.
+
+## [2026-10-06] rollover | 2026-W42 새 커버리지 창 개시
+- 확인 시각: 2026-10-06 19:45 KST. 이전 창 `2026-W41`의 coverage end `2026-10-05 13:00 KST`가 종료되어, metadata를 `2026-W42`·`2026-10-05 17:00`~`2026-10-12 13:00 KST`로 전환. GeekNews·GeekNews Plus는 browser에서 빈 응답으로 current content inspection 불가였고, AI타임스KR·AI타임스 HTML surface는 직접 점검함.
+- 새 창의 직접 검증된 고가치 후보가 아직 충분하지 않아 정규 카드 50건과 Deep Dive 2건을 직전 창의 source-verified carry-over로 보존. Executive Summary에 이 상태를 명시하고, 새 후보 확인 시 canonical list를 교체할 예정. `weekly/2026-W42.md` 생성 및 `index.md` weekly index 동기화.
+- 검증 통과: `python3 scripts/validate_weekly_news.py`(50 cards, Deep Dive 2건), `node --check docs/app.js`, `git diff --check`. Local render에서 card 50건·Deep Dive 2건·최종 업데이트 `2026-10-06 19:45 KST`를 확인. Cloudflare Traces Deep Dive modal은 `aria-hidden=false`, source link, rich section 9개를 DOM으로 확인.
