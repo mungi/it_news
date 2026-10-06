@@ -37,6 +37,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-codex-28-days-speed-2026-10-06]] — Codex·ChatGPT Work 28일 연속 개선 보도와 GPT-6 Astra·Sol 처리 속도 50% 상향의 latency·quota·fallback 검증 경계.
 - [[raw/articles/cloudflare-root-ksk-2024-rollover-2026-10-07]] — DNS root `KSK-2024` rollover의 RFC 8509 readiness·validating resolver trust anchor·SERVFAIL 대응 경계.
 - [[raw/articles/aws-acm-acme-privatelink-2026-10-07]] — ACM ACME public certificate PrivateLink의 Private DNS·endpoint policy·renewal SLO·audit 검증 경계.
 - [[raw/articles/aws-bedrock-glm-5-3-ga-2026-10-06]] — Amazon Bedrock `GLM 5.3` GA의 100만 token context·128K output·reasoning effort·prompt cache와 tenant별 quota·FinOps 검증 경계.
