@@ -3237,3 +3237,8 @@
 - AWS Batch official announcement/RSS, GitHub Engineering article의 metadata·본문, Kubernetes Blog article의 metadata·본문, 인공지능신문 canonical article의 published metadata·OG image·본문을 직접 대조. AWS Batch CloudWatch job metrics, GitHub agent-scale Git activity 수치와 architecture issue, Kubernetes cgroup v2 migration guidance, EmbeddingGemma 2의 740M·Apache 2.0·8K·modular encoder 보도 범위를 수록.
 - 공식 artifact/model card와 benchmark methodology를 직접 검증하지 못한 EmbeddingGemma 2 수치, AWS metric dimension/region, provider-specific cgroup default와 GitHub 관측치의 외부 일반화는 확정하지 않음. `news-586`~`news-589`를 최신순 삽입하고 actual cap tail news-537, news-538, news-536, news-533을 제거해 50-item cap·rank 1–50 유지. raw capture, index 및 canonical weekly archive를 동기화.
 - 검증 통과: `python3 scripts/validate_weekly_news.py`(50 cards, Deep Dive 2건), `node --check docs/app.js`, `git diff --check`.
+
+## [2026-10-07] update | OpenAI Codex Auto-review 무료화 보도 추가
+- 확인 시각: 2026-10-07 16:17 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·The Hacker News·CISA feed를 current research pass에 포함.
+- AI타임스 canonical article의 `article:published_time` `2026-10-07T15:53:43+09:00`, OG image와 본문을 직접 대조. 기사에 포함된 OpenAI 제품 담당자의 10월 6일 게시물 인용 기준으로 ChatGPT 로그인 사용자의 Settings > Permissions > Auto-review 무료 활성화, 주 agent와 분리된 reviewer agent의 고위험·목적 이탈 행동 검토, 별도 token·plan quota 차감 미적용 범위를 수록.
+- 공식 product documentation·reviewer model/runtime·rule/tool coverage·차단/override semantics·enterprise admin policy·audit retention은 독립 확인하지 못해 확정하지 않음. `news-590`을 KST 최신순 rank 1에 삽입하고 actual cap tail `news-540`을 제거해 50-item cap·rank 1–50 유지. raw capture SHA-256 `3b6ec6007406de538903983badc2be3e52f04aeb79b89d067a8b50096daf7068`, index 및 canonical `weekly/2026-W42.md`를 동기화.
