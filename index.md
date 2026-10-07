@@ -301,6 +301,10 @@
 - [[raw/articles/aws-bedrock-gpt-6-astra-ultrafast-2026-10-01]] — Bedrock GPT-6 Astra UltraFast의 최대 6배·300 tokens/s provider 주장과 latency·quota·fallback·FinOps canary 경계.
 - [[raw/articles/aitimes-openai-decisions-api-2026-10-01]] — OpenAI Decisions API 제한 프리뷰의 선택지 기반 agent routing·policy gate·trace 검증 경계.
 - [[raw/articles/aitimes-google-rrsi-agent-harness-2026-10-01]] — Google RRSI의 agent harness 자기개선, holdout·cost·side effect·rollback release gate 경계.
+- [[raw/articles/aws-batch-job-cloudwatch-metrics-2026-10-07]] — AWS Batch, CloudWatch job metrics 기본 발행: queue·job 상태 관측 범위 확대의 source-verified 운영 경계.
+- [[raw/articles/github-agent-scale-git-infrastructure-2026-10-07]] — GitHub, agent-scale 개발용 Git 인프라 설계 공개: 월 4,733억 Git 이벤트·73.8억 commit 관측의 source-verified 운영 경계.
+- [[raw/articles/kubernetes-cgroups-v2-shift-2026-10-07]] — Kubernetes, cgroup v2 전환 가이드 공개: node OS·runtime·resource 관측의 사전 호환성 점검 요구의 source-verified 운영 경계.
+- [[raw/articles/aitimeskr-google-embeddinggemma-2-2026-10-07]] — Google EmbeddingGemma 2 보도: 7.4억 파라미터 온디바이스 멀티모달 임베딩·Apache 2.0 공개의 source-verified 운영 경계.
 - `raw/articles/` — 200건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
