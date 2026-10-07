@@ -2,13 +2,14 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-08 04:33",
+  "last_updated_kst": "2026-10-08 08:37",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
     "GitHub는 agent·CI 동시 workload에서 2026년 8월 월 4,733억 Git 이벤트와 9월 73.8억 commit을 공개함. agent throughput은 model latency뿐 아니라 push·merge ref contention·CI fetch fan-out의 capacity 문제임.",
     "Kubernetes cgroup v2 전환 가이드는 node OS·runtime·metrics/security agent와 CPU/memory/PSI 관측의 compatibility를 함께 확인하도록 요구함. node pool canary와 image rollback 조건이 필요함.",
-    "AWS Batch의 CloudWatch job metrics 발행으로 queue·job lifecycle을 SLO와 alarm에 연결할 수 있음. queue wait·retry·compute scaling·completed job cost를 함께 관측해야 원인 판별 가능함."
+    "AWS Batch의 CloudWatch job metrics 발행으로 queue·job lifecycle을 SLO와 alarm에 연결할 수 있음. queue wait·retry·compute scaling·completed job cost를 함께 관측해야 원인 판별 가능함.",
+    "Cloudflare는 보안 agent가 evidence를 직접 수집·분류하지 않도록 fixed reconnaissance·citation validation·restricted disposition을 code로 분리함. SOC agent pilot은 model prompt보다 tenant scope·evidence lineage·replay·human override를 먼저 고정해야 함."
   ],
   "deep_dives": [
     {
@@ -209,6 +210,73 @@
   ],
   "items": [
     {
+      "id": "news-593",
+      "title_ko": "Cloudflare, evidence-grounded agentic SOC harness 공개: 결정론적 증거 수집과 specialist agent 분리",
+      "title_original": "Building an evidence-grounded agentic security operations harness on Cloudflare",
+      "summary": "핵심: Cloudflare Managed Defense가 **결정론적 evidence package**를 먼저 만들고, 그 뒤 triage·전문 분석 agent를 분리하는 보안 운영 harness를 공개함. 모델이 tenant scope·증거 수집·분류 vocabulary를 임의로 확장하지 못하게 하고 citation을 application code로 검증하는 구조이며, agent SOC 도입은 모델 선택보다 evidence lineage·권한·재현성 설계가 먼저 필요함.",
+      "detail": "Cloudflare는 Managed Defense의 alert 분석에서 고정된 versioned API reconnaissance가 identity·detection history·traffic baseline·enforcement outcome·network observation을 source·version·timestamp와 함께 수집한 뒤 모델 분석에 넘긴다고 설명함. high-volume noise는 Clef로 triage하고, 심층 건은 coordinator가 traffic analysis·customer context·threat intelligence·synthesis specialist 4개 agent를 병렬 실행함. Workers가 evidence admission·result validation, Workflows가 durable orchestration, D1·R2·Durable Objects가 state·artifact·case chat을 담당하는 구현 사례이며, 제품 일반 SLA·정확도·tenant availability는 원문에서 확정하지 않음.",
+      "why_it_matters": "보안 alert는 탐지 가설·정책·telemetry·위협정보가 섞이면 모델이 context를 authority로 오인하거나 미수집 데이터를 부재로 해석할 수 있음. source-bound evidence와 scope enforcement를 model 밖의 deterministic code로 고정하면 analyst가 recommendation의 근거·coverage gap·실패 단계를 재검토할 수 있음.",
+      "engineering_implication": "시사점: agent SOC pilot은 alert별 tenant·asset·time-window·source version·collection failure를 immutable evidence package로 남기고, model output의 citation·allowed disposition·action permission을 policy engine으로 검증해야 함. retrieval timeout과 not-found를 같은 상태로 저장하지 말고, evidence snapshot replay·human override·case handoff를 release gate에 포함 필요.",
+      "korea_implication": "국내 SOC·MSSP도 다중 고객 telemetry를 agent에 연결할 때 tenant scope와 case artifact의 data residency·retention·analyst override를 model prompt가 아닌 API·IAM·storage policy로 분리 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "AI Agent",
+        "Security Operations",
+        "SOC",
+        "Workers",
+        "Observability",
+        "Governance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-08 01:30",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/agentic-security-operations/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M32R921QMDZ1S2MHB3M7Q85H.01M32R93AJ8Q0D22GYW0163M3F.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare Managed Defense가 alert 조사용 agentic security operations harness 구조를 공개함. 초기 단일 general-purpose agent는 telemetry·detector 설명·policy·threat intelligence를 하나의 prompt에 넣어 근거 없는 claim을 만들고 scope와 failure state를 흐린다는 문제를 확인한 뒤, 증거 수집과 모델 해석을 분리함.",
+          "items": [
+            "구조: model inference 전에 fixed reconnaissance workflow가 고객 identity·detection history·traffic baseline·enforcement outcome·network observation을 수집",
+            "증거: 각 수집값에 source·version·timestamp를 보존하고 missing source와 collection failure를 evidence package에 기록"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "고빈도 known noise는 Workers AI의 Clef가 reconnaissance data와 비교해 passive 처리하고, 심층 검토가 필요한 alert만 specialist agent 경로로 보냄. coordinator 아래 traffic analysis·customer context·threat intelligence·synthesis agent가 병렬로 typed finding을 만들며, synthesis agent는 새 evidence를 fetch하거나 승인 vocabulary 밖 classification을 선택하지 못하도록 제한됨.",
+          "items": [
+            "triage: 과거 disposition·traffic behavior·재발 여부를 이용해 analyst queue로 들어갈 alert 범위 축소",
+            "분석: specialist 4개가 각각 request behavior·고객 이력·승인된 indicator·advisory synthesis를 담당",
+            "검증: application code가 모든 citation의 investigation 소속·scope·claim support를 확인하고 invalid finding은 correction 또는 limitation으로 기록"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "탐지는 exploit 성공의 증명이 아니며, 넓은 context를 가진 모델은 detection hypothesis를 incident fact로 바꾸기 쉬움. deterministic evidence admission과 tenant scope enforcement를 모델 밖으로 옮기면 동일 snapshot을 replay해 specialist 간 해석 차이와 retrieval 차이를 분리할 수 있음.",
+          "items": [
+            "경계: prompt만으로 account·time range·source boundary를 강제하지 않고 application code에서 subject·scope를 고정",
+            "재현성: evidence snapshot replay로 input 변화와 model interpretation 변화를 분리",
+            "리스크: timeout·unavailable·not-found를 구별하지 않으면 모델이 미수집 evidence를 부재로 오인하는 조건"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "원문 구현에서 Workers는 evidence admission·result validation, Workflows는 단계별 durable orchestration, D1은 investigation/advisory state, R2는 bounded context와 evidence artifact, Durable Objects는 case-chat state를 담당함. 이 구성이 특정 조직의 제품 선택을 지시하는 것은 아니나, agent SOC의 최소 설계 단위가 model prompt가 아니라 evidence lineage·state durability·human decision interface라는 점을 구체화함.",
+          "items": [
+            "팀 액션: alert별 tenant·asset·time anchor·policy version·source coverage·collection error를 immutable dossier로 저장",
+            "팀 액션: allowed disposition·citation schema·action permission·human override를 policy engine과 audit log로 분리",
+            "검토 항목: evidence retention·PII redaction·cross-tenant retrieval·case handoff·replay test·false-positive suppression·incident escalation"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-592",
       "title_ko": "AWS, Claude Haiku 5.5 제공: effort control 기반 병렬 subagent·고처리량 agent workload 대상",
       "title_original": "Claude Haiku 5.5 is now available on AWS",
@@ -270,7 +338,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-591",
@@ -333,7 +401,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-590",
@@ -396,7 +464,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-589",
@@ -459,7 +527,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-587",
@@ -522,7 +590,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-588",
@@ -585,7 +653,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-583",
@@ -651,7 +719,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-586",
@@ -714,7 +782,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-584",
@@ -776,7 +844,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-585",
@@ -838,7 +906,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-581",
@@ -906,7 +974,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-582",
@@ -974,7 +1042,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-580",
@@ -1041,7 +1109,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-579",
@@ -1121,7 +1189,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-577",
@@ -1193,7 +1261,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-578",
@@ -1260,7 +1328,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-576",
@@ -1333,7 +1401,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-575",
@@ -1409,7 +1477,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-572",
@@ -1481,7 +1549,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-574",
@@ -1544,7 +1612,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-570",
@@ -1609,7 +1677,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-573",
@@ -1676,7 +1744,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-569",
@@ -1747,7 +1815,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-565",
@@ -1811,7 +1879,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-566",
@@ -1875,7 +1943,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-568",
@@ -1939,7 +2007,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-567",
@@ -2003,7 +2071,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-564",
@@ -2083,7 +2151,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-563",
@@ -2166,7 +2234,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-562",
@@ -2240,7 +2308,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-561",
@@ -2313,7 +2381,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-559",
@@ -2381,7 +2449,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-558",
@@ -2447,7 +2515,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-556",
@@ -2513,7 +2581,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-554",
@@ -2587,7 +2655,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-560",
@@ -2652,7 +2720,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-557",
@@ -2727,7 +2795,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-555",
@@ -2796,11 +2864,11 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-553",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -2886,7 +2954,7 @@
     },
     {
       "id": "news-551",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -2960,7 +3028,7 @@
     },
     {
       "id": "news-550",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -3042,7 +3110,7 @@
     },
     {
       "id": "news-549",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -3133,7 +3201,7 @@
     },
     {
       "id": "news-552",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -3204,7 +3272,7 @@
     },
     {
       "id": "news-547",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -3350,11 +3418,11 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-545",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -3437,7 +3505,7 @@
     },
     {
       "id": "news-546",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
       "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
       "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
@@ -3570,7 +3638,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-543",
@@ -3652,80 +3720,6 @@
             "검증: raw·decoded·double-encoded path, case variation, POST body inspection을 representative staging route에서 canary",
             "지표: exposed EMHub count, fixed-build coverage, all-node forensic completion, suspicious encoded-path triage time",
             "팀 액션: PeopleSoft owner·network/WAF owner·WebLogic/DB owner·SOC가 asset별 patch와 hunt evidence를 같은 incident record에 연결 필요"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-542",
-      "title_ko": "CISA KEV: SharePoint RCE·MikroTik RouterOS MikroTrick 활성 악용을 patch와 management-plane forensic으로 함께 처리",
-      "title_original": "SharePoint RCE and MikroTik RouterOS Flaws Actively Exploited in the Wild",
-      "summary": "핵심: CISA가 Microsoft SharePoint `CVE-2026-65660`과 MikroTik RouterOS `CVE-2026-67279`을 KEV에 추가함. Microsoft는 9월 25일 SharePoint code-injection 결함의 observed attack evidence를 확인했고, CERT Polska는 RouterOS `CVE-2026-67279`·`CVE-2026-86060` chain이 인터넷 노출 장비의 password·SSH key 없는 관리자 장악으로 이어질 수 있음을 분석함.\n시사점: SharePoint와 RouterOS 모두 fixed build 적용만으로 종결하지 말고 internet exposure·configuration·privileged account·access log·credential rotation evidence를 같은 긴급 변경 기록으로 관리 필요.",
-      "detail": "CISA KEV 추가는 Microsoft SharePoint `CVE-2026-65660`과 MikroTik RouterOS `CVE-2026-67279`의 active-exploitation 우선순위를 높임. Microsoft는 SharePoint 결함을 authorized network attacker의 code execution 가능성으로 업데이트하고 2026-09-25 observed attacks evidence를 명시했으나, 공격자·피해 조직·성공 범위·post-exploitation 행위는 공개하지 않음. CERT Polska의 `MikroTrick` 분석은 `CVE-2026-67279` session-channel 결함과 `CVE-2026-86060` login argument injection이 결합될 때 인증 없이 administrative console을 장악하는 조건을 설명함. RouterOS는 maintained branch fixed build 적용과 public management service 차단, SharePoint는 security update와 IIS/application telemetry·service account scope 확인을 병렬로 수행 필요.",
-      "why_it_matters": "KEV 등록과 vendor observed-attack evidence는 CVSS만으로 정한 patch queue보다 빠른 remediation을 요구함. SharePoint application tier와 RouterOS edge management plane은 각각 identity·content·network control 경계에 있어, package version green 상태만으로 prior access나 persistence가 없었다고 판정할 수 없음.",
-      "engineering_implication": "시사점: 24시간 내 SharePoint build·internet-facing web application·service account와 RouterOS version·SSH/WWW/Winbox exposure를 inventory화하고, fixed build canary 뒤 access/auth log·unknown account·configuration diff·outbound traffic을 hunt 필요. 의심 RouterOS는 clean rebuild와 password·SSH key·API·VPN secret rotation, SharePoint는 IIS/application log·privileged identity·content/configuration change evidence를 closure record로 보존 필요.",
-      "korea_implication": "국내 공공·기업의 on-premises collaboration server와 지사·매장·OT edge router는 patch owner와 network owner가 분리되기 쉬움. KEV 대응 ticket에 exact version, exposure, change window, forensic log retention, credential rotation owner를 함께 지정 필요.",
-      "category": "Security",
-      "tags": [
-        "CISA KEV",
-        "Microsoft SharePoint",
-        "MikroTik",
-        "RouterOS",
-        "MikroTrick",
-        "Active Exploitation",
-        "Patch Management",
-        "Management Plane"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-26 17:49",
-      "source_name": "CISA KEV / Microsoft / CERT Polska",
-      "source_url": "https://thehackernews.com/2026/09/sharepoint-rce-and-mikrotik-routeros.html",
-      "image_url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiHEPamtRBBEzltsUWnj-F8umrMf4eUUhTmGUJdhHlrvWZamHWpBtXcrpQKDArTziRiiIWv8psX4DTZyN9kLBtcAyLOPJma9_M7sYKgYz6WBISbOhJrRlfByfCKfTTMdBqaYUp-0nskrt2ndt3poUFLDGegEFJojS0EzEvwAqzaUNtvX26jZopYE4zA4S3K/s1600/share-kev.jpg",
-      "local_image": "assets/images/fallback-security.svg",
-      "related_links": [
-        {
-          "title": "Microsoft Security Response Center: CVE-2026-65660",
-          "url": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2026-65660"
-        },
-        {
-          "title": "CERT Polska: MikroTrick technical analysis",
-          "url": "https://cert.pl/en/posts/2026/09/mikrotrick-technical-analysis/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "CISA가 Microsoft SharePoint `CVE-2026-65660`과 MikroTik RouterOS `CVE-2026-67279`을 KEV catalog에 추가함. The Hacker News가 인용한 Microsoft update는 2026-09-25 기준 SharePoint 결함의 observed attacks evidence를 명시했고, CERT Polska는 RouterOS chain의 internet-exposed administration takeover 조건을 공개함.",
-          "items": [
-            "SharePoint: CVSS 8.8 code-injection 결함으로 authorized attacker의 network code execution 가능 범위",
-            "RouterOS: CVSS 6.9 session-channel 결함과 login argument-injection 결합 시 password·SSH key 없는 admin console access 조건"
-          ]
-        },
-        {
-          "heading": "SharePoint 영향 범위와 증거 경계",
-          "body": "Microsoft는 SharePoint Server 결함을 처음 spoofing으로 분류했다가 remote code execution 가능성으로 업데이트함. observed exploitation은 확인됐지만 공격자, 시작 시점, 표적 조직 수, 성공 침해 수, 후속 행위는 공개 source에서 확인되지 않아 local telemetry로 scope를 판정해야 함.",
-          "items": [
-            "우선순위: internet-facing SharePoint, delayed security update, privileged service account와 document/workflow integration 경로",
-            "보존: IIS·reverse proxy·SharePoint ULS/application log, security update status, service account sign-in, web shell·configuration change evidence"
-          ]
-        },
-        {
-          "heading": "RouterOS MikroTrick 영향 범위",
-          "body": "CERT Polska는 `CVE-2026-67279`가 unauthenticated client의 session channel 생성과 exec request를 허용하고, `CVE-2026-86060`이 attacker-controlled policy mask를 login에 전달하는 chain이라고 설명함. maintained RouterOS branches의 2026-09 security update와 public management service exposure 제거를 함께 확인해야 함.",
-          "items": [
-            "검증: RouterOS exact build, SSH·WWW·Winbox source CIDR, `ops` 같은 unknown privileged account, Flagged status와 scheduler/script/configuration diff",
-            "복구: suspicious device configuration을 그대로 restore하지 않고 clean rebuild·verified configuration import·password/SSH key/API/VPN secret rotation 수행"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "KEV 대응 완료 기준은 fixed version 보고가 아니라 exposed asset이 패치됐고 patch-gap access와 persistence가 없다는 evidence를 확보한 상태임. SharePoint와 RouterOS는 application·identity·network owner가 나뉘므로 asset list, change window, log retention, incident owner를 단일 closure record로 묶어야 함.",
-          "items": [
-            "팀 액션: 24시간 내 SharePoint/RouterOS asset inventory와 fixed-build rollout·public exposure reduction plan 확정",
-            "운영 지표: KEV asset remediation coverage, exposed management endpoint count, suspicious auth/configuration triage time, credential rotation completion"
           ]
         }
       ],

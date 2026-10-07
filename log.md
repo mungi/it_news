@@ -3258,3 +3258,8 @@
 - 확인 시각: 2026-10-08 04:33 KST. GeekNews RSS, AI타임스KR·AI타임스 RSS, AWS What’s New, Cloudflare, GitHub, Kubernetes, CNCF, OpenAI, CISA, The Hacker News를 재점검했고 GeekNews Plus는 HTTP 403으로 현재 본문을 수집하지 못함.
 - AWS 공식 공지의 2026-10-07 게시일과 본문을 직접 대조. Claude Haiku 5.5의 Amazon Bedrock·Claude Platform on AWS 제공, coding·tool use·computer use·agent workload, Haiku 최초 effort control, voice/live support·분류·요약·문서 field extraction 및 상위 모델이 정의한 병렬 subagent 활용 범위를 수록.
 - model ID·리전 availability·quota·가격·throughput·guardrail/data handling은 공지에서 확정하지 않아 tenant별 Bedrock documentation·console canary 확인 범위로 유지. `news-592`를 KST `2026-10-08 00:00` 기준 rank 1에 삽입하고 actual cap tail `news-541`을 제거해 50-item cap·rank 1–50을 유지. raw capture SHA-256 `9d2079a6667ac708b585b405ce9e5c53e08e587e58f46487e550b7cbae3aa0c4`, `index.md`, canonical `weekly/2026-W42.md`를 동기화.
+
+## [2026-10-08] update | Cloudflare evidence-grounded agentic SOC harness 추가
+- 확인 시각: 2026-10-08 08:37 KST. GeekNews RSS·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Kubernetes·Cloudflare·CNCF·OpenAI·The Hacker News research surface를 재점검했고 GeekNews Plus는 HTTP 404였음.
+- Cloudflare 공식 원문의 `2026-10-07T16:30:36.761Z` metadata·OG image·본문을 직접 대조. fixed versioned API reconnaissance, Clef triage, traffic/customer-context/threat-intelligence/synthesis specialist 4개 agent, evidence citation validation, Workers·Workflows·D1·R2·Durable Objects 역할이라는 Managed Defense 구현 범위를 수록.
+- 제품 일반 정확도·SLA·tenant availability·자동 대응 권한은 원문에서 확정하지 않음. `news-593`을 KST `2026-10-08 01:30` 기준 rank 1에 삽입하고 actual cap tail `news-542`를 제거해 50-item cap·rank 1–50 유지. source body SHA-256 `6bc24cfb8dd9195b8848d2281b2f42cc3609102d73f9bd74537dd0455ad435a4`, raw capture, `index.md`, canonical `weekly/2026-W42.md`를 동기화.

@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-08 | Total pages: 394
+> Last updated: 2026-10-08 | Total pages: 395
 
 ## Entities
 
@@ -306,9 +306,10 @@
 - [[raw/articles/aitimes-google-constellation-nuclear-power-2026-10-07]] — Google·Constellation 3.59GW 원전 전력 계약 보도와 AI 데이터센터 전력 조달의 source-verified 운영 경계.
 - [[raw/articles/github-agent-scale-git-infrastructure-2026-10-07]] — GitHub, agent-scale 개발용 Git 인프라 설계 공개: 월 4,733억 Git 이벤트·73.8억 commit 관측의 source-verified 운영 경계.
 - [[raw/articles/kubernetes-cgroups-v2-shift-2026-10-07]] — Kubernetes, cgroup v2 전환 가이드 공개: node OS·runtime·resource 관측의 사전 호환성 점검 요구의 source-verified 운영 경계.
+- [[raw/articles/cloudflare-evidence-grounded-agentic-security-operations-2026-10-08]] — Cloudflare Managed Defense의 evidence-grounded agentic SOC harness: 결정론적 evidence admission·citation validation·tenant scope enforcement 운영 경계.
 - [[raw/articles/aitimeskr-google-embeddinggemma-2-2026-10-07]] — Google EmbeddingGemma 2 보도: 7.4억 파라미터 온디바이스 멀티모달 임베딩·Apache 2.0 공개의 source-verified 운영 경계.
 - [[raw/articles/aitimes-openai-codex-auto-review-free-2026-10-07]] — OpenAI Codex Auto-review 무료화 보도와 reviewer agent·sandbox 운영 경계.
-- `raw/articles/` — 201건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 202건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.
