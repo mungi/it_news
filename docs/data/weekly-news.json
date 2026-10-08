@@ -2,7 +2,7 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-08 20:53",
+  "last_updated_kst": "2026-10-09 00:57",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
@@ -14,195 +14,190 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Agent-scale Git 인프라: commit·merge·CI read fan-out을 하나의 capacity domain으로 다루는 방법",
-      "summary": "한 줄 결론: coding agent 도입 뒤 Git 병목은 모델 응답시간만이 아니라 durable write·ref contention·CI fetch fan-out으로 이동함. **push·merge p95, ref lock, CI queue, branch TTL**을 같은 SLO와 concurrency gate로 운영해야 함.",
-      "details": "GitHub는 2026년 8월 월 4,733억 Git 이벤트와 9월 73.8억 commit을 공개하며 agent-scale 개발에 맞춰 Git 인프라를 재구축한다고 설명했다. agent가 action마다 checkpoint·commit을 남기고 CI·code scanning이 같은 branch tip을 대량으로 읽으면 write durability, ref serialization, object maintenance, read cache가 상호 의존한다. 조직별 Git provider·repository topology·CI 실행 방식은 다르므로 GitHub 수치를 성능 보장으로 쓰지 말고 own telemetry와 canary로 capacity·rollback 조건을 설정해야 한다.",
-      "why_it_matters": "한 줄 결론: coding agent의 throughput은 token latency만으로 결정되지 않음. Git write/read path와 CI scheduler를 함께 측정하고, repository별 concurrency cap·merge policy·rollback을 release control에 포함해야 함.",
+      "title": "AWS Config 77개 리소스 타입 확대: 자동 기록 범위와 compliance control을 다시 검증하는 방법",
+      "summary": "한 줄 결론: AWS Config가 77개 resource type을 추가하면서 all-resource recording 계정은 새 타입을 자동 추적함. **recording 범위, Config rule·aggregator, 비용·배포 파이프라인**을 함께 재검토해야 신규 control-plane 자산이 사각지대에 남지 않음.",
+      "details": "AWS는 EC2, Amazon S3 Files, Amazon Q Business 등을 포함한 77개 resource type을 AWS Config가 추가 지원한다고 공지했다. 모든 resource type recording을 켠 계정은 새 타입을 자동 기록하며, 해당 타입은 Config rules와 aggregators에서도 사용할 수 있다. 그러나 자동 기록은 곧바로 의미 있는 compliance coverage나 remediation을 뜻하지 않는다. 조직별 recorder exclusion, delegated administrator, organization aggregator, rule scope, tag/ownership, IaC drift, configuration item volume과 비용, 운영 runbook을 새 타입별로 검증해야 한다.",
+      "why_it_matters": "한 줄 결론: 자산 발견 범위가 넓어지면 보안·감사·FinOps의 데이터 계약도 변함. Config recorder가 새 리소스를 수집하는지, rule이 필요한 property를 평가하는지, 중앙 aggregator와 remediation이 실제 운영 계정까지 닿는지를 분리해 확인해야 함.",
       "sources": [
-        "https://github.blog/engineering/architecture-optimization/building-git-infrastructure-for-agent-scale-development/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-config-new-resource-types"
       ],
-      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-invertocat-github-logo.png",
-      "local_image": "",
-      "refreshed_kst": "2026-10-08 00:28",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-10-09 00:57",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "agent-scale 개발에서 Git은 source-control 도구를 넘어 agent execution control plane의 일부가 됨. agent loop의 commit, merge queue, CI fetch, code scanning이 같은 repository state를 읽고 쓰므로 model latency와 별도인 durable-write·ref-contention·read-fan-out SLO가 필요함.",
+          "body": "AWS Config의 resource type 증가는 단순 inventory 목록 확장이 아니라 configuration evidence의 수집·집계·평가·조치 경로가 바뀌는 control-plane 변경임. all-resource recording을 사용하더라도 기존 rule이 새 타입을 평가하는지 별도로 증명해야 함.",
           "items": [
-            "변화: agent가 거의 매 action마다 checkpoint 또는 commit을 남기는 write pattern 확대",
-            "팀 액션: repository별 push·merge p95와 ref lock·CI queue를 release gate로 계측"
+            "변화: **77개** 추가 타입이 Config의 discover·assess·audit·remediate 범위에 편입",
+            "팀 액션: organization recorder·aggregator·rule scope와 configuration item 비용 baseline 재점검"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "GitHub Engineering은 서비스를 계속 운영하면서 agent-scale 개발을 위한 Git infrastructure를 재구축한다고 공개함. GitHub 전체 Git activity는 2025년 9월 월 2,182억 events에서 2026년 8월 월 4,733억 events로 두 배 이상 늘었고, 2026년 9월에는 개발자와 agent가 73.8억 commits를 생성했다는 플랫폼 관측치임.",
+          "body": "AWS 공지는 EC2, Amazon S3 Files, Amazon Q Business를 포함한 77개 추가 타입을 지원한다고 명시함. 모든 resource type recording이 활성화된 경우 새 타입을 자동 track하며 Config rules와 Config aggregators에서 이용할 수 있는 범위임.",
           "items": [
-            "규모: busiest repository가 2026년 8월 약 10억 requests를 처리했다는 원문 관측",
-            "변화: 월간 push가 6.9억에서 33.5억으로 4.9배 증가했다는 원문 수치",
-            "부하: GitHub Actions가 2026년 9월 32.6억 회 실행돼 branch-tip read fan-out을 키운 조건"
+            "범위: `AWS::BedrockAgentCore::PaymentConnector`·`AWS::BedrockAgentCore::ResourcePolicy` 등 agent control-plane 타입 포함",
+            "범위: `AWS::GuardDuty::ThreatEntitySet`·`TrustedEntitySet`, `AWS::InspectorV2::CodeSecurityScanConfiguration` 등 security 관련 타입 포함",
+            "범위: `AWS::QBusiness::DataSource`·`Index`·`Permission`·`Plugin`·`Retriever`·`WebExperience` 등 enterprise search 구성요소 포함"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "agent의 작업 단위가 짧아질수록 commit turnaround가 agent당 serial bottleneck이 됨. 읽기는 cache·replica로 수평 확장이 가능하지만 push는 durable storage와 일관된 visibility가 선행돼야 다음 agent 또는 CI job이 안전하게 state를 사용할 수 있음. merge queue의 hot ref는 이 write path를 한 지점에 집중시키므로 평균 latency보다 tail latency와 queueing이 중요함.",
+          "heading": "AI·Infra 전문가 해석",
+          "body": "Config가 타입을 기록한다는 사실과 조직의 보안 통제가 유효하다는 사실은 다름. 새 타입은 configuration item schema·relationship·delivery cadence가 기존 resource와 다를 수 있으며, generic tag·encryption·public-access rule이 해당 타입을 자동 포괄한다는 보장은 원문에 없음.",
           "items": [
-            "볼 것: agent action당 commit 수, push p50/p95/p99, merge ref queue, failed/retried write 비율",
-            "피할 것: LLM token throughput만 높이고 Git write capacity와 branch contention을 미계측하는 rollout"
+            "볼 것: 새 타입별 configuration item 생성, resource relationship, delivery delay, recorder status",
+            "피할 것: all-resource recording 상태만 확인하고 rule applicability·evaluation result·remediation path를 생략하는 운영",
+            "결정: control objective를 asset discovery, preventive policy, detective rule, remediation으로 분해"
           ]
         },
         {
-          "heading": "아키텍처 관점",
-          "body": "agent runner, Git remote, merge queue, CI scheduler, code scanning, artifact/cache storage를 단일 request path가 아니라 상호 연결된 capacity domain으로 모델링해야 함. branch tip 하나에 대한 push가 수천 건의 clone·fetch를 유발할 수 있으므로, ephemeral branch의 수명과 cache key·invalidation 정책도 Git storage 비용과 read burst를 좌우함.",
+          "heading": "아키텍처·거버넌스 관점",
+          "body": "central security account의 aggregator는 여러 account·Region에서 모은 configuration evidence를 다루므로 신규 타입이 account boundary와 Region coverage에서 빠지지 않는지 확인해야 함. IaC state와 Config inventory가 다를 때 어느 system을 authoritative source로 삼을지도 resource class별로 정해야 함.",
           "items": [
-            "설계: repository hot spot·default branch·agent branch·fork·monorepo workload를 별도 class로 분류",
-            "설계: branch TTL·checkpoint batch·merge queue·CI trigger coalescing을 workload class별로 설정",
-            "관측: push 완료부터 CI visibility·artifact availability까지의 end-to-end timeline 수집"
+            "설계: organization account·sandbox·production·regulated workload별 recorder inclusion matrix 작성",
+            "설계: Config resource type, CloudFormation type, Terraform provider resource, CMDB ownership의 mapping 유지",
+            "거버넌스: agent connector·enterprise search·security policy 타입에 owner·data classification·change approval 지정"
           ]
         },
         {
-          "heading": "운영·SRE 관점",
-          "body": "Git remote가 정상 응답하더라도 ref lock 증가, merge queue 대기, CI runner backlog, clone/fetch egress burst가 agent delivery를 지연시킬 수 있음. incident dashboard는 repository별 write error·durability latency·ref contention과 CI queue·runner saturation을 correlation해야 원인을 모델, Git, CI 중 어디에 둘지 구분 가능함.",
+          "heading": "보안·감사 관점",
+          "body": "새로 추적되는 security·AI resource는 권한, 외부 data source, policy, plugin 같은 간접 노출 지점을 만들 수 있음. Config rule이 형식상 COMPLIANT여도 resource policy의 실제 principal·condition·cross-account trust가 조직 policy에 맞는지는 별도 검토가 필요함.",
           "items": [
-            "SLO: push/merge p95·p99, ref lock wait, CI queue age, clone/fetch throughput, branch cleanup lag 정의",
-            "알림: 특정 repository hot ref의 contention과 global provider failure를 분리하는 threshold 설계",
-            "복구: agent concurrency cap·checkpoint interval 완화·CI trigger suppression·manual merge fallback runbook화"
+            "검증: ResourcePolicy·Permission·Plugin에 대한 least privilege, external identity, cross-account condition 확인",
+            "감사: rule evaluation timestamp, aggregator ingestion, exception ticket, remediation evidence 연결",
+            "리스크: 신규 타입을 기존 broad allowlist에 자동 포함해 approval 없이 production에 노출하는 경로"
           ]
         },
         {
-          "heading": "비용·보안·거버넌스 관점",
-          "body": "agent가 만든 branch·commit·CI 실행은 storage, runner minute, artifact retention, network egress를 동시에 늘릴 수 있음. 더 높은 concurrency는 secret scan·policy check·human review가 따라갈 시간을 줄이므로 protected branch, required checks, workflow permission, audit retention을 throughput 최적화와 분리해 유지해야 함.",
+          "heading": "비용·FinOps 관점",
+          "body": "기록 대상이 늘면 configuration item 수, delivery channel, aggregator query와 rule evaluation volume이 변할 수 있음. 공지는 가격 또는 item volume을 보장하지 않으므로 신규 타입이 많은 개발 account부터 관측해 비용과 signal을 함께 측정해야 함.",
           "items": [
-            "비용 변수: object growth·pack maintenance·CI runner·cache hit rate·artifact retention·egress",
-            "통제: agent token·branch creation·workflow trigger·merge 권한을 repository와 environment별 최소 권한으로 분리",
-            "감사: agent identity·commit provenance·approval·check result·rollback commit을 release timeline에 보존"
+            "측정: account·Region·resource type별 configuration item 증분과 rule evaluation 실패율",
+            "측정: 중앙 aggregator query·conformance pack·remediation automation의 실행량",
+            "결정: 보존 기간과 non-production recorder scope를 control requirement와 비용으로 비교"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 단계는 agent-enabled repository의 baseline 측정임. 다음으로 낮은 위험의 ephemeral branch workload에서 concurrency와 checkpoint policy를 canary로 변경하고, protected default branch에는 merge queue와 required check를 유지한 채 rollout해야 함. provider SaaS와 self-hosted forge는 rate limit·storage·runner topology가 다르므로 각각 실측이 필요함.",
+          "body": "먼저 현재 recorder mode와 exclusions, organization aggregation, managed/custom rule inventory를 export함. 다음으로 새 타입이 생성되는 representative account에서 capture·aggregation·evaluation·remediation을 end-to-end로 시험하고, 결과를 policy-as-code와 운영 대시보드에 반영해야 함.",
           "items": [
-            "0~2주: repository별 agent concurrency·commit rate·push/merge latency·CI queue baseline 수집",
-            "2~4주: checkpoint batch·branch TTL·CI coalescing·cache policy를 canary에서 비교",
-            "확대 전: ref contention threshold·provider rate limit·runner budget·kill switch·manual fallback 승인"
+            "1단계: 77개 타입 중 실제 사용 서비스와 owner를 inventory에 매핑",
+            "2단계: staging account에서 configuration item·rule result·aggregator visibility canary 수행",
+            "3단계: gap별 custom rule·SCP·IAM policy·IaC check와 exception workflow 보강"
           ]
         },
         {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀은 agent workflow와 commit granularity를, platform 팀은 Git·CI·cache capacity를, security 팀은 identity와 branch protection을 소유해야 함. 완료 기준은 agent가 많은 commit을 만드는 사실이 아니라 target repository가 protected workflow와 tail-latency budget 안에서 merge·build·rollback을 반복하는 증거임.",
+          "heading": "개발팀·인프라팀 체크리스트",
+          "body": "새 타입의 이름을 목록에 추가하는 것으로 완료 처리하지 말고 evidence pipeline을 실행해 확인해야 함.",
           "items": [
-            "개발팀: checkpoint frequency·branch naming·PR/merge policy·test trigger·manual takeover 확인",
-            "플랫폼팀: Git p95·ref lock·CI queue·cache·storage growth·rate limit·capacity alert 확인",
-            "보안팀: agent identity·secret scanning·required check·protected branch·audit export 확인"
+            "체크: all-resource 또는 explicit recorder mode와 Region별 recorder 상태 확인",
+            "체크: Config rule·conformance pack이 새 resource type을 evaluate하는지 sample resource로 확인",
+            "체크: organization aggregator와 SIEM export에서 account·Region·owner metadata가 보이는지 확인",
+            "체크: configuration item 증분·evaluation failure·remediation failure alarm과 rollback owner 지정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "agent-scale 개발의 병목은 agent runtime 밖에도 존재함. Git write와 CI read를 독립 시스템으로 보지 말고 하나의 release capacity model로 관리해야 agent concurrency를 올려도 merge latency와 control 품질을 함께 지킬 수 있음.",
+          "body": "AWS Config의 coverage 확대는 policy-as-code의 사전 조건인 asset evidence를 넓히는 변경임. **자동 기록은 자동 통제가 아님**. 신규 타입이 실제 조직의 rule·aggregator·remediation·비용 guardrail을 통과하는지 canary 증거로 확인해야 함.",
           "items": [
-            "발표 메세지: agent throughput의 다음 병목은 commit·merge·CI path일 가능성",
-            "팀 액션: 이번 주 repository별 push/merge p95, ref contention, CI queue baseline을 확보"
+            "발표 포인트: 77개 신규 타입을 보안 기능 목록이 아니라 configuration evidence 계약 변경으로 설명",
+            "즉시 행동: 이번 주 change window에 representative account의 recorder·rule·aggregator end-to-end test 예약"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Kubernetes cgroup v2 전환: node image·runtime·MemoryQoS·eBPF 관측을 함께 검증하는 방법",
-      "summary": "한 줄 결론: cgroup v2 전환은 node OS 옵션 변경이 아니라 resource control·metrics·security agent의 compatibility migration임. **kernel version, runtime, MemoryQoS, PSI, eBPF cgroup path**를 node-pool canary와 rollback으로 검증해야 함.",
-      "details": "Kubernetes Blog는 cgroup v2가 unified hierarchy, memory.high·memory.min·memory.low, safe delegation, PSI와 같은 기능을 제공하며 cgroup v1과 resource-control·agent integration 경계가 다르다고 정리했다. 특히 MemoryQoS의 tiered reservation은 cgroup v2와 kernel 조건에 의존하고, Cilium 같은 eBPF workload는 cgroup path와 attach model을 점검해야 한다. 특정 managed Kubernetes의 default 또는 모든 workload 성능 보장은 아니므로 node OS, kubelet, CRI runtime, metrics/security agent, HPA input을 포함한 canary가 필요하다.",
-      "why_it_matters": "한 줄 결론: cgroup v2 migration의 성공 기준은 node가 Ready가 되는 사실이 아님. CPU·memory·I/O pressure, OOM·eviction, metrics·eBPF enforcement, workload SLO가 기존 pool과 일관되는 증거가 필요함.",
+      "title": "Cloudflare Radar 재설계: Internet traffic·outage 관측 화면을 운영 의사결정에 연결하는 방법",
+      "summary": "한 줄 결론: Cloudflare Radar가 traffic·outage 중심 interactive map과 tabbed exploration으로 재설계됨. **외부 Internet signal, 자체 telemetry, incident timeline**을 분리·상관해 장애 탐지와 대외 커뮤니케이션에 써야 하며, 공개 dashboard를 단독 SLO 증거로 사용하면 안 됨.",
+      "details": "Cloudflare는 2026-10-08 Radar의 사용자 경험을 재설계했다고 공개했다. 전 세계 Cloudflare network 기반 Internet trend data를 지도 중심의 traffic·outage 진입점과 국가·추세·data story로 이어지는 탐색 흐름으로 정리하고, 기존 bento box chart widget을 tabbed flow와 표준화된 Kumo component 기반으로 바꿨다. 이는 public Internet signal의 접근성을 높이는 product/UI 변경이다. 개별 조직의 availability, root cause, packet loss, application error, SLA를 보장하는 telemetry는 아니므로 외부 signal과 내부 observability를 별도 evidence로 운영해야 한다.",
+      "why_it_matters": "한 줄 결론: 외부 traffic·outage signal은 고객 체감과 광역 사건의 맥락을 알려 주지만 조직별 원인 판정 데이터는 아님. NOC·SRE·security team은 public view를 event correlation 입력으로 쓰고, own logs·metrics·traces와 incident command 기준을 우선해야 함.",
       "sources": [
-        "https://kubernetes.io/blog/2026/10/06/kubernetes-cgroups-v2-shift/"
+        "https://blog.cloudflare.com/radar-redesign/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-infra.svg",
-      "refreshed_kst": "2026-10-08 00:28",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4DWY89ZAV8VV76CKKZXT18F.01M4DWY9FYSBMPEDPF1WQARM7H.png",
+      "local_image": "",
+      "refreshed_kst": "2026-10-09 00:57",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "cgroup v2는 Linux resource control hierarchy의 세대 교체이며 Kubernetes node의 OS·kubelet·CRI runtime·observability·security integration을 함께 바꾸는 migration임. node pool canary에서 resource behavior와 telemetry를 비교하고 image-level rollback을 준비해야 함.",
+          "body": "Radar 재설계는 public Internet data를 더 넓은 사용자가 탐색하도록 만드는 UI·information architecture 변경임. 지도에서 본 traffic·outage 신호를 조직 내부의 SLO·synthetic test·network telemetry와 결합할 때만 운영 판단의 증거가 됨.",
           "items": [
-            "변화: unified hierarchy와 memory protection·PSI·delegation을 활용할 수 있는 기반",
-            "팀 액션: cgroup mode·kernel·runtime·agent support matrix를 node image release에 고정"
+            "변화: traffic와 outage를 상단 map 중심의 즉시 탐색 경로로 재배치",
+            "팀 액션: 외부 signal은 detection context로, 내부 telemetry는 root-cause와 customer impact의 기준으로 분리"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Kubernetes Blog는 cgroup v1과 v2의 CPU·memory controller, rootless delegation, eBPF device control, PSI 차이를 정리함. cgroup v2 memory controller에서는 memory.high가 throttling을 제공하고, tiered reservation 사용 시 memory.min과 memory.low가 hard/soft protection을 제공함. 이 보호 모델은 cgroup v1에서 제공되지 않는 범위임.",
+          "body": "Cloudflare는 Radar가 global network로 구동되는 real-time Internet trend view라고 설명함. 기존 landing page는 bento box layout과 vertical card가 정보의 우선순위와 자연스러운 reading path를 흐렸고, 새 화면은 map·summary statistics·tabbed flow로 global view에서 country·trend·data story로 이동하는 구조임.",
           "items": [
-            "MemoryQoS: Burstable container에 memory.high throttling을 적용하는 feature gate 설명",
-            "예약: Guaranteed Pod request를 memory.min, Burstable Pod request를 memory.low로 매핑하는 TieredReservation 설명",
-            "kernel: MemoryQoS에는 kernel 5.9 이상 권장과 이전 kernel livelock 경고 조건 안내"
+            "범위: map 상단은 outage를 먼저, traffic을 함께 보여 주는 navigation point로 설계",
+            "구조: 기존 chart widget을 tabbed flow로 바꾸어 summary와 in-depth exploration을 연결",
+            "구현: Cloudflare product system의 Kumo component로 표준화·maintainability를 높이는 방향"
           ]
         },
         {
-          "heading": "AI/Infra 전문가 해석",
-          "body": "cgroup 전환은 limit 값의 문법만 바꾸는 작업이 아님. 동일한 request·limit라도 throttling·reclaim·reservation·metric path가 달라 autoscaler 판단, node pressure, tail latency, OOM/eviction 양상이 달라질 수 있음. GPU inference, batch, latency-sensitive service를 한 pool에서 섞는 경우 workload class별 memory pressure와 CPU throttling baseline이 필요함.",
+          "heading": "SRE·NOC 전문가 해석",
+          "body": "public traffic anomaly는 upstream, regional connectivity, DNS, CDN, ISP, major platform incident 같은 광역 사건의 후보 신호가 될 수 있음. 그러나 특정 service의 5xx, latency, failed transaction, DNS resolution, end-user geography는 조직의 RUM·synthetic·edge log로 교차 검증해야 함.",
           "items": [
-            "볼 것: CPU throttling, memory.events, PSI, page fault, OOM/eviction, pod startup·tail latency",
-            "피할 것: node Ready와 basic smoke test만 통과하면 resource semantics가 동일하다고 간주하는 판단"
+            "볼 것: external traffic/outage time window와 own error-rate·latency·availability·support contact의 시간 상관",
+            "피할 것: public map의 변화를 곧바로 자사 장애 원인이나 SLA breach로 선언하는 판단",
+            "운영 과제: external signal event에 incident owner·validation query·communication threshold를 연결"
           ]
         },
         {
-          "heading": "아키텍처 관점",
-          "body": "node image, systemd, kubelet cgroup driver, CRI runtime, OCI runtime, CNI·eBPF agent, metrics agent가 같은 cgroup filesystem과 ownership model에 닿음. rootless container delegation은 cgroup v2에서 공식 지원되는 path이지만 Kubernetes Pod user namespace와는 별도 기능이므로 filesystem·kernel·CRI·OCI prerequisites를 함께 확인해야 함.",
+          "heading": "관측 아키텍처 관점",
+          "body": "외부 dashboard, Internet routing/DNS signal, CDN/edge log, application APM, business KPI를 계층이 다른 telemetry로 모델링해야 함. 각 data source의 sampling, geography, aggregation, time resolution, retention이 다르므로 dashboard timestamp를 incident timeline의 하나의 annotation으로 다루는 편이 안전함.",
           "items": [
-            "설계: node pool별 cgroup mode·kernel·systemd·kubelet·runtime·CNI·agent version inventory 구성",
-            "설계: latency-sensitive·batch·BestEffort·Guaranteed workload를 canary pool에서 분리",
-            "검증: Pod user namespace와 rootless runtime은 cgroup transition과 별도로 compatibility test 수행"
+            "설계: public signal, provider status, synthetic probe, RUM, service metric, trace를 time-normalized incident timeline에 수집",
+            "설계: country·ASN·ISP·region segmentation과 user journey·dependency graph를 별도 dimension으로 유지",
+            "검증: external anomaly 발생 시 own probe와 application metric이 어떤 lead/lag를 가지는지 game day로 측정"
           ]
         },
         {
-          "heading": "관측·SRE 관점",
-          "body": "PSI는 node·Pod·container 수준의 CPU·memory·I/O contention signal을 제공하므로 기존 CPU usage·working-set 기반 alert만으로 보이지 않던 pressure를 드러낼 수 있음. 그러나 exporter·dashboard·recording rule이 cgroup v2 path와 metric semantics를 이해하지 못하면 HPA input 또는 incident triage가 왜곡될 수 있음.",
+          "heading": "장애 대응·커뮤니케이션 관점",
+          "body": "Radar의 outage-first UI는 비기술 stakeholder가 사건의 규모와 geography를 빠르게 이해하는 데 도움을 줄 수 있음. 다만 public data가 자사 tenant·customer cohort·transaction path를 식별하지 않으므로 status page update는 내부 incident commander가 확인한 customer impact와 복구 추정에 근거해야 함.",
           "items": [
-            "관측: cgroup filesystem mount·agent scrape success·PSI·memory.events·OOM/eviction을 rollout 전후 비교",
-            "SLO: workload class별 p95/p99 latency·restart·eviction·node pressure·autoscaling delay 기준 설정",
-            "복구: alert noise와 workload regression을 구분할 node image·runtime·agent rollback sequence 준비"
+            "절차: external anomaly 감지 → internal validation → provider escalation → customer-impact assessment → public communication 순서 고정",
+            "지표: detect-to-validate, validate-to-declare, region별 affected request, recovery confirmation을 분리 기록",
+            "리스크: 공개 화면의 국가 단위 신호를 특정 고객·ISP·application failure로 과잉 해석하는 오류"
           ]
         },
         {
-          "heading": "네트워크·보안 관점",
-          "body": "cgroup v1의 device access control interface file과 달리 cgroup v2 device controller는 cgroup BPF 위에서 구현됨. 원문은 Cilium이 socket-based load balancing을 위해 BPF cgroup program을 attach하고 기본 cgroup root로 /run/cilium/cgroupv2를 사용한다고 설명함. policy enforcement와 runtime security agent는 path·attach point·privilege를 actual node image에서 재검증해야 함.",
+          "heading": "보안·데이터 신뢰 관점",
+          "body": "Internet trend dashboard는 awareness에는 유용하지만 forensic evidence 또는 intrusion attribution의 단독 근거가 될 수 없음. security operation에서는 외부 signal을 IOC·DNS·BGP·WAF·endpoint·identity telemetry와 correlation하고, source·timestamp·aggregation level을 case record에 남겨야 함.",
           "items": [
-            "통제: CNI·eBPF·runtime security agent의 cgroup mount·attach failure·privileged access를 canary에서 확인",
-            "리스크: cgroup path mismatch로 network policy·socket load balancing·device policy 관측이 누락되는 조건",
-            "감사: node image와 agent daemonset 변경을 동일 change record로 연결"
-          ]
-        },
-        {
-          "heading": "비용·용량 관점",
-          "body": "MemoryQoS와 PSI는 noisy-neighbor pressure를 더 세밀하게 다룰 수 있지만 reserve·throttle·reclaim 정책이 잘못되면 effective allocatable capacity와 pod density가 달라질 수 있음. 더 많은 Pod를 예약하는 결정보다 target workload의 latency·OOM·I/O pressure와 node replacement 비용을 같이 측정해야 함.",
-          "items": [
-            "비용 변수: node density·overprovisioning·eviction retry·autoscaling churn·observability cardinality",
-            "검토: memory.min/low reservation이 schedulable capacity와 cluster autoscaler behavior에 주는 영향",
-            "판단: capacity saving은 workload SLO·rollback rate·incident load와 함께 평가 필요"
+            "확인: public observation의 coverage와 aggregation level을 incident evidence와 구분",
+            "확인: WAF·DDoS·DNS·identity alert의 tenant scope와 raw log retention 확인",
+            "리스크: 공개 aggregated data만으로 공격 주체·영향 범위·복구를 확정하는 대응"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 fleet inventory와 compatible node image를 정리하고, non-critical pool에서 metrics/security/CNI agent를 포함한 canary를 실행해야 함. 이후 workload class별로 MemoryQoS와 reservation policy를 opt-in해 production pool로 확대한다. managed Kubernetes는 provider control-plane, node AMI, add-on support matrix를 독립 확인해야 함.",
+          "body": "운영팀은 Radar를 새 monitoring system으로 도입하기보다 external-context feed로 등록하는 편이 적절함. 자사 incident workflow에 URL, analyst checklist, internal validation dashboard, provider escalation template을 연결하고 실제 regional event에서 false positive·lead time을 검증해야 함.",
           "items": [
-            "0~2주: cgroup mode·kernel·runtime·agent·workload resource baseline 수집",
-            "2~4주: node pool canary에서 PSI·OOM·latency·HPA·eBPF policy·rollback game day 수행",
-            "확대 전: provider support·image pin·exception owner·capacity guardrail·node drain plan 승인"
+            "1단계: NOC/SRE runbook에 public Internet context 확인 절차와 담당자 추가",
+            "2단계: 최근 incident를 대상으로 external signal과 internal telemetry의 correlation replay",
+            "3단계: 유효한 lead time·false positive 기준을 정해 on-call enrichment 또는 manual review로 운영"
           ]
         },
         {
-          "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀은 workload request/limit와 latency regression을, platform 팀은 node image·runtime·autoscaling을, security/network 팀은 eBPF·agent enforcement를 소유해야 함. 완료 기준은 cgroup v2 활성화가 아니라 representative workload가 동일 또는 합의된 SLO 안에서 resource·network·security telemetry를 남기는 증거임.",
+          "heading": "개발팀·인프라팀 체크리스트",
+          "body": "UI 변경 자체보다 organization의 incident evidence chain을 보강하는 데 초점을 맞춰야 함.",
           "items": [
-            "개발팀: request/limit·QoS class·memory-sensitive workload·load test·fallback replica 확인",
-            "플랫폼팀: kernel·kubelet·CRI·node image·PSI/OOM alert·drain/rollback 확인",
-            "보안·네트워크팀: CNI cgroup root·BPF attach·runtime policy·agent log·privilege 확인"
+            "체크: public signal 조회 시각·URL·geography·time range를 ticket에 보존하는 template 준비",
+            "체크: 같은 시각의 synthetic·RUM·edge·APM·business metric query를 one-click으로 연결",
+            "체크: external anomaly가 있어도 declare하지 않을 조건과 escalation owner를 runbook에 명시",
+            "체크: quarterly game day에서 country-level anomaly와 dependency outage를 구분하는 drill 수행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "cgroup v2는 Kubernetes의 resource management와 observability를 개선할 수 있는 기반이지만 node-level compatibility migration임. image upgrade처럼 취급하지 말고 workload SLO, telemetry completeness, enforcement continuity를 release gate로 둬야 함.",
+          "body": "Radar의 새 화면은 Internet의 거시적 상태를 읽기 쉽게 만든 interface임. **public signal은 맥락이고, 내부 telemetry가 판정 근거임**. outage map을 incident dashboard의 대체재로 쓰지 말고 validation·communication workflow의 보조 증거로 연결해야 함.",
           "items": [
-            "발표 메세지: cgroup v2의 성공은 node Ready가 아니라 workload resource behavior와 telemetry의 일관성",
-            "팀 액션: 다음 node-image rollout 전에 cgroup v2 canary matrix와 rollback trigger를 확정"
+            "발표 포인트: 지도·tabbed flow 변경을 UI 뉴스가 아니라 외부 observability context의 소비 방식 변화로 설명",
+            "즉시 행동: 다음 장애 회고에서 public signal과 own telemetry가 일치·불일치한 사례를 한 건 비교"
           ]
         }
       ]

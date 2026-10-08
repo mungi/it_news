@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-08 | Total pages: 396
+> Last updated: 2026-10-09 | Total pages: 398
 
 ## Entities
 
@@ -312,6 +312,8 @@
 - [[raw/articles/mistral-large-4-open-weights-preview-2026-10-06]] — Mistral Large 4 public preview의 1조/활성 520억 MoE·100만 token context·이달 말 open weights와 red-teaming 운영 경계.
 - [[raw/articles/aitimeskr-google-embeddinggemma-2-2026-10-07]] — Google EmbeddingGemma 2 보도: 7.4억 파라미터 온디바이스 멀티모달 임베딩·Apache 2.0 공개의 source-verified 운영 경계.
 - [[raw/articles/aitimes-openai-codex-auto-review-free-2026-10-07]] — OpenAI Codex Auto-review 무료화 보도와 reviewer agent·sandbox 운영 경계.
+- [[raw/articles/aws-config-77-resource-types-2026-10-08]] — AWS Config 77개 신규 resource type의 recorder·rule·aggregator·remediation 운영 경계.
+- [[raw/articles/cloudflare-radar-redesign-2026-10-08]] — Cloudflare Radar traffic·outage map 재설계와 public signal·internal telemetry incident 검증 경계.
 - `raw/articles/` — 202건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.

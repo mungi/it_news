@@ -3278,3 +3278,9 @@
 - 확인 시각: 2026-10-08 20:53 KST. GeekNews RSS·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Kubernetes·CNCF·CISA·The Hacker News research surface를 재점검했고 GeekNews Plus는 HTTP 404, Cloudflare RSS는 HTTP 403이었음.
 - GitHub 공식 원문의 `article:published_time` `2026-10-07T17:45:34+00:00`, OG image와 본문을 직접 대조. AI agent 관련 PR 비율, 공개 push·secret prevalence, push block override, 초당 credential match, ModernBERT candidate batch 2ms 미만 평가, private preview·GHES 3.23 public preview·AI credit 범위를 source 경계로 수록.
 - 조직별 precision·false-positive rate·latency·credit 비용·GHES offline model lifecycle은 원문에서 보장하지 않아 tenant별 canary 확인 범위로 유지. `news-596`을 KST `2026-10-08 02:45` 기준 rank 2에 삽입하고 actual cap tail `news-546`을 제거해 50-item cap·rank 1–50을 유지. OG image를 `docs/assets/images/news-596.png`에 저장하고 raw capture SHA-256 `cac359656586a953927ee3828d7aad7213634c8033ae47ffa50081a60aacd166`, `index.md`, canonical weekly archive를 동기화. 당일 00:28에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-09] update | KST 첫 실행 Deep Dive 전면 교체: AWS Config resource coverage·Cloudflare Radar 외부 관측
+- 확인 시각: 2026-10-09 00:57 KST. GeekNews·GeekNews Plus는 HTTP 403으로 현재 본문을 수집하지 못했고, AI타임스KR·AI타임스, AWS What’s New, Cloudflare, GitHub, Kubernetes, OpenAI, CNCF research surface를 재점검함.
+- AWS 공식 announcement/RSS와 Cloudflare 공식 원문/RSS를 직접 대조. AWS Config 77개 신규 resource type의 all-resource recording 자동 추적·Config rule·aggregator 범위, Cloudflare Radar의 traffic·outage map·tabbed exploration·Kumo component 기반 재설계 범위를 수록함.
+- KST 첫 실행 정책에 따라 전일 GitHub agent-scale Git·Kubernetes cgroup v2 topic을 유지하지 않고, primary source가 겹치지 않는 AWS·Cloudflare event로 Deep Dive 2건의 title·summary·details·source·image·9개 expert section을 actual `refreshed_kst` `2026-10-09 00:57`로 전면 갱신. 정규 카드 50건·newest-first rank 1–50은 유지하고 raw capture 2건, `index.md`, canonical `weekly/2026-W42.md`를 동기화.
+- 검증 통과: `python3 scripts/validate_weekly_news.py`(50 cards, Deep Dive 2건), `node --check docs/app.js`, `git diff --check`.
