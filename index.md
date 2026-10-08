@@ -307,6 +307,7 @@
 - [[raw/articles/github-agent-scale-git-infrastructure-2026-10-07]] — GitHub, agent-scale 개발용 Git 인프라 설계 공개: 월 4,733억 Git 이벤트·73.8억 commit 관측의 source-verified 운영 경계.
 - [[raw/articles/kubernetes-cgroups-v2-shift-2026-10-07]] — Kubernetes, cgroup v2 전환 가이드 공개: node OS·runtime·resource 관측의 사전 호환성 점검 요구의 source-verified 운영 경계.
 - [[raw/articles/cloudflare-evidence-grounded-agentic-security-operations-2026-10-08]] — Cloudflare Managed Defense의 evidence-grounded agentic SOC harness: 결정론적 evidence admission·citation validation·tenant scope enforcement 운영 경계.
+- [[raw/articles/aitimes-openai-gpt-6-intelligent-ui-2026-10-08]] — OpenAI GPT-6 지능형 UI 보도: 생성 component·스트리밍·schema validation·action binding 운영 경계.
 - [[raw/articles/mistral-large-4-open-weights-preview-2026-10-06]] — Mistral Large 4 public preview의 1조/활성 520억 MoE·100만 token context·이달 말 open weights와 red-teaming 운영 경계.
 - [[raw/articles/aitimeskr-google-embeddinggemma-2-2026-10-07]] — Google EmbeddingGemma 2 보도: 7.4억 파라미터 온디바이스 멀티모달 임베딩·Apache 2.0 공개의 source-verified 운영 경계.
 - [[raw/articles/aitimes-openai-codex-auto-review-free-2026-10-07]] — OpenAI Codex Auto-review 무료화 보도와 reviewer agent·sandbox 운영 경계.
