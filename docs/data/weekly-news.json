@@ -2,13 +2,13 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-08 16:49",
+  "last_updated_kst": "2026-10-08 20:53",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
     "GitHub는 agent·CI 동시 workload에서 2026년 8월 월 4,733억 Git 이벤트와 9월 73.8억 commit을 공개함. agent throughput은 model latency뿐 아니라 push·merge ref contention·CI fetch fan-out의 capacity 문제임.",
     "Kubernetes cgroup v2 전환 가이드는 node OS·runtime·metrics/security agent와 CPU/memory/PSI 관측의 compatibility를 함께 확인하도록 요구함. node pool canary와 image rollback 조건이 필요함.",
-    "AWS Batch의 CloudWatch job metrics 발행으로 queue·job lifecycle을 SLO와 alarm에 연결할 수 있음. queue wait·retry·compute scaling·completed job cost를 함께 관측해야 원인 판별 가능함.",
+    "GitHub는 비정형 secret 후보를 문맥 기반 ModernBERT classifier로 2ms 미만에 평가해 push protection에 넣는다고 공개함. agent가 늘리는 code volume에는 block·override·false positive·revoke lead time·AI credit을 함께 측정하는 DevSecOps control이 필요함.",
     "Cloudflare는 보안 agent가 evidence를 직접 수집·분류하지 않도록 fixed reconnaissance·citation validation·restricted disposition을 code로 분리함. SOC agent pilot은 model prompt보다 tenant scope·evidence lineage·replay·human override를 먼저 고정해야 함."
   ],
   "deep_dives": [
@@ -277,6 +277,73 @@
       ]
     },
     {
+      "id": "news-596",
+      "rank": 2,
+      "title_ko": "GitHub, AI secret detection을 push protection에 확대: ModernBERT 분류기로 후보 묶음 2ms 미만 평가",
+      "title_original": "Secret protection must scale with software",
+      "summary": "핵심: GitHub가 코드 문맥에서 비정형 secret 후보를 판별하는 **ModernBERT classifier**를 push protection에 추가함. 후보 secret 묶음을 2ms 미만에 평가하고 예방 가능 secret 수를 두 배 이상 늘릴 수 있다는 GitHub 설명이며, Enterprise Cloud·Teams Secret Protection 대상 private preview와 GHES 3.23 public preview 범위임.",
+      "detail": "GitHub 공식 글은 2026년 2분기 공개 push 5억7400만 건 중 secret 탐지 비율이 0.47%였고, secret이 포함된 public code가 약 2초마다 새로 나타난다고 설명함. 새 classifier는 database URL·Kubernetes Secret manifest·Dockerfile처럼 prefix가 일정하지 않은 값도 주변 문맥으로 판별하며, push critical path에서 candidate batch를 2ms 미만에 평가하는 범위임. 기능은 이달 말 Enterprise Cloud·GitHub Teams의 GitHub Secret Protection 조직에 private preview로 제공 예정이고 AI credits를 사용하며, GHES 3.23 public preview에는 air-gapped 환경용 AI-detected alert를 포함하는 계획임.",
+      "why_it_matters": "AI agent가 생성하는 PR·push가 늘면 정규식 기반 detector만으로는 내부 password·connection string 같은 비정형 credential의 노출을 막기 어려움. 다만 push 차단의 false positive는 개발 흐름을 직접 멈추므로 detection rate뿐 아니라 override율·평가 지연·배포별 credit 사용량을 함께 운영해야 함.",
+      "engineering_implication": "시사점: secret protection rollout은 대표 repository에서 block·override·false positive·scan latency·credential revoke lead time·AI credit을 baseline과 비교하고, service account·CI secret·Kubernetes manifest의 예외 승인과 rotation runbook을 함께 고정 필요.",
+      "korea_implication": "국내 개발 조직도 GitHub Cloud와 GHES를 혼용하면 plan·AI credit·GHES 3.23 지원 범위, 네트워크 격리 환경의 model update와 alert 전달 경로를 별도 검증 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "Secret Protection",
+        "Secret Scanning",
+        "Push Protection",
+        "ModernBERT",
+        "AI Security",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-08 02:45",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/ai-and-ml/github-copilot/secret-protection-must-scale-with-software/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-security-invertocat-blocks-copilot.png",
+      "local_image": "assets/images/news-596.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub가 코드 문맥을 사용해 비정형 secret 후보를 판별하는 AI-powered generic secret detection model을 push protection에 포함한다고 공개함. 기존 post-push 탐지와 달리 repository history에 credential이 들어가기 전의 critical path에서 block 또는 allow 판단을 수행하는 구조임.",
+          "items": [
+            "대상: database URL·Kubernetes Secret manifest·Dockerfile 안의 password 형태 값처럼 issuer prefix가 고정되지 않은 credential 후보",
+            "제공: GitHub Secret Protection을 사용하는 Enterprise Cloud·GitHub Teams 조직 대상 private preview를 이달 말 제공 예정"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 2024년 2분기부터 2026년 2분기까지 screened push가 2.84배, credential이 포함된 push가 2.59배 증가했다고 제시함. 공개 code에서 약 2초마다 새 secret이 나타나지만 push별 prevalence의 통계적으로 감지 가능한 상승 추세는 없었다는 GitHub 관측 범위임.",
+          "items": [
+            "규모: 2026년 2분기 public push 5억7400만 건 중 0.47%에서 secret 탐지라는 원문 수치",
+            "운영: push-path block override 비율이 6.63%에서 3.93%로 하락했다는 9개 분기 관측",
+            "탐지: 150개 이상 technical partner와 연계하고 2026년 2분기 public scanning이 평균 초당 26건 credential match를 보고한 범위"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "GitHub는 새 ModernBERT classifier가 candidate secret 묶음을 2ms 미만에 평가하고, 기존 LLM pipeline보다 정밀하며 예방 가능 secret 수를 두 배 이상 늘릴 수 있다고 설명함. 이 수치는 GitHub 환경의 vendor 주장으로, 조직별 repository 언어·manifest 형태·custom detector·CI topology에서 동일한 precision 또는 latency를 보장하지 않음.",
+          "items": [
+            "성능 경계: push protection critical path에서 batch 평가 2ms 미만이라는 GitHub 설명",
+            "통제 경계: false positive는 developer flow를 중단시키므로 차단 수만으로 품질을 판단하지 않는 원칙",
+            "비용 경계: private preview 기능의 AI credit 사용과 plan entitlement를 production rollout 전 확인 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "원문은 AI secret detection을 사용하는 조직을 새 model로 자동 업데이트하고, post-push alert는 별도 추가 비용 없이 유지한다고 설명함. GHES 3.23 public preview에는 air-gapped 환경의 AI-detected alert를 포함할 예정이나, release 일정·지원 범위·offline model lifecycle은 실제 배포 문서로 재확인해야 함.",
+          "items": [
+            "팀 액션: block·override·false positive·scan latency·revoke lead time·AI credit을 repository와 secret class별 dashboard로 수집",
+            "팀 액션: CI secret·service account·Kubernetes manifest의 allow/exception owner와 credential rotation runbook 지정",
+            "검토 항목: GitHub plan·Secret Protection entitlement·GHES version·air-gap model update·audit export·incident escalation 확인"
+          ]
+        }
+      ]
+    },
+    {
       "id": "news-593",
       "title_ko": "Cloudflare, evidence-grounded agentic SOC harness 공개: 결정론적 증거 수집과 specialist agent 분리",
       "title_original": "Building an evidence-grounded agentic security operations harness on Cloudflare",
@@ -341,7 +408,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-592",
@@ -405,7 +472,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-594",
@@ -476,7 +543,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-591",
@@ -539,7 +606,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-590",
@@ -602,7 +669,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-589",
@@ -665,7 +732,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-587",
@@ -728,7 +795,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-588",
@@ -791,7 +858,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-583",
@@ -857,7 +924,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-586",
@@ -920,7 +987,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-584",
@@ -982,7 +1049,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-585",
@@ -1044,7 +1111,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-581",
@@ -1112,7 +1179,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-582",
@@ -1180,7 +1247,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-580",
@@ -1247,7 +1314,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-579",
@@ -1327,7 +1394,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-577",
@@ -1399,7 +1466,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-578",
@@ -1466,7 +1533,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-576",
@@ -1539,7 +1606,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-575",
@@ -1615,7 +1682,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-572",
@@ -1687,7 +1754,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-574",
@@ -1750,7 +1817,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-570",
@@ -1815,7 +1882,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-573",
@@ -1882,7 +1949,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-569",
@@ -1953,7 +2020,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-565",
@@ -2017,7 +2084,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-566",
@@ -2081,7 +2148,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-568",
@@ -2145,7 +2212,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-567",
@@ -2209,7 +2276,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-564",
@@ -2289,7 +2356,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-563",
@@ -2372,7 +2439,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-562",
@@ -2446,7 +2513,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-561",
@@ -2519,7 +2586,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-559",
@@ -2587,7 +2654,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-558",
@@ -2653,7 +2720,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-556",
@@ -2719,7 +2786,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-554",
@@ -2793,7 +2860,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-560",
@@ -2858,7 +2925,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-557",
@@ -2933,7 +3000,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-555",
@@ -3002,11 +3069,11 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-553",
-      "rank": 42,
+      "rank": 43,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -3092,7 +3159,7 @@
     },
     {
       "id": "news-551",
-      "rank": 43,
+      "rank": 44,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -3166,7 +3233,7 @@
     },
     {
       "id": "news-550",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -3248,7 +3315,7 @@
     },
     {
       "id": "news-549",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -3339,7 +3406,7 @@
     },
     {
       "id": "news-552",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -3410,7 +3477,7 @@
     },
     {
       "id": "news-547",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -3556,11 +3623,11 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-545",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "Citrix NetScaler ADC·Gateway: active exploitation 확인된 RCE 2건에 fixed build·DTLS·prior-access forensic 병행",
       "title_original": "Warning: Two Unpatched Citrix NetScaler RCE Zero-Days Under Active Exploitation",
       "summary": "핵심: Citrix가 9월 27일 `CVE-2026-88771`·`CVE-2026-88772`의 실제 악용과 수정 build를 공개함. 첫 번째는 기본 구성을 포함한 영향 version의 모든 ADC·Gateway deployment, 두 번째는 기본 활성화 가능성이 높은 VPN virtual server의 DTLS 조건이 대상임.\n조치: 14.1은 `14.1-73.37` 이상, 13.1은 `13.1-64.23` 이상으로 올리고, patch 전 VPX snapshot·remote log·support bundle을 보존한 뒤 HA·VPN/AAA·DTLS regression과 prior-access hunt를 병렬 운영 필요.",
@@ -3637,72 +3704,6 @@
           "items": [
             "보존: snapshot·support bundle·core dump·configuration export·remote log retention",
             "조사: admin/AAA auth log·new account·config change·VPN session·egress anomaly·HA peer 차이"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-546",
-      "rank": 50,
-      "title_ko": "Anthropic Claude Tag: 2주간 3,000여 변경으로 Claude 웹·데스크톱 핵심 경로를 약 3배 가속",
-      "title_original": "Anthropic used Claude to optimize Claude, reporting 3x faster key user experiences",
-      "summary": "핵심: AI타임스가 인용한 Anthropic 발표에서 내부 연구 모델 `Claude Tag`가 2주간 병목 추적·benchmark 생성·코드 배포·사후 관리를 수행해 Claude 웹 첫 로딩을 3.1초에서 0.55초로, Claude Code 세션 시작을 0.8초에서 0.3초로 단축한 범위임.\n운영: 3,000여 변경과 약 200개 feature flag를 적용하는 동안 인간 엔지니어가 목표·trade-off·최종 승인을 맡고, unit test 선작성·telemetry·점진 rollout을 결합해 장애·rollback 없이 진행했다는 vendor report임.",
-      "detail": "AI타임스는 Anthropic이 내부 연구용 `Claude Tag`를 자율형 최적화 agent로 사용해 Claude 웹 서비스와 데스크톱 앱의 성능 개선을 수행했다고 보도했다. 보도된 수치는 2주간의 개선 결과이며, 첫 로딩 3.1초→0.55초와 Claude Code session start 0.8초→0.3초를 포함한다. agent는 Datadog MCP server와 Valgrind 분석 도구를 사용했고, 6,900개 React hook과 900개 store subscription이 집중된 입력창, 긴 em dash 처리의 V8 regex path 등 구체적 병목을 찾아 수정했다. Anthropic의 내부 운영 결과이므로 다른 서비스의 처리량·안정성·비용 개선을 보장하는 benchmark로 일반화하지 않아야 함.",
-      "why_it_matters": "성능 개선 agent를 production code path에 연결할 때 자동 분석 능력보다 measurement contract, test-first change, feature-flag rollback, human approval이 안전한 rollout의 결정 조건임. source가 제시한 사례는 agent의 도구 사용을 단일 자동 배포가 아니라 관측·수정·승인·복구가 분리된 release system으로 다룬 범위임.",
-      "engineering_implication": "시사점: latency 개선 agent는 SLO·trace·profiling access를 read-only로 시작하고, patch는 unit/integration test·canary·feature flag·change owner를 통과한 뒤에만 확대 필요. p50뿐 아니라 p95/p99, error rate, CPU/memory, rollback time, flag debt를 동일 release dashboard에서 확인 필요.",
-      "korea_implication": "국내 서비스 조직도 coding agent를 performance workflow에 투입할 때 production write 권한을 먼저 부여하지 말고 observability 조회·재현 가능한 benchmark·staging patch 제안부터 분리해야 함.",
-      "category": "AI",
-      "tags": [
-        "Anthropic",
-        "Claude",
-        "AI Agent",
-        "Performance Engineering",
-        "Feature Flags",
-        "Observability",
-        "DevTools"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-27 15:59",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=215678",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/215678_219617_4345.jpg",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 인용한 Anthropic 발표는 내부 연구용 모델 `Claude Tag`를 자율형 performance optimization agent로 사용한 사례임. source는 2026년 9월 23일 현지 기준 발표과 2주간의 결과를 연결하며 Claude 웹 서비스와 데스크톱 앱의 핵심 사용자 경험이 약 3배 빨라졌다고 설명함.",
-          "items": [
-            "성과: Claude 웹 첫 로딩 `3.1초→0.55초`, Claude Code session start `0.8초→0.3초`로 단축했다는 source 수치",
-            "범위: 일일 수만 시간의 사용자 대기 시간을 줄였다는 Anthropic 설명이며 외부 독립 benchmark·전체 workload latency는 미확정"
-          ]
-        },
-        {
-          "heading": "agent가 찾은 병목",
-          "body": "source는 `Claude Tag`가 병목 추적, performance benchmark 생성, 코드 배포, 사후 관리를 수행했다고 설명함. Datadog MCP server와 Valgrind를 사용해 frontend와 runtime path를 관측하고, 반복 가능한 local symptom을 좁혀 작은 patch를 제안한 구조임.",
-          "items": [
-            "frontend: 입력창에 `6,900개` React hook과 `900개` store subscription이 몰려 키 입력마다 re-render가 발생한 병목 확인",
-            "runtime: 코드 하이라이팅 지연의 긴 em dash 처리에서 V8 regular-expression path를 약 20줄 수정해 개선한 사례",
-            "observability: 화면 흔들림의 layout shift 원인을 좁히기 위해 agent가 telemetry를 구축하고 150개 이상 개선 사례를 병렬 진행한 범위"
-          ]
-        },
-        {
-          "heading": "변경 통제와 사람 역할",
-          "body": "agent가 코드를 제안·적용했지만 human engineer가 목표 설정, trade-off 판단, 최종 승인을 맡았다는 source 설명임. automated performance work의 안전성은 모델 단독 판단이 아니라 test, rollout control, accountable approval이 결합된 조건으로 해석해야 함.",
-          "items": [
-            "change control: `3,000건` 이상 변경에 unit test 선작성과 약 `200개` feature flag를 적용한 source 설명",
-            "release outcome: 해당 기간 장애·rollback이 없었다는 Anthropic 내부 운영 결과이며 다른 조직의 동일 결과를 보장하지 않는 범위"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "성능 agent 도입은 broad production write 권한으로 시작할 일이 아님. metric query, trace, profiler, patch proposal, test execution, staged deploy를 별도 capability로 나누고 external side effect마다 approval과 rollback evidence를 남겨야 함.",
-          "items": [
-            "도입 순서: read-only observability·baseline benchmark·staging patch·canary feature flag·production rollout 단계 분리",
-            "release gate: p50/p95/p99 latency, error rate, CPU·memory, client rendering, flag exposure, rollback time을 baseline과 함께 판정",
-            "운영 과제: agent가 생성한 patch의 ownership, test provenance, tool credential scope, flag cleanup deadline을 change record에 연결"
           ]
         }
       ]

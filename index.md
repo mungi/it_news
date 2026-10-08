@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-08 | Total pages: 395
+> Last updated: 2026-10-08 | Total pages: 396
 
 ## Entities
 
@@ -302,6 +302,7 @@
 - [[raw/articles/aitimes-openai-decisions-api-2026-10-01]] — OpenAI Decisions API 제한 프리뷰의 선택지 기반 agent routing·policy gate·trace 검증 경계.
 - [[raw/articles/aitimes-google-rrsi-agent-harness-2026-10-01]] — Google RRSI의 agent harness 자기개선, holdout·cost·side effect·rollback release gate 경계.
 - [[raw/articles/aws-batch-job-cloudwatch-metrics-2026-10-07]] — AWS Batch, CloudWatch job metrics 기본 발행: queue·job 상태 관측 범위 확대의 source-verified 운영 경계.
+- [[raw/articles/github-secret-protection-modernbert-push-protection-2026-10-08]] — GitHub AI secret detection의 ModernBERT·push protection·2ms 미만 candidate batch와 DevSecOps 검증 경계.
 - [[raw/articles/aws-claude-haiku-5-5-2026-10-08]] — AWS Claude Haiku 5.5 제공의 effort control·병렬 subagent·Bedrock model access·quota·FinOps 검증 경계.
 - [[raw/articles/aitimes-google-constellation-nuclear-power-2026-10-07]] — Google·Constellation 3.59GW 원전 전력 계약 보도와 AI 데이터센터 전력 조달의 source-verified 운영 경계.
 - [[raw/articles/github-agent-scale-git-infrastructure-2026-10-07]] — GitHub, agent-scale 개발용 Git 인프라 설계 공개: 월 4,733억 Git 이벤트·73.8억 commit 관측의 source-verified 운영 경계.
