@@ -37,6 +37,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-workers-on-demand-profiling-2026-10-09]] — Cloudflare Workers·Durable Objects production CPU·memory flamegraph profiling의 source map·artifact access·SLO canary 운영 경계.
 - [[raw/articles/aitimes-anthropic-claude-dashboards-motion-2026-10-09]] — Claude Dashboards·Motion 베타 보도의 enterprise data connector·query·export·생성 코드 승인 경계.
 - [[raw/articles/aitimes-openai-codex-28-days-speed-2026-10-06]] — Codex·ChatGPT Work 28일 연속 개선 보도와 GPT-6 Astra·Sol 처리 속도 50% 상향의 latency·quota·fallback 검증 경계.
 - [[raw/articles/cloudflare-root-ksk-2024-rollover-2026-10-07]] — DNS root `KSK-2024` rollover의 RFC 8509 readiness·validating resolver trust anchor·SERVFAIL 대응 경계.
@@ -320,7 +321,7 @@
 - [[raw/articles/anthropic-oss-scanner-2026-10-09]] — Anthropic OSS Scanner의 opt-in 미검증 AI 취약점 report·offline audit Dockerfile·maintainer triage 운영 경계.
 - [[raw/articles/aws-bedrock-cost-explorer-product-attributes-2026-10-09]] — Bedrock model·provider·inference type·feature 비용 attribute와 application/IAM tag FinOps 귀속 경계.
 - [[raw/articles/cncf-kubernetes-nis2-dora-ownership-2026-10-09]] — Kubernetes 플랫폼의 NIS2·DORA 통제를 artifact·RACI·evidence retrieval로 분해하는 운영 경계.
-- `raw/articles/` — 202건의 출처 메타데이터와 한국어 브리핑 요약.
+- `raw/articles/` — 203건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
 - [[raw/articles/island-fakegit-agentbaiting-2026-07-21]] — FakeGit의 위장 Skill·MCP server, AgentBaiting discovery와 artifact-execution 통제.

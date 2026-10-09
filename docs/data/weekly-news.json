@@ -2,7 +2,7 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-09 21:20",
+  "last_updated_kst": "2026-10-10 01:29",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
@@ -14,196 +14,273 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "AWS Config 77개 리소스 타입 확대: 자동 기록 범위와 compliance control을 다시 검증하는 방법",
-      "summary": "한 줄 결론: AWS Config가 77개 resource type을 추가하면서 all-resource recording 계정은 새 타입을 자동 추적함. **recording 범위, Config rule·aggregator, 비용·배포 파이프라인**을 함께 재검토해야 신규 control-plane 자산이 사각지대에 남지 않음.",
-      "details": "AWS는 EC2, Amazon S3 Files, Amazon Q Business 등을 포함한 77개 resource type을 AWS Config가 추가 지원한다고 공지했다. 모든 resource type recording을 켠 계정은 새 타입을 자동 기록하며, 해당 타입은 Config rules와 aggregators에서도 사용할 수 있다. 그러나 자동 기록은 곧바로 의미 있는 compliance coverage나 remediation을 뜻하지 않는다. 조직별 recorder exclusion, delegated administrator, organization aggregator, rule scope, tag/ownership, IaC drift, configuration item volume과 비용, 운영 runbook을 새 타입별로 검증해야 한다.",
-      "why_it_matters": "한 줄 결론: 자산 발견 범위가 넓어지면 보안·감사·FinOps의 데이터 계약도 변함. Config recorder가 새 리소스를 수집하는지, rule이 필요한 property를 평가하는지, 중앙 aggregator와 remediation이 실제 운영 계정까지 닿는지를 분리해 확인해야 함.",
+      "title": "Anthropic OSS Scanner: AI 취약점 보고 대량 유입을 maintainer triage 체계로 전환하는 방법",
+      "summary": "한 줄 결론: Anthropic의 opt-in **OSS Scanner**는 strongest model이 만든 미검증 보고를 eligible project maintainer에게 무상·주기적으로 전달함. 발견 모델을 자동 patch pipeline으로 취급하지 말고, 수신·재현·중복 제거·CVD·release 검증의 처리량과 신뢰도를 운영 지표로 만들어야 함.",
+      "details": "Anthropic은 2026년 10월 8일(UTC) OSS Scanner를 공개했다. eligible open-source project의 core maintainer가 opt-in하면 strongest model의 security scan report를 human review·triage 없이 빠르게 받는 구조다. Anthropic은 최근 6개월 29,000개 이상 candidate를 발견했지만 약 6,000개만 수동 검토했다고 밝혔고, 48개 project의 critical/high 후보 97건 중 85건이 CVD 기준을 충족한 초기 평가를 제시했다. 이 수치는 특정 평가 집합의 결과이며 project별 severity, duplicate, threat-model 적합성, scan frequency를 보장하지 않는다. 팀은 AI finding을 신뢰할 수 없는 외부 보안 입력으로 다루고 privileged CI·production branch와 분리된 재현 환경, disclosure owner, patch acceptance evidence를 갖춰야 한다.",
+      "why_it_matters": "모델이 늘리는 것은 취약점 발견량이며, maintainer가 처리해야 하는 것은 검증 가능한 security evidence임. report throughput이 triage·fix·disclosure throughput을 넘으면 빠른 탐지가 alert debt와 release risk로 전환됨.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-config-new-resource-types"
+        "https://www.anthropic.com/research/launching-opt-in-vuln-finding-service-for-open-source",
+        "https://red.anthropic.com/oss-scanner/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "refreshed_kst": "2026-10-09 00:57",
+      "image_url": "https://www-cdn.anthropic.com/images/4zrzovbb/website/6d4a0d28992ade92d6fa63646fd9c9d318245c6c-2400x1260.jpg",
+      "local_image": "",
+      "refreshed_kst": "2026-10-10 01:29",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AWS Config의 resource type 증가는 단순 inventory 목록 확장이 아니라 configuration evidence의 수집·집계·평가·조치 경로가 바뀌는 control-plane 변경임. all-resource recording을 사용하더라도 기존 rule이 새 타입을 평가하는지 별도로 증명해야 함.",
+          "body": "OSS Scanner는 AI가 찾아낸 report를 maintainer에게 더 빨리 보내는 intake 경로임. **자동 발견은 자동 검증·자동 수정이 아님**. incoming report의 신뢰도와 처리 능력을 분리해 운영해야 함.",
           "items": [
-            "변화: **77개** 추가 타입이 Config의 discover·assess·audit·remediate 범위에 편입",
-            "팀 액션: organization recorder·aggregator·rule scope와 configuration item 비용 baseline 재점검"
+            "변화: eligible project core maintainer가 opt-in하면 strongest model의 periodic security scan report 수신",
+            "팀 액션: report intake부터 reproduce·severity·CVD·patch validation까지 owner와 SLA를 먼저 고정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS 공지는 EC2, Amazon S3 Files, Amazon Q Business를 포함한 77개 추가 타입을 지원한다고 명시함. 모든 resource type recording이 활성화된 경우 새 타입을 자동 track하며 Config rules와 Config aggregators에서 이용할 수 있는 범위임.",
+          "body": "Anthropic은 Project Glasswing 경험을 바탕으로 OSS Scanner를 공개함. output은 human review나 triage를 거치지 않은 model-generated report이며, 빠른 전달의 대가로 incorrect·invalid report 가능성이 남는 구조임.",
           "items": [
-            "범위: `AWS::BedrockAgentCore::PaymentConnector`·`AWS::BedrockAgentCore::ResourcePolicy` 등 agent control-plane 타입 포함",
-            "범위: `AWS::GuardDuty::ThreatEntitySet`·`TrustedEntitySet`, `AWS::InspectorV2::CodeSecurityScanConfiguration` 등 security 관련 타입 포함",
-            "범위: `AWS::QBusiness::DataSource`·`Index`·`Permission`·`Plugin`·`Retriever`·`WebExperience` 등 enterprise search 구성요소 포함"
+            "규모: 최근 6개월 **29,000개 이상** candidate 발견, 약 6,000개 수동 review·triage라는 원문 공개 범위",
+            "전달: maintainer 요청에 따라 검증 전 report 약 5,000건을 직접 보낸 실적이라는 원문 공개 범위",
+            "구성: 가능한 경우 self-contained reproducer·원인 설명·bisect·candidate patch를 포함하는 report 형식"
           ]
         },
         {
-          "heading": "AI·Infra 전문가 해석",
-          "body": "Config가 타입을 기록한다는 사실과 조직의 보안 통제가 유효하다는 사실은 다름. 새 타입은 configuration item schema·relationship·delivery cadence가 기존 resource와 다를 수 있으며, generic tag·encryption·public-access rule이 해당 타입을 자동 포괄한다는 보장은 원문에 없음.",
+          "heading": "초기 평가의 읽는 법",
+          "body": "Anthropic은 48개 project의 critical/high 후보 97건을 CVD 전문가가 점검해 85건이 기준을 충족했다고 설명함. 12건 중 11건은 알려진 issue 또는 scan 내 duplicate, 1건은 invalid이라는 해당 sample의 결과임.",
           "items": [
-            "볼 것: 새 타입별 configuration item 생성, resource relationship, delivery delay, recorder status",
-            "피할 것: all-resource recording 상태만 확인하고 rule applicability·evaluation result·remediation path를 생략하는 운영",
-            "결정: control objective를 asset discovery, preventive policy, detective rule, remediation으로 분해"
+            "수치: **85/97(88%)**은 특정 프로젝트·severity·review 기준의 초기 평가값",
+            "경계: severity inflation과 project threat model 오해를 maintainer가 지적한 사례를 원문이 명시",
+            "피할 것: 88%를 모든 언어·repository·future scan의 precision 또는 SLA로 일반화하는 판단"
           ]
         },
         {
-          "heading": "아키텍처·거버넌스 관점",
-          "body": "central security account의 aggregator는 여러 account·Region에서 모은 configuration evidence를 다루므로 신규 타입이 account boundary와 Region coverage에서 빠지지 않는지 확인해야 함. IaC state와 Config inventory가 다를 때 어느 system을 authoritative source로 삼을지도 resource class별로 정해야 함.",
+          "heading": "AI·AppSec 전문가 해석",
+          "body": "이 서비스의 병목은 model inference가 아니라 report acceptance queue임. 독립 재현, affected-version 확인, exploitability·severity 판정, duplicate correlation, embargo와 downstream disclosure가 서로 다른 책임과 시간을 요구함.",
           "items": [
-            "설계: organization account·sandbox·production·regulated workload별 recorder inclusion matrix 작성",
-            "설계: Config resource type, CloudFormation type, Terraform provider resource, CMDB ownership의 mapping 유지",
-            "거버넌스: agent connector·enterprise search·security policy 타입에 owner·data classification·change approval 지정"
+            "설계: incoming report를 untrusted evidence로 분류하고 issue tracker 직접 생성·자동 merge와 분리",
+            "측정: arrival rate, reproduce success, valid/duplicate/invalid ratio, time-to-acknowledge, time-to-fix를 별도 기록",
+            "리스크: model이 제시한 PoC·patch를 privileged runner 또는 production branch에서 즉시 실행하는 경로"
           ]
         },
         {
-          "heading": "보안·감사 관점",
-          "body": "새로 추적되는 security·AI resource는 권한, 외부 data source, policy, plugin 같은 간접 노출 지점을 만들 수 있음. Config rule이 형식상 COMPLIANT여도 resource policy의 실제 principal·condition·cross-account trust가 조직 policy에 맞는지는 별도 검토가 필요함.",
+          "heading": "재현·패치 아키텍처 관점",
+          "body": "report는 repository snapshot, dependency graph, compiler·runtime, build network가 고정되지 않으면 재현성이 떨어짐. offline audit Dockerfile을 포함하는 enrollment 구조는 scan 환경 정의에 도움을 주지만, local reproduction과 patch CI의 trust boundary까지 대신 정의하지는 않음.",
           "items": [
-            "검증: ResourcePolicy·Permission·Plugin에 대한 least privilege, external identity, cross-account condition 확인",
-            "감사: rule evaluation timestamp, aggregator ingestion, exception ticket, remediation evidence 연결",
-            "리스크: 신규 타입을 기존 broad allowlist에 자동 포함해 approval 없이 production에 노출하는 경로"
+            "격리: network egress 제한 sandbox에서 reproducer·candidate patch를 실행하고 secret·production credential 미주입",
+            "증거: commit SHA, container digest, tool version, reproduction log, reviewer decision을 advisory record에 연결",
+            "검증: patch가 취약점만 막고 compatibility·performance·supply-chain policy를 훼손하지 않는 acceptance test 필요"
           ]
         },
         {
-          "heading": "비용·FinOps 관점",
-          "body": "기록 대상이 늘면 configuration item 수, delivery channel, aggregator query와 rule evaluation volume이 변할 수 있음. 공지는 가격 또는 item volume을 보장하지 않으므로 신규 타입이 많은 개발 account부터 관측해 비용과 signal을 함께 측정해야 함.",
+          "heading": "공개·거버넌스 관점",
+          "body": "unreviewed report에는 알려진 결함, 동일 scan의 중복, 영향이 과장된 후보가 섞일 수 있음. 공개 전에 maintainer·security contact·CVE authority·downstream packager의 역할과 embargo 조건을 명확히 해야 함.",
           "items": [
-            "측정: account·Region·resource type별 configuration item 증분과 rule evaluation 실패율",
-            "측정: 중앙 aggregator query·conformance pack·remediation automation의 실행량",
-            "결정: 보존 기간과 non-production recorder scope를 control requirement와 비용으로 비교"
+            "절차: receipt → acknowledgement → isolated reproduce → severity/threat-model review → duplicate check → coordinated disclosure 순서",
+            "거버넌스: security mailbox·PGP key·backup contact·advisory template·exception owner를 repository policy에 명시",
+            "리스크: 공개 issue에 검증 전 PoC·attack path를 올려 patch 전에 공격 가능성을 높이는 운영"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 현재 recorder mode와 exclusions, organization aggregation, managed/custom rule inventory를 export함. 다음으로 새 타입이 생성되는 representative account에서 capture·aggregation·evaluation·remediation을 end-to-end로 시험하고, 결과를 policy-as-code와 운영 대시보드에 반영해야 함.",
+          "body": "가입 전 한 repository를 기준으로 report 수신과 closure 흐름을 rehearsal하고, triage backlog가 감당 가능한지 판단해야 함. scan 빈도 확대는 resolved-report quality와 maintainer capacity가 확인된 뒤 진행하는 편이 안전함.",
           "items": [
-            "1단계: 77개 타입 중 실제 사용 서비스와 owner를 inventory에 매핑",
-            "2단계: staging account에서 configuration item·rule result·aggregator visibility canary 수행",
-            "3단계: gap별 custom rule·SCP·IAM policy·IaC check와 exception workflow 보강"
+            "1단계: critical dependency와 security contact·disclosure policy·reproduction sandbox를 inventory화",
+            "2단계: historical CVE 또는 synthetic finding으로 receipt부터 patch verification까지 tabletop·game day 수행",
+            "3단계: SLA·queue threshold·duplicate workflow·release gate를 충족한 project부터 opt-in 확대"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "새 타입의 이름을 목록에 추가하는 것으로 완료 처리하지 말고 evidence pipeline을 실행해 확인해야 함.",
+          "body": "대량 AI report 수신 전에 execution boundary와 evidence contract를 정해야 함.",
           "items": [
-            "체크: all-resource 또는 explicit recorder mode와 Region별 recorder 상태 확인",
-            "체크: Config rule·conformance pack이 새 resource type을 evaluate하는지 sample resource로 확인",
-            "체크: organization aggregator와 SIEM export에서 account·Region·owner metadata가 보이는지 확인",
-            "체크: configuration item 증분·evaluation failure·remediation failure alarm과 rollback owner 지정"
+            "체크: report mailbox·PGP·on-call escalation·acknowledgement SLA와 vacation backup 확인",
+            "체크: offline reproduction image, no-secret runner, package cache·egress policy, artifact retention 확인",
+            "체크: CVE/CVD owner, embargo exception, downstream notification, patch backport matrix 확인",
+            "체크: report volume·validity·fix lead time·reopen rate를 security dashboard에서 추적"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AWS Config의 coverage 확대는 policy-as-code의 사전 조건인 asset evidence를 넓히는 변경임. **자동 기록은 자동 통제가 아님**. 신규 타입이 실제 조직의 rule·aggregator·remediation·비용 guardrail을 통과하는지 canary 증거로 확인해야 함.",
+          "body": "OSS Scanner는 detection capacity를 제공하지만 maintainer의 verification capacity를 대체하지 않음. **AI report는 보안 입력이고 patch는 별도 승인 artifact임**. 자동화 범위는 수신·분류·증거 수집까지로 제한하고 merge·disclosure는 검증된 control 아래 둬야 함.",
           "items": [
-            "발표 포인트: 77개 신규 타입을 보안 기능 목록이 아니라 configuration evidence 계약 변경으로 설명",
-            "즉시 행동: 이번 주 change window에 representative account의 recorder·rule·aggregator end-to-end test 예약"
+            "발표 포인트: 29,000 candidate와 6,000 human triage의 차이를 AI 발견량과 운영 처리량의 gap으로 설명",
+            "즉시 행동: 핵심 OSS 한 곳에서 report receipt-to-reproduce-to-disclosure drill의 시간과 owner를 이번 주 측정"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Cloudflare Radar 재설계: Internet traffic·outage 관측 화면을 운영 의사결정에 연결하는 방법",
-      "summary": "한 줄 결론: Cloudflare Radar가 traffic·outage 중심 interactive map과 tabbed exploration으로 재설계됨. **외부 Internet signal, 자체 telemetry, incident timeline**을 분리·상관해 장애 탐지와 대외 커뮤니케이션에 써야 하며, 공개 dashboard를 단독 SLO 증거로 사용하면 안 됨.",
-      "details": "Cloudflare는 2026-10-08 Radar의 사용자 경험을 재설계했다고 공개했다. 전 세계 Cloudflare network 기반 Internet trend data를 지도 중심의 traffic·outage 진입점과 국가·추세·data story로 이어지는 탐색 흐름으로 정리하고, 기존 bento box chart widget을 tabbed flow와 표준화된 Kumo component 기반으로 바꿨다. 이는 public Internet signal의 접근성을 높이는 product/UI 변경이다. 개별 조직의 availability, root cause, packet loss, application error, SLA를 보장하는 telemetry는 아니므로 외부 signal과 내부 observability를 별도 evidence로 운영해야 한다.",
-      "why_it_matters": "한 줄 결론: 외부 traffic·outage signal은 고객 체감과 광역 사건의 맥락을 알려 주지만 조직별 원인 판정 데이터는 아님. NOC·SRE·security team은 public view를 event correlation 입력으로 쓰고, own logs·metrics·traces와 incident command 기준을 우선해야 함.",
+      "title": "Amazon Bedrock 비용 product attribute: 모델·호출자·workload를 같은 FinOps 계약으로 묶는 방법",
+      "summary": "한 줄 결론: AWS Cost Explorer·Budgets·Dashboards가 Bedrock 비용을 **model·provider·inference type·feature**로 나눠 분석·예산 필터링할 수 있게 됨. product dimension과 application·project·workspace·IAM principal tag를 연결해 모델 routing의 비용 효과를 owner가 조치 가능한 단위로 운영해야 함.",
+      "details": "AWS는 2026년 10월 8일(UTC) Cost Explorer, AWS Budgets, AWS Cost Management Dashboards에서 Amazon Bedrock product attribute를 지원한다고 공지했다. model, model provider, inference type, feature별로 Cost Explorer와 Dashboard에서 비용을 group/filter하고 Budgets에서 같은 속성을 filter할 수 있다. application inference profile과 project/workspace cost allocation tag, IAM principal tag를 결합하는 사용법도 제시했다. AWS GovCloud (US)와 China Beijing/Ningxia를 제외한 AWS Region에서 추가 비용 없이 제공된다고 명시했다. 이 차원은 billing attribution 도구이며 token latency·task quality·tag completeness·cross-account allocation 정확도는 자동 보장하지 않으므로, service catalog·deployment metadata·budget action·SLO를 함께 설계해야 한다.",
+      "why_it_matters": "AI 비용은 model invoice가 아니라 prompt·output·feature·caller·application·workspace의 조합으로 발생함. 같은 모델의 사용량이라도 input/output ratio, reranker, shared role, untagged request에 따라 비용 원인과 조치자가 달라짐.",
       "sources": [
-        "https://blog.cloudflare.com/radar-redesign/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-bedrock-attributes-in-cost-explorer/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4DWY89ZAV8VV76CKKZXT18F.01M4DWY9FYSBMPEDPF1WQARM7H.png",
-      "local_image": "",
-      "refreshed_kst": "2026-10-09 00:57",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-10-10 01:29",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Radar 재설계는 public Internet data를 더 넓은 사용자가 탐색하도록 만드는 UI·information architecture 변경임. 지도에서 본 traffic·outage 신호를 조직 내부의 SLO·synthetic test·network telemetry와 결합할 때만 운영 판단의 증거가 됨.",
+          "body": "Bedrock product attribute는 “누가 어떤 모델·기능에서 비용을 만들었는가”를 billing plane에서 나누는 새 dimension임. **비용 가시성은 비용 통제가 아님**. tag·identity·service ownership·budget response를 하나의 운영 계약으로 연결해야 함.",
           "items": [
-            "변화: traffic와 outage를 상단 map 중심의 즉시 탐색 경로로 재배치",
-            "팀 액션: 외부 signal은 detection context로, 내부 telemetry는 root-cause와 customer impact의 기준으로 분리"
+            "변화: model·provider·inference type·feature 기준 group/filter와 budget filter 제공",
+            "팀 액션: product attribute와 application·workspace·IAM principal ownership을 같은 dashboard key로 매핑"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 Radar가 global network로 구동되는 real-time Internet trend view라고 설명함. 기존 landing page는 bento box layout과 vertical card가 정보의 우선순위와 자연스러운 reading path를 흐렸고, 새 화면은 map·summary statistics·tabbed flow로 global view에서 country·trend·data story로 이동하는 구조임.",
+          "body": "AWS는 Cost Explorer와 Dashboards에서 Bedrock cost를 product attribute별 group/filter하고, Budgets에서 같은 attribute별 filter를 지원한다고 공지함. model, provider, inference type, feature가 공식 dimension 범위임.",
           "items": [
-            "범위: map 상단은 outage를 먼저, traffic을 함께 보여 주는 navigation point로 설계",
-            "구조: 기존 chart widget을 tabbed flow로 바꾸어 summary와 in-depth exploration을 연결",
-            "구현: Cloudflare product system의 Kumo component로 표준화·maintainability를 높이는 방향"
+            "예시: model은 Claude Sonnet 5·Claude Haiku 4.5, provider는 Anthropic·Cohere라는 공지 예시",
+            "예시: inference type은 input/output token, feature는 on-demand inference·reranker라는 공지 예시",
+            "범위: GovCloud US와 China Beijing/Ningxia를 제외한 AWS Region, 추가 비용 없음이라는 공지 범위"
           ]
         },
         {
-          "heading": "SRE·NOC 전문가 해석",
-          "body": "public traffic anomaly는 upstream, regional connectivity, DNS, CDN, ISP, major platform incident 같은 광역 사건의 후보 신호가 될 수 있음. 그러나 특정 service의 5xx, latency, failed transaction, DNS resolution, end-user geography는 조직의 RUM·synthetic·edge log로 교차 검증해야 함.",
+          "heading": "AI·FinOps 전문가 해석",
+          "body": "attribute는 비용의 기술적 분해 축이고 tag·principal은 비용의 조직적 분해 축임. 두 축을 연결하지 않으면 고비용 모델은 보여도 어떤 제품 release·prompt change·agent owner가 조치해야 하는지는 남지 않음.",
           "items": [
-            "볼 것: external traffic/outage time window와 own error-rate·latency·availability·support contact의 시간 상관",
-            "피할 것: public map의 변화를 곧바로 자사 장애 원인이나 SLA breach로 선언하는 판단",
-            "운영 과제: external signal event에 incident owner·validation query·communication threshold를 연결"
+            "분해: model/provider/feature는 공급·기능 축, application/project/workspace/principal은 제품·책임 축",
+            "측정: input/output cost, reranker·on-demand feature cost, unallocated spend, budget breach를 분리",
+            "피할 것: 전체 Bedrock spend 감소만 보고 quality·latency·completed-task·customer outcome 손실을 누락하는 판단"
           ]
         },
         {
-          "heading": "관측 아키텍처 관점",
-          "body": "외부 dashboard, Internet routing/DNS signal, CDN/edge log, application APM, business KPI를 계층이 다른 telemetry로 모델링해야 함. 각 data source의 sampling, geography, aggregation, time resolution, retention이 다르므로 dashboard timestamp를 incident timeline의 하나의 annotation으로 다루는 편이 안전함.",
+          "heading": "비용 데이터 모델 관점",
+          "body": "application inference profile·project/workspace tag·IAM principal tag는 request attribution의 후보 signal임. shared role, multi-tenant service, cross-account invocation, tag activation 시점, profile 미사용 호출은 별도 exception으로 남을 수 있음.",
           "items": [
-            "설계: public signal, provider status, synthetic probe, RUM, service metric, trace를 time-normalized incident timeline에 수집",
-            "설계: country·ASN·ISP·region segmentation과 user journey·dependency graph를 별도 dimension으로 유지",
-            "검증: external anomaly 발생 시 own probe와 application metric이 어떤 lead/lag를 가지는지 game day로 측정"
+            "설계: service catalog ID를 inference profile·deployment metadata·cost allocation tag·dashboard filter에 공통 사용",
+            "설계: caller principal과 end-user/tenant를 혼동하지 않고 identity scope와 product ownership을 별도 dimension으로 유지",
+            "검증: representative request의 invocation trace, billing line, tag, owner가 같은 service key로 연결되는지 canary"
           ]
         },
         {
-          "heading": "장애 대응·커뮤니케이션 관점",
-          "body": "Radar의 outage-first UI는 비기술 stakeholder가 사건의 규모와 geography를 빠르게 이해하는 데 도움을 줄 수 있음. 다만 public data가 자사 tenant·customer cohort·transaction path를 식별하지 않으므로 status page update는 내부 incident commander가 확인한 customer impact와 복구 추정에 근거해야 함.",
+          "heading": "예산·SLO 운영 관점",
+          "body": "Budget은 비용 이상을 알려 주는 control이 아니라 owner가 action할 수 있는 trigger여야 함. 단일 model spend alert만으로는 retry storm, output verbosity, cache miss, feature rollout, traffic growth를 구분하기 어려움.",
           "items": [
-            "절차: external anomaly 감지 → internal validation → provider escalation → customer-impact assessment → public communication 순서 고정",
-            "지표: detect-to-validate, validate-to-declare, region별 affected request, recovery confirmation을 분리 기록",
-            "리스크: 공개 화면의 국가 단위 신호를 특정 고객·ISP·application failure로 과잉 해석하는 오류"
+            "지표: model-feature spend와 request volume·token direction·error/retry·latency·task success를 같은 기간으로 비교",
+            "절차: alert → owner triage → routing/prompt/cache/limit 변경 → quality·SLO 재검증 → cost closure 순서",
+            "리스크: budget breach 후 일괄 rate-limit로 고객 workload를 차단하고 product impact를 기록하지 않는 운영"
           ]
         },
         {
-          "heading": "보안·데이터 신뢰 관점",
-          "body": "Internet trend dashboard는 awareness에는 유용하지만 forensic evidence 또는 intrusion attribution의 단독 근거가 될 수 없음. security operation에서는 외부 signal을 IOC·DNS·BGP·WAF·endpoint·identity telemetry와 correlation하고, source·timestamp·aggregation level을 case record에 남겨야 함.",
+          "heading": "보안·거버넌스 관점",
+          "body": "principal tag는 비용 귀속에 도움을 주지만 permission boundary를 대체하지 않음. FinOps dashboard에는 project·workspace·user/role 정보가 노출될 수 있으므로 dashboard access, tag mutation, export 권한도 governance 대상으로 봐야 함.",
           "items": [
-            "확인: public observation의 coverage와 aggregation level을 incident evidence와 구분",
-            "확인: WAF·DDoS·DNS·identity alert의 tenant scope와 raw log retention 확인",
-            "리스크: 공개 aggregated data만으로 공격 주체·영향 범위·복구를 확정하는 대응"
+            "통제: cost-center·environment·data-classification tag의 작성 권한과 change audit 분리",
+            "통제: dashboard/export recipient, shared-role mapping, tag exception의 approval·expiry 기록",
+            "리스크: 비용 분류 tag를 identity authorization 또는 tenant isolation 증거로 오해하는 설계"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "운영팀은 Radar를 새 monitoring system으로 도입하기보다 external-context feed로 등록하는 편이 적절함. 자사 incident workflow에 URL, analyst checklist, internal validation dashboard, provider escalation template을 연결하고 실제 regional event에서 false positive·lead time을 검증해야 함.",
+          "body": "한 workload부터 request-to-bill lineage를 검증하고, unallocated spend를 숨기지 않는 것이 첫 단계임. 이후 model routing과 feature release의 변경 기록을 cost dashboard에 연결하면 비용 최적화의 원인과 효과를 재현할 수 있음.",
           "items": [
-            "1단계: NOC/SRE runbook에 public Internet context 확인 절차와 담당자 추가",
-            "2단계: 최근 incident를 대상으로 external signal과 internal telemetry의 correlation replay",
-            "3단계: 유효한 lead time·false positive 기준을 정해 on-call enrichment 또는 manual review로 운영"
+            "1단계: top spend model·feature·application과 shared/untagged bucket을 baseline화",
+            "2단계: production-like request에서 product attribute, allocation tag, IAM principal tag, payer aggregation을 대조",
+            "3단계: budget alert를 owner runbook·routing rollback·SLO guardrail과 연결하고 weekly review"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "UI 변경 자체보다 organization의 incident evidence chain을 보강하는 데 초점을 맞춰야 함.",
+          "body": "attribute가 표시되는지 확인하는 것으로 완료하지 말고 attribution과 actionability를 함께 시험해야 함.",
           "items": [
-            "체크: public signal 조회 시각·URL·geography·time range를 ticket에 보존하는 template 준비",
-            "체크: 같은 시각의 synthetic·RUM·edge·APM·business metric query를 one-click으로 연결",
-            "체크: external anomaly가 있어도 declare하지 않을 조건과 escalation owner를 runbook에 명시",
-            "체크: quarterly game day에서 country-level anomaly와 dependency outage를 구분하는 drill 수행"
+            "체크: 실제 사용 Region·payer account·Cost Explorer/Dashboard/Budgets filter 노출 확인",
+            "체크: inference profile·project/workspace tag·IAM principal tag가 sample request 비용에 반영되는지 확인",
+            "체크: shared role·untagged·cross-account·late billing data를 exception bucket으로 분리",
+            "체크: budget alert owner, routing/prompt/cache change authority, quality·latency rollback condition 지정"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Radar의 새 화면은 Internet의 거시적 상태를 읽기 쉽게 만든 interface임. **public signal은 맥락이고, 내부 telemetry가 판정 근거임**. outage map을 incident dashboard의 대체재로 쓰지 말고 validation·communication workflow의 보조 증거로 연결해야 함.",
+          "body": "이번 변경은 AI 비용을 단일 vendor bill에서 workload 단위 운영 지표로 옮길 수 있는 기반임. **모델별 비용만 보면 원인을 놓침**. product attribute와 deployment·identity·SLO metadata를 결합해 조치 가능한 FinOps control로 만들어야 함.",
           "items": [
-            "발표 포인트: 지도·tabbed flow 변경을 UI 뉴스가 아니라 외부 observability context의 소비 방식 변화로 설명",
-            "즉시 행동: 다음 장애 회고에서 public signal과 own telemetry가 일치·불일치한 사례를 한 건 비교"
+            "발표 포인트: input/output·feature·caller·application을 분리해야 model routing의 진짜 비용 효과를 판단 가능",
+            "즉시 행동: 상위 Bedrock workload 하나에서 request trace와 monthly cost line을 같은 owner/service key로 연결"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-603",
+      "title_ko": "Cloudflare, Workers·Durable Objects production CPU·메모리 flamegraph profiling 제공",
+      "title_original": "Introducing on-demand CPU and memory profiling with flamegraphs for Workers and Durable Objects",
+      "summary": "핵심: Cloudflare가 Workers와 Durable Objects에서 production CPU·memory profile을 생성해 interactive **flamegraph**로 보는 기능을 공개함. Worker 상세 `Observability`의 Flamegraph 경로와 source map 필요성이 안내됐으며, profile 실행 권한·traffic 영향·artifact 데이터 노출·sampling overhead는 account와 workload별 canary로 검증 필요.",
+      "detail": "Cloudflare 공식 발표 기준 Workers와 Durable Objects에서 on-demand CPU·memory profiling을 실행하고 production flamegraph를 생성할 수 있음. 원문은 Worker 상세 화면의 Observability 탭에서 Flamegraph를 선택하는 흐름을 제시하며, TypeScript Worker는 source map이 없으면 함수명이 난독화돼 profile 해석이 어려울 수 있다고 안내함. Cloudflare 내부 사례로 R2 binding Worker의 50초 CPU trace를 통한 낭비 경로 확인, heap profile에서 Prometheus 관련 code path가 allocation 약 66.7%를 차지한 문제를 찾아 제거한 사례를 제시함. 사례 수치와 효과는 해당 workload의 결과이므로 다른 Worker의 CPU/memory 감소나 production overhead를 보장하지 않음.",
+      "why_it_matters": "serverless workload의 CPU limit·OOM·tail latency는 aggregate metric만으로 원인 함수까지 좁히기 어려움. production profile은 code path 단위 근거를 주지만, customer input·function name·stack·dependency 정보가 artifact에 남을 수 있어 observability access boundary와 함께 운영해야 함.",
+      "engineering_implication": "시사점: profiling을 incident-only 기능으로 두지 말고 baseline·trigger·duration·authorized operator·profile retention·export·traffic safeguard를 runbook에 고정 필요. source map artifact와 deployed build ID를 연결하고, profile 결과의 CPU/memory 변화는 error rate·p95/p99·request volume·cost와 같은 시간 창에서 비교 필요.",
+      "korea_implication": "국내 서비스는 production profile에 포함될 수 있는 code·stack·request context의 접근 통제와 저장 위치, on-call·외주 운영자의 dashboard 권한을 데이터 분류와 계약 조건에 맞춰 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "Cloudflare",
+        "Workers",
+        "Durable Objects",
+        "Serverless",
+        "Observability",
+        "Performance",
+        "Flamegraph"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-09 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/workers-on-demand-profiling/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4DTWHJBQSP4CBVDNVA8FFQ4.01M4DTWKKK4BYT9FWPHDWPAQA2.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 Workers와 Durable Objects의 on-demand CPU·memory profiling과 interactive flamegraph를 production에서 제공한다고 공개함. Worker 상세의 `Observability` 탭에서 `Flamegraph`를 선택하는 dashboard 경로가 원문에 제시됨.",
+          "items": [
+            "제공: CPU·memory profile을 생성해 memory leak·performance bottleneck을 code path 관점에서 분석하는 경로",
+            "대상: Cloudflare Workers와 Durable Objects production workload 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 TypeScript Worker에서 source map을 활성화하지 않으면 profile에 난독화된 함수명이 나타날 수 있다고 안내함. Cloudflare 내부 R2 binding Worker 사례에서는 50초 CPU trace를 사용해 최적화 대상을 찾았다고 설명함.",
+          "items": [
+            "해석: deployed build와 source map artifact를 연결하지 않으면 flamegraph의 함수 attribution 신뢰도 저하",
+            "사례: R2 binding Worker에서 50초 CPU trace를 캡처한 Cloudflare 내부 사례",
+            "경계: 사례의 duration·효과를 모든 Worker workload의 권장값 또는 성능 보장으로 일반화하지 않는 원칙"
+          ]
+        },
+        {
+          "heading": "메모리 분석 사례와 경계",
+          "body": "Cloudflare는 heap profile에서 Prometheus 관련 code path가 allocation의 약 66.7%를 차지한 사례를 제시함. 해당 code는 비활성화됐다고 여겨졌지만 일부 경로가 남아 memory cost를 만들었고, 제거 뒤 memory usage가 개선됐다는 설명임.",
+          "items": [
+            "사례: heap profile의 allocation 약 **66.7%**가 Prometheus 관련 code path라는 원문 사례",
+            "리스크: disabled feature가 instrumentation·dependency initialization을 통해 memory cost를 계속 만드는 조건",
+            "경계: 특정 내부 Worker의 allocation 비율·개선 효과는 customer workload의 재현 보장 아님"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "aggregate CPU·memory metric은 증상은 알려도 어떤 function·dependency·feature flag가 원인인지 충분히 말해 주지 못함. profile은 코드 경로 근거를 추가하지만 production traffic과 customer data가 섞인 관측 artifact로 다뤄야 함.",
+          "items": [
+            "검증: profile 결과를 error rate·OOM·p95/p99·request volume·deployment version과 같은 time window에서 상관",
+            "리스크: profile artifact의 stack·function name·dependency·request context에 대한 과도한 dashboard/export 접근",
+            "운영 과제: incident analysis와 routine optimization의 profile 실행 조건을 구분"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "production profiling 도입 전 source map provenance, operator role, duration·frequency, profile retention·export, traffic safeguard를 runbook으로 고정해야 함. profile 변경 뒤에는 CPU/memory만이 아니라 SLO와 비용을 함께 확인해야 함.",
+          "items": [
+            "팀 액션: non-critical Worker에서 baseline profile과 deployed build ID·source map mapping을 먼저 검증",
+            "팀 액션: profile execution 권한·artifact retention·export recipient·incident ticket linkage를 access review에 포함",
+            "검토 항목: sampling overhead·plan availability·retention·data handling·rollback 조건은 account 문서와 canary에서 확인"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-602",
       "title_ko": "Anthropic, Claude Dashboards·Motion 베타 공개: 데이터 연결·생성 코드의 권한과 검증 경로를 분리",
@@ -282,11 +359,11 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-601",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "CNCF, Kubernetes 플랫폼의 NIS2·DORA 책임을 운영 artifact·RACI로 분해하는 방법 제시",
       "title_original": "Who owns NIS2 and DORA on a Kubernetes platform team",
       "summary": "핵심: CNCF 기고가 NIS2·DORA 대응을 security backlog가 아니라 **Kubernetes 운영 artifact와 책임자**로 연결해야 한다고 제안함. hardened image catalog·secrets manager·API server audit/SIEM·admission policy를 control question·evidence·sprint owner로 쪼개고, NIS2의 24시간 early warning·72시간 notification에 필요한 사실 수집 runbook을 platform 운영에 포함해야 함.",
@@ -364,7 +441,7 @@
     },
     {
       "id": "news-598",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "Amazon Bedrock, GPT-6.1 Sol Ultrafast 모드 제공: 지연 민감 agent workload의 latency·비용·품질을 분리 검증",
       "title_original": "OpenAI GPT-6.1 Sol now supports Ultrafast mode on Amazon Bedrock",
       "summary": "핵심: AWS가 Amazon Bedrock에서 OpenAI **GPT-6.1 Sol Ultrafast** 모드를 제공한다고 공지함. 실시간 coding assistant·interactive agent·고객 대면 경험처럼 응답 속도가 중요한 workload가 공식 대상이며, 속도 개선의 절대 수치·가격·리전·inference profile은 공지에서 확정하지 않아 기존 mode와 p95·완료 품질·token 비용을 같은 trace로 canary 비교 필요.",
@@ -507,7 +584,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-599",
@@ -574,11 +651,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-597",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "NVIDIA·Microsoft, Windows용 AI agent 실행 기반 공개: Microsoft Execution Containers와 RTX Spark·DGX Station 결합",
       "title_original": "NVIDIA and Microsoft expand Windows AI agent platform with Microsoft Execution Containers, RTX Spark, and DGX Station",
       "summary": "핵심: NVIDIA·Microsoft가 Windows에서 AI agent를 지속 실행·관리하기 위한 **Microsoft Execution Containers(MXC)** 정식 제공과 RTX Spark·Windows용 DGX Station 구성을 공개함. 기사 기준 RTX Spark는 최대 128GB unified memory·1 PFLOPS FP4, Windows용 DGX Station은 최대 748GB coherent memory·20 PFLOPS FP4·최대 1조 parameter 모델 실행을 제시하며, endpoint agent는 모델 크기보다 container isolation·권한·telemetry·hardware capacity를 함께 검증해야 함.",
@@ -646,7 +723,7 @@
     },
     {
       "id": "news-595",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "OpenAI GPT-6 지능형 UI 공개 보도: 질문별 화면·도구 조합과 스트리밍 응답 적용",
       "title_original": "",
       "summary": "핵심: AI타임스 보도 기준 OpenAI가 질문의 맥락에 맞춰 차트·버튼·입력창·지도·계산기 등을 조합하는 **Intelligent UI**를 GPT-6에 적용함. 답변과 UI를 함께 생성·점진 표시하는 네이티브 스트리밍 구성과 검색 질문의 GPT-6 Instant 초기 응답 평균 44% 단축이라는 내부 평가가 제시됐으며, 생성 UI 도입은 model 품질 외 component schema·action permission·accessibility·fallback 검증이 필요한 변경임.",
@@ -713,7 +790,7 @@
     },
     {
       "id": "news-596",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "GitHub, AI secret detection을 push protection에 확대: ModernBERT 분류기로 후보 묶음 2ms 미만 평가",
       "title_original": "Secret protection must scale with software",
       "summary": "핵심: GitHub가 코드 문맥에서 비정형 secret 후보를 판별하는 **ModernBERT classifier**를 push protection에 추가함. 후보 secret 묶음을 2ms 미만에 평가하고 예방 가능 secret 수를 두 배 이상 늘릴 수 있다는 GitHub 설명이며, Enterprise Cloud·Teams Secret Protection 대상 private preview와 GHES 3.23 public preview 범위임.",
@@ -843,7 +920,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-592",
@@ -907,7 +984,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-594",
@@ -978,7 +1055,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-591",
@@ -1041,7 +1118,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-590",
@@ -1104,7 +1181,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-589",
@@ -1167,7 +1244,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-587",
@@ -1230,7 +1307,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-588",
@@ -1293,7 +1370,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-583",
@@ -1359,7 +1436,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-586",
@@ -1422,7 +1499,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-584",
@@ -1484,7 +1561,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-585",
@@ -1546,7 +1623,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-581",
@@ -1614,7 +1691,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-582",
@@ -1682,7 +1759,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-580",
@@ -1749,7 +1826,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-579",
@@ -1829,7 +1906,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-577",
@@ -1901,7 +1978,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-578",
@@ -1968,7 +2045,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-576",
@@ -2041,7 +2118,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-575",
@@ -2117,7 +2194,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-572",
@@ -2189,7 +2266,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-574",
@@ -2252,7 +2329,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-570",
@@ -2317,7 +2394,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-573",
@@ -2384,7 +2461,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-569",
@@ -2455,7 +2532,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-565",
@@ -2519,7 +2596,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-566",
@@ -2583,7 +2660,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-568",
@@ -2647,7 +2724,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-567",
@@ -2711,7 +2788,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-564",
@@ -2791,7 +2868,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-563",
@@ -2874,7 +2951,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-562",
@@ -2948,7 +3025,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-561",
@@ -3021,7 +3098,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-559",
@@ -3089,7 +3166,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-558",
@@ -3155,7 +3232,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-556",
@@ -3221,7 +3298,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-554",
@@ -3295,7 +3372,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-560",
@@ -3360,7 +3437,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-557",
@@ -3435,7 +3512,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-555",
@@ -3504,11 +3581,11 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-553",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -3588,80 +3665,6 @@
             "canary: read-only low-risk workflow에서 completed-task quality·p95/p99·tool retry·approval latency·egress·cost를 trace ID로 비교",
             "보안: ephemeral VM·scoped token·connector allowlist·secret redaction·artifact expiry·kill switch 적용",
             "팀 액션: background run마다 owner·purpose·data classification·permission·approval·output destination·retention·rollback record 연결"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "news-551",
-      "rank": 50,
-      "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
-      "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
-      "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
-      "detail": "AWS는 9월 29일 UTC Amazon Bedrock Managed Agents(BMA)를 preview로 공개했다. BMA는 AWS와 OpenAI가 공동 개발한 OpenAI Agents API의 customized AWS-native version으로, OpenAI 모델용 agent가 AWS resource와 기존 identity·permission·governance control 안에서 실행되도록 설계됐다. BMA는 model state, tool selection/use, code execution, multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 보존해 작업을 재개할 수 있다. reusable skill과 MCP server를 포함한 tool 연결, agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 제공한다. preview는 US East (N. Virginia), US West (Oregon), US East (Ohio)에서 제공되며 BMA 자체 추가 요금은 없지만 underlying AWS resource 비용은 발생한다. model·tool별 availability, quota, session retention, code-execution isolation, service terms와 GA pricing은 source가 확정하지 않아 account·documentation canary로 확인해야 한다.",
-      "why_it_matters": "Managed agent runtime은 model 호출을 넘어 session state, tool execution, approval, audit, identity를 함께 운영하는 control plane이다. MCP와 code execution을 연결할수록 tool 권한·egress·artifact·retention·rollback을 application release gate로 분리해야 한다.",
-      "engineering_implication": "시사점: read-only low-risk workflow에서 agent IAM role·tool allowlist·human approval·CloudTrail trace·session resume을 함께 canary 검증 필요. completed-task quality·p95/p99·tool retry·approval latency·egress destination·underlying resource cost를 측정하고, write action과 code execution은 별도 capability·budget·rollback 조건으로 분리 필요.",
-      "korea_implication": "한국 리전 제공 여부는 공지에 포함되지 않음. 국내 조직은 공개된 미국 3개 리전과 실제 tenant model access·data path·cross-Region routing·session retention을 사전 확인하고, 소스코드·개인정보가 포함된 tool workflow는 내부 반출 정책과 대조 필요.",
-      "category": "AI",
-      "tags": [
-        "AWS",
-        "Amazon Bedrock",
-        "OpenAI",
-        "AI Agent",
-        "MCP",
-        "IAM",
-        "CloudTrail",
-        "Human Approval",
-        "Agent Runtime"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 92,
-      "published_kst": "2026-09-30 06:10",
-      "source_name": "AWS What's New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/09/bedrock-managed-agents-preview/",
-      "image_url": "assets/images/fallback-ai.svg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "related_links": [
-        {
-          "title": "Amazon Bedrock Managed Agents documentation",
-          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-managed-agents-openai.html"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 `Bedrock Managed Agents(BMA)`를 preview로 공개함. AWS와 OpenAI가 공동 개발한 OpenAI Agents API의 AWS-native customized version이며, OpenAI 모델용 agent를 기존 AWS identity·permission·governance control과 함께 실행하는 범위임.",
-          "items": [
-            "제공 리전: US East (N. Virginia)·US West (Oregon)·US East (Ohio) preview 범위",
-            "실행 경로: supported API로 agent 생성·호출하며 AWS resource와 기존 identity control을 결합"
-          ]
-        },
-        {
-          "heading": "실행 상태·tool orchestration",
-          "body": "BMA는 model state 보존, tool 선택·사용, code 실행, multi-step decision coordination을 관리함. durable session은 message·tool call·intermediate result를 보존해 새 정보를 넣고 이전 진행 상태에서 작업을 이어갈 수 있는 구조임. reusable skill과 MCP server를 포함한 tool 연결도 지원함.",
-          "items": [
-            "state: durable session의 message·tool call·intermediate result 보존 범위",
-            "tool: reusable skill과 MCP server 연결을 지원하되 tool별 schema·permission·availability는 별도 확인 필요",
-            "경계: 공지는 code-execution isolation, session retention 기간, tool별 network egress 정책을 확정하지 않음"
-          ]
-        },
-        {
-          "heading": "identity·approval·audit control",
-          "body": "각 agent는 자체 IAM role로 동작하고 consequential action 이전 human approval을 지원하며 supported API activity를 AWS CloudTrail에 기록함. 이는 application authorization을 대체하지 않으므로 agent role·tool credential·external write 권한을 같은 broad permission으로 묶지 않아야 함.",
-          "items": [
-            "권한: agent IAM role과 tool별 credential·resource policy를 task risk별 least privilege로 분리",
-            "승인: external write·code execution·privileged API는 human approval과 idempotency·rollback evidence 결합",
-            "감사: CloudTrail API event, agent trace, tool side effect, approver identity를 동일 change record에 연결"
-          ]
-        },
-        {
-          "heading": "비용·도입 시사점",
-          "body": "preview 기간 BMA 자체에 추가 요금은 없지만 agent가 소비하는 AWS resource 비용은 발생하며 GA에서 가격이 바뀔 수 있음. agent platform 비용은 model token뿐 아니라 code execution, tool call, session state, logs, storage, network egress, failed/retried task와 reviewer 시간을 포함해 판단해야 함.",
-          "items": [
-            "canary: read-only low-risk task에서 completed-task quality·p95/p99·tool retry·approval latency·session resume 검증",
-            "FinOps: token·compute·storage·log·network·MCP/tool call·human review를 completed task 비용으로 계측",
-            "release gate: model access·quota·session retention·code isolation·egress·GA pricing/terms 확인 전 production write 권한 확대 금지"
           ]
         }
       ]
