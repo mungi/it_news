@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-09 | Total pages: 398
+> Last updated: 2026-10-09 | Total pages: 399
 
 ## Entities
 
@@ -318,6 +318,7 @@
 - [[raw/articles/cloudflare-radar-redesign-2026-10-08]] — Cloudflare Radar traffic·outage map 재설계와 public signal·internal telemetry incident 검증 경계.
 - [[raw/articles/anthropic-oss-scanner-2026-10-09]] — Anthropic OSS Scanner의 opt-in 미검증 AI 취약점 report·offline audit Dockerfile·maintainer triage 운영 경계.
 - [[raw/articles/aws-bedrock-cost-explorer-product-attributes-2026-10-09]] — Bedrock model·provider·inference type·feature 비용 attribute와 application/IAM tag FinOps 귀속 경계.
+- [[raw/articles/cncf-kubernetes-nis2-dora-ownership-2026-10-09]] — Kubernetes 플랫폼의 NIS2·DORA 통제를 artifact·RACI·evidence retrieval로 분해하는 운영 경계.
 - `raw/articles/` — 202건의 출처 메타데이터와 한국어 브리핑 요약.
 - [[raw/articles/google-gemini-3-6-flash-3-5-flash-lite-cyber-2026-07-22]] — Gemini 3.6 Flash·3.5 Flash-Lite의 비용·처리량 주장과 Flash Cyber 제한 pilot 운영 경계.
 - [[raw/articles/servicenow-cve-2026-6875-2026-07-21]] — ServiceNow AI Platform sandbox escape의 fixed release·Guarded Script·exploitation-status 증거 경계.
