@@ -2,7 +2,7 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-09 05:03",
+  "last_updated_kst": "2026-10-09 09:13",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
@@ -205,8 +205,76 @@
   ],
   "items": [
     {
-      "id": "news-597",
+      "id": "news-598",
       "rank": 1,
+      "title_ko": "Amazon Bedrock, GPT-6.1 Sol Ultrafast 모드 제공: 지연 민감 agent workload의 latency·비용·품질을 분리 검증",
+      "title_original": "OpenAI GPT-6.1 Sol now supports Ultrafast mode on Amazon Bedrock",
+      "summary": "핵심: AWS가 Amazon Bedrock에서 OpenAI **GPT-6.1 Sol Ultrafast** 모드를 제공한다고 공지함. 실시간 coding assistant·interactive agent·고객 대면 경험처럼 응답 속도가 중요한 workload가 공식 대상이며, 속도 개선의 절대 수치·가격·리전·inference profile은 공지에서 확정하지 않아 기존 mode와 p95·완료 품질·token 비용을 같은 trace로 canary 비교 필요.",
+      "detail": "AWS 공식 공지 기준 GPT-6.1 Sol의 Ultrafast 모드가 Amazon Bedrock에서 제공됨. AWS는 speed가 가장 중요한 workload의 faster inference를 목적이라고 설명하며, real-time coding assistant·interactive agent·customer-facing experience를 사용 사례로 제시함. GPT-6.1 Sol은 기능 개발·issue debug·복잡한 codebase 조사·multi-step workflow 완료에 사용할 수 있고, Bedrock console 또는 지원 API로 호출 가능하다고 명시함. 다만 tokens/s·first-token·p95/p99 지연, 모델 품질 변화, 가격, 지원 리전·endpoint·API·feature·inference profile은 공지에 수치 또는 목록이 없으므로 account별 Bedrock documentation과 production-like canary에서 확인해야 함.",
+      "why_it_matters": "동일 모델의 빠른 실행 mode는 agent의 interactive UX와 concurrency 설계를 바꿀 수 있지만, model mode 변경은 latency만이 아니라 routing·rate limit·token 과금·tool timeout·fallback·audit trace의 운영 조건 변경임. 빠른 first response가 multi-step task의 완료 시간 또는 품질을 보장하지 않으므로 단계별 지표를 분리해야 함.",
+      "engineering_implication": "시사점: read-only 또는 low-risk coding task에서 standard와 Ultrafast를 A/B routing해 first-token·tokens/s·p95/p99·completed-task success·tool retry·timeout·input/output/cache token·request cost를 같은 trace ID로 비교 필요. model ID·inference profile·Region·quota·pricing·IAM model access·CloudTrail event·fallback 및 rollback 조건을 release record에 함께 고정 필요.",
+      "korea_implication": "국내 Bedrock 사용 조직은 목표 리전의 Ultrafast availability, cross-Region inference data path, account quota·가격과 기업 데이터 처리 정책을 console·계약 조건에서 확인한 뒤 서비스별 latency SLO에 연결 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "OpenAI",
+        "GPT-6.1 Sol",
+        "Inference",
+        "AI Agent",
+        "Latency",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-09 04:41",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/openai-gpt-sol-ultrafast-amazon/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Bedrock에서 OpenAI `GPT-6.1 Sol`의 Ultrafast 모드를 제공한다고 공지함. speed가 가장 중요한 workload의 faster inference를 목적으로 하며, real-time coding assistant·interactive agent·customer-facing experience를 사용 사례로 명시한 범위임.",
+          "items": [
+            "제공: Bedrock console 또는 지원 Amazon Bedrock API를 통한 GPT-6.1 Sol Ultrafast 호출 범위",
+            "대상: 실시간 coding assistant·interactive agent·고객 대면 응답처럼 latency가 직접 UX가 되는 workload"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "AWS는 GPT-6.1 Sol이 기능 개발, issue debug, 복잡한 codebase 조사, multi-step workflow 완료를 지원한다고 설명함. AWS security·governance·audit control을 통해 model invocation activity를 다룰 수 있다고 안내했으나, mode별 성능 수치나 개별 control 설정값은 공지에 없음.",
+          "items": [
+            "작업: feature build·debug·complex codebase investigation·multi-step workflow의 공식 활용 범위",
+            "통제: AWS control을 통한 workload security·access governance·model invocation audit 안내",
+            "미공개: tokens/s·first-token·p95/p99·quality delta·pricing·quota·Region·endpoint·inference profile 목록"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent의 체감 응답성은 model inference뿐 아니라 retrieval·tool call·approval·streaming·client rendering·retry를 포함한 end-to-end path에서 결정됨. faster inference mode를 선택해도 tool timeout·provider throttle·queueing·fallback이 남으면 사용자 완료 시간은 개선되지 않을 수 있음.",
+          "items": [
+            "측정: first-token, streaming completion, tool completion, end-to-end completed-task 시간을 분리 계측",
+            "경계: 빠른 initial response를 task success·code quality·customer resolution 개선으로 자동 해석하지 않는 원칙",
+            "리스크: mode 전환 뒤 concurrency 증가가 quota throttle·tool saturation·budget overrun으로 전파되는 조건"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이번 공지는 Ultrafast의 절대 성능, 가격, 지원 리전, API·feature·inference profile을 확정하지 않고 Bedrock documentation 확인을 안내함. production 전 standard와 Ultrafast를 동일 input·tool topology에서 비교하고, routing·cost guardrail·rollback을 model mode 단위로 운영해야 함.",
+          "items": [
+            "팀 액션: representative read-only coding task에서 standard 대비 p50/p95/p99·success·retry·token·request cost A/B canary 수행",
+            "팀 액션: model ID·Region·inference profile·IAM model access·CloudTrail audit·fallback/rollback owner를 change record에 고정",
+            "검토 항목: account별 availability·quota·price·cross-Region data path·tool timeout·rate limit·SLO와 budget alarm 확인"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news-597",
+      "rank": 2,
       "title_ko": "NVIDIA·Microsoft, Windows용 AI agent 실행 기반 공개: Microsoft Execution Containers와 RTX Spark·DGX Station 결합",
       "title_original": "NVIDIA and Microsoft expand Windows AI agent platform with Microsoft Execution Containers, RTX Spark, and DGX Station",
       "summary": "핵심: NVIDIA·Microsoft가 Windows에서 AI agent를 지속 실행·관리하기 위한 **Microsoft Execution Containers(MXC)** 정식 제공과 RTX Spark·Windows용 DGX Station 구성을 공개함. 기사 기준 RTX Spark는 최대 128GB unified memory·1 PFLOPS FP4, Windows용 DGX Station은 최대 748GB coherent memory·20 PFLOPS FP4·최대 1조 parameter 모델 실행을 제시하며, endpoint agent는 모델 크기보다 container isolation·권한·telemetry·hardware capacity를 함께 검증해야 함.",
@@ -274,7 +342,7 @@
     },
     {
       "id": "news-595",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "OpenAI GPT-6 지능형 UI 공개 보도: 질문별 화면·도구 조합과 스트리밍 응답 적용",
       "title_original": "",
       "summary": "핵심: AI타임스 보도 기준 OpenAI가 질문의 맥락에 맞춰 차트·버튼·입력창·지도·계산기 등을 조합하는 **Intelligent UI**를 GPT-6에 적용함. 답변과 UI를 함께 생성·점진 표시하는 네이티브 스트리밍 구성과 검색 질문의 GPT-6 Instant 초기 응답 평균 44% 단축이라는 내부 평가가 제시됐으며, 생성 UI 도입은 model 품질 외 component schema·action permission·accessibility·fallback 검증이 필요한 변경임.",
@@ -341,7 +409,7 @@
     },
     {
       "id": "news-596",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "GitHub, AI secret detection을 push protection에 확대: ModernBERT 분류기로 후보 묶음 2ms 미만 평가",
       "title_original": "Secret protection must scale with software",
       "summary": "핵심: GitHub가 코드 문맥에서 비정형 secret 후보를 판별하는 **ModernBERT classifier**를 push protection에 추가함. 후보 secret 묶음을 2ms 미만에 평가하고 예방 가능 secret 수를 두 배 이상 늘릴 수 있다는 GitHub 설명이며, Enterprise Cloud·Teams Secret Protection 대상 private preview와 GHES 3.23 public preview 범위임.",
@@ -471,7 +539,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-592",
@@ -535,7 +603,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-594",
@@ -606,7 +674,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-591",
@@ -669,7 +737,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-590",
@@ -732,7 +800,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-589",
@@ -795,7 +863,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-587",
@@ -858,7 +926,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-588",
@@ -921,7 +989,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-583",
@@ -987,7 +1055,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-586",
@@ -1050,7 +1118,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-584",
@@ -1112,7 +1180,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-585",
@@ -1174,7 +1242,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-581",
@@ -1242,7 +1310,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-582",
@@ -1310,7 +1378,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-580",
@@ -1377,7 +1445,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-579",
@@ -1457,7 +1525,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-577",
@@ -1529,7 +1597,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-578",
@@ -1596,7 +1664,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-576",
@@ -1669,7 +1737,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-575",
@@ -1745,7 +1813,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-572",
@@ -1817,7 +1885,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-574",
@@ -1880,7 +1948,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-570",
@@ -1945,7 +2013,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-573",
@@ -2012,7 +2080,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-569",
@@ -2083,7 +2151,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-565",
@@ -2147,7 +2215,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-566",
@@ -2211,7 +2279,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-568",
@@ -2275,7 +2343,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-567",
@@ -2339,7 +2407,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-564",
@@ -2419,7 +2487,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-563",
@@ -2502,7 +2570,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-562",
@@ -2576,7 +2644,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-561",
@@ -2649,7 +2717,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-559",
@@ -2717,7 +2785,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-558",
@@ -2783,7 +2851,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-556",
@@ -2849,7 +2917,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-554",
@@ -2923,7 +2991,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-560",
@@ -2988,7 +3056,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-557",
@@ -3063,7 +3131,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-555",
@@ -3132,11 +3200,11 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-553",
-      "rank": 44,
+      "rank": 45,
       "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
       "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
       "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
@@ -3222,7 +3290,7 @@
     },
     {
       "id": "news-551",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Amazon Bedrock Managed Agents 미리보기: OpenAI Agents API 기반 durable session·MCP·IAM·CloudTrail을 AWS control plane에 결합",
       "title_original": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
       "summary": "- 공개: AWS와 OpenAI가 공동 개발한 `Bedrock Managed Agents(BMA)` 미리보기 제공. OpenAI Agents API의 AWS-native customized version으로, OpenAI 모델용 agent를 기존 AWS identity·permission·governance 아래 실행하는 범위\n- 실행 모델: state 보존·tool 선택/사용·code 실행·multi-step coordination을 관리하고, durable session에 message·tool call·intermediate result를 남겨 후속 입력으로 작업 재개 가능\n- 통제·비용: agent별 IAM role, consequential action 전 human approval, supported API activity CloudTrail 기록을 지원함. 미리보기 기간 BMA 별도 요금은 없지만 사용 AWS resource 비용은 발생하며 GA 시 pricing 변경 가능",
@@ -3296,7 +3364,7 @@
     },
     {
       "id": "news-550",
-      "rank": 46,
+      "rank": 47,
       "title_ko": "Amazon Bedrock, OpenAI GPT-6.1 Sol 정식 제공: 명시적 prompt cache·IAM·PrivateLink 조건으로 agent workload 운영",
       "title_original": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
       "summary": "- 공개: AWS가 OpenAI `GPT-6.1 Sol`의 Amazon Bedrock 정식 제공을 발표함. agentic coding·computer use·전문 업무를 대상으로 하며, 반복 context용 explicit prompt caching 지원 범위 포함\n- 성능 경계: AWS blog는 OpenAI 주장으로 `DeepSWE v1.1`에서 GPT-6 Astra와 작업당 약 **5분의 1 비용** 수준, GPT-6 Sol 최고 점수보다 6.4%p 높다고 제시함. benchmark·reasoning effort·workload 조건의 vendor 근거이므로 production SLO·절감 보장으로 해석 금지\n- 운영: Bedrock API·console에서 호출하고 IAM·CloudTrail·PrivateLink·tool approval을 application control과 함께 묶어야 함. 모델 access·Region·endpoint·inference profile·pricing은 account와 model card에서 사전 확인 필요",
@@ -3378,7 +3446,7 @@
     },
     {
       "id": "news-549",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Spectre-v2 BTR: 패치된 Intel Linux에서 JIT stale branch target으로 root hash를 수분 내 유출한 연구 공개",
       "title_original": "New Spectre-v2 BTR Attack Leaks Linux Memory Despite Existing Defenses",
       "summary": "- 공개: VUSec·Scuola Superiore Sant'Anna 연구진이 self-modifying JIT code 뒤 stale indirect-branch prediction entry를 재사용하는 Spectre-v2 `Branch Target Reuse(BTR)` 변형 공개\n- 영향: Firefox SpiderMonkey·GraalVM·Linux `cBPF` JIT가 서로 다른 exploitability·leakage 특성으로 영향 확인, fully patched Intel Linux 기본 방어에서 root password hash를 수분 내 복구한 PoC 제시\n- 완화: Linux kernel `CVE-2026-64507`·`CVE-2026-64508` 완화가 upstream에 병합됐고 GraalVM은 JIT code-cache location randomization을 적용\n- 조치: JIT 사용 workload의 kernel·browser·runtime fixed build와 reboot 상태를 확인하고, upstream patch 여부와 distro backport·운영 환경의 unprivileged code 실행 경로를 함께 점검 필요",
@@ -3469,7 +3537,7 @@
     },
     {
       "id": "news-552",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "Amazon Bedrock, 서울 리전에서 Claude Opus 5·Sonnet 5 in-Region inference 제공",
       "title_original": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
       "summary": "- 제공: Amazon Bedrock이 서울 `ap-northeast-2`의 `bedrock-runtime` endpoint에서 Anthropic `Claude Opus 5`와 `Claude Sonnet 5` in-Region inference를 제공함\n- 데이터 경계: AWS 공지상 inference request와 data는 호출한 리전 안에서 처리되고 해당 리전을 벗어나지 않는 범위임\n- 운영: 기존 global·cross-Region inference workload는 endpoint·inference profile·data path·quota·latency·failover를 별도 canary로 대조 필요",
@@ -3540,7 +3608,7 @@
     },
     {
       "id": "news-547",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "Anthropic Claude Sonnet 5.5: Sonnet 5 대비 30% 이상 속도·작업당 최대 30% 비용 절감으로 출시",
       "title_original": "Introducing Claude Sonnet 5.5",
       "summary": "핵심: Anthropic이 `Claude Sonnet 5.5`를 Sonnet 5보다 출력 속도는 **30% 이상**, 작업당 비용은 최대 **30% 절감**한다고 공개함. `Terminal-Bench 4.0` 70.6%, `CursorBench 4.0` 55.5%는 vendor 평가 결과이며 complex·open-ended 작업에는 Opus 5.5가 더 강하다는 원문 경계도 함께 제시됨.\n운영: `claude-sonnet-5-5` canary에서 token·tool call·cache hit·p95/p99·retry·quality와 cyber safeguard false positive를 기존 Sonnet workload와 같은 task set으로 비교하고, thinking-off 사용 경로는 `between_tools` migration을 사전 검증 필요.",
@@ -3613,80 +3681,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "news-548",
-      "title_ko": "GitHub Security Lab Taskflow Agent: Android 앱 취약점 24건을 찾은 AI 감사 workflow 공개",
-      "title_original": "How we found 24 Android vulnerabilities using our open source AI security agent",
-      "summary": "핵심: GitHub Security Lab이 `seclab-taskflows`의 Android 감사 workflow로 현재까지 24건의 취약점을 보고했다고 공개함. mobile entry point 분리와 vulnerability class별 반복 taskflow를 결합해 exported component·intent 기반 attack surface를 좁히는 방식임.\n운영: 실행에는 GitHub Copilot license와 premium model request가 필요하고 medium-sized repository는 1~2시간, 다수 tool call이 들 수 있음. 결과 행의 취약점 표시는 triage 시작점일 뿐이므로 재현·영향 판정·responsible disclosure를 별도 gate로 운영 필요.",
-      "detail": "GitHub Security Lab은 오픈소스 `seclab-taskflows`에 Android application audit workflow를 추가해 24건의 취약점을 보고했다고 공개했다. workflow는 repository의 mobile/non-mobile entry point를 구분하고, intent entry point에는 confused deputy·insecure broadcast 같은 mobile-specific class를 반복적으로 검토하도록 prompt를 구성한다. 공개 사례에서 OsmAnd의 exported `MapActivity`는 외부 앱이 intent extras를 조작해 settings import를 제어하고 map tile request를 공격자 domain으로 보낼 수 있었던 조건이 설명됐다. GitHub는 이 흐름을 vulnerability finding 보조 도구로 소개했으며, reported count는 해당 taskflow의 vendor disclosure 결과이지 모든 Android app의 탐지율이나 자동 수정 정확도를 보장하는 benchmark가 아님.",
-      "why_it_matters": "LLM 기반 security audit은 broad code review보다 entry point·component·vulnerability class를 분리한 반복 workflow에서 재현 가능한 검토 범위를 만들 수 있다. 반면 Copilot premium request, 장시간 tool execution, repository source exposure, false positive triage가 실제 도입 비용과 보안 경계를 결정한다.",
-      "engineering_implication": "시사점: Android audit agent는 production repository write 권한 없이 disposable Codespace 또는 isolated VM에서 실행하고, source access·network egress·tool call budget·artifact retention을 task별로 제한 필요. candidate finding은 reproducer, affected version, exploit precondition, security owner review, disclosure/patch ticket을 통과한 뒤에만 취약점으로 집계 필요.",
-      "korea_implication": "국내 모바일 서비스 조직도 exported activity·intent·deep link·content provider를 CI 보안 점검에 넣을 수 있으나, proprietary source와 premium model request의 data handling·비용·보존 조건을 vendor 계약과 내부 정책에서 먼저 확정 필요.",
-      "category": "Security",
-      "tags": [
-        "GitHub",
-        "AI Agent",
-        "Application Security",
-        "Android",
-        "Fuzzing",
-        "DevSecOps",
-        "Open Source"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-09-29 04:00",
-      "source_name": "GitHub Security Lab",
-      "source_url": "https://github.blog/security/how-we-found-24-android-vulnerabilities-using-our-open-source-ai-security-agent/",
-      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-security-invertocat-blocks-copilot.png?fit=1920%2C1080",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "GitHub Security Lab Taskflow Agent repository",
-          "url": "https://github.com/github/securitylab-taskflows"
-        },
-        {
-          "title": "GitHub Advisory Database",
-          "url": "https://github.com/advisories"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "GitHub Security Lab은 AI prompt와 workflow를 security research에 재사용·공유하기 위한 `seclab-taskflows`의 Android audit taskflow를 공개함. 원문은 이 workflow로 보고한 Android 취약점이 현재 24건이며, 이미 공개된 사례를 포함한다고 설명함.",
-          "items": [
-            "대상: Android repository의 attacker-controlled entry point와 component interaction 분석",
-            "실행: GitHub Copilot license·premium model request 필요, 중간 규모 repository는 약 1~2시간 소요 가능"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "workflow는 `gather_mobile_entry_point_info.yaml`로 mobile과 non-mobile entry point를 분리하고, `classify_application_local.yaml`에서 entry point별 vulnerability class를 검토하도록 구성됨. 같은 repository를 반복 실행해 strict checklist와 broad exploration을 함께 쓰는 구조임.",
-          "items": [
-            "intent entry point: confused deputy·insecure broadcast 등 Android-specific class를 명시적으로 점검",
-            "결과 확인: `./scripts/audit/run_mobile.sh myorg/myrepo` 실행 뒤 SQLite `audit_results`의 `has_vulnerability` 행을 triage 대상으로 확인"
-          ]
-        },
-        {
-          "heading": "공개 사례와 증거 경계",
-          "body": "OsmAnd 사례에서 exported `MapActivity`는 외부 component가 호출할 수 있고, intent extras는 외부 caller가 임의로 설정할 수 있는 조건임. 원문은 settings import 관련 extra가 silent import·replace·confirmation bypass에 연결되고, tile URL을 바꾸면 위치 tile coordinate가 외부 domain으로 전송될 수 있음을 설명함.",
-          "items": [
-            "영향 조건: exported activity와 attacker-controlled intent extra가 같은 settings import path에 연결된 경우",
-            "경계: 24건은 GitHub Security Lab이 보고한 disclosure 수이며 일반 Android app의 recall·precision 또는 자동 remediation 성공률 미확정"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "agent output은 vulnerability verdict가 아니라 security review queue로 다뤄야 함. deterministic check와 LLM exploration을 분리하고, finding마다 reproducer·affected version·permission·data flow·false-positive 사유를 evidence로 남겨야 CI gate가 과도한 alert와 누락을 함께 줄일 수 있음.",
-          "items": [
-            "격리: disposable Codespace 또는 throwaway VM, production secret·write token·broad network egress 미부여",
-            "검증: exported component·intent/deep link·content provider별 test corpus와 human exploitability review 연결",
-            "비용 통제: premium request·tool call·runtime·artifact storage를 repository와 run ID 단위로 계측"
-          ]
-        }
-      ],
-      "rank": 50
     }
   ]
 }

@@ -313,6 +313,7 @@
 - [[raw/articles/aitimeskr-google-embeddinggemma-2-2026-10-07]] — Google EmbeddingGemma 2 보도: 7.4억 파라미터 온디바이스 멀티모달 임베딩·Apache 2.0 공개의 source-verified 운영 경계.
 - [[raw/articles/aitimes-openai-codex-auto-review-free-2026-10-07]] — OpenAI Codex Auto-review 무료화 보도와 reviewer agent·sandbox 운영 경계.
 - [[raw/articles/aws-config-77-resource-types-2026-10-08]] — AWS Config 77개 신규 resource type의 recorder·rule·aggregator·remediation 운영 경계.
+- [[raw/articles/aws-bedrock-gpt-6-1-sol-ultrafast-2026-10-09]] — Amazon Bedrock GPT-6.1 Sol Ultrafast 모드의 latency-sensitive agent workload·mode별 SLO·FinOps canary 검증 경계.
 - [[raw/articles/aitimeskr-nvidia-microsoft-windows-agent-mxc-rtx-spark-2026-10-08]] — NVIDIA·Microsoft Windows AI agent 플랫폼 보도의 MXC isolation·endpoint 권한·로컬 AI capacity 검증 경계.
 - [[raw/articles/cloudflare-radar-redesign-2026-10-08]] — Cloudflare Radar traffic·outage map 재설계와 public signal·internal telemetry incident 검증 경계.
 - `raw/articles/` — 202건의 출처 메타데이터와 한국어 브리핑 요약.
