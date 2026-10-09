@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-09 | Total pages: 399
+> Last updated: 2026-10-10 | Total pages: 400
 
 ## Entities
 
@@ -316,6 +316,7 @@
 - [[raw/articles/aitimes-openai-codex-auto-review-free-2026-10-07]] — OpenAI Codex Auto-review 무료화 보도와 reviewer agent·sandbox 운영 경계.
 - [[raw/articles/aws-config-77-resource-types-2026-10-08]] — AWS Config 77개 신규 resource type의 recorder·rule·aggregator·remediation 운영 경계.
 - [[raw/articles/aws-bedrock-gpt-6-1-sol-ultrafast-2026-10-09]] — Amazon Bedrock GPT-6.1 Sol Ultrafast 모드의 latency-sensitive agent workload·mode별 SLO·FinOps canary 검증 경계.
+- [[raw/articles/aws-bedrock-openai-reasoning-summaries-2026-10-10]] — Bedrock OpenAI Responses API `reasoning.summary`의 observability·data governance·cross-Region trace 검증 경계.
 - [[raw/articles/aitimeskr-nvidia-microsoft-windows-agent-mxc-rtx-spark-2026-10-08]] — NVIDIA·Microsoft Windows AI agent 플랫폼 보도의 MXC isolation·endpoint 권한·로컬 AI capacity 검증 경계.
 - [[raw/articles/cloudflare-radar-redesign-2026-10-08]] — Cloudflare Radar traffic·outage map 재설계와 public signal·internal telemetry incident 검증 경계.
 - [[raw/articles/anthropic-oss-scanner-2026-10-09]] — Anthropic OSS Scanner의 opt-in 미검증 AI 취약점 report·offline audit Dockerfile·maintainer triage 운영 경계.

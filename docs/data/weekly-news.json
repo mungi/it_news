@@ -2,7 +2,7 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-10 01:29",
+  "last_updated_kst": "2026-10-10 05:32",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
@@ -206,6 +206,79 @@
   ],
   "items": [
     {
+      "id": "news-604",
+      "title_ko": "Amazon Bedrock, OpenAI 모델 Responses API에 reasoning summary 제공: 디버그 로그·데이터 경계 분리 필요",
+      "title_original": "Amazon Bedrock now supports reasoning summaries for OpenAI models",
+      "summary": "핵심: Amazon Bedrock의 OpenAI 모델 `Responses API`가 `reasoning.summary` parameter를 지원해 응답과 함께 사람이 읽을 수 있는 reasoning summary를 반환함. in-Region·GEO cross-Region·global cross-Region inference 범위가 공지됐으며, summary를 품질 평가·디버깅 보조 신호로 쓰되 prompt·tool context·개인정보가 섞일 수 있는 새로운 telemetry로 분류해 저장·열람·export 경계를 별도 검증 필요.",
+      "detail": "AWS 공식 공지 기준 Amazon Bedrock에서 OpenAI 모델을 Responses API로 호출할 때 `reasoning.summary` parameter를 요청할 수 있음. 결과는 model answer와 함께 reasoning output item의 `summary` array로 반환되며, AWS는 coding·analysis·multi-step problem solving에서 접근 방식의 맥락을 제공한다고 설명함. 해당 capability는 OpenAI GPT 모델을 제공하는 모든 Bedrock Region에서 in-Region, geographic cross-Region, global cross-Region inference에 사용할 수 있다고 명시함. 공지는 summary의 길이·형식·비용·지연·모델별 지원 세부 조건, 보존·redaction·audit 동작을 수치로 확정하지 않으므로 account별 API 문서와 representative prompt로 검증 필요.",
+      "why_it_matters": "reasoning summary는 답변만 남던 agent trace에 model 접근 방식이라는 새 관측 신호를 추가함. 그러나 디버깅 편의성과 별개로 prompt·retrieved text·tool input 또는 민감 업무 맥락이 log·support ticket·analytics export로 확산될 수 있어 observability data classification과 동일한 control이 필요.",
+      "engineering_implication": "시사점: low-risk canary에서 summary on/off를 동일 trace ID로 비교해 task success·human review time·first-token/p95·token/요청 비용·payload size를 측정 필요. summary는 raw prompt와 분리된 restricted log sink에 두고 redaction·retention·RBAC·export approval·cross-Region data path를 적용하며, summary를 authorization 근거나 model output의 진실성 증거로 사용하지 않는 policy 필요.",
+      "korea_implication": "국내 조직은 cross-Region inference 사용 시 summary와 trace가 어떤 리전·account·observability sink로 흐르는지, 개인정보·금융·공공 데이터의 보존·접근·위탁처리 조건을 Bedrock 설정과 계약 문서에서 함께 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "OpenAI",
+        "Responses API",
+        "Reasoning",
+        "Observability",
+        "AI Agent",
+        "Data Governance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-10 02:44",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-reasoning-summaries-openai/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Bedrock의 OpenAI 모델이 `Responses API`에서 `reasoning.summary` parameter를 지원함. 요청하면 model answer와 함께 사람이 읽을 수 있는 reasoning summary를 받을 수 있는 API surface 추가임.",
+          "items": [
+            "제공: reasoning output item의 `summary` array에 reasoning summary 반환",
+            "용도: coding·analysis·multi-step problem solving의 model 접근 방식 확인 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "AWS는 이 기능이 OpenAI GPT 모델을 제공하는 모든 Bedrock Region에서 사용 가능하다고 공지함. 호출 경로는 in-Region inference, geographic cross-Region inference, global cross-Region inference를 포함하는 범위임.",
+          "items": [
+            "범위: OpenAI GPT model availability가 있는 Bedrock Region 대상",
+            "경계: summary 길이·형식·model별 차이·가격·latency 수치는 공지에 미기재"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent의 실패 분석은 최종 answer와 tool event만으로 원인을 좁히기 어려운 경우가 있음. summary는 reviewer가 모델 접근 방식을 빠르게 비교할 단서를 주지만, 정답성·policy compliance·실행 승인 근거를 보장하지는 않음.",
+          "items": [
+            "활용: task success·human review·tool outcome과 summary를 같은 trace에서 대조하는 evaluation signal",
+            "리스크: summary 문구를 사실 검증 없이 user-facing explanation·approval evidence로 전용하는 운영"
+          ]
+        },
+        {
+          "heading": "관측·데이터 거버넌스",
+          "body": "reasoning summary는 새 log payload로 취급해야 함. prompt, retrieval 결과, tool argument, tenant·업무 맥락과 결합될 때 observability sink·support export·analytics에서 접근 범위가 넓어질 수 있음.",
+          "items": [
+            "통제: restricted log sink, RBAC, redaction, retention, export approval을 raw prompt trace와 같은 수준으로 적용",
+            "검증: cross-Region inference·centralized logging·incident ticket 경로에서 data residency와 recipient를 추적"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "기능 활성화 전 low-risk workload에서 summary on/off의 운영 효과와 비용을 함께 측정해야 함. 장문의 summary가 trace volume·storage·검색 비용을 늘릴 수 있으므로 sampling·payload cap·retention과 rollout/rollback 조건을 명시할 필요.",
+          "items": [
+            "팀 액션: trace ID 기준으로 task success·review time·first-token/p95·payload size·token/요청 비용 비교",
+            "팀 액션: summary 조회 role, redaction failure 대응, export audit, feature disable 조건을 release checklist에 추가"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-603",
       "title_ko": "Cloudflare, Workers·Durable Objects production CPU·메모리 flamegraph profiling 제공",
       "title_original": "Introducing on-demand CPU and memory profiling with flamegraphs for Workers and Durable Objects",
@@ -279,7 +352,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-602",
@@ -359,11 +432,11 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-601",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "CNCF, Kubernetes 플랫폼의 NIS2·DORA 책임을 운영 artifact·RACI로 분해하는 방법 제시",
       "title_original": "Who owns NIS2 and DORA on a Kubernetes platform team",
       "summary": "핵심: CNCF 기고가 NIS2·DORA 대응을 security backlog가 아니라 **Kubernetes 운영 artifact와 책임자**로 연결해야 한다고 제안함. hardened image catalog·secrets manager·API server audit/SIEM·admission policy를 control question·evidence·sprint owner로 쪼개고, NIS2의 24시간 early warning·72시간 notification에 필요한 사실 수집 runbook을 platform 운영에 포함해야 함.",
@@ -441,7 +514,7 @@
     },
     {
       "id": "news-598",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Amazon Bedrock, GPT-6.1 Sol Ultrafast 모드 제공: 지연 민감 agent workload의 latency·비용·품질을 분리 검증",
       "title_original": "OpenAI GPT-6.1 Sol now supports Ultrafast mode on Amazon Bedrock",
       "summary": "핵심: AWS가 Amazon Bedrock에서 OpenAI **GPT-6.1 Sol Ultrafast** 모드를 제공한다고 공지함. 실시간 coding assistant·interactive agent·고객 대면 경험처럼 응답 속도가 중요한 workload가 공식 대상이며, 속도 개선의 절대 수치·가격·리전·inference profile은 공지에서 확정하지 않아 기존 mode와 p95·완료 품질·token 비용을 같은 trace로 canary 비교 필요.",
@@ -584,7 +657,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-599",
@@ -651,11 +724,11 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-597",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "NVIDIA·Microsoft, Windows용 AI agent 실행 기반 공개: Microsoft Execution Containers와 RTX Spark·DGX Station 결합",
       "title_original": "NVIDIA and Microsoft expand Windows AI agent platform with Microsoft Execution Containers, RTX Spark, and DGX Station",
       "summary": "핵심: NVIDIA·Microsoft가 Windows에서 AI agent를 지속 실행·관리하기 위한 **Microsoft Execution Containers(MXC)** 정식 제공과 RTX Spark·Windows용 DGX Station 구성을 공개함. 기사 기준 RTX Spark는 최대 128GB unified memory·1 PFLOPS FP4, Windows용 DGX Station은 최대 748GB coherent memory·20 PFLOPS FP4·최대 1조 parameter 모델 실행을 제시하며, endpoint agent는 모델 크기보다 container isolation·권한·telemetry·hardware capacity를 함께 검증해야 함.",
@@ -723,7 +796,7 @@
     },
     {
       "id": "news-595",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "OpenAI GPT-6 지능형 UI 공개 보도: 질문별 화면·도구 조합과 스트리밍 응답 적용",
       "title_original": "",
       "summary": "핵심: AI타임스 보도 기준 OpenAI가 질문의 맥락에 맞춰 차트·버튼·입력창·지도·계산기 등을 조합하는 **Intelligent UI**를 GPT-6에 적용함. 답변과 UI를 함께 생성·점진 표시하는 네이티브 스트리밍 구성과 검색 질문의 GPT-6 Instant 초기 응답 평균 44% 단축이라는 내부 평가가 제시됐으며, 생성 UI 도입은 model 품질 외 component schema·action permission·accessibility·fallback 검증이 필요한 변경임.",
@@ -790,7 +863,7 @@
     },
     {
       "id": "news-596",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "GitHub, AI secret detection을 push protection에 확대: ModernBERT 분류기로 후보 묶음 2ms 미만 평가",
       "title_original": "Secret protection must scale with software",
       "summary": "핵심: GitHub가 코드 문맥에서 비정형 secret 후보를 판별하는 **ModernBERT classifier**를 push protection에 추가함. 후보 secret 묶음을 2ms 미만에 평가하고 예방 가능 secret 수를 두 배 이상 늘릴 수 있다는 GitHub 설명이며, Enterprise Cloud·Teams Secret Protection 대상 private preview와 GHES 3.23 public preview 범위임.",
@@ -920,7 +993,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-592",
@@ -984,7 +1057,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-594",
@@ -1055,7 +1128,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-591",
@@ -1118,7 +1191,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-590",
@@ -1181,7 +1254,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-589",
@@ -1244,7 +1317,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-587",
@@ -1307,7 +1380,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-588",
@@ -1370,7 +1443,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-583",
@@ -1436,7 +1509,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-586",
@@ -1499,7 +1572,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-584",
@@ -1561,7 +1634,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-585",
@@ -1623,7 +1696,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-581",
@@ -1691,7 +1764,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-582",
@@ -1759,7 +1832,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-580",
@@ -1826,7 +1899,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-579",
@@ -1906,7 +1979,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-577",
@@ -1978,7 +2051,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-578",
@@ -2045,7 +2118,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-576",
@@ -2118,7 +2191,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-575",
@@ -2194,7 +2267,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-572",
@@ -2266,7 +2339,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-574",
@@ -2329,7 +2402,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-570",
@@ -2394,7 +2467,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-573",
@@ -2461,7 +2534,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-569",
@@ -2532,7 +2605,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-565",
@@ -2596,7 +2669,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-566",
@@ -2660,7 +2733,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-568",
@@ -2724,7 +2797,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-567",
@@ -2788,7 +2861,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-564",
@@ -2868,7 +2941,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-563",
@@ -2951,7 +3024,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-562",
@@ -3025,7 +3098,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-561",
@@ -3098,7 +3171,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-559",
@@ -3166,7 +3239,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-558",
@@ -3232,7 +3305,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-556",
@@ -3298,7 +3371,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-554",
@@ -3372,7 +3445,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-560",
@@ -3437,7 +3510,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-557",
@@ -3512,7 +3585,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-555",
@@ -3581,93 +3654,7 @@
           ]
         }
       ],
-      "rank": 49
-    },
-    {
-      "id": "news-553",
-      "rank": 50,
-      "title_ko": "OpenAI Dots 공개 보도: 24시간 백그라운드 B2B agent의 격리 VM·승인·ID 통제 검증 필요",
-      "title_original": "OpenAI unveils 24-hour autonomous agent 'dots' for enterprise workflows",
-      "summary": "- 공개 보도: AI타임스는 OpenAI가 DevDay 2026에서 `dots`를 공개했다고 보도함. GPT-6 Astra 기반의 상시 가동 B2B agent로, 격리된 cloud virtual computer·전용 browser에서 background coding·test·research·data collection을 수행하는 구조로 설명됨\n- 권한 경계: specialized dots에 전용 ID·system login credential·internal DB access를 부여해 procurement·invoice·CS·contract review를 맡길 수 있다고 보도됨. read-only research, human approval, Microsoft Agent 365·enterprise ID 통합 계획은 source의 설명 범위임\n- 출시·비용 경계: Pro/Business Premium 기본 1개, 고부하 background 작업의 token overage 과금, enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 보도임. 실제 availability·SLA·region·retention·connector permission은 OpenAI 공식 문서와 tenant canary로 재확인 필요",
-      "detail": "AI타임스는 OpenAI가 9월 29일 현지시간 DevDay 2026에서 `dots`를 공개했다고 보도했다. 보도에 따르면 Dots는 GPT-6 Astra 기반의 상시 가동 B2B agent이며, agent마다 격리된 cloud virtual computer와 전용 browser를 부여해 사용자의 device 전원이 꺼져도 code 작성·test·web research·data collection을 background에서 수행한다. 4,000개 이상 내·외부 application 연결, ChatGPT·Slack·Microsoft Teams·SMS의 대화 맥락 유지, Specialized dots의 전용 ID·system credential·internal DB access, read-only research와 sensitive action human approval, Agent 365 및 enterprise ID integration 계획이 언급됐다. Pro/Business Premium에는 기본 1개가 포함되고 고부하 background 작업은 token overage로 과금되며 enterprise 및 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라는 설명이다. 원문은 OpenAI 공식 문서 URL·정확한 SLA·지역·retention·connector별 permission 및 availability를 제시하지 않으므로, 제품 일반 제공·data policy·security control의 확정 근거로 확대하지 않는다.",
-      "why_it_matters": "상시 실행 agent는 model 호출보다 virtual computer, connector, long-lived identity, background execution, approval, audit, cost를 하나의 control plane으로 운영해야 한다. read-only 기본값과 human approval만으로 credential scope·data egress·side effect·rollback이 자동으로 닫히지 않는다.",
-      "engineering_implication": "시사점: 실제 tenant에 제공될 경우 read-only low-risk workflow부터 ephemeral/isolated VM·connector allowlist·scoped identity·approval·event trace·retention·egress·completed-task cost를 함께 canary 검증 필요. credential rotation, external write idempotency, suspended-run revocation, human-approval timeout, provider outage와 rollback을 release gate로 분리 필요.",
-      "korea_implication": "국내 기업은 agent가 한국 데이터·업무 system·SaaS connector에 접근할 때 region, cross-border data path, retention, admin consent, audit export 조건을 실제 contract와 tenant setting으로 확인 필요.",
-      "category": "AI",
-      "tags": [
-        "OpenAI",
-        "AI Agent",
-        "Background Agent",
-        "Enterprise AI",
-        "Virtual Machine",
-        "Identity",
-        "Human Approval",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 94,
-      "published_kst": "2026-09-30 07:07",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=215779",
-      "image_url": "https://cdn.aitimes.com/news/photo/202609/215779_219737_718.jpeg",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "AI타임스: DevDay 상시 작동 agent 사전 보도",
-          "url": "https://www.aitimes.com/news/articleView.html?idxno=215750"
-        },
-        {
-          "title": "AI타임스: Dots 사전 관측 보도",
-          "url": "https://www.aitimes.com/news/articleView.html?idxno=215684"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스는 OpenAI가 9월 29일 현지시간 DevDay 2026에서 `dots`를 공개했다고 보도함. `dots`는 GPT-6 Astra 기반의 상시 가동 B2B agent로 설명되며, 단발성 chat 대신 연속적인 업무 process를 background에서 수행하는 제품 포지셔닝임.",
-          "items": [
-            "발행 시각: AI타임스 `article:published_time` 기준 2026-09-30 07:07 KST",
-            "증거 경계: OpenAI 공식 news page는 현 run에서 Cloudflare challenge로 본문 재검증 불가, visible source는 AI타임스 보도 범위"
-          ]
-        },
-        {
-          "heading": "실행 환경과 업무 범위",
-          "body": "보도는 각 `dots`에 isolated cloud virtual computer와 dedicated browser를 부여한다고 설명함. 사용자 PC·smartphone 전원이 꺼진 상태에서도 code 작성·test·app 구현·web research·data collection을 background에서 진행할 수 있다는 주장임.",
-          "items": [
-            "실행 경로: device-local process가 아닌 provider cloud VM·browser 기반 background execution 설명",
-            "협업 채널: ChatGPT web/app·Slack·Microsoft Teams·SMS에서 단일 대화 맥락 유지 보도",
-            "경계: VM isolation 방식·network egress·sandbox escape·run retention·concurrency SLA는 보도에서 미확정"
-          ]
-        },
-        {
-          "heading": "identity·connector·approval 경계",
-          "body": "`Specialized dots`에는 전용 ID, system login credential, internal DB access를 부여해 procurement·invoice processing·email marketing·customer support·contract review를 맡길 수 있다고 보도됨. research mode는 message sending·data change를 막는 read-only mode이고 account change·payment는 human approval 대상이라는 설명임.",
-          "items": [
-            "권한: agent identity·connector credential·database role·external write를 task risk별 최소 권한으로 분리 필요",
-            "승인: payment·account change·contract submission·production deployment은 approval과 idempotency·rollback evidence 결합 필요",
-            "통합: Microsoft Agent 365·enterprise ID integration은 계획으로 언급됐으며 tenant-level availability·policy effect 별도 확인 필요"
-          ]
-        },
-        {
-          "heading": "데이터·보안·운영 비용",
-          "body": "보도는 enterprise input data와 background task history를 model training에 사용하지 않는 policy를 설명함. Pro/Business Premium에는 agent 1개가 기본 포함되고 high-load background 작업은 token limit 초과 뒤 metered charge이며 enterprise와 developer API는 Q4부터 waitlist를 거쳐 순차 제공 예정이라고 밝힘.",
-          "items": [
-            "검증: data training exclusion과 retention·support access·export·region·subprocessor 조건을 공식 terms와 DPA에서 별도 대조",
-            "FinOps: token뿐 아니라 VM time·browser/tool run·connector call·storage·log·retry·human review를 completed task 비용으로 계측",
-            "release gate: plan·waitlist·API general availability·quota·pricing·region을 계정 console과 official documentation에서 확인 전 production 의존 금지"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "상시 실행 agent의 위험은 모델 response보다 long-lived identity와 tool side effect에서 커짐. agent를 employee처럼 포장하더라도 credential lifecycle, revocation, approval, audit, outage behavior를 platform control로 구현하지 않으면 privileged automation의 blast radius가 커짐.",
-          "items": [
-            "canary: read-only low-risk workflow에서 completed-task quality·p95/p99·tool retry·approval latency·egress·cost를 trace ID로 비교",
-            "보안: ephemeral VM·scoped token·connector allowlist·secret redaction·artifact expiry·kill switch 적용",
-            "팀 액션: background run마다 owner·purpose·data classification·permission·approval·output destination·retention·rollback record 연결"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }
