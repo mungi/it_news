@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-10 | Total pages: 400
+> Last updated: 2026-10-10 | Total pages: 401
 
 ## Entities
 
@@ -37,6 +37,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-security-hub-findings-s3-export-2026-10-10]] — AWS Security Hub finding의 S3 CSV·OCSF JSON export와 evidence bucket·schema·access-control 운영 경계.
 - [[raw/articles/cloudflare-workers-on-demand-profiling-2026-10-09]] — Cloudflare Workers·Durable Objects production CPU·memory flamegraph profiling의 source map·artifact access·SLO canary 운영 경계.
 - [[raw/articles/aitimes-anthropic-claude-dashboards-motion-2026-10-09]] — Claude Dashboards·Motion 베타 보도의 enterprise data connector·query·export·생성 코드 승인 경계.
 - [[raw/articles/aitimes-openai-codex-28-days-speed-2026-10-06]] — Codex·ChatGPT Work 28일 연속 개선 보도와 GPT-6 Astra·Sol 처리 속도 50% 상향의 latency·quota·fallback 검증 경계.
