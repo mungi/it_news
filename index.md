@@ -37,6 +37,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimeskr-aws-physical-ai-toolchain-2026-10-10]] — AWS Physical AI Toolchain의 합성 데이터·simulation·edge 배포·현장 재학습 연결과 physical-action release gate 운영 경계.
 - [[raw/articles/cloudflare-clef-omni-multimodal-2026-10-10]] — Cloudflare Clef-omni의 audio·video·image·text 단일 decision-model 입력, schema score·calibration·media data-boundary 검증 경계.
 - [[raw/articles/aws-security-hub-findings-s3-export-2026-10-10]] — AWS Security Hub finding의 S3 CSV·OCSF JSON export와 evidence bucket·schema·access-control 운영 경계.
 - [[raw/articles/cloudflare-workers-on-demand-profiling-2026-10-09]] — Cloudflare Workers·Durable Objects production CPU·memory flamegraph profiling의 source map·artifact access·SLO canary 운영 경계.
