@@ -2,7 +2,7 @@
   "week": "2026-W42",
   "coverage_start_kst": "2026-10-05 17:00",
   "coverage_end_kst": "2026-10-12 13:00",
-  "last_updated_kst": "2026-10-10 13:44",
+  "last_updated_kst": "2026-10-10 17:55",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google의 Constellation 3.59GW 원전 전력 계약 보도는 AI 데이터센터 capacity가 GPU뿐 아니라 PPA·uprate·PJM 조달·계통 인도 시점의 제약을 받는다는 사례임. IT load·PUE·firm power·commercial operation date를 같은 capacity model로 관리해야 함.",
@@ -277,6 +277,91 @@
       "rank": 1
     },
     {
+      "id": "news-607",
+      "title_ko": "Cloudflare Clef-omni 공개: 단일 decision model에 오디오·비디오 입력 추가, schema 점수화 경로 검증 필요",
+      "title_original": "Introducing Clef-omni with full multimodality, plus a faster Clef and a cheaper Clef-flash",
+      "summary": "핵심: Cloudflare가 text·image에 audio·video를 더한 open-weight decision model **Clef-omni**를 공개함. `wav`·`mp3`·`mp4`·`webm`을 단일 입력 sequence로 처리하고 schema-constrained scoring을 지향하므로, production 도입 전 media payload 크기·지연·confidence calibration·입력 보존·schema 변경 내성을 workload별 canary로 검증 필요.",
+      "detail": "Cloudflare 공식 발표 기준 Clef-omni는 Qwen3-Omni-30B-A3B-Instruct MoE를 기반으로 text·image·audio·video를 직접 처리하는 decision model이다. Cloudflare는 text-to-speech output component를 제외하고 전체 payload의 prefill pass에서 modalities와 valid parameter option을 함께 score한다고 설명했으며, output token generation을 생략하는 구조를 제시했다. open weights는 Hugging Face에서 제공되고, Cloudflare Workers AI API에서 audio·video input을 받는 예시가 공개됐다. Clef-omni의 task accuracy·latency·throughput·가격·리전·data retention·모든 schema의 calibration은 공지에서 보장하지 않으므로, agent 또는 inspection workflow에 연결하기 전 ground truth와 failure path를 포함한 canary가 필요.",
+      "why_it_matters": "멀티모달 입력을 transcription·captioning·separate classifier 체인으로 분해하지 않고 decision model 하나에서 score하려는 경로임. pipeline hop을 줄일 가능성은 있으나, input provenance·payload cost·모달리티별 오류·confidence의 승인 기준을 하나의 control plane에서 관리해야 함.",
+      "engineering_implication": "시사점: representative audio·video·image·text set에서 Clef-omni와 기존 cascade의 task precision/recall·end-to-end p95·payload byte·egress·GPU/API cost를 같은 trace ID로 비교 필요. schema option 변경, missing/corrupt media, low-confidence output, sensitive media retention을 release gate와 fallback queue로 정의하고, model score를 자동 physical action 또는 privileged write 권한의 단독 근거로 사용하지 않는 policy 필요.",
+      "korea_implication": "국내 제조·현장 점검·고객지원 조직은 음성·영상에 포함된 얼굴·음성·설비 정보의 국외 전송, 보존, 접근자와 vendor API·open-weight self-hosting 경로를 데이터 분류·위탁 처리 기준에 맞춰 분리 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "Cloudflare",
+        "Clef-omni",
+        "Multimodal",
+        "Open Weights",
+        "Workers AI",
+        "Decision Model",
+        "Schema Validation"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-10-10 03:27",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/clef-faster-cheaper-multimodal/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4HE412EXF8WEMZGXMF07M7P.01M4HE430AWZQNNMNXJE05KDNG.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Clef-omni Workers AI 모델 문서",
+          "url": "https://developers.cloudflare.com/workers-ai/models/clef-omni/"
+        },
+        {
+          "title": "Clef-omni Hugging Face open weights",
+          "url": "https://huggingface.co/cloudflare/clef-omni"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 Clef decision model 계열에 audio·video·image·text를 함께 받는 Clef-omni를 추가 공개함. Cloudflare Workers AI API example은 `audio`, `videos`, `images`, `state`, `questions` field로 다중 모달 입력과 구조화된 질문을 전달하는 경로를 제시함.",
+          "items": [
+            "입력: `wav`·`mp3` audio와 `mp4`·`webm` video를 text·image와 같은 request에 포함하는 범위",
+            "공개: model open weights를 Hugging Face에 제공하고 Workers AI model documentation으로 API 경로 안내"
+          ]
+        },
+        {
+          "heading": "모델·추론 경로",
+          "body": "원문은 Qwen3-Omni-30B-A3B-Instruct MoE의 comprehension backbone을 채택하고 text-to-speech output component를 제외했다고 설명함. 전체 payload의 quick prefill pass에서 modalities와 valid parameter option을 score하고, output token generation을 생략하는 구조라는 발표 범위임.",
+          "items": [
+            "구성: audio·video·visual frame·text를 unified sequence로 처리한다는 Cloudflare 설명",
+            "경로: option별 evidence gathering과 full-context cross-attention으로 confidence score를 계산한다는 발표 구조",
+            "경계: task별 accuracy·latency·throughput·모달리티 길이 제한은 원문에서 일반 보장하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "학습·schema 제약의 읽는 법",
+          "body": "Cloudflare는 Qwen3 backbone을 freeze하고 LoRA를 학습했으며, label-smoothed cross-entropy와 Brier score calibration을 결합한 post-training을 설명함. 이는 schema-constrained scoring의 구현 설명이지 조직별 승인 정확도 또는 calibration SLA가 아님.",
+          "items": [
+            "학습: frozen backbone·LoRA·label-smoothed cross-entropy·Brier score calibration이라는 원문 공개 범위",
+            "검증: schema option 추가·삭제·순서 변경과 ambiguous media에서 confidence·abstention·fallback 동작 확인",
+            "피할 것: score 또는 JSON-valid output을 factual correctness·authorization·physical-world safety의 증거로 전용하는 설계"
+          ]
+        },
+        {
+          "heading": "아키텍처·운영 영향",
+          "body": "단일 model path는 speech-to-text, image analysis, video frame split 뒤 별도 decision model을 호출하는 cascade를 줄일 후보임. 반대로 긴 media upload·transcode·payload retention·retry·trace correlation이 병목과 data boundary를 새로 만들 수 있음.",
+          "items": [
+            "측정: modality별 payload byte·ingest/preprocess/model p95·error/retry·cost·task precision/recall을 동일 trace ID로 비교",
+            "격리: test media와 production media의 bucket·API credential·log sink·retention을 분리하고 request body의 무분별한 debug export 차단",
+            "fallback: missing/corrupt media·low-confidence score·schema validation failure를 human review 또는 기존 cascade로 보내는 queue 설계"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 모델 input 종류가 아니라 업무 decision의 오류 비용으로 내려야 함. low-risk inspection 또는 routing workflow에서 ground-truth set과 explicit rejection case를 먼저 만들고, score threshold와 human override를 검증한 뒤 write action 범위를 늘리는 순서가 필요.",
+          "items": [
+            "팀 액션: 기존 transcription/caption cascade와 Clef-omni를 같은 representative set에서 precision·recall·p95·payload cost로 A/B 비교",
+            "팀 액션: schema version, model version, input hash, confidence, reviewer decision을 audit record로 연결",
+            "검토 항목: API region·pricing·quota·media retention·open-weight license·self-hosting resource requirement는 account 문서와 model card에서 별도 확인"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-604",
       "title_ko": "Amazon Bedrock, OpenAI 모델 Responses API에 reasoning summary 제공: 디버그 로그·데이터 경계 분리 필요",
       "title_original": "Amazon Bedrock now supports reasoning summaries for OpenAI models",
@@ -347,7 +432,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-603",
@@ -423,7 +508,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-606",
@@ -502,7 +587,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-602",
@@ -582,11 +667,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-601",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "CNCF, Kubernetes 플랫폼의 NIS2·DORA 책임을 운영 artifact·RACI로 분해하는 방법 제시",
       "title_original": "Who owns NIS2 and DORA on a Kubernetes platform team",
       "summary": "핵심: CNCF 기고가 NIS2·DORA 대응을 security backlog가 아니라 **Kubernetes 운영 artifact와 책임자**로 연결해야 한다고 제안함. hardened image catalog·secrets manager·API server audit/SIEM·admission policy를 control question·evidence·sprint owner로 쪼개고, NIS2의 24시간 early warning·72시간 notification에 필요한 사실 수집 runbook을 platform 운영에 포함해야 함.",
@@ -664,7 +749,7 @@
     },
     {
       "id": "news-598",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Amazon Bedrock, GPT-6.1 Sol Ultrafast 모드 제공: 지연 민감 agent workload의 latency·비용·품질을 분리 검증",
       "title_original": "OpenAI GPT-6.1 Sol now supports Ultrafast mode on Amazon Bedrock",
       "summary": "핵심: AWS가 Amazon Bedrock에서 OpenAI **GPT-6.1 Sol Ultrafast** 모드를 제공한다고 공지함. 실시간 coding assistant·interactive agent·고객 대면 경험처럼 응답 속도가 중요한 workload가 공식 대상이며, 속도 개선의 절대 수치·가격·리전·inference profile은 공지에서 확정하지 않아 기존 mode와 p95·완료 품질·token 비용을 같은 trace로 canary 비교 필요.",
@@ -807,7 +892,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-599",
@@ -874,11 +959,11 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-597",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "NVIDIA·Microsoft, Windows용 AI agent 실행 기반 공개: Microsoft Execution Containers와 RTX Spark·DGX Station 결합",
       "title_original": "NVIDIA and Microsoft expand Windows AI agent platform with Microsoft Execution Containers, RTX Spark, and DGX Station",
       "summary": "핵심: NVIDIA·Microsoft가 Windows에서 AI agent를 지속 실행·관리하기 위한 **Microsoft Execution Containers(MXC)** 정식 제공과 RTX Spark·Windows용 DGX Station 구성을 공개함. 기사 기준 RTX Spark는 최대 128GB unified memory·1 PFLOPS FP4, Windows용 DGX Station은 최대 748GB coherent memory·20 PFLOPS FP4·최대 1조 parameter 모델 실행을 제시하며, endpoint agent는 모델 크기보다 container isolation·권한·telemetry·hardware capacity를 함께 검증해야 함.",
@@ -946,7 +1031,7 @@
     },
     {
       "id": "news-595",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "OpenAI GPT-6 지능형 UI 공개 보도: 질문별 화면·도구 조합과 스트리밍 응답 적용",
       "title_original": "",
       "summary": "핵심: AI타임스 보도 기준 OpenAI가 질문의 맥락에 맞춰 차트·버튼·입력창·지도·계산기 등을 조합하는 **Intelligent UI**를 GPT-6에 적용함. 답변과 UI를 함께 생성·점진 표시하는 네이티브 스트리밍 구성과 검색 질문의 GPT-6 Instant 초기 응답 평균 44% 단축이라는 내부 평가가 제시됐으며, 생성 UI 도입은 model 품질 외 component schema·action permission·accessibility·fallback 검증이 필요한 변경임.",
@@ -1013,7 +1098,7 @@
     },
     {
       "id": "news-596",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "GitHub, AI secret detection을 push protection에 확대: ModernBERT 분류기로 후보 묶음 2ms 미만 평가",
       "title_original": "Secret protection must scale with software",
       "summary": "핵심: GitHub가 코드 문맥에서 비정형 secret 후보를 판별하는 **ModernBERT classifier**를 push protection에 추가함. 후보 secret 묶음을 2ms 미만에 평가하고 예방 가능 secret 수를 두 배 이상 늘릴 수 있다는 GitHub 설명이며, Enterprise Cloud·Teams Secret Protection 대상 private preview와 GHES 3.23 public preview 범위임.",
@@ -1143,7 +1228,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-592",
@@ -1207,7 +1292,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-594",
@@ -1278,7 +1363,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-591",
@@ -1341,7 +1426,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-590",
@@ -1404,7 +1489,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-589",
@@ -1467,7 +1552,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-587",
@@ -1530,7 +1615,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-588",
@@ -1593,7 +1678,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-583",
@@ -1659,7 +1744,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-586",
@@ -1722,7 +1807,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-584",
@@ -1784,7 +1869,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-585",
@@ -1846,7 +1931,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-581",
@@ -1914,7 +1999,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-582",
@@ -1982,7 +2067,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-580",
@@ -2049,7 +2134,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-579",
@@ -2129,7 +2214,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-577",
@@ -2201,7 +2286,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-578",
@@ -2268,7 +2353,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-576",
@@ -2341,7 +2426,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-575",
@@ -2417,7 +2502,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-572",
@@ -2489,7 +2574,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-574",
@@ -2552,7 +2637,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-570",
@@ -2617,7 +2702,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-573",
@@ -2684,7 +2769,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-569",
@@ -2755,7 +2840,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-565",
@@ -2819,7 +2904,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-566",
@@ -2883,7 +2968,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-568",
@@ -2947,7 +3032,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-567",
@@ -3011,7 +3096,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-564",
@@ -3091,7 +3176,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-563",
@@ -3174,7 +3259,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-562",
@@ -3248,7 +3333,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-561",
@@ -3321,7 +3406,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-559",
@@ -3389,7 +3474,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-558",
@@ -3455,7 +3540,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-556",
@@ -3521,7 +3606,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-554",
@@ -3592,71 +3677,6 @@
           "items": [
             "검증: API authentication·device onboarding·policy push·HA failover·audit export regression",
             "팀 액션: fixed build·exposure closure·forensic·credential/configuration review를 하나의 incident change record에 연결"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-560",
-      "title_ko": "Cloudflare Containers 재구성: agent sandbox별 runtime image·instance 선택, 시작 6배 단축·snapshot beta",
-      "title_original": "Cloudflare Containers, rebuilt to scale agent sandboxes",
-      "summary": "- 공개: Cloudflare가 agent workload용 Containers runtime·scheduler를 재구성함. application code가 sandbox별 image·instance type을 runtime에 선택하고 `durable_object` policy로 lifecycle을 제어하는 구조\n- 성능: Cloudflare는 start를 6배 이상 단축했다고 밝혔고, ComputeSDK 독립 benchmark의 median startup은 4초 이상에서 `648ms`로 측정됨\n- 운영: filesystem snapshot은 public beta이며 agent workspace의 저장·복원을 지원함. image provenance·resource quota·snapshot retention·egress·cold-start p95를 canary로 검증 필요",
-      "detail": "Cloudflare는 2026년 9월 30일 Containers를 agent sandbox workload에 맞게 재구성했다고 발표했다. 새 `durable_object` scheduling policy는 application code가 task별 sandbox image와 instance type을 runtime에 선택하도록 하며, Durable Object가 해당 Container의 stable identity와 lifecycle·outbound traffic 제어를 맡는다. Cloudflare는 Containers start가 6배 이상 빨라졌고 ComputeSDK 독립 benchmark에서 median startup이 4초 이상에서 648ms로 낮아졌다고 제시했다. filesystem snapshot은 public beta로, agent가 만든 workspace를 저장·복원하는 용도다. 발표는 burst test에서 수십만 container를 수초 안에 만들었다는 preliminary test도 언급하지만, 조직별 startup·quota·isolation·가격·snapshot 보존·cleanup 보장은 아니다. agent sandbox 도입 시 image digest·package provenance·instance 권한·network egress·snapshot retention·task 종료 후 cleanup과 p95 start/restore·failure telemetry를 release gate로 묶어야 한다.",
-      "why_it_matters": "agent는 task마다 compiler·repository·tool·filesystem 상태가 다른 Linux workspace를 즉시 만들고 중단·복원해야 함. deploy-time 고정 구성 대신 task-time resource selection과 persistent controller를 제공하면 sandbox orchestration을 application control plane에서 관리할 수 있음.",
-      "engineering_implication": "시사점: `durable_object`별 image digest·instance type·tool credential·egress policy·snapshot lifecycle을 trace로 남기고, untrusted code 실행은 최소 권한·ephemeral secret·network allowlist·destroy verification을 기본값으로 설정 필요.",
-      "korea_implication": "국내 기업의 coding agent·RAG evaluation sandbox는 데이터 반출·망 분리·개인정보 처리 조건에 따라 outbound traffic과 snapshot 저장 위치·보존 기간을 계약·관리 콘솔·runtime trace로 별도 확인 필요.",
-      "category": "Cloud",
-      "tags": [
-        "Cloudflare",
-        "Containers",
-        "AI Agent",
-        "Sandbox",
-        "Durable Objects",
-        "Serverless",
-        "DevTools",
-        "Cloud"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-09-30 21:58",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/faster-agent-sandboxes/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M3S8R4W0018F4ABEE2X1ZH4G.01M3S8R5VDFQC24Z3Q4E6RBE3E.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 Containers를 agent sandbox에 맞게 재구성함. agent task가 시작될 때 application code가 image와 compute instance type을 선택하고, `durable_object` scheduling policy가 sandbox별 lifecycle 결정을 runtime으로 옮기는 구조임.",
-          "items": [
-            "발행: Cloudflare Blog `2026-09-30T12:58:00Z`, KST `2026-09-30 21:58`",
-            "공개 범위: `durable_object` scheduling policy와 filesystem snapshot public beta"
-          ]
-        },
-        {
-          "heading": "본문 핵심 포인트",
-          "body": "기존 Containers는 application deployment 시 image와 resource를 정해 rollout하는 방식이었음. 변경 후에는 task가 필요한 repository·compiler·test runner·filesystem 시작 상태에 맞춰 runtime 구성을 고르고, Durable Object가 stable identity와 start·sleep·stop·outbound traffic 제어를 담당함.",
-          "items": [
-            "성능 주장: Containers start 6배 이상 단축, ComputeSDK benchmark median startup `4초 이상→648ms`",
-            "상태 관리: snapshot으로 agent workspace를 저장·복원 가능, 장기 task와 pause/resume workload 대상"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "agent workspace는 사전 배포된 단일 service와 달리 task별로 수명·image·resource·state가 달라짐. runtime scheduling과 snapshot을 묶으면 coding agent·evaluation·reinforcement learning 환경의 provisioning 지연과 state handoff를 control plane에서 다룰 수 있음.",
-          "items": [
-            "적용 대상: repository·package manager·compiler·test runner가 필요한 coding agent 및 known-state evaluation sandbox",
-            "증거 경계: benchmark·burst test는 Cloudflare와 ComputeSDK 조건의 결과이며 tenant workload의 p95·quota·비용·격리 보장 아님"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "sandbox를 빠르게 만드는 것과 안전하게 폐기하는 것은 별도 검증 항목임. image provenance·instance entitlement·tool credential·outbound traffic·snapshot retention·task cleanup을 request ID와 연결하고, cold start·restore·failure·orphan container telemetry로 rollout을 판정해야 함.",
-          "items": [
-            "보안: untrusted code 실행은 per-task identity·ephemeral secret·egress allowlist·filesystem snapshot 접근 제어 필요",
-            "운영: image digest·resource quota·start/restore p95·snapshot size·cleanup success·failed destroy를 canary dashboard에 연결"
           ]
         }
       ],
