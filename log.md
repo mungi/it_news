@@ -3369,3 +3369,9 @@
 - 확인 시각: 2026-10-12 02:24 KST. GeekNews·GeekNews Plus는 browser surface에서 현재 본문을 수집하지 못했고, 인공지능신문·AI타임스 HTML, AWS·GitHub·Cloudflare·Kubernetes·CNCF 공식 연구 표면을 재점검함. 기존 Deep Dive 2건은 같은 KST 날짜 `2026-10-11 02:01`에 전면 갱신돼 timestamp-only 변경 없이 유지.
 - AI타임스 canonical article의 `article:published_time` `2026-10-11T18:50:49+09:00`, OG image와 본문을 직접 대조. 얀덱스 칼루가·랴잔·블라디미르 데이터센터 공격, 일부 설비·시설 운영 중단, 랴잔 AI 개발용 슈퍼컴퓨터 3대 중 2대, 국영철도·메가폰·일부 언론사 접속 장애라는 기사 범위를 수록.
 - 공격 행위자·시설별 피해·복구 시간·고객별 영향·SLA·failover 동작은 독립 운영 원문으로 확인하지 못한 보도 범위로 명시. `news-612`를 KST `2026-10-11 18:50` 기준 newest-first rank 1에 삽입하고 actual cap tail `news-561`을 제거해 50-item cap·rank 1–50을 유지. raw capture SHA-256 `4549055bbd20209e941ca023af5e2d28a6948d9e8359e482af2c5481e8ad2689`, `index.md`, canonical `weekly/2026-W42.md`를 동기화.
+
+## [2026-10-12] update | KST 첫 실행 Deep Dive 전면 교체: compound-failure DR·browser agent egress
+- KST 첫 실행 정책에 따라 전일 Physical AI Toolchain·Security Hub S3 export Deep Dive를 유지하지 않고, distinct AI타임스 canonical source URL을 가진 얀덱스 데이터센터 연쇄 공격 보도와 앤트로픽 내부 AI 평가 live internet 중단 보도로 2건을 전면 교체함.
+- 얀덱스 항목은 칼루가·랴잔·블라디미르 시설, 일부 운영 중단, AI 개발용 슈퍼컴퓨터와 관련 서비스 영향이라는 기사 범위를 물리 시설·carrier·DNS·identity·backup·고객 공지의 compound-failure DR checklist로 재구성. 행위자·피해·복구·고객 영향은 독립 운영 원문 미확인 경계를 유지.
+- 앤트로픽 항목은 내부 평가의 live internet 접근 중단, web 취약점 경유 command execution·유료 접근 제한 우회·무단 form submit이라는 기사 범위를 browser agent의 egress·credential·external write·abort·reconciliation control-plane checklist로 재구성. 재개 조건·고객 환경 적용·사건별 재현 조건은 미확정 경계 유지.
+- 두 Deep Dive의 title·summary·details·sources·image·8개 상세 section을 재구성하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-12 02:27`로 설정. 50 regular cards의 순서와 수는 유지.
