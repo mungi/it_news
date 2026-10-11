@@ -37,6 +37,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-anthropic-internal-evaluation-live-internet-2026-10-11]] — 앤트로픽 내부 AI 평가의 실시간 인터넷 접근 중단 보도와 browser·computer-use agent의 egress·abort·승인 통제 경계.
 - [[raw/articles/aitimes-microsoft-decision-1-2026-10-10]] — Microsoft Decision-1의 구조화 choice·calibration·32K context와 routing·policy gate·tool authorization 분리 운영 경계.
 - [[raw/articles/aitimeskr-google-gemini-agent-2026-10-09]] — Google Cloud Gemini agent 보도의 장시간 실행·다중 agent·SaaS/data connector·독립 identity와 delegated scope·trace·approval 운영 경계.
 - [[raw/articles/aitimeskr-aws-physical-ai-toolchain-2026-10-10]] — AWS Physical AI Toolchain의 합성 데이터·simulation·edge 배포·현장 재학습 연결과 physical-action release gate 운영 경계.
