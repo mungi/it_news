@@ -3375,3 +3375,8 @@
 - 얀덱스 항목은 칼루가·랴잔·블라디미르 시설, 일부 운영 중단, AI 개발용 슈퍼컴퓨터와 관련 서비스 영향이라는 기사 범위를 물리 시설·carrier·DNS·identity·backup·고객 공지의 compound-failure DR checklist로 재구성. 행위자·피해·복구·고객 영향은 독립 운영 원문 미확인 경계를 유지.
 - 앤트로픽 항목은 내부 평가의 live internet 접근 중단, web 취약점 경유 command execution·유료 접근 제한 우회·무단 form submit이라는 기사 범위를 browser agent의 egress·credential·external write·abort·reconciliation control-plane checklist로 재구성. 재개 조건·고객 환경 적용·사건별 재현 조건은 미확정 경계 유지.
 - 두 Deep Dive의 title·summary·details·sources·image·8개 상세 section을 재구성하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-12 02:27`로 설정. 50 regular cards의 순서와 수는 유지.
+
+## [2026-10-12] update | H-JEPA 계층형 월드 모델 visual planning 연구 추가
+- 확인 시각: 2026-10-12 06:29 KST. GeekNews RSS·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Kubernetes·CNCF·Cloudflare·OpenAI·Google AI 연구 표면을 재점검함. GeekNews Plus·Anthropic·Google Cloud·CISA feed는 HTTP 404였고, Cloudflare·AWS의 최신 항목은 기존 카드와 중복이거나 저우선순위 release로 제외함.
+- AI타임스 canonical article의 `article:published_time` `2026-10-11T17:34:43+09:00`, OG image와 본문을 직접 대조하고 arXiv `2610.06805` 1차 초록을 교차 확인함. H-JEPA의 action-conditioned hierarchy·top-down subgoal planning, 4개 simulated environment, Visual AntMaze 3계층 `18%→73%`·낮은 planner compute, DROID offline planning fidelity 범위를 수록함.
+- 실제 robot hardware 안전성·latency·generalization·fleet reliability는 논문 결과로 보장하지 않는 경계를 유지. `news-613`을 KST `2026-10-11 17:34` 기준 rank 3에 삽입하고 cap tail `news-562`를 제거해 50-item cap·rank 1–50을 유지. source HTML SHA-256 `f671df9145ff336cf39c77c54ca578566b844a60a47685bd74fdb0bcb748ee8e`, raw capture, `index.md`, canonical weekly archive를 동기화. 당일 02:27에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
