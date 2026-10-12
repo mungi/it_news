@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-13 | Total pages: 405
+> Last updated: 2026-10-13 | Total pages: 406
 
 ## Entities
 
@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-meta-muse-wonder-2026-10-13]] — Meta Muse Wonder·Wonder Full 보도: 100만 token context·장기 작업 기능·구독 전용 상위 모델·benchmark와 비용 검증 경계.
 - [[raw/articles/cloudflare-transformers-logpush-2026-10-12]] — Cloudflare Logpush Transformers의 SQL 기반 export 전 filter·redaction·reshape와 log data-boundary·detection coverage 운영 경계.
 - [[raw/articles/cncf-kagent-agent-builder-2026-10-12]] — CNCF kagent agent-builder local lab의 Agent CR·RBAC 축소 예시와 default auth·cluster-admin·shared-cluster 보안 경계.
 - [[raw/articles/navercloud-fpt-apac-ai-factory-gpuaas-2026-10-12]] — 네이버클라우드·FPT의 APAC AI 팩토리·GPUaaS 협력 계획과 다국가 capacity·data residency·tenant 운영 검증 경계.

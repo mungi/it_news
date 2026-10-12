@@ -2,9 +2,10 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-13 02:47",
+  "last_updated_kst": "2026-10-13 06:55",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Meta가 Muse Wonder와 구독 전용 Wonder Full을 공개했다는 AI타임스 보도 기준, 장기 agent 도입은 benchmark 순위만이 아니라 API 접근·context/tool loop·작업당 비용·data control을 함께 검증해야 함.",
     "Cloudflare는 Logpush export 전 SQL로 filter·redact·reshape하는 Transformers를 공개함. log export는 observability 기능이면서 data egress control이므로 query version·field allowlist·detection coverage·rollback을 함께 검증 필요.",
     "CNCF kagent builder 실습은 natural-language agent가 Kubernetes Agent CR을 만들 수 있는 경로를 제시함. default unsecure auth·bundled database password·cluster-admin 기본값을 production으로 옮기지 말고 RBAC·admission·approval·audit을 분리 필요."
   ],
@@ -174,8 +175,81 @@
   ],
   "items": [
     {
+      "id": "news-617",
+      "title_ko": "메타 Muse Wonder·Wonder Full 공개: 장기 작업 지속성 모델과 구독 전용 상위 모델",
+      "title_original": "Meta releases Muse Wonder and Muse Wonder Full",
+      "summary": "핵심: AI타임스 보도 기준 Meta가 100만 token context의 Muse Wonder와 Muse Wonder Full을 공개함. Wonder는 Meta Model API·Muse Code에 제공하고 Full은 Muse Code 구독 전용으로 API를 열지 않았으므로, benchmark 수치와 별개로 접근 경로·작업당 비용·data/control plane 조건을 분리 검증 필요.",
+      "detail": "AI타임스는 Wonder 시리즈가 text·image·video·audio를 입력받아 text를 출력하고, Active Memory·Active Focus로 장기 작업의 정보 유지와 장애 회피를 목표로 한다고 보도했다. Meta 공개 수치로 DeepSWE 1.1은 Full 79.0%·Wonder 78.8%, SWE-Marathon은 Full 57.5%·Wonder 53.1%이며, 같은 기사에서 모델별 coding tool과 Full 추론 설정이 달라 통제 비교가 아니라고 명시한다. Wonder API 가격은 100만 token당 input $4·output $20·cached input $0.20으로 보도됐고, Full token 가격·public API·region·quota·SLA·retention은 독립 확인 범위가 아니다.",
+      "why_it_matters": "장기 agent workload의 품질은 단일 benchmark보다 context·memory·tool loop·retry·human handoff·작업당 비용의 결합으로 결정되며, 상위 모델의 구독 전용 제공은 enterprise integration 경로를 제한함.",
+      "engineering_implication": "시사점: 동일 task set에서 completion·human-review rate·p95 latency·tool retry·context/cache token·end-to-end task cost를 계측하고, Full을 API workload의 대체재로 가정하지 말고 access·data handling·audit 조건부터 확인 필요.",
+      "korea_implication": "국내 팀은 모델 성능 기사만으로 업무 자동화 도입을 결정하지 말고, 한국 리전·계약·data residency·API availability·운영 지원과 함께 실제 task 비용을 PoC에서 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "Meta",
+        "Muse Wonder",
+        "Foundation Model",
+        "AI Agent",
+        "Coding",
+        "Benchmark",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 90,
+      "published_kst": "2026-10-13 06:27",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216176",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216176_220197_5655.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스는 Meta가 Muse Wonder와 상위 Muse Wonder Full을 발표했다고 보도함. 일반 Wonder는 Meta Model API와 Muse Code에 제공하고, Full은 Muse Code 구독자에게만 제공하며 public API에서는 사용할 수 없다는 범위임.",
+          "items": [
+            "제공: Wonder의 Meta Model API·Muse Code 경로와 Full의 Muse Code 구독 한정 경로",
+            "학습: 두 모델을 Ohio Prometheus data center에서 훈련했다는 기사 보도 범위"
+          ]
+        },
+        {
+          "heading": "모델·접근 경로",
+          "body": "기사 기준 두 모델은 text·image·video·audio 입력과 text 출력을 지원하고 100만 token context를 유지함. Active Memory는 대화·업무 정보를 유지해 필요한 시점에 쓰는 기능, Active Focus는 작업 중 장애가 발생해도 다른 접근을 찾는 기능으로 설명됨.",
+          "items": [
+            "범위: 장기 소프트웨어 개발·예약·보험 처리·전문 문서 작성에 활용 가능하다는 회사 설명",
+            "경계: memory persistence·tool authority·data retention·external write approval의 제품 계약 조건은 독립 1차 문서 미확인"
+          ]
+        },
+        {
+          "heading": "성능 수치와 비교 조건",
+          "body": "Meta 공개 수치로 DeepSWE 1.1에서 Full 79.0%·Wonder 78.8%, SWE-Marathon에서 Full 57.5%·Wonder 53.1%를 기록했다는 보도임. 같은 기사는 모델별 coding tool과 Full의 추론 설정이 달라 동일 조건의 통제 비교가 아니라고 명시함.",
+          "items": [
+            "독립 평가 인용: Artificial Analysis AAII v4.3 최대 추론 설정에서 Full 56점·Wonder 52점이라는 기사 범위",
+            "반례: TerminalBench 4.0과 HealthBench Pro에서 Full이 비교 모델보다 낮았다는 기사 범위"
+          ]
+        },
+        {
+          "heading": "비용·도입 제약",
+          "body": "Wonder API 가격은 100만 token당 input $4·output $20·cached input $0.20으로 보도됨. Full은 token 가격이 공개되지 않았고 월 $50 또는 $200 Muse Code 구독이 필요하며 enterprise가 API로 자동화에 연결할 수 없다는 제약이 기사에 포함됨.",
+          "items": [
+            "비용: 기사 인용 Artificial Analysis 평가에서 Wonder 작업당 평균 비용 $4.52",
+            "제약: token 단가가 낮아도 context·tool loop·retry·human review를 합친 작업 비용은 별도 측정 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "이 발표는 benchmark 상위 수치와 제품 접근성을 분리해 평가해야 하는 사례임. 공개 API 모델과 구독 전용 모델을 같은 production 선택지로 취급하면 integration·audit·capacity 계획이 왜곡될 수 있음.",
+          "items": [
+            "팀 액션: 실제 업무 fixture로 completion·human review·p95 latency·tool retry·token/cache·작업당 비용을 canary 비교",
+            "팀 액션: API availability·region·quota·data handling·audit log·rollback 조건을 계약 또는 공식 문서로 확인",
+            "팀 액션: 상위 모델이 API에서 제공되지 않는 동안 vendor lock-in과 fallback model 경로를 설계"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-615",
-      "rank": 1,
+      "rank": 2,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -239,7 +313,7 @@
     },
     {
       "id": "news-616",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
