@@ -3402,3 +3402,8 @@
 - AWS 공식 공지 2건을 직접 대조: Lambda Web Functions의 Node.js HTTP server·warm concurrency·streaming·VPC·5개 Region, AgentCore short-term memory의 GB 단가·12KB/64KB billable 조건·TTL 범위를 수록함.
 - 인공지능신문 canonical 기사 2건의 published metadata·OG image·본문을 직접 대조: MongoDB 9.0·Atlas Infinite의 compute/storage 분리 AWS preview와 Microsoft Azure Maia 200/300·HBM4·96-accelerator rack 계획을 수록. 성능·전력·가격·SLA·리전 미확정 범위는 vendor/기사 조건으로 구분함.
 - `news-618`~`news-621`을 KST 최신순으로 삽입해 W43 7건·rank 1–7을 유지하고 raw captures·index·canonical weekly archive를 동기화. 당일 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-13] update | AMD Helion·현대차·기아 VAST Data 신규 카드 추가
+- 확인 시각: 2026-10-13 15:09 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF·OpenAI·Google AI·CISA feed를 current research pass에 포함함.
+- 인공지능신문 canonical 기사 2건의 `article:published_time`, OG image, 본문을 직접 대조. AMD Helion은 OCP 기반 CPU-only·CPU/GPU integrated agentic AI rack, 6세대 EPYC 최대 3만2768 core, Instinct MI350P, 공랭/수랭과 2026년 11월 계획을 기사 범위로 수록. 현대차·기아 VAST Data 투자는 42dot의 ADAS·LLM 통합, Hopper DGX SuperPOD 연계, DASE·S3/NFS shared namespace와 회사 주장 2:1 data reduction을 기사 범위로 수록.
+- Helion의 SKU·rack power·price·throughput·regional availability와 VAST의 투자 규모·SLA·retention·security·benchmark 조건은 독립 확정하지 않아 workload canary 확인 범위로 유지. `news-622`·`news-623`을 KST 최신순으로 삽입해 W43 9건·rank 1–9을 유지하고 raw captures·`index.md`·canonical `weekly/2026-W43.md`를 동기화. 당일 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
