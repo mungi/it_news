@@ -3412,3 +3412,8 @@
 - 확인 시각: 2026-10-13 19:15 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New·Cloudflare·CNCF·GitHub·Kubernetes·OpenAI research surface를 재점검함. 신규 후보 3건은 인공지능신문 canonical article의 published metadata·OG image·본문을 직접 대조함.
 - NVIDIA Vera Rubin rack·compute tray의 OCP 기여, ConnectX-10/BlueField의 Google Falcon Transport 지원 계획, Arm의 agentic AI CPU benchmark methodology를 수록. 1.99배 rack 모델링 및 45% sandbox latency 수치, protocol/hardware availability·interoperability·vendor performance 경계는 기사 보도 범위로 구분함.
 - `news-624`~`news-626`을 KST 최신순으로 삽입해 W43 12건·rank 1–12를 유지. raw captures SHA-256, `index.md`, canonical `weekly/2026-W43.md`를 동기화했으며 같은 KST 날짜 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-13] update | 성균관대 AI 비서 비용·로봇 반복 안전성 연구 보도 추가
+- 확인 시각: 2026-10-13 23:22 KST. GeekNews·GeekNews Plus는 HTTP 403이었고, 인공지능신문·AI타임스, AWS What's New, GitHub, Kubernetes, CNCF, Cloudflare 연구 표면을 재점검함.
+- 인공지능신문 canonical article의 `article:published_time` `2026-10-13T20:49:34+09:00`, OG image와 설명 메타데이터를 직접 대조. 성균관대학교 권민혜 교수팀의 AI 비서 외부 검토 감소·3분의 1 비용 주장과 로봇 제어의 단발 성공 대신 반복 안정 행동 학습이라는 보도 범위를 수록함.
+- 모델·task set·hardware·benchmark·실험 반복·현장 안전 제약이 기사에서 충분히 공개되지 않아 production 비용 절감·robot safety 보장으로 확대하지 않음. `news-627`을 KST `2026-10-13 20:49` 기준 newest-first rank 1에 삽입해 W43 13건·rank 1–13을 유지하고 raw capture SHA-256 `0ca5599c5f8324f50f59da59caf3afd17e9c16522ea8b87ec4966f4ab276990e`, `index.md`, canonical weekly archive를 동기화. 같은 KST 날짜 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.

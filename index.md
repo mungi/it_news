@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-13 | Total pages: 412
+> Last updated: 2026-10-13 | Total pages: 413
 
 ## Entities
 
@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/skku-ai-assistant-robot-rl-2026-10-13]] — 성균관대 AI 비서 외부 검토 비용·로봇 강화학습 반복 안전성 연구 보도의 재현성 검증 경계.
 - [[raw/articles/amd-helion-agentic-ai-rack-2026-10-13]] — AMD Helion OCP 기반 agentic AI rack reference design의 CPU/GPU 분리·power/cooling·capacity 검증 경계.
 - [[raw/articles/hyundai-kia-vast-data-physical-ai-2026-10-13]] — 현대차·기아 VAST Data 전략 투자와 42dot physical AI data plane의 lineage·recovery·GPU-feed 검증 경계.
 - [[raw/articles/mongodb-9-atlas-infinite-2026-10-13]] — MongoDB 9.0·Atlas Infinite의 compute/storage 분리, AWS preview, 사용량 과금과 성능 주장을 보도 범위로 기록.
