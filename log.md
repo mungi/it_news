@@ -3396,3 +3396,9 @@
 - 확인 시각: 2026-10-13 06:55 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF·OpenAI·Google AI·Google Cloud·CISA·The Hacker News feed를 current research pass에 포함함.
 - AI타임스 canonical article의 `article:published_time` `2026-10-13T05:53:35+09:00`, 기사 화면의 업데이트 표기 `2026-10-13 06:27 KST`, OG image와 본문을 직접 대조. Muse Wonder의 Meta Model API·Muse Code 제공, Wonder Full의 Muse Code 구독 전용·public API 미제공, text·image·video·audio 입력·100만 token context, Meta benchmark와 Artificial Analysis 인용 수치, Wonder API 가격을 기사 범위로 수록함.
 - 모델별 coding tool·Full 추론 설정 차이, Full token price, API/region/quota/SLA, data retention·tool permission·benchmark harness는 독립 확인하지 못해 production 보장으로 확대하지 않음. `news-617`을 KST `2026-10-13 06:27` 기준 newest-first rank 1에 삽입해 3-item W43 목록을 유지하고 raw capture SHA-256 `853e4e167105b6e3796f4226353ce806051fc01e2f7fcafc90192c161d6be6fc`, `index.md`, canonical `weekly/2026-W43.md`를 동기화. 같은 KST 날짜 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-13] update | Lambda Web Functions·AgentCore Memory·MongoDB·Azure Maia 신규 카드 추가
+- 확인 시각: 2026-10-13 11:04 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF·OpenAI·Google AI·CISA feed를 current research pass에 포함함.
+- AWS 공식 공지 2건을 직접 대조: Lambda Web Functions의 Node.js HTTP server·warm concurrency·streaming·VPC·5개 Region, AgentCore short-term memory의 GB 단가·12KB/64KB billable 조건·TTL 범위를 수록함.
+- 인공지능신문 canonical 기사 2건의 published metadata·OG image·본문을 직접 대조: MongoDB 9.0·Atlas Infinite의 compute/storage 분리 AWS preview와 Microsoft Azure Maia 200/300·HBM4·96-accelerator rack 계획을 수록. 성능·전력·가격·SLA·리전 미확정 범위는 vendor/기사 조건으로 구분함.
+- `news-618`~`news-621`을 KST 최신순으로 삽입해 W43 7건·rank 1–7을 유지하고 raw captures·index·canonical weekly archive를 동기화. 당일 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
