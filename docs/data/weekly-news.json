@@ -2,14 +2,14 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-14 03:29",
+  "last_updated_kst": "2026-10-14 07:42",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Google Gemini 4 Argon 상용 확대 보도는 agent가 장시간 codebase를 탐색·변경하더라도 merge 권한은 별도 release gate여야 함을 보여줌. ADK 사례의 6개 제안 중 2개 채택 조건을 task completion·review rejection·rollback으로 재현 필요.",
+    "Cloudflare D1 control plane 공개는 multi-tenant database 확장이 query 처리량만의 문제가 아님을 보여줌. lifecycle state·metadata cache·mapping repair·delete/restore를 별도 SLO와 reconciliation으로 운영 필요.",
     "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요.",
     "GPT-6.1 Sol의 Codex·ChatGPT Work 기본 context 50만 token 확대 보도는 compaction 빈도를 낮추는 runtime 변경임. completion·p99·token·작업당 비용·sensitive context retention을 동일 task trace에서 비교 필요.",
-    "AMD Helion·NVIDIA Vera Rubin·Falcon Transport 보도는 AI 인프라 조달이 accelerator 수량을 넘어 CPU/GPU ratio·fabric·power·cooling·firmware와 failure recovery를 묶는 rack-scale 검증 문제임.",
-    "AWS Lambda Web Functions의 HTTP server·warm concurrency·streaming·active CPU 과금 모델은 event function과 다른 connection·concurrency·FinOps canary를 요구함.",
-    "성균관대 AI 비서·로봇 강화학습 연구 보도는 외부 검토 비용과 반복 안전성을 분리해 재현해야 함. task·model·review 조건 및 constraint violation·abort·recovery를 release gate로 설정 필요."
+    "AMD Helion·NVIDIA Vera Rubin·Falcon Transport 보도는 AI 인프라 조달이 accelerator 수량을 넘어 CPU/GPU ratio·fabric·power·cooling·firmware와 failure recovery를 묶는 rack-scale 검증 문제임."
   ],
   "deep_dives": [
     {
@@ -177,6 +177,71 @@
   ],
   "items": [
     {
+      "id": "news-631",
+      "title_ko": "Google Gemini 4 Argon 상용 확대 보도: 장기 agent 변경안을 merge gate로 분리하는 검증",
+      "title_original": "Google expands Gemini 4 Argon availability across AI Studio, Gemini API, and product surfaces",
+      "summary": "핵심: AI타임스는 Google이 Gemini 4 Argon을 AI Studio·Gemini API와 일부 Gemini·Search·Antigravity 경로에 확대 제공했다고 보도함. ADK 약 20만5000줄 codebase에서 11시간 작업·1만6892개 unit test 뒤 6개 제안 중 2개만 채택한 사례는 agent의 탐색·변경안 생성과 merge 판단을 분리해야 함을 드러냄.",
+      "detail": "AI타임스 보도 기준 Google은 Gemini 4 Argon을 전 세계 개발자·기업·유료 사용자로 확대하며 AI Studio와 Gemini API, Gemini 앱과 Search AI Mode, Ultra 구독자의 Antigravity 경로를 제시함. 공개 ADK 최적화 사례에서 모델은 약 800개 source file·20만5000줄 Python codebase를 11시간 동안 분석하고 1만6892개 공개 unit test를 실행해 32개 file의 6개 최적화 제안을 냈으며, 개발팀은 session copy와 package lazy loading 2개만 채택함. 채택 변경의 긴 session 준비 약 40% 단축·package loading 21% 개선은 이 codebase의 결과이고, 전체 ADK·모델 응답·다른 repository의 동일한 개선을 보장하지 않음.",
+      "why_it_matters": "장시간 coding agent는 test 통과와 production-safe change를 같은 신호로 취급하면 stale data·private implementation 의존·복잡성·내부 호환성 문제를 배포할 수 있음.",
+      "engineering_implication": "시사점: agent 제안은 sandbox·reproducible test·diff risk classification으로 분리하고, merge는 owner review·performance SLO·rollback·data freshness gate를 통과한 변경으로 제한 필요.",
+      "korea_implication": "국내 개발 조직은 제품별 실제 모델 접근·구독·API quota·data retention을 계약과 console에서 확인하고, vendor 사례의 시간·성능 수치를 자체 codebase capacity 계획에 바로 적용하지 않아야 함.",
+      "category": "AI",
+      "tags": [
+        "Google",
+        "Gemini 4 Argon",
+        "Agentic Coding",
+        "ADK",
+        "Code Review",
+        "AI Platform",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 94,
+      "published_kst": "2026-10-14 05:01",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216220",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216220_220255_41.png",
+      "local_image": "assets/images/news-631.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Google의 Gemini 4 Argon 확대 제공을 다룬 보도임. 기사 범위에서 개발자와 기업은 AI Studio·Gemini API를, 일부 유료 사용자는 Gemini 앱·Search AI Mode·Antigravity를 이용하는 경로가 제시됨.",
+          "items": [
+            "제공 범위: AI Studio·Gemini API와 제품 surface 확대라는 기사 설명",
+            "일정 경계: 리전·tier·quota·SLA·API 기능 차이는 기사만으로 일반 확정 불가"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사는 ADK 최적화 사례를 autonomous coding의 실무 사례로 제시함. 모델은 약 800개 source file·20만5000줄 codebase에서 11시간 작업하고, 1만6892개 공개 unit test를 실행해 32개 file에 걸친 6개 제안을 제출한 범위임.",
+          "items": [
+            "선별: 개발팀 review 뒤 session copy·package lazy loading 2개 제안 채택",
+            "제외: stale data 위험·비공개 구현 의존·복잡성 증가·내부 test 호환성 문제의 4개 제안 제외"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent가 변경안을 찾고 test를 통과해도 production ownership과 regression 책임은 사라지지 않음. 기사에서 채택 변경은 긴 session의 memory 내 준비를 약 40%, package loading을 21% 개선했으나 첫 model request 시간은 거의 변하지 않은 범위임.",
+          "items": [
+            "경계: 특정 ADK codebase 결과를 전체 모델·agent throughput 개선으로 일반화하지 않는 원칙",
+            "리스크: public test green을 data freshness·private API·internal compatibility 보증으로 해석하는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agentic change pipeline은 탐색·patch 생성·test·review·deployment approval을 분리해야 함. 평가 fixture와 baseline을 고정하고, accept된 diff의 latency·memory·rollback·human rework를 같이 비교해야 운영 가치가 확인됨.",
+          "items": [
+            "팀 액션: representative repository에서 task completion·test pass·review rejection·rollback·p95·작업당 비용 계측",
+            "팀 액션: protected branch에는 code owner·security scan·performance regression·feature flag·kill switch 결합",
+            "팀 액션: model·tool version과 prompt·context·test environment를 release evidence로 보존"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-628",
       "title_ko": "GitHub secret detection 모델 공개: 문맥 분류기로 오탐과 스캔 지연을 함께 줄이는 경로",
       "title_original": "GitHub’s model for secret detection: Finding more secrets with less noise",
@@ -238,7 +303,73 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
+    },
+    {
+      "id": "news-630",
+      "title_ko": "Cloudflare D1 control plane 공개: 수백만 database에서 query path와 lifecycle metadata를 분리하는 설계",
+      "title_original": "Under the hood, off the hot path: how D1 scales to millions of databases",
+      "summary": "핵심: Cloudflare는 D1이 수백만 개 생성 database와 수십만 개 활성 database를 지원하도록 control plane을 확장한 구조를 공개함. query data plane을 Durable Object·Eyeball Worker에 유지하고 Workers KV metadata cache·Postgres read replica·Hyperdrive로 중앙 병목을 줄이는 설계라서, multi-tenant DB 플랫폼은 query SLO와 lifecycle consistency를 분리해 검증해야 함.",
+      "detail": "Cloudflare 공식 글은 D1의 live non-deleted database 수가 15배 늘었고, 수백만 개 생성 database와 어느 시점의 수십만 개 활성 database를 지원하도록 control plane을 바꿨다고 설명함. query는 D1 Eyeball Worker와 database를 뒷받침하는 Durable Object에서 처리하고, read-heavy metadata는 Workers KV edge cache, 중앙 Postgres 접근은 Hyperdrive와 read replica로 분리하는 구조다. database create에서 Postgres 상태·Durable Object ID·Workers KV mapping을 연결하며 failure recovery를 설명한다. 이는 Cloudflare 구현 사례이므로 다른 managed database 또는 self-hosted 환경의 latency·availability·consistency를 보장하지 않음.",
+      "why_it_matters": "tenant별 database를 대량 생성하는 serverless·SaaS 플랫폼은 query throughput만큼 create·delete·schema migration·metadata cache·retry의 control plane failure가 고객 SLO와 비용을 결정함.",
+      "engineering_implication": "시사점: database lifecycle API를 idempotency key·state machine·reconciliation·audit event로 설계하고, metadata cache staleness·delete tombstone·mapping repair를 query latency와 별도 SLO로 canary 검증 필요.",
+      "korea_implication": "국내 SaaS·공공 multi-tenant 서비스는 managed database의 data residency·tenant isolation·backup·delete retention과 control-plane 장애 공지·recovery contract를 도입 전 확인해야 함.",
+      "category": "Data",
+      "tags": [
+        "Cloudflare",
+        "D1",
+        "Serverless",
+        "Database",
+        "Control Plane",
+        "Durable Objects",
+        "Workers KV",
+        "Multi-tenant"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 90,
+      "published_kst": "2026-10-14 01:20",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/d1-control-plane/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4TZKNBC5XJ3T8WNHET65CMR.png",
+      "local_image": "assets/images/news-630.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 D1 control plane을 수백만 database 규모로 확장한 내부 구조를 공개함. 원문은 live non-deleted database 수 15배 증가와 수백만 생성·수십만 활성 database 지원이라는 자사 운영 범위를 설명함.",
+          "items": [
+            "목표: 모든 query를 중앙 control plane으로 보내지 않고 edge query path를 유지하는 구조",
+            "경계: Cloudflare D1의 내부 구현·운영 결과이며 다른 database 서비스의 SLO 보장 아님"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 request 성격에 따라 역할을 나눔. query는 D1 Eyeball Worker와 database Durable Object가 처리하고, read-heavy metadata는 Workers KV edge cache에서 읽으며, 중앙 Postgres 접근은 Hyperdrive·read replica를 활용하는 경로임.",
+          "items": [
+            "구성: Edge API Worker·D1 Eyeball Worker·Durable Object·Workers KV·Postgres·Hyperdrive의 책임 분리",
+            "lifecycle: create 중 Postgres 상태·Durable Object ID·Workers KV mapping을 순서대로 연결하고 failure recovery 고려"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "multi-tenant database 플랫폼의 장애는 query error만으로 끝나지 않음. create retry, stale metadata, mapping 누락, delete·migration의 부분 완료가 tenant provisioning과 support load를 키울 수 있음.",
+          "items": [
+            "리스크: data-plane query SLO만 보고 account·database lifecycle control-plane backlog를 누락하는 경로",
+            "리스크: edge cache hit를 strong consistency 또는 delete 완료 증거로 해석하는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "lifecycle API는 idempotency·reconciliation·audit을 가진 state machine으로 다루고, query path와 별도 관측 지표를 둬야 함. region·tenant isolation·backup·restore·retention은 서비스 계약과 실제 failure drill로 검증 필요.",
+          "items": [
+            "팀 액션: create·delete·restore·schema migration별 state transition·retry·compensation·owner 정의",
+            "팀 액션: metadata cache age·provisioning p95·mapping repair·orphan resource·reconciliation lag dashboard 구성",
+            "팀 액션: region failure·central DB latency·cache miss·Durable Object failure에서 tenant lifecycle canary와 rollback drill 실행"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-627",
@@ -303,7 +434,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-626",
@@ -369,7 +500,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-625",
@@ -435,7 +566,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-629",
@@ -500,7 +631,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-624",
@@ -566,7 +697,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-622",
@@ -632,7 +763,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-623",
@@ -698,7 +829,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-618",
@@ -761,7 +892,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-619",
@@ -825,7 +956,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-617",
@@ -898,7 +1029,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-620",
@@ -962,7 +1093,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-621",
@@ -1025,11 +1156,11 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-615",
-      "rank": 14,
+      "rank": 16,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1093,7 +1224,7 @@
     },
     {
       "id": "news-616",
-      "rank": 15,
+      "rank": 17,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",

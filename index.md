@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-14 | Total pages: 415
+> Last updated: 2026-10-14 | Total pages: 417
 
 ## Entities
 
@@ -38,6 +38,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-google-gemini-4-argon-general-availability-2026-10-14]] — Gemini 4 Argon 상용 확대 보도와 ADK agent 변경안의 review·rollback·release gate 경계.
+- [[raw/articles/cloudflare-d1-control-plane-millions-databases-2026-10-14]] — Cloudflare D1 control plane의 수백만 database 확장·metadata cache·lifecycle reconciliation 운영 경계.
 - [[raw/articles/github-secret-detection-context-classifier-2026-10-13]] — GitHub secret detection 문맥 classifier의 acceptance·scan latency와 push protection·rotation 운영 경계.
 - [[raw/articles/aitimes-openai-gpt-6-1-sol-500k-context-2026-10-13]] — GPT-6.1 Sol 50만 token 기본 context 확대 보도와 compaction·비용·data boundary 검증 경계.
 - [[raw/articles/skku-ai-assistant-robot-rl-2026-10-13]] — 성균관대 AI 비서 외부 검토 비용·로봇 강화학습 반복 안전성 연구 보도의 재현성 검증 경계.
