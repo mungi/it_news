@@ -2,180 +2,244 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-13 23:22",
+  "last_updated_kst": "2026-10-14 03:29",
   "audience": "developers and engineers",
   "executive_summary": [
-    "AMD Helion은 agent execution의 CPU·GPU·network·storage·rack power를 workload별로 조합하는 OCP 기반 reference design임. 최대 core 수보다 tool-heavy trace의 CPU queue·GPU utilization·p99·watt/task와 failure domain을 함께 검증 필요.",
-    "현대차·기아의 VAST Data 전략 투자는 physical AI data plane을 model training과 분리된 병목으로 다룸. shared namespace·S3/NFS·DASE는 dataset lineage·replication·restore·GPU feed SLO와 함께 평가 필요.",
-    "Amazon Web Services는 Lambda Web Functions를 공개함. Node.js HTTP server·동시 요청·native streaming·active CPU 과금 모델은 event function과 다른 concurrency·connection·FinOps canary를 요구함.",
-    "MongoDB 9.0·Atlas Infinite 보도는 DB engine 성능과 compute/storage 분리형 elastic architecture를 함께 제시함. AWS preview의 scale-out time·backup·connection saturation·사용량 비용은 production trace로 확인 필요.",
-    "성균관대 연구 보도는 agent 외부 검토 비용과 로봇의 반복 안전성을 별개로 다룸. AI 비서의 3분의 1 비용 주장은 task·model·review 조건을, 로봇 결과는 constraint violation·abort·recovery를 포함한 반복 trial로 재현 필요."
+    "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요.",
+    "GPT-6.1 Sol의 Codex·ChatGPT Work 기본 context 50만 token 확대 보도는 compaction 빈도를 낮추는 runtime 변경임. completion·p99·token·작업당 비용·sensitive context retention을 동일 task trace에서 비교 필요.",
+    "AMD Helion·NVIDIA Vera Rubin·Falcon Transport 보도는 AI 인프라 조달이 accelerator 수량을 넘어 CPU/GPU ratio·fabric·power·cooling·firmware와 failure recovery를 묶는 rack-scale 검증 문제임.",
+    "AWS Lambda Web Functions의 HTTP server·warm concurrency·streaming·active CPU 과금 모델은 event function과 다른 connection·concurrency·FinOps canary를 요구함.",
+    "성균관대 AI 비서·로봇 강화학습 연구 보도는 외부 검토 비용과 반복 안전성을 분리해 재현해야 함. task·model·review 조건 및 constraint violation·abort·recovery를 release gate로 설정 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare Logpush Transformers: log export를 data-minimization control plane으로 운영하는 방법",
-      "summary": "한 줄 결론: Logpush Transformers는 로그를 목적지에 보내기 전에 SQL로 filter·redact·reshape하는 경로임. SIEM 전송 편의가 아니라 source field·query version·destination schema·access·rollback을 묶는 data-control release로 운영해야 함.",
-      "details": "Cloudflare는 Logpush에서 SQL 기반 Transformers로 export 전 log stream의 filter·redaction·reshaping을 지원한다고 공개했다. 원문은 Logpush가 SIEM·analytics·object storage로 log를 내보내며 health check 제거·민감 field 제거·record 재구성을 지원한다고 설명한다. destination별 parser와 retention, query 오류의 탐지 누락, raw evidence 보존은 조직별 검증이 필요하다.",
-      "why_it_matters": "export 이전 최소화는 복제본과 접근 경로를 줄이지만, 과도한 filter·redaction은 탐지와 forensic evidence를 약화시킬 수 있음.",
+      "title": "GitHub secret detection classifier: 탐지 모델을 push protection·rotation까지 연결하는 운영 설계",
+      "summary": "한 줄 결론: GitHub의 문맥 인식 secret classifier는 alert 수를 줄이는 기능이 아니라 detection-to-remediation pipeline의 signal 품질을 바꾸는 계층임. acceptance·scan time 수치만 보지 말고 block·bypass·rotation·false-negative sampling을 하나의 release metric으로 운영해야 함.",
+      "details": "GitHub 공식 글은 context-aware secret classifier가 weighted acceptance를 11.5% 높이고 median scan execution time을 86% 줄였다고 공개한다. 원문은 GitHub 환경의 탐지 품질·속도 결과를 설명하며, 특정 조직의 secret taxonomy, enforcement, SaaS/self-hosted 적용 범위나 false-negative rate를 일반 보장하지 않는다. 운영팀은 classifier를 rule의 대체재가 아니라 push protection, exception, credential rotation, artifact purge와 함께 검증할 detection control로 다뤄야 한다.",
+      "why_it_matters": "secret alert의 precision과 scan latency는 developer bypass, exposed credential dwell time, incident triage load를 동시에 좌우함.",
       "sources": [
-        "https://blog.cloudflare.com/transformers-on-logpush/"
+        "https://github.blog/ai-and-ml/githubs-model-for-secret-detection-finding-more-secrets-with-less-noise/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4HA4NCR1ES1EHGE8ZHS7TSA.png",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-security-logo.png",
       "local_image": "",
-      "refreshed_kst": "2026-10-13 02:47",
+      "refreshed_kst": "2026-10-14 03:29",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Logpush Transformers는 log pipeline의 마지막 formatting 단계가 아니라 **외부 전송 전 data boundary**임. query가 무엇을 버리고 가리는지, 어떤 schema를 만드는지, 오류 시 어떻게 원복하는지를 versioned release로 관리해야 함.",
+          "body": "문맥 인식 classifier의 목적은 alert를 적게 만드는 일이 아니라 **실제 노출을 더 빨리 정확하게 차단·복구하는 경로**임. 탐지 quality 변경은 security policy와 developer workflow를 함께 바꾸므로 model rollout으로 취급 필요.",
           "items": [
-            "변화: filter·redact·reshape를 export job 안에서 SQL로 선언하는 경로",
-            "팀 액션: query 변경을 SIEM parser 변경과 같은 change ticket으로 처리"
+            "변화: pattern match 뒤 source context를 반영하는 classifier 계층",
+            "팀 액션: classifier output을 block·review·allow 정책과 독립적으로 version 관리"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare 원문은 Logpush가 log를 batch로 가능한 한 빨리 전달하고, SIEM·analytics platform·object storage로 export한다고 설명함. Transformers는 health check 제거, sensitive field omission, dashboard·investigation용 record reshape를 목적지 도달 전에 수행하는 범위임. Birthday Week 동안 self-service plan의 Logpush 제공과 Transformers GA를 언급함.",
+          "body": "GitHub 공식 글은 context-aware secret classifier를 소개하고 weighted acceptance 11.5% 향상, median scan execution time 86% 감소를 제시함. 원문은 secret detection quality와 scan efficiency에 초점을 두며, 특정 secret family별 recall 또는 모든 repository의 동일 효과를 보장하지 않음.",
           "items": [
-            "원문 사실: 별도 processing service를 두던 전처리 부담을 export pipeline으로 이동하는 방향",
-            "경계: destination별 retention·가격·field coverage·delivery SLA는 원문에서 일반 보장하지 않은 사항"
+            "원문 사실: detection quality와 scan execution time을 함께 측정한 결과 공개",
+            "경계: self-hosted scanner·custom regex·repository policy에 대한 동등한 결과 미공개"
           ]
         },
         {
           "heading": "AI·Infra 전문가 해석",
-          "body": "관측 데이터는 기능 log이면서 보안·개인정보 데이터임. 변환 위치가 source에 가까울수록 downstream copy와 접근 주체를 줄일 수 있지만, filter 한 줄이 detection rule의 required field나 incident chronology를 지울 수 있음. transform은 data classification과 detection engineering이 공동 소유하는 policy여야 함.",
+          "body": "secret detection은 classification 문제이면서 enforcement control 문제임. classifier score가 높아도 branch protection이 bypass되거나 leaked credential이 revoke되지 않으면 exposure window는 줄지 않음. score, policy verdict, developer action, rotation 완료를 하나의 event chain으로 묶어야 함.",
           "items": [
-            "분리: raw evidence 보존·transformed operational stream·analytics aggregate의 목적과 access 분리",
-            "추적: source field·query digest·sample event·destination·approval·deploy time을 common record로 연결"
+            "분해: candidate match·context score·policy verdict·bypass·rotation·forensic closure 연결",
+            "피할 것: accepted alert 비율을 credential compromise 감소의 직접 증거로 해석"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "안전한 pipeline은 raw source에서 export query를 바로 수정하는 방식이 아니라 sample corpus와 schema contract를 거치는 흐름임. destination parser가 허용하는 type·nested field·timestamp 규칙을 사전 시험하고, canary job에서 drop rate·parse failure·delivery lag를 baseline과 비교해야 함. query failure가 발생할 때 raw log를 무단 재전송하지 않는 fallback도 필요함.",
+          "body": "안전한 경로는 detector가 secret 후보를 만들고 classifier가 우선순위를 주며, policy engine이 severity와 branch·repository 조건에 따라 block 또는 review를 결정하는 구조임. detector 또는 model 변경은 replay corpus와 shadow mode를 거쳐야 하며, protected branch의 fail-open 조건을 명시해야 함.",
           "items": [
-            "설계: per-destination transform과 shared source schema를 분리해 blast radius 축소",
-            "검증: allowlist·denylist·regex·hashing·null handling을 adversarial sample로 회귀 시험"
+            "설계: rule engine·classifier·policy engine·rotation automation의 책임 분리",
+            "검증: 과거 incident·synthetic secret·benign fixture로 regression과 shadow score 비교"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "redaction은 비밀값을 별표로 바꾸는 작업만이 아님. identifier의 join 가능성, URL query의 token, header·cookie·body field, tenant boundary를 함께 검토해야 함. 반대로 조사에 필요한 IP·request ID·policy verdict를 과도하게 제거하면 security operation이 복구 불가능해질 수 있음.",
+          "body": "context classifier는 source code 주변 텍스트를 처리하므로 model input의 repository scope와 retention도 검토 대상임. exception은 개발 편의가 아니라 credential exposure 승인으로 남을 수 있어 owner·expiry·reason·compensating control이 필요.",
           "items": [
-            "통제: data classification owner와 detection owner의 dual approval",
-            "통제: query repository·review·immutable audit·least-privilege export credential 적용"
+            "통제: bypass에 owner·만료·사유·ticket·post-merge rotation requirement 연결",
+            "통제: SaaS scope·data handling·audit export와 internal policy의 정합성 확인"
           ]
         },
         {
           "heading": "비용·품질 관점",
-          "body": "전송 전 filter는 storage·ingestion·query 비용을 낮출 수 있으나, savings만으로 rule을 만들면 forensic reprocessing 비용과 investigation delay가 더 커질 수 있음. record reshape는 destination normalization을 줄이지만 schema drift가 발생하면 dashboard와 alert가 조용히 빈 값을 받을 위험이 있음.",
+          "body": "scan time 86% 감소는 GitHub가 제시한 median 결과이며 tail latency, massive monorepo, PR burst, language별 성능은 별도 측정 필요. precision이 높아져도 false negative가 high-impact key에서 발생하면 평균 지표가 위험을 감출 수 있음.",
           "items": [
-            "지표: exported bytes·dropped events·parser error·ingestion lag·alert coverage·reprocess time",
-            "결정: 비용 절감 query는 detection coverage diff와 incident owner sign-off 뒤 rollout"
+            "지표: scan p50/p95·accepted alert·bypass·confirmed exposure·rotation lead time·sampled miss",
+            "결정: model 변경은 developer throughput과 high-severity recall guardrail을 함께 충족할 때 확대"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "새 transform은 code deploy처럼 검토하고 점진 배포해야 함. 기준은 쿼리가 실행된다는 사실이 아니라, 필요한 evidence가 허용된 대상에 정확히 도달하고 민감 정보가 빠졌다는 증거임.",
+          "body": "repository별 secret type, credential authority, rotation path가 명확해야 탐지 결과를 조치로 바꿀 수 있음. 특히 CI token·cloud key·package registry token은 commit 차단만으로 끝내지 말고 issuance·revoke evidence를 연결해야 함.",
           "items": [
-            "체크: source field inventory와 destination별 permitted field matrix 확인",
-            "체크: query digest·test fixture·schema version·approval owner·rollback query 기록",
-            "체크: canary의 drop rate·parse failure·delivery lag·alert coverage 비교",
-            "체크: raw evidence retention·access log·incident export 절차와 DLP rule 확인"
+            "체크: secret taxonomy와 source별 owner·TTL·rotation API inventory 확인",
+            "체크: push protection·branch rule·exception expiry·audit event의 end-to-end test",
+            "체크: leaked artifact cache·fork·log·release asset purge 절차와 incident drill 실행",
+            "체크: classifier 변경 전후 false-negative sampling과 review queue SLO 비교"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "로그를 보내기 전 변환하는 위치는 강력하지만, 한 번 누락된 evidence는 downstream에서 복구할 수 없음. **data minimization과 detection completeness를 함께 측정**하고, transform 변경을 privacy·SRE·security의 공동 release gate로 운영 필요.",
+          "body": "secret detection의 품질은 모델 score가 아니라 노출된 권한이 실제로 끊기는 시간으로 판단해야 함. **탐지·차단·rotation·증적 보존을 단일 control loop로 측정**하는 조직만 alert 개선을 위험 감소로 연결 가능.",
           "items": [
-            "발표 포인트: observability export가 곧 data egress control이라는 구조",
-            "즉시 행동: 대표 Logpush stream 하나에서 field allowlist와 detection coverage canary 실행"
+            "발표 포인트: secret classifier는 developer tool 기능이면서 credential control-plane 변화",
+            "즉시 행동: 대표 repository에서 synthetic secret injection부터 rotation evidence까지 canary 실행"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "CNCF kagent builder 실습: agent가 Kubernetes manifest를 만들 때의 RBAC·approval 경계",
-      "summary": "한 줄 결론: kagent의 agent-builder 실습은 agent를 Kubernetes custom resource로 선언·배포하는 경로를 보여줌. default unsecure auth·bundled database password·cluster-admin 기본값을 production 기본값으로 쓰지 말고, manifest write를 bounded privilege와 admission·approval으로 분리해야 함.",
-      "details": "CNCF 게시물은 kagent Agent CR과 controller가 running pod를 만드는 local lab, qwen3-coder:30b-a3b 사용 예시, Agent CR 생성으로 제한한 RBAC values를 제시한다. 동시에 default unsecure auth mode와 built-in database password, localhost port-forward의 laptop 전제와 shared cluster 부적합성을 명시한다. 이 글은 production 보안 구성 보장이 아닌 권한 최소화 출발점으로 다뤄야 한다.",
-      "why_it_matters": "natural-language agent가 YAML을 생성하면 코드 생성 문제가 admission·RBAC·tool authority·supply-chain 문제로 확장됨.",
+      "title": "GPT-6.1 Sol 50만 context 보도: 장기 coding-agent의 compaction 감소를 품질·비용·data boundary로 검증하는 방법",
+      "summary": "한 줄 결론: GPT-6.1 Sol의 기본 context 확대 보도는 장기 task의 요약 빈도를 낮출 수 있는 runtime 변경임. 실제 도입 기준은 최대 token 수가 아니라 completion·review·p99·cost·sensitive-context retention이 개선되는지 여부여야 함.",
+      "details": "AI타임스는 OpenAI 제품 책임자의 공개를 인용해 Codex와 ChatGPT Work의 GPT-6.1 Sol 기본 context가 27만2000에서 50만 token으로 늘었고 최대 100만 token을 지원한다고 보도했다. 보도는 context compaction 감소와 장기 작업의 세부 조건 유지 가능성을 설명한다. API·요금·quota·리전·retention·tool 권한과 실제 품질·비용 효과는 원문 보도에서 일반 보장하지 않아 조직별 task trace와 governance control로 검증해야 한다.",
+      "why_it_matters": "long-context default 변경은 agent prompt budget, latency, token cost, code·ticket·log data boundary를 한꺼번에 움직이는 운영 변경임.",
       "sources": [
-        "https://www.cncf.io/blog/2026/10/12/from-zero-to-agent-builder-running-kagent-on-your-laptop/"
+        "https://www.aitimes.com/news/articleView.html?idxno=216196"
       ],
-      "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/From-zero-to-agent-builder-1.png",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216196_220217_5256.jpg",
       "local_image": "",
-      "refreshed_kst": "2026-10-13 02:47",
+      "refreshed_kst": "2026-10-14 03:29",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "kagent agent-builder의 위험 경계는 model output이 YAML이라는 점이 아니라, 그 YAML이 controller를 거쳐 cluster state를 바꾼다는 점임. **생성·검증·승인·apply·runtime tool call**을 한 identity나 한 policy에 묶지 않아야 함.",
+          "body": "50만 token 기본 context는 prompt를 더 길게 넣을 수 있다는 뜻보다 **compaction·retrieval·approval·retention을 재조정하는 agent runtime 변경**에 가까움. context 증가는 장기 task failure를 줄일 수 있으나, 품질과 비용의 방향은 trace별로 검증 필요.",
           "items": [
-            "변화: Agent CR을 apply하면 controller가 실행 pod로 전환하는 Kubernetes-native 흐름",
-            "팀 액션: agent manifest write 권한과 workload 실행 권한을 별도 principal로 분리"
+            "변화: 기본 context 27만2000에서 **50만 token**으로 확대됐다는 보도",
+            "팀 액션: 기존 context cap과 summary policy를 그대로 유지하지 말고 canary로 재검토"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "CNCF 게시물은 kagent를 Kubernetes resource로 agent를 실행하는 Sandbox project로 소개함. Agent에는 system prompt·model·tool list를 선언하며 controller가 A2A를 사용하는 running pod로 전환하는 구조임. local lab은 Docker·kind·kubectl·Helm·jq·Ollama를 사용하고 qwen3-coder:30b-a3b example을 제시함.",
+          "body": "AI타임스는 OpenAI 제품 책임자의 10월 12일 공개를 인용해 Codex·ChatGPT Work의 GPT-6.1 Sol 기본 context 50만 token, 최대 100만 token 지원을 전함. 보도는 긴 작업에서 context compaction 발생을 줄이고 더 많은 조건을 유지하려는 목적을 설명함.",
           "items": [
-            "원문 사실: `Agent` CR 생성으로 builder가 agent를 만드는 demonstrator",
-            "경계: 모델별 성공률은 저자의 local run 경험이며 production reliability 보장이 아님"
+            "원문 사실: 기본값 약 80% 확대와 user-configurable setting이라는 기사 범위",
+            "경계: API access·pricing·quota·region·enterprise retention·SLA는 기사에서 일반 확정하지 않은 범위"
           ]
         },
         {
           "heading": "AI·Infra 전문가 해석",
-          "body": "declarative agent platform에서는 prompt와 tool list가 application configuration이면서 privileged infrastructure intent가 됨. LLM이 manifest syntax를 맞춘다고 해서 namespace, image, secret reference, network egress, service account가 안전한 것은 아님. policy enforcement은 model 판단 뒤가 아니라 Kubernetes admission 전후의 deterministic layer에 있어야 함.",
+          "body": "long-context는 memory 자체가 아니라 input budget임. 오래된 instruction, stale tool output, duplicate code, sensitive log가 같은 prompt에 남으면 attention budget을 쓰고 governance risk를 키울 수 있음. retrieval selection과 compaction quality를 함께 설계해야 context 확장이 실제 task quality로 이어짐.",
           "items": [
-            "분해: natural-language request·generated manifest·policy verdict·human approval·apply result·runtime trace 연결",
-            "피할 것: agent가 만든 YAML을 human-readable이라는 이유만으로 trusted IaC로 간주"
+            "분해: source selection·context assembly·model call·tool action·human review·retention event 연결",
+            "피할 것: context limit 증가를 autonomous coding reliability의 대리 지표로 사용하는 경로"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "원문은 기본 chart의 tool server ServiceAccount가 cluster-admin을 받을 수 있음을 명시하고, 예시에서는 read-only role에 `agents.kagent.dev`만 create/update/patch하도록 축소함. 이 방식은 agent builder의 blast radius를 줄이는 출발점이지만, CR controller가 생성하는 pod의 service account·image·network policy도 별도로 조사해야 함.",
+          "body": "agent runtime은 task plan, repository snapshot, issue, test result, tool output을 어떤 순서·budget으로 넣는지 명시해야 함. 새 기본값에서는 context fill ratio와 compaction trigger가 달라질 수 있어 cache, queue, timeout, fallback model 정책을 함께 시험해야 함.",
           "items": [
-            "설계: namespace-scoped RBAC·resource allowlist·tool allowlist·admission policy의 중첩 적용",
-            "검증: generated CR diff·controller-created object·runtime egress·audit event를 하나의 release trace로 확인"
+            "설계: immutable task snapshot·retrieval allowlist·context budget·summary version을 분리 관리",
+            "검증: 동일 task trace에서 old/new cap의 completion·diff quality·retry·p99·timeout 비교"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "게시물은 default unsecure auth mode에서 모든 request가 동일 user로 동작하고 bundled PostgreSQL이 built-in password를 쓴다고 명시함. UI·API의 localhost port-forward는 laptop 격리 조건일 뿐 multi-user authentication, database secret rotation, tenant audit를 제공하지 않음. shared cluster에서는 OIDC identity와 namespace/tenant boundary가 선행 조건임.",
+          "body": "긴 context에는 source code, customer ticket, production log, access token처럼 민감한 문자열이 함께 들어갈 가능성이 커짐. input classification, redaction, session retention, connector scope, export audit이 model context 상향보다 먼저 점검돼야 함.",
           "items": [
-            "통제: per-user identity·short-lived credential·namespace scope·secret reference allowlist 적용",
-            "통제: CR admission·image signature·policy exception expiry·audit retention을 change record에 연결"
+            "통제: secret-like value·PII·customer data의 preflight DLP와 deny rule 적용",
+            "통제: session·prompt·tool transcript retention, access review, incident export policy 확인"
           ]
         },
         {
           "heading": "비용·품질 관점",
-          "body": "local model과 hosted model은 token 비용만 다를 뿐 운영 비용은 tool invocation, failed apply, reconcile loop, cluster resource, log retention, human review에서 발생함. qwen3-coder example의 약 18GB disk footprint도 laptop demonstration의 capacity 조건임. agent creation success rate는 manifest acceptance, rollback, policy denial, remediation time과 함께 평가해야 함.",
+          "body": "50만 token은 ceiling이 아니라 workload별 비용 변수임. compaction 감소가 token 증가보다 큰 rework 감소를 만들 수 있지만, context stuffing은 input cost와 latency만 키울 수 있음. 최대 context 100만 token은 capacity·rate limit·response latency와 별도로 평가해야 함.",
           "items": [
-            "지표: policy-denied apply·controller reconciliation error·tool call·rollback time·review queue",
-            "결정: low-risk read-only Agent부터 canary하고 write scope는 evidence 기반으로 단계 확대"
+            "지표: context fill ratio·compaction count·cache hit·input/output token·p95/p99·completion·review rework",
+            "결정: task당 비용과 accepted change quality가 동시에 개선될 때만 default cap 확대"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "agent builder를 production에 연결하기 전 chart default와 custom values의 권한 차이를 inventory로 검증해야 함. deployment 이후에는 agent가 만든 CR뿐 아니라 controller가 파생한 pod·service account·network connection을 추적해야 함.",
+          "body": "모델 context 변경은 code-assistant 설정 변경이 아니라 data path와 FinOps policy의 변경임. representative monorepo·issue·test failure task로 평가하고, sensitive context가 session에 머무는 경로를 확인해야 함.",
           "items": [
-            "체크: default ServiceAccount·CRD permission·controller privilege와 custom RBAC diff 확인",
-            "체크: namespace·resource·verb·tool·secret·image·egress allowlist를 admission policy로 검증",
-            "체크: request·manifest digest·policy verdict·human approval·apply·runtime action trace 연결",
-            "체크: kill switch·CR rollback·orphan pod cleanup·database credential rotation drill 실행"
+            "체크: task fixture·baseline prompt·retrieval source·expected output·human review rubric 고정",
+            "체크: compaction·retry·tool error·latency·token·작업당 비용 dashboard 구성",
+            "체크: context cap·fallback model·timeout·kill switch와 rollout cohort 설정",
+            "체크: connector data classification·redaction·retention·access audit의 policy test 실행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "agent가 manifest를 만들 수 있다는 기능은 platform automation의 시작일 뿐임. production 기준은 YAML 생성 성공이 아니라 **권한이 제한되고, 변경이 승인되며, 파생 workload까지 추적·되돌릴 수 있는 상태**여야 함.",
+          "body": "long-context agent의 성패는 최대 token 수가 아니라 필요한 사실만 안전하게 유지하며 작업을 끝내는 능력에 달림. **compaction 감소를 completion·cost·data exposure 지표로 검증**하고, context 상향을 단계적 release로 운영 필요.",
           "items": [
-            "발표 포인트: agent builder는 cluster-admin 자동화가 아니라 bounded infrastructure intent 문제",
-            "즉시 행동: 대표 Agent CR 하나에 admission deny test·human approval·rollback drill 적용"
+            "발표 포인트: 50만 context는 prompt feature가 아니라 workload capacity·governance 변경",
+            "즉시 행동: 장기 coding task 10개에서 old/new context cap의 completion·p99·token·review·DLP event 비교"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-628",
+      "title_ko": "GitHub secret detection 모델 공개: 문맥 분류기로 오탐과 스캔 지연을 함께 줄이는 경로",
+      "title_original": "GitHub’s model for secret detection: Finding more secrets with less noise",
+      "summary": "핵심: GitHub가 문맥 인식 secret classifier로 탐지 품질을 높이고 weighted acceptance를 11.5% 높이며 median scan execution time을 86% 줄였다고 공개함. 탐지 모델의 개선은 기존 push protection·incident triage·developer workflow에 영향을 주므로, 조직별 secret 유형·차단 정책·bypass 사유·false negative를 별도 계측 필요.",
+      "detail": "GitHub 공식 글은 secret scanning의 rule match 뒤 문맥을 판별하는 classifier를 소개하며, weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 제시함. 이 수치는 GitHub 환경의 평가 결과이므로 self-hosted scanner, 자체 regex, repository 언어·secret 종류·push protection enforcement에 그대로 일반화할 수 없음. 운영 판단은 탐지량보다 confirmed exposure, developer bypass, remediation lead time, missed-secret sampling을 함께 보는 방식이 필요.",
+      "why_it_matters": "secret scanning은 탐지율만 높이면 alert fatigue와 CI·commit latency를 만들고, 속도만 높이면 민감한 누출을 놓칠 수 있어 detection quality와 developer path를 함께 다뤄야 함.",
+      "engineering_implication": "시사점: rule·classifier 변경을 security release로 관리하고, detector별 precision proxy·bypass reason·time-to-remediate·sampled false negative·push latency를 baseline과 canary로 비교 필요.",
+      "korea_implication": "국내 조직은 GitHub Cloud 기능 범위와 Enterprise·self-hosted repository의 적용 차이를 확인하고, 비밀값 rotation owner와 CI credential inventory를 차단 정책에 연결 필요.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "Secret Scanning",
+        "Application Security",
+        "DevSecOps",
+        "AI",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-10-14 02:56",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/ai-and-ml/githubs-model-for-secret-detection-finding-more-secrets-with-less-noise/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-security-logo.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub가 secret detection에 문맥 인식 classifier를 적용하는 방법과 내부 평가 결과를 공개함. 정규식·pattern match만으로 secret 여부를 확정하기보다, 주변 코드와 사용 맥락을 분류해 유효 alert 비중과 처리 속도를 함께 개선하려는 범위임.",
+          "items": [
+            "결과: weighted acceptance **11.5% 향상**이라는 GitHub 공개 수치",
+            "결과: median scan execution time **86% 감소**라는 GitHub 환경 평가 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 탐지 결과의 양보다 개발자와 보안팀이 실제로 받아들이는 alert 품질을 목표로 둠. classifier는 탐지 rule을 대체하는 단일 통제가 아니라 후보를 더 잘 분류하는 계층으로 해석해야 함.",
+          "items": [
+            "변화: pattern match 이후 context를 반영하는 classifier 경로",
+            "경계: repository 구성·언어·secret 종류·운영 정책이 다른 환경의 동일 효과는 미확정"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "secret 노출은 commit·issue·log·artifact·configuration을 통해 퍼질 수 있고, alert가 과도하면 개발자가 bypass하거나 triage가 지연될 수 있음. 반대로 정상 코드와 유사한 누출을 놓치면 rotation이 늦어지는 위험이 남음.",
+          "items": [
+            "리스크: acceptance 지표만 보고 high-impact false negative를 누락하는 경로",
+            "리스크: scan 속도 개선을 enforcement latency·developer experience 보장으로 해석하는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 평가는 모델 점수 하나가 아니라 secret lifecycle로 해야 함. 탐지 뒤 block, owner notification, revoke·rotate, artifact purge, incident evidence까지 연결되는지 확인 필요.",
+          "items": [
+            "팀 액션: detector별 alert·accepted alert·bypass reason·push latency·remediation lead time baseline 작성",
+            "팀 액션: synthetic secret과 과거 incident sample로 false positive·false negative 회귀 시험",
+            "팀 액션: critical credential은 push protection, short-lived credential, automated rotation과 결합"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-627",
       "title_ko": "성균관대 AI 비서·로봇 강화학습 연구 보도: 외부 검토 비용과 반복 안전성의 분리 검증",
@@ -239,7 +303,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-626",
@@ -305,7 +369,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-625",
@@ -371,7 +435,72 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
+    },
+    {
+      "id": "news-629",
+      "title_ko": "GPT-6.1 Sol 기본 컨텍스트 50만 토큰 확대 보도: 장기 코딩 작업의 compaction·비용·품질 검증",
+      "title_original": "OpenAI increases GPT-6.1 Sol default context length to 500k in Codex and ChatGPT Work",
+      "summary": "핵심: AI타임스는 OpenAI가 Codex와 ChatGPT Work에서 GPT-6.1 Sol의 기본 context를 27만2000에서 50만 token으로 확대했다고 보도함. 긴 context는 compaction 빈도를 줄일 수 있으나, 작업 완료율·latency·token 사용량·비용·권한 범위가 개선된다는 일반 보장은 아니므로 장기 task trace로 검증 필요.",
+      "detail": "AI타임스 보도는 OpenAI 제품 책임자의 10월 12일 공개 내용을 인용해 GPT-6.1 Sol 기본 context를 50만 token으로 올렸으며 최대 지원 길이는 100만 token이라고 전함. 보도는 장기 코딩 작업에서 context compaction을 줄여 세부 조건 보존을 돕는다는 설명을 담음. API 제공 범위, 요금, 리전, quota, retention, tool 권한, 실제 품질·latency·비용 효과는 이 보도만으로 확정할 수 없어 조직별 canary가 필요.",
+      "why_it_matters": "agentic coding의 긴 작업은 context 압축·재구성·retrieval·tool output 누락에서 실패할 수 있으며, context 상향은 모델 기능 변경이면서 capacity·FinOps·data governance 변경임.",
+      "engineering_implication": "시사점: context window 변경 전후로 compaction 횟수·task completion·p95/p99·input/output token·cache hit·작업당 비용·sensitive context retention을 동일 trace에서 비교 필요.",
+      "korea_implication": "국내 개발 조직은 제품별 실제 적용 대상과 enterprise data retention·residency·계약 quota를 확인하고, source code·ticket·log가 long-context session에 모이는 범위를 DLP 정책으로 검증 필요.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "GPT-6.1 Sol",
+        "Codex",
+        "Long Context",
+        "Agentic Coding",
+        "FinOps",
+        "Data Governance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-13 17:35",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216196",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216196_220217_5256.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스는 OpenAI가 Codex와 ChatGPT Work에서 GPT-6.1 Sol 기본 context length를 27만2000 token에서 50만 token으로 높였다고 보도함. 보도 기준 최대 context는 100만 token이며, 변경은 28일 연속 Codex 개선의 7일 차 공개 범위임.",
+          "items": [
+            "변화: 기본 context 약 **80% 확대**라는 보도 수치",
+            "대상: Codex와 ChatGPT Work 사용 경로라는 기사 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "보도는 context 한도를 넘을 때 이전 내용을 요약하는 compaction의 발생 빈도를 줄이는 목적을 설명함. 긴 codebase·대화·다단계 작업에서 더 많은 조건을 유지할 수 있으나, model quality나 tool execution 신뢰성을 자동으로 보장하는 기능은 아님.",
+          "items": [
+            "효과 가설: 반복 요약과 재입력 감소를 통한 task continuity 개선",
+            "경계: API availability·pricing·quota·region·retention·SLA는 기사만으로 미확정"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "long-context agent는 prompt 안에 code, ticket, tool result, log, credential-adjacent configuration을 함께 담을 수 있음. context 증가가 retrieval 품질을 대체하지 않으며, 오래된 지시·오염된 tool output·민감 데이터의 보존 범위도 함께 커질 수 있음.",
+          "items": [
+            "리스크: context 길이를 장기 task 완료율 또는 reasoning quality 보장으로 해석하는 경로",
+            "리스크: token·latency·retention 증가를 측정하지 않고 기본값을 전면 적용하는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "변경은 prompt budget 확장이 아니라 agent runtime policy 변경으로 다뤄야 함. representative repository와 task trace에서 compaction 감소가 실제 completion·review·cost 개선으로 이어지는지 확인 필요.",
+          "items": [
+            "팀 액션: compaction count·task completion·manual correction·p95/p99·token·작업당 비용 비교",
+            "팀 액션: context에 들어가는 code·ticket·log·secret-like string의 classification과 retention 확인",
+            "팀 액션: 작은 user group canary와 context cap·fallback model·kill switch를 결합"
+          ]
+        }
+      ],
+      "rank": 5
     },
     {
       "id": "news-624",
@@ -437,7 +566,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-622",
@@ -503,7 +632,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-623",
@@ -569,7 +698,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-618",
@@ -632,7 +761,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-619",
@@ -696,7 +825,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-617",
@@ -769,7 +898,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-620",
@@ -833,7 +962,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-621",
@@ -896,11 +1025,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-615",
-      "rank": 12,
+      "rank": 14,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -964,7 +1093,7 @@
     },
     {
       "id": "news-616",
-      "rank": 13,
+      "rank": 15,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",

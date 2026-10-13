@@ -3417,3 +3417,9 @@
 - 확인 시각: 2026-10-13 23:22 KST. GeekNews·GeekNews Plus는 HTTP 403이었고, 인공지능신문·AI타임스, AWS What's New, GitHub, Kubernetes, CNCF, Cloudflare 연구 표면을 재점검함.
 - 인공지능신문 canonical article의 `article:published_time` `2026-10-13T20:49:34+09:00`, OG image와 설명 메타데이터를 직접 대조. 성균관대학교 권민혜 교수팀의 AI 비서 외부 검토 감소·3분의 1 비용 주장과 로봇 제어의 단발 성공 대신 반복 안정 행동 학습이라는 보도 범위를 수록함.
 - 모델·task set·hardware·benchmark·실험 반복·현장 안전 제약이 기사에서 충분히 공개되지 않아 production 비용 절감·robot safety 보장으로 확대하지 않음. `news-627`을 KST `2026-10-13 20:49` 기준 newest-first rank 1에 삽입해 W43 13건·rank 1–13을 유지하고 raw capture SHA-256 `0ca5599c5f8324f50f59da59caf3afd17e9c16522ea8b87ec4966f4ab276990e`, `index.md`, canonical weekly archive를 동기화. 같은 KST 날짜 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-14] update | KST 첫 실행 Deep Dive 전면 교체: GitHub secret classifier·GPT-6.1 Sol long context
+- 확인 시각: 2026-10-14 03:29 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스, AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF·OpenAI research surface를 current research pass에 포함함.
+- GitHub 공식 원문 `2026-10-13T17:56:33+00:00`의 context-aware secret classifier, weighted acceptance 11.5% 향상, median scan execution time 86% 감소를 직접 대조함. AI타임스 canonical 기사 `2026-10-13T17:35:00+09:00`의 GPT-6.1 Sol Codex·ChatGPT Work 기본 context 27만2000→50만 token, 최대 100만 token과 compaction 감소 설명을 직접 대조함.
+- KST 첫 실행 정책에 따라 전일 Logpush Transformers·kagent Deep Dive를 유지하지 않고, URL이 겹치지 않는 GitHub 공식 source와 GPT-6.1 Sol 보도로 2건의 title·summary·details·source·image·8개 expert section을 전면 재구성하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-14 03:29`로 설정함.
+- `news-628`·`news-629`을 verified published KST 최신순으로 삽입해 W43 15건·rank 1–15 유지. raw capture SHA-256 `38ba8b1c7656b7ad4f170eaa59098929dcf8710db01925fac37583a73dfb6cb4`, `fc86eaa5c719588724d22f1cc4f0be41f19229d0e61b46cecdc34bf9928cd79a`, `index.md`, canonical `weekly/2026-W43.md`를 동기화. GitHub 공식 수치는 해당 환경 결과로, GPT 보도의 API·가격·quota·retention·운영 효과는 독립 확정하지 않음.
