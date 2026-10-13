@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-13 15:09",
+  "last_updated_kst": "2026-10-13 19:15",
   "audience": "developers and engineers",
   "executive_summary": [
     "AMD Helion은 agent execution의 CPU·GPU·network·storage·rack power를 workload별로 조합하는 OCP 기반 reference design임. 최대 core 수보다 tool-heavy trace의 CPU queue·GPU utilization·p99·watt/task와 failure domain을 함께 검증 필요.",
@@ -177,6 +177,204 @@
   ],
   "items": [
     {
+      "id": "news-626",
+      "title_ko": "Arm agentic AI CPU 평가 방법론 보도: 랙당 모델링 수치와 workload 재현성 경계",
+      "title_original": "Arm introduces agentic AI CPU performance methodology",
+      "summary": "핵심: Arm이 Fujitsu·Meta·OpenAI 지원을 받아 agentic AI CPU 평가 방법론을 개발했고, Signal65 검증에서 Arm AGI CPU의 7개 workload 랙당 모델링 성능이 AMD EPYC 9755 대비 평균 1.99배였다고 인공지능신문이 보도함. 특정 rack model 수치는 실제 production 우위를 보장하지 않으므로 agent trace·power·sandbox·network 조건을 공개한 재현 시험 필요.",
+      "detail": "인공지능신문 보도 기준 Arm의 방법론은 representative agent workload, repeatable CPU measurement, end-to-end task outcome을 함께 평가하는 구조다. Signal65 측정에서 tool execution 1.7배, orchestration 2.0배, reasoning/planning 2.2배의 rack-level modeled performance 및 AMD EPYC 9965 대비 sandbox creation latency 최대 45% 단축이 언급된다. 비교 CPU가 지표마다 다르고 rack 수치는 server 결과를 모델링한 값이므로, processor SKU·core density·memory·network·software version·power cap·agent harness와 실제 비용을 같은 조건에서 다시 검증해야 한다.",
+      "why_it_matters": "agent system은 inference 외에 scheduler·tool execution·sandbox·retrieval·data movement에 CPU를 사용하므로 CPU 선택은 token/s뿐 아니라 task completion·tail latency·isolation·watt/task 문제임.",
+      "engineering_implication": "벤치마크 도입 전 workload fixture와 harness, CPU/DPU 역할, rack power cap, concurrency·sandbox policy를 고정하고 task completion·p99·queue·GPU starvation·watt/task·failure recovery를 함께 계측 필요.",
+      "korea_implication": "국내 AI 인프라 procurement는 vendor 모델링 수치를 용량 계획에 바로 넣지 말고 전력·공간·support·software ecosystem과 실제 agent workload의 canary 결과를 계약 기준으로 연결 필요.",
+      "category": "Infra",
+      "tags": [
+        "Arm",
+        "Agentic AI",
+        "CPU",
+        "Benchmark",
+        "Data Center",
+        "OCP",
+        "DPU",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-10-13 18:18",
+      "source_name": "인공지능신문",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=42282",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202610/42282_63568_1810_v150.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Arm이 agentic AI workload용 CPU 평가 방법론을 공개했다고 보도됨. Fujitsu·Meta·OpenAI의 지원과 Signal65의 검증이 언급되며, 평가 기준을 core 수보다 rack 수준 작업 완료량으로 옮기는 방향임.",
+          "items": [
+            "원칙: representative workload·repeatable CPU measurement·end-to-end outcome을 함께 보는 방법론",
+            "범위: 발표 수치와 참여사 지원은 기사 보도 범위이며 공개 benchmark artifact·production SLA의 독립 확인 필요"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사 기준 Signal65는 7개 workload에서 Arm AGI CPU의 rack당 모델링 성능이 AMD EPYC 9755 대비 평균 1.99배라고 평가함. tool execution 1.7배, orchestration 2.0배, reasoning/planning 2.2배와 EPYC 9965 대비 sandbox creation latency 최대 45% 단축이 언급됨.",
+          "items": [
+            "조건: rack-level 수치는 server 단위 측정치를 기반으로 모델링한 값",
+            "비교 경계: 성능 지표별 AMD processor가 다르며 workload·software·density·power 조건에 의존하는 결과"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent runtime의 CPU 병목은 tool call·queue·sandbox·retrieval·scheduler에서 생길 수 있음. GPU inference 성능만으로 전체 task completion이나 rack-level energy efficiency를 판단하면 capacity plan이 왜곡될 수 있음.",
+          "items": [
+            "리스크: vendor rack model을 production throughput·cost·availability 보장으로 해석하는 오류",
+            "리스크: agent harness·concurrency·network·memory·power cap 차이를 통제하지 않은 CPU 비교"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "CPU 평가는 component benchmark와 full task trace를 분리하고 둘 다 운영해야 함. 같은 agent task가 실제로 얼마나 완료됐는지와 power·latency·failure recovery를 함께 기록해야 조달 판단이 가능.",
+          "items": [
+            "팀 액션: representative tool execution·orchestration·planning fixture와 fixed harness/version으로 task completion·p95/p99·queue 계측",
+            "팀 액션: rack power cap·memory·network·DPU/offload·sandbox policy를 명시하고 watt/task·GPU idle·cost 비교",
+            "팀 액션: node loss·sandbox failure·traffic burst에서 retry·isolation·capacity fallback canary 실행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-625",
+      "title_ko": "NVIDIA·Google Falcon Transport 지원 계획: AI 이더넷의 혼잡 제어·RDMA 상호운용성",
+      "title_original": "NVIDIA plans Falcon Transport support on ConnectX-10 SuperNIC and BlueField DPU",
+      "summary": "핵심: NVIDIA가 ConnectX-10 SuperNIC와 BlueField DPU에서 Google Falcon Transport를 지원할 계획이라고 인공지능신문이 보도함. multipath·programmable congestion control·hardware packet recovery와 standard RDMA interface의 조합은 AI fabric 선택지를 넓히지만, NIC/DPU 출시·DOCA 구현·상호운용성·lossless tuning은 별도 검증 대상임.",
+      "detail": "인공지능신문 보도 기준 NVIDIA와 Google은 OCP Global Summit 2026에서 Falcon Transport 지원 계획을 공개했다. Falcon은 Ethernet 환경의 multipath load balancing, programmable congestion control, hardware packet recovery, connection-level security를 제공하는 전송 프로토콜로 설명되며, NVIDIA는 ConnectX-10 SuperNIC·BlueField DPU·DOCA와의 결합을 계획한다. 기사에는 standard RDMA API를 유지하며 양사의 network interface 연계를 넓히는 방향이 언급됐으나, hardware availability, protocol maturity, throughput·tail latency, interoperability matrix, congestion 설정·운영 책임은 독립 공식 문서와 cluster canary로 확인해야 한다.",
+      "why_it_matters": "분산 학습·추론은 accelerator보다 collective·storage·east-west traffic의 tail latency와 packet loss에 먼저 제한될 수 있어 transport와 NIC/DPU control plane이 cluster utilization을 좌우함.",
+      "engineering_implication": "fabric 변경 전 workload별 incast·all-reduce·storage traffic을 재현하고 loss·retransmit·ECN/PFC·flow completion·GPU idle·p99·failure recovery를 기존 RoCE/RDMA baseline과 같은 조건에서 비교 필요.",
+      "korea_implication": "국내 AI cluster는 NIC/DPU 조달과 switch·optics·cabling·운영 인력의 protocol support matrix를 함께 확인하고, 특정 roadmap을 현재 제공 기능으로 간주하지 않아야 함.",
+      "category": "Infra",
+      "tags": [
+        "NVIDIA",
+        "Google",
+        "Falcon Transport",
+        "ConnectX-10",
+        "BlueField",
+        "DPU",
+        "RDMA",
+        "AI Networking"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-13 17:53",
+      "source_name": "인공지능신문",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=42280",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202610/42280_63566_5234_v150.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "NVIDIA가 향후 ConnectX-10 SuperNIC와 BlueField DPU에서 Google Falcon Transport를 지원할 계획이라고 보도됨. 공개 시점은 OCP Global Summit 2026이며, DOCA와 hardware acceleration을 결합하는 방향임.",
+          "items": [
+            "대상: 대규모 AI 학습·분산 추론·고속 storage처럼 east-west traffic이 큰 Ethernet workload",
+            "일정 경계: 기사만으로는 product availability·SKU·software version·support region을 확정할 수 없는 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Falcon은 Ethernet의 혼잡·packet loss에 대응하도록 설계된 전송 프로토콜로 소개됨. 기사에서 multipath load balancing, programmable congestion control, hardware packet recovery, connection-level security와 standard RDMA API 유지가 언급됨.",
+          "items": [
+            "구성: ConnectX-10 SuperNIC·BlueField DPU·DOCA를 통한 protocol implementation 계획",
+            "효과 경계: bandwidth utilization·latency 개선은 topology·traffic mix·switch configuration에 따라 달라지는 조건"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI fabric은 평균 bandwidth보다 incast, collective synchronization, retransmit과 tail latency가 job completion과 GPU idle을 좌우함. 새로운 transport 지원은 hardware·software·operations layer를 함께 바꾸는 change임.",
+          "items": [
+            "리스크: lossless Ethernet·ECN/PFC·buffer tuning을 검증하지 않고 transport만 교체하는 경로",
+            "리스크: RDMA API compatibility를 end-to-end interoperability와 failure semantics 보장으로 오해하는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "신규 transport는 rack 또는 pod 수준의 bounded canary로 시작해야 함. 같은 job trace에서 기존 fabric과 telemetry·rollback 조건을 비교하고, DPU/NIC firmware와 switch support를 하나의 release artifact로 관리 필요.",
+          "items": [
+            "팀 액션: all-reduce·incast·checkpoint·storage traffic에서 flow completion·loss·retransmit·ECN/PFC·GPU idle·p99 계측",
+            "팀 액션: NIC/DPU firmware·DOCA·switch OS·optics·cabling·RDMA library interoperability matrix 확인",
+            "팀 액션: congestion event·device reset·link failure에서 job retry·isolation·rollback drill 실행"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-624",
+      "title_ko": "NVIDIA Vera Rubin 랙·컴퓨트 트레이 OCP 기여: 기가와트 AI 팩토리의 통합 설계 경계",
+      "title_original": "NVIDIA contributes Vera Rubin rack and compute tray designs to OCP",
+      "summary": "핵심: NVIDIA가 Vera Rubin의 랙·컴퓨트 트레이 설계를 OCP에 기여했다고 인공지능신문이 보도함. GPU 단품이 아니라 compute·network·power·cooling을 함께 설계하는 rack-scale 경로이므로, OCP 기여를 즉시 호환성·공급·성능 보장으로 해석하지 말고 rack power·liquid cooling·fabric·firmware 책임을 통합 검증 필요.",
+      "detail": "인공지능신문 보도 기준 NVIDIA는 OCP Global Summit 2026에서 Vera Rubin 랙과 컴퓨트 트레이 설계를 OCP에 기여하고 MGX 기반의 공동 설계 방향을 제시했다. 기사에는 Meta와 Spectrum-X/Spectrum-6, Google과 Falcon Transport, Cisco와 400Gb/s USFP, Visionbay의 800V DC 설계 및 DSX용 오픈소스 구성 요소가 함께 언급된다. 실제 OCP 산출물 범위, vendor별 구현 차이, 인증·가용 시점, rack-level 성능·전력·냉각·가격은 이 2차 보도만으로 확정할 수 없어 공식 OCP/NVIDIA 문서와 조달·PoC 검증이 필요하다.",
+      "why_it_matters": "AI 팩토리 용량이 커질수록 accelerator 수보다 power delivery·cooling·network·serviceability의 결합이 deployment schedule과 token 단가를 제한함.",
+      "engineering_implication": "OCP design adoption 전 rack BOM·firmware matrix·cooling loop·power envelope·fabric topology·spare/field-service 책임을 공급사별로 확인하고 representative training·inference trace로 p99·watt/token·failure recovery를 비교 필요.",
+      "korea_implication": "국내 데이터센터 도입은 전력 인입·수랭 설비·rack 규격·현장 유지보수·부품 조달 리드타임을 GPU 확보 계획과 같은 gate로 검증 필요.",
+      "category": "Infra",
+      "tags": [
+        "NVIDIA",
+        "Vera Rubin",
+        "OCP",
+        "AI Factory",
+        "Rack-scale",
+        "Data Center",
+        "Power",
+        "Cooling"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-10-13 17:22",
+      "source_name": "인공지능신문",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=42278",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202610/42278_63563_2221_v150.jpg",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "NVIDIA가 Vera Rubin의 rack·compute tray 설계를 OCP에 기여했다고 보도됨. MGX 기반 설계를 여러 system manufacturer가 공통 기반으로 활용하는 방향이며, 발표는 OCP Global Summit 2026 범위임.",
+          "items": [
+            "기여: 개별 GPU board가 아닌 rack·compute tray 수준의 설계 공개 방향",
+            "범위: 기사에서 언급한 기여가 모든 vendor 구현·인증·즉시 공급을 보장하지 않는 경계"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사에는 AI factory를 compute·network·power·cooling의 결합 시스템으로 다루는 방향이 제시됨. Meta와는 Spectrum-X Ethernet SuperNIC·Spectrum-6, Google과는 Falcon Transport 지원 계획, Cisco와는 400Gb/s USFP 관련 협력이 언급됨.",
+          "items": [
+            "전력: Visionbay의 800V DC AI factory 설계와 grid resilience 표준 언급",
+            "소프트웨어: DSX AI factory용 open-source component 공개라는 기사 범위"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "기가와트급 AI deployment에서는 rack density가 올라갈수록 power delivery, cooling loop, fabric fault, firmware compatibility와 현장 serviceability가 GPU 수량과 같은 배치 제약이 됨.",
+          "items": [
+            "리스크: OCP 기여를 supplier 간 동일 BOM·성능·support 보장으로 간주하는 오류",
+            "리스크: cooling·power·network commissioning을 accelerator procurement 뒤에 두어 일정이 밀리는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 공개 설계 여부가 아니라 특정 facility와 workload에서 재현되는 system SLO로 해야 함. rack 단위의 capacity·failure·recovery 책임을 component vendor별 계약으로 분해할 필요.",
+          "items": [
+            "팀 액션: power envelope·cooling capacity·network topology·firmware/BMC compatibility·spare lead time matrix 작성",
+            "팀 액션: training·long-context inference trace에서 p99·collective retry·watt/token·thermal headroom·node/rack failure recovery canary 실행",
+            "팀 액션: OCP/NVIDIA 공식 specification, regional supply·support와 certification 범위를 procurement gate로 확인"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
       "id": "news-622",
       "title_ko": "AMD Helion 공개: CPU·GPU 역할을 분리하는 agentic AI 랙 레퍼런스 설계",
       "title_original": "AMD unveils Helion agentic AI rack-scale infrastructure",
@@ -240,7 +438,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 4
     },
     {
       "id": "news-623",
@@ -306,7 +504,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 5
     },
     {
       "id": "news-618",
@@ -369,7 +567,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-619",
@@ -433,7 +631,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-617",
@@ -506,7 +704,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     },
     {
       "id": "news-620",
@@ -570,7 +768,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 9
     },
     {
       "id": "news-621",
@@ -633,11 +831,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 10
     },
     {
       "id": "news-615",
-      "rank": 8,
+      "rank": 11,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -701,7 +899,7 @@
     },
     {
       "id": "news-616",
-      "rank": 9,
+      "rank": 12,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",

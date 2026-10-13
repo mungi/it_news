@@ -3407,3 +3407,8 @@
 - 확인 시각: 2026-10-13 15:09 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF·OpenAI·Google AI·CISA feed를 current research pass에 포함함.
 - 인공지능신문 canonical 기사 2건의 `article:published_time`, OG image, 본문을 직접 대조. AMD Helion은 OCP 기반 CPU-only·CPU/GPU integrated agentic AI rack, 6세대 EPYC 최대 3만2768 core, Instinct MI350P, 공랭/수랭과 2026년 11월 계획을 기사 범위로 수록. 현대차·기아 VAST Data 투자는 42dot의 ADAS·LLM 통합, Hopper DGX SuperPOD 연계, DASE·S3/NFS shared namespace와 회사 주장 2:1 data reduction을 기사 범위로 수록.
 - Helion의 SKU·rack power·price·throughput·regional availability와 VAST의 투자 규모·SLA·retention·security·benchmark 조건은 독립 확정하지 않아 workload canary 확인 범위로 유지. `news-622`·`news-623`을 KST 최신순으로 삽입해 W43 9건·rank 1–9을 유지하고 raw captures·`index.md`·canonical `weekly/2026-W43.md`를 동기화. 당일 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-13] update | NVIDIA OCP rack 설계·Falcon Transport·Arm agentic CPU 평가 추가
+- 확인 시각: 2026-10-13 19:15 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New·Cloudflare·CNCF·GitHub·Kubernetes·OpenAI research surface를 재점검함. 신규 후보 3건은 인공지능신문 canonical article의 published metadata·OG image·본문을 직접 대조함.
+- NVIDIA Vera Rubin rack·compute tray의 OCP 기여, ConnectX-10/BlueField의 Google Falcon Transport 지원 계획, Arm의 agentic AI CPU benchmark methodology를 수록. 1.99배 rack 모델링 및 45% sandbox latency 수치, protocol/hardware availability·interoperability·vendor performance 경계는 기사 보도 범위로 구분함.
+- `news-624`~`news-626`을 KST 최신순으로 삽입해 W43 12건·rank 1–12를 유지. raw captures SHA-256, `index.md`, canonical `weekly/2026-W43.md`를 동기화했으며 같은 KST 날짜 02:47에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.

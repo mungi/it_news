@@ -47,6 +47,9 @@
 - [[raw/articles/aitimes-meta-muse-wonder-2026-10-13]] — Meta Muse Wonder·Wonder Full 보도: 100만 token context·장기 작업 기능·구독 전용 상위 모델·benchmark와 비용 검증 경계.
 - [[raw/articles/cloudflare-transformers-logpush-2026-10-12]] — Cloudflare Logpush Transformers의 SQL 기반 export 전 filter·redaction·reshape와 log data-boundary·detection coverage 운영 경계.
 - [[raw/articles/cncf-kagent-agent-builder-2026-10-12]] — CNCF kagent agent-builder local lab의 Agent CR·RBAC 축소 예시와 default auth·cluster-admin·shared-cluster 보안 경계.
+- [[raw/articles/nvidia-vera-rubin-ocp-rack-design-2026-10-13]] — NVIDIA Vera Rubin rack·compute tray OCP 기여와 기가와트 AI factory의 power·cooling·fabric 통합 설계 검증 경계.
+- [[raw/articles/nvidia-google-falcon-transport-2026-10-13]] — NVIDIA·Google Falcon Transport의 ConnectX-10·BlueField·DOCA 결합 계획과 AI Ethernet congestion/RDMA 검증 경계.
+- [[raw/articles/arm-agentic-ai-cpu-benchmark-2026-10-13]] — Arm agentic AI CPU 평가 방법론의 rack-level modeled performance·sandbox latency와 재현성 검증 경계.
 - [[raw/articles/navercloud-fpt-apac-ai-factory-gpuaas-2026-10-12]] — 네이버클라우드·FPT의 APAC AI 팩토리·GPUaaS 협력 계획과 다국가 capacity·data residency·tenant 운영 검증 경계.
 - [[raw/articles/aitimes-hjepa-hierarchical-world-model-2026-10-11]] — H-JEPA 계층형 world model의 time-scale 분해·Visual AntMaze 18%→73% 연구 결과와 physical AI deployment 검증 경계.
 - [[raw/articles/aitimes-yandex-datacenter-attacks-2026-10-11]] — 얀덱스 데이터센터 연쇄 공격 보도와 region·통신·AI 연산의 물리 인프라 연속성·DR 운영 경계.
