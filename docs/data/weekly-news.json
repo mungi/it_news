@@ -2,14 +2,14 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-14 11:42",
+  "last_updated_kst": "2026-10-14 15:55",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google Gemini 4 Argon 상용 확대 보도는 agent가 장시간 codebase를 탐색·변경하더라도 merge 권한은 별도 release gate여야 함을 보여줌. ADK 사례의 6개 제안 중 2개 채택 조건을 task completion·review rejection·rollback으로 재현 필요.",
     "Cloudflare D1 control plane 공개는 multi-tenant database 확장이 query 처리량만의 문제가 아님을 보여줌. lifecycle state·metadata cache·mapping repair·delete/restore를 별도 SLO와 reconciliation으로 운영 필요.",
     "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요.",
     "GPT-6.1 Sol의 Codex·ChatGPT Work 기본 context 50만 token 확대 보도는 compaction 빈도를 낮추는 runtime 변경임. completion·p99·token·작업당 비용·sensitive context retention을 동일 task trace에서 비교 필요.",
-    "AWS Security Hub resource criticality와 Agent Registry custom metadata는 cloud·agent inventory를 단순 목록이 아닌 triage·release policy 입력으로 바꾸는 기능임. asset tag·owner·data class·review expiry의 누락과 drift를 detection·approval·incident SLA와 함께 검증 필요."
+    "AWS ECS LiveTaskCount는 draining 중인 task까지 active capacity로 집계하고, 기존 RunningTaskCount는 stable health signal로 남김. autoscaling·alarm·capacity dashboard는 deployment·scale-in·rollback trace에서 두 metric과 desired count의 의미를 분리해 검증 필요."
   ],
   "deep_dives": [
     {
@@ -246,6 +246,86 @@
       "rank": 1
     },
     {
+      "id": "news-634",
+      "title_ko": "Amazon ECS LiveTaskCount: draining 중인 task까지 포함해 autoscaling·capacity 지표를 분리",
+      "title_original": "Amazon ECS adds LiveTaskCount and removes the charge for RunningTaskCount metric",
+      "summary": "핵심: Amazon ECS가 `ACTIVATING`·`RUNNING`·`DEACTIVATING` 상태의 활성 task를 함께 세는 무료 `LiveTaskCount` service metric을 추가함. scale-in connection draining 중인 task도 포함하므로 autoscaling·capacity planning에는 LiveTaskCount를, current·desired state가 모두 RUNNING인 `RunningTaskCount`는 health·stability signal로 분리해 해석 필요.",
+      "detail": "AWS 공식 공지 기준 LiveTaskCount는 ECS service에서 활성 실행 중인 task 수를 보고하는 무료 utilization metric이며 `ACTIVATING`, `RUNNING`, `DEACTIVATING` 상태를 모두 포함한다. 종료로 전환 중이지만 connection draining을 수행하는 task도 포함하므로 workload가 실제로 점유하는 실행 capacity를 보는 autoscaling·capacity planning에 맞는 범위다. 기존 CloudWatch Container Insights의 RunningTaskCount는 current와 desired state가 모두 RUNNING인 task만 세며 health·stability signal 용도로 계속 제공된다. RunningTaskCount의 추가 비용은 2026년 10월 1일부터 자동으로 사라졌고, 두 metric은 ECS 제공 전 리전에서 사용할 수 있다. metric 의미가 다르므로 dashboard·alarm·target tracking을 일괄 치환하지 말고 draining·deployment·scale-in 시계열과 service desired count를 함께 canary 검증해야 함.",
+      "why_it_matters": "service task 수를 단일 값으로 취급하면 deployment·connection draining·scale-in 중 실제 capacity와 stable task 수를 혼동해 autoscaling과 SLO 판단이 흔들릴 수 있음.",
+      "engineering_implication": "시사점: LiveTaskCount를 capacity·autoscaling 후보로, RunningTaskCount를 stable health 관측으로 분리하고, deployment·draining·rollback 구간에서 두 값과 desired count·request latency·target utilization의 관계를 기준선으로 기록 필요.",
+      "korea_implication": "국내 ECS 운영 조직은 region별 metric 수집·Container Insights 비용 배분·기존 dashboard query를 확인하고, 비용 절감보다 service alarm과 target-tracking policy의 semantics 검증을 먼저 수행해야 함.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Amazon ECS",
+        "CloudWatch",
+        "Autoscaling",
+        "Capacity Planning",
+        "Observability",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 79,
+      "published_kst": "2026-10-14 07:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/ecs-service-metrics/",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [
+        {
+          "title": "ECS service utilization metrics: LiveTaskCount",
+          "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_utilization.html#cw_live_task_count"
+        },
+        {
+          "title": "Amazon ECS Container Insights metrics",
+          "url": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cloudwatch-container-insights.html"
+        },
+        {
+          "title": "Amazon CloudWatch pricing",
+          "url": "https://aws.amazon.com/cloudwatch/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon ECS가 서비스에서 실제로 활성인 task 수를 보고하는 `LiveTaskCount`를 추가함. CloudWatch Container Insights opt-in 없이 ECS service utilization metric으로 제공되고 추가 비용이 없는 범위임.",
+          "items": [
+            "범위: `ACTIVATING`·`RUNNING`·`DEACTIVATING`의 활성 task를 함께 집계",
+            "대상: scale-in 중 connection draining을 수행하는 task까지 포함하는 관측 경로"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "LiveTaskCount는 active, metric-generating task의 전체 모습을 필요로 하는 autoscaling policy와 capacity planning에 적합하다고 AWS가 설명함. 기존 `RunningTaskCount`는 current와 desired state가 모두 RUNNING인 task만 세며 health·stability signal 용도로 유지됨.",
+          "items": [
+            "구분: LiveTaskCount는 lifecycle 전환 구간을 포함한 active capacity 관측",
+            "구분: RunningTaskCount는 stable RUNNING task 중심의 health·stability 관측",
+            "비용: RunningTaskCount 추가 비용은 2026년 10월 1일부터 자동 제거"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "deployment·draining·scale-in 중에는 request를 계속 처리하는 task와 desired state가 RUNNING인 task 수가 달라질 수 있음. 하나의 metric만 target tracking, alert, capacity 계산에 재사용하면 scale action 또는 incident 판단의 의미가 바뀔 수 있음.",
+          "items": [
+            "리스크: LiveTaskCount 증가를 unhealthy task 증가로 해석하는 dashboard 오류",
+            "리스크: RunningTaskCount만으로 draining 포함 실제 capacity를 계산하는 autoscaling 오류"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "기존 metric을 즉시 교체하지 말고 대표 service에서 rolling deployment, connection draining, traffic burst, rollback을 재현해야 함. desired count·pending count·ALB request/target·latency·error rate와 두 metric의 시계열 관계를 비교한 뒤 alarm과 target-tracking semantics를 확정 필요.",
+          "items": [
+            "팀 액션: service별 LiveTaskCount·RunningTaskCount·desired count의 dashboard label과 owner 정리",
+            "팀 액션: scale-in draining·blue/green·failed deployment에서 alarm·target tracking·SLO trace canary 실행",
+            "팀 액션: Container Insights metric 비용 제거 뒤에도 cardinality·retention·cross-account dashboard 비용을 별도 점검",
+            "팀 액션: metric 변경 전후 capacity headroom·p95 latency·5xx·scale action·rollback 시간을 release evidence로 보존"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-633",
       "title_ko": "AWS Agent Registry custom metadata: agent·MCP 자산 거버넌스를 schema로 강제",
       "title_original": "AWS Agent Registry now supports custom metadata for registry records",
@@ -316,7 +396,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-631",
@@ -381,7 +461,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-628",
@@ -445,7 +525,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-630",
@@ -511,7 +591,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-627",
@@ -576,7 +656,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-626",
@@ -642,7 +722,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-625",
@@ -708,7 +788,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-629",
@@ -773,7 +853,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-624",
@@ -839,7 +919,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-622",
@@ -905,7 +985,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-623",
@@ -971,7 +1051,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-618",
@@ -1034,7 +1114,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-619",
@@ -1098,7 +1178,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-617",
@@ -1171,7 +1251,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-620",
@@ -1235,7 +1315,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-621",
@@ -1298,11 +1378,11 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-615",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1366,7 +1446,7 @@
     },
     {
       "id": "news-616",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
