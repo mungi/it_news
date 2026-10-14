@@ -2,13 +2,13 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-14 15:55",
+  "last_updated_kst": "2026-10-14 19:58",
   "audience": "developers and engineers",
   "executive_summary": [
+    "KT AI 전용회선은 AIDC·GPU 거점 사이의 연결을 400·800Gbps로 넓힌다는 보도 범위임. 회선 속도보다 job별 flow concurrency·p99 RTT·loss·failover·cloud on-ramp 비용을 acceptance test에서 함께 검증 필요.",
     "Google Gemini 4 Argon 상용 확대 보도는 agent가 장시간 codebase를 탐색·변경하더라도 merge 권한은 별도 release gate여야 함을 보여줌. ADK 사례의 6개 제안 중 2개 채택 조건을 task completion·review rejection·rollback으로 재현 필요.",
     "Cloudflare D1 control plane 공개는 multi-tenant database 확장이 query 처리량만의 문제가 아님을 보여줌. lifecycle state·metadata cache·mapping repair·delete/restore를 별도 SLO와 reconciliation으로 운영 필요.",
     "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요.",
-    "GPT-6.1 Sol의 Codex·ChatGPT Work 기본 context 50만 token 확대 보도는 compaction 빈도를 낮추는 runtime 변경임. completion·p99·token·작업당 비용·sensitive context retention을 동일 task trace에서 비교 필요.",
     "AWS ECS LiveTaskCount는 draining 중인 task까지 active capacity로 집계하고, 기존 RunningTaskCount는 stable health signal로 남김. autoscaling·alarm·capacity dashboard는 deployment·scale-in·rollback trace에서 두 metric과 desired count의 의미를 분리해 검증 필요."
   ],
   "deep_dives": [
@@ -177,6 +177,73 @@
   ],
   "items": [
     {
+      "id": "news-635",
+      "title_ko": "KT AI 전용회선: AIDC·GPU 거점 간 400·800Gbps 연결로 확장",
+      "title_original": "KT launches AI dedicated lines with up to 800 Gbps bandwidth for AI data-center connectivity",
+      "summary": "핵심: KT가 AIDC와 분산 GPU 인프라 연결용 AI 전용회선을 출시하고 기존 최대 100Gbps 수준을 400Gbps·800Gbps로 확대함. 기사 기준 APN 기반으로 광·전기 신호 변환을 최소화하고 고객 환경별 경로·이원화 구성을 제시하지만, 실제 지연·가용성·요금·제공 거점은 계약과 회선 설계별 확인 필요.",
+      "detail": "인공지능신문 보도 기준 KT의 AI 전용회선은 전국에 분산된 AI 데이터센터와 GPU 인프라 사이의 학습·추론 데이터 이동을 대상으로 하며, 400Gbps와 800Gbps 대역폭을 제공한다. KT는 약 84만km 광케이블과 다원화 경로, APN 기반 광 전달을 설명하지만, 이는 통신사의 서비스·설계 계획 범위다. 분산 학습·storage·inference cluster를 연결하는 조직은 회선 속도만 비교하지 말고 end-to-end RTT·loss·burst·failover·암호화·cloud on-ramp·SLO를 workload trace로 검증해야 함.",
+      "why_it_matters": "분산 GPU와 데이터센터를 연결할 때 network bottleneck은 학습 데이터 이동, checkpoint, model artifact 복제, remote inference의 tail latency와 복구 경로를 함께 제한함.",
+      "engineering_implication": "시사점: 400·800Gbps 회선을 GPU capacity의 대체 지표로 보지 말고, job별 bytes·flow concurrency·p99 RTT·packet loss·retransmit·failover time·egress 비용을 기준으로 path diversity와 bandwidth reservation을 검증 필요.",
+      "korea_implication": "국내 AIDC·GPU 운영 조직은 실제 제공 건물·carrier handoff·이원화 경로의 shared-risk, cloud interconnect 연계, SLA·maintenance window·요금·암호화 책임을 계약서와 circuit acceptance test에서 확인해야 함.",
+      "category": "Infra",
+      "tags": [
+        "KT",
+        "AIDC",
+        "GPU Infrastructure",
+        "Networking",
+        "APN",
+        "High Bandwidth",
+        "Korea"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 83,
+      "published_kst": "2026-10-14 12:36",
+      "source_name": "인공지능신문",
+      "source_url": "https://www.aitimes.kr/news/articleView.html?idxno=42297",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202610/42297_63597_3552_v150.jpg",
+      "local_image": "assets/images/news-635.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "KT가 AI 데이터센터 사이의 대용량 전송을 위한 AI 전용회선을 14일 출시함. 기존 최대 100Gbps 수준에서 400Gbps·800Gbps 옵션으로 확장해 분산 GPU·스토리지·AI 서비스 거점 연결을 대상으로 제시한 범위임.",
+          "items": [
+            "대역폭: 기존 최대 100Gbps 대비 400Gbps·800Gbps 옵션 제공",
+            "대상: AIDC 사업자와 다수 거점의 GPU 인프라를 연결하려는 기업 환경"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기사에서 KT는 약 84만km 광케이블 인프라와 다원화된 통신 경로를 기반으로 고객 환경별 network path를 설계한다고 설명함. APN 기반 구조는 광·전기 신호 변환을 최소화해 전송 지연을 낮추는 방향이며, 장애 시 다른 경로를 쓰는 이원화 구성도 제시됨.",
+          "items": [
+            "경로: 복수 데이터센터·주요 거점 사이의 고객별 경로 설계 범위",
+            "복원력: 특정 회선·경로 장애 때 대체 경로를 쓰는 이원화 구성 설명",
+            "구조: APN 기반으로 광·전기 신호 변환 최소화를 지향하는 전송 경로"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI cluster의 병목은 accelerator 수만으로 설명되지 않음. 분산 학습 데이터, checkpoint, model artifact, RAG corpus, remote inference가 거점 사이를 오갈 때 bandwidth·RTT·loss·congestion·복구 시간이 job completion과 serving tail latency를 결정할 수 있음.",
+          "items": [
+            "리스크: 회선 정격 대역폭만으로 collective traffic·storage replication·burst workload 성능을 추정하는 경로",
+            "리스크: 이원화 회선이 실제로 다른 fiber·POP·power domain을 지나지 않아 common-mode failure가 남는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 회선 주문이 아니라 workload-aware network acceptance로 다뤄야 함. representative training·checkpoint·inference trace에서 throughput뿐 아니라 p99 RTT, packet loss, retransmit, congestion, failover, encryption overhead, cloud on-ramp 비용을 함께 기록해야 함.",
+          "items": [
+            "팀 액션: source·destination·carrier handoff·physical path·shared-risk group을 circuit inventory에 연결",
+            "팀 액션: 400·800Gbps circuit에서 flow concurrency·MTU·QoS·rate limit·p99 RTT·loss·retransmit canary 실행",
+            "팀 액션: 단일 경로와 장애 유도 failover에서 checkpoint recovery·job retry·serving error budget 비교",
+            "팀 액션: SLA·maintenance window·암호화·DDoS·cloud interconnect·egress 책임을 계약·runbook에 명시"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-632",
       "title_ko": "AWS Security Hub resource criticality: 노출 우선순위를 자산 중요도와 연결",
       "title_original": "AWS Security Hub now supports resource criticality for prioritization",
@@ -243,7 +310,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-634",
@@ -323,7 +390,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-633",
@@ -396,7 +463,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-631",
@@ -461,7 +528,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-628",
@@ -525,7 +592,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-630",
@@ -591,7 +658,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-627",
@@ -656,7 +723,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-626",
@@ -722,7 +789,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-625",
@@ -788,7 +855,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-629",
@@ -853,7 +920,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-624",
@@ -919,7 +986,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-622",
@@ -985,7 +1052,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-623",
@@ -1051,7 +1118,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-618",
@@ -1114,7 +1181,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-619",
@@ -1178,7 +1245,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-617",
@@ -1251,7 +1318,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-620",
@@ -1315,7 +1382,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-621",
@@ -1378,11 +1445,11 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-615",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1446,7 +1513,7 @@
     },
     {
       "id": "news-616",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",

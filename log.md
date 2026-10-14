@@ -3439,3 +3439,8 @@
 - 확인 시각: 2026-10-14 15:55 KST. GeekNews·GeekNews Plus·AI타임스KR·AI타임스 표면과 AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF feed를 current research pass에 포함했으며, 새 고신호 후보 중 AWS ECS 공식 공지를 직접 대조함.
 - AWS canonical announcement와 RSS `Tue, 13 Oct 2026 22:00:00 GMT`를 대조. `LiveTaskCount`의 `ACTIVATING`·`RUNNING`·`DEACTIVATING` 집계, connection draining task 포함, autoscaling·capacity planning 용도, stable RUNNING task만 집계하는 `RunningTaskCount`와의 역할 차이, Container Insights opt-in 불필요, 2026-10-01부터 RunningTaskCount 추가 비용 자동 제거, ECS 제공 전 리전 범위를 수록함.
 - `news-634`를 KST `2026-10-14 07:00` 기준 newest-first rank 2에 삽입해 W43 20건·rank 1–20을 유지. source HTML SHA-256 `c88ddce129c6358c066e1f0964be2c16e5dc90b52781968fdd64f8a4f03e4e9f`, raw capture, `index.md`, canonical `weekly/2026-W43.md`를 동기화. Deep Dive 2건은 같은 KST 날짜 03:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-14] update | KT AI 전용회선 400·800Gbps AIDC 연결 추가
+- 확인 시각: 2026-10-14 19:58 KST. GeekNews·GeekNews Plus·AI타임스KR·AI타임스와 AWS What’s New·GitHub·Cloudflare·Kubernetes·CNCF feed를 current research pass에 포함했고, 인공지능신문 canonical article을 직접 대조함.
+- 인공지능신문 canonical article의 `article:published_time` `2026-10-14T12:36:10+09:00`, OG image와 본문을 대조. KT AI 전용회선의 기존 최대 100Gbps에서 400Gbps·800Gbps 확대, 전국 약 84만km 광케이블·다원화 경로, 이원화 path, APN 기반 광·전기 변환 최소화 설명을 수록함.
+- 제공 거점·실제 지연·SLA·가격·암호화·cloud on-ramp·shared-risk 분리는 독립 확정하지 않아 contract와 workload-aware circuit acceptance test 확인 범위로 유지. `news-635`를 KST `2026-10-14 12:36` 기준 newest-first rank 1에 삽입해 W43 21건·rank 1–21을 유지하고 OG image local copy, raw capture SHA-256 `1838071199c2a50ba2847b551c5cc29b10ee282758dc615f2454f46d3630e0c4`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 03:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
