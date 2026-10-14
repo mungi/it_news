@@ -2,12 +2,12 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-15 00:03",
+  "last_updated_kst": "2026-10-15 04:08",
   "audience": "developers and engineers",
   "executive_summary": [
     "KT AI 전용회선은 AIDC·GPU 거점 사이의 연결을 400·800Gbps로 넓힌다는 보도 범위임. 회선 속도보다 job별 flow concurrency·p99 RTT·loss·failover·cloud on-ramp 비용을 acceptance test에서 함께 검증 필요.",
     "Google Gemini 4 Argon 상용 확대 보도는 agent가 장시간 codebase를 탐색·변경하더라도 merge 권한은 별도 release gate여야 함을 보여줌. ADK 사례의 6개 제안 중 2개 채택 조건을 task completion·review rejection·rollback으로 재현 필요.",
-    "Cloudflare D1 control plane 공개는 multi-tenant database 확장이 query 처리량만의 문제가 아님을 보여줌. lifecycle state·metadata cache·mapping repair·delete/restore를 별도 SLO와 reconciliation으로 운영 필요.",
+    "Cloudflare Hyperdrive의 MySQL cache bug는 query cache가 SQL text만의 문제가 아님을 드러냄. negotiated capability·compression·character set·session state가 response wire format을 바꾸면 cache key·admission·response parser를 같은 compatibility contract로 검증 필요.",
     "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요.",
     "AWS ECS LiveTaskCount는 draining 중인 task까지 active capacity로 집계하고, 기존 RunningTaskCount는 stable health signal로 남김. autoscaling·alarm·capacity dashboard는 deployment·scale-in·rollback trace에서 두 metric과 desired count의 의미를 분리해 검증 필요."
   ],
@@ -194,6 +194,77 @@
   ],
   "items": [
     {
+      "id": "news-636",
+      "title_ko": "Cloudflare Hyperdrive MySQL cache bug: protocol capability를 cache compatibility contract로 분리",
+      "title_original": "Inside Hyperdrive: How we solved a rare Hyperdrive MySQL caching bug",
+      "summary": "핵심: Cloudflare는 MySQL cache를 켠 Hyperdrive에서 약 0.001%의 빈 query response가 나온 사례를 분석해, 같은 data center cache를 공유하는 Client·Endpoint가 서로 다른 protocol capability로 encoding된 결과 bytes를 재사용한 경로를 수정했다고 공개함. cache key는 SQL text만이 아니라 result wire format을 바꾸는 capability·compression·character set 같은 compatibility contract를 포함해야 함.",
+      "detail": "Cloudflare 공식 글 기준 Hyperdrive는 Worker 가까이의 Client와 origin database 가까이의 Endpoint로 구성되며, 같은 data center에 있으면 CDN cache를 공유한다. MySQL connection phase에서 협상한 capability가 Worker client와 Hyperdrive-origin 구간에서 다를 수 있지만, cache hit 때 response translation이 생략되면서 `CLIENT_DEPRECATE_EOF` 여부가 다른 result-set packet을 전달할 수 있었다. Cloudflare는 high-volume customer에서 non-empty여야 할 response가 약 0.001% 빈 결과가 되는 현상을 조사했고, capability를 cache key에 넣어 Client와 Endpoint가 같은 response encoding만 재사용하도록 수정했다고 설명함. 이 글은 Cloudflare Hyperdrive 구현 사례이므로 다른 driver·proxy·DB의 영향 범위는 별도 trace와 canary로 확인 필요.",
+      "why_it_matters": "connection pool·edge cache·database proxy가 protocol translation을 수행하면 cache hit가 origin query보다 더 위험한 data path가 될 수 있으며, result truncation·early EOF·hang은 일반 application error rate만으로 원인을 좁히기 어려움.",
+      "engineering_implication": "시사점: query cache key와 invalidation 설계에 SQL·bind value 외 protocol version·negotiated capability·compression·character set·session state를 포함하고, cache hit/miss별 result digest·packet parsing failure·empty-result rate를 분리 계측 필요.",
+      "korea_implication": "국내 Workers·MySQL 또는 database proxy 운영 조직은 managed service의 수정 공지와 별도로 사용 중인 driver version·proxy cache 설정·region colocation 조건을 inventory화하고, 빈 결과를 정상 empty set과 구별하는 application-level assertion을 canary에 추가해야 함.",
+      "category": "Infra",
+      "tags": [
+        "Cloudflare",
+        "Hyperdrive",
+        "MySQL",
+        "Database Proxy",
+        "Cache",
+        "Protocol",
+        "Workers"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 82,
+      "published_kst": "2026-10-14 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/hyperdrive-mysql/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4VK1JSTQP05JHNRKH640HNP.png",
+      "local_image": "assets/images/news-636.png",
+      "related_links": [
+        {
+          "title": "MySQL CLIENT_DEPRECATE_EOF capability",
+          "url": "https://dev.mysql.com/doc/dev/mysql-server/latest/group__group__cs__capabilities__flags.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare는 MySQL 지원을 추가한 Hyperdrive beta에서, 가장 높은 volume 고객의 non-empty query response가 드물게 비어 있는 현상을 조사함. 발생 비율은 약 0.001%였고 trace에서 원인을 직접 포착하지 못해 cache topology와 MySQL protocol을 함께 분석한 범위임.",
+          "items": [
+            "증상: cache를 켠 instance에서 non-empty여야 하는 response가 드물게 empty response로 관측",
+            "조건: Client와 Endpoint가 같은 data center cache를 공유하고 한 node가 저장한 결과를 다른 node가 읽는 경로"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Hyperdrive Client는 Worker-facing MySQL capability를 협상하고 response를 변환하며, Endpoint는 origin database와 통신함. Worker와 origin 구간의 capability 집합이 다를 수 있어 origin response는 Worker가 기대하는 wire format으로 변환돼야 하나, shared cache hit에서 encoded bytes가 직접 전달된 경로가 문제였음.",
+          "items": [
+            "구조: Client는 Worker 인접 실행·local cache 처리, Endpoint는 origin 인접 connection pool 처리",
+            "차이: `CLIENT_DEPRECATE_EOF` 협상 여부에 따라 result-set metadata EOF와 final EOF 또는 OK packet 형식 변경",
+            "실패: Client가 Endpoint encoding을 그대로 보내면 early EOF 또는 hang 가능 경로"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "cache는 같은 query에 같은 bytes가 나온다는 전제를 사용하지만, database protocol response는 query string만으로 결정되지 않을 수 있음. negotiated capability·compression·character set·session state가 bytes와 parser 의미를 바꾸면 cache hit가 origin path와 다른 semantic result를 만들 수 있음.",
+          "items": [
+            "리스크: SQL text hash만으로 cache compatibility를 판단해 protocol version 또는 capability mismatch를 누락하는 설계",
+            "리스크: empty result·packet parse error·timeout을 application retry로만 흡수해 silent data loss와 hang을 분리하지 못하는 운영"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "Cloudflare는 capability를 cache key에 넣어 compatible response만 재사용하도록 수정했다고 설명함. 자체 proxy·pooler·cache에서는 cache admission, key, invalidation, response parser의 protocol contract를 명시하고 protocol matrix canary로 cache hit와 origin 결과를 비교해야 함.",
+          "items": [
+            "팀 액션: driver·proxy·server별 capability negotiation과 compression·charset·prepared-statement state를 cache key design review에 포함",
+            "팀 액션: cache hit/miss별 row count·result digest·empty-result rate·EOF/OK parse error·timeout을 분리 dashboard화",
+            "팀 액션: mixed driver·server version과 same-region/shared-cache 조건에서 query replay·cache flush·rollback canary 실행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-635",
       "title_ko": "KT AI 전용회선: AIDC·GPU 거점 간 400·800Gbps 연결로 확장",
       "title_original": "KT launches AI dedicated lines with up to 800 Gbps bandwidth for AI data-center connectivity",
@@ -258,7 +329,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-632",
@@ -327,7 +398,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-634",
@@ -407,7 +478,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-633",
@@ -480,7 +551,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-631",
@@ -545,7 +616,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-628",
@@ -609,7 +680,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-630",
@@ -675,7 +746,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-627",
@@ -740,7 +811,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-626",
@@ -806,7 +877,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-625",
@@ -872,7 +943,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-629",
@@ -937,7 +1008,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-624",
@@ -1003,7 +1074,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-622",
@@ -1069,7 +1140,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-623",
@@ -1135,7 +1206,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-618",
@@ -1198,7 +1269,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-619",
@@ -1262,7 +1333,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-617",
@@ -1335,7 +1406,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-620",
@@ -1399,7 +1470,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-621",
@@ -1462,11 +1533,11 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-615",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1530,7 +1601,7 @@
     },
     {
       "id": "news-616",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",

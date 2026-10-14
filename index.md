@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-hyperdrive-mysql-cache-protocol-2026-10-14]] — Cloudflare Hyperdrive MySQL cache의 protocol capability mismatch, `CLIENT_DEPRECATE_EOF` wire-format·cache-key compatibility 검증 경계.
 - [[raw/articles/aitimeskr-kt-ai-dedicated-line-800gbps-2026-10-14]] — KT AI 전용회선의 400·800Gbps AIDC·GPU 연결, APN·이원화 경로와 workload-aware network acceptance 검증 경계.
 - [[raw/articles/aws-ecs-live-task-count-running-task-count-pricing-2026-10-14]] — Amazon ECS `LiveTaskCount`의 lifecycle-inclusive active capacity와 `RunningTaskCount` health signal·가격 변경 운영 경계.
 - [[raw/articles/aws-security-hub-resource-criticality-2026-10-14]] — AWS Security Hub resource criticality의 exposure prioritization·tag/rule 기반 자산 중요도와 SOC triage 검증 경계.
