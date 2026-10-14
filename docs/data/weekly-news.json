@@ -2,14 +2,14 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-14 07:42",
+  "last_updated_kst": "2026-10-14 11:42",
   "audience": "developers and engineers",
   "executive_summary": [
     "Google Gemini 4 Argon 상용 확대 보도는 agent가 장시간 codebase를 탐색·변경하더라도 merge 권한은 별도 release gate여야 함을 보여줌. ADK 사례의 6개 제안 중 2개 채택 조건을 task completion·review rejection·rollback으로 재현 필요.",
     "Cloudflare D1 control plane 공개는 multi-tenant database 확장이 query 처리량만의 문제가 아님을 보여줌. lifecycle state·metadata cache·mapping repair·delete/restore를 별도 SLO와 reconciliation으로 운영 필요.",
     "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요.",
     "GPT-6.1 Sol의 Codex·ChatGPT Work 기본 context 50만 token 확대 보도는 compaction 빈도를 낮추는 runtime 변경임. completion·p99·token·작업당 비용·sensitive context retention을 동일 task trace에서 비교 필요.",
-    "AMD Helion·NVIDIA Vera Rubin·Falcon Transport 보도는 AI 인프라 조달이 accelerator 수량을 넘어 CPU/GPU ratio·fabric·power·cooling·firmware와 failure recovery를 묶는 rack-scale 검증 문제임."
+    "AWS Security Hub resource criticality와 Agent Registry custom metadata는 cloud·agent inventory를 단순 목록이 아닌 triage·release policy 입력으로 바꾸는 기능임. asset tag·owner·data class·review expiry의 누락과 drift를 detection·approval·incident SLA와 함께 검증 필요."
   ],
   "deep_dives": [
     {
@@ -177,6 +177,148 @@
   ],
   "items": [
     {
+      "id": "news-632",
+      "title_ko": "AWS Security Hub resource criticality: 노출 우선순위를 자산 중요도와 연결",
+      "title_original": "AWS Security Hub now supports resource criticality for prioritization",
+      "summary": "핵심: AWS Security Hub가 exposure finding 우선순위에 resource criticality를 추가함. automation rule로 계정·resource 범위의 중요도를 설정하거나 tag·resource name에서 자동 추론하고, Resources 목록과 exposure finding의 Impact assessment에서 정렬·필터·그룹화할 수 있음.",
+      "detail": "AWS 공식 공지 기준 resource criticality는 중앙 보안팀이 business-critical resource를 위협하는 노출을 먼저 분류하도록 돕는 Security Hub 기능임. automation rule은 기존 inventory와 이후 Security Hub가 발견하는 resource에 모두 적용되며, tag·resource name 기반 추론도 별도 설정 없이 동작하고 결정 source를 기록함. Security Hub Essentials에 추가 비용 없이 기본 활성화되지만, tag 품질·자동화 rule 범위·asset ownership이 부정확하면 finding 우선순위도 왜곡될 수 있어 조직별 CMDB·tagging·incident SLA와의 정합성 검증이 필요함.",
+      "why_it_matters": "노출 severity만으로 remediation queue를 만들면 중요하지 않은 test resource와 production의 crown jewel이 같은 우선순위를 받을 수 있음.",
+      "engineering_implication": "시사점: criticality 값을 취약점 severity의 대체값으로 쓰지 말고, account·owner·data classification·internet exposure·exploitability와 결합한 triage policy로 운영하고 rule 변경은 sample finding으로 검증 필요.",
+      "korea_implication": "국내 AWS 조직은 계정 구조와 resource tag가 조직·서비스 owner·개인정보·업무 중요도를 실제로 반영하는지 점검하고, Security Hub priority를 SOC escalation·patch SLA에 연결하기 전 exception 경로를 검증해야 함.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "Security Hub",
+        "Exposure Management",
+        "Cloud Security",
+        "Asset Criticality",
+        "DevSecOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-10-14 10:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/security-hub-resource-criticality/",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [
+        {
+          "title": "AWS Security Hub User Guide",
+          "url": "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub-v2.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS Security Hub가 exposure prioritization에 resource criticality를 추가함. 노출 자체의 severity와 별도로 해당 resource가 업무상 얼마나 중요한지 표시해 중앙 보안팀의 triage 순서를 조정하는 기능임.",
+          "items": [
+            "기능: Resources 페이지와 exposure finding의 Impact assessment에 criticality 표시",
+            "목적: business-critical resource를 위협하는 노출을 우선 식별하는 경로"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "criticality는 automation rule로 설정할 수 있으며, 특정 account의 compute resource를 Very High로 지정하는 예시가 공식 공지에 제시됨. rule은 기존 inventory와 이후 발견되는 resource에 적용되며, tag·resource name 기반 자동 추론도 지원함.",
+          "items": [
+            "적용 범위: 기존 inventory와 신규 발견 resource에 지속 적용",
+            "추적성: Security Hub가 criticality 결정 source를 기록하는 구조"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "severity가 같은 finding도 production payment API, 개발 sandbox, 폐기 예정 resource의 대응 순서는 달라야 함. 자산 중요도가 결합되면 SOC queue를 business impact 기준으로 정렬할 수 있으나, 잘못된 tag 또는 rule은 반대로 우선순위 오류를 확대할 수 있음.",
+          "items": [
+            "리스크: tag 누락·stale CMDB·account 재사용으로 crown-jewel 분류가 틀어지는 경로",
+            "경계: criticality는 exploitability·public exposure·active attack 신호를 대체하지 않는 보조 축"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입은 Security Hub 화면 설정이 아니라 asset governance 변경으로 다뤄야 함. production resource sample과 의도적으로 낮은 중요도의 test resource를 함께 검증해 rule 적용·source 기록·ticket routing·SLA가 예상대로 작동하는지 확인 필요.",
+          "items": [
+            "팀 액션: account·service·data classification·owner 기준의 criticality taxonomy와 change owner 정의",
+            "팀 액션: criticality·severity·internet exposure·KEV 여부를 결합한 triage query와 escalation SLA canary 실행",
+            "팀 액션: tag drift·rule failure·manual override를 audit event와 정기 reconciliation에 연결"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-633",
+      "title_ko": "AWS Agent Registry custom metadata: agent·MCP 자산 거버넌스를 schema로 강제",
+      "title_original": "AWS Agent Registry now supports custom metadata for registry records",
+      "summary": "핵심: AWS Agent Registry가 agent·MCP server·skill·gateway 등 registry record에 조직별 custom metadata schema를 추가함. owner·data classification·review status 같은 필드를 record type별로 정의하고, 생성·갱신 때 required value를 검증하며 Console·CLI·SDK·MCP endpoint에서 필터할 수 있음.",
+      "detail": "AWS 공식 공지 기준 Agent Registry custom metadata는 이름·설명만으로는 부족한 대규모 agent resource의 discovery와 governance를 위한 기능임. registry마다 공통 attribute schema를 한 번 정의하고 agent record의 model family처럼 type-specific field를 확장할 수 있으며, field는 free text·URL·Boolean·허용 choice를 지원함. required field와 value는 record 생성·업데이트 때 검증되고 Console·CLI·SDK·registry MCP endpoint에서 검색 필터로 사용 가능함. 지원 리전은 US East (N. Virginia), US West (Oregon), Asia Pacific (Sydney·Tokyo), Europe (Ireland)로 공지됐으며, metadata 자체가 runtime authorization·connector scope·approval·audit를 자동 강제한다는 보장은 없어 별도 policy와 release control이 필요함.",
+      "why_it_matters": "agent와 MCP 자산이 늘면 누가 소유하고 어떤 데이터를 다루며 어떤 review를 통과했는지 찾지 못해 shadow agent와 policy exception이 늘어날 수 있음.",
+      "engineering_implication": "시사점: metadata schema를 catalog 편의 기능으로 끝내지 말고 owner·data class·tool write scope·review expiry·runtime identity를 required field로 정하고, deployment pipeline과 policy engine이 이를 검증하도록 연결 필요.",
+      "korea_implication": "국내 조직은 제공 리전과 데이터 처리 경로를 계약·console에서 확인하고, 개인정보·망분리·고객 데이터 connector가 있는 agent는 registry metadata와 별도 access review 증적을 함께 유지해야 함.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Agent Registry",
+        "MCP",
+        "AI Governance",
+        "Metadata",
+        "Platform Engineering"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 82,
+      "published_kst": "2026-10-14 06:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-agent-registry-custom-metadata-registry-records",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [
+        {
+          "title": "AWS Agent Registry documentation",
+          "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry.html"
+        },
+        {
+          "title": "Define a custom metadata schema",
+          "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-custom-metadata-schema.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS Agent Registry가 registry record용 custom metadata를 지원함. 대상 catalog는 agent, MCP server, agent skill, gateway와 조직이 정의한 custom resource이며, 조직별 구조화 field를 record에 붙이는 범위임.",
+          "items": [
+            "대상: agent·MCP server·skill·gateway·custom resource의 중앙 catalog",
+            "목적: 이름·설명만으로 부족한 대규모 agent 자산의 discovery·governance 보강"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "registry마다 common attribute를 한 번 정의하고 record type별 field를 확장할 수 있음. field는 free text·URL·Boolean·허용 choice를 지원하며, required field와 value는 record 생성 또는 update 시 검증됨.",
+          "items": [
+            "예시: team ownership·data classification·review status와 agent별 model family 기록",
+            "검색: Console·CLI·SDK·registry MCP endpoint에서 metadata field 기반 filter 지원"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agent inventory가 있어도 owner, connector data class, tool write scope, security review 만료일이 비어 있으면 운영자가 위험한 resource를 찾고 중단하기 어려움. schema validation은 최소 메타데이터를 registration 시점에 남기게 하지만 실제 runtime 권한을 자동 축소하지는 않음.",
+          "items": [
+            "리스크: catalog metadata를 IAM authorization·connector allowlist·human approval의 대체 통제로 오해하는 경로",
+            "경계: 공지의 지원 리전은 미국 동부·서부, 시드니·도쿄, 아일랜드이며 다른 리전 availability는 별도 확인 대상"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "schema는 운영 검색용 label보다 policy input으로 설계해야 함. 새 agent 등록과 update pipeline에서 metadata completeness를 검사하고, high-risk class에는 security review expiry·runtime identity·approved tool scope를 required field로 둔 뒤 drift를 정기 점검 필요.",
+          "items": [
+            "팀 액션: owner·business purpose·data class·write scope·review expiry·incident contact를 required field 후보로 정의",
+            "팀 액션: CI/CD에서 schema validation과 deployment approval을 연결하고 missing metadata를 release block으로 처리",
+            "팀 액션: registry export와 IAM·MCP gateway·connector inventory를 대조해 orphaned record와 shadow agent 탐지"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-631",
       "title_ko": "Google Gemini 4 Argon 상용 확대 보도: 장기 agent 변경안을 merge gate로 분리하는 검증",
       "title_original": "Google expands Gemini 4 Argon availability across AI Studio, Gemini API, and product surfaces",
@@ -239,7 +381,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-628",
@@ -303,7 +445,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-630",
@@ -369,7 +511,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-627",
@@ -434,7 +576,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-626",
@@ -500,7 +642,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-625",
@@ -566,7 +708,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-629",
@@ -631,7 +773,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-624",
@@ -697,7 +839,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-622",
@@ -763,7 +905,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-623",
@@ -829,7 +971,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-618",
@@ -892,7 +1034,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-619",
@@ -956,7 +1098,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-617",
@@ -1029,7 +1171,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-620",
@@ -1093,7 +1235,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-621",
@@ -1156,11 +1298,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-615",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1224,7 +1366,7 @@
     },
     {
       "id": "news-616",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
