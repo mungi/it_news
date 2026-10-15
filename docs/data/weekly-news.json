@@ -2,197 +2,266 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-15 20:24",
+  "last_updated_kst": "2026-10-16 00:28",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Cloudflare·OpenAI research pilot은 참여 Cloudflare network 약 1%의 signal로 ChatGPT Search가 수억 개 신규 page를 발견·색인했다고 공개함. AI crawler 정책은 robots 허용 여부뿐 아니라 canonical URL·404/redirect·cache·origin cost·compromised URL 대응을 같은 운영 계약으로 관리 필요.",
+    "Kueue Headlamp plugin `0.1.0-alpha`는 Job Pending을 queue admission과 Pod scheduling으로 분리해 읽는 경로를 제시함. `QuotaReserved`·`Admitted` condition과 LocalQueue·ClusterQueue·ResourceFlavor를 먼저 확인한 뒤 node scheduling 조사로 넘겨야 함.",
     "AWS ARC Region switch는 failover plan에 SSM command·Lambda payload·quota parity·target health 대기를 추가함. Regional DR은 DNS 전환 뒤의 IAM·quota·target readiness·data consistency를 game day evidence로 함께 검증 필요.",
-    "KT AI 전용회선은 AIDC·GPU 거점 사이의 연결을 400·800Gbps로 넓힌다는 보도 범위임. 회선 속도보다 job별 flow concurrency·p99 RTT·loss·failover·cloud on-ramp 비용을 acceptance test에서 함께 검증 필요.",
     "Liquid AI `LFM2.5-24B-A2B`는 24B/2B active MoE·131K context·open weight를 제시하지만, 온디바이스 agent의 release gate는 token/s보다 device별 task completion·p95 latency·memory·thermal·tool 권한·egress trace를 함께 검증해야 함.",
-    "Cloudflare Hyperdrive의 MySQL cache bug는 query cache가 SQL text만의 문제가 아님을 드러냄. negotiated capability·compression·character set·session state가 response wire format을 바꾸면 cache key·admission·response parser를 같은 compatibility contract로 검증 필요.",
-    "GitHub는 secret detection 문맥 classifier의 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 공개함. detector 품질은 accepted alert뿐 아니라 bypass·rotation lead time·sampled false negative와 함께 검증 필요."
+    "Cloudflare Hyperdrive의 MySQL cache bug는 query cache가 SQL text만의 문제가 아님을 드러냄. negotiated capability·compression·character set·session state가 response wire format을 바꾸면 cache key·admission·response parser를 같은 compatibility contract로 검증 필요."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Amazon ECS LiveTaskCount: task lifecycle metric을 autoscaling·SLO 판단으로 분리하는 운영 설계",
-      "summary": "한 줄 결론: `LiveTaskCount`는 draining까지 포함한 실제 active capacity를, `RunningTaskCount`는 stable task health를 읽는 서로 다른 signal임. 기존 dashboard·alarm·target tracking을 일괄 치환하지 말고 deployment·draining·rollback trace에서 desired count·traffic·latency와 함께 재검증해야 함.",
-      "details": "AWS 공식 공지는 ECS 서비스에 `LiveTaskCount`를 추가하고 `RunningTaskCount`의 추가 비용을 2026년 10월 1일부터 제거했다고 밝힘. LiveTaskCount는 `ACTIVATING`·`RUNNING`·`DEACTIVATING` task를 포함하며 connection draining 중인 task까지 active capacity로 센다. RunningTaskCount는 current와 desired state가 모두 RUNNING인 stable task를 세는 health·stability signal로 남는다. 두 값은 deployment와 scale-in 구간에서 의도적으로 달라질 수 있으므로, autoscaling·capacity planning·incident alert가 같은 의미의 task count를 전제하지 않게 운영해야 함.",
-      "why_it_matters": "ECS task 수를 하나의 건강도·용량 지표로 취급하면 deployment·connection draining·rollback 때 실제 request-serving capacity와 stable health를 혼동할 수 있음.",
+      "title": "Cloudflare·OpenAI AI discovery pilot: crawler discovery를 origin 비용·URL 품질·보안 신호로 운영하는 방법",
+      "summary": "한 줄 결론: AI search discovery는 sitemap 제출만의 문제가 아니라 crawler가 어떤 URL을 발견·fetch·색인하고, origin이 어떤 비용·보안 위험을 감수하는지의 control plane임. allow/deny 결정과 별도로 canonical URL·404/redirect·cache·compromise response·crawler telemetry를 하나의 운영 계약으로 묶어야 함.",
+      "details": "Cloudflare와 OpenAI는 참여 Cloudflare network 약 1%의 신호를 활용한 research pilot에서 OpenAI가 수억 개의 새 웹 페이지를 발견·색인했다고 발표했다. 신호는 crawler의 URL discovery 효율을 높이는 입력이고, relevance와 helpfulness에 따른 평가·순위화는 OpenAI가 독립 수행한다고 설명한다. 공지는 존재하지 않는 URL 반복 요청, 임의 URL의 홈페이지 redirect, 복제 콘텐츠를 fetch 전 식별해 낭비를 줄이는 실험과, compromised page를 domain 전체와 분리해 flag하는 harmful-page signal 시험을 함께 제시한다. 공개된 결과는 pilot 범위이며 ranking·traffic·crawl reduction·false-positive·개별 publisher 적용 효과는 보장하지 않는다. 서비스 운영자는 AI crawler 접근을 마케팅 설정이 아니라 URL lifecycle·origin capacity·bot/WAF policy·security response의 결합된 변경으로 다뤄야 함.",
+      "why_it_matters": "AI crawler가 유입 경로와 bot load를 바꾸면서 URL hygiene·cache·WAF·침해 대응의 작은 결함이 search exposure와 origin 비용을 동시에 바꿀 수 있음.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/ecs-service-metrics/"
+        "https://blog.cloudflare.com/cloudflare-openai-discovery-agentic-web/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/cloud.svg",
-      "refreshed_kst": "2026-10-15 00:03",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4ZW7X8KGSZJHDCDSMPABH8P.01M4ZW7YDPC4VWS7X23DWFNBKR.png",
+      "local_image": "assets/images/news-641.png",
+      "refreshed_kst": "2026-10-16 00:28",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "ECS의 새 metric은 task를 더 많이 세는 기능이 아니라 **capacity signal과 health signal의 contract를 분리**하는 변경임. `LiveTaskCount`와 `RunningTaskCount`가 다를 수 있는 lifecycle 구간을 dashboard·alarm·autoscaling에서 명시적으로 모델링 필요.",
+          "body": "AI discovery의 운영 단위는 domain이 아니라 **URL lifecycle과 crawler policy의 결합**임. URL이 발견된 뒤 canonical 여부·fetch 비용·안전성·색인 자격이 어떻게 판단되는지 관측하지 않으면 robots 허용만으로 origin·보안·검색 품질을 통제할 수 없음.",
           "items": [
-            "변화: `LiveTaskCount`는 `ACTIVATING`·`RUNNING`·`DEACTIVATING` task를 active capacity로 집계",
-            "팀 액션: 기존 task-count query가 capacity·health·billing 중 무엇을 뜻하는지 inventory화"
+            "변화: Cloudflare network signal로 crawler discovery 후보를 넓히고 OpenAI가 독립 평가·순위화",
+            "팀 액션: AI crawler 정책을 robots·WAF·cache·redirect·incident response의 공동 change record로 관리"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS 공식 공지는 `LiveTaskCount`를 ECS service utilization metric으로 추가하고 CloudWatch Container Insights opt-in 없이 추가 비용 없이 제공한다고 설명함. `RunningTaskCount`는 current·desired state가 모두 RUNNING인 task만 계속 집계하며, 해당 Container Insights 추가 비용은 2026년 10월 1일부터 자동 제거됨.",
+          "body": "Cloudflare와 OpenAI는 2026년 7월 시작한 research pilot의 초기 결과를 공개함. 참여 Cloudflare network의 약 1%를 사용한 pilot에서 OpenAI가 수억 개의 새 웹 페이지를 발견·색인했다고 설명하며, link가 적은 구체적 매뉴얼·지역 정보도 발견 대상이 될 수 있다고 밝힘.",
           "items": [
-            "원문 사실: scale-in connection draining task도 LiveTaskCount에 포함",
-            "원문 사실: ECS 제공 전 리전에서 별도 action 없이 이용 가능한 범위",
-            "경계: 공지는 특정 workload의 latency 개선이나 autoscaling policy 변경 결과를 보장하지 않음"
+            "원문 사실: OpenAI가 relevance와 helpfulness를 독립적으로 평가·순위화하는 구조",
+            "원문 사실: crawl 후보 발견에 Cloudflare network signal을 활용한 공동 pilot",
+            "경계: 색인·ranking·referral·crawl reduction의 production 보장 또는 전체 network rollout 발표 아님"
           ]
         },
         {
-          "heading": "AI·Infra 전문가 해석",
-          "body": "service desired count는 control-plane 목표이고, stable RUNNING task는 health 관측이며, lifecycle-inclusive task는 실제 workload capacity의 근사치임. rollout 또는 scale-in 중 세 값이 다르다는 사실을 오류로 처리하면 deployment controller와 autoscaler가 서로 반대되는 action을 낼 수 있음.",
+          "heading": "AI·Infra 전문가 해석: discovery·fetch·index의 분리",
+          "body": "crawler가 URL을 아는 일과 URL을 fetch할 가치가 있는 일, index에 넣을 일은 다른 단계임. 공지는 bot이 존재하지 않는 파일을 반복 요청하거나, site가 거의 모든 주소를 homepage로 redirect하거나, 여러 URL이 같은 content를 내는 패턴이 fetch 낭비를 만든다고 설명함.",
           "items": [
-            "분해: desired count·pending/activating·live·stable running·draining·registered target을 별도 시계열로 유지",
-            "피할 것: stable task 감소를 즉시 serving capacity 상실로, live task 증가를 즉시 health 악화로 해석"
+            "설계: URL candidate·HTTP status·canonical target·content fingerprint·last modified·fetch decision을 같은 trace로 연결",
+            "피할 것: 200 status만 성공으로 보고 soft-404·redirect chain·duplicate content를 정상 page로 집계",
+            "지표: crawler request·unique URL·fetch-to-index ratio·404/redirect ratio·origin bytes·cache-hit ratio"
           ]
         },
         {
-          "heading": "아키텍처·운영 관점",
-          "body": "target tracking은 어떤 metric을 utilization denominator로 쓰는지에 따라 scale-out·scale-in 반응이 달라짐. ALB 또는 service mesh의 registered target, in-flight request, connection drain timeout과 ECS state transition을 한 trace에 연결해야 active capacity가 실제 traffic을 처리했는지 판단 가능.",
+          "heading": "보안·신뢰성 관점",
+          "body": "공지에는 compromised page 하나를 flag해 index에서 제외할 수 있는 harmful-page signal 시험이 포함됨. 이 접근은 domain 전체 차단보다 blast radius를 줄일 수 있지만, 신호 오류·정리 후 재평가·cache purge·WAF rule rollback이 연결되지 않으면 정상 content와 incident 대응 모두에 손실을 만들 수 있음.",
           "items": [
-            "설계: LiveTaskCount는 capacity headroom·queue drain·scale action 분석 후보",
-            "설계: RunningTaskCount는 deployment 안정성·task replacement·health alert 분석 후보",
-            "검증: rolling·blue/green·failed deployment·rollback에서 두 metric과 request p95·5xx를 replay"
-          ]
-        },
-        {
-          "heading": "SRE·신뢰성 관점",
-          "body": "draining task는 종료 상태로 이동해도 기존 connection을 처리할 수 있어, scale-in 직후 LiveTaskCount와 RunningTaskCount의 차이가 확대될 수 있음. alarm이 stable count만 보고 capacity 부족을 선언하거나 live count만 보고 health를 정상으로 판단하면 error budget 대응이 늦어질 수 있음.",
-          "items": [
-            "관측: desired count 대비 live/stable 비율, target deregistration delay, pending duration, replacement rate 기록",
-            "가드레일: metric missing·stale datapoint·deployment 중 suppress 조건과 fail-safe escalation을 문서화",
-            "복구: alarm threshold 변경 전 이전 query로 되돌릴 수 있는 versioned dashboard·IaC 유지"
+            "통제: suspicious URL 탐지와 WAF block·origin cleanup·cache purge·re-index 상태를 ticket ID로 연결",
+            "통제: credential phishing·SEO spam·injected content의 URL별 evidence와 expiry를 보존",
+            "리스크: domain-level allow/deny만으로 page compromise·duplicate URL·redirect abuse를 놓치는 경로"
           ]
         },
         {
           "heading": "비용·FinOps 관점",
-          "body": "RunningTaskCount 추가 비용 제거는 기존 Container Insights 비용 구조의 한 축을 바꾸지만, 전체 observability 비용이 자동으로 0이 되는 의미는 아님. metric retention, high-cardinality dimension, cross-account dashboard, log·trace ingestion은 별도 비용 경로로 남음.",
+          "body": "AI crawler의 origin fetch는 network egress·compute·database read·cache churn을 만들 수 있음. 반대로 너무 강한 bot 차단은 문서·support page·product catalog의 발견성을 낮출 수 있으므로 request volume이 아니라 useful fetch 비율과 origin marginal cost를 함께 봐야 함.",
           "items": [
-            "확인: metric charge 제거 범위와 account별 Container Insights bill line item 대조",
-            "지표: task-hour·scale action·idle drain time·metric ingestion·dashboard query 비용을 같은 cost allocation에 연결",
-            "결정: 비용 절감 이유만으로 alert·autoscaling metric을 교체하지 않는 원칙"
+            "계측: crawler user agent·ASN·path class별 request·byte·cache miss·backend latency·error rate 분리",
+            "계측: allow policy 변경 전후 unique discovery candidate·origin cost·WAF challenge·conversion/referral을 cohort 비교",
+            "결정: crawler 예산은 전체 bot traffic 예산과 별도로 owner·threshold·exception expiry를 지정"
+          ]
+        },
+        {
+          "heading": "도입 로드맵",
+          "body": "먼저 URL quality와 crawler observability를 정리하고, 제한된 crawler cohort에서 policy를 시험한 뒤 security workflow와 연결해야 함. 전면 허용이나 차단을 먼저 하면 discovery benefit과 abuse cost를 분리할 증거가 부족함.",
+          "items": [
+            "1단계: sitemap·canonical·404·redirect·robots·WAF rule inventory와 URL owner 지정",
+            "2단계: low-risk documentation path에서 crawler policy canary, status·bytes·cache·indexing signal 측정",
+            "3단계: suspicious page triage·cache purge·re-index·policy rollback을 incident tabletop으로 검증"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "새 metric을 도입하기 전 service마다 shutdown grace period, load balancer deregistration delay, deployment strategy, target tracking target value를 수집해야 함. 이 값이 없으면 metric 차이를 정상 lifecycle인지 capacity regression인지 구분할 수 없음.",
+          "body": "각 팀은 discovery path와 serving path가 같은 URL contract를 따르는지 확인해야 함. content platform·CDN·security·SEO owner가 분리된 조직은 URL 상태 변경이 crawler policy에 미치는 영향을 release review에 넣어야 함.",
           "items": [
-            "체크: service별 LiveTaskCount·RunningTaskCount·desired count dashboard label과 owner 지정",
-            "체크: traffic burst와 scale-in draining canary에서 latency·5xx·queue depth·scale action 비교",
-            "체크: failed deployment와 rollback에서 alarm routing·on-call runbook·capacity reservation 검증",
-            "체크: Container Insights 비용·retention·cross-account query를 변경 전후로 대조"
+            "체크: canonical URL·redirect rule·soft-404·robots·sitemap 변경의 CI lint와 deploy owner 확인",
+            "체크: crawler별 rate limit·WAF exception·origin timeout·cache policy의 versioned IaC 여부 확인",
+            "체크: compromised URL containment 뒤 purge·search re-evaluation·audit evidence의 end-to-end drill",
+            "체크: weekly review에서 crawler unique URL·origin error·security flag·false-positive appeal을 함께 검토"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "ECS task count는 하나의 숫자가 아니라 lifecycle마다 의미가 다른 관측 계약임. **capacity·health·control-plane 목표를 분리한 뒤** alarm과 autoscaling을 바꿔야 deployment 중의 false alert와 잘못된 scale action을 줄일 수 있음.",
+          "body": "AI search 시대의 crawl control은 단순 차단 규칙이 아니라 **발견성·origin 비용·URL 보안의 동시 최적화** 문제임. URL 단위 telemetry와 containment runbook을 먼저 갖춘 뒤 crawler 정책을 넓혀야 함.",
           "items": [
-            "발표 포인트: LiveTaskCount는 draining을 포함한 service capacity signal, RunningTaskCount는 stable health signal",
-            "즉시 행동: 대표 ECS service에서 deployment·scale-in·rollback 3개 trace로 metric semantics canary 실행"
+            "발표 포인트: network signal은 발견 후보 입력이고 ranking 결정은 OpenAI의 별도 평가 범위",
+            "즉시 행동: 대표 문서 domain의 404·redirect·canonical·crawler origin cost와 compromised-URL 대응 경로 점검"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "AWS Agent Registry custom metadata: agent·MCP 자산을 catalog가 아닌 release control로 운영하는 방법",
-      "summary": "한 줄 결론: AWS Agent Registry의 custom metadata는 agent·MCP server·skill·gateway의 owner·data class·review 상태를 구조화하는 catalog 기능임. metadata 자체가 runtime authorization을 강제하지 않으므로 required schema를 CI/CD approval·IAM·connector policy·drift reconciliation과 연결해야 함.",
-      "details": "AWS 공식 공지는 Agent Registry record에 조직별 custom metadata schema를 정의하는 기능을 발표함. agent, MCP server, agent skill, gateway, custom resource의 record에 common attribute와 type-specific field를 넣고, free text·URL·Boolean·허용 choice와 required validation을 사용할 수 있다. Console·CLI·SDK·registry MCP endpoint에서 filter도 가능하다. 그러나 metadata는 runtime identity, tool write scope, connector authorization, human approval, audit 보존을 자동으로 집행하지 않으므로 agent asset lifecycle의 최소 증적과 별도 policy control을 함께 설계해야 함.",
-      "why_it_matters": "agent와 MCP 자산이 늘면 등록 이름만으로는 owner·데이터 처리 범위·write 권한·security review 만료를 판단할 수 없어 shadow agent와 exception 누적 위험이 커짐.",
+      "title": "Kueue Headlamp plugin: Pending Job을 queue admission과 Pod scheduling으로 분해하는 Kubernetes 운영 설계",
+      "summary": "한 줄 결론: Kueue가 admission하지 않은 Job과 admission 뒤 scheduler가 배치하지 못한 Pod는 같은 Pending 증상처럼 보이지만 owner·metric·복구 조치가 다름. `Workload` condition에서 queue quota·flavor·admission check를 먼저 확인하고, `Admitted=True` 뒤에만 node·affinity·volume·image pull 조사로 넘겨야 함.",
+      "details": "Kubernetes 블로그는 Headlamp용 Kueue plugin 0.1.0-alpha를 통해 Kueue v1beta2 Workload, LocalQueue, ClusterQueue, ResourceFlavor, Cohort를 read-only로 연결해 pending Job의 admission path를 읽는 절차를 공개했다. Kueue는 quota, ResourceFlavor, admission check, 대기 Workload 정책으로 Job 시작 여부를 판단하고, kube-scheduler는 admission된 Pod의 실제 node 배치를 판단한다. 예시에서 3 Pod와 총 CPU 3개 요청은 ClusterQueue의 CPU 2개·Pod slot 2개를 넘어서 `QuotaReserved=False`가 되며, scheduler의 node capacity 부족과 다른 문제다. alpha plugin은 명령·GitOps·policy control을 대체하지 않으므로 UI 관측을 API·RBAC·queue SLO·runbook과 결합해야 함.",
+      "why_it_matters": "GPU·AI batch cluster에서 queue admission과 scheduling을 혼동하면 capacity 증설과 quota 조정, on-call escalation, SLA 측정이 모두 잘못된 signal을 따라갈 수 있음.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-agent-registry-custom-metadata-registry-records"
+        "https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/"
       ],
       "image_url": "",
-      "local_image": "assets/images/cloud.svg",
-      "refreshed_kst": "2026-10-15 00:03",
+      "local_image": "assets/images/fallback-infra.svg",
+      "refreshed_kst": "2026-10-16 00:28",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "custom metadata는 agent inventory의 검색 편의 기능으로 끝내면 운영 가치가 제한됨. **등록 시점 metadata completeness를 deployment gate로 만들고 runtime control과 대조**해야 catalog가 governance evidence로 작동함.",
+          "body": "Pending Job의 첫 질문은 Pod가 어느 node에 갈지보다 **Kueue가 Workload를 admission했는지**임. admission 전 문제를 scheduler investigation으로 보내면 quota·flavor·queue policy의 root cause가 node 증설과 retry로 가려짐.",
           "items": [
-            "변화: agent·MCP server·skill·gateway·custom resource record의 구조화 field 지원",
-            "팀 액션: metadata schema를 owner label이 아니라 release 조건·audit input으로 설계"
+            "변화: Headlamp Kueue plugin `0.1.0-alpha`가 admission object의 linked read-only view 제공",
+            "팀 액션: Job Pending runbook의 첫 branch를 `Admitted`·`QuotaReserved` condition으로 변경"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS 공식 공지는 registry별 common attribute schema와 record type별 확장 field를 지원한다고 설명함. field는 free text·URL·Boolean·허용 choice로 정의할 수 있고 required value는 create·update 시 검증됨. Console·CLI·SDK·registry MCP endpoint에서 custom metadata filter를 지원하며, 공지된 제공 리전은 미국 동부·서부, 시드니·도쿄, 아일랜드임.",
+          "body": "원문은 Kueue가 설치된 cluster, Headlamp, 그리고 Kueue plugin `0.1.0-alpha`를 전제로 함. plugin은 Kueue v1beta2 Cohort·ClusterQueue·LocalQueue·ResourceFlavor·Workload를 read-only로 보여주며, 자체 create·edit·stop·resume·delete workflow는 추가하지 않음.",
           "items": [
-            "원문 사실: team ownership·data classification·review status·model family가 metadata 예시",
-            "원문 사실: schema validation은 record 생성·갱신 시 적용",
-            "경계: runtime authorization·connector scope·approval·audit 자동 집행은 공지 범위에 없음"
+            "원문 사실: Workload에서 condition message와 LocalQueue·ClusterQueue·ResourceFlavor·Cohort link를 따라가는 UI path",
+            "원문 사실: Kubernetes identity가 각 Kueue resource를 read할 권한이 있어야 조회 가능한 범위",
+            "경계: alpha UI가 queue policy enforcement·RBAC 설계·kubectl/kueuectl automation을 대체하지 않음"
           ]
         },
         {
-          "heading": "AI·Infra 전문가 해석",
-          "body": "agent registry는 CMDB와 비슷하지만 artifact·model·tool·connector·runtime identity의 관계를 다뤄야 함. metadata가 최신이어도 deployed runtime이 다른 tool scope나 connector를 쓰면 catalog는 잘못된 안전 신호가 됨. registration evidence와 execution evidence를 지속적으로 대조하는 control loop가 필요.",
+          "heading": "AI·Infra 전문가 해석: admission과 scheduler의 책임 분리",
+          "body": "Kueue admission은 queue policy, quota, ResourceFlavor, admission check, 다른 대기 Workload를 기준으로 start 여부를 결정함. admission 후 kube-scheduler가 node capacity·affinity·taint/toleration·topology·volume·image pull 같은 실행 조건을 다룸. 이 경계는 alert ownership도 둘로 나눠야 함.",
           "items": [
-            "분해: registry record·source artifact digest·runtime identity·tool allowlist·connector scope·approval event 연결",
-            "피할 것: `reviewed=true` 같은 Boolean 하나로 release와 runtime 권한을 모두 승인하는 경로"
+            "`Admitted=True`: Job resume 뒤 Pod·node·PVC·image event 조사로 handoff",
+            "`QuotaReserved=False`: quota reservation 실패와 condition message·ClusterQueue capacity 조사",
+            "`Inadmissible`: covered resource·flavor assignment·stopped queue·admission check를 우선 조사"
+          ]
+        },
+        {
+          "heading": "원문 예시의 capacity 계산",
+          "body": "원문 예시는 parallelism 3인 Job이 Pod당 CPU 1개를 요구해 총 CPU 3개와 Pod slot 3개를 요구하는 구조임. ClusterQueue가 nominal CPU 2개와 Pod slot 2개만 제공하면 Kueue가 reservation을 만들지 않고 Workload를 대기 상태로 유지함.",
+          "items": [
+            "요청: Pod template 하나가 아니라 PodSet 전체의 CPU·memory·accelerator·count를 합산",
+            "비교: ClusterQueue의 nominal quota·current reservation·usage·borrowing/lending limit을 동시 확인",
+            "판정: queue가 부족한 경우 node autoscaler 성공 여부만으로 Job 시작을 설명할 수 없는 경로"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "schema는 모든 resource에 필요한 common field와 agent type별 field를 분리해야 함. 예를 들어 모든 record에는 owner, business purpose, data classification, incident contact, review expiry가 필요하고, write-capable agent에는 approved tool scope, runtime identity, rollback owner 같은 field가 추가돼야 함.",
+          "body": "LocalQueue는 namespace Job의 entry point이고 ClusterQueue는 cluster-level quota·admission policy를 제공함. ResourceFlavor는 node label·taint/toleration·topology 같은 compute class를, Cohort는 unused quota 공유와 borrowing/lending 관계를 표현함. 각 객체의 상태를 한 화면에 연결하더라도 ownership은 platform·application team으로 명시해야 함.",
           "items": [
-            "설계: immutable artifact version·environment·deployment URL을 catalog record와 연결",
-            "설계: free text보다 enumerated choice를 우선해 search·policy query·drift detection의 모호성 축소",
-            "검증: create·update API와 CI pipeline에서 missing/expired metadata가 실제 release block인지 canary 실행"
+            "설계: namespace별 LocalQueue와 ClusterQueue mapping, quota owner, escalation target을 catalog화",
+            "설계: GPU·high-memory·confidential node 같은 Flavor 선택 기준과 fallback 순서 문서화",
+            "관측: pending·reserving·admitted workload count와 reservation age·flavor mismatch rate를 분리"
           ]
         },
         {
-          "heading": "보안·거버넌스 관점",
-          "body": "MCP server와 agent skill은 tool 호출을 통해 데이터 읽기·쓰기 또는 외부 egress를 만들 수 있음. metadata에 data class를 붙이는 일과 connector의 실제 OAuth scope·IAM policy·network egress를 제한하는 일은 다른 통제임. 고위험 record는 metadata change와 권한 change를 같은 approval chain에서 추적해야 함.",
+          "heading": "SRE·비용 관점",
+          "body": "queue에서 기다리는 시간과 node에서 기다리는 시간은 capacity plan의 처방이 다름. quota reservation이 없는데 GPU node를 늘리면 비용만 증가할 수 있고, admission이 끝났는데 queue quota만 올리면 Pod placement failure가 남음. wait reason별 p50/p95와 cancellation·preemption을 분리해야 함.",
           "items": [
-            "통제: data class·tool write scope·connector classification·security review expiry를 required field 후보로 지정",
-            "통제: owner 변경·scope 확대·review 만료를 audit event와 ticket·approver로 연결",
-            "통제: Korea 또는 regulated workload는 제공 리전·data path·retention을 별도 evidence로 확인"
-          ]
-        },
-        {
-          "heading": "비용·운영 품질 관점",
-          "body": "catalog 검색과 filter가 가능해도 누락된 metadata, stale owner, orphaned runtime은 incident triage 시간을 늘림. 수량이 늘수록 manual spreadsheet 정리는 실패하므로 schema completion, expired review, undeployed record, unregistered runtime을 service-level indicator로 측정해야 함.",
-          "items": [
-            "지표: required-field completion·expired review·ownerless record·registry/runtime mismatch·exception age",
-            "지표: high-risk agent의 approval lead time·tool scope drift·offboarding closure time",
-            "결정: metadata 입력률보다 production runtime과의 reconciliation 성공률을 governance quality 지표로 사용"
+            "지표: admission wait·scheduler wait·runtime duration·queue abandonment을 lifecycle별로 계측",
+            "지표: reserved-but-unscheduled resource time·idle quota·borrowed quota·preemption recovery time을 FinOps review에 연결",
+            "가드레일: queue config 변경 전 workload class별 SLO·fair-sharing·blast radius·rollback 기준 합의"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 단계는 작은 필수 schema와 enforcement 범위를 정하는 일임. 이후 CI/CD registration, policy query, runtime inventory reconciliation을 순서대로 붙여야 팀이 metadata를 형식적 입력이 아닌 release artifact로 유지할 수 있음.",
+          "body": "UI 배포보다 먼저 condition semantics와 runbook을 표준화해야 함. 작은 non-production queue에서 failure mode를 재현하고, RBAC·dashboard·escalation을 확인한 뒤 shared GPU cluster로 확대하는 순서가 안전함.",
           "items": [
-            "1단계: owner·purpose·data class·environment·review expiry의 common schema와 taxonomy 합의",
-            "2단계: registry create/update를 CI pipeline에 연결하고 missing field를 non-production부터 block",
-            "3단계: IAM·MCP gateway·connector inventory와 nightly reconciliation, exception expiry와 escalation 추가"
+            "1단계: `Admitted`·`QuotaReserved`·`Inadmissible` condition과 owner·pager route 정의",
+            "2단계: quota shortage·flavor mismatch·stopped queue·admitted 뒤 node shortage를 test fixture로 재현",
+            "3단계: Headlamp read RBAC, API metrics, GitOps config diff, weekly capacity review를 같은 evidence chain으로 연결"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "agent 등록 이전에 누가 tool 권한을 승인하고, data class가 바뀌면 누가 재검토하며, runtime이 사라지면 record를 누가 폐기하는지 정해야 함. 이 lifecycle owner가 없으면 required field는 입력만 남고 운영 증적이 되지 않음.",
+          "body": "개발팀은 Job 요구량을 PodSet 합계로 선언하고 queue 선택을 manifest review에 넣어야 함. 인프라팀은 queue 상태를 볼 최소 권한과 sensitive capacity metadata의 노출 경계를 정의하고, UI가 보이지 않는 경우 CLI/runbook fallback을 준비해야 함.",
           "items": [
-            "체크: resource type별 required field·allowable values·schema owner·change process 정의",
-            "체크: artifact digest·runtime identity·deployment environment·tool scope를 record에 연결",
-            "체크: expired review·ownerless record·unregistered runtime의 daily reconciliation과 ticket routing 구성",
-            "체크: source URL·AWS 제공 리전·data path·connector authorization의 evidence 보존"
+            "체크: Job namespace·LocalQueue·priority·PodSet total request·ResourceFlavor requirement review",
+            "체크: ClusterQueue quota·reservation·usage·borrow/lend·preemption·stop policy alert 확인",
+            "체크: Headlamp plugin alpha lifecycle·RBAC·API compatibility·kubectl fallback 검증",
+            "체크: incident마다 admission/scheduler branch·manual intervention·recovery time을 postmortem field로 기록"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "agent registry의 목적은 agent를 많이 등록하는 일이 아니라 어떤 agent가 어떤 데이터와 tool 권한으로 실행되는지 증명하는 일임. **catalog schema·release gate·runtime reconciliation을 연결**해야 metadata가 실제 governance control로 전환됨.",
+          "body": "Kubernetes Pending은 하나의 상태가 아니라 control plane 단계가 다른 증상임. **admission 상태를 먼저 확인하고 scheduler를 두 번째 단계로 넘기는 규율**이 GPU·batch cluster의 불필요한 증설과 잘못된 escalation을 줄임.",
           "items": [
-            "발표 포인트: custom metadata는 agent control-plane의 최소 inventory contract",
-            "즉시 행동: write-capable MCP server 10개를 선정해 metadata·IAM·connector scope·approval evidence 대조"
+            "발표 포인트: `QuotaReserved=False`는 queue capacity signal, `Admitted=True` 뒤 Pending은 scheduling signal",
+            "즉시 행동: 대표 GPU Job으로 4개 failure mode를 inject해 Workload condition·queue view·Pod event·on-call handoff 확인"
           ]
         }
       ]
     }
   ],
   "items": [
+    {
+      "id": "news-641",
+      "title_ko": "Cloudflare·OpenAI AI discovery pilot: 1% 네트워크 신호로 수억 개 웹 페이지 색인 확장",
+      "title_original": "Cloudflare and OpenAI: making AI discovery better for everyone",
+      "summary": "핵심: Cloudflare와 OpenAI가 참여 Cloudflare 네트워크 약 1%에서 얻은 신호로 ChatGPT Search의 신규 페이지 발견·색인을 시험했고, 수억 개 페이지를 추가 발견했다고 공개함. crawler가 요청한 존재하지 않는 URL·홈페이지 일괄 redirect·중복 콘텐츠와 page-level 유해 신호를 구분해 불필요한 fetch를 줄이는 pilot 범위이며, index 순위와 노출은 OpenAI가 독립 평가한다는 설명임.",
+      "detail": "Cloudflare와 OpenAI는 2026년 7월 시작한 research pilot의 초기 결과를 공개함. 참여 Cloudflare network 약 1%의 신호를 사용해 OpenAI crawler가 이전에 알지 못했던 수억 개 웹 페이지를 발견·색인했고, OpenAI가 relevance와 helpfulness를 독립 평가·순위화하는 구조라고 설명함. 양사는 반복적으로 존재하지 않는 파일을 요구하는 bot, 임의 URL을 홈으로 redirect하는 site, 같은 콘텐츠의 복제 URL을 탐지해 fetch 전 낭비를 줄이는 방식을 시험했고, 단일 compromised page를 flag하는 harmful-page signal도 시험 중이라고 밝힘. 이는 공동 pilot의 초기 결과이며, ranking 변화·publisher referral·crawl volume·false positive·개별 사이트 적용 조건은 공지에서 정량 보장하지 않음.",
+      "why_it_matters": "AI search crawler의 discovery 경로는 publisher traffic뿐 아니라 origin request 비용·bot 관리·compromised page의 index 노출을 함께 바꿈. domain 차단과 URL별 위험 분류, crawl freshness와 cache 효율의 trade-off를 같은 운영 정책으로 다뤄야 함.",
+      "engineering_implication": "시사점: AI crawler allow/deny와 robots 정책, 404·redirect·duplicate URL 비율, cache-hit·origin egress, crawler request-rate, suspicious-page remediation을 분리 계측하고, 공개 전 content freshness·canonical URL·security response를 crawl-access policy와 함께 검증 필요.",
+      "korea_implication": "국내 서비스는 AI crawler 허용 여부를 검색 노출만의 결정으로 보지 말고, 개인정보 경로·robots 정책·WAF/bot rule·canonical URL·origin cost·침해 페이지 차단 절차를 서비스 owner와 보안팀의 공동 변경으로 관리 필요.",
+      "category": "AI",
+      "tags": [
+        "Cloudflare",
+        "OpenAI",
+        "AI Search",
+        "Crawler",
+        "Web Discovery",
+        "Bot Management",
+        "Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 90,
+      "published_kst": "2026-10-15 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/cloudflare-openai-discovery-agentic-web/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4ZW7X8KGSZJHDCDSMPABH8P.01M4ZW7YDPC4VWS7X23DWFNBKR.png",
+      "local_image": "assets/images/news-641.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare와 OpenAI가 AI search discovery 연구 pilot의 초기 결과를 공개함. 참여 Cloudflare network의 약 1%에서 얻은 신호로 OpenAI crawler가 유용한 URL 후보를 찾고, OpenAI가 해당 페이지를 독립적으로 평가·색인하는 분리 구조임.",
+          "items": [
+            "범위: 2026년 7월 시작한 Cloudflare·OpenAI 공동 research pilot",
+            "결과: ChatGPT Search용으로 이전에 알려지지 않았던 수억 개 웹 페이지 발견·색인이라는 양사 공개 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공지에서 Cloudflare network signal은 URL 발견 효율을 높이는 입력이고, OpenAI가 relevance와 helpfulness를 별도로 평가·순위화한다고 설명됨. 자동화 트래픽이 존재하지 않는 URL을 반복 요청하거나, site가 임의 주소를 홈으로 redirect하거나, 여러 URL이 같은 콘텐츠를 제공하면 crawler fetch가 낭비될 수 있다는 관찰도 제시됨.",
+          "items": [
+            "발견: link가 적은 세부 매뉴얼·지역 정보처럼 유용하지만 알려지지 않은 page 후보 탐색",
+            "효율: nonexistent URL·homepage redirect·duplicate content 패턴을 fetch 전 감지하는 실험",
+            "경계: Cloudflare signal이 ChatGPT Search ranking 또는 publisher 노출을 자동 결정하는 구조 아님"
+          ]
+        },
+        {
+          "heading": "보안·운영 경계",
+          "body": "양사는 정상 domain 전체를 제외하지 않고 compromised page 하나를 flag해 index에서 제외할 수 있는 harmful-page signal도 시험 중이라고 밝힘. 다만 signal 정확도, false positive 처리, 보안 사고 뒤 재평가, publisher appeal·remediation workflow는 공지에서 보장하지 않은 영역임.",
+          "items": [
+            "보안: fake login form 같은 단일 compromised page를 domain 전체와 분리해 판단하는 시험 범위",
+            "리스크: URL-level flag가 잘못 적용되면 정상 content 발견·검색 유입을 동시에 잃는 경로",
+            "운영: WAF·CDN·security response와 sitemap·canonical URL 변경의 ownership 분리 방지"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI crawler 정책은 robots.txt 한 파일로 끝나지 않음. origin에 도달한 request의 canonicalization, cache, WAF/bot rule, 404와 redirect 품질, compromise 대응이 discovery 비용과 content exposure를 함께 결정함.",
+          "items": [
+            "팀 액션: AI crawler별 allow/deny·rate limit·robots policy와 owner·review date inventory화",
+            "팀 액션: 404·soft-404·redirect chain·duplicate canonical URL·crawler origin egress를 dashboard로 분리",
+            "팀 액션: compromised URL 발견 시 WAF 차단·content cleanup·cache purge·re-index 요청 순서를 incident runbook에 명시"
+          ]
+        }
+      ],
+      "rank": 1
+    },
     {
       "id": "news-640",
       "title_ko": "Liquid AI LFM2.5-24B-A2B: 24B/2B active MoE 온디바이스 agent 모델 공개",
@@ -259,7 +328,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-639",
@@ -326,7 +395,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-638",
@@ -398,7 +467,83 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
+    },
+    {
+      "id": "news-642",
+      "title_ko": "Kueue Headlamp plugin 0.1.0-alpha: Job Pending을 admission과 scheduler 문제로 분리",
+      "title_original": "Why Is My Kubernetes Job Still Pending? Tracing Kueue Admission with Headlamp",
+      "summary": "핵심: Kubernetes 블로그가 Headlamp의 `0.1.0-alpha` Kueue plugin으로 Job이 Pending일 때 `Workload`의 `QuotaReserved`·`Admitted` condition에서 LocalQueue·ClusterQueue·ResourceFlavor·Cohort까지 추적하는 경로를 제시함. admission 전 quota·flavor·queue 문제와 admission 뒤 Pod scheduling 문제를 같은 Pending 증상으로 섞지 말고, RBAC와 queue capacity·assignment를 분리 확인해야 함.",
+      "detail": "Kubernetes 블로그는 Headlamp용 Kueue plugin `0.1.0-alpha`의 read-only view를 사용해 pending Job을 조사하는 절차를 공개함. Kueue는 quota·ResourceFlavor·admission check·대기 workload를 기준으로 Workload admission을 판단하고, kube-scheduler는 admission 뒤 Pod를 어느 node에 배치할지 판단하므로 두 단계를 구분해야 함. plugin은 Kueue v1beta2 Cohort·ClusterQueue·LocalQueue·ResourceFlavor·Workload를 읽어 Workload condition과 linked resource를 탐색하게 하며 create/edit/stop/resume/delete workflow는 제공하지 않음. 예시에서 3 Pod·총 CPU 3개 요청은 ClusterQueue의 CPU 2개·Pod slot 2개를 넘어서 `QuotaReserved=False` 상태가 되며, 이는 scheduler node shortage가 아니라 admission-capacity 문제임. alpha UI와 read 권한은 production control을 대체하지 않으므로 API·kubectl·GitOps 상태와 함께 검증 필요.",
+      "why_it_matters": "AI/배치 workload는 queue admission에 묶여 Pod가 아직 생성되지 않을 수 있음. 이를 scheduler 장애로 오진하면 node 증설·affinity 변경·SRE escalation이 실제 quota·flavor·admission check 원인을 가리고 복구 시간을 늘릴 수 있음.",
+      "engineering_implication": "시사점: Job Pending runbook을 `Workload admitted 여부 → QuotaReserved/condition/event → LocalQueue/ClusterQueue quota·reservation → ResourceFlavor/Cohort → Pod scheduler event` 순서로 분리하고, Headlamp read RBAC·Kueue object visibility·queue SLA를 canary에서 검증 필요.",
+      "korea_implication": "국내 GPU Kubernetes 운영 조직은 shared cluster의 namespace별 queue와 accelerator flavor가 team별 RBAC에 과도하게 노출되지 않는지 확인하고, quota 부족과 실제 GPU node 부족을 구분한 on-call 지표를 운영 필요.",
+      "category": "Infra",
+      "tags": [
+        "Kubernetes",
+        "Kueue",
+        "Headlamp",
+        "Batch Scheduling",
+        "Queueing",
+        "GPU",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-15 03:35",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-infra.svg",
+      "related_links": [
+        {
+          "title": "Kueue documentation",
+          "url": "https://kueue.sigs.k8s.io/"
+        },
+        {
+          "title": "Headlamp Kueue plugin repository",
+          "url": "https://github.com/kubernetes-sigs/headlamp-kueue-plugin"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes 블로그가 Headlamp에서 Kueue admission path를 따라 pending Job을 조사하는 방법을 공개함. 대상 plugin은 `0.1.0-alpha`이며 Kueue v1beta2 resource의 read-only view를 제공하는 범위임.",
+          "items": [
+            "대상: Cohort·ClusterQueue·LocalQueue·ResourceFlavor·Workload의 read-only 탐색",
+            "경계: plugin 자체에 create·edit·stop·resume·delete workflow 추가 없음"
+          ]
+        },
+        {
+          "heading": "admission과 scheduling 분리",
+          "body": "Kueue는 Workload가 지금 quota·policy·flavor 조건에서 시작 가능한지 판단하고, kube-scheduler는 admission 뒤 Pod를 어떤 node에 놓을지 판단함. Pod가 없거나 Job이 suspended인 단계는 scheduler event보다 Workload condition부터 확인해야 함.",
+          "items": [
+            "`Admitted=True`: Kueue admission 완료 뒤 Job·Pod·node·volume·image pull scheduling branch로 이동",
+            "`QuotaReserved=False`: quota reservation 실패 원인과 condition message를 queue resource에서 추적",
+            "`Inadmissible`: covered resource·ResourceFlavor·stopped queue·admission check가 원인 후보"
+          ]
+        },
+        {
+          "heading": "본문 예시",
+          "body": "글의 재현 예시는 Pod 3개가 각각 CPU 1개를 요청해 총 CPU 3개와 Pod slot 3개를 요구함. ClusterQueue가 CPU 2개와 Pod slot 2개만 제공하면 Kueue가 Workload를 suspended 상태로 두며, node capacity 부족을 증명하는 신호는 아님.",
+          "items": [
+            "요청: parallelism 3과 Pod당 CPU 1개로 총 CPU 3개 요청",
+            "가용: ClusterQueue nominal quota CPU 2개·Pod slot 2개라는 예시",
+            "결론: condition message·ClusterQueue가 같은 admission-capacity 부족을 설명하는 흐름"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "interactive UI는 queue 상태를 빠르게 읽는 보조 수단이고, quota·fair sharing·borrowing·lending·preemption과 RBAC는 API와 GitOps로 관리해야 함. queue visibility가 부족하면 on-call은 Pending 증상만 보고 scheduler 또는 infrastructure를 잘못 조정할 수 있음.",
+          "items": [
+            "팀 액션: Workload condition·queue reservation·flavor assignment·scheduler event를 단계별 dashboard와 runbook에 분리",
+            "팀 액션: namespace operator의 Headlamp read RBAC와 sensitive queue metadata 노출을 least privilege로 검토",
+            "팀 액션: representative GPU job에서 quota 부족·flavor mismatch·admitted 뒤 node shortage를 각각 inject해 escalation 경로 검증"
+          ]
+        }
+      ],
+      "rank": 5
     },
     {
       "id": "news-637",
@@ -467,7 +612,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-636",
@@ -538,7 +683,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-635",
@@ -605,7 +750,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-632",
@@ -674,7 +819,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-634",
@@ -754,7 +899,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-633",
@@ -827,7 +972,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-631",
@@ -892,7 +1037,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-628",
@@ -956,7 +1101,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-630",
@@ -1022,7 +1167,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-627",
@@ -1087,7 +1232,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-626",
@@ -1153,7 +1298,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-625",
@@ -1219,7 +1364,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-629",
@@ -1284,7 +1429,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-624",
@@ -1350,7 +1495,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-622",
@@ -1416,7 +1561,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-623",
@@ -1482,7 +1627,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 21
     },
     {
       "id": "news-618",
@@ -1545,7 +1690,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-619",
@@ -1609,7 +1754,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-617",
@@ -1682,7 +1827,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-620",
@@ -1746,7 +1891,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-621",
@@ -1809,11 +1954,11 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-615",
-      "rank": 25,
+      "rank": 27,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1877,7 +2022,7 @@
     },
     {
       "id": "news-616",
-      "rank": 26,
+      "rank": 28,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
