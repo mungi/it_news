@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-16 | Total pages: 423
+> Last updated: 2026-10-16 | Total pages: 424
 
 ## Entities
 
@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-programmable-gateway-dlp-2026-10-16]] — Cloudflare Gateway·DLP의 `Forward` Worker inline policy·custom validation과 failure default·identity·egress·rollback 운영 경계.
 - [[raw/articles/cloudflare-openai-ai-discovery-agentic-web-2026-10-15]] — Cloudflare·OpenAI AI discovery pilot의 crawler URL 발견·fetch 효율·compromised-page signal과 origin·보안 운영 경계.
 - [[raw/articles/kubernetes-kueue-headlamp-admission-tracing-2026-10-15]] — Headlamp Kueue plugin의 Job admission·scheduler 분리, queue quota·ResourceFlavor·RBAC 운영 경계.
 - [[raw/articles/aitimes-liquid-ai-lfm2-5-24b-a2b-ondevice-agent-2026-10-15]] — Liquid AI `LFM2.5-24B-A2B` 24B/2B active MoE open-weight 모델의 온디바이스 agent 성능·reward-hacking·sandbox 검증 경계.

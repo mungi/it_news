@@ -2,14 +2,14 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-16 00:28",
+  "last_updated_kst": "2026-10-16 04:37",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare·OpenAI research pilot은 참여 Cloudflare network 약 1%의 signal로 ChatGPT Search가 수억 개 신규 page를 발견·색인했다고 공개함. AI crawler 정책은 robots 허용 여부뿐 아니라 canonical URL·404/redirect·cache·origin cost·compromised URL 대응을 같은 운영 계약으로 관리 필요.",
     "Kueue Headlamp plugin `0.1.0-alpha`는 Job Pending을 queue admission과 Pod scheduling으로 분리해 읽는 경로를 제시함. `QuotaReserved`·`Admitted` condition과 LocalQueue·ClusterQueue·ResourceFlavor를 먼저 확인한 뒤 node scheduling 조사로 넘겨야 함.",
     "AWS ARC Region switch는 failover plan에 SSM command·Lambda payload·quota parity·target health 대기를 추가함. Regional DR은 DNS 전환 뒤의 IAM·quota·target readiness·data consistency를 game day evidence로 함께 검증 필요.",
     "Liquid AI `LFM2.5-24B-A2B`는 24B/2B active MoE·131K context·open weight를 제시하지만, 온디바이스 agent의 release gate는 token/s보다 device별 task completion·p95 latency·memory·thermal·tool 권한·egress trace를 함께 검증해야 함.",
-    "Cloudflare Hyperdrive의 MySQL cache bug는 query cache가 SQL text만의 문제가 아님을 드러냄. negotiated capability·compression·character set·session state가 response wire format을 바꾸면 cache key·admission·response parser를 같은 compatibility contract로 검증 필요."
+    "Cloudflare Gateway·DLP는 `Forward` action과 custom validation으로 Worker 코드를 inline policy path에 연결함. 보안 rule과 Worker artifact·identity claim·secret·egress·timeout·failure default·rollback을 같은 change set으로 검토해야 browsing access와 DLP enforcement의 우회 경로를 줄일 수 있음."
   ],
   "deep_dives": [
     {
@@ -196,6 +196,74 @@
   ],
   "items": [
     {
+      "id": "news-643",
+      "title_ko": "Cloudflare Gateway·DLP: Worker 기반 inline policy 코드 실행과 custom validation 추가",
+      "title_original": "A fully programmable secure web gateway",
+      "summary": "핵심: Cloudflare가 Gateway와 DLP에 Worker로 요청을 전달하는 `Forward` action과 custom validation function을 추가해, policy 평가 경로에서 조직별 코드를 실행할 수 있도록 공개함. Zero Trust 모든 plan 대상이라는 발표 범위이며, JWT claim 기반 header 주입·SaaS 가입 event 알림·민감 destination 접근 사유 수집 같은 제약을 proxy·Logpush pipeline 없이 inline 처리하는 용도를 제시함.",
+      "detail": "Cloudflare는 Gateway·DLP policy action에 `Forward`를 추가하고 custom validation function을 공개함. Gateway가 Worker로 traffic을 전달하면 같은 edge location·machine·data center 안의 local function call로 처리돼 network boundary hairpin과 추가 network latency가 없다는 설명임. policy engine의 allow/block/isolate/log 같은 terminal action만으로 처리하기 어려운 JWT claim 기반 header transformation, SaaS sign-up 알림, 접근 사유를 묻는 dynamic warning page를 customer code와 request context로 처리하는 범위임. 모든 Zero Trust plan에서 제공한다고 밝혔지만, Worker code의 권한·latency·실패 시 allow/block·비밀값·로그 보존·변경 승인·rollback은 고객 운영 설계로 남음.",
+      "why_it_matters": "secure web gateway가 traffic enforcement와 customer code execution을 inline으로 결합하면 proxy·SIEM webhook 같은 별도 extension path를 줄일 수 있음. 동시에 policy decision path에 code deployment와 external data dependency가 들어오므로, bug·timeout·privilege escalation이 browsing access와 DLP enforcement에 직접 영향을 줄 수 있음.",
+      "engineering_implication": "시사점: `Forward` Worker를 일반 edge app이 아닌 security control-plane code로 취급하고, input schema·identity claim 최소화·secret binding·egress allowlist·CPU/time limit·failure default·version pin·audit trace·canary/rollback을 policy rule과 하나의 change set으로 검증 필요.",
+      "korea_implication": "국내 Zero Trust 도입 조직은 header transformation과 DLP validation에서 개인정보·사번·group claim이 Worker log·외부 API로 전송되는 경로를 데이터 분류·보존·국외 이전 정책과 함께 점검하고, 보안팀과 platform팀의 배포 승인 경계를 분리 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "Gateway",
+        "DLP",
+        "Zero Trust",
+        "SASE",
+        "Workers",
+        "Policy as Code",
+        "Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-10-16 02:11",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/programmable-gateway-dlp/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M50729XBFENPFCPC1VC6XK2E.png",
+      "local_image": "assets/images/news-643.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 Gateway와 DLP에 Worker 실행을 연결하는 `Forward` action 및 custom validation function을 공개함. 보안 policy가 condition과 allow·block·isolate·log의 terminal action에 머무르지 않고, 요청이 policy evaluation을 통과하는 중 조직별 logic을 실행하는 구성 범위임.",
+          "items": [
+            "제공: `Forward` action으로 Gateway traffic을 Cloudflare Worker에 전달하는 경로",
+            "범위: custom validation function과 함께 모든 Cloudflare Zero Trust plan에서 제공한다는 발표"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 Gateway policy가 identity provider JWT claim을 읽어 HTTP header를 넣지 못해 NGINX proxy pool을 별도 운영하는 사례, SaaS 가입 event를 Slack으로 보내기 위해 Logpush·SIEM·Slack pipeline을 엮는 사례, 민감 destination 접속 전 사용자 사유를 묻는 warning page 사례를 제시함. Worker는 request traffic 변환 또는 policy evaluation용 customer data 제공에 사용 가능하다고 설명함.",
+          "items": [
+            "사용 예: JWT claim 기반 header injection과 request context 기반 custom policy 판단",
+            "사용 예: sign-up event 처리와 dynamic warning/justification flow 구성",
+            "구현 주장: Gateway에서 Worker로의 dispatch는 같은 edge location 내 local function call이라는 설명"
+          ]
+        },
+        {
+          "heading": "운영·보안 경계",
+          "body": "inline Worker는 policy engine의 확장 지점이지만, customer code와 외부 data fetch가 traffic allow/block 결정에 들어오는 구조임. 원문은 organization별 arbitrary logic 실행을 장점으로 제시하나, runtime error·dependency timeout·unexpected response·권한 과다·로그의 민감정보 보존에 대한 자동 안전장치를 발표하지 않음.",
+          "items": [
+            "리스크: Worker 예외 또는 timeout에서 fail-open으로 전환돼 DLP·access policy가 우회되는 경로",
+            "리스크: JWT·URL·request body·validation result가 debug log 또는 외부 service로 과도하게 전송되는 경로",
+            "경계: local dispatch 설명은 customer Worker 코드와 external dependency의 end-to-end latency·availability 보장 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "policy-as-code는 Terraform으로 rule만 배포하는 수준보다 넓은 변경 surface임. 보안·platform 팀은 rule expression, Worker artifact, secret binding, input/output contract, failure behavior를 동시 review하고 browse traffic에 적용하기 전 bounded cohort에서 증거를 만들어야 함.",
+          "items": [
+            "팀 액션: Worker input field·identity claim·data classification·external egress destination을 allowlist와 schema test로 고정",
+            "팀 액션: allow·block·timeout·malformed response·dependency outage별 explicit default와 p95/p99 latency SLO 정의",
+            "팀 액션: signed artifact digest·version pin·least-privilege secret·policy/Worker correlation ID·canary rollback을 release gate에 포함"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-641",
       "title_ko": "Cloudflare·OpenAI AI discovery pilot: 1% 네트워크 신호로 수억 개 웹 페이지 색인 확장",
       "title_original": "Cloudflare and OpenAI: making AI discovery better for everyone",
@@ -260,7 +328,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-640",
@@ -328,7 +396,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-639",
@@ -395,7 +463,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-638",
@@ -467,7 +535,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-642",
@@ -543,7 +611,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-637",
@@ -612,7 +680,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-636",
@@ -683,7 +751,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-635",
@@ -750,7 +818,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-632",
@@ -819,7 +887,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-634",
@@ -899,7 +967,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-633",
@@ -972,7 +1040,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-631",
@@ -1037,7 +1105,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-628",
@@ -1101,7 +1169,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-630",
@@ -1167,7 +1235,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-627",
@@ -1232,7 +1300,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-626",
@@ -1298,7 +1366,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-625",
@@ -1364,7 +1432,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-629",
@@ -1429,7 +1497,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-624",
@@ -1495,7 +1563,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-622",
@@ -1561,7 +1629,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-623",
@@ -1627,7 +1695,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-618",
@@ -1690,7 +1758,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-619",
@@ -1754,7 +1822,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-617",
@@ -1827,7 +1895,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-620",
@@ -1891,7 +1959,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-621",
@@ -1954,11 +2022,11 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-615",
-      "rank": 27,
+      "rank": 28,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -2022,7 +2090,7 @@
     },
     {
       "id": "news-616",
-      "rank": 28,
+      "rank": 29,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
