@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-15 08:10",
+  "last_updated_kst": "2026-10-15 12:15",
   "audience": "developers and engineers",
   "executive_summary": [
     "AWS ARC Region switch는 failover plan에 SSM command·Lambda payload·quota parity·target health 대기를 추가함. Regional DR은 DNS 전환 뒤의 IAM·quota·target readiness·data consistency를 game day evidence로 함께 검증 필요.",
@@ -194,6 +194,78 @@
   ],
   "items": [
     {
+      "id": "news-638",
+      "title_ko": "Amazon CloudWatch pipelines: 조건부 log routing·연쇄 parser로 telemetry 분류 경로 확장",
+      "title_original": "Amazon CloudWatch announces log routing and chained log parsers",
+      "summary": "핵심: Amazon CloudWatch pipelines가 처리된 field 조건에 따라 event를 서로 다른 log group으로 보내는 conditional routing과, 앞 parser 출력 field를 뒤 parser가 소비하는 chained parsers를 추가함. 혼합 telemetry를 severity·source·type별 retention·access control에 맞춰 분리할 수 있지만, parser order·unmatched event·schema drift·destination policy를 IaC와 test corpus로 검증 필요.",
+      "detail": "AWS 공식 공지와 Recent Announcements RSS 기준 CloudWatch pipelines는 telemetry를 infrastructure 관리 없이 CloudWatch로 ingest·transform·route하는 managed service임. 이번 변경으로 processed field 조건에 따라 event별 destination log group을 나눌 수 있고, parser processor를 순차 적용해 JSON envelope를 parse한 뒤 추출 field에 Grok parser를 적용할 수 있음. conditional routing과 chained parsers는 CloudWatch pipelines GA 상용 AWS Region에서 Console·CLI·SDK로 구성 가능함. 공지는 malformed event 처리, parser schema drift, cross-account destination authorization, 처리 지연과 비용 효과를 보장하지 않으므로 production policy로 승격 전 representative log replay가 필요.",
+      "why_it_matters": "단일 log group에 서로 다른 schema·민감도·보존 기간의 telemetry를 섞으면 search cost, access boundary, retention policy, SIEM forwarding 규칙이 함께 복잡해짐. parser 결과를 routing 조건으로 쓰는 경로는 pipeline 순서와 field contract가 깨질 때 log loss 또는 잘못된 분류를 만들 수 있음.",
+      "engineering_implication": "시사점: routing condition·parser chain·destination retention·KMS/access policy·unmatched/failure path를 하나의 versioned pipeline contract로 관리하고, schema version별 replay에서 routed ratio·parse failure·end-to-end latency·delivery gap을 release gate로 검증 필요.",
+      "korea_implication": "국내 AWS 조직은 개인정보·보안 로그·운영 로그의 log group 분리가 기존 ISMS/PIMS 보존·접근통제 정책과 일치하는지, cross-account central logging destination과 KMS key policy가 실제 조회·incident 대응을 막지 않는지 확인 필요.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "Amazon CloudWatch",
+        "Observability",
+        "Logging",
+        "Telemetry Pipeline",
+        "Log Routing",
+        "Parser",
+        "Security"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 81,
+      "published_kst": "2026-10-15 07:14",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/cloudwatch-pipelines-log-routing/",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon CloudWatch pipelines documentation",
+          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Pipelines.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 CloudWatch pipelines에 conditional log routing과 chained parser를 추가함. pipelines는 telemetry를 ingest·transform·route하는 managed service이며, 이번 기능은 서로 다른 event format과 destination policy를 한 pipeline에서 분기·순차 처리하는 범위임.",
+          "items": [
+            "기능: processed field 조건으로 event마다 서로 다른 CloudWatch log group을 선택하는 routing 추가",
+            "기능: 앞 parser가 만든 field를 뒤 parser가 소비하는 processor chain 추가"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "conditional routing은 severity·source·type 같은 처리 field를 조건으로 destination을 고를 수 있어 log group별 retention·access control을 분리하는 용도임. chained parser는 nested format을 단계별로 해석하며, AWS는 JSON envelope를 먼저 parse한 뒤 추출 field에 Grok parser를 적용하는 예시를 제시함.",
+          "items": [
+            "처리 순서: JSON envelope parse 뒤 extracted field에 Grok parser를 적용하는 구성 예시",
+            "구성 경로: CloudWatch pipelines GA 상용 AWS Region에서 Console·CLI·SDK 지원",
+            "경계: 공지는 parser 오류 처리·schema evolution·cross-account destination policy의 자동 완결을 설명하지 않음"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "telemetry format과 data sensitivity가 섞인 log group은 retention·IAM·SIEM export rule을 넓게 열기 쉬움. 반대로 parser output field에 의존하는 route는 order, type, field name이 바뀌면 event가 default destination으로 새거나 의도치 않게 drop되는 운영 위험이 있음.",
+          "items": [
+            "리스크: parser chain 순서 변경으로 route condition이 기대한 field를 읽지 못하는 경로",
+            "리스크: unmatched event와 parse failure를 별도 destination·alarm으로 수집하지 않아 telemetry gap을 놓치는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "routing rule은 단순 filter가 아니라 data boundary와 observability coverage를 함께 정하는 control임. pipeline definition·destination log group·retention·KMS key·resource policy를 IaC로 묶고, production 전 representative log corpus로 parser와 routing 결과를 replay 검증해야 함.",
+          "items": [
+            "팀 액션: schema version·parser order·route condition·default/failure destination을 code review 대상에 포함",
+            "팀 액션: event type별 routed ratio·parse failure·unmatched count·end-to-end delivery latency를 dashboard와 SLO에 연결",
+            "팀 액션: central logging account의 KMS·resource policy·SIEM subscription을 least privilege와 incident-read path로 canary 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-637",
       "title_ko": "AWS ARC Region switch: failover plan에 SSM·Lambda payload·quota·target health 검증 추가",
       "title_original": "ARC Region switch adds four new capabilities",
@@ -260,7 +332,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-636",
@@ -331,7 +403,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-635",
@@ -398,7 +470,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-632",
@@ -467,7 +539,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-634",
@@ -547,7 +619,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-633",
@@ -620,7 +692,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-631",
@@ -685,7 +757,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-628",
@@ -749,7 +821,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-630",
@@ -815,7 +887,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-627",
@@ -880,7 +952,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-626",
@@ -946,7 +1018,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-625",
@@ -1012,7 +1084,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-629",
@@ -1077,7 +1149,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-624",
@@ -1143,7 +1215,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-622",
@@ -1209,7 +1281,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-623",
@@ -1275,7 +1347,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-618",
@@ -1338,7 +1410,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-619",
@@ -1402,7 +1474,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-617",
@@ -1475,7 +1547,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-620",
@@ -1539,7 +1611,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-621",
@@ -1602,11 +1674,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-615",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -1670,7 +1742,7 @@
     },
     {
       "id": "news-616",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",

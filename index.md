@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-cloudwatch-pipelines-conditional-routing-chained-parsers-2026-10-15]] — Amazon CloudWatch pipelines의 conditional routing·chained parser, log-group data boundary·schema-drift 검증 경계.
 - [[raw/articles/aws-arc-region-switch-failover-readiness-2026-10-15]] — AWS ARC Region switch의 SSM·Lambda payload·quota parity·target health 기반 multi-Region failover readiness 검증 경계.
 - [[raw/articles/cloudflare-hyperdrive-mysql-cache-protocol-2026-10-14]] — Cloudflare Hyperdrive MySQL cache의 protocol capability mismatch, `CLIENT_DEPRECATE_EOF` wire-format·cache-key compatibility 검증 경계.
 - [[raw/articles/aitimeskr-kt-ai-dedicated-line-800gbps-2026-10-14]] — KT AI 전용회선의 400·800Gbps AIDC·GPU 연결, APN·이원화 경로와 workload-aware network acceptance 검증 경계.
