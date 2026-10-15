@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-16 | Total pages: 424
+> Last updated: 2026-10-16 | Total pages: 428
 
 ## Entities
 
@@ -38,6 +38,10 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cncf-opentelemetry-software-carbon-intensity-2026-10-16]] — OpenTelemetry에 Software Carbon Intensity를 연결하는 community proposal의 allocation·provenance·data-quality 운영 경계.
+- [[raw/articles/aws-dynamodb-streams-timestamp-processing-2026-10-16]] — DynamoDB Streams `AT_TIMESTAMP` shard iterator의 replay·PITR synchronization·idempotency 운영 경계.
+- [[raw/articles/aws-lambda-durable-execution-go-ga-2026-10-16]] — Lambda Durable Execution Go SDK GA의 checkpoint·callback·state schema·idempotency 운영 경계.
+- [[raw/articles/github-evergreen-access-review-repository-hygiene-2026-10-16]] — GitHub Evergreen access review·stale repository archive의 fail-secure·exception·restore 운영 경계.
 - [[raw/articles/cloudflare-programmable-gateway-dlp-2026-10-16]] — Cloudflare Gateway·DLP의 `Forward` Worker inline policy·custom validation과 failure default·identity·egress·rollback 운영 경계.
 - [[raw/articles/cloudflare-openai-ai-discovery-agentic-web-2026-10-15]] — Cloudflare·OpenAI AI discovery pilot의 crawler URL 발견·fetch 효율·compromised-page signal과 origin·보안 운영 경계.
 - [[raw/articles/kubernetes-kueue-headlamp-admission-tracing-2026-10-15]] — Headlamp Kueue plugin의 Job admission·scheduler 분리, queue quota·ResourceFlavor·RBAC 운영 경계.

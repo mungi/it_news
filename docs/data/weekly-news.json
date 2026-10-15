@@ -2,14 +2,14 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-16 04:37",
+  "last_updated_kst": "2026-10-16 08:42",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Cloudflare·OpenAI research pilot은 참여 Cloudflare network 약 1%의 signal로 ChatGPT Search가 수억 개 신규 page를 발견·색인했다고 공개함. AI crawler 정책은 robots 허용 여부뿐 아니라 canonical URL·404/redirect·cache·origin cost·compromised URL 대응을 같은 운영 계약으로 관리 필요.",
-    "Kueue Headlamp plugin `0.1.0-alpha`는 Job Pending을 queue admission과 Pod scheduling으로 분리해 읽는 경로를 제시함. `QuotaReserved`·`Admitted` condition과 LocalQueue·ClusterQueue·ResourceFlavor를 먼저 확인한 뒤 node scheduling 조사로 넘겨야 함.",
-    "AWS ARC Region switch는 failover plan에 SSM command·Lambda payload·quota parity·target health 대기를 추가함. Regional DR은 DNS 전환 뒤의 IAM·quota·target readiness·data consistency를 game day evidence로 함께 검증 필요.",
-    "Liquid AI `LFM2.5-24B-A2B`는 24B/2B active MoE·131K context·open weight를 제시하지만, 온디바이스 agent의 release gate는 token/s보다 device별 task completion·p95 latency·memory·thermal·tool 권한·egress trace를 함께 검증해야 함.",
-    "Cloudflare Gateway·DLP는 `Forward` action과 custom validation으로 Worker 코드를 inline policy path에 연결함. 보안 rule과 Worker artifact·identity claim·secret·egress·timeout·failure default·rollback을 같은 change set으로 검토해야 browsing access와 DLP enforcement의 우회 경로를 줄일 수 있음."
+    "OpenTelemetry의 Software Carbon Intensity 논의는 energy·carbon을 workload·service 관측에 연결하려는 community proposal임. SLO·FinOps에 쓰기 전 allocation boundary·grid-intensity timestamp·추정 방식·missing-data rule을 telemetry contract로 고정 필요.",
+    "Amazon DynamoDB Streams의 `AT_TIMESTAMP`는 replay·resume 시작점을 세밀하게 하지만 24시간 retention과 consumer idempotency를 바꾸지 않음. timestamp·checkpoint·PITR export manifest·deduplication key를 같은 복구 evidence로 남겨야 함.",
+    "AWS Lambda Durable Execution SDK for Go는 checkpoint·callback·최대 1년 wait을 Go workflow에 제공함. durable runtime과 별도로 callback identity·state schema·idempotency·compensation·deadline을 application control로 설계 필요.",
+    "GitHub Evergreen 사례는 external collaborator 무응답을 revoke하고 stale repository는 delete 대신 archive하는 secure-default workflow를 제시함. legal hold·service account·break-glass·restore owner를 exception inventory로 분리하지 않으면 자동화가 업무 연속성을 끊을 수 있음.",
+    "Cloudflare Gateway·DLP `Forward`는 Worker 코드를 inline policy path에 연결함. security rule과 Worker artifact·identity claim·secret·egress·timeout·failure default·rollback을 하나의 change set으로 검토해야 policy 우회 경로를 줄일 수 있음."
   ],
   "deep_dives": [
     {
@@ -196,6 +196,273 @@
   ],
   "items": [
     {
+      "id": "news-644",
+      "title_ko": "CNCF 커뮤니티: Software Carbon Intensity를 OpenTelemetry 관측 신호로 다루는 제안",
+      "title_original": "Carbon as a first-class signal: Bringing software carbon intensity to OpenTelemetry",
+      "summary": "핵심: CNCF Ambassador·Kepler maintainer가 Software Carbon Intensity(SCI)를 OpenTelemetry semantic convention으로 연결해 CPU·memory·latency와 함께 workload별 carbon signal을 읽는 방향을 제안함. 확정 specification이나 CNCF project release가 아닌 community·standardization 논의 범위이므로, carbon metric은 allocation 경계·추정 방식·grid intensity 시각을 명시한 뒤 SLO·FinOps 판단에 사용해야 함.",
+      "detail": "CNCF 글은 cloud-native observability가 CPU·memory·latency·resource allocation을 수집하지만 carbon emissions는 운영 view에서 빠져 있다고 지적함. Kepler 같은 project의 energy/infrastructure data와 Green Software Foundation의 공통 language 작업을 Software Carbon Intensity와 OpenTelemetry semantic convention으로 연결하는 제안임. 글은 carbon measurement 자체보다 해당 정보를 workload·service·engineering decision에 붙이는 일이 과제라고 설명함. 이 글은 maintainer 관점의 community post이며, 공개된 OpenTelemetry 표준·제품 기능·배출량 정확도·cost saving을 보장하는 발표는 아님.",
+      "why_it_matters": "AI·cloud workload의 전력 사용량을 CPU utilization 하나로 해석하면 workload attribution·region별 grid factor·time boundary가 빠짐. carbon telemetry를 운영 의사결정에 쓰려면 metric source와 allocation model을 latency·cost metric만큼 엄격하게 versioning해야 함.",
+      "engineering_implication": "시사점: energy source·allocation unit·grid-intensity timestamp·estimation method·missing-data rule을 telemetry contract로 고정하고, carbon dashboard는 배포 전후 workload cohort 비교와 data-quality coverage를 먼저 표시 필요.",
+      "korea_implication": "국내 multi-region 또는 해외 cloud 사용 조직은 location tag와 전력·배출 계수의 provenance를 분리 보관하고, ESG 보고 수치와 runtime telemetry 추정치를 같은 값으로 혼용하지 않아야 함.",
+      "category": "Infra",
+      "tags": [
+        "CNCF",
+        "OpenTelemetry",
+        "Observability",
+        "Software Carbon Intensity",
+        "Kepler",
+        "Sustainability"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 73,
+      "published_kst": "2026-10-16 07:21",
+      "source_name": "CNCF Blog",
+      "source_url": "https://www.cncf.io/blog/2026/10/15/carbon-as-a-first-class-signal-bringing-software-carbon-intensity-to-opentelemetry/",
+      "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Carbon-as-a-first-class-signal.jpg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CNCF Ambassador이자 Kepler maintainer가 Observability Summit Europe 발표 내용을 바탕으로 Software Carbon Intensity와 OpenTelemetry를 연결하는 공통 telemetry 방향을 제안함.",
+          "items": [
+            "제안: CPU·memory·latency 외에 carbon emissions를 cloud-native 운영 signal로 취급",
+            "배경: energy 또는 carbon 값을 workload·service·engineering decision에 연결하는 attribution 과제"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 Kepler 같은 project가 energy·infrastructure 정보를 노출하고, Green Software Foundation이 carbon-related telemetry의 common language를 다루고 있다고 설명함.",
+          "items": [
+            "연결: SCI와 OpenTelemetry semantic convention으로 carbon telemetry의 표현을 맞추는 논의",
+            "경계: 확정 semantic convention·CNCF project release·제품 기능을 공지한 문서 아님"
+          ]
+        },
+        {
+          "heading": "운영·데이터 품질 경계",
+          "body": "carbon signal은 CPU utilization처럼 직접 단일 계측값이 아닐 수 있음. energy source, resource allocation, grid intensity, time window와 추정 method가 바뀌면 같은 workload의 비교값도 달라질 수 있음.",
+          "items": [
+            "리스크: region·node·tenant allocation rule 없이 cluster total을 service carbon으로 배분하는 오류",
+            "리스크: grid-intensity 시각과 workload execution 시각을 분리해 temporal mismatch를 만드는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "carbon metric을 SLO·chargeback·capacity decision에 넣기 전 data contract와 completeness를 먼저 검증해야 함. 관측값이 없는 구간을 0으로 처리하면 비용 절감 또는 배출 감축 판단이 왜곡될 수 있음.",
+          "items": [
+            "팀 액션: energy source·allocation unit·grid factor provenance·estimation version·missing-data rule을 metric label과 catalog에 기록",
+            "팀 액션: release cohort별 energy·latency·cost·carbon coverage를 함께 비교하고, reported와 estimated 값을 dashboard에서 분리"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-645",
+      "title_ko": "Amazon DynamoDB Streams: 특정 시각부터 읽는 `AT_TIMESTAMP` shard iterator 추가",
+      "title_original": "Amazon DynamoDB Streams now supports timestamp-based stream processing",
+      "summary": "핵심: Amazon DynamoDB Streams가 `AT_TIMESTAMP` shard iterator로 지정 시각 이후 첫 record부터 읽는 처리를 추가함. 중단 뒤 resume·debug/audit replay·backlog 건너뛰기·PITR export 뒤 동기화에 쓸 수 있지만, 24시간 retention 안의 timestamp만 의미가 있으며 idempotency·checkpoint·duplicate 처리·export consistency는 consumer 설계 범위임.",
+      "detail": "AWS는 DynamoDB Streams consumer가 기존에는 최대 24시간 보존 record의 시작점 또는 새 record만 고를 수 있었고, 이제 timestamp를 주면 해당 시각 이후 첫 record부터 읽을 수 있다고 발표함. `AT_TIMESTAMP`는 DynamoDB Streams Kinesis adapter를 사용하는 Amazon Kinesis Client Library(KCL)에서 사용 가능함. AWS는 interruption recovery, debugging/auditing replay, 최신 시각 근처에서 resume해 backlog skip, point-in-time recovery(PITR) export 뒤 export timestamp에서 동기화하는 용도를 제시함. commercial AWS Region·GovCloud(US)·China Region에서 제공되고 standard `GetRecords` request 외 추가 요금은 없다는 범위임.",
+      "why_it_matters": "stream 재처리의 시작점을 정확히 고르면 전체 retained stream 재생이나 data gap을 줄일 수 있음. 다만 timestamp는 consumer state를 대체하지 않으므로 at-least-once delivery, shard별 progress, downstream side effect의 deduplication이 없으면 replay가 중복 write 또는 감사 결과 불일치를 만들 수 있음.",
+      "engineering_implication": "시사점: replay request마다 UTC timestamp·business watermark·consumer checkpoint·deduplication key·PITR export manifest를 함께 남기고, lag·duplicate·ordering violation·DLQ 증가를 canary에서 확인 필요.",
+      "korea_implication": "국내 리전과 cross-region recovery를 함께 운영하는 팀은 timestamp 기준 timezone과 PITR export source region을 runbook에 고정하고, KMS·IAM·consumer deployment 시점의 권한 차이도 복구 drill에 포함해야 함.",
+      "category": "Data",
+      "tags": [
+        "AWS",
+        "DynamoDB",
+        "DynamoDB Streams",
+        "KCL",
+        "PITR",
+        "CDC",
+        "Data Recovery"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 82,
+      "published_kst": "2026-10-16 03:30",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-dynamodb-streams-timestamp-processing",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [
+        {
+          "title": "DynamoDB Streams documentation",
+          "url": "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon DynamoDB Streams가 `AT_TIMESTAMP` shard iterator type을 추가해 consumer가 지정한 시각 이후 첫 stream record부터 읽도록 지원함.",
+          "items": [
+            "변화: oldest retained record 또는 새 record만 선택하던 시작 위치에 timestamp 지정 추가",
+            "제공: DynamoDB Streams Kinesis adapter를 통한 Amazon Kinesis Client Library 사용 경로"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "원문은 interruption 뒤 processing resume, debugging·auditing용 과거 지점 replay, recent timestamp에서 backlog skip, PITR export 뒤 export timestamp부터 synchronization하는 사례를 제시함.",
+          "items": [
+            "보존: 기존 stream record 보존 범위는 최대 24시간",
+            "범위: commercial AWS Region·AWS GovCloud (US)·China Region 제공, 표준 `GetRecords` request 외 추가 요금 없음"
+          ]
+        },
+        {
+          "heading": "복구·데이터 정합성 경계",
+          "body": "`AT_TIMESTAMP`는 reader 시작점이지 transaction boundary나 exactly-once contract가 아님. timestamp 근처 record의 consumer checkpoint와 downstream side effect가 어긋나면 duplicate 또는 gap 판단이 어려워짐.",
+          "items": [
+            "리스크: application event time과 stream record write time을 같은 watermark로 가정하는 오류",
+            "리스크: PITR export 완료 시각·exported data boundary·stream consumer 시작 시각을 혼동하는 복구 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "timestamp replay는 운영자 편의 기능이지만 replay plan 자체를 evidence로 남겨야 함. stream shard와 destination store의 idempotency·ordering·failure retry contract를 먼저 확인해야 audit replay가 production write를 오염시키지 않음.",
+          "items": [
+            "팀 액션: replay마다 requested timestamp·resolved first record·checkpoint·export manifest·operator approval을 ticket에 기록",
+            "팀 액션: duplicate rate·consumer lag·out-of-order event·DLQ·downstream write conflict를 staging replay로 검증",
+            "팀 액션: 24시간 retention 이전 timestamp와 empty range 요청의 failure behavior를 runbook에 명시"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "id": "news-646",
+      "title_ko": "AWS Lambda Durable Execution SDK for Go 정식 출시: checkpoint·callback·최대 1년 wait을 Go workflow에 연결",
+      "title_original": "AWS Lambda Durable Execution SDK for Go is now generally available",
+      "summary": "핵심: AWS가 Go용 Lambda Durable Execution SDK를 정식 출시해 infrastructure automation·approval gate 배포·AI 호출 뒤 human review 같은 multi-step workflow를 Go code에서 durable function으로 만들 수 있게 함. progress checkpoint·callback·durable invocation·wait을 제공하고 최대 1년 외부 event 대기를 지원하지만, idempotency·state schema·callback 인증·compensation·deadline은 application control로 설계해야 함.",
+      "detail": "AWS Lambda Durable Execution SDK for Go는 Lambda durable functions로 resilient long-running workflow를 작성하는 Go 개발자용 SDK임. step progress tracking, callback integration, reliable function chaining을 위한 durable invocation, efficient suspension용 waits를 제공하며 external event를 기다릴 때 최대 1년 execution을 pause할 수 있다고 AWS가 설명함. Go module에 `go get`으로 추가하고 `provided.al2023` runtime에 single static binary로 배포할 수 있음. `durabletest`는 network나 AWS credential 없이 local machine에서 workflow 전체를 test하고, `durablelint`는 resume 시 workflow를 깨뜨릴 수 있는 code를 검사하는 용도로 제공됨. 리전과 pricing은 별도 availability·pricing page 확인 범위임.",
+      "why_it_matters": "approval·callback·장기 wait가 있는 automation을 일반 Lambda retry에만 맡기면 progress state와 duplicate callback이 분산됨. durable runtime이 checkpoint를 제공해도 external system의 write와 승인 결정은 자동으로 exactly-once가 되지 않으므로 business idempotency와 audit trail이 필요함.",
+      "engineering_implication": "시사점: step boundary별 idempotency key·state schema version·callback audience/expiry·compensation·deadline·manual override를 정의하고, `durabletest` fixture로 restart·duplicate callback·timeout·deployment rollback을 검증 필요.",
+      "korea_implication": "국내 규제·승인 workflow는 human approval callback의 identity, decision retention, PII 포함 여부, long wait 동안 role·policy가 변경되는 경우의 reauthorization을 별도 설계해야 함.",
+      "category": "DevTools",
+      "tags": [
+        "AWS",
+        "Lambda",
+        "Go",
+        "Serverless",
+        "Durable Execution",
+        "Workflow",
+        "Human in the Loop"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 81,
+      "published_kst": "2026-10-16 03:23",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-lambda-durable-go-sdk-support/",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [
+        {
+          "title": "AWS Lambda Durable Execution SDK for Go",
+          "url": "https://github.com/aws/aws-durable-execution-sdk-go"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Go용 Lambda Durable Execution SDK를 general availability로 제공함. long-running multi-step application을 Lambda durable functions 기반으로 작성하는 범위임.",
+          "items": [
+            "용도: infrastructure automation·approval gate deployment·AI model 호출 뒤 human review workflow",
+            "기능: progress checkpoint·callback integration·durable invocation·efficient wait 제공"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "AWS 설명에 따르면 external event 대기 중 execution을 최대 1년 pause할 수 있음. Go module에 `go get`으로 추가하고 `provided.al2023` runtime에 single static binary로 배포하는 경로임.",
+          "items": [
+            "테스트: `durabletest`로 network·AWS credential 없이 local workflow 전체 검증",
+            "정적 분석: `durablelint`로 resume 시 workflow를 깨뜨릴 code pattern 탐지"
+          ]
+        },
+        {
+          "heading": "신뢰성·승인 경계",
+          "body": "runtime checkpoint는 progress persistence를 돕지만 external API write, callback delivery, human approval은 independent side effect임. retry나 resume에서 같은 step이 다시 실행돼도 안전한 business idempotency와 compensation이 필요함.",
+          "items": [
+            "리스크: callback token의 audience·expiry·one-time use를 검증하지 않아 stale approval을 수락하는 경로",
+            "리스크: workflow code와 persisted state schema가 바뀐 뒤 resume compatibility가 깨지는 배포 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "durable workflow의 release unit은 Go binary만이 아니라 state contract·callback identity·operation runbook임. local test가 AWS integration, IAM permission, downstream quota, production timeout을 보장하지는 않음.",
+          "items": [
+            "팀 액션: step마다 idempotency key·input/output schema version·deadline·compensation owner를 명시",
+            "팀 액션: duplicate callback·partial external write·long wait·role change·deployment rollback fixture를 `durabletest`에 추가",
+            "팀 액션: region·pricing·concurrency·observability와 human approval audit retention을 production readiness review에서 확인"
+          ]
+        }
+      ],
+      "rank": 3
+    },
+    {
+      "id": "news-647",
+      "title_ko": "GitHub Evergreen 사례: 외부 협업자 access review와 stale repository archive를 fail-secure 기본값으로 자동화",
+      "title_original": "Staying Evergreen: How we automated secure access and repo hygiene in a shared org",
+      "summary": "핵심: GitHub가 shared organization에서 GitHub App `Evergreen`으로 outside collaborator 분기별 access review와 stale repository archive를 자동화한 사례를 공개함. 무응답 access review는 revoke하는 fail-secure default, delete 대신 archive, review·cleanup 사이 2주 grace period라는 설계이며 조직별 legal hold·break-glass·업무 연속성 예외는 별도 정책으로 검증해야 함.",
+      "detail": "GitHub Engineering은 고객·partner와 협업하는 shared organization에서 외부 collaborator와 repository 수명주기 관리를 자동화한 `Evergreen` 사례를 공개함. 분기마다 repository별 outside collaborator review를 열어 유지할 계정을 선택하고, 응답이 없는 review의 access는 자동 revoke함. 사람 활동이 없는 repository는 stale로 flag해 warning issue를 열고 grace period 후 archive하며 delete하지 않는다는 원칙임. controller repository의 GitHub Actions 네 개가 `repository_dispatch`로 1일 stale review, 8일 access review, 16일 stale cleanup, 23일 access cleanup을 실행함. review는 cleanup 2주 전에 열고 `workflow_dispatch`로 수동 실행도 지원함. 이는 GitHub 내부 조직 운영 사례이지 모든 enterprise의 retention·legal hold·privileged access 정책을 대체하지 않음.",
+      "why_it_matters": "external collaborator access와 dormant repository는 inventory가 없으면 ownership이 사라진 뒤에도 남기 쉬움. 무응답 revoke와 archive는 secure default를 만들지만, service account·incident response·customer handoff를 잘못 분류하면 production access 또는 evidence retention을 끊을 수 있음.",
+      "engineering_implication": "시사점: auto-revoke와 archive 전에 owner inventory·approval evidence·exception expiry·break-glass·legal hold·restore procedure를 policy-as-code와 dry-run report로 검증 필요.",
+      "korea_implication": "국내 고객 공동 개발과 외주 repository는 계약 종료일·개인정보 처리자 access·소스 보존 의무를 collaborator review와 archive workflow의 exception record에 연결해야 함.",
+      "category": "Security",
+      "tags": [
+        "GitHub",
+        "GitHub Actions",
+        "DevSecOps",
+        "Access Review",
+        "Repository Hygiene",
+        "Automation",
+        "Identity"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 80,
+      "published_kst": "2026-10-16 03:00",
+      "source_name": "GitHub Blog",
+      "source_url": "https://github.blog/engineering/platform-security/staying-evergreen-how-we-automated-secure-access-and-repo-hygiene-in-a-shared-org/",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/00ab37fbbb9bc343b007734b0e5805a26e747c90d955750bd976cb9ce84f6a2a-1920x1080-1.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "GitHub Engineering이 shared organization에서 GitHub App `Evergreen`으로 outside collaborator access review와 stale repository archival을 자동화한 운영 사례를 공개함.",
+          "items": [
+            "access review: 분기별 repository 외부 collaborator를 확인하고 유지 대상 외 access revoke",
+            "repository hygiene: human activity가 없는 repository를 flag·warning 뒤 archive, delete는 수행하지 않는 설계"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "Evergreen은 dedicated controller repository의 four scheduled GitHub Actions workflow가 `repository_dispatch` event를 보내 실행하는 구성임. review는 cleanup보다 2주 먼저 열리고 hard grace period가 적용됨.",
+          "items": [
+            "일정: 매 분기 1일 stale review, 8일 access review, 16일 stale cleanup, 23일 access cleanup 실행",
+            "기본값: access review 무응답은 유지가 아니라 revoke하는 fail-secure outcome",
+            "운영: 모든 단계가 `workflow_dispatch` 수동 실행 지원"
+          ]
+        },
+        {
+          "heading": "보안·업무 연속성 경계",
+          "body": "자동 revoke와 archive는 inventory와 exception data의 정확성에 의존함. customer handoff, service account, incident response access, legal hold repository를 일반 stale/no-response 대상으로 처리하면 availability 또는 evidence 보존에 손실이 생길 수 있음.",
+          "items": [
+            "리스크: human activity만 기준으로 machine-managed 또는 compliance retention repository를 stale로 오분류",
+            "리스크: review issue 응답자를 owner authority로 검증하지 않아 과도한 access 유지 또는 정상 access revoke"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "GitHub 사례는 cron 자체보다 secure default와 reversible archive를 workflow state로 남기는 방식에 초점을 둠. 조직 policy와 approval evidence를 GitHub issue checklist만으로 충족한다고 가정하면 안 됨.",
+          "items": [
+            "팀 액션: collaborator·repository owner·business end date·legal hold·break-glass·exception expiry inventory화",
+            "팀 액션: auto-revoke 전 dry-run diff와 delegated approver record를 생성하고, revoke 뒤 restore escalation·SLA를 확인",
+            "팀 액션: archive workflow에 CI disable·secret rotation·dependabot/alert ownership·restore test를 연결"
+          ]
+        }
+      ],
+      "rank": 4
+    },
+    {
       "id": "news-643",
       "title_ko": "Cloudflare Gateway·DLP: Worker 기반 inline policy 코드 실행과 custom validation 추가",
       "title_original": "A fully programmable secure web gateway",
@@ -261,7 +528,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 5
     },
     {
       "id": "news-641",
@@ -328,7 +595,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 6
     },
     {
       "id": "news-640",
@@ -396,7 +663,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-639",
@@ -463,7 +730,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-638",
@@ -535,7 +802,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-642",
@@ -611,7 +878,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-637",
@@ -680,7 +947,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-636",
@@ -751,7 +1018,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-635",
@@ -818,7 +1085,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-632",
@@ -887,7 +1154,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-634",
@@ -967,7 +1234,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-633",
@@ -1040,7 +1307,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-631",
@@ -1105,7 +1372,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-628",
@@ -1169,7 +1436,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-630",
@@ -1235,7 +1502,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 19
     },
     {
       "id": "news-627",
@@ -1300,7 +1567,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-626",
@@ -1366,7 +1633,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 21
     },
     {
       "id": "news-625",
@@ -1432,7 +1699,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 22
     },
     {
       "id": "news-629",
@@ -1497,7 +1764,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 23
     },
     {
       "id": "news-624",
@@ -1563,7 +1830,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "id": "news-622",
@@ -1629,7 +1896,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-623",
@@ -1695,7 +1962,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-618",
@@ -1758,7 +2025,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-619",
@@ -1822,7 +2089,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 28
     },
     {
       "id": "news-617",
@@ -1895,7 +2162,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 29
     },
     {
       "id": "news-620",
@@ -1959,7 +2226,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 30
     },
     {
       "id": "news-621",
@@ -2022,11 +2289,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 31
     },
     {
       "id": "news-615",
-      "rank": 28,
+      "rank": 32,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -2090,7 +2357,7 @@
     },
     {
       "id": "news-616",
-      "rank": 29,
+      "rank": 33,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
