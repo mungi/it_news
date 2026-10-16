@@ -3497,3 +3497,9 @@
 - 확인 시각: 2026-10-16 12:50 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·Google AI·CISA feed를 current research pass에 포함함.
 - AWS canonical announcement와 Recent Announcements RSS를 직접 대조. AgentCore Web Search의 AWS GovCloud(US-West)·US East(Ohio)·US West(Oregon)·Asia Pacific(Sydney) 추가 제공, 최신 web grounding과 research·summarization·question answering 용도 범위를 수록함.
 - citation 정확도·search ranking·prompt injection 차단·데이터 전송·비용·서울 리전 제공은 공지에서 보장하지 않아 query·retrieval·citation·downstream action trace와 allowlist·approval·retention·cost budget 검증 범위로 유지. `news-648`을 KST `2026-10-16 05:40` 기준 newest-first rank 2에 삽입해 W43 34건·rank 1–34를 유지하고 raw capture SHA-256 `534aa68600f7f781620a8c408a4b843c26018ddca927712d09012bf1b01a7b8f`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 00:28에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-16] update | Meta Muse Spark Open·Anthropic METR 독립 평가 접근권 추가
+- 확인 시각: 2026-10-16 16:52 KST. GeekNews RSS·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF feed를 재점검했으며 GeekNews Plus는 HTTP 403으로 후보 본문 수집에 사용하지 않음.
+- 인공지능신문 canonical 원문의 `article:published_time` `2026-10-16T11:10:00+09:00`, 본문·OG image·Meta developer documentation 및 Hugging Face collection 링크를 대조함. `Muse Spark Open`의 total 8,160억·active 420억 parameter MoE, 62 layer·256 expert·token당 8 expert, 최대 100만 token context와 배포 framework·license 경계를 수록함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-16T15:53:05+09:00`, 본문·OG image를 대조함. Anthropic의 METR 연구원 6명 직원급에 가까운 access, independent publication, customer data·privilege·model architecture redaction 범주와 evaluator independence·remediation evidence 경계를 수록함.
+- `news-649`·`news-650`을 verified published KST 최신순으로 삽입해 W43 36건·rank 1–36 유지. raw capture, `index.md`, canonical `weekly/2026-W43.md`를 동기화. Deep Dive 2건은 같은 KST 날짜 00:28에 전면 갱신돼 timestamp-only 변경 없이 유지.
