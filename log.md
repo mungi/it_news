@@ -3503,3 +3503,8 @@
 - 인공지능신문 canonical 원문의 `article:published_time` `2026-10-16T11:10:00+09:00`, 본문·OG image·Meta developer documentation 및 Hugging Face collection 링크를 대조함. `Muse Spark Open`의 total 8,160억·active 420억 parameter MoE, 62 layer·256 expert·token당 8 expert, 최대 100만 token context와 배포 framework·license 경계를 수록함.
 - AI타임스 canonical 원문의 `article:published_time` `2026-10-16T15:53:05+09:00`, 본문·OG image를 대조함. Anthropic의 METR 연구원 6명 직원급에 가까운 access, independent publication, customer data·privilege·model architecture redaction 범주와 evaluator independence·remediation evidence 경계를 수록함.
 - `news-649`·`news-650`을 verified published KST 최신순으로 삽입해 W43 36건·rank 1–36 유지. raw capture, `index.md`, canonical `weekly/2026-W43.md`를 동기화. Deep Dive 2건은 같은 KST 날짜 00:28에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-16] update | OpenAI GPT-Live-1.1 한국어 음성·억양 개선 추가
+- 확인 시각: 2026-10-16 21:00 KST. GeekNews·GeekNews Plus는 HTTP 403이었고, AI타임스KR·AI타임스·AWS What's New·Cloudflare·GitHub·Kubernetes·CNCF feed를 재점검함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-16T17:02:19+09:00`, OG image와 본문을 직접 대조. ChatGPT·Codex·`dots`의 `GPT-Live-1.1` 업데이트, 한국어 포함 6개 언어 새 음성·억양 개선, 영어 `Bubbie`, 대기 안내 축소, ChatGPT Voice 적용·API 추후 제공 범위를 수록함.
+- 계정·지역별 availability, API 출시일·가격·SLA·실제 음성 품질은 보장하지 않아 locale별 quality·latency·fallback, transcript/audio retention, moderation, tool-action approval canary 확인 범위로 유지. `news-651`을 KST `2026-10-16 17:02` 기준 newest-first rank 1에 삽입해 W43 37건·rank 1–37을 유지하고 raw source SHA-256 `d283b18de598c48b6199967e47da13f910e9fa0103693fc81b8bcef304951125`, `index.md`, canonical weekly archive를 동기화. 같은 KST 날짜 00:28에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.

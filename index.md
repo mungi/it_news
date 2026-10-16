@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-16 | Total pages: 428
+> Last updated: 2026-10-16 | Total pages: 429
 
 ## Entities
 
@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-gpt-live-1-1-korean-voice-2026-10-16]] — OpenAI `GPT-Live-1.1` 한국어 포함 6개 언어 음성·억양 업데이트 보도와 voice agent locale·latency·transcript·tool-approval 검증 경계.
 - [[raw/articles/aitimes-anthropic-metr-employee-level-access-2026-10-16]] — Anthropic·METR 직원급 안전 평가 접근권 보도의 evaluator scope·redaction·publication independence·remediation evidence 운영 경계.
 - [[raw/articles/aitimeskr-meta-muse-spark-open-2026-10-16]] — Meta `Muse Spark Open` 816B/42B active MoE open weight의 artifact·memory·license·agent control 검증 경계.
 - [[raw/articles/aws-bedrock-agentcore-web-search-regions-2026-10-16]] — Bedrock AgentCore Web Search의 GovCloud·3개 리전 확대와 web grounding data path·prompt-injection·citation·action audit 운영 경계.
