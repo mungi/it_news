@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-16 | Total pages: 429
+> Last updated: 2026-10-17 | Total pages: 431
 
 ## Entities
 
@@ -58,7 +58,9 @@
 - [[raw/articles/aws-ecs-live-task-count-running-task-count-pricing-2026-10-14]] — Amazon ECS `LiveTaskCount`의 lifecycle-inclusive active capacity와 `RunningTaskCount` health signal·가격 변경 운영 경계.
 - [[raw/articles/aws-security-hub-resource-criticality-2026-10-14]] — AWS Security Hub resource criticality의 exposure prioritization·tag/rule 기반 자산 중요도와 SOC triage 검증 경계.
 - [[raw/articles/aws-agent-registry-custom-metadata-2026-10-14]] — AWS Agent Registry custom metadata schema의 agent·MCP 자산 owner·data class·review status 거버넌스 경계.
+- [[raw/articles/google-gemini-4-argon-official-2026-10-13]] — Google 공식 Gemini 4 Argon의 API·Antigravity 제공과 Chrome·ADK·Gemma engineering 사례, agent release evidence 경계.
 - [[raw/articles/aitimes-google-gemini-4-argon-general-availability-2026-10-14]] — Gemini 4 Argon 상용 확대 보도와 ADK agent 변경안의 review·rollback·release gate 경계.
+- [[raw/articles/aws-transform-azure-to-aws-code-conversion-2026-10-16]] — AWS Transform Azure SDK→AWS SDK .NET 변환 GA와 source·service contract migration 검증 경계.
 - [[raw/articles/cloudflare-d1-control-plane-millions-databases-2026-10-14]] — Cloudflare D1 control plane의 수백만 database 확장·metadata cache·lifecycle reconciliation 운영 경계.
 - [[raw/articles/github-secret-detection-context-classifier-2026-10-13]] — GitHub secret detection 문맥 classifier의 acceptance·scan latency와 push protection·rotation 운영 경계.
 - [[raw/articles/aitimes-openai-gpt-6-1-sol-500k-context-2026-10-13]] — GPT-6.1 Sol 50만 token 기본 context 확대 보도와 compaction·비용·data boundary 검증 경계.
