@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-agentcore-web-search-regions-2026-10-16]] — Bedrock AgentCore Web Search의 GovCloud·3개 리전 확대와 web grounding data path·prompt-injection·citation·action audit 운영 경계.
 - [[raw/articles/cncf-opentelemetry-software-carbon-intensity-2026-10-16]] — OpenTelemetry에 Software Carbon Intensity를 연결하는 community proposal의 allocation·provenance·data-quality 운영 경계.
 - [[raw/articles/aws-dynamodb-streams-timestamp-processing-2026-10-16]] — DynamoDB Streams `AT_TIMESTAMP` shard iterator의 replay·PITR synchronization·idempotency 운영 경계.
 - [[raw/articles/aws-lambda-durable-execution-go-ga-2026-10-16]] — Lambda Durable Execution Go SDK GA의 checkpoint·callback·state schema·idempotency 운영 경계.

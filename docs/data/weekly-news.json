@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-16 08:42",
+  "last_updated_kst": "2026-10-16 12:50",
   "audience": "developers and engineers",
   "executive_summary": [
     "OpenTelemetry의 Software Carbon Intensity 논의는 energy·carbon을 workload·service 관측에 연결하려는 community proposal임. SLO·FinOps에 쓰기 전 allocation boundary·grid-intensity timestamp·추정 방식·missing-data rule을 telemetry contract로 고정 필요.",
@@ -258,6 +258,70 @@
       "rank": 1
     },
     {
+      "id": "news-648",
+      "title_ko": "Amazon Bedrock AgentCore Web Search, GovCloud·오하이오·오리건·시드니 리전으로 확대",
+      "title_original": "Web Search on Amazon Bedrock AgentCore expands to AWS GovCloud and 3 Regions",
+      "summary": "핵심: AWS가 Bedrock AgentCore Web Search를 AWS GovCloud(US-West), US East(Ohio), US West(Oregon), Asia Pacific(Sydney)로 확대함. AI agent가 최신 웹 근거를 가져오는 managed tool의 제공 리전만 넓어진 공지이므로, 검색 결과의 출처 품질·권한·데이터 전송·비용·모델 응답 검증은 별도 control로 유지 필요.",
+      "detail": "AWS 공식 공지는 Bedrock AgentCore Web Search가 AI agent에 최신 웹 기반 grounding을 제공하는 fully managed tool이며 research·summarization·question answering 용도를 제시한다. 이번 변경은 기존 제공 범위에 AWS GovCloud(US-West)와 오하이오·오리건·시드니 3개 리전을 더한 리전 가용성 확대다. 공지는 search response의 인용 정확도, connector별 접근 제어, prompt injection 차단, 결과 보존, 사용량 비용, 서울 리전 제공을 보장하지 않는다. agent가 외부 웹 문서를 tool input으로 쓰는 경우에는 retrieval 결과와 최종 action 사이의 policy·approval·audit 경계를 별도로 설계해야 함.",
+      "why_it_matters": "웹 grounding의 리전 선택지가 늘면 agent 배치와 네트워크 경로를 가까운 실행 리전에 맞출 수 있지만, 외부 콘텐츠는 신뢰도·저작권·프롬프트 주입·개인정보·데이터 전송 위험을 함께 가져옴.",
+      "engineering_implication": "시사점: Web Search 호출마다 agent identity·query class·retrieved URL·citation·response digest·downstream tool action을 trace로 묶고, allowlist·content sanitization·human approval·retention·cost budget을 리전 rollout의 release gate로 설정 필요.",
+      "korea_implication": "이번 공지의 아시아 태평양 신규 리전은 시드니이며 서울 제공을 뜻하지 않음. 국내 워크로드는 data residency·cross-region latency·egress·감사 로그 보존 위치를 지원 리전 문서와 계정 설정으로 확인 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "AgentCore",
+        "Web Search",
+        "AI Agent",
+        "Grounding",
+        "Data Governance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-16 05:40",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-agentcore/",
+      "image_url": "",
+      "local_image": "assets/images/cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 Amazon Bedrock AgentCore의 Web Search를 AWS GovCloud(US-West), US East(Ohio), US West(Oregon), Asia Pacific(Sydney)에서 추가 제공한다고 공지함.",
+          "items": [
+            "변화: 기존 가용 범위에 GovCloud와 3개 상용 리전 추가",
+            "용도: research·summarization·question answering에 최신 웹 근거를 공급하는 managed tool"
+          ]
+        },
+        {
+          "heading": "원문에서 확인된 기능 범위",
+          "body": "공지는 Web Search를 AI agent가 웹에서 current grounding을 얻도록 하는 fully managed tool로 설명함. 이번 문서는 API 동작 변경이나 새 모델·새 검색 품질 지표가 아니라 리전 availability 변경을 다룸.",
+          "items": [
+            "확인: agent 응답의 최신성 보강을 위한 웹 grounding 제공 범위",
+            "경계: citation 정확도·검색 ranking·응답 품질·특정 도메인 coverage 수치를 공지하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 경계",
+          "body": "외부 웹 검색은 untrusted content를 agent context에 넣는 경로임. 리전 가용성이 늘어도 retrieved text의 prompt injection, 악성 URL, 저작권·개인정보, tool action 권한이 자동으로 통제되는 것은 아님.",
+          "items": [
+            "리스크: 검색 문서의 지시문을 system policy 또는 승인 없는 tool call로 해석하는 경로",
+            "통제: query class·URL allowlist·content sanitization·citation·action approval을 분리 기록"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "리전 추가는 agent workload의 deployment 선택지를 넓히지만, Web Search를 연결한 agent는 data path와 evidence path를 함께 검증해야 함. 서비스 출시 전 검색 결과가 실제 action으로 이어지는 경로를 canary로 측정 필요.",
+          "items": [
+            "팀 액션: agent identity·query·retrieved URL·response digest·downstream action을 하나의 trace로 연결",
+            "팀 액션: token·tool call·web retrieval 비용, latency, blocked content, citation coverage를 release dashboard로 관리"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-645",
       "title_ko": "Amazon DynamoDB Streams: 특정 시각부터 읽는 `AT_TIMESTAMP` shard iterator 추가",
       "title_original": "Amazon DynamoDB Streams now supports timestamp-based stream processing",
@@ -325,7 +389,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-646",
@@ -395,7 +459,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-647",
@@ -460,7 +524,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-643",
@@ -528,7 +592,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-641",
@@ -595,7 +659,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-640",
@@ -663,7 +727,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-639",
@@ -730,7 +794,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-638",
@@ -802,7 +866,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-642",
@@ -878,7 +942,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-637",
@@ -947,7 +1011,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-636",
@@ -1018,7 +1082,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-635",
@@ -1085,7 +1149,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-632",
@@ -1154,7 +1218,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-634",
@@ -1234,7 +1298,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-633",
@@ -1307,7 +1371,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-631",
@@ -1372,7 +1436,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-628",
@@ -1436,7 +1500,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-630",
@@ -1502,7 +1566,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-627",
@@ -1567,7 +1631,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-626",
@@ -1633,7 +1697,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-625",
@@ -1699,7 +1763,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-629",
@@ -1764,7 +1828,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-624",
@@ -1830,7 +1894,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-622",
@@ -1896,7 +1960,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-623",
@@ -1962,7 +2026,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-618",
@@ -2025,7 +2089,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-619",
@@ -2089,7 +2153,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-617",
@@ -2162,7 +2226,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-620",
@@ -2226,7 +2290,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-621",
@@ -2289,11 +2353,11 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-615",
-      "rank": 32,
+      "rank": 33,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -2357,7 +2421,7 @@
     },
     {
       "id": "news-616",
-      "rank": 33,
+      "rank": 34,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
