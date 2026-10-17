@@ -3536,6 +3536,12 @@
 - 점수 공개·추가 측정은 향후 계획이며 자동 enforcement·모든 bot의 보안 보증으로 확대하지 않음. `news-656`을 KST `2026-10-16 22:00` 기준 newest-first rank 5에 삽입해 W43 42건·rank 1–42를 유지하고 fallback image·raw source record·`index.md`·canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 01:03에 전면 갱신돼 timestamp-only 변경 없이 유지.
 
 ## [2026-10-17] update | 레플릿 결정론적 시뮬레이션 테스트 활용 보도 추가
-- 확인 시각: 2026-10-17 21:25 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스와 AWS What’s New·GitHub·CNCF·Kubernetes·Google AI feed를 current research pass에 포함함.
+- 확인 시각: 2026-10-17 21:25 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스와 AWS What’s New·GitHub·CNCF·Kubernetes·Google AI feed를 재점검함.
 - AI타임스 canonical 원문의 `article:published_time` `2026-10-17T19:27:01+09:00`, OG image와 본문을 직접 대조. 레플릿의 앤티테시스 상용 플랫폼 사용 보도, 결정론적 simulation의 execution replay 의미, network·server·storage fault injection, hypervisor 기반 실행 조건 통제, AI 단독 보안 검사 한계와 static/dependency scan 결합 범위를 수록함.
 - AI 모델 출력의 결정론성, 레플릿 전체 workflow·coverage·defect reduction·SLA, simulation의 production fidelity는 기사에서 확정되지 않아 일반 성과로 확대하지 않음. `news-657`을 KST `2026-10-17 19:27` 기준 newest-first rank 1에 삽입해 W43 43건·rank 1–43을 유지하고 OG image local copy·raw source SHA-256 `8e619f55658d86f1efff156d8ce0810b1f12550983fc0e5ea51e4e3ca8962a47`·`index.md`·canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 01:03에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-18] update | KST 첫 실행 Deep Dive 전면 교체: CloudWatch 로그 중앙화·AI coding deterministic replay
+- 확인 시각: 2026-10-18 01:29 KST. GeekNews·GeekNews Plus는 HTTP 403으로 접근이 제한됐고, AI타임스KR·AI타임스 홈페이지(HTTP 200), AWS What’s New 및 기존 검증 source capture를 current research pass에 포함함.
+- 전일 Gemini 4 Argon·AWS Transform Deep Dive를 유지하지 않고, AWS 공식 CloudWatch log centralization 공지와 AI타임스의 레플릿 deterministic simulation 보도로 2건을 전면 교체함. 첫 주제는 GovCloud(US-East·US-West)·13개 상용 리전, Organizations rule·source context·무료 1 copy·추가 GB당 $0.05와 KMS/IAM·parser·delivery lag·coverage 검증 경계를 정리함.
+- 두 번째 주제는 network·server·storage failure injection과 execution replay 보도 범위, LLM output determinism·production fidelity와의 구분, static/dependency scan·sandbox·rollback evidence를 포함한 AI coding release gate를 재구성함. 두 Deep Dive는 서로 다른 source URL을 사용했고 각 9/10개 expert section·1,800자 이상 기준을 충족함.
+- `docs/data/weekly-news.json`의 `refreshed_kst`·`last_updated_kst`를 실제 시각으로 갱신하고 canonical `weekly/2026-W43.md`를 재생성함. 일반 뉴스는 새로 검증된 후보가 없어 43건 newest-first·rank 1–43을 유지함.
