@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-cloudwatch-log-centralization-regions-2026-10-17]] — AWS CloudWatch 로그 중앙화의 GovCloud·13개 상용 리전 확대와 Organizations rule·source context·KMS/IAM·retention·copy 비용 검증 경계.
 - [[raw/articles/aws-lambda-durable-functions-govcloud-2026-10-17]] — AWS Lambda Durable Functions의 AWS GovCloud(US-West·US-East) 제공과 checkpoint·wait·idempotency·callback·audit 검증 경계.
 - [[raw/articles/aitimes-openai-gpt-live-1-1-korean-voice-2026-10-16]] — OpenAI `GPT-Live-1.1` 한국어 포함 6개 언어 음성·억양 업데이트 보도와 voice agent locale·latency·transcript·tool-approval 검증 경계.
 - [[raw/articles/aitimes-anthropic-metr-employee-level-access-2026-10-16]] — Anthropic·METR 직원급 안전 평가 접근권 보도의 evaluator scope·redaction·publication independence·remediation evidence 운영 경계.

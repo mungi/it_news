@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-17 05:10",
+  "last_updated_kst": "2026-10-17 09:13",
   "audience": "developers and engineers",
   "executive_summary": [
     "AWS Transform이 Azure SDK에서 AWS SDK로의 .NET cloud-native code conversion을 정식 출시함. Functions·Blob Storage·Queue Storage mapping은 source 작업을 줄이지만 data·event·IAM·운영 contract의 자동 등가성을 뜻하지 않아 mapping별 verification 필요.",
@@ -194,6 +194,88 @@
   ],
   "items": [
     {
+      "id": "news-654",
+      "title_ko": "Amazon CloudWatch 로그 중앙화, AWS GovCloud와 13개 상용 리전으로 확대",
+      "title_original": "Amazon CloudWatch log centralization now available in AWS GovCloud and additional commercial Regions",
+      "summary": "핵심: AWS가 CloudWatch log centralization을 AWS GovCloud(US)와 13개 상용 리전에 추가 제공함. Organizations 기반 rule로 여러 계정·리전의 로그를 source context가 보강된 단일 destination account에 복사할 수 있으나, 중앙화는 retention·KMS·destination IAM·cross-partition 경계와 detection coverage를 자동으로 통제하지 않음.",
+      "detail": "AWS 공식 공지와 What’s New API는 CloudWatch log centralization이 AWS GovCloud(US) 및 13개 상용 리전에 추가 제공된다고 발표함. 기능은 AWS Organizations와 통합해 전체 조직·특정 OU·선택 계정 범위의 여러 계정·리전 로그를 한 destination account로 복사하고, source context를 enriched system field로 보존하는 범위임. 추가 제공 리전은 Cape Town, Hong Kong, Hyderabad, Jakarta, Malaysia, Melbourne, Canada West(Calgary), Milan, Spain, Zurich, Tel Aviv, Bahrain, UAE와 GovCloud US-East·US-West임. 고객은 한 개 log copy를 무료로 중앙화할 수 있고 추가 copy는 GB당 $0.05로 과금됨. 이 공지는 기존 로그의 보존 기간·KMS key policy·destination access, cross-partition 통합, parser 호환성, delivery lag 또는 alert completeness를 보장하지 않으므로 source/destination data contract와 비용·탐지 증적을 별도 검증해야 함.",
+      "why_it_matters": "multi-account·multi-region 환경에서 로그를 계정별로 분산 보관하면 incident triage·감사·탐지 rule 운영이 느려질 수 있음. 반면 중앙화는 고객 식별자·보안 event·운영 로그의 복제 경로와 비용·권한 범위를 늘리는 control-plane 변경임.",
+      "engineering_implication": "시사점: 조직·OU·계정별 rule scope, source context field, destination account·KMS·S3/CloudWatch Logs policy, retention·delete·SIEM parser·delivery lag·GB당 복제 비용을 change record로 묶고, source outage·권한 철회·rule 변경·추가 copy billing을 canary로 검증 필요.",
+      "korea_implication": "국내 AWS 조직은 서울 리전 로그를 다른 리전 또는 계정에 중앙화할 때 개인정보·접속기록 보존 위치, KMS key ownership, cross-account 접근자, 외부 SIEM 위탁 범위와 egress·복제 비용을 운영 정책에 반영 필요.",
+      "category": "Infra",
+      "tags": [
+        "AWS",
+        "CloudWatch Logs",
+        "Log Centralization",
+        "Observability",
+        "AWS Organizations",
+        "Security Operations",
+        "Governance"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-10-17 05:04",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-cloudwatch-centralization-region-expansion/",
+      "image_url": "",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon CloudWatch Logs User Guide: Log centralization",
+          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/"
+        },
+        {
+          "title": "Amazon CloudWatch pricing",
+          "url": "https://aws.amazon.com/cloudwatch/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 CloudWatch log centralization을 AWS GovCloud(US)와 13개 상용 리전에 추가 제공함. 기능은 여러 AWS account와 Region의 log data를 custom aggregation pipeline 없이 단일 destination account로 복사하는 범위임.",
+          "items": [
+            "제공: AWS GovCloud(US-East·US-West) 및 Cape Town·Hong Kong·Hyderabad·Jakarta·Malaysia·Melbourne 등 추가 리전 확대",
+            "목적: multi-account·multi-region log를 중앙 monitoring과 investigation 경로로 집계"
+          ]
+        },
+        {
+          "heading": "원문에서 확인된 동작 범위",
+          "body": "centralization rule은 AWS Organizations와 통합되며 전체 조직, 특정 organizational unit 또는 선택 account 범위로 지정할 수 있음. source context를 enriched system field로 보존한 채 단일 account로 copy하는 것이 공지된 기능 범위임.",
+          "items": [
+            "구성: CloudWatch console, AWS CLI 또는 SDK로 centralization rule 생성 가능",
+            "경계: 공지는 source log schema·parser compatibility·delivery latency·destination service의 자동 설정을 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "보안·데이터 경계",
+          "body": "로그 중앙화는 원래 account에 있던 security event와 application metadata를 다른 account의 저장·분석 경로로 복제하는 변경임. source context 보강은 조사에 유용하지만 KMS policy, destination IAM, retention, export와 third-party SIEM access를 자동으로 안전하게 만들지 않음.",
+          "items": [
+            "리스크: source와 destination의 encryption key·resource policy·access review가 어긋나 log 접근 범위가 넓어지는 경로",
+            "리스크: central copy만 보존하고 source integrity·delivery failure·parser drop을 확인하지 않아 incident evidence가 누락되는 경로"
+          ]
+        },
+        {
+          "heading": "비용·운영 관점",
+          "body": "AWS는 한 개 log copy의 중앙화를 무료로 제공하고 추가 copy는 GB당 $0.05라고 설명함. 따라서 중앙화 rule의 범위와 복수 destination은 ingestion volume, retention, downstream SIEM 비용과 함께 평가해야 함.",
+          "items": [
+            "비용: 추가 centralized copy는 GB당 $0.05라는 AWS 공지 범위",
+            "측정: source bytes·copied bytes·rule coverage·delivery lag·destination ingestion error·retention 비용을 account와 log group별 비교"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입은 console 설정이 아니라 observability data contract 변경으로 관리해야 함. 대표 production·security log group부터 source-to-destination completeness, identity, encryption, alert query, 비용을 검증하고 조직 전체로 확대할 필요.",
+          "items": [
+            "팀 액션: organization·OU·account별 rule scope, source/destination owner, KMS key, retention·delete·break-glass access를 inventory화",
+            "팀 액션: sample event로 source context·timestamp·log integrity·SIEM parser·detection rule parity를 canary 검증",
+            "팀 액션: source account 권한 철회·destination outage·rule rollback·추가 copy billing에서 evidence continuity와 alert coverage drill"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-653",
       "title_ko": "AWS Lambda Durable Functions, AWS GovCloud(US) 리전 제공 확대",
       "title_original": "AWS Lambda durable functions are now available in AWS GovCloud (US) Regions",
@@ -274,7 +356,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-652",
@@ -372,7 +454,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-651",
@@ -449,7 +531,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-650",
@@ -512,7 +594,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-649",
@@ -592,7 +674,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-644",
@@ -654,7 +736,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-648",
@@ -718,7 +800,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-645",
@@ -788,7 +870,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-646",
@@ -858,7 +940,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-647",
@@ -923,7 +1005,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-643",
@@ -991,7 +1073,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-641",
@@ -1058,7 +1140,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-640",
@@ -1126,7 +1208,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-639",
@@ -1193,7 +1275,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-638",
@@ -1265,7 +1347,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-642",
@@ -1341,7 +1423,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-637",
@@ -1410,7 +1492,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-636",
@@ -1481,7 +1563,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-635",
@@ -1548,7 +1630,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-632",
@@ -1617,7 +1699,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-634",
@@ -1697,7 +1779,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-633",
@@ -1770,7 +1852,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-631",
@@ -1835,7 +1917,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-628",
@@ -1899,7 +1981,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-630",
@@ -1965,7 +2047,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-627",
@@ -2030,7 +2112,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-626",
@@ -2096,7 +2178,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-625",
@@ -2162,7 +2244,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-629",
@@ -2227,7 +2309,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-624",
@@ -2293,7 +2375,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-622",
@@ -2359,7 +2441,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-623",
@@ -2425,7 +2507,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-618",
@@ -2488,7 +2570,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-619",
@@ -2552,7 +2634,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-617",
@@ -2625,7 +2707,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-620",
@@ -2689,7 +2771,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-621",
@@ -2752,11 +2834,11 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-615",
-      "rank": 38,
+      "rank": 39,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -2820,7 +2902,7 @@
     },
     {
       "id": "news-616",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
