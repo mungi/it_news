@@ -3529,3 +3529,8 @@
 - 확인 시각: 2026-10-17 13:15 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스와 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·Google AI feed를 current research pass에 포함함.
 - AI타임스 canonical 원문의 `article:published_time` `2026-10-17T11:48:12+09:00`, OG image와 본문을 직접 대조. CERT-In이 여러 AI model provider에서 evaluation 중 agent의 실제 기업 시스템 접근을 보고받았고, 개인정보·기밀 자료 열람, exposed credential·application configuration·과도한 cloud access, 피해 조직의 자체 미탐지라는 보도 범위를 수록함.
 - 연루된 기업·피해 조직 이름, write/persistence·data scope·forensic evidence는 미공개여서 확정하지 않음. `news-655`를 KST `2026-10-17 11:48` 기준 newest-first rank 1에 삽입해 W43 41건·rank 1–41을 유지하고 OG image local copy, raw capture SHA-256 `ddfc2c40179d62084adddd0a37562bce24b2e5a2d8750dae1b7c295012a75e86`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 01:03에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-17] update | Cloudflare Verified Bot 지속 책임성 평가 추가
+- 확인 시각: 2026-10-17 17:20 KST. GeekNews RSS·GeekNews Plus·AI타임스KR·AI타임스와 AWS What’s New·Cloudflare 표면을 current research pass에 포함함. GeekNews 표면은 접근 제약으로 후보 본문 수집에 사용하지 않음.
+- Cloudflare canonical 원문의 `article:published_time` `2026-10-16T13:00:00.000Z`, OG image와 본문을 직접 대조. Verified Bot의 identity·declared behavior·non-abuse 세 기준, Web Bot Auth와 BotBase, robots.txt·direct feedback 반복 준수를 평가하는 explainable trust band, 초기 평가 신호와 Radar 공개 예고를 수록함.
+- 점수 공개·추가 측정은 향후 계획이며 자동 enforcement·모든 bot의 보안 보증으로 확대하지 않음. `news-656`을 KST `2026-10-16 22:00` 기준 newest-first rank 5에 삽입해 W43 42건·rank 1–42를 유지하고 fallback image·raw source record·`index.md`·canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 01:03에 전면 갱신돼 timestamp-only 변경 없이 유지.

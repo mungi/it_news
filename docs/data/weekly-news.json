@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-17 13:15",
+  "last_updated_kst": "2026-10-17 17:20",
   "audience": "developers and engineers",
   "executive_summary": [
     "AWS Transform이 Azure SDK에서 AWS SDK로의 .NET cloud-native code conversion을 정식 출시함. Functions·Blob Storage·Queue Storage mapping은 source 작업을 줄이지만 data·event·IAM·운영 contract의 자동 등가성을 뜻하지 않아 mapping별 verification 필요.",
@@ -540,6 +540,89 @@
       "rank": 4
     },
     {
+      "id": "news-656",
+      "title_ko": "Cloudflare, Verified Bot의 robots.txt·429 준수 이력을 지속 평가하는 신뢰 등급 도입 예고",
+      "title_original": "Continuous accountability for Verified bots",
+      "summary": "핵심: Cloudflare가 Verified Bot의 신원 검증만으로 신뢰를 고정하지 않고, robots.txt와 HTTP 429 등 사이트 선호를 반복적으로 준수하는지 관측해 설명 가능한 trust band로 평가하는 시스템을 공개함. 초기 평가는 지시 준수와 직접 피드백 반응을 대상으로 하며, 공개 Radar 점수와 후속 측정 확대는 예고 범위이므로 crawler 운영자는 서명된 identity 외에 crawl policy·rate-limit·중단 telemetry를 증명 가능한 운영 신호로 관리 필요.",
+      "detail": "Cloudflare 공식 글은 Verified Bot이 정확한 신원 식별, 선언한 작업 수행, abusive behavior 금지의 세 기준을 충족해야 한다고 설명하고, Web Bot Auth로 요청을 서명하며 BotBase가 이를 공개 형식으로 목록화한다고 밝힘. 새 시스템은 bot이 사이트 선호를 얼마나 일관되게 준수하는지 관측해 trust band와 관측 근거를 제시하는 방향이며, 초기 신호는 instruction 준수와 direct feedback 반응임. robots.txt는 최소 규칙일 뿐이고, 명시되지 않은 접근을 허용한다는 뜻은 아니며 HTTP 429 등 사이트의 중단·감속 신호도 고려 대상임. 점수 공개와 측정 확장은 향후 계획이므로 모든 crawler에 대한 자동 차단·표준 인증·점수의 보안 보증으로 확대할 수 없음.",
+      "why_it_matters": "AI crawler와 agent의 웹 접근이 늘면서 user-agent나 인증된 운영자 이름만으로는 origin 부하·opt-out·rate-limit·재시도 동작을 판단하기 어려움. 행동 이력 기반 신뢰도는 bot identity, request policy, origin feedback, retry controller를 연결하는 운영 증적의 필요성을 높임.",
+      "engineering_implication": "시사점: crawler·agent별 Web Bot Auth 또는 동등 identity, robots.txt parser version·policy decision·429/Retry-After 수신·backoff·중단·재개 trace를 보관하고, origin owner가 관측한 위반 신고를 운영자 queue와 rollback/disable 절차에 연결 필요.",
+      "korea_implication": "국내 서비스 운영자는 AI crawler의 allow·deny 정책과 rate-limit 응답을 robots.txt·WAF·CDN·application log에서 일관되게 적용하고, partner crawler의 identity·contact·incident response 경로를 계약과 운영 문서에 분리해 둘 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "Verified Bots",
+        "AI Crawler",
+        "Robots.txt",
+        "Web Bot Auth",
+        "Rate Limiting",
+        "Bot Management"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 82,
+      "published_kst": "2026-10-16 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/verified-bots-accountability/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M51ZPERWNWYTD7Z36YMY80A8.01M51ZPFH7VV8EHQTMPJG9FHZ4.png",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "Cloudflare Web Bot Auth",
+          "url": "https://developers.cloudflare.com/bots/concepts/bot/verified-bots/web-bot-auth/"
+        },
+        {
+          "title": "RFC 9309: Robots Exclusion Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc9309"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 Verified Bot의 신원 검증 뒤에도 사이트 선호를 계속 준수하는지 평가·보고하는 시스템을 공개함. 기존 Verified Bot은 정확한 신원 식별, 선언한 작업 수행, abusive behavior 금지라는 세 기준을 제시하며 Web Bot Auth 요청 서명과 BotBase의 공개 목록화를 사용함.",
+          "items": [
+            "변화: bot operator identity 확인 뒤에도 실제 crawl·request 행동을 지속 관측하는 신뢰 평가 방향",
+            "범위: Web Bot Auth의 request signature와 BotBase 목록화는 identity evidence이며 행동 적합성의 자동 보증은 아님"
+          ]
+        },
+        {
+          "heading": "원문에서 확인된 평가 신호",
+          "body": "새 시스템은 crawler가 사이트 선호를 얼마나 일관되게 준수하는지 관측해 설명 가능한 trust band를 제시하는 구상임. 초기 신호는 published instruction의 준수 여부와 site operator의 direct feedback에 반응했는지 여부이며, permanent judgment가 아닌 반복 관측 기반 범위로 설명됨.",
+          "items": [
+            "확인: instruction 준수와 direct feedback 반응이 최초 평가 신호",
+            "확인: trust band에는 일관성 및 관측된 행동 근거를 제시하는 방향",
+            "경계: Radar 공개 점수와 추가 측정은 향후 계획이며 현재의 enforcement API·차단 정책 발표 아님"
+          ]
+        },
+        {
+          "heading": "robots.txt·rate-limit 운영 경계",
+          "body": "원문은 robots.txt를 사이트 소유자의 선호 전달 수단으로 설명하고 RFC 9309에 맞는 반복 준수를 본다고 밝힘. robots.txt는 최소 규칙이므로 문서에 금지되지 않은 요청이 자동 허용되는 것은 아니며, 지속 접근이 원치 않음을 알리는 다른 신호와 HTTP 429도 crawler controller가 반영해야 하는 범위임.",
+          "items": [
+            "운영: robots.txt fetch·parse 결과와 path별 allow·deny decision을 crawler release와 함께 기록",
+            "운영: HTTP 429·Retry-After·WAF challenge·operator feedback을 retry budget·backoff·stop condition에 연결"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "AI search·agent crawler는 request volume과 URL discovery 폭이 넓어 origin 부하와 opt-out 위반이 identity 확인 이후에 발생할 수 있음. user-agent 문자열 또는 verified operator 이름만으로는 rate-limit 반응, redirect 재시도, crawl 정책 변경 반영을 판정할 수 없으므로 behavior telemetry가 별도 운영 계약이 됨.",
+          "items": [
+            "리스크: crawler bug 또는 configuration drift가 verified identity와 무관하게 origin overload·policy violation을 만드는 경로",
+            "리스크: retry queue가 429·feedback을 무시해 정상 수집 작업이 abusive pattern으로 누적되는 경로"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "crawler 운영팀은 identity, policy fetch, decision, request, response, retry, disable을 같은 trace로 연결해야 외부 trust assessment와 자체 incident 대응을 대조할 수 있음. 서비스 운영팀은 robots.txt, CDN/WAF, application rate-limit의 정책 차이를 inventory화하고 partner bot에 대한 contact·appeal·suspension 절차를 준비할 필요.",
+          "items": [
+            "팀 액션: bot별 identity key·policy parser version·target host·429 rate·backoff·stop event·operator case ID를 telemetry field로 표준화",
+            "팀 액션: robots.txt 변경·429 burst·WAF denial·credential revoke에서 crawl 중단과 재개 승인 흐름을 canary로 검증",
+            "팀 액션: origin owner와 crawler owner의 feedback SLA, evidence handoff, disable authority를 서비스 계약에 명시"
+          ]
+        }
+      ],
+      "rank": 5
+    },
+    {
       "id": "news-651",
       "title_ko": "OpenAI, `GPT-Live-1.1`에 한국어 포함 6개 언어 새 음성·억양 개선 적용",
       "title_original": "GPT-Live-1.1",
@@ -614,7 +697,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-650",
@@ -677,7 +760,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-649",
@@ -757,7 +840,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-644",
@@ -819,7 +902,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-648",
@@ -883,7 +966,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-645",
@@ -953,7 +1036,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-646",
@@ -1023,7 +1106,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-647",
@@ -1088,7 +1171,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-643",
@@ -1156,7 +1239,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-641",
@@ -1223,7 +1306,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-640",
@@ -1291,7 +1374,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-639",
@@ -1358,7 +1441,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-638",
@@ -1430,7 +1513,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-642",
@@ -1506,7 +1589,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-637",
@@ -1575,7 +1658,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-636",
@@ -1646,7 +1729,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-635",
@@ -1713,7 +1796,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-632",
@@ -1782,7 +1865,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-634",
@@ -1862,7 +1945,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-633",
@@ -1935,7 +2018,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-631",
@@ -2000,7 +2083,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-628",
@@ -2064,7 +2147,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-630",
@@ -2130,7 +2213,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-627",
@@ -2195,7 +2278,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-626",
@@ -2261,7 +2344,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-625",
@@ -2327,7 +2410,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-629",
@@ -2392,7 +2475,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-624",
@@ -2458,7 +2541,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-622",
@@ -2524,7 +2607,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-623",
@@ -2590,7 +2673,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-618",
@@ -2653,7 +2736,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-619",
@@ -2717,7 +2800,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-617",
@@ -2790,7 +2873,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-620",
@@ -2854,7 +2937,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-621",
@@ -2917,11 +3000,11 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-615",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -2985,7 +3068,7 @@
     },
     {
       "id": "news-616",
-      "rank": 41,
+      "rank": 42,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
