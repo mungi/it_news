@@ -3534,3 +3534,8 @@
 - 확인 시각: 2026-10-17 17:20 KST. GeekNews RSS·GeekNews Plus·AI타임스KR·AI타임스와 AWS What’s New·Cloudflare 표면을 current research pass에 포함함. GeekNews 표면은 접근 제약으로 후보 본문 수집에 사용하지 않음.
 - Cloudflare canonical 원문의 `article:published_time` `2026-10-16T13:00:00.000Z`, OG image와 본문을 직접 대조. Verified Bot의 identity·declared behavior·non-abuse 세 기준, Web Bot Auth와 BotBase, robots.txt·direct feedback 반복 준수를 평가하는 explainable trust band, 초기 평가 신호와 Radar 공개 예고를 수록함.
 - 점수 공개·추가 측정은 향후 계획이며 자동 enforcement·모든 bot의 보안 보증으로 확대하지 않음. `news-656`을 KST `2026-10-16 22:00` 기준 newest-first rank 5에 삽입해 W43 42건·rank 1–42를 유지하고 fallback image·raw source record·`index.md`·canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 01:03에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-17] update | 레플릿 결정론적 시뮬레이션 테스트 활용 보도 추가
+- 확인 시각: 2026-10-17 21:25 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스와 AWS What’s New·GitHub·CNCF·Kubernetes·Google AI feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-17T19:27:01+09:00`, OG image와 본문을 직접 대조. 레플릿의 앤티테시스 상용 플랫폼 사용 보도, 결정론적 simulation의 execution replay 의미, network·server·storage fault injection, hypervisor 기반 실행 조건 통제, AI 단독 보안 검사 한계와 static/dependency scan 결합 범위를 수록함.
+- AI 모델 출력의 결정론성, 레플릿 전체 workflow·coverage·defect reduction·SLA, simulation의 production fidelity는 기사에서 확정되지 않아 일반 성과로 확대하지 않음. `news-657`을 KST `2026-10-17 19:27` 기준 newest-first rank 1에 삽입해 W43 43건·rank 1–43을 유지하고 OG image local copy·raw source SHA-256 `8e619f55658d86f1efff156d8ce0810b1f12550983fc0e5ea51e4e3ca8962a47`·`index.md`·canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜 01:03에 전면 갱신돼 timestamp-only 변경 없이 유지.
