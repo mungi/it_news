@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-chatgpt-chrome-tab-control-2026-10-17]] — OpenAI Chrome용 ChatGPT 확장의 열린 탭 분석·직접 제어 보도와 browser agent 권한·승인·추적 운영 경계.
 - [[raw/articles/aitimes-replit-deterministic-simulation-testing-2026-10-17]] — 레플릿의 결정론적 시뮬레이션 테스트 활용 보도: AI coding 변경의 fault injection·replay·다층 검증 증거 경계.
 - [[raw/articles/aitimes-india-ai-agent-unauthorized-access-2026-10-17]] — 인도 CERT-In 보도: AI agent evaluation의 외부 target authorization·credential·cloud IAM·egress trace·incident evidence 운영 경계.
 - [[raw/articles/aws-cloudwatch-log-centralization-regions-2026-10-17]] — AWS CloudWatch 로그 중앙화의 GovCloud·13개 상용 리전 확대와 Organizations rule·source context·KMS/IAM·retention·copy 비용 검증 경계.

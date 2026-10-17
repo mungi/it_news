@@ -3545,3 +3545,8 @@
 - 전일 Gemini 4 Argon·AWS Transform Deep Dive를 유지하지 않고, AWS 공식 CloudWatch log centralization 공지와 AI타임스의 레플릿 deterministic simulation 보도로 2건을 전면 교체함. 첫 주제는 GovCloud(US-East·US-West)·13개 상용 리전, Organizations rule·source context·무료 1 copy·추가 GB당 $0.05와 KMS/IAM·parser·delivery lag·coverage 검증 경계를 정리함.
 - 두 번째 주제는 network·server·storage failure injection과 execution replay 보도 범위, LLM output determinism·production fidelity와의 구분, static/dependency scan·sandbox·rollback evidence를 포함한 AI coding release gate를 재구성함. 두 Deep Dive는 서로 다른 source URL을 사용했고 각 9/10개 expert section·1,800자 이상 기준을 충족함.
 - `docs/data/weekly-news.json`의 `refreshed_kst`·`last_updated_kst`를 실제 시각으로 갱신하고 canonical `weekly/2026-W43.md`를 재생성함. 일반 뉴스는 새로 검증된 후보가 없어 43건 newest-first·rank 1–43을 유지함.
+
+## [2026-10-18] update | OpenAI Chrome용 ChatGPT 열린 탭 분석·직접 제어 추가
+- 확인 시각: 2026-10-18 05:35 KST. GeekNews·GeekNews Plus는 HTTP 403으로 접근이 제한됐고, AI타임스KR·AI타임스와 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·Google AI feed를 current research pass에 포함함. 새 후보는 AI타임스 canonical 원문을 직접 대조함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-17T15:40:58+09:00`, OG image와 본문을 확인. OpenAI가 X로 공개했다는 Chrome 공식 ChatGPT 확장의 열린 탭 context, Chat·Work 모드, 데스크톱 앱 `컴퓨터 사용`에서 Chrome 연결, 페이지 비교·양식 입력 후 정지·메시지 전송·파일 download·tab 정리 사례를 수록함.
+- 계정·플랜·지역별 availability, site별 permission, action approval·rollback·audit log, prompt injection 및 download 검사 동작은 공개되지 않아 확정하지 않음. `news-658`을 KST `2026-10-17 15:40` 기준 newest-first rank 2로 삽입해 W43 44건·rank 1–44를 유지하고 OG image local copy, raw source SHA-256 `0c8bd8ba6310350f4160f139ed79186af0a4f033e86b77b9117a04baff425ea4`, `index.md`, canonical `weekly/2026-W43.md`를 동기화함.
