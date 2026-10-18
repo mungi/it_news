@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-18 21:48",
+  "last_updated_kst": "2026-10-19 01:51",
   "audience": "developers and engineers",
   "executive_summary": [
     "중국이 대규모 모델·에이전트·컴퓨팅 클러스터·칩 설계 등 23개 AI 기술을 포함한 수출 통제 개정안을 공개함. 오픈소스·API 예외와 기술 소유권·핵심 인력·해외 직접 배치의 관리 경계가 달라 China-linked model·artifact·IP·control-right inventory 분리 필요.",
@@ -14,187 +14,178 @@
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "CloudWatch 로그 중앙화 확대: 복사 규칙을 observability data contract로 운영하는 방법",
-      "summary": "한 줄 결론: AWS CloudWatch log centralization의 GovCloud·13개 상용 리전 확대는 여러 계정·리전 로그의 집계를 단순화하지만, 중앙 copy 자체가 탐지 완전성·보존·암호화·접근 통제를 보장하지 않음. rule scope, source context, KMS/IAM, parser, delivery lag, 추가 copy 비용을 하나의 data contract로 검증해야 함.",
-      "details": "AWS는 CloudWatch log centralization을 AWS GovCloud(US-East·US-West)와 13개 상용 리전에 추가 제공한다고 발표했다. AWS Organizations와 통합해 전체 조직, 특정 OU 또는 선택 account의 여러 account·Region 로그를 하나의 destination account로 복사하며 source context를 enriched system field로 보존하는 범위다. 한 개 centralized copy는 무료이고 추가 copy는 GB당 $0.05다. 이는 managed log pipeline의 운영 부담을 줄일 수 있지만 retention, KMS/IAM policy, parser compatibility, delivery lag, alert completeness와 cross-partition 설계는 공지가 보장하지 않으므로 production rollout은 completeness·access·cost evidence를 갖춘 canary로 시작해야 함.",
-      "why_it_matters": "중앙 로그는 보안 조사와 SRE 관측의 공통 기반이지만 copy 경로가 늘면 데이터 접근면·비용·탐지 공백도 함께 늘어남.",
+      "title": "GitHub 비밀값 탐지의 문맥 분류: push protection을 secret lifecycle control로 운영하는 방법",
+      "summary": "한 줄 결론: GitHub의 문맥 인식 secret classifier는 내부 평가에서 weighted acceptance 11.5% 향상과 median scan execution time 86% 감소를 제시했지만, 모델 지표만으로 유출 차단·회수 품질이 보장되지는 않음. rule match부터 차단, bypass, owner 통지, revoke·rotate, artifact 정리, 사후 검증까지를 하나의 secret lifecycle control로 계측해야 함.",
+      "details": "GitHub는 secret scanning에서 정규식·패턴으로 찾은 후보의 주변 문맥을 분류하는 모델을 공개하고, 내부 환경에서 weighted acceptance가 11.5% 높아지고 median scan execution time은 86% 낮아졌다고 밝혔다. 이 결과는 GitHub의 rule·repository·workflow와 결합된 범위다. 조직은 classifier 도입 여부보다 어떤 secret이 어떤 경로로 발견되고, push protection이 언제 막거나 우회되며, 노출 credential이 얼마나 빨리 무효화되는지를 release control로 운영해야 한다. 모델은 triage를 돕는 계층이지 credential rotation·권한 축소·artifact purge·forensic evidence를 대체하지 않음.",
+      "why_it_matters": "비밀값 탐지는 정확도·속도·개발자 마찰의 균형 문제이며, 하나라도 빠지면 alert fatigue·bypass 또는 노출 지속 시간이 길어질 수 있음.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-cloudwatch-centralization-region-expansion/"
+        "https://github.blog/ai-and-ml/githubs-model-for-secret-detection-finding-more-secrets-with-less-noise/"
       ],
-      "image_url": "",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "refreshed_kst": "2026-10-18 01:29",
+      "image_url": "https://github.blog/wp-content/uploads/2026/01/generic-github-security-logo.png",
+      "local_image": "",
+      "refreshed_kst": "2026-10-19 01:51",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "이번 확대의 판단 단위는 리전 availability가 아니라 **source에서 destination까지 로그 증거가 완전·안전·경제적으로 이어지는지**임. Centralization rule은 복사 경로를 만들 뿐, SOC query·retention·access review·incident evidence의 정확성을 자동으로 만들지 않음.",
+          "body": "판단 기준은 탐지 alert 수가 아니라 **노출된 credential을 차단·무효화·증명하는 폐쇄 루프**임. 문맥 classifier는 후보 우선순위를 개선할 수 있으나 실제 공격면 축소는 push protection, rotation, access review, artifact cleanup이 연결될 때만 측정 가능.",
           "items": [
-            "변화: GovCloud(US-East·US-West)와 13개 상용 리전에서 log centralization 제공 확대",
-            "팀 액션: rule scope·KMS/IAM·parser·delivery lag·추가 copy 비용을 단일 change record로 승인"
+            "변화: GitHub가 문맥 인식 classifier의 weighted acceptance **11.5% 향상**과 median scan execution time **86% 감소**를 내부 평가 범위로 공개",
+            "팀 액션: detector 결과를 block·bypass·rotation·forensic evidence까지 같은 incident ID로 연결"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS 공지의 기능 범위는 AWS Organizations와 연결해 전체 조직, 특정 OU 또는 선택 account의 여러 account·Region log를 하나의 destination account로 복사하는 것임. 복사본에는 source context를 enriched system field로 보존하며 Console·CLI·SDK에서 rule을 구성할 수 있음.",
+          "body": "GitHub 원문은 pattern match만으로 secret 여부를 확정하기보다 주변 코드와 사용 맥락을 분류해 경보 품질과 처리 시간을 함께 개선하는 방법을 설명함. 수치는 GitHub 환경의 공개 결과이며, self-hosted scanner나 다른 언어·repository 구성의 동일 효과를 보장하는 발표는 아님.",
           "items": [
-            "원문 사실: Cape Town·Hong Kong·Hyderabad·Jakarta·Malaysia·Melbourne·Canada West·Milan·Spain·Zurich·Tel Aviv·Bahrain·UAE와 GovCloud 제공 추가",
-            "원문 사실: 한 개 centralized copy 무료, 추가 copy는 GB당 $0.05 범위"
+            "원문 사실: classifier는 rule을 폐기하는 단일 통제가 아니라 후보를 문맥으로 평가하는 추가 계층",
+            "원문 사실: weighted acceptance와 median scan time은 GitHub 평가 지표이며 false-negative 전체율·조직별 enforcement 효과의 일반 보장 아님"
           ]
         },
         {
           "heading": "AI·Infra 전문가 해석",
-          "body": "로그 중앙화는 observability 기능 toggle이 아니라 producer, transport, destination, consumer를 잇는 data-plane 변경임. source account의 log group과 destination query·SIEM detection 사이에서 필드·시간·owner·보존 contract가 끊기면 중앙화 성공 지표와 실제 incident 대응 능력이 달라질 수 있음.",
+          "body": "secret detection은 ML model 평가와 credential incident response가 결합된 control plane임. precision proxy가 좋아져도 high-impact secret을 놓치거나 bypass 뒤 회수가 늦으면 실제 위험은 줄지 않음. 반대로 모든 의심 문자열을 막으면 CI와 긴급 배포가 우회 경로를 만들 수 있어 detector threshold와 exception process를 함께 설계해야 함.",
           "items": [
-            "설계: log group별 data class·source owner·destination owner·parser·retention·detection owner를 inventory화",
-            "피할 것: rule 생성 성공이나 destination ingest량만으로 coverage를 판단하는 운영"
+            "설계: secret class·repository tier·deployment path별 block 또는 alert 정책과 owner를 분리",
+            "피할 것: acceptance 지표만으로 privileged token·cloud key·signing key의 residual risk를 판단하는 운영"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "Organizations 범위를 넓히면 신규 account·OU 이동·예외 account가 log coverage에 영향을 줌. source context 보강은 조사에 유용하지만 event timestamp, account/Region identity, sequence, delivery failure와 parser drop을 synthetic event로 대조해야 source-to-destination completeness를 판단할 수 있음.",
+          "body": "검출 지점은 developer workstation, pre-commit, pull request, push protection, CI log, build artifact, package registry와 runtime configuration으로 나뉨. 한 지점의 classifier 결과가 다른 지점의 masking·block·rotation trigger와 이어지지 않으면 동일 값이 cache·fork·artifact에 남을 수 있음. event schema에는 detector version, rule, classifier decision, commit or artifact digest, owner, action timestamp가 필요.",
           "items": [
-            "검증: representative application·audit·security log의 source event와 destination event를 ID·timestamp·context field로 reconciliation",
-            "운영: account onboarding·OU 이동·rule 변경·destination outage를 runbook과 alert ownership에 연결"
+            "검증: synthetic secret과 과거 incident sample로 detector revision 전후 precision proxy·missed sample·push latency 비교",
+            "운영: bypass 사유·승인자·expiry·재검토를 exception record로 보관하고 permanent bypass를 금지"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "복사한 로그에는 보안 이벤트와 application metadata가 포함될 수 있음. source의 resource policy, destination IAM, KMS key, break-glass access, export 권한, third-party SIEM connector가 다른 경로로 결합되므로 least privilege와 access review를 destination 기준으로 다시 수행해야 함.",
+          "body": "탐지 결과는 민감한 credential metadata와 repository context를 포함할 수 있으므로 alert viewer, remediation operator, audit reader의 권한을 분리해야 함. 발견된 값은 로그에서 다시 노출되지 않게 redaction하고, 실제 secret은 rotation 전에 삭제만 하는 방식으로 처리하지 않아야 함. provider audit log와 IAM change가 회수 증거에 포함돼야 함.",
           "items": [
-            "통제: source/destination KMS key policy·role trust·resource policy·retention delete 권한을 분리 검토",
-            "리스크: central copy만 보존하고 source integrity 또는 delivery failure evidence를 잃는 조사 공백"
+            "통제: short-lived credential·least privilege·vault reference를 우선하고 long-lived secret inventory를 축소",
+            "통제: revoke·rotate·dependent service restart·artifact purge·access review를 incident close criteria로 정의"
           ]
         },
         {
-          "heading": "FinOps·SRE 관점",
-          "body": "무료 copy 한 개는 전체 비용의 상한이 아님. 추가 copy GB당 $0.05 외에도 destination retention, query, SIEM ingestion, export와 cross-region design이 비용을 바꿀 수 있음. 운영 지표는 copied bytes와 비용뿐 아니라 delivery lag, parse success, alert freshness, coverage ratio를 함께 가져야 함.",
+          "heading": "SRE·비용 관점",
+          "body": "scan time 감소는 개발자 waiting time과 compute 사용량에 영향을 줄 수 있지만, 보안 효과는 remediation lead time과 escaped-secret 비용을 포함해 계산해야 함. alert volume만 줄이면 missed secret 표본이 늘 수 있고, 모든 alert를 사람 검토로 보내면 대응 queue가 병목이 됨. detector 운영 지표와 incident SLA를 같은 dashboard에서 관찰해야 함.",
           "items": [
-            "측정: source bytes·copied bytes·delivery lag·parse error·detection freshness·retention cost를 log group별 비교",
-            "경계: 공지는 delivery latency·alert completeness·downstream parser 호환성을 보장하지 않음"
+            "측정: alert·accepted alert·bypass·sampled false negative·push latency·time-to-revoke·time-to-rotate·reopen rate",
+            "경계: GitHub의 11.5%·86% 수치를 조직의 CI latency 또는 breach reduction 수치로 환산할 근거 없음"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "보안과 운영에 결정적인 소수 log group에서 source-to-destination canary를 먼저 수행하고, account·OU 단위로 확장해야 rollback과 evidence gap을 관리할 수 있음. 기존 pipeline을 즉시 제거하지 말고 parallel query와 detection parity 기간을 둬야 함.",
+          "body": "먼저 critical repository와 cloud/provider credential 한두 종류에서 baseline을 만들고, classifier 또는 rule 변경을 feature flag처럼 canary 적용해야 함. 이후 bypass workflow와 automated rotation이 실제로 닫히는지 chaos-style drill로 확인한 뒤 scope를 넓히는 순서가 안전함.",
           "items": [
-            "1단계: data classification·rule scope·destination account·access/KMS/retention owner 정의",
-            "2단계: synthetic event와 실제 sample로 field·timestamp·parser·alert parity·비용 canary 검증",
-            "3단계: 조직 확대 전 delivery failure·destination outage·access revoke·billing threshold drill"
+            "1단계: secret taxonomy·owner·detection point·block policy·rotation runbook inventory화",
+            "2단계: representative repository에서 synthetic leak과 approved bypass를 이용해 end-to-end timing 측정",
+            "3단계: artifact registry·CI log·fork·deployment credential까지 evidence scope 확장"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "개발팀은 application log schema와 correlation ID를, 플랫폼·보안팀은 route, access, retention, detection evidence를 공동 소유해야 함. schema 변경이 중앙 query를 조용히 깨지 않도록 producer change와 parser/detection change를 함께 배포해야 함.",
+          "body": "개발팀은 secret을 code·test fixture·log에 남기지 않는 interface와 CI masking을, 플랫폼·보안팀은 detector policy·vault·IAM·rotation automation을 공동 소유해야 함. 모델이나 rule change도 security release로 versioning해야 regression 원인을 분리할 수 있음.",
           "items": [
-            "체크: account·OU·Region·log group별 inclusion/exclusion과 owner 확인",
-            "체크: KMS·IAM·resource policy·break-glass·export·retention·delete 권한 확인",
-            "체크: copied byte·lag·missing event·parser drop·alert freshness·추가 copy 비용의 SLO/SLO breach action 정의"
+            "체크: detector/rule/classifier version·commit/artifact digest·action·owner·SLA를 event record로 보존",
+            "체크: push protection bypass의 reason·approver·expiry·follow-up rotation 여부 확인",
+            "체크: critical secret의 revoke·rotate·dependent workload restart·audit log 조회 drill 실행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "중앙화의 가치가 rule 개수에 있지 않고 **조사 가능한 로그 증거의 연속성**에 있음. 새로운 리전으로 확대하기 전에 대표 incident event 하나가 source 발생부터 destination detection·retention·access review까지 끊기지 않는지 증명해야 함.",
+          "body": "문맥 분류의 성과는 alert 숫자를 예쁘게 만드는 데 있지 않고 **유출된 권한을 더 빨리 닫는 데** 있음. 대표 cloud key 하나를 의도적으로 노출한 test에서 탐지부터 block·rotation·artifact purge·audit evidence까지의 시간을 먼저 재야 함.",
           "items": [
-            "발표 포인트: AWS 공지의 rule scope·source context·무료 1 copy와 GB당 $0.05 추가 copy 범위",
-            "즉시 행동: production과 security log 각각 한 개에서 source/destination reconciliation·access·비용 canary 실행"
+            "발표 포인트: GitHub 공개 지표 11.5% acceptance 향상·86% median scan time 감소와 적용 경계",
+            "즉시 행동: critical repository 한 곳에서 synthetic secret drill과 bypass/rotation evidence 점검"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "AI 코딩의 결정론적 시뮬레이션 검증: 생성 코드의 failure path를 replay evidence로 바꾸는 방법",
-      "summary": "한 줄 결론: AI coding workflow의 승인 기준은 생성 속도나 unit test 통과만이 아니라 장애 조건에서 같은 실행을 재현하고 수정 결과를 비교할 수 있는 evidence임. 레플릿의 앤티테시스 활용 보도는 deterministic simulation을 network·server·storage failure path 검증 수단으로 제시하지만, 모델 출력의 결정론성이나 production fidelity를 자동 보장하지 않음.",
-      "details": "AI타임스는 The Information 보도를 인용해 레플릿이 앤티테시스의 상용 테스트 플랫폼을 사용한다고 전했다. 통제된 가상 환경에서 네트워크 지연, 서버, 저장장치 장애를 주입하고 오류 실행을 같은 조건에서 재현하는 방식이 보도 범위다. 이는 LLM이 같은 출력을 내거나 AI 생성 코드가 정확하다는 보장이 아니며, 레플릿의 전체 coverage·defect reduction·SLA도 공개되지 않았다. 개발 조직은 AI 생성 patch에 static analysis, dependency scan, deterministic replay, human review, rollback evidence를 결합하고 simulation의 external dependency·data mutation·production traffic fidelity를 별도 검증해야 함.",
-      "why_it_matters": "AI가 만든 patch는 failure timing과 distributed state를 이해했다는 증거가 아니므로, replay 가능한 실행 artifact가 merge와 incident 대응의 품질을 좌우함.",
+      "title": "Verified Bot의 지속 책임성: AI crawler를 identity가 아닌 행동 증거로 통제하는 방법",
+      "summary": "한 줄 결론: Cloudflare는 Verified Bot의 신원 확인 뒤에도 robots.txt·HTTP 429·운영자 피드백을 지속 준수하는지 평가하는 trust band를 공개했음. 서명된 bot identity만으로 origin 부하·opt-out·retry behavior가 안전해지지 않으므로, crawler policy decision·rate-limit 반응·중단·재개를 trace 가능한 행동 증거로 운영해야 함.",
+      "details": "Cloudflare는 Verified Bot의 기준으로 정확한 신원 식별, 선언한 작업 수행, abusive behavior 금지를 제시하고 Web Bot Auth 및 BotBase를 이용한 identity evidence를 설명했다. 새 시스템은 robots.txt 같은 공개 지시와 direct feedback, HTTP 429 등 origin signal을 반복적으로 준수하는지를 관측해 설명 가능한 trust band를 제공하려는 범위다. 공개 Radar 점수·추가 측정·자동 enforcement의 완성 범위는 향후 계획이다. 서비스와 crawler 운영자는 identity, policy fetch/parser version, request decision, response, backoff, disable authority를 하나의 운영 contract로 만들 필요.",
+      "why_it_matters": "AI search와 agent crawler는 URL discovery·retry·병렬성이 넓어 user-agent 이름이나 허용 목록만으로 origin 안전성과 정책 준수를 판단할 수 없음.",
       "sources": [
-        "https://www.aitimes.com/news/articleView.html?idxno=216367",
-        "https://replit.com/blog/securing-ai-generated-code"
+        "https://blog.cloudflare.com/verified-bots-accountability/"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202610/216367_220421_2042.jpg",
-      "local_image": "assets/images/news-657.jpg",
-      "refreshed_kst": "2026-10-18 01:29",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M51ZPERWNWYTD7Z36YMY80A8.01M51ZPFH7VV8EHQTMPJG9FHZ4.png",
+      "local_image": "assets/images/fallback-security.svg",
+      "refreshed_kst": "2026-10-19 01:51",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AI coding의 release gate는 **생성된 diff를 같은 failure 조건에서 재현·수정·비교할 수 있는지**임. 결정론적 simulation은 프로그램 실행의 replay 수단이며, LLM 출력의 결정론성이나 production 안전성의 동의어가 아님.",
+          "body": "crawler의 신뢰 단위는 user-agent 문자열이나 등록된 운영자 이름이 아니라 **정책 변화와 origin feedback에 실제로 반응한 request trace**임. Verified identity는 시작점이며 robots.txt·429·직접 중단 요구를 무시하면 정상 bot도 origin 관점에서 abusive pattern이 될 수 있음.",
           "items": [
-            "변화: 네트워크 지연·server·storage failure를 주입한 실행 검증 도구 활용 보도",
-            "팀 액션: AI-generated change에 test 결과만이 아니라 replay artifact·fault model·review·rollback evidence 연결"
+            "변화: Cloudflare가 Verified Bot의 identity 뒤 행동 준수를 반복 관측하는 trust band 방향 공개",
+            "팀 액션: crawler별 policy decision·429/Retry-After·backoff·disable·재개 승인을 telemetry contract로 고정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AI타임스는 The Information 보도를 인용해 레플릿이 앤티테시스 상용 테스트 플랫폼을 사용한다고 전함. 기사에서 플랫폼은 통제된 가상 환경에서 프로그램을 실행하고 장애를 주입하며 오류 조건을 같은 방식으로 재현하는 범위로 설명됨.",
+          "body": "Cloudflare 원문은 Verified Bot의 세 기준으로 정확한 identity, 선언한 behavior, abusive behavior 금지를 제시함. Web Bot Auth의 request signature와 BotBase 공개 목록은 identity evidence에 해당하며, 새 관측은 published instruction 준수와 site operator direct feedback 반응을 초기 신호로 다룸. Radar 공개 점수와 추가 측정은 예고 범위임.",
           "items": [
-            "원문 사실: 앤티테시스의 hypervisor가 실행 순서·시간·network 같은 재현 조건을 통제한다고 설명",
-            "원문 사실: 레플릿의 1월 연구는 AI 단독 보안 검사의 표현·질문 의존성과 static/dependency scan 결합 필요성을 제기"
-          ]
-        },
-        {
-          "heading": "결정론성의 범위와 경계",
-          "body": "결정론적 simulation은 동일 입력과 환경 조건 아래 프로그램 실행을 replay하는 성질임. model sampling, prompt 변화, tool output, external API, live data가 같은 결과를 낸다는 뜻이 아니므로 agent output과 execution evidence를 서로 다른 artifact로 보관해야 함.",
-          "items": [
-            "구분: program replay 가능성과 LLM output repeatability는 별도 문제",
-            "경계: production traffic·third-party API·data mutation·clock·hardware fidelity는 보도만으로 확정 불가"
+            "원문 사실: 초기 평가 신호는 지시 준수와 direct feedback 반응",
+            "원문 사실: trust band는 지속 행동의 일관성과 관측 근거를 설명하는 방향이며 현재 모든 crawler의 자동 차단 보장 아님"
           ]
         },
         {
           "heading": "AI·Infra 전문가 해석",
-          "body": "AI code review는 syntax·pattern·local context 검토를 빠르게 할 수 있지만 distributed state, timeout race, retry amplification, storage fault에서 실제로 안전하다는 증명은 실행 evidence가 담당함. simulation은 AI를 대체하는 test가 아니라 AI가 만든 change의 failure surface를 좁히는 보조 control임.",
+          "body": "AI crawler는 agent loop, URL frontier, cache, retry queue, tool budget이 결합된 distributed client임. identity layer와 request scheduler를 분리하면 signed bot이더라도 stale robots policy, redirect loop, retry amplification으로 origin에 손상을 줄 수 있음. trust 판단은 bot registration database가 아니라 host·path·policy version·response·next action을 이어 보는 event stream에서 나와야 함.",
           "items": [
-            "설계: prompt/model·source revision·generated diff·fault schedule·seed·test result·review decision을 같은 trace에 연결",
-            "피할 것: unit test pass 또는 agent self-review를 system failure behavior의 대체 지표로 사용하는 판단"
+            "설계: identity key, target host, policy parser version, decision reason, response class, retry state를 request trace에 결합",
+            "피할 것: robots.txt allow만 보고 application rate limit·WAF challenge·operator opt-out을 무시하는 controller"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "대표 service를 선택해 timeout, packet delay/loss, dependency unavailability, disk/storage error, restart, duplicate delivery를 fault model로 정의해야 함. 오류가 나면 scheduler order와 input·state·network condition을 보존해 patch 전후 같은 scenario에서 regression을 비교해야 함.",
+          "body": "crawler는 robots.txt fetch와 cache TTL, path matching, HTTP status, Retry-After, DNS·redirect, concurrency budget을 명시적으로 모델링해야 함. policy fetch 실패나 parser 오류를 allow로 처리하면 fail-open이 되고, 429를 개별 request 실패로만 취급하면 queue가 재증폭될 수 있음. host별 circuit breaker와 global emergency stop을 분리하고 정책 변경은 active frontier에 즉시 전파해야 함.",
           "items": [
-            "검증: idempotency·retry budget·circuit breaker·queue/DLQ·transaction boundary·compensation behavior 확인",
-            "운영: flaky test·unreproducible failure·simulation runtime·artifact retention을 pipeline capacity와 운영 지표로 관리"
+            "검증: robots.txt 변경·429 burst·redirect loop·WAF denial·operator complaint에서 stop time과 residual request 수 측정",
+            "운영: crawl job, queue partition, worker version, policy snapshot, contact case ID를 correlation ID로 연결"
           ]
         },
         {
-          "heading": "보안·공급망 관점",
-          "body": "AI-generated code의 보안 검토는 static analysis와 dependency scan을 함께 써야 한다는 레플릿 연구 맥락이 제시됨. simulation environment도 untrusted code와 secret을 실행할 수 있으므로 production credential·network egress·real customer data를 그대로 연결하지 않는 격리 경계가 필요함.",
+          "heading": "보안·거버넌스 관점",
+          "body": "Web Bot Auth 같은 identity proof는 key custody와 revocation이 동반돼야 하며, compromised credential 또는 misconfigured worker가 유효 identity를 가진 채 정책을 위반할 가능성은 별도임. origin 측은 allowlist와 rate limit만이 아니라 contact·appeal·suspension·evidence handoff를 정의해야 함. crawler 측은 untrusted page content가 scheduler instruction을 바꾸지 않도록 policy control plane과 수집 data plane을 분리해야 함.",
           "items": [
-            "통제: ephemeral sandbox·least-privilege test identity·egress allowlist·masked test data·artifact access review 적용",
-            "통제: dependency lockfile·SCA result·secret scan·manual security review를 replay result와 같은 merge evidence로 보관"
+            "통제: signing key rotation·revocation·worker identity·egress allowlist·per-host budget을 독립 control로 적용",
+            "통제: operator feedback의 수신 SLA·disable authority·재개 승인·evidence retention을 계약 또는 runbook에 명시"
           ]
         },
         {
-          "heading": "비용·SRE 관점",
-          "body": "simulation 사용량은 compute뿐 아니라 scenario authoring, environment reset, artifact storage, human triage 비용을 포함함. 반대로 escaped defect와 incident time을 줄이는 효과는 조직별 workload와 coverage에 따라 측정해야 하며 보도에서 일반 성과로 확정할 수 없음.",
+          "heading": "SRE·FinOps 관점",
+          "body": "예의 있는 crawl은 단지 윤리 문제가 아니라 retry traffic·egress·cache miss·origin incident 비용을 줄이는 capacity control임. 429 비율만 낮아도 target selection을 과도하게 회피했을 수 있으므로 successful fetch, policy denial, retry depth, backoff compliance, host concentration, stop latency를 함께 봐야 함.",
           "items": [
-            "측정: scenario runtime·flake rate·replay success·fault coverage·escaped defect·MTTR·review rework를 AI change cohort별 비교",
-            "경계: 레플릿의 전체 coverage·defect reduction·SLA와 앤티테시스 일반 효과는 공개되지 않은 범위"
+            "측정: host별 request·429·Retry-After 준수율·retry depth·policy violation·disable latency·egress cost",
+            "경계: Cloudflare의 향후 Radar 점수와 trust band가 조직별 crawler SLA나 legal compliance를 자동 증명하지 않음"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "customer impact가 작고 deterministic dependency를 가진 service부터 시작해 failure model과 acceptance criteria를 고정해야 함. 실제 production traffic 또는 destructive write를 simulation으로 바로 대체하지 말고 shadow·staging·canary와 rollback drill을 분리하는 편이 안전함.",
+          "body": "먼저 read-only crawler 한 개와 제한된 host allowlist에서 policy snapshot과 429 handling을 측정하고, 이후 multi-agent discovery나 partner crawler로 범위를 넓히는 편이 안전함. production origin에 load를 주는 테스트 대신 sandbox host와 controlled rate-limit endpoint로 fail-closed behavior를 검증해야 함.",
           "items": [
-            "1단계: AI-generated change의 허용 범위·data class·owner·abort/rollback 기준 정의",
-            "2단계: timeout·retry·storage failure 등 한두 개 scenario에서 replay artifact와 regression gate 구축",
-            "3단계: critical workflow로 확대 전 external dependency mock·security scan·staging canary·incident drill 검증"
+            "1단계: bot identity·target class·policy source·parser·concurrency·stop owner 정의",
+            "2단계: robots.txt update와 429/Retry-After scenario로 policy propagation·backoff·circuit breaker canary",
+            "3단계: external feedback ticket·key revoke·global kill switch·recovery approval drill"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "개발팀은 scenario와 application contract를, 인프라팀은 sandbox, identity, telemetry, retention, budget을 공동 소유해야 함. test harness나 agent skill 변경도 source 변경처럼 versioned evidence로 남겨야 regression 원인을 분리할 수 있음.",
+          "body": "개발팀은 crawler code와 parser release를, 플랫폼·SRE·보안팀은 signing identity, host budget, telemetry, incident contact를 공동 소유해야 함. agent prompt나 retrieval plan 변경이 URL frontier를 바꾸면 일반 code deploy와 같은 change review를 거쳐야 함.",
           "items": [
-            "체크: model/prompt/skill hash·base commit·dependency lockfile·fault schedule·seed·test result 기록",
-            "체크: sandbox TTL·network egress·test credential·artifact retention·production data exclusion 확인",
-            "체크: replay success·flake·timeout·escaped defect·rollback·cost·review precision의 threshold와 escalation 정의"
+            "체크: bot key·worker version·parser version·policy snapshot·target host·request decision 기록",
+            "체크: 429·Retry-After·robots.txt deny·WAF denial·complaint의 stop/retry/restart 기준 확인",
+            "체크: key revoke·emergency disable·data retention·origin operator contact와 escalation ownership 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AI coding의 위험은 코드가 빠르게 생성되는 데 있지 않고 **실패했을 때 같은 조건을 다시 만들지 못하는 데** 있음. 생성량을 늘리기 전에 대표 failure path 하나를 deterministic replay·security scan·human approval까지 연결해 merge evidence로 만들어야 함.",
+          "body": "Verified Bot의 다음 단계는 identity badge가 아니라 **origin이 관찰할 수 있는 지속 준수 증거**임. crawler 한 개를 골라 robots.txt 변경과 429 응답 뒤 몇 초 안에 어떤 worker가 얼마나 멈추는지 먼저 측정해야 함.",
           "items": [
-            "발표 포인트: 보도된 simulation 범위와 model output determinism·production fidelity를 구분할 필요",
-            "즉시 행동: 대표 서비스 한 개에 timeout·retry·storage failure scenario와 replay artifact를 CI gate로 추가"
+            "발표 포인트: identity·declared behavior·non-abuse 세 기준과 행동 기반 trust band 방향",
+            "즉시 행동: host별 429/backoff·policy propagation·kill-switch drill을 운영 dashboard에 추가"
           ]
         }
       ]
