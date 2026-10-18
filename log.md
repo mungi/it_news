@@ -3550,3 +3550,8 @@
 - 확인 시각: 2026-10-18 05:35 KST. GeekNews·GeekNews Plus는 HTTP 403으로 접근이 제한됐고, AI타임스KR·AI타임스와 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·Google AI feed를 current research pass에 포함함. 새 후보는 AI타임스 canonical 원문을 직접 대조함.
 - AI타임스 canonical 원문의 `article:published_time` `2026-10-17T15:40:58+09:00`, OG image와 본문을 확인. OpenAI가 X로 공개했다는 Chrome 공식 ChatGPT 확장의 열린 탭 context, Chat·Work 모드, 데스크톱 앱 `컴퓨터 사용`에서 Chrome 연결, 페이지 비교·양식 입력 후 정지·메시지 전송·파일 download·tab 정리 사례를 수록함.
 - 계정·플랜·지역별 availability, site별 permission, action approval·rollback·audit log, prompt injection 및 download 검사 동작은 공개되지 않아 확정하지 않음. `news-658`을 KST `2026-10-17 15:40` 기준 newest-first rank 2로 삽입해 W43 44건·rank 1–44를 유지하고 OG image local copy, raw source SHA-256 `0c8bd8ba6310350f4160f139ed79186af0a4f033e86b77b9117a04baff425ea4`, `index.md`, canonical `weekly/2026-W43.md`를 동기화함.
+
+## [2026-10-18] update | TheoPhysEval GPT-6 아스트라 평가·중국 AI 기술 수출 통제 개정안 추가
+- 확인 시각: 2026-10-18 09:37 KST. GeekNews·GeekNews Plus는 접근 제약으로 후보 본문 수집이 불가했고, AI타임스KR·AI타임스 홈페이지와 AWS What’s New·Cloudflare 표면을 재점검함.
+- AI타임스 canonical 원문 2건을 직접 대조. TheoPhysEval 보도는 GPT-6 아스트라의 검색·코드 실행 조건 50문제 중 49문제 해결, 총 API 비용 116.28달러, 11개 분야, 기준 답안 재검토와 사전 노출 가능성의 한계를 기록함. 중국 수출 통제 보도는 23개 AI 기술, 오픈소스·API 예외, 해외 직접 배치·기술 소유권·핵심 인력·실질 지배권 이전의 별도 관리 가능성을 기록함.
+- `news-659`·`news-660`을 KST 발행 시각 최신순으로 삽입해 W43 46건·rank 1–46을 유지하고, raw capture SHA-256 `4b82d5172843f855f6db8f02c1c8f22707d95daf4e1fe0591ca83411f0819d57`, `ebc77aa1eb0627249c31ce2852a94574021f3f007fb3fb1460641bba0aa1ee39`, `index.md`, canonical `weekly/2026-W43.md`를 동기화함. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
