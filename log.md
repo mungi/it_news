@@ -3560,3 +3560,8 @@
 - 확인 시각: 2026-10-18 13:40 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스 홈페이지는 HTTP 200으로 확인했으며 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI feed를 current research pass에 포함함.
 - AI타임스 canonical 원문 2건을 직접 대조. 앤트로픽 보도는 캐나다 20년 임대·95MW→420MW 계획과 일본 최대 500MW 전용 센터 협상 범위를, DeepSeek 보도는 V4.1-Flash-1017 benchmark·Search/Fetch 1,000건당 $0.75·11월 1일 tool 과금 전환 범위를 수록함.
 - `news-661`·`news-662`를 발행 시각 최신순으로 삽입해 W43 48건·rank 1–48 유지, raw capture SHA-256·`index.md`·canonical weekly archive를 동기화함. 양 보도의 capacity·benchmark·가격은 공개 범위를 넘어 production SLO·usable GPU·일반 성능 우위로 확대하지 않음. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-18] update | Liquid AI d1-ultra 멀티모달 의사결정 모델 추가
+- 확인 시각: 2026-10-18 17:44 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스와 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·Google AI feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 입력 시각 `2026-10-18 17:13 KST`, OG image와 본문을 직접 대조. Liquid AI `d1-ultra`의 text/image one-pass 판단, `Noul` 0~1 확률·`Choice` 다중 선택지 확률·`Score` 기준 기반 점수, API 제공과 회로 기판·보험 청구 대조 사례를 수록함.
+- TypeSafe AI Jev 1.14 비교·독립 평가 1위는 제공사 주장 범위로 구분하고 benchmark 구성·latency·비용·calibration·production 성과는 미공개 범위로 기록. `news-663`을 KST 17:13 기준 newest-first rank 1에 삽입해 W43 49건·rank 1–49 유지, OG image local copy, raw capture SHA-256 `51a6ae16458ac27c30f8c3a506c8f15f01e4524c6fa47df4e045c8a12fdb9727`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.

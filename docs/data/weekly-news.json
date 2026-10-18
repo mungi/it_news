@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-18 13:40",
+  "last_updated_kst": "2026-10-18 17:44",
   "audience": "developers and engineers",
   "executive_summary": [
     "중국이 대규모 모델·에이전트·컴퓨팅 클러스터·칩 설계 등 23개 AI 기술을 포함한 수출 통제 개정안을 공개함. 오픈소스·API 예외와 기술 소유권·핵심 인력·해외 직접 배치의 관리 경계가 달라 China-linked model·artifact·IP·control-right inventory 분리 필요.",
@@ -202,6 +202,79 @@
   ],
   "items": [
     {
+      "id": "news-663",
+      "title_ko": "리퀴드 AI, 멀티모달 의사결정 모델 `d1-ultra` API 공개",
+      "title_original": "Liquid AI introduces d1-ultra multimodal decision model",
+      "summary": "핵심: 리퀴드 AI가 텍스트·이미지를 한 번의 forward pass로 처리하고 생성 token 대신 확률 또는 score를 반환하는 `d1-ultra`를 API로 제공하기 시작했다고 보도됨. 회사는 TypeSafe AI `Jev 1.14`를 앞섰다고 주장했지만, benchmark 구성·latency·비용·calibration 조건과 production 성과는 전체 공개되지 않은 범위임.",
+      "detail": "기사에 따르면 `d1-ultra`는 텍스트·이미지 또는 두 입력을 함께 받아 별도 출력 token 생성 없이 판단 결과와 선택지별 확률을 반환함. `Noul`은 예·아니요 질문에 0~1 확률을, `Choice`는 복수 선택지 확률을, `Score`는 사전 정의 기준상의 점수를 제공하는 형식임. 회로 기판 규격·이미지 대조와 보험 청구 사진·설명 대조가 예시로 제시됐지만, 각 업무의 dataset shift, false positive·negative 비용, threshold, abstention, human review 전환 조건은 사용자 조직의 별도 검증 대상임. 모델 제공사의 비교 주장과 독립 평가 1위 언급은 task distribution·평가 protocol·calibration·API 지연·단가가 공개된 동일 조건의 workload 결과인지 확인 전 일반 우위로 해석할 수 없음.",
+      "why_it_matters": "확률을 반환하는 비생성형 판단 모델은 분류·검수·라우팅의 지연과 token 비용을 줄일 수 있으나, 숫자 자체가 calibration·입력 품질·업무 손실 함수를 보장하지 않음. 자동 action과 사람 검토 사이의 threshold·abstention·audit 설계가 모델 선택만큼 중요함.",
+      "engineering_implication": "시사점: 대표 image/text task에서 AUROC 같은 단일 점수 외에 calibration error·false positive/negative·abstention·p95 latency·request cost·drift·human override를 측정하고, confidence가 낮거나 data provenance가 불명확한 입력은 자동 처리 대신 review queue로 보내야 함.",
+      "korea_implication": "국내 이미지 검수·보험·제조 품질 조직은 API 도입 전 입력 이미지의 개인정보·민감정보·국외 전송·보존 조건과 domain별 threshold·사람 검토 책임을 함께 확인할 필요.",
+      "category": "AI",
+      "tags": [
+        "Liquid AI",
+        "Multimodal",
+        "Decision Model",
+        "Inference",
+        "API",
+        "Calibration",
+        "AI Governance"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 78,
+      "published_kst": "2026-10-18 17:13",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216371",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216371_220428_1554.png",
+      "local_image": "assets/images/news-663.png",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "리퀴드 AI가 15일 현지시각 `d1-ultra`를 공개하고 API 제공을 시작했다고 기사에서 전함. 텍스트와 이미지를 단독 또는 함께 입력받아 판단 결과와 확률을 반환하는 의사결정 모델 범위임.",
+          "items": [
+            "제공 방식: 별도 생성 output 대신 한 번의 forward pass에서 판단 결과 산출",
+            "활용 예시: 회로 기판의 규격·실제 이미지 대조와 보험 청구 사진·설명 대조"
+          ]
+        },
+        {
+          "heading": "입력·출력 contract",
+          "body": "기사의 설명상 `Noul`은 예·아니요 질문에 0~1 확률을, `Choice`는 여러 선택지 확률을, `Score`는 정해진 평가 기준상의 위치를 출력함. API 응답의 score가 업무 정책의 승인·거절 결정을 직접 뜻하지는 않음.",
+          "items": [
+            "설계: task별 input schema·허용 이미지 형식·score 의미·abstention 응답을 API contract로 고정",
+            "검증: score threshold와 business action을 분리하고 low-confidence 경로는 사람 검토로 전환"
+          ]
+        },
+        {
+          "heading": "성능 주장과 확인 범위",
+          "body": "회사는 TypeSafe AI `Jev 1.14`보다 높은 성능과 독립 평가 의사결정 모델 1위를 주장했다고 기사에서 전함. benchmark dataset, task mix, latency, unit cost, calibration, 운영 데이터의 false positive·negative 결과는 기사에 전체 공개되지 않은 범위임.",
+          "items": [
+            "경계: vendor 비교 결과를 다른 domain·입력 품질·손실 함수의 production 우위로 일반화하지 않을 것",
+            "검증: 동일 dataset split·prompt/input preprocessing·threshold에서 baseline과 shadow comparison 실행"
+          ]
+        },
+        {
+          "heading": "운영·보안 관점",
+          "body": "이미지와 텍스트를 결합한 판단 경로는 data provenance와 개인정보 경계를 함께 다룸. 모델 확률을 자동 routing·claim triage·품질 차단에 연결하면 override와 audit trace가 없을 때 오류 원인과 책임 분리가 어려움.",
+          "items": [
+            "통제: request ID·model version·input hash 또는 provenance·score·threshold·action·human override를 audit trail로 보존",
+            "통제: 민감 이미지 redaction·retention·access control·국외 전송 여부를 API data path와 함께 검토"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "도입 판단은 모델 순위가 아니라 업무별 손실과 review capacity를 포함한 decision quality로 해야 함. 낮은 지연의 score model도 calibration drift 또는 input shift가 생기면 자동화 위험을 키울 수 있음.",
+          "items": [
+            "팀 액션: representative task에서 calibration error·false positive/negative·abstention·p95 latency·request cost baseline 측정",
+            "팀 액션: drift alert·threshold 변경 승인·fallback rule·human-review SLA를 release gate에 연결",
+            "팀 액션: high-impact action에는 dry-run과 shadow mode를 거쳐 rollback 가능한 policy로 확대"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-661",
       "title_ko": "앤트로픽, 캐나다 420MW 데이터센터 용량 임대 계약·일본 전용 센터 협상 보도",
       "title_original": "Anthropic signs first Canada data-center capacity lease and discusses a dedicated Japan site",
@@ -272,7 +345,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-662",
@@ -345,7 +418,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-660",
@@ -410,7 +483,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-657",
@@ -488,7 +561,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-659",
@@ -559,7 +632,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-658",
@@ -640,7 +713,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-655",
@@ -723,7 +796,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-654",
@@ -805,7 +878,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-653",
@@ -888,7 +961,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-652",
@@ -986,7 +1059,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-656",
@@ -1069,7 +1142,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-651",
@@ -1146,7 +1219,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-650",
@@ -1209,7 +1282,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-649",
@@ -1289,7 +1362,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-644",
@@ -1351,7 +1424,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-648",
@@ -1415,7 +1488,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-645",
@@ -1485,7 +1558,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-646",
@@ -1555,7 +1628,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-647",
@@ -1620,7 +1693,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-643",
@@ -1688,7 +1761,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-641",
@@ -1755,7 +1828,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-640",
@@ -1823,7 +1896,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-639",
@@ -1890,7 +1963,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-638",
@@ -1962,7 +2035,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-642",
@@ -2038,7 +2111,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-637",
@@ -2107,7 +2180,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-636",
@@ -2178,7 +2251,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-635",
@@ -2245,7 +2318,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-632",
@@ -2314,7 +2387,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-634",
@@ -2394,7 +2467,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-633",
@@ -2467,7 +2540,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-631",
@@ -2532,7 +2605,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-628",
@@ -2596,7 +2669,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-630",
@@ -2662,7 +2735,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-627",
@@ -2727,7 +2800,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-626",
@@ -2793,7 +2866,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-625",
@@ -2859,7 +2932,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-629",
@@ -2924,7 +2997,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-624",
@@ -2990,7 +3063,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-622",
@@ -3056,7 +3129,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-623",
@@ -3122,7 +3195,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-618",
@@ -3185,7 +3258,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-619",
@@ -3249,7 +3322,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-617",
@@ -3322,7 +3395,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-620",
@@ -3386,7 +3459,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-621",
@@ -3449,11 +3522,11 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-615",
-      "rank": 47,
+      "rank": 48,
       "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
       "title_original": "Filter, reshape, and redact logs before export with Transformers",
       "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
@@ -3517,7 +3590,7 @@
     },
     {
       "id": "news-616",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "CNCF kagent agent-builder 실습: Agent CR 생성 권한을 제한한 Kubernetes 자동화 경계",
       "title_original": "From zero to agent builder: Running kagent on your laptop",
       "summary": "핵심: CNCF 게시물은 kagent의 Agent custom resource를 자연어 요청으로 생성하는 local builder 실습과 `agents.kagent.dev` write로 제한한 RBAC example을 공개함. default unsecure auth·bundled PostgreSQL password·cluster-admin 기본값과 shared cluster 부적합성도 명시했으므로, agent-generated YAML은 admission policy·human approval·namespace/tool allowlist·audit trace 뒤에서만 적용 필요.",
