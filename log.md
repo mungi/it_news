@@ -3555,3 +3555,8 @@
 - 확인 시각: 2026-10-18 09:37 KST. GeekNews·GeekNews Plus는 접근 제약으로 후보 본문 수집이 불가했고, AI타임스KR·AI타임스 홈페이지와 AWS What’s New·Cloudflare 표면을 재점검함.
 - AI타임스 canonical 원문 2건을 직접 대조. TheoPhysEval 보도는 GPT-6 아스트라의 검색·코드 실행 조건 50문제 중 49문제 해결, 총 API 비용 116.28달러, 11개 분야, 기준 답안 재검토와 사전 노출 가능성의 한계를 기록함. 중국 수출 통제 보도는 23개 AI 기술, 오픈소스·API 예외, 해외 직접 배치·기술 소유권·핵심 인력·실질 지배권 이전의 별도 관리 가능성을 기록함.
 - `news-659`·`news-660`을 KST 발행 시각 최신순으로 삽입해 W43 46건·rank 1–46을 유지하고, raw capture SHA-256 `4b82d5172843f855f6db8f02c1c8f22707d95daf4e1fe0591ca83411f0819d57`, `ebc77aa1eb0627249c31ce2852a94574021f3f007fb3fb1460641bba0aa1ee39`, `index.md`, canonical `weekly/2026-W43.md`를 동기화함. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-18] update | 앤트로픽 Canada/Japan capacity·DeepSeek V4.1 Flash Search/Fetch API 추가
+- 확인 시각: 2026-10-18 13:40 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스KR·AI타임스 홈페이지는 HTTP 200으로 확인했으며 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI feed를 current research pass에 포함함.
+- AI타임스 canonical 원문 2건을 직접 대조. 앤트로픽 보도는 캐나다 20년 임대·95MW→420MW 계획과 일본 최대 500MW 전용 센터 협상 범위를, DeepSeek 보도는 V4.1-Flash-1017 benchmark·Search/Fetch 1,000건당 $0.75·11월 1일 tool 과금 전환 범위를 수록함.
+- `news-661`·`news-662`를 발행 시각 최신순으로 삽입해 W43 48건·rank 1–48 유지, raw capture SHA-256·`index.md`·canonical weekly archive를 동기화함. 양 보도의 capacity·benchmark·가격은 공개 범위를 넘어 production SLO·usable GPU·일반 성능 우위로 확대하지 않음. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.

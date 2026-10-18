@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-17 | Total pages: 432
+> Last updated: 2026-10-18 | Total pages: 434
 
 ## Entities
 
@@ -38,6 +38,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-anthropic-canada-japan-datacenter-capacity-2026-10-18]] — 앤트로픽 캐나다 420MW capacity 임대·일본 전용 센터 협상 보도와 usable capacity·commissioning·residency 검증 경계.
+- [[raw/articles/aitimes-deepseek-v41-flash-search-fetch-2026-10-18]] — DeepSeek V4.1-Flash-1017·Search·Fetch API 공개 보도와 agent tool 비용·provenance·data-boundary 검증 경계.
 - [[raw/articles/aitimes-china-ai-export-controls-proposal-2026-10-17]] — 중국 AI·agent·칩 설계 23개 기술 수출 통제 개정안 보도와 오픈소스·API 예외, 기술 이전·control-right 운영 경계.
 - [[raw/articles/aitimes-gpt6-astra-theophyseval-2026-10-17]] — GPT-6 아스트라 TheoPhysEval 결과 보도와 tool-using benchmark·채점·재현성 운영 경계.
 - [[raw/articles/aitimes-openai-chatgpt-chrome-tab-control-2026-10-17]] — OpenAI Chrome용 ChatGPT 확장의 열린 탭 분석·직접 제어 보도와 browser agent 권한·승인·추적 운영 경계.
