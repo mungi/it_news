@@ -38,6 +38,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/arxiv-gemini-4-argon-minecraft-multi-agent-2026-10-16]] — Gemini 4 Argon agent 4개의 27시간 14분 Minecraft 자율 완주 실험과 Mineflayer 관측·행동 contract, 장기 multi-agent 재현성·운영 검증 경계.
 - [[raw/articles/aitimes-liquid-ai-d1-ultra-multimodal-decision-model-2026-10-18]] — Liquid AI `d1-ultra` 멀티모달 확률·점수형 의사결정 API 보도와 calibration·threshold·review·data-boundary 검증 경계.
 - [[raw/articles/aitimes-anthropic-canada-japan-datacenter-capacity-2026-10-18]] — 앤트로픽 캐나다 420MW capacity 임대·일본 전용 센터 협상 보도와 usable capacity·commissioning·residency 검증 경계.
 - [[raw/articles/aitimes-deepseek-v41-flash-search-fetch-2026-10-18]] — DeepSeek V4.1-Flash-1017·Search·Fetch API 공개 보도와 agent tool 비용·provenance·data-boundary 검증 경계.

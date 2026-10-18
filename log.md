@@ -3575,3 +3575,8 @@
 - 확인 시각: 2026-10-19 01:51 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스·AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF 피드를 재점검함. GitHub와 Cloudflare canonical 원문의 발행 시각·OG metadata·본문을 직접 대조함.
 - 전일 CloudWatch log centralization·AI coding deterministic replay Deep Dive를 유지하지 않고, GitHub의 문맥 인식 secret classifier와 Cloudflare의 Verified Bot 지속 행동 평가를 서로 겹치지 않는 공식 원문으로 교체함. GitHub 공개 지표는 weighted acceptance 11.5% 향상·median scan execution time 86% 감소의 내부 평가 범위로, Cloudflare 기능은 robots.txt·HTTP 429·direct feedback 준수 관측과 trust band 방향으로 한정함.
 - 각 Deep Dive의 title·summary·details·source·image metadata·9개 전문가 section을 재구성하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-19 01:51`로 설정함. 50건 newest-first 뉴스 목록·rank 1–50은 유지하고 canonical `weekly/2026-W43.md`를 재생성함. GitHub 지표의 일반 성능·breach 감소와 Cloudflare의 자동 enforcement·compliance 보장은 원문 범위를 넘어 확정하지 않음.
+
+## [2026-10-19] update | Gemini 4 Argon 4-agent Minecraft 장기 협업 실험 추가
+- 확인 시각: 2026-10-19 05:56 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스·AI타임스KR 홈페이지는 HTTP 200을 확인했으며, AI타임스 canonical article와 linked arXiv v1 원문을 직접 대조함.
+- arXiv `2610.22319`의 v1 제출 시각 `2026-10-15 17:51:32 UTC`, sandboxed Minecraft Java Edition 1.20.4 Easy run의 4-agent 구성, `Mineflayer`·in-game chat·shared memory, 27시간 14분·program 2,783개·사망 605회, 단일 run·22% error 종료·상태 API/pathfinding·약 $520 출시 할인 비용의 평가 경계를 수록함.
+- AI타임스 발행 시각 `2026-10-18T18:30:30+09:00`, OG image·본문을 직접 대조해 `news-665`를 newest-first rank 1로 삽입하고 마지막 `news-616`만 제거해 50건·rank 1–50을 유지함. primary raw capture SHA-256 `391740066c134f17643797c1e57e5d26d18283ed1b56bfc816bac86f58b3e8a1`, local image, `index.md`, canonical `weekly/2026-W43.md`를 동기화함. 실험 결과를 일반 computer-use agent·production software 성공률 또는 비용 수치로 확대하지 않음.
