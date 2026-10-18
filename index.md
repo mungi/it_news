@@ -362,6 +362,7 @@
 - [[raw/articles/aws-nlb-listener-rules-dual-stack-2026-07-23]] — AWS NLB listener rule의 dual-stack IPv4·IPv6 target routing과 원본 client IP 보존 운영 경계.
 - [[raw/articles/cncf-confidential-containers-incubating-2026-07-23]] — Confidential Containers CNCF incubation과 TEE·attestation·secret release 운영 경계.
 - [[raw/articles/aws-bedrock-gpt-6-astra-ultrafast-2026-10-01]] — Bedrock GPT-6 Astra UltraFast의 최대 6배·300 tokens/s provider 주장과 latency·quota·fallback·FinOps canary 경계.
+- [[raw/articles/aitimes-openai-gpt-6-astra-pro-parallel-agents-2026-10-18]] — OpenAI GPT-6 Astra Pro 병렬 agent 실행 보도와 task DAG·권한·비용·trace·rollback 운영 경계.
 - [[raw/articles/aitimes-openai-decisions-api-2026-10-01]] — OpenAI Decisions API 제한 프리뷰의 선택지 기반 agent routing·policy gate·trace 검증 경계.
 - [[raw/articles/aitimes-google-rrsi-agent-harness-2026-10-01]] — Google RRSI의 agent harness 자기개선, holdout·cost·side effect·rollback release gate 경계.
 - [[raw/articles/aws-batch-job-cloudwatch-metrics-2026-10-07]] — AWS Batch, CloudWatch job metrics 기본 발행: queue·job 상태 관측 범위 확대의 source-verified 운영 경계.

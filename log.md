@@ -3565,3 +3565,8 @@
 - 확인 시각: 2026-10-18 17:44 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스와 AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·OpenAI·Google AI feed를 current research pass에 포함함.
 - AI타임스 canonical 원문의 입력 시각 `2026-10-18 17:13 KST`, OG image와 본문을 직접 대조. Liquid AI `d1-ultra`의 text/image one-pass 판단, `Noul` 0~1 확률·`Choice` 다중 선택지 확률·`Score` 기준 기반 점수, API 제공과 회로 기판·보험 청구 대조 사례를 수록함.
 - TypeSafe AI Jev 1.14 비교·독립 평가 1위는 제공사 주장 범위로 구분하고 benchmark 구성·latency·비용·calibration·production 성과는 미공개 범위로 기록. `news-663`을 KST 17:13 기준 newest-first rank 1에 삽입해 W43 49건·rank 1–49 유지, OG image local copy, raw capture SHA-256 `51a6ae16458ac27c30f8c3a506c8f15f01e4524c6fa47df4e045c8a12fdb9727`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-18] update | OpenAI GPT-6 Astra Pro 병렬 에이전트 실행 추가
+- 확인 시각: 2026-10-18 21:48 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·The Hacker News feed를 재점검함. 새 후보 중 AI타임스 canonical article을 직접 대조함.
+- 원문의 `article:published_time` `2026-10-18T17:51:14+09:00`, OG image와 본문을 확인. `GPT-6 Astra Pro`의 한 요청 분해·여러 agent 병렬 실행, agent별 진행 상태·개별 결과 표시, 일부 ChatGPT Pro 사용자 제공, codebase 검토·복합 조사·기업 분석 예시와 응답 속도·plugin/tool 개선 언급 범위를 수록함.
+- 속도 향상 수치·도구별 변경·계정별 availability·최대 동시성·가격·quota·권한·감사·cancel/rollback은 공개되지 않아 확정하지 않음. `news-664`를 KST 17:51 기준 newest-first rank 1에 삽입해 W43 50건·rank 1–50을 유지하고 OG image local copy, raw capture SHA-256 `5a3d5497e8ae965a39c7dc1dedfc9b165ca17c800031007db3c062bc5764dc8d`, `index.md`, canonical weekly archive를 동기화함. Deep Dive 2건은 KST 01:29에 전면 갱신돼 timestamp-only 변경 없이 유지.
