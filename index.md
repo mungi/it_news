@@ -39,6 +39,7 @@
 
 ## Raw Articles
 - [[raw/articles/anthropic-claude-ecdsa-curve-origins-2026-10-17]] — Anthropic Claude의 NIST ECDSA 공개 곡선 seed provenance 재현과 `lrand48`·Unix timestamp·독립 검증 경계.
+- [[raw/articles/anthropic-claude-mythos-5-quantum-circuits-2026-10-17]] — Anthropic Claude Mythos 5의 verifier-driven 양자회로 탐색과 logical gate·qubit 절감, hardware·error-correction 재현 경계.
 - [[raw/articles/arxiv-gemini-4-argon-minecraft-multi-agent-2026-10-16]] — Gemini 4 Argon agent 4개의 27시간 14분 Minecraft 자율 완주 실험과 Mineflayer 관측·행동 contract, 장기 multi-agent 재현성·운영 검증 경계.
 - [[raw/articles/aitimes-liquid-ai-d1-ultra-multimodal-decision-model-2026-10-18]] — Liquid AI `d1-ultra` 멀티모달 확률·점수형 의사결정 API 보도와 calibration·threshold·review·data-boundary 검증 경계.
 - [[raw/articles/aitimes-anthropic-canada-japan-datacenter-capacity-2026-10-18]] — 앤트로픽 캐나다 420MW capacity 임대·일본 전용 센터 협상 보도와 usable capacity·commissioning·residency 검증 경계.
