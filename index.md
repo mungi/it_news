@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-cloudwatch-omni-additional-regions-2026-10-20]] — CloudWatch Omni 8개 리전 확대와 cross-cloud telemetry·OpenTelemetry·agent observability 검증 경계.
+- [[raw/articles/aws-ec2-image-builder-asg-integration-2026-10-20]] — EC2 Image Builder ASG 실행 인스턴스 활용과 AMI provenance·cleanup·capacity 검증 경계.
 - [[raw/articles/google-harness2-recursive-agent-harnessing-2026-10-19]] — Harness²의 verifier 없는 open-world agent harness 재귀 개선과 probe·holdout·권한·rollback 운영 경계.
 - [[raw/articles/aws-guardduty-runtime-optional-detection-rules-2026-10-20]] — GuardDuty Runtime Monitoring 선택형 탐지 규칙 50여 개·dry-run과 EC2/EKS/ECS runtime evidence·triage 운영 경계.
 - [[raw/articles/anthropic-claude-ecdsa-curve-origins-2026-10-17]] — Anthropic Claude의 NIST ECDSA 공개 곡선 seed provenance 재현과 `lrand48`·Unix timestamp·독립 검증 경계.

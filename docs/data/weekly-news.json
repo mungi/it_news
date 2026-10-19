@@ -2,9 +2,11 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-20 02:17",
+  "last_updated_kst": "2026-10-20 06:22",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Amazon CloudWatch Omni가 Tokyo를 포함한 8개 리전으로 확대됨. AWS·Azure·GCP telemetry, OpenTelemetry, agent evaluation view를 한 화면에 묶는 기능이지만 collector coverage·identity·residency·비용은 workload별 canary로 검증해야 함.",
+    "EC2 Image Builder가 ASG의 실행 중 인스턴스로 image build를 수행할 수 있게 됨. launch·bootstrap 대기는 줄일 수 있으나 build host 재사용에 따른 AMI drift·credential·cleanup·capacity 통제를 build manifest와 release gate에 포함해야 함.",
     "Amazon GuardDuty Runtime Monitoring에 EC2·EKS·ECS용 선택형 탐지 규칙 50여 개와 dry-run이 추가됨. rule 수가 아니라 asset·identity·runtime evidence·triage outcome·containment까지 연결되는 운영 loop를 활성화 기준으로 삼아야 함.",
     "Google Research의 `Harness²`는 verifier 없는 open-world task에서 agent harness를 task-level·harnessing-level 재귀로 개선하는 연구 구조임. online edit는 prompt·tool·memory·policy를 바꿀 수 있어 frozen baseline·holdout·approval·rollback을 release gate로 운영해야 함."
   ],
@@ -191,6 +193,153 @@
   ],
   "items": [
     {
+      "id": "news-670",
+      "title_ko": "Amazon CloudWatch Omni, 8개 리전으로 제공 확대",
+      "title_original": "Amazon CloudWatch Omni is now available in additional AWS Regions",
+      "summary": "핵심: AWS가 AI 기반 observability 경험 `CloudWatch Omni`를 **8개 추가 리전**으로 확대함. 중앙 account의 space에서 AWS 계정·리전뿐 아니라 Azure·GCP telemetry를 보고, 서비스 discovery·dependency mapping·golden metric·AWS DevOps Agent 기반 root-cause 탐색을 제공하는 범위임. LangGraph·CrewAI·OpenAI Agents SDK·Vercel AI SDK·Strands용 evaluation-driven agent observability도 포함하지만, cross-cloud telemetry 완전성·자동 원인 규명·SLO 개선을 보장하는 공지는 아님.",
+      "detail": "AWS 공식 What’s New RSS는 CloudWatch Omni가 Canada (Central), Mumbai, Singapore, Sydney, Tokyo, Frankfurt, London, São Paulo로 확대됐다고 밝힘. Omni는 OpenTelemetry 상호운용성과 CloudWatch의 scale·reliability를 결합한 observability 경험으로, SSO 기반 standalone web experience 또는 local IDE extension에서 사용할 수 있음. 중앙 account의 Omni space는 AWS account·Region·Azure·GCP의 telemetry를 볼 수 있게 하며, service discovery·dependency mapping·golden metric surface와 chat·point-and-click·Agent Toolkit for AWS를 통한 telemetry 탐색을 제공함. Agent observability workflow는 LangGraph, CrewAI, OpenAI Agents SDK, Vercel AI SDK, Strands를 대상으로 명시됐으나, source별 ingestion 범위·비용·cross-cloud identity·data residency·agent evaluation 결과의 정확도는 조직별로 검증해야 함.",
+      "why_it_matters": "AI agent와 분산 workload의 trace·metric·log를 한 화면에 모으려는 조직에서는 telemetry schema와 account boundary가 운영 품질을 좌우함. 리전 확대는 Tokyo를 포함하지만, collector coverage·cross-account permission·외부 cloud data path를 검증하지 않으면 빈 observability view 또는 비용 증가로 이어질 수 있음.",
+      "engineering_implication": "시사점: 대표 agent workload에서 OpenTelemetry resource attribute·trace context·account/tenant identity·retention을 먼저 맞추고, CloudWatch Omni view와 원본 telemetry·incident record가 같은 service dependency를 가리키는지 canary로 비교할 것. Azure·GCP 연동은 SSO, IAM, egress, data residency, pricing을 별도 change record로 승인할 것.",
+      "korea_implication": "한국 리전은 이번 공지의 추가 제공 목록에 포함되지 않음. 국내 조직은 Tokyo 제공을 서울 리전 제공으로 해석하지 말고 실제 workload 리전·cross-Region telemetry 전송·개인정보 및 로그 보관 경계를 확인할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "CloudWatch",
+        "Observability",
+        "OpenTelemetry",
+        "AI Agent",
+        "Cross-Cloud",
+        "SRE"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-10-20 04:10",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-cloudwatch-omni-8-regions/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "Amazon CloudWatch Omni 제품 페이지",
+          "url": "https://aws.amazon.com/cloudwatch/omni/"
+        },
+        {
+          "title": "Amazon CloudWatch Omni 문서",
+          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-omni.html"
+        },
+        {
+          "title": "CloudWatch Omni 요금",
+          "url": "https://aws.amazon.com/cloudwatch/omni/pricing/"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 CloudWatch Omni를 Canada (Central), Asia Pacific의 Mumbai·Singapore·Sydney·Tokyo, Europe의 Frankfurt·London, South America의 São Paulo로 확대함. 기존 제공 리전은 US East (N. Virginia), US West (Oregon), Europe (Ireland)임.",
+          "items": [
+            "제공 방식: SSO 기반 standalone web experience 또는 local IDE extension 범위",
+            "대상: application과 agent를 한 곳에서 observe·troubleshoot하려는 CloudWatch 사용자 범위"
+          ]
+        },
+        {
+          "heading": "관측 데이터와 탐색 기능",
+          "body": "Omni는 OpenTelemetry 상호운용성과 CloudWatch의 scale·reliability를 결합한다고 AWS가 설명함. 중앙 account의 space에서 AWS account·Region·Azure·GCP telemetry를 보고, 서비스 발견·dependency mapping·golden metric surface·AWS DevOps Agent 기반 root-cause 탐색을 제공하는 범위임.",
+          "items": [
+            "탐색: chat·point-and-click·Agent Toolkit for AWS를 통한 telemetry signal 및 dynamic view 구성",
+            "경계: 공지는 source별 ingestion completeness·자동 root cause 정확도·SLO 개선 수치를 제시하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "Agent observability 범위",
+          "body": "전용 agent observability 경험은 LangGraph, CrewAI, OpenAI Agents SDK, Vercel AI SDK, Strands의 evaluation-driven workflow를 포함한다고 명시함. framework 지원 표기는 production trace completeness나 evaluator 품질을 보장하지 않으므로 framework·version·instrumentation 단위로 확인이 필요함.",
+          "items": [
+            "확인: agent trace·tool call·evaluation result의 resource attribute와 tenant identity 연결 필요",
+            "피할 것: IDE extension 또는 chat 탐색을 incident evidence·human approval의 대체 수단으로 취급"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "cross-account·cross-cloud observability는 collector, identity, schema, retention, egress cost가 함께 맞아야 운영 가능한 view가 됨. 대표 workload에서 원본 telemetry와 Omni dependency view를 대조하고, missing span·attribute drift·query latency·cross-account access failure를 release gate로 측정해야 함.",
+          "items": [
+            "팀 액션: OpenTelemetry semantic convention·trace propagation·account/tenant tag·retention을 service별 inventory화",
+            "팀 액션: SSO·IAM·Azure/GCP connector·data residency·pricing을 분리 검토하고 Tokyo와 Seoul 리전 제공 범위를 구분",
+            "팀 액션: incident 한 건을 이용해 discovery·dependency·golden metric·agent evaluation이 원본 evidence와 일치하는지 drill 실행"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-671",
+      "title_ko": "EC2 Image Builder, 기존 Auto Scaling Group 인스턴스로 이미지 빌드 지원",
+      "title_original": "EC2 Image Builder now integrates with ASG for faster image builds",
+      "summary": "핵심: EC2 Image Builder가 기존 Auto Scaling Group(ASG)의 실행 중인 인스턴스를 image build에 쓰도록 지원함. build 시 새 인스턴스 launch·bootstrap 시간을 줄이고, 사용된 인스턴스는 ASG가 보충하는 pool 방식임. opt-in 기능이며 ASG를 설정하지 않은 기존 pipeline의 기본 launch path는 바뀌지 않음.",
+      "detail": "AWS 공식 What’s New RSS는 EC2 Image Builder infrastructure configuration에 ASG를 지정하면 build time에 새 EC2 instance를 시작하는 대신 이미 실행 중인 ASG instance를 골라 build component를 적용하고 image를 만든다고 밝힘. 인스턴스가 build에 사용되면 ASG가 pool을 계속 보충해 다음 pipeline run에 사용할 instance를 준비하는 구조임. 이 기능은 opt-in이고 기존 pipeline에는 동작 변화가 없으며 모든 AWS Region에서 추가 비용 없이 제공된다고 공지함. 다만 warm pool의 AMI·patch level·instance profile·network route·build isolation·artifact cleanup·ASG capacity와 image reproducibility는 공지가 자동 보장하지 않는 운영 검증 대상임.",
+      "why_it_matters": "golden AMI build 시간이 release path의 병목인 조직에서는 pre-warmed capacity로 bootstrap 지연을 줄일 수 있음. 반면 build host 재사용은 clean-room build·credential 수명·artifact 잔존·concurrent pipeline contention의 통제를 더 중요하게 만듦.",
+      "engineering_implication": "시사점: ASG pool을 build 전용 account 또는 subnet에 격리하고, base AMI·patch level·instance profile·component version·artifact hash·cleanup 결과를 build manifest에 남길 것. 기존 launch path와 ASG path의 build duration, failure rate, image drift, capacity pressure를 canary로 비교할 것.",
+      "korea_implication": "모든 AWS Region 제공 공지이므로 국내 사용 리전에서도 사용 가능 범위를 확인할 수 있음. 다만 실제 build artifact의 KMS key, private subnet egress, cross-account distribution, AMI 공유 정책은 계정별로 검토 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "EC2 Image Builder",
+        "Auto Scaling",
+        "AMI",
+        "CI/CD",
+        "Platform Engineering"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 76,
+      "published_kst": "2026-10-20 02:30",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/ec2-image-builder-asg-faster-builds/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "EC2 Image Builder ASG integration 문서",
+          "url": "https://docs.aws.amazon.com/imagebuilder/latest/userguide/infra-config-parent-instance.html"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "EC2 Image Builder가 image build에 기존 Auto Scaling Group의 실행 중인 EC2 instance를 사용할 수 있게 됨. 새 instance launch와 bootstrap 대기 시간을 없애 build를 빠르게 하려는 기능 범위임.",
+          "items": [
+            "설정: Image Builder infrastructure configuration에 ASG를 지정하는 opt-in 방식",
+            "동작: build 시 ASG의 실행 중 instance를 선택해 build component 적용 및 image 생성"
+          ]
+        },
+        {
+          "heading": "Pool 동작과 호환성",
+          "body": "AWS는 build에 instance가 사용되면 ASG가 pool을 계속 replenishment해 다음 pipeline run용 instance를 확보한다고 설명함. ASG를 설정하지 않은 pipeline은 기존 default launch path를 계속 사용하므로 기능을 켜지 않은 workload의 동작은 바뀌지 않음.",
+          "items": [
+            "호환성: 기존 pipeline의 default launch path 무변경",
+            "제공: 모든 AWS Region, 기능 자체의 추가 비용 없음이라는 공지 범위"
+          ]
+        },
+        {
+          "heading": "재현성과 보안 경계",
+          "body": "재사용 instance는 warm startup을 줄일 수 있지만 build 사이의 filesystem residue, cached credential, package mirror, mutable base state가 image reproducibility에 영향을 줄 수 있음. 공지는 host cleanup·isolation·concurrency·artifact provenance를 자동 보장하지 않으므로 별도 control이 필요함.",
+          "items": [
+            "검증: base AMI·patch level·instance profile·component version·artifact hash를 build manifest에 기록",
+            "피할 것: running instance 재사용을 clean-room build 또는 immutable provenance의 보장으로 해석"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "ASG 기반 build pool은 CI/CD capacity와 image supply chain을 함께 다루는 platform change임. 전용 account·subnet·IAM role·egress allowlist에서 기존 path와 비교 canary를 수행하고, build duration뿐 아니라 drift·failure·capacity·cleanup evidence를 release gate로 관리해야 함.",
+          "items": [
+            "팀 액션: build 전용 ASG의 min/max capacity·concurrent build·replacement·patch cadence 정의",
+            "팀 액션: build 종료 뒤 workspace·credential·temporary artifact cleanup과 instance replacement evidence 수집",
+            "팀 액션: default launch path 대비 p50/p95 build time·failure rate·AMI hash·ASG capacity pressure 비교"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-668",
       "title_ko": "Amazon GuardDuty Runtime Monitoring, 선택형 탐지 규칙 50여 개·dry-run 제공",
       "title_original": "Amazon GuardDuty adds optional threat detection rules for Runtime Monitoring",
@@ -263,7 +412,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-669",
@@ -337,7 +486,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
     }
   ]
 }
