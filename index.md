@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-18 | Total pages: 435
+> Last updated: 2026-10-20 | Total pages: 438
 
 ## Entities
 
@@ -21,6 +21,7 @@
 ## Queries
 
 ## Weekly Briefings
+- [[weekly/2026-W44]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W43]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W42]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
 - [[weekly/2026-W41]] — 새 커버리지 창의 AI/Cloud/Infra/IT 뉴스 사이트 데이터와 발표 자료.
@@ -38,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/google-harness2-recursive-agent-harnessing-2026-10-19]] — Harness²의 verifier 없는 open-world agent harness 재귀 개선과 probe·holdout·권한·rollback 운영 경계.
+- [[raw/articles/aws-guardduty-runtime-optional-detection-rules-2026-10-20]] — GuardDuty Runtime Monitoring 선택형 탐지 규칙 50여 개·dry-run과 EC2/EKS/ECS runtime evidence·triage 운영 경계.
 - [[raw/articles/anthropic-claude-ecdsa-curve-origins-2026-10-17]] — Anthropic Claude의 NIST ECDSA 공개 곡선 seed provenance 재현과 `lrand48`·Unix timestamp·독립 검증 경계.
 - [[raw/articles/anthropic-claude-mythos-5-quantum-circuits-2026-10-17]] — Anthropic Claude Mythos 5의 verifier-driven 양자회로 탐색과 logical gate·qubit 절감, hardware·error-correction 재현 경계.
 - [[raw/articles/arxiv-gemini-4-argon-minecraft-multi-agent-2026-10-16]] — Gemini 4 Argon agent 4개의 27시간 14분 Minecraft 자율 완주 실험과 Mineflayer 관측·행동 contract, 장기 multi-agent 재현성·운영 검증 경계.
