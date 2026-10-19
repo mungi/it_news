@@ -2,7 +2,7 @@
   "week": "2026-W43",
   "coverage_start_kst": "2026-10-12 17:00",
   "coverage_end_kst": "2026-10-19 13:00",
-  "last_updated_kst": "2026-10-19 05:56",
+  "last_updated_kst": "2026-10-19 10:03",
   "audience": "developers and engineers",
   "executive_summary": [
     "중국이 대규모 모델·에이전트·컴퓨팅 클러스터·칩 설계 등 23개 AI 기술을 포함한 수출 통제 개정안을 공개함. 오픈소스·API 예외와 기술 소유권·핵심 인력·해외 직접 배치의 관리 경계가 달라 China-linked model·artifact·IP·control-right inventory 분리 필요.",
@@ -1106,6 +1106,78 @@
       "rank": 12
     },
     {
+      "id": "news-666",
+      "title_ko": "앤트로픽 Claude, NIST ECDSA 곡선 시드 출처를 재현해 장기 backdoor 의혹 범위 축소",
+      "title_original": "Claude reveals ECDSA curve origins",
+      "summary": "핵심: Anthropic은 내부 연구용 Claude가 **30분 이내** NIST P-192·P-224·P-256·P-384·P-521 공개 seed의 생성 방식을 `lrand48`과 Unix timestamp로 재현했다고 공개함. 이는 ECDSA 취약점·비밀키 복구·새 공격이 아니라 곡선 parameter provenance를 확인한 연구 결과이며, 기존 deployment의 key rotation이나 algorithm migration 필요성을 뜻하지 않는 범위임.",
+      "detail": "NIST는 2000년 ECDSA 표준에 여러 타원곡선을 채택하면서 coefficient `b`를 정의하는 공개 seed를 함께 제시했지만, NSA가 seed 선택 과정을 설명하지 않아 의도적 약점 가능성 논쟁이 이어졌음. Anthropic에 따르면 Claude는 기존의 passphrase hash 가설 대신 공개 seed 안의 1990년대 C library PRNG 출력 패턴을 탐색해 `lrand48`과 Unix timestamp 초기화를 식별했고, P-256 seed를 포함한 5개 곡선을 재현함. P-256은 20-byte candidate를 반복 생성하는 과정에서 1,842번째 iteration에 standardized seed가 나왔음. 원문은 이는 cryptographic break나 attack이 아니고 사용자 조치가 필요하지 않다고 명시하며, candidate 중 일부 곡선이 선택되지 않은 이유와 base point 생성 방식은 여전히 미해결로 남긴 범위임.",
+      "why_it_matters": "암호 parameter의 provenance는 알고리즘 이름·key length와 별도의 supply-chain evidence임. AI가 공개 artifact와 code를 이용해 오래된 설계 기록을 재현할 수 있음을 보였지만, 재현 결과는 독립 검토·미해결 가정·deployment 영향 범위를 분리해 다뤄야 함.",
+      "engineering_implication": "시사점: TLS·PKI·HSM·서명 검증 경로의 crypto inventory에서 algorithm·curve·library·certificate chain·parameter provenance와 vendor support를 함께 기록하고, AI 분석 결과는 reproduction code·input hash·독립 reviewer 확인 뒤 risk register에 반영해야 함.",
+      "korea_implication": "국내 PKI·금융·공공 시스템은 이번 결과를 ECDSA 즉시 교체 사유로 해석하지 말고, 실제 사용 curve·library patch·certificate lifecycle·국가 암호모듈 정책을 별도 inventory로 확인할 필요.",
+      "category": "Security",
+      "tags": [
+        "Anthropic",
+        "Claude",
+        "ECDSA",
+        "NIST",
+        "Cryptography",
+        "AI Research",
+        "Verification"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-10-17 02:02",
+      "source_name": "Anthropic",
+      "source_url": "https://www.anthropic.com/research/ecdsa-curve-origins",
+      "image_url": "https://www-cdn.anthropic.com/images/4zrzovbb/website/d0c862c5cabd703c0fcbaad939385133f02b694c-1200x630.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "AI타임스 보도: 앤트로픽 클로드, 25년 된 암호 표준 미스터리 해결",
+          "url": "https://www.aitimes.com/news/articleView.html?idxno=216380"
+        }
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Anthropic 공식 연구 글은 NIST가 2000년 ECDSA 표준에 포함한 P-192·P-224·P-256·P-384·P-521의 공개 seed 생성 경로를 Claude가 재현했다고 설명함. seed는 curve coefficient `b`를 정의하는 공개 parameter이며, 서명자 private key가 아님.",
+          "items": [
+            "결과: 내부 연구용 Claude가 **30분 이내** 5개 seed의 생성 방식 식별",
+            "범위: ECDSA 취약점·새 공격·비밀키 복구가 아닌 공개 parameter provenance 연구"
+          ]
+        },
+        {
+          "heading": "재현 방법과 공개 사실",
+          "body": "원문은 Claude가 공개 seed의 bit pattern을 검사해 1990년대 C library PRNG 후보를 좁히고, `lrand48`을 Unix timestamp로 초기화한 뒤 20-byte candidate를 반복 생성하는 방법을 찾았다고 설명함. P-256 standardized seed는 이 과정의 1,842번째 iteration에서 재현됐으며, 검증 code도 공개됨.",
+          "items": [
+            "방법: 34개 generator·output slice 조합을 검사해 `lrand48` 출력 특징 식별",
+            "근거: P-256의 candidate iteration **1,842회**와 공개 reproduction code",
+            "구분: 이전의 humorous passphrase hash 가설은 확인되지 않은 경로"
+          ]
+        },
+        {
+          "heading": "보안 영향과 남은 경계",
+          "body": "Anthropic은 발견이 cryptographic break·weakness·attack이 아니며 실제 key를 생성하는 용도와 공개 seed를 구분해야 한다고 명시함. 단순하고 재현 가능한 clock-seeded PRNG 경로는 intentional backdoor 가능성을 낮추는 근거이나, 일부 candidate curve가 선택되지 않은 이유와 base point 생성 방식은 해결되지 않았음.",
+          "items": [
+            "영향: 기존 ECDSA 사용자에게 key rotation·certificate 교체·설정 변경을 요구하지 않는 공식 범위",
+            "경계: seed provenance 재현이 전체 curve-selection process 또는 모든 cryptosystem의 안전성을 증명하지 않음",
+            "경계: 미해결 base point·candidate selection 질문은 별도 cryptographic review 대상"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI가 공개 code·parameter·역사적 runtime 특성을 묶어 설계 provenance를 분석하는 workflow는 SBOM·attestation·reproducible build와 유사하게 evidence를 남겨야 함. 모델 결론만 수용하지 않고 artifact version, reproduction command, reviewer, 적용 불가 범위를 기록해야 security architecture 의사결정에 쓸 수 있음.",
+          "items": [
+            "팀 액션: crypto inventory에 algorithm·curve·library·certificate chain·HSM/PKI owner·vendor support 상태 기록",
+            "팀 액션: AI-assisted security analysis는 input artifact hash·model/tool version·reproduction code·독립 reviewer를 같은 evidence bundle로 보관",
+            "팀 액션: 실제 migration 판단은 CVE·표준 폐기·provider support·interop test·certificate lifecycle trigger로 분리"
+          ]
+        }
+      ],
+      "rank": 13
+    },
+    {
       "id": "news-652",
       "title_ko": "AWS Transform, Azure SDK에서 AWS SDK로의 .NET cloud-native 코드 변환 정식 출시",
       "title_original": "AWS Transform announces Azure-to-AWS cloud-native code conversion",
@@ -1201,7 +1273,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-656",
@@ -1284,7 +1356,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-651",
@@ -1361,7 +1433,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-650",
@@ -1424,7 +1496,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-649",
@@ -1504,7 +1576,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-644",
@@ -1566,7 +1638,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-648",
@@ -1630,7 +1702,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-645",
@@ -1700,7 +1772,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-646",
@@ -1770,7 +1842,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-647",
@@ -1835,7 +1907,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-643",
@@ -1903,7 +1975,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-641",
@@ -1970,7 +2042,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-640",
@@ -2038,7 +2110,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-639",
@@ -2105,7 +2177,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-638",
@@ -2177,7 +2249,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-642",
@@ -2253,7 +2325,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-637",
@@ -2322,7 +2394,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-636",
@@ -2393,7 +2465,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-635",
@@ -2460,7 +2532,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-632",
@@ -2529,7 +2601,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-634",
@@ -2609,7 +2681,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-633",
@@ -2682,7 +2754,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-631",
@@ -2747,7 +2819,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-628",
@@ -2811,7 +2883,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-630",
@@ -2877,7 +2949,7 @@
           ]
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-627",
@@ -2942,7 +3014,7 @@
           ]
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-626",
@@ -3008,7 +3080,7 @@
           ]
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-625",
@@ -3074,7 +3146,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-629",
@@ -3139,7 +3211,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-624",
@@ -3205,7 +3277,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-622",
@@ -3271,7 +3343,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-623",
@@ -3337,7 +3409,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-618",
@@ -3400,7 +3472,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "id": "news-619",
@@ -3464,7 +3536,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-617",
@@ -3537,7 +3609,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-620",
@@ -3601,7 +3673,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-621",
@@ -3664,71 +3736,7 @@
           ]
         }
       ],
-      "rank": 49
-    },
-    {
-      "id": "news-615",
-      "rank": 50,
-      "title_ko": "Cloudflare Logpush Transformers 공개: SQL로 export 전 로그 필터·마스킹·스키마 변환",
-      "title_original": "Filter, reshape, and redact logs before export with Transformers",
-      "summary": "핵심: Cloudflare가 Logpush export pipeline에서 SQL 기반 Transformers로 log stream을 filter·redact·reshape하는 기능을 공개함. SIEM·analytics·object storage에 전달하기 전 health check와 민감 field를 줄이고 record를 바꾸는 경로이므로, transform query를 data classification·detection coverage·destination schema·rollback이 결합된 release artifact로 관리 필요.",
-      "detail": "Cloudflare 공식 원문은 Logpush가 batch를 가능한 한 빨리 전달하며, SIEM·analytics platform·object storage로 export한다고 설명한다. Transformers는 목적지 도달 전 health check 제거, sensitive field omission, dashboard·investigation용 record reshape를 SQL로 수행하는 범위다. self-service plan 제공과 GA 언급은 기능 가용 범위이며, destination별 parser 호환성·retention·access control·delivery SLA·query failure 동작은 조직별 문서와 canary로 확인해야 한다.",
-      "why_it_matters": "export 이전 최소화는 downstream 복제본과 접근 경로를 줄이지만, filter·redaction 오류는 detection evidence와 incident timeline을 함께 제거할 수 있음.",
-      "engineering_implication": "시사점: source field inventory·destination allowlist·query digest·test fixture·approval owner·rollback query를 같은 change record에 보존하고, drop rate·parse failure·delivery lag·alert coverage를 canary 기준으로 비교 필요.",
-      "korea_implication": "국내 조직은 개인정보·접속기록·보안로그의 외부 분석 플랫폼 전송 시 field allowlist와 보존 위치·접근자·위탁 처리 범위를 log transform 변경과 함께 검토 필요.",
-      "category": "Security",
-      "tags": [
-        "Cloudflare",
-        "Logpush",
-        "Observability",
-        "Data Minimization",
-        "SIEM",
-        "Log Redaction"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 91,
-      "published_kst": "2026-10-12 23:44",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/transformers-on-logpush/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M4HA4NCR1ES1EHGE8ZHS7TSA.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 Logpush export pipeline에서 SQL로 log stream을 filter·redact·reshape하는 Transformers 지원을 공개함. 원문은 Logpush가 batch를 가능한 한 빨리 전달해 near-real-time 정보를 제공한다고 설명하며, 이번 기능은 observability 업데이트와 함께 self-service plan에 제공된 범위임.",
-          "items": [
-            "변화: export 이전 단계에서 health check 제외·민감 field 제거·record 형태 변경 가능",
-            "대상: SIEM·analytics platform·object storage로 전달하는 Cloudflare log stream"
-          ]
-        },
-        {
-          "heading": "원문에서 확인된 동작 범위",
-          "body": "원문은 목적지에 도달하기 전 별도 processing service를 두던 작업을 Logpush pipeline 안으로 가져오는 방향을 제시함. SQL transform은 필요한 event만 남기고, 필드를 제거하거나 대시보드·조사 도구가 기대하는 schema로 record를 재구성하는 용도임.",
-          "items": [
-            "처리: filter·redaction·reshape를 export job의 declarative query로 관리하는 범위",
-            "경계: 모든 destination의 parser 호환성·field semantics·delivery latency 보장은 원문에서 확정하지 않은 사항"
-          ]
-        },
-        {
-          "heading": "왜 중요한가",
-          "body": "log export는 보안 분석·장애 조사·비용 분석에 필요하지만, raw event에는 client identifier·request metadata·cookie 또는 application-sensitive field가 섞일 수 있음. destination에 보낸 뒤 정제하면 복제본·retention·access path가 늘어나므로, export 전 최소화는 data boundary를 앞당기는 통제임.",
-          "items": [
-            "리스크: redaction 누락이 SIEM·data lake·support export로 확산되는 경로",
-            "리스크: filtering 오류가 detection evidence 또는 incident timeline을 제거하는 경로"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "Transform query는 편의 기능이 아니라 production data contract로 취급 필요. source field inventory, allowlist, sample event, destination parser, query version, approval owner와 rollback을 같은 release artifact로 남기고, raw 보존 경로와 transformed 경로의 접근 권한을 분리해야 함.",
-          "items": [
-            "팀 액션: PII·secret·customer identifier별 allowlist와 denylist를 sample log로 회귀 검증",
-            "팀 액션: dropped event 비율·schema error·delivery lag·destination ingestion failure를 canary 지표로 기록",
-            "팀 액션: incident investigation용 immutable raw evidence의 보존 위치와 접근 승인을 별도 설계"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }

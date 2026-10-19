@@ -3580,3 +3580,8 @@
 - 확인 시각: 2026-10-19 05:56 KST. GeekNews·GeekNews Plus는 HTTP 403, AI타임스·AI타임스KR 홈페이지는 HTTP 200을 확인했으며, AI타임스 canonical article와 linked arXiv v1 원문을 직접 대조함.
 - arXiv `2610.22319`의 v1 제출 시각 `2026-10-15 17:51:32 UTC`, sandboxed Minecraft Java Edition 1.20.4 Easy run의 4-agent 구성, `Mineflayer`·in-game chat·shared memory, 27시간 14분·program 2,783개·사망 605회, 단일 run·22% error 종료·상태 API/pathfinding·약 $520 출시 할인 비용의 평가 경계를 수록함.
 - AI타임스 발행 시각 `2026-10-18T18:30:30+09:00`, OG image·본문을 직접 대조해 `news-665`를 newest-first rank 1로 삽입하고 마지막 `news-616`만 제거해 50건·rank 1–50을 유지함. primary raw capture SHA-256 `391740066c134f17643797c1e57e5d26d18283ed1b56bfc816bac86f58b3e8a1`, local image, `index.md`, canonical `weekly/2026-W43.md`를 동기화함. 실험 결과를 일반 computer-use agent·production software 성공률 또는 비용 수치로 확대하지 않음.
+
+## [2026-10-19] update | Anthropic Claude ECDSA 곡선 시드 provenance 재현 연구 추가
+- 확인 시각: 2026-10-19 10:03 KST. GeekNews·GeekNews Plus는 빈 응답/접근 제약으로 후보 본문 수집이 불가했고, AI타임스·AI타임스KR 표면과 Anthropic 공식 연구 원문을 current research pass에 포함함.
+- Anthropic canonical 원문의 발행일 `2026-10-16`, OG image·본문을 직접 대조하고 linked AI타임스 보도의 `article:published_time` `2026-10-18T19:10:14+09:00`를 보조 확인함. Claude가 30분 이내 NIST P-192·P-224·P-256·P-384·P-521 공개 seed 생성 경로를 `lrand48`·Unix timestamp로 재현하고 P-256 1,842 iteration·reproduction code를 공개한 범위를 수록함.
+- 이를 ECDSA break·새 공격·private key 복구·즉시 key rotation 요구로 확대하지 않았고, candidate selection·base point generation 미해결 범위를 명시함. `news-666`을 KST `2026-10-17 02:02` 기준 newest-first rank로 삽입하고 마지막 `news-615`만 제거해 50건·rank 1–50 유지, raw capture SHA-256 `81b8be6b8d68f5f826e6af2d211ab7a6f3616322950b5a74338c6001e97596dc`, `index.md`, canonical weekly archive를 동기화함. Deep Dive 2건은 같은 KST 날짜 01:51에 전면 갱신돼 timestamp-only 변경 없이 유지.
