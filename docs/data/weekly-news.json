@@ -2,191 +2,200 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-20 18:38",
+  "last_updated_kst": "2026-10-21 02:48",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Cloudflare는 Citrix NetScaler Gateway의 CVE-2026-88771 대응에서 patch와 별도로 Access·WAF·origin restriction을 취약 코드 앞에 배치하는 layered mitigation을 제안함. edge control은 fixed build·forensic hunt·session/credential rotation을 대체하지 않으므로 external reachability와 bypass path를 함께 검증해야 함.",
-    "CNCF member post는 AI accelerator workload에서 scheduler와 autoscaler가 reservation·topology·DRA claim을 같은 계약으로 해석하지 못하면 pending pod와 유휴 GPU가 함께 생길 수 있다고 정리함. implementation별 DRA 지원을 확인하고 placement locality·queue time·all-reduce throughput·cost를 canary job으로 비교해야 함.",
+    "llm-d v1.0.0은 multi-tenant flow control, router HA·safe rolling update, `DisaggregatedSet` 기반 prefill/decode coordinated rollout, session affinity를 한 릴리스에 묶음. 3,000개 동시 agent나 5~10배 비용 절감 수치는 별도 국내 보도·실증 범위이므로 자체 모델·GPU·SLO에서 p95 latency·queue·cache·cost를 재측정해야 함.",
     "Amazon Connect Customer Global Resiliency가 연결 리전의 전환 준비 상태와 미동기화·조치 필요 resource를 한 화면에 표시함. readiness indicator를 failover 성공으로 대체하지 말고 phone number·routing·identity·integration·rollback을 drill evidence로 확인해야 함.",
     "Cloudflare는 내부 AI 코드 리뷰어에서 shared prompt cache와 model/effort routing을 조정해 고비용 2주 평균 실행당 비용을 $2.43에서 $0.77로 낮추고 median 시간을 4분 9초에서 1분 32초로 줄인 사례를 공개함. cache hit만 보지 말고 token·quality·latency·human rework를 shadow 평가와 함께 측정해야 함.",
+    "Cloudflare는 Citrix NetScaler Gateway의 CVE-2026-88771 대응에서 patch와 별도로 Access·WAF·origin restriction을 취약 코드 앞에 배치하는 layered mitigation을 제안함. edge control은 fixed build·forensic hunt·session/credential rotation을 대체하지 않으므로 external reachability와 bypass path를 함께 검증해야 함.",
     "미 DHS의 연방조달 공급망 명령은 DeepSeek와 계열사 제품뿐 아니라 해당 기술 기반 제3자 제품·서비스를 연방 민간기관 IT 시스템의 제거·향후 조달 금지 범위에 포함함. model name 중심 관리로는 부족하므로 provider·SDK·embedded feature·data egress·계약 경로까지 AI component inventory로 점검해야 함."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "GuardDuty Runtime Monitoring 선택형 규칙: dry-run을 탐지 운영 계약으로 만드는 방법",
-      "summary": "한 줄 결론: GuardDuty Runtime Monitoring의 50여 개 선택형 규칙은 탐지 coverage를 넓히지만, 실제 위험 감소는 rule enablement가 아니라 dry-run·triage·containment·증거 보존이 닫힌 운영 loop로 연결될 때만 확인됨. EC2·EKS·ECS별 baseline과 response owner를 먼저 고정해야 함.",
-      "details": "AWS는 Runtime Monitoring에 process·file·network activity를 다루는 50개 이상의 선택형 탐지 규칙을 추가하고 dry-run을 제공했다. 13개 finding type은 여러 MITRE ATT&CK 전술에 매핑되며 네 개 신규 finding type도 포함한다. 이 공지는 runtime 탐지의 coverage 확장 범위이지, 조직별 true-positive 비율, 자동 차단, 침해 예방, 조사 완료를 보장하는 발표가 아니다. 운영팀은 rule마다 어떤 asset·image·identity·command evidence가 남고 누구에게 어떻게 escalation되는지, dry-run 결과가 live detection의 threshold와 suppression lifecycle로 어떻게 이어지는지를 계측해야 한다.",
-      "why_it_matters": "runtime 탐지는 cloud workload의 실제 process·file·network 행동을 다루므로 config-only control로 보이지 않는 침해 신호를 보완할 수 있음. 반면 정상 batch·deployment·admin 작업도 유사 신호를 내므로 baseline과 response capacity가 없으면 alert fatigue 또는 무분별한 suppression으로 끝날 위험이 있음.",
+      "title": "llm-d v1.0.0: 분산 추론을 모델 배포가 아닌 SLO·capacity control plane으로 운영하는 방법",
+      "summary": "한 줄 결론: llm-d v1.0.0은 priority·fairness-aware flow control, router HA, prefill/decode coordinated rollout, session affinity를 묶어 agent 추론 fleet의 운영 기능을 확장함. 성능 주장은 workload·가속기·model server·traffic mix에 종속되므로, v1 전환은 image·CRD·routing policy·rollback을 함께 검증하는 platform release로 다뤄야 함.",
+      "details": "llm-d GitHub의 v1.0.0 release는 multi-tenant quality of service를 위한 controlled load shedding과 `flowControl` 설정 통합, hot standby와 safe rolling update를 갖춘 router HA, prefill/decode replica를 논리 단위로 다루는 `DisaggregatedSet`, `previous_response_id`와 session-state-producer·session affinity를 명시한다. 릴리스는 `llm-d-rocm` 자체 image stream의 deprecation과 upstream vLLM image 이동도 포함한다. 이 범위는 distributed inference control plane의 기능 목록이며, 특정 조직의 latency·GPU utilization·비용·무중단 성공을 보장하지 않는다. 운영팀은 admission, queue, cache locality, topology, image provenance, CRD/version skew, rollback과 tenant fairness를 같은 acceptance gate로 검증해야 한다.",
+      "why_it_matters": "agent traffic은 multi-turn context, bursty tool loop, interactive request가 같은 GPU fleet에서 경합하므로 model server 하나의 throughput보다 admission·cache locality·priority·deployment coordination이 tail latency와 비용을 좌우함. routing·autoscaling·image update가 함께 바뀌는 v1 전환은 platform control-plane change로 검토할 필요.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/guardduty-runtime-optional-detection-rules/"
+        "https://github.com/llm-d/llm-d/releases/tag/v1.0.0"
       ],
-      "image_url": "assets/images/fallback-security.svg",
-      "local_image": "assets/images/fallback-security.svg",
-      "refreshed_kst": "2026-10-20 02:11",
+      "image_url": "https://cdn.aitimes.kr/news/thumbnail/202610/42368_63699_432_v150.jpg",
+      "local_image": "",
+      "refreshed_kst": "2026-10-21 02:48",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "선택형 runtime rule의 성공 지표는 finding 수가 아니라 **탐지부터 containment와 evidence closure까지의 시간**임. dry-run은 설정 전 미리보기 기능이 아니라 asset·identity·runbook·조사 용량을 검증하는 release stage로 다뤄야 함.",
+          "body": "`llm-d v1.0.0`의 검토 단위는 inference server 설치 여부가 아니라 **tenant별 SLO·queue·cache·capacity를 제어하는 release**임. agent workload의 burst와 multi-turn locality를 다루는 기능이 추가됐지만, target model·GPU·traffic mix에서의 latency와 비용은 별도 검증이 필요함.",
           "items": [
-            "변화: AWS가 Runtime Monitoring용 선택형 규칙 **50여 개**와 dry-run 제공",
-            "팀 액션: rule enablement마다 owner·asset scope·triage SLA·suppression expiry를 change record에 결합"
+            "변화: priority·fairness-aware flow control, router HA, `DisaggregatedSet`, session-aware serving을 v1 release에 결합",
+            "팀 액션: upgrade 승인 전에 admission·queue·p95 latency·cache hit·GPU utilization·rollback 지표의 owner와 임계값 확정"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS 공식 RSS는 process·file·network activity를 다루는 50개 이상 규칙을 공개하고 `sudoers` 변경과 audit logging 비활성화를 환경 의존 신호의 예시로 제시함. 대상은 EC2, EKS, ECS의 EC2·Fargate workload이며 모든 상용 리전과 AWS GovCloud(US) 제공 범위임.",
+          "body": "GitHub release는 multi-tenant QoS에서 probabilistic admitter, program-aware fairness, turn-priority scoring을 포함한 controlled load shedding과 `flowControl` 설정 통합을 명시함. router는 hot standby와 safe rolling update를 지원하고, `DisaggregatedSet`은 prefill/decode replica의 coordinated rollout·lockstep upgrade·Pod snapshot readiness·native revision routing을 다루는 범위임.",
           "items": [
-            "원문 사실: 13개 finding type이 persistence·privilege escalation·execution·defense evasion·discovery·exfiltration·command and control 전술과 매핑",
-            "원문 사실: SuspiciousCommand 2종과 SensitiveFileRead 2종 등 신규 finding type 4개 추가"
+            "원문 사실: router configuration API가 `v1`으로 승격되고 Responses API가 `previous_response_id` 지원",
+            "원문 사실: session-state-producer plugin과 evolving session affinity로 multi-turn cached context 근접 배치 지향",
+            "원문 사실: DRA/DRANET topology-aware accelerator guide와 `llm-d-pd-utils`의 GPU topology·network benchmark 지원 추가"
           ]
         },
         {
           "heading": "AI·Infra 전문가 해석",
-          "body": "runtime rule은 static policy보다 workload 문맥에 가깝지만, rule match만으로 malicious intent를 확정하지 못함. 같은 file read나 command가 deployment·debug·backup·sidecar lifecycle에서는 정상일 수 있으므로 detector와 adjudication을 분리해야 함. 탐지 도입은 security product toggle이 아니라 observation contract를 만드는 작업임.",
+          "body": "agent serving에서 request rate만으로 autoscaling하면 cached prefix가 있는 replica와 멀어지거나 queue가 과도하게 늘 수 있음. priority와 fairness는 product policy이며, admission은 SRE safety valve임. 따라서 router가 정한 placement·drop·retry 결과를 application trace와 tenant contract에 연결하지 않으면 QoS 개선 여부를 판정하기 어려움.",
           "items": [
-            "설계: finding에 rule ID·asset·image digest·identity·parent process·command/file/network evidence·deployment revision 결합",
-            "피할 것: MITRE mapping 또는 rule 개수를 detection coverage와 incident-response 품질의 동의어로 취급"
+            "설계: interactive, background, batch를 별 queue·budget·deadline으로 분리하고 tenant·model·session attribute를 routing telemetry에 연결",
+            "피할 것: controlled load shedding을 장애로 간주해 무제한 retry하거나, fairness 정책을 고객별 quota·계약과 분리",
+            "판정: accepted·shed·timeout·retry request를 한 trace ID로 기록해 admission 변경 전후 비교"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "EC2, EKS, ECS는 실행 단위와 owner가 다르므로 같은 finding type도 대응 경로가 달라짐. EKS는 pod·node·service account·image digest·namespace를, ECS는 task definition·task role·container image·cluster를, EC2는 instance profile·AMI·process tree를 함께 남겨야 조사 가능한 사건 단위가 됨.",
+          "body": "prefill/decode disaggregation은 replica lifecycle과 failure domain을 늘림. `DisaggregatedSet`의 coordinated update가 있어도 model image, tokenizer, cache schema, network fabric, LeaderWorkerSet·Gateway API CRD, routing config가 같은 compatibility envelope에 있어야 함. Pod snapshot readiness는 application readiness와 client-visible SLO를 자동으로 증명하지 않음.",
           "items": [
-            "검증: dry-run finding을 CloudTrail·deployment event·image provenance·network flow와 correlation 가능한지 확인",
-            "운영: workload update, scheduled job, emergency admin action을 변경 캘린더와 연결해 정상 activity 판정 근거 보존"
-          ]
-        },
-        {
-          "heading": "보안·거버넌스 관점",
-          "body": "sensitive file read나 suspicious command는 credential·개인정보·운영 명령의 메타데이터를 포함할 수 있음. alert viewer와 containment operator, exception approver의 권한을 분리하고, suppression은 사유·승인자·만료·재검토가 있는 time-bound exception으로 관리해야 함.",
-          "items": [
-            "통제: high-impact finding에는 least privilege, credential rotation, workload isolation, immutable evidence 절차 연결",
-            "통제: suppression을 permanent allowlist로 바꾸지 않고 expiry 뒤 재평가하도록 workflow화"
+            "검증: canary에서 prefill·decode pair failure, in-flight request drain, revision routing, cache warmup, scale-from-zero를 재현",
+            "검증: DRA/DRANET placement와 GPU topology·network benchmark 결과를 실제 collective·TTFT·TPOT trace와 대조",
+            "운영: change record에 image digest·chart·CRD·router policy·model server version·rollback pointer를 함께 보존"
           ]
         },
         {
           "heading": "SRE·FinOps 관점",
-          "body": "탐지 활성화는 telemetry, finding triage, incident response의 비용과 인력 queue를 함께 늘릴 수 있음. alert 감소만 최적화하면 blind spot이 커질 수 있으므로 coverage, true-positive sample, response time, repeated finding, suppression churn을 함께 봐야 함. dry-run 기간은 production SLO와 보안 운영 용량을 맞추는 관찰 창임.",
+          "body": "session affinity와 prefix-cache routing은 cache reuse를 높일 수 있지만 hot session concentration, stale capacity, cross-zone traffic, tail queue를 만들 수 있음. prefill/decode를 분리하면 각 pool의 utilization과 cost attribution도 달라짐. 평균 token cost나 aggregate throughput만으로는 user-facing degradation을 찾기 어려움.",
           "items": [
-            "측정: rule별 alert volume·sampled true-positive·MTTA·MTTR·suppression expiry·coverage gap·cost",
-            "경계: AWS 공지는 조직별 false-positive rate, breach reduction, auto-remediation 결과를 제시하지 않은 범위"
+            "측정: tenant·model·queue별 TTFT, TPOT, p95/p99 latency, shed rate, retry rate, cache hit, GPU duty cycle, token당 비용",
+            "측정: prefill/decode pool별 idle time·queue depth·cross-zone traffic·cache eviction·warmup 비용",
+            "경계: 릴리스는 조직별 비용 절감, 처리량, 무중단 성공률 또는 SLO 충족 수치를 제시하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 관점",
+          "body": "v1에는 model server image와 ecosystem component의 정렬 변경이 포함됨. release notes는 `llm-d-rocm` 자체 image stream을 deprecated로 두고 upstream vLLM image 이동을 예고함. image provenance, signature, vulnerability response, registry access와 tenant data path는 routing 기능과 독립된 배포 통제 대상임.",
+          "items": [
+            "통제: production registry image digest·cosign verification·SBOM·base image EOL을 deployment admission에 연결",
+            "통제: tenant/session attribute를 cache key·trace·log에서 최소화하고 retention·access policy를 분리",
+            "통제: API version·CRD migration·rollback 시 data plane 권한과 secret scope가 확대되지 않는지 review"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 critical workload 한두 개에서 asset mapping과 on-call owner를 확정하고 dry-run으로 baseline을 수집해야 함. 이후 credential access 또는 defense evasion처럼 impact가 큰 finding부터 live detection canary를 적용하고, incident drill로 closure evidence를 확인한 뒤 다른 account·cluster로 넓히는 순서가 안전함.",
+          "body": "먼저 한 model·한 tenant tier·read-only workload에서 baseline을 고정하고 router policy만 shadow mode로 비교하는 방식이 안전함. 다음으로 prefill/decode canary와 HA switchover를 실시하고, upgrade 중 in-flight traffic·cache warmup·fallback server가 SLO를 만족하는지 확인해야 함. multi-tenant fairness는 계약 priority와 incident policy가 정해진 뒤 확대해야 함.",
           "items": [
-            "1단계: EC2·EKS·ECS workload inventory와 runtime monitoring coverage·owner·log retention 확인",
-            "2단계: dry-run sample을 rule별로 분류하고 expected admin/deployment behavior와 비교",
-            "3단계: high-confidence finding canary, escalation, containment, post-incident review를 통한 scope 확장"
+            "1단계: model server·GPU topology·network·queue·cache·tenant SLO inventory와 frozen baseline 수집",
+            "2단계: admission·session affinity·prefix routing shadow 비교와 overload/load-shedding drill 실행",
+            "3단계: `DisaggregatedSet` canary, HA failover, rolling update·rollback을 통과한 pool만 확대"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "개발팀은 image·deployment·service identity의 provenance를, 플랫폼팀은 telemetry·asset correlation·on-call routing을, 보안팀은 rule lifecycle과 incident close criteria를 함께 소유해야 함. detector가 의미 있는 action으로 이어지려면 release metadata와 runtime evidence의 연결이 필수임.",
+          "body": "개발팀은 session state와 retry semantics를, 플랫폼팀은 routing·capacity·version matrix를, SRE는 SLO·rollback·incident handoff를 공동 소유해야 함. Responses API state를 사용하는 application은 `previous_response_id`의 state lifecycle과 privacy boundary를 별도로 설계할 필요.",
           "items": [
-            "체크: rule ID·finding type·asset/image digest·identity·evidence·owner·triage outcome 기록",
-            "체크: EKS/ECS/EC2별 coverage gap, stale workload, log retention, regional enablement 확인",
-            "체크: suspicious command와 sensitive file read scenario의 containment·rotation·forensic drill 실행"
+            "체크: request class·tenant·model·session·deadline·retry budget·fallback path를 routing attribute로 명시",
+            "체크: image/Helm/CRD/router/model-server version matrix와 tested configuration·known limitation 확인",
+            "체크: overload, prefill/decode node loss, cache miss storm, HA promotion, rollback의 runbook·alert·owner drill 실행"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Runtime Monitoring은 rule catalog를 켜는 일이 아니라 **실행 중인 workload의 이상 행동을 닫힌 incident loop로 바꾸는 일**임. 이번 주에는 critical service 하나에서 dry-run finding이 alert·owner·evidence·containment까지 어떻게 흘러가는지 측정해야 함.",
+          "body": "llm-d v1.0.0은 model serving의 단일 benchmark보다 **agent traffic을 안전하게 admission·배치·업데이트하는 control plane**을 다루는 릴리스임. 이번 주에는 대표 agent 하나의 queue·cache·p95 latency·rollback trace를 기준선으로 만들고, routing 변경을 shadow mode에서 비교해야 함.",
           "items": [
-            "발표 포인트: 50여 개 선택형 규칙, 13개 finding type, dry-run 제공과 적용 경계",
-            "즉시 행동: 대표 workload의 dry-run 1주 baseline과 live-detection canary 기준 수립"
+            "발표 포인트: multi-tenant flow control, hot-standby router HA, `DisaggregatedSet`, session affinity와 v1 compatibility boundary",
+            "즉시 행동: 대표 workload의 overload drill과 v1 compatibility matrix·rollback artifact 검증"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Harness²: verifier 없는 open-world agent self-improvement를 release control로 운영하는 방법",
-      "summary": "한 줄 결론: Harness²는 verifier 없는 open-world task에서 agent harness를 재귀적으로 개선하는 연구 접근을 제시하지만, online edit의 가치는 benchmark score가 아니라 change evidence·권한 경계·rollback이 닫힌 control plane에서 판단해야 함.",
-      "details": "arXiv 원문은 task-level Propose-Probe-Compose와 harnessing-level continual improvement를 결합한 Harness²를 제시한다. 세 professional benchmark와 네 model-harness configuration에서 GLM-5·Gemini 3.5 Flash base harness 대비 최대 11.5점, 4.5점, 11.8 percentage point 개선을 보고한다. 하지만 ground-truth verifier가 없는 online edit는 prompt·tool·memory·policy를 바꿀 수 있으므로, score만으로 production safety나 cost·write correctness를 판단할 수 없다. 조직은 candidate edit, probe evidence, holdout outcome, tool/IAM scope, human approval, rollback을 같은 release record로 운영해야 한다.",
-      "why_it_matters": "agent harness는 실행 성능과 위험 표면을 함께 바꾸므로 자동 개선은 model tuning이 아니라 policy-bearing software release에 가까움.",
+      "title": "Amazon Connect Global Resiliency readiness: 상태 화면을 failover 증거로 완성하는 방법",
+      "summary": "한 줄 결론: Amazon Connect Customer Global Resiliency의 새 readiness 화면은 linked Region의 replication 상태와 조치 대상 resource를 찾는 control surface임. 실제 복구 역량은 phone number·traffic distribution group·routing·user·외부 integration을 포함한 switch rehearsal의 RTO/RPO evidence로만 확인됨.",
+      "details": "AWS는 Amazon Connect 관리자 화면의 Global Resiliency 페이지가 linked Region별 overall readiness와 native replication resource, in-sync·pending synchronization·action-needed 상태를 보여준다고 공지했다. traffic distribution group과 연결되지 않은 phone number·user는 예시로 식별·association할 수 있다. 이 기능은 configuration completeness를 빠르게 확인하는 데 유용하지만 actual traffic switch, call routing, agent login, external CRM/API, recording, identity, rollback의 성공이나 RTO/RPO를 보장하지 않는다. 컨택센터 운영팀은 화면 상태를 drift detection의 입력으로 쓰고, 전환 drill의 call outcome·queue state·integration error·rollback time을 별도 증거로 유지해야 한다.",
+      "why_it_matters": "컨택센터는 복제된 resource만으로 고객 통화가 복구되지 않으며 번호·routing·사용자·외부 의존성·운영 절차가 함께 작동해야 함. readiness 화면은 누락 구성을 앞당겨 찾지만, drill 없는 green 상태는 고객 영향과 recovery objective를 판정할 근거가 아님.",
       "sources": [
-        "https://arxiv.org/abs/2610.14224",
-        "https://github.com/google-research/harness2"
+        "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-connect-global-resiliency-readiness-overview"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202610/216410_220477_5524.png",
-      "local_image": "",
-      "refreshed_kst": "2026-10-20 02:17",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "refreshed_kst": "2026-10-21 02:48",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Harness self-improvement의 통과 기준은 benchmark 점수 하나가 아니라 **candidate edit가 안전한 권한·비용·rollback 경계 안에서 재현되는가**임. verifier 없는 task에서 online edit를 곧바로 production write path에 연결하면 개선 loop가 새 failure mode가 될 수 있음.",
+          "body": "Global Resiliency 페이지는 **구성 drift를 찾는 readiness control**이며 failover 완료 증명은 아님. 전환 준비 상태를 customer-impact recovery evidence로 바꾸려면 번호·routing·agent·integration·rollback을 실제 traffic으로 검증해야 함.",
           "items": [
-            "변화: task-level과 harnessing-level의 두 재귀를 연결한 `Harness²` 공개",
-            "팀 액션: edit proposal·probe·approval·deployment·rollback을 단일 change ID로 연결"
+            "변화: linked Region의 overall readiness, native replication resource, `in-sync`·`pending synchronization`·`action-needed` 상태 제공",
+            "팀 액션: 화면의 action-needed 항목을 change inventory와 drill ticket에 연결하고 recovery evidence를 별도 저장"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "arXiv는 open-world task가 harness 설계 시점에 unseen이고 test-time에 novel하므로 ground-truth verifier가 online edit를 안정적으로 안내하기 어렵다고 문제를 정의함. task-level recursion은 contrastive Propose-Probe-Compose로 current task harness를 다듬고, harnessing-level recursion은 그 경험을 continual improvement harness에 반영하는 방식임.",
+          "body": "AWS What’s New는 Amazon Connect 관리자 웹사이트에 Global Resiliency 페이지를 추가했다고 공지함. 전체 readiness와 Global Resiliency가 native replication하는 resource 목록을 보며, resource type별 sync 상태와 조치 필요 여부를 검토하는 범위임.",
           "items": [
-            "원문 사실: parallel 또는 sequential recursion으로 task-level budget을 확장할 수 있는 구조",
-            "원문 사실: GLM-5·Gemini 3.5 Flash와 네 model-harness configuration에서 세 professional benchmark 측정"
+            "원문 사실: phone number 또는 user가 traffic distribution group과 연결되지 않은 사례를 affected resource로 식별",
+            "원문 사실: 관리자가 페이지에서 해당 resource association 작업으로 이동 가능한 흐름 제공",
+            "제공 범위: Amazon Connect Customer Global Resiliency 지원 리전 대상"
           ]
         },
         {
           "heading": "AI·Infra 전문가 해석",
-          "body": "harness는 prompt template, planner, memory, tool routing, retry, evaluator, policy를 묶은 executable control plane임. 따라서 edit가 score를 높여도 tool 선택·data path·retry 폭증·권한 상속을 바꿀 수 있음. candidate generator와 safety/quality adjudicator를 분리하고, holdout evaluation을 online task feedback과 혼동하지 않아야 함.",
+          "body": "DR dashboard의 green signal은 control-plane metadata가 기대 상태와 맞는지 말할 뿐, data-plane traffic과 업무 프로세스가 복구됐는지는 말하지 않음. 컨택센터에서는 call ingress, routing profile, queue, agent identity, customer context, CRM·ticket·recording integration이 함께 실행 경로를 구성함. readiness와 recovery validation을 다른 gate로 분리해야 함.",
           "items": [
-            "설계: editable harness component와 immutable policy boundary·tool allowlist·budget limit을 분리",
-            "피할 것: current task probe 성공을 unseen workload의 safety·quality generalization으로 해석"
+            "설계: resource replication check와 end-to-end call scenario를 같은 report에서 분리 표기",
+            "피할 것: native replication 대상이 아닌 custom integration·external identity·downstream API를 화면 상태만으로 complete 처리",
+            "판정: test call 성공, queue state, agent login, CRM lookup, recording, rollback을 recovery acceptance criterion으로 정의"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "online harness edit에는 input context, proposed diff, probe environment, tool result, model version, memory snapshot, policy decision, deployment target, rollback pointer가 필요함. 이 정보가 없으면 언제 어떤 edit가 external action·latency·cost·failure를 바꿨는지 재현할 수 없음. sandbox와 production connector는 별도 identity·network·secret boundary를 가져야 함.",
+          "body": "traffic distribution group은 phone number와 user association의 한 부분이며, 전환 시 실제 dependency graph에는 routing profile, queue, hours of operation, Lambda/API integration, contact flow, IAM, telephony carrier, recording storage가 포함될 수 있음. 조직별 구현이 다르므로 native replication 목록과 own integration inventory의 차이를 명시해야 함.",
           "items": [
-            "검증: read-only sandbox에서 edit 전후 task success·p95 latency·tool call·token cost·policy violation 비교",
-            "운영: diff promotion은 feature flag·canary cohort·automatic rollback threshold를 가진 release workflow로 관리"
-          ]
-        },
-        {
-          "heading": "보안·거버넌스 관점",
-          "body": "self-improving loop는 untrusted task content가 future harness behavior에 영향을 주는 memory-poisoning 경로가 될 수 있음. probe feedback과 retrieved content를 trusted policy input으로 승격하지 말고 provenance와 isolation을 유지해야 함. external write와 credential scope는 improvement engine과 분리된 approval path가 필요함.",
-          "items": [
-            "통제: edit artifact·retrieval source·tool transcript의 provenance·hash·retention period 기록",
-            "통제: secret access·SaaS write·cloud mutation은 human approval과 idempotency·compensation으로 분리"
+            "검증: 리전별 phone number·traffic distribution group·user·routing·queue·contact flow·integration endpoint inventory 대조",
+            "검증: target Region IAM·secret·network egress·CRM allowlist·recording/storage policy를 scenario별로 확인",
+            "운영: configuration change 뒤 readiness review와 planned switch rehearsal을 change completion 조건으로 설정"
           ]
         },
         {
           "heading": "SRE·FinOps 관점",
-          "body": "recursion budget이 늘면 candidate 수, model calls, tool calls, evaluator runtime, queue latency가 함께 증가함. 평균 score만 보면 tail cost와 failure retry를 놓칠 수 있으므로 cost per accepted improvement, p95 task latency, rollback rate, regression rate를 같은 dashboard에서 관찰해야 함.",
+          "body": "failover drill은 정상 운영 traffic과 다른 capacity·telephony·integration load를 만들 수 있음. drill 비용이나 replicated resource 수만 보기보다 recovery completion time, call abandonment, routing failure, agent login failure, retry와 rollback 시간으로 objective를 측정해야 함. RTO/RPO는 서비스와 데이터 경로별로 분해할 필요.",
           "items": [
-            "측정: accepted edit rate·holdout win rate·p95 latency·tool/token cost·rollback·policy violation·human rework",
-            "경계: 논문의 최대 개선 폭은 조직별 workload cost·SLO·reliability 보장 수치가 아님"
+            "측정: switch 시작~first successful call, queue state convergence, agent login success, CRM/API error, recording availability, rollback time",
+            "측정: test call success·abandonment·latency와 active/standby capacity·telephony cost를 별도 추적",
+            "경계: AWS 공지는 RTO/RPO, call quality, external dependency failover, 비용 수치를 보장하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "보안·거버넌스 관점",
+          "body": "DR 전환은 고객 통화·상담 기록·개인정보·agent access가 다른 리전과 external system을 통과할 수 있는 변경임. readiness dashboard 접근 권한과 actual switch 권한, customer-data export 권한을 분리하고 drill transcript·approval·exception을 감사 가능한 기간 동안 보존해야 함.",
+          "items": [
+            "통제: switch operator, readiness reviewer, identity/recording approver의 역할 분리와 least privilege 적용",
+            "통제: test data·call recording·customer context의 regional residency·retention·masking 정책 확인",
+            "통제: emergency failover의 approval override와 사후 review·credential rotation 기준을 runbook에 명시"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "먼저 deterministic 또는 known-answer read-only task에 frozen baseline과 independent check를 둔 뒤, limited sandbox에서 task-level edit만 canary로 시험해야 함. 이후 holdout task에서 benefit이 유지되는지 확인하고, write action은 별도 approval·rollback·incident drill을 통과한 component에만 허용하는 순서가 필요함.",
+          "body": "먼저 화면에서 pending·action-needed resource를 inventory와 매칭하고, 한 queue·한 phone number·한 agent cohort의 low-risk drill로 data-plane evidence를 만든다. 이후 external CRM·recording·authentication을 포함해 scope를 넓히고, scheduled rehearsal과 configuration drift review를 운영 cadence에 포함하는 순서가 필요함.",
           "items": [
-            "1단계: editable component·immutable policy·tool scope·budget·owner inventory화",
-            "2단계: sandbox probe와 holdout evaluation으로 edit admission criterion 설정",
-            "3단계: canary, feature flag, rollback SLO, security review를 통과한 제한 workload 확대"
+            "1단계: native replication resource와 non-native dependency를 분리한 linked-Region inventory 작성",
+            "2단계: representative phone number·queue·agent로 switch·rollback rehearsal과 RTO/RPO evidence 수집",
+            "3단계: integration failure·carrier issue·identity failure scenario를 포함한 quarterly drill과 remediation tracking"
           ]
         },
         {
           "heading": "개발팀·인프라팀 체크리스트",
-          "body": "개발팀은 harness diff와 test artifact를, 플랫폼팀은 isolated runtime·identity·quota·telemetry를, 보안팀은 policy boundary와 approval evidence를 공동 관리해야 함. continual learning state는 일반 application configuration보다 높은 change risk를 가질 수 있음.",
+          "body": "애플리케이션팀은 contact flow와 external API degradation을, platform팀은 account·region·identity·network configuration을, 운영팀은 call handling과 고객 공지·rollback을 공동 소유해야 함. 화면의 resource state가 change process 밖에 남지 않도록 ticket·CMDB·incident record를 연결할 필요.",
           "items": [
-            "체크: prompt/model/tool/evaluator/memory/policy version과 task context·probe result 보존",
-            "체크: read-only/ write tool 분리, egress allowlist, secret isolation, per-run budget 확인",
-            "체크: regression·timeout·policy violation·budget exhaustion의 rollback과 human handoff drill 실행"
+            "체크: readiness status·resource identifier·owner·last change·exception expiry를 CMDB 또는 change record에 기록",
+            "체크: phone number association, routing profile, user/agent access, contact flow, CRM/API, recording 경로의 target Region 시험",
+            "체크: partial failover·rollback·carrier failure·external API timeout 시의 on-call·customer communication·manual fallback drill"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Harness²의 발표 포인트는 self-improvement 자체가 아니라 **verifier 없는 변화도 probe와 경험 축적으로 다루려는 구조**임. 실제 배포에서는 model이 만든 edit보다 조직이 증명할 수 있는 approval·trace·rollback 경계를 먼저 만들어야 함.",
+          "body": "Amazon Connect readiness 화면은 전환 가능성을 높이는 시작점이며 **고객 통화가 실제로 복구되는지 증명하는 도구는 drill**임. 이번 주에는 action-needed resource 한 건을 종료하고, 대표 call flow의 switch·rollback 시간을 RTO evidence로 남겨야 함.",
           "items": [
-            "발표 포인트: WorkBuddy-Bench 최대 11.5점, JobBench 4.5점, LAB 11.8 percentage point의 연구 조건",
-            "즉시 행동: 대표 read-only agent 한 개에 frozen baseline·holdout·edit trace·rollback threshold 적용"
+            "발표 포인트: overall readiness·sync 상태·traffic distribution group 미연결 resource 식별과 기능 경계",
+            "즉시 행동: one-queue/one-number rehearsal에서 call routing·agent login·CRM·recording·rollback evidence 수집"
           ]
         }
       ]
