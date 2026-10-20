@@ -3607,3 +3607,9 @@
 - 확인 시각: 2026-10-20 10:26 KST. GeekNews·GeekNews Plus는 접근 제약을 재확인했고, AI타임스·AI타임스KR, AWS What’s New, Cloudflare, GitHub, Kubernetes 표면을 current research pass에 포함함.
 - AI타임스 canonical 원문의 `article:published_time` `2026-10-20T05:29:07+09:00`, OG image, 링크된 미국 연방관보 공개 문서 `2026-21447`을 대조. DHS 명령의 Federal Civilian Executive Branch 범위, DeepSeek·계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스의 제거·향후 조달 금지 범위를 수록함.
 - 기관별 실제 사용량·개별 제품 판정·제거 완료 시한은 공개 자료에서 확인하지 못해 확정하지 않음. `news-672`를 KST `2026-10-20 05:29` 기준 newest-first rank 1로 삽입해 W44 5건·rank 1–5를 유지하고 raw source SHA-256 `504ef5c5777cae0b9e0491b0df992ed943ee7edd69eb09dce225536c3039ea6a`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-20] update | Amazon Connect resiliency readiness·Cloudflare AI reviewer FinOps·Clairic preview 추가
+- 확인 시각: 2026-10-20 14:33 KST. GeekNews·GeekNews Plus는 HTTP 403으로 접근이 제한됐고, AI타임스KR·AI타임스 홈페이지, AWS What’s New RSS, Cloudflare·GitHub·Kubernetes·CNCF·Google AI·OpenAI feed를 current research pass에 포함함.
+- AWS canonical announcement와 RSS를 대조해 Amazon Connect Global Resiliency readiness page의 overall status·native replication resource·sync/pending/action-needed 상태 및 traffic distribution group 미연결 resource 예시를 수록함. 실제 failover·RTO/RPO·통화 품질 보장으로 확대하지 않음.
+- Cloudflare canonical 원문 2건의 `article:published_time`·OG image·본문을 직접 대조. AI 코드 리뷰어는 $2.43→$0.77, median 4분 9초→1분 32초, cache prefix·shadow comparison 범위를, Clairic은 Workers AI preview·typed value·confidence·80% interval과 accuracy·calibration 미보장 경계를 수록함.
+- `news-673`·`news-674`·`news-675`를 KST 발행 시각 newest-first으로 추가해 W44 8건·rank 1–8을 유지하고 raw capture·`index.md`·canonical `weekly/2026-W44.md`를 동기화함. Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.

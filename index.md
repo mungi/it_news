@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-20 | Total pages: 438
+> Last updated: 2026-10-20 | Total pages: 441
 
 ## Entities
 
@@ -39,6 +39,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-amazon-connect-global-resiliency-readiness-2026-10-20]] — Amazon Connect 연결 리전 전환 준비 상태 화면과 config drift·failover drill 검증 경계.
+- [[raw/articles/cloudflare-ai-code-review-inference-optimization-2026-10-20]] — Cloudflare AI 코드 리뷰어의 prompt cache·model routing 비용 최적화와 shadow quality gate 운영 경계.
+- [[raw/articles/cloudflare-clairic-extraction-model-2026-10-20]] — Workers AI Clairic typed extraction·confidence·interval과 validation·human review 운영 경계.
 - [[raw/articles/aitimes-us-federal-deepseek-supply-chain-removal-2026-10-20]] — 미국 연방 민간기관의 DeepSeek 및 기반 제3자 서비스 제거 명령과 AI 공급망 인벤토리·조달 통제 경계.
 - [[raw/articles/aws-cloudwatch-omni-additional-regions-2026-10-20]] — CloudWatch Omni 8개 리전 확대와 cross-cloud telemetry·OpenTelemetry·agent observability 검증 경계.
 - [[raw/articles/aws-ec2-image-builder-asg-integration-2026-10-20]] — EC2 Image Builder ASG 실행 인스턴스 활용과 AMI provenance·cleanup·capacity 검증 경계.

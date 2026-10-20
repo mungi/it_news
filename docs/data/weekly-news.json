@@ -2,14 +2,14 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-20 10:26",
+  "last_updated_kst": "2026-10-20 14:33",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Amazon Connect Customer Global Resiliency가 연결 리전의 전환 준비 상태와 미동기화·조치 필요 resource를 한 화면에 표시함. readiness indicator를 failover 성공으로 대체하지 말고 phone number·routing·identity·integration·rollback을 drill evidence로 확인해야 함.",
+    "Cloudflare는 내부 AI 코드 리뷰어에서 shared prompt cache와 model/effort routing을 조정해 고비용 2주 평균 실행당 비용을 $2.43에서 $0.77로 낮추고 median 시간을 4분 9초에서 1분 32초로 줄인 사례를 공개함. cache hit만 보지 말고 token·quality·latency·human rework를 shadow 평가와 함께 측정해야 함.",
+    "Cloudflare의 `Clairic` preview는 typed extraction·계산·추정·예측을 Workers AI에서 단일 pass로 반환함. confidence·80% interval은 자동 승인 근거가 아니라 field validation·provenance·human review·fallback을 정하는 입력으로 운영해야 함.",
     "Amazon CloudWatch Omni가 Tokyo를 포함한 8개 리전으로 확대됨. AWS·Azure·GCP telemetry, OpenTelemetry, agent evaluation view를 한 화면에 묶는 기능이지만 collector coverage·identity·residency·비용은 workload별 canary로 검증해야 함.",
-    "EC2 Image Builder가 ASG의 실행 중 인스턴스로 image build를 수행할 수 있게 됨. launch·bootstrap 대기는 줄일 수 있으나 build host 재사용에 따른 AMI drift·credential·cleanup·capacity 통제를 build manifest와 release gate에 포함해야 함.",
-    "Amazon GuardDuty Runtime Monitoring에 EC2·EKS·ECS용 선택형 탐지 규칙 50여 개와 dry-run이 추가됨. rule 수가 아니라 asset·identity·runtime evidence·triage outcome·containment까지 연결되는 운영 loop를 활성화 기준으로 삼아야 함.",
-    "Google Research의 `Harness²`는 verifier 없는 open-world task에서 agent harness를 task-level·harnessing-level 재귀로 개선하는 연구 구조임. online edit는 prompt·tool·memory·policy를 바꿀 수 있어 frozen baseline·holdout·approval·rollback을 release gate로 운영해야 함.",
-    "미 DHS의 연방조달 공급망 명령은 DeepSeek와 계열사 제품뿐 아니라 해당 기술 기반 제3자 제품·서비스를 연방 민간기관 IT 시스템의 제거·향후 조달 금지 범위에 포함함. 모델명 중심 관리로는 부족하므로 provider·SDK·embedded feature·data egress·계약 경로까지 AI component inventory로 점검해야 함."
+    "미 DHS의 연방조달 공급망 명령은 DeepSeek와 계열사 제품뿐 아니라 해당 기술 기반 제3자 제품·서비스를 연방 민간기관 IT 시스템의 제거·향후 조달 금지 범위에 포함함. model name 중심 관리로는 부족하므로 provider·SDK·embedded feature·data egress·계약 경로까지 AI component inventory로 점검해야 함."
   ],
   "deep_dives": [
     {
@@ -194,8 +194,71 @@
   ],
   "items": [
     {
+      "id": "news-673",
+      "title_ko": "Amazon Connect Customer Global Resiliency, 연결 리전 전환 준비 상태 화면 제공",
+      "title_original": "Amazon Connect Customer Global Resiliency now provides business users visibility into resiliency readiness across linked Regions",
+      "summary": "핵심: Amazon Connect Customer Global Resiliency가 관리자 화면에 `Global Resiliency` 페이지를 추가해 연결 리전의 전환 준비 상태와 동기화되지 않았거나 조치가 필요한 resource를 표시함. phone number·user가 traffic distribution group에 연결되지 않은 경우를 화면에서 식별·연결할 수 있지만, 상태 화면이 실제 failover 성공·RTO/RPO·전화 품질을 보장하는 기능은 아님.",
+      "detail": "AWS 공식 공지는 Amazon Connect 관리자 웹사이트의 Global Resiliency 페이지가 연결된 리전 전환 준비 상태를 한 곳에서 보여준다고 설명함. 이 화면은 전체 readiness 상태와 Global Resiliency가 native replication하는 resource 목록을 제공하고, resource type별 sync·pending synchronization·action 필요 상태를 구분함. 전화번호 또는 사용자가 traffic distribution group에 연결되지 않은 사례는 affected resource를 표시하고 관리자 화면에서 association하도록 지원함. 이는 configuration completeness를 확인하는 control surface이며, 실제 traffic switch·routing·identity·integrated dependency·runbook이 목표 RTO/RPO 안에서 작동하는지는 별도 drill로 검증해야 함.",
+      "why_it_matters": "컨택센터 DR은 replicated configuration만으로 끝나지 않으며 phone number, user, routing, external integration, 운영자 절차가 함께 전환돼야 함. 동기화 상태를 중앙에서 확인하면 사전 점검을 줄일 수 있으나 readiness indicator를 failover evidence로 대체하면 복구 시점에 dependency 누락이 드러날 위험이 있음.",
+      "engineering_implication": "시사점: Global Resiliency 페이지의 pending·action-needed resource를 change inventory와 연결하고, 리전별 phone number·traffic distribution group·user·routing profile·integration endpoint·IAM·runbook을 drill checklist로 검증할 것. switch rehearsal에서 completion time, call routing, agent login, queue state, external API 및 rollback을 RTO/RPO evidence로 기록할 것.",
+      "korea_implication": "국내 Amazon Connect 사용 조직은 실제 Customer Global Resiliency 지원 리전과 한국 고객번호·통신사·개인정보·녹취 보관의 지역별 제약을 별도 확인해야 함.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon Connect",
+        "Disaster Recovery",
+        "Multi-Region",
+        "Resiliency",
+        "Contact Center"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 77,
+      "published_kst": "2026-10-20 06:45",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-connect-global-resiliency-readiness-overview",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Connect Customer Global Resiliency가 관리자 웹사이트에 `Global Resiliency` 페이지를 추가함. 연결된 리전 전환 준비 상태를 단일 화면에서 검토하도록 하는 control surface 범위임.",
+          "items": [
+            "표시: 전체 readiness 상태와 native replication 대상 resource 목록 제공",
+            "구분: resource type별 in-sync·pending synchronization·action-needed 상태 표시"
+          ]
+        },
+        {
+          "heading": "화면에서 확인하는 구성",
+          "body": "AWS는 phone number 또는 user가 traffic distribution group에 연결되지 않은 경우를 예시로 제시함. 해당 resource를 페이지에서 식별하고 association 작업으로 이동할 수 있는 흐름임.",
+          "items": [
+            "예시: traffic distribution group과 연결되지 않은 phone number 또는 user 식별",
+            "경계: 공지는 모든 routing·identity·외부 integration dependency의 완전성을 자동 판정한다고 설명하지 않은 범위"
+          ]
+        },
+        {
+          "heading": "복구 검증 경계",
+          "body": "readiness view는 configuration sync와 조치 대상을 빠르게 찾는 데 유용하지만 실제 failover evidence와 같지 않음. traffic switch 뒤 call routing, queue, agent login, external CRM/API, recording과 rollback이 함께 검증돼야 함.",
+          "items": [
+            "검증: planned switch drill에서 completion time·call success·queue state·agent access·integration error 수집",
+            "피할 것: green readiness 상태를 RTO/RPO 충족 또는 고객 영향 없음의 증명으로 해석"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "컨택센터 리전 전환은 화면의 resource 상태와 운영 runbook을 연결해야 함. configuration drift가 발생할 수 있는 변경마다 readiness review와 rehearsal evidence를 남기면 실제 장애 시 누락 범위를 줄일 수 있음.",
+          "items": [
+            "팀 액션: phone number·traffic distribution group·user·routing profile·integration endpoint·IAM을 리전별 inventory로 관리",
+            "팀 액션: quarterly switch rehearsal에 rollback, 고객 공지, 녹취·개인정보 처리, external dependency failure를 포함"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-672",
-      "rank": 1,
+      "rank": 2,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -204,7 +267,14 @@
       "engineering_implication": "시사점: model registry에 모델명뿐 아니라 provider·hosting region·SDK/package version·gateway·embedded feature·data classification·egress endpoint·계약 owner를 연결할 것. 신규 제한 또는 공급망 사건은 SBOM 유사 inventory, feature flag, approval·exception 만료, 대체 경로와 rollback으로 대응할 것.",
       "korea_implication": "미 연방 민간기관 대상 명령이며 국내 조직에 직접 적용되는 규정은 아님. 다만 미국 공공 조달 또는 해당 고객을 지원하는 국내 공급자는 DeepSeek 기반 component와 재판매·embedded 경로의 계약상 영향 여부를 별도 확인할 필요.",
       "category": "Security",
-      "tags": ["AI Supply Chain", "DeepSeek", "Federal Procurement", "Third-Party Risk", "Data Egress", "Governance"],
+      "tags": [
+        "AI Supply Chain",
+        "DeepSeek",
+        "Federal Procurement",
+        "Third-Party Risk",
+        "Data Egress",
+        "Governance"
+      ],
       "region": "Global",
       "importance": "high",
       "score": 84,
@@ -214,7 +284,10 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216417_220488_2149.png",
       "local_image": "",
       "related_links": [
-        {"title": "미국 연방관보 공개 문서: 2026-21447", "url": "https://public-inspection.federalregister.gov/2026-21447.pdf"}
+        {
+          "title": "미국 연방관보 공개 문서: 2026-21447",
+          "url": "https://public-inspection.federalregister.gov/2026-21447.pdf"
+        }
       ],
       "detailed_content": [
         {
@@ -251,6 +324,70 @@
           ]
         }
       ]
+    },
+    {
+      "id": "news-674",
+      "title_ko": "Cloudflare, AI 코드 리뷰어의 prompt cache·모델 라우팅 최적화로 실행당 비용 68% 절감 공개",
+      "title_original": "Cutting our inference bill by 68% by being obsessive about optimization",
+      "summary": "핵심: Cloudflare가 내부 AI 코드 리뷰어의 평균 실행당 비용을 고비용 2주 평균 **$2.43에서 $0.77로 68%** 낮추고 median 처리 시간을 4분 9초에서 1분 32초로 줄인 최적화 사례를 공개함. shared prompt prefix의 cache breakpoint 분리, 호출 수 절감, workload별 model·effort 조정이 원인이며 자체 reviewer·provider·repository mix의 내부 결과임.",
+      "detail": "Cloudflare는 AI 코드 리뷰어의 비용이 8월 말 약 $2.46까지 증가한 뒤, 9월 중순부터 token 사용을 계측·최적화했다고 설명함. 고비용 2주 평균 $2.43 대비 현재 평균은 $0.77이며, median review 시간은 4분 9초에서 1분 32초로 바뀌었다고 공개함. 절감의 약 40%는 reviewer code 변경, 나머지는 model 선택과 effort 실험에서 왔다고 설명함. OpenCode v2는 canary repository에서 v1과 shadow comparison을 수행했고 승인 결정이 98% 일치한 조건에서 전환했으며 full-tier review가 약 13% 빨라졌다고 기록함. 이 수치는 Cloudflare 내부 workload의 관측값으로 다른 모델·prompt·pricing·review policy에 일반화할 수 없으므로, 조직별 cache hit·token·quality·latency·human rework를 함께 비교해야 함.",
+      "why_it_matters": "agentic code review는 context 증가와 다중 호출 때문에 cache hit rate가 높아도 token 비용이 커질 수 있음. prompt prefix 안정성, cache breakpoint 위치, model routing, effort tier는 품질·지연·비용을 동시에 바꾸므로 단가만 보고 최적화하면 review coverage나 regression을 놓칠 수 있음.",
+      "engineering_implication": "시사점: agent session의 system prompt·tool definition·repository-specific context를 분리하고 cacheable prefix hash, read/write token, cache hit, model/effort, acceptance, latency, human rework를 run 단위로 계측할 것. 변경은 shadow evaluation과 holdout repository를 거쳐 quality regression·cost·p95 latency·fallback/rollback 기준을 함께 통과시킬 것.",
+      "korea_implication": "국내 개발 조직도 코드·비밀정보·repository metadata가 외부 model context로 전달되는 경로와 provider별 cache retention·regional processing·계약 조건을 비용 최적화 전 함께 검토할 필요.",
+      "category": "DevTools",
+      "tags": [
+        "Cloudflare",
+        "AI Code Review",
+        "Prompt Caching",
+        "Model Routing",
+        "FinOps",
+        "Developer Tools"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-20 04:12",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/obsessive-inference-optimization/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M58NMFG35J21WVMK7QGMANJT.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare는 내부 AI 코드 리뷰어의 고비용 2주 평균 실행당 비용이 $2.43에서 $0.77로 감소했고 median review 시간이 4분 9초에서 1분 32초로 줄었다고 공개함. 절감의 약 40%는 reviewer code 최적화, 나머지는 model·effort 실험이라는 설명임.",
+          "items": [
+            "관측: 평균 비용 **68% 절감**, 공개한 내부 workload 기준",
+            "경계: 조직별 repository 크기·모델 가격·review tier·quality policy에 대한 일반 성능 보장은 아님"
+          ]
+        },
+        {
+          "heading": "token 비용이 커진 조건",
+          "body": "8월 말 평균 비용은 약 $2.46이었고, session당 평균 LLM call은 16.6회였음. cache hit rate는 4월 85.7%에서 9월 97%로 올랐지만 review당 token은 0.91M에서 2.99M으로 증가해 cache read 비용도 누적되는 구조였음.",
+          "items": [
+            "비용 구성: 최적화 직전 output token 약 23%, cache write 43%, cache read 34%라는 내부 분해",
+            "원인: 반복 호출마다 전체 conversation context가 전송돼 call 수와 context 크기가 함께 비용 변수로 작동"
+          ]
+        },
+        {
+          "heading": "cache prefix와 runtime 변경",
+          "body": "첫 LLM call의 shared system block이 repository-specific environment와 같은 block에 있고 cache breakpoint가 끝에 있어 repository 간 prefix 재사용이 어렵다는 점을 확인함. agent prompt 끝 marker와 plugin hook으로 block을 나누고, 공유 prefix 앞의 repository-specific 정보를 제거해 reuse를 높이는 방식임.",
+          "items": [
+            "변경: 공통 agent prompt·tool definition을 stable prefix로 분리하고 cache breakpoint를 별도 배치",
+            "검증: OpenCode v2를 canary repository에서 v1과 shadow 비교해 approval decision 98% 일치 조건으로 전환"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "cache 최적화는 prompt formatting 변경이면서 품질·보안·운영 정책 변경이기도 함. tool description 또는 skill list를 안정화하려고 context를 제거할 때 필요한 capability가 빠지지 않는지, provider cache data path와 retention이 정책에 맞는지 함께 검증해야 함.",
+          "items": [
+            "팀 액션: cache hit/read/write token·model/effort·acceptance·p95 latency·human rework를 request trace에 연결",
+            "팀 액션: prompt/model/routing 변경은 shadow·holdout·quality gate·fallback·rollback을 가진 release workflow로 운영",
+            "팀 액션: repository-specific context와 secret·PII가 shared cache prefix에 섞이지 않도록 prompt assembly와 provider retention 검토"
+          ]
+        }
+      ],
+      "rank": 3
     },
     {
       "id": "news-670",
@@ -328,7 +465,71 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 4
+    },
+    {
+      "id": "news-675",
+      "title_ko": "Cloudflare, typed extraction·계산·추정용 `Clairic` preview를 Workers AI에 제공",
+      "title_original": "Introducing Clairic, a new System One class of extraction models",
+      "summary": "핵심: Cloudflare가 unstructured input에서 typed value를 추출·계산·추정·예측하는 System One 계열 `Clairic` preview를 Workers AI의 `@cf/cloudflare/clairic`으로 공개함. 추출값은 character offset·confidence, 추정·예측값은 median과 80% interval을 반환하는 구조이며, 단일 pass·무토큰 생성이 typed output mismatch를 줄일 수 있어도 업무 정확도·calibration·schema coverage를 보장하지는 않음.",
+      "detail": "Cloudflare는 Clairic을 값 추출, 계산, 추정, 시계열 예측을 처리하는 extraction model class의 첫 preview로 소개하고 Workers AI에서 `@cf/cloudflare/clairic`으로 제공한다고 밝힘. 모델은 이름·주문 ID 같은 extracted text span, number·date·time·duration·list 같은 computed value, 선언한 bounds와 grid 안의 estimated value, future series의 forecasted value를 반환하며 output에 confidence score와 estimated/forecasted value의 median·80% interval을 붙인다고 설명함. Cloudflare는 token을 생성하지 않아 schema에 맞지 않는 자유 생성이나 LLM과 같은 형태의 hallucination을 하지 않는다고 설명하지만, null 또는 잘못된 value를 낼 수 있음도 명시함. 따라서 typed result를 business write·claim decision·financial action에 직접 연결하기보다 field-level validation·threshold·human review·fallback을 운영 경계로 두어야 함.",
+      "why_it_matters": "문서·운영 로그·청구·지원 티켓에서 반복되는 structured field extraction은 일반 LLM의 reasoning token과 자유 텍스트를 항상 요구하지 않을 수 있음. typed result와 confidence·interval은 routing과 review threshold에 쓸 수 있지만 confidence가 실제 error rate와 정렬되는지, input distribution 변화에서 유지되는지는 별도 검증 대상임.",
+      "engineering_implication": "시사점: input schema·output type·null semantics·confidence calibration·80% interval coverage·validation error·human override·fallback model을 dataset별로 계측할 것. production write path는 extracted span provenance와 character offset, source document version, threshold decision, reviewer outcome을 보존하고 low-confidence 또는 out-of-schema result를 queue로 보낼 것.",
+      "korea_implication": "국내 문서·상담·청구 데이터 적용 시 한국어 형식, 주민·금융·의료 정보 처리, Workers AI 처리 지역·보관·subprocessor 조건과 confidence threshold의 공정성 검토가 필요.",
+      "category": "AI",
+      "tags": [
+        "Cloudflare",
+        "Workers AI",
+        "Extraction Model",
+        "Structured Output",
+        "Calibration",
+        "AI Operations"
+      ],
+      "region": "Global",
+      "importance": "medium",
+      "score": 82,
+      "published_kst": "2026-10-20 02:48",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/clairic-extraction-model/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5AKCBMF8BCH80YN3A4DG9FH.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 System One extraction model class의 첫 preview인 `Clairic`을 Workers AI `@cf/cloudflare/clairic`으로 제공함. unstructured input에서 typed value를 직접 반환하는 단일 pass 모델로 설명된 범위임.",
+          "items": [
+            "대상: text span·number·date·time·duration·list의 추출 또는 계산",
+            "제공: 추정·예측값에 median과 **80% interval**, output confidence score 반환"
+          ]
+        },
+        {
+          "heading": "출력 계약",
+          "body": "extracted value는 입력 내 character offset과 confidence를 포함하고, computed value는 타입 규칙에 맞춘 결과를 반환하는 구조임. estimated value는 사용자가 선언한 bounds·grid 안의 distribution으로, forecast는 미래 step별 estimate로 설명됨.",
+          "items": [
+            "반환: answer를 찾지 못하면 null을 낼 수 있는 typed-output contract",
+            "경계: token을 생성하지 않는다는 설명은 업무 오류·입력 누락·calibration failure가 없다는 보장이 아님"
+          ]
+        },
+        {
+          "heading": "LLM routing과 검증",
+          "body": "invoice total, delivery date, repair cost, traffic forecast처럼 반복된 output shape의 작업에 경량 모델을 배치할 수 있음. 다만 source 문서 형식 변화, OCR 오류, 다국어 표기, rare category는 schema-valid 결과에도 semantic error를 만들 수 있어 field validation과 fallback이 필요함.",
+          "items": [
+            "검증: dataset·field별 exact match·null rate·confidence calibration·80% interval coverage·latency·cost 비교",
+            "피할 것: confidence score를 ground truth 또는 자동 승인 권한의 단독 근거로 취급"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "typed extraction은 자유 생성 결과를 줄이는 수단이지 자동화 책임을 없애는 수단이 아님. value와 함께 source span·document version·threshold·review outcome을 저장하면 오류 분석과 policy 변경을 재현할 수 있음.",
+          "items": [
+            "팀 액션: low-confidence·out-of-schema·validation failure 결과를 human review 또는 LLM fallback queue로 분기",
+            "팀 액션: write action 전 source provenance·character offset·schema version·reviewer override를 audit record로 보존",
+            "팀 액션: model preview의 availability·가격·regional data handling·open-weight release 계획을 production commitment로 해석하지 않음"
+          ]
+        }
+      ],
+      "rank": 5
     },
     {
       "id": "news-671",
@@ -397,7 +598,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-668",
@@ -472,7 +673,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 7
     },
     {
       "id": "news-669",
@@ -546,7 +747,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 8
     }
   ]
 }
