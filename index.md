@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-20 | Total pages: 441
+> Last updated: 2026-10-20 | Total pages: 443
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-netscaler-front-door-defense-2026-10-19]] — Cloudflare, NetScaler Gateway 취약점 대응을 패치 외 전면 접근 통제로 분리 제안
+- [[raw/articles/cncf-ai-workloads-kubernetes-autoscaling-2026-10-19]] — CNCF, AI workload가 Kubernetes autoscaling에 요구하는 reservation·topology·DRA 관점 정리
 - [[raw/articles/aws-amazon-connect-global-resiliency-readiness-2026-10-20]] — Amazon Connect 연결 리전 전환 준비 상태 화면과 config drift·failover drill 검증 경계.
 - [[raw/articles/cloudflare-ai-code-review-inference-optimization-2026-10-20]] — Cloudflare AI 코드 리뷰어의 prompt cache·model routing 비용 최적화와 shadow quality gate 운영 경계.
 - [[raw/articles/cloudflare-clairic-extraction-model-2026-10-20]] — Workers AI Clairic typed extraction·confidence·interval과 validation·human review 운영 경계.

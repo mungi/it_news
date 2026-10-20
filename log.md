@@ -3613,3 +3613,9 @@
 - AWS canonical announcement와 RSS를 대조해 Amazon Connect Global Resiliency readiness page의 overall status·native replication resource·sync/pending/action-needed 상태 및 traffic distribution group 미연결 resource 예시를 수록함. 실제 failover·RTO/RPO·통화 품질 보장으로 확대하지 않음.
 - Cloudflare canonical 원문 2건의 `article:published_time`·OG image·본문을 직접 대조. AI 코드 리뷰어는 $2.43→$0.77, median 4분 9초→1분 32초, cache prefix·shadow comparison 범위를, Clairic은 Workers AI preview·typed value·confidence·80% interval과 accuracy·calibration 미보장 경계를 수록함.
 - `news-673`·`news-674`·`news-675`를 KST 발행 시각 newest-first으로 추가해 W44 8건·rank 1–8을 유지하고 raw capture·`index.md`·canonical `weekly/2026-W44.md`를 동기화함. Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-20] update | NetScaler 전면 방어 가이드·AI workload Kubernetes autoscaling 해설 추가
+- 확인 시각: 2026-10-20 18:38 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·Kubernetes·CNCF·Google AI·OpenAI·CISA·The Hacker News 표면을 current research pass에 포함함.
+- Cloudflare canonical 원문의 `article:published_time` `2026-10-19T13:00:00Z`, OG image와 본문을 직접 대조. Citrix가 9월 27일 CVE-2026-88771·CVE-2026-88772 악용을 관측한 사실을 인용하고, Access·WAF·origin restriction의 전면 방어를 제안한 범위를 수록함. fixed build·forensic hunt·credential/session rotation 대체로 확대하지 않음.
+- CNCF member post의 `article:published_time` `2026-10-19T11:00:00Z`, OG image와 본문을 직접 대조. AI accelerator 배치에서 reservation·topology·DRA structured claim, scheduler·autoscaler capacity simulation의 관계와 implementation별 지원 경계를 수록함. 새 Kubernetes 표준·모든 autoscaler 지원·성능 보장으로 확대하지 않음.
+- `news-676`·`news-677`을 verified KST 발행 시각 순으로 삽입해 W44 10건·rank 1–10을 유지. raw source 2건, `index.md`, canonical `weekly/2026-W44.md`를 동기화. Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
