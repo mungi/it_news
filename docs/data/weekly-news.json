@@ -2,13 +2,14 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-20 06:22",
+  "last_updated_kst": "2026-10-20 10:26",
   "audience": "developers and engineers",
   "executive_summary": [
     "Amazon CloudWatch Omni가 Tokyo를 포함한 8개 리전으로 확대됨. AWS·Azure·GCP telemetry, OpenTelemetry, agent evaluation view를 한 화면에 묶는 기능이지만 collector coverage·identity·residency·비용은 workload별 canary로 검증해야 함.",
     "EC2 Image Builder가 ASG의 실행 중 인스턴스로 image build를 수행할 수 있게 됨. launch·bootstrap 대기는 줄일 수 있으나 build host 재사용에 따른 AMI drift·credential·cleanup·capacity 통제를 build manifest와 release gate에 포함해야 함.",
     "Amazon GuardDuty Runtime Monitoring에 EC2·EKS·ECS용 선택형 탐지 규칙 50여 개와 dry-run이 추가됨. rule 수가 아니라 asset·identity·runtime evidence·triage outcome·containment까지 연결되는 운영 loop를 활성화 기준으로 삼아야 함.",
-    "Google Research의 `Harness²`는 verifier 없는 open-world task에서 agent harness를 task-level·harnessing-level 재귀로 개선하는 연구 구조임. online edit는 prompt·tool·memory·policy를 바꿀 수 있어 frozen baseline·holdout·approval·rollback을 release gate로 운영해야 함."
+    "Google Research의 `Harness²`는 verifier 없는 open-world task에서 agent harness를 task-level·harnessing-level 재귀로 개선하는 연구 구조임. online edit는 prompt·tool·memory·policy를 바꿀 수 있어 frozen baseline·holdout·approval·rollback을 release gate로 운영해야 함.",
+    "미 DHS의 연방조달 공급망 명령은 DeepSeek와 계열사 제품뿐 아니라 해당 기술 기반 제3자 제품·서비스를 연방 민간기관 IT 시스템의 제거·향후 조달 금지 범위에 포함함. 모델명 중심 관리로는 부족하므로 provider·SDK·embedded feature·data egress·계약 경로까지 AI component inventory로 점검해야 함."
   ],
   "deep_dives": [
     {
@@ -193,6 +194,65 @@
   ],
   "items": [
     {
+      "id": "news-672",
+      "rank": 1,
+      "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
+      "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
+      "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
+      "detail": "AI타임스 보도와 링크된 미국 연방관보 공개 문서는 DHS가 Federal Acquisition Security Council의 권고와 관련 증거를 검토해 Federal Civilian Executive Branch의 IT 시스템에 대한 DeepSeek 공급망 위험 명령을 공개한 사실을 기록함. 대상은 DeepSeek와 계열사가 개발한 제품·서비스뿐 아니라 DeepSeek 기술을 사용해 구축한 제3자 제품·서비스까지 포함하는 범위임. 공개 자료에서는 기관별 실제 사용량, 개별 제품의 판정 절차, 구체적 제거 완료 시한을 확인하지 못했음. 엔터프라이즈 AI 운영에서는 model name allow/deny list만으로 끝내지 않고 provider, SDK, gateway, managed service, embedded feature, data egress, procurement 및 exception record를 함께 추적해야 함.",
+      "why_it_matters": "AI 공급망 위험은 직접 API 호출뿐 아니라 vendor feature·재판매 서비스·embedded model dependency에 숨어 있을 수 있음. 정부 조달 명령의 적용 대상과 별개로, 조직의 모델·도구 inventory가 provider lineage와 데이터 경로를 표현하지 못하면 규제·계약·보안 변경을 신속히 평가하기 어려움.",
+      "engineering_implication": "시사점: model registry에 모델명뿐 아니라 provider·hosting region·SDK/package version·gateway·embedded feature·data classification·egress endpoint·계약 owner를 연결할 것. 신규 제한 또는 공급망 사건은 SBOM 유사 inventory, feature flag, approval·exception 만료, 대체 경로와 rollback으로 대응할 것.",
+      "korea_implication": "미 연방 민간기관 대상 명령이며 국내 조직에 직접 적용되는 규정은 아님. 다만 미국 공공 조달 또는 해당 고객을 지원하는 국내 공급자는 DeepSeek 기반 component와 재판매·embedded 경로의 계약상 영향 여부를 별도 확인할 필요.",
+      "category": "Security",
+      "tags": ["AI Supply Chain", "DeepSeek", "Federal Procurement", "Third-Party Risk", "Data Egress", "Governance"],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-10-20 05:29",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216417",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216417_220488_2149.png",
+      "local_image": "",
+      "related_links": [
+        {"title": "미국 연방관보 공개 문서: 2026-21447", "url": "https://public-inspection.federalregister.gov/2026-21447.pdf"}
+      ],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "DHS가 Federal Acquisition Security Council의 권고와 관련 증거를 검토한 뒤, 2018년 Federal Acquisition Supply Chain Security Act 절차에 따른 명령을 연방관보 공개 문서로 제시함. 적용 대상은 Federal Civilian Executive Branch이며 민간기업 일반을 뜻하지 않는 범위임.",
+          "items": [
+            "조치: 연방 민간기관 IT 시스템에서 지정 대상 제품·서비스 제거 및 향후 조달 금지 범위",
+            "근거: 연방조달 공급망 위험 판단과 FASC 권고를 전제로 한 DHS 명령"
+          ]
+        },
+        {
+          "heading": "대상 범위",
+          "body": "보도와 공개 문서는 DeepSeek와 계열사가 개발한 제품·서비스뿐 아니라 DeepSeek 기술을 사용해 구축된 제3자 제품·서비스까지 대상으로 설명함. 직접 챗봇 사용만이 아니라 다른 공급자의 제품에 포함된 기술 dependency도 조사 대상이 될 수 있는 범위임.",
+          "items": [
+            "포함: DeepSeek 및 계열사 제품·서비스와 기술 기반 제3자 제품·서비스",
+            "점검: model provider, SDK, API gateway, managed service, embedded feature의 lineage 확인 필요"
+          ]
+        },
+        {
+          "heading": "확인된 경계",
+          "body": "공개 자료에는 기관별 실제 사용 규모와 제품별 판정 방식, 구체적인 제거 완료 시한이 제시되지 않은 범위임. 보안 위험 사유는 민감 데이터가 중국으로 이전될 가능성으로 제시됐지만, 개별 조직의 데이터 흐름·배포 형태·계약 조건은 별도 검토 대상임.",
+          "items": [
+            "미확정: 기관별 adoption 규모, deadline, 개별 third-party product의 판정 절차",
+            "피할 것: 이 명령을 모든 국가·민간 조직에 대한 일반적 사용 금지 또는 개별 서비스의 침해 사실로 확대"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI component inventory는 모델명과 사용자 계정만 기록해서는 공급망 변화를 추적하기 어려움. provider·hosting region·SDK version·feature dependency·data class·egress endpoint·procurement owner·exception expiry를 같은 record에 연결하면 조달 제한과 보안 검토를 change workflow로 처리할 수 있음.",
+          "items": [
+            "팀 액션: AI model·provider·SDK·gateway·embedded dependency·data egress를 inventory와 architecture review에 등록",
+            "팀 액션: 고위험 provider 변경에 feature flag·approval·exception 만료·대체 모델·rollback 경로 적용",
+            "팀 액션: 공공 조달 고객 지원 조직은 계약·재판매·subprocessor 문서와 실제 component lineage 대조"
+          ]
+        }
+      ]
+    },
+    {
       "id": "news-670",
       "title_ko": "Amazon CloudWatch Omni, 8개 리전으로 제공 확대",
       "title_original": "Amazon CloudWatch Omni is now available in additional AWS Regions",
@@ -268,7 +328,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-671",
@@ -337,7 +397,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-668",
@@ -412,7 +472,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-669",
@@ -486,7 +546,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     }
   ]
 }

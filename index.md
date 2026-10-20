@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-us-federal-deepseek-supply-chain-removal-2026-10-20]] — 미국 연방 민간기관의 DeepSeek 및 기반 제3자 서비스 제거 명령과 AI 공급망 인벤토리·조달 통제 경계.
 - [[raw/articles/aws-cloudwatch-omni-additional-regions-2026-10-20]] — CloudWatch Omni 8개 리전 확대와 cross-cloud telemetry·OpenTelemetry·agent observability 검증 경계.
 - [[raw/articles/aws-ec2-image-builder-asg-integration-2026-10-20]] — EC2 Image Builder ASG 실행 인스턴스 활용과 AMI provenance·cleanup·capacity 검증 경계.
 - [[raw/articles/google-harness2-recursive-agent-harnessing-2026-10-19]] — Harness²의 verifier 없는 open-world agent harness 재귀 개선과 probe·holdout·권한·rollback 운영 경계.

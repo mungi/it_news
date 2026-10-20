@@ -3602,3 +3602,8 @@
 - AWS Recent Announcements RSS와 canonical announcement page를 직접 대조. CloudWatch Omni는 RSS `Mon, 19 Oct 2026 19:10:00 GMT`를 KST `2026-10-20 04:10`으로 변환해 Canada (Central), Mumbai, Singapore, Sydney, Tokyo, Frankfurt, London, São Paulo 확대, cross-account·cross-Region·Azure/GCP telemetry, OpenTelemetry, agent observability 범위를 수록함. ingestion completeness·자동 root cause·SLO 개선은 보장으로 확대하지 않음.
 - EC2 Image Builder ASG 통합은 RSS `Mon, 19 Oct 2026 17:30:00 GMT`를 KST `2026-10-20 02:30`으로 변환해 실행 중 ASG instance 재사용·pool replenishment·opt-in·기존 path 무변경·전 리전/추가 비용 없음 범위를 수록함. AMI drift·credential·cleanup·capacity·provenance는 별도 canary 검증 경계로 유지.
 - `news-670`·`news-671`을 최신순 rank 1–2에 삽입해 W44 4건·rank 1–4를 유지하고 raw capture SHA-256·`index.md`·canonical `weekly/2026-W44.md`를 동기화. Deep Dive 2건은 같은 KST 날짜 02:11/02:17에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-20] update | 미국 연방 민간기관 DeepSeek 및 기반 제3자 서비스 제거 명령 추가
+- 확인 시각: 2026-10-20 10:26 KST. GeekNews·GeekNews Plus는 접근 제약을 재확인했고, AI타임스·AI타임스KR, AWS What’s New, Cloudflare, GitHub, Kubernetes 표면을 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-20T05:29:07+09:00`, OG image, 링크된 미국 연방관보 공개 문서 `2026-21447`을 대조. DHS 명령의 Federal Civilian Executive Branch 범위, DeepSeek·계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스의 제거·향후 조달 금지 범위를 수록함.
+- 기관별 실제 사용량·개별 제품 판정·제거 완료 시한은 공개 자료에서 확인하지 못해 확정하지 않음. `news-672`를 KST `2026-10-20 05:29` 기준 newest-first rank 1로 삽입해 W44 5건·rank 1–5를 유지하고 raw source SHA-256 `504ef5c5777cae0b9e0491b0df992ed943ee7edd69eb09dce225536c3039ea6a`, `index.md`, canonical weekly archive를 동기화. Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
