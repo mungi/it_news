@@ -2,14 +2,14 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-21 02:48",
+  "last_updated_kst": "2026-10-21 06:53",
   "audience": "developers and engineers",
   "executive_summary": [
+    "AWS `TorchNeuron` 공개 베타는 Trainium2·Trainium3에서 `.to('neuron')`, eager execution, `torch.compile`, NKI custom operator 경로를 제시함. accelerator 평가에서는 CUDA extension·distributed checkpoint·numerical parity·compile warm-up·step/token당 비용을 같은 SLO와 dataset에서 비교해야 함.",
+    "Amazon Bedrock이 모든 Anthropic Claude 모델의 schema-compliant JSON structured outputs를 지원함. JSON 형식 준수와 업무 사실성·권한·downstream write 안전성은 별도이므로 schema versioning, business validation, exception queue, approval gate를 분리해야 함.",
     "llm-d v1.0.0은 multi-tenant flow control, router HA·safe rolling update, `DisaggregatedSet` 기반 prefill/decode coordinated rollout, session affinity를 한 릴리스에 묶음. 3,000개 동시 agent나 5~10배 비용 절감 수치는 별도 국내 보도·실증 범위이므로 자체 모델·GPU·SLO에서 p95 latency·queue·cache·cost를 재측정해야 함.",
     "Amazon Connect Customer Global Resiliency가 연결 리전의 전환 준비 상태와 미동기화·조치 필요 resource를 한 화면에 표시함. readiness indicator를 failover 성공으로 대체하지 말고 phone number·routing·identity·integration·rollback을 drill evidence로 확인해야 함.",
-    "Cloudflare는 내부 AI 코드 리뷰어에서 shared prompt cache와 model/effort routing을 조정해 고비용 2주 평균 실행당 비용을 $2.43에서 $0.77로 낮추고 median 시간을 4분 9초에서 1분 32초로 줄인 사례를 공개함. cache hit만 보지 말고 token·quality·latency·human rework를 shadow 평가와 함께 측정해야 함.",
-    "Cloudflare는 Citrix NetScaler Gateway의 CVE-2026-88771 대응에서 patch와 별도로 Access·WAF·origin restriction을 취약 코드 앞에 배치하는 layered mitigation을 제안함. edge control은 fixed build·forensic hunt·session/credential rotation을 대체하지 않으므로 external reachability와 bypass path를 함께 검증해야 함.",
-    "미 DHS의 연방조달 공급망 명령은 DeepSeek와 계열사 제품뿐 아니라 해당 기술 기반 제3자 제품·서비스를 연방 민간기관 IT 시스템의 제거·향후 조달 금지 범위에 포함함. model name 중심 관리로는 부족하므로 provider·SDK·embedded feature·data egress·계약 경로까지 AI component inventory로 점검해야 함."
+    "Cloudflare는 내부 AI 코드 리뷰어에서 shared prompt cache와 model/effort routing을 조정해 고비용 2주 평균 실행당 비용을 $2.43에서 $0.77로 낮추고 median 시간을 4분 9초에서 1분 32초로 줄인 사례를 공개함. cache hit만 보지 말고 token·quality·latency·human rework를 shadow 평가와 함께 측정해야 함."
   ],
   "deep_dives": [
     {
@@ -203,6 +203,134 @@
   ],
   "items": [
     {
+      "region": "Global",
+      "related_links": [],
+      "id": "news-678",
+      "title_ko": "AWS, Trainium용 네이티브 PyTorch 백엔드 `TorchNeuron` 공개 베타",
+      "title_original": "AWS announces TorchNeuron: Native PyTorch Support for AWS Trainium (Public Beta)",
+      "summary": "핵심: AWS가 Trainium2·Trainium3용 오픈소스 네이티브 PyTorch 백엔드 `TorchNeuron` 공개 베타를 출시함. 기존 PyTorch 코드는 `.to('neuron')` 전환으로 eager execution·`torch.compile`·표준 API 호환을 목표로 하며, NKI를 통한 custom operator·하드웨어 최적화 경로도 제공함.",
+      "detail": "AWS What’s New RSS는 `TorchNeuron`을 Trainium용 오픈소스 native PyTorch backend 공개 베타로 공지함. 개발자는 `.to('neuron')` 전환으로 Trainium에서 PyTorch 코드를 실행하고 eager execution, `torch.compile`, standard PyTorch API 호환을 사용할 수 있다는 범위임. NKI(Neuron Kernel Interface) 연동은 custom operator와 Trainium hardware 성능 최적화 경로를 제공함. 지원 표기는 EC2 Trainium2·Trainium3 instance 대상이며, 기존 CUDA extension·분산 학습 stack·모델별 정확도·컴파일 시간·처리량·비용 우위는 공지에서 보장하지 않음.",
+      "why_it_matters": "가속기 전환의 마찰은 모델 코드보다 framework·compiler·custom op·distributed runtime 호환성에서 발생함. PyTorch-native 경로가 실제 workload에서 유지되면 Trainium 평가의 porting 범위를 줄일 수 있지만, device 전환 한 줄만으로 production compatibility가 증명되지는 않음.",
+      "engineering_implication": "시사점: 대표 training·inference model별 eager/`torch.compile`·custom operator·distributed checkpoint·numerical parity를 분리 canary로 측정할 것. CUDA 의존 extension, data loader, collective, kernel fallback, compile cache, p95 step latency와 token·step당 비용을 같은 acceptance gate로 비교할 것.",
+      "korea_implication": "국내 리전 사용 가능 여부와 Trainium2·Trainium3 capacity, 지원 AMI·SDK·quota는 실제 배포 account와 리전에서 별도 확인 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Trainium",
+        "PyTorch",
+        "TorchNeuron",
+        "AI Infrastructure",
+        "Training",
+        "Inference"
+      ],
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-21 00:00",
+      "source_name": "AWS What’s New RSS",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-announce-native-pytorch-support-trainium",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 `TorchNeuron` 공개 베타를 발표함. Trainium에서 native PyTorch execution을 제공하는 오픈소스 backend 범위임.",
+          "items": [
+            "대상: Amazon EC2 Trainium2·Trainium3 instance 지원",
+            "배포: `aws-neuron/torch-neuronx` GitHub repository를 통한 source 공개"
+          ]
+        },
+        {
+          "heading": "코드·컴파일 경로",
+          "body": "AWS는 기존 PyTorch 코드에서 `.to('neuron')` 전환을 제시하고 eager execution·`torch.compile`·standard PyTorch API 호환을 표방함. 이는 source-level migration 범위이며 모든 operator와 third-party extension의 무변경 동작 보장은 아님.",
+          "items": [
+            "경로: model·tensor device placement를 `neuron`으로 전환하는 개발 흐름",
+            "경계: CUDA custom extension, graph break, dynamic shape, compiler fallback의 지원 범위는 workload별 확인 필요"
+          ]
+        },
+        {
+          "heading": "하드웨어 최적화 범위",
+          "body": "`TorchNeuron`은 Neuron Kernel Interface와 통합돼 custom operator와 Trainium hardware 최적화에 연결되는 구조임. kernel-level 최적화는 portability와 유지보수 비용을 함께 바꾸므로 base PyTorch path와 분리해 평가할 필요.",
+          "items": [
+            "기능: NKI 기반 custom operator 및 성능 최적화 경로 제공",
+            "검증: custom kernel의 numerical parity·upgrade compatibility·profiling evidence를 model release artifact로 보존"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "새 backend 평가는 단일 throughput benchmark보다 training step·inference request의 end-to-end contract로 수행해야 함. compile warm-up·checkpoint restore·distributed failure와 observability가 기존 GPU path와 동등하게 동작하는지 확인이 필요함.",
+          "items": [
+            "팀 액션: eager·compile·custom op·distributed checkpoint·fault recovery를 포함한 model별 compatibility matrix 작성",
+            "팀 액션: p50/p95 step latency, compile time, memory, utilization, accuracy drift, token·step당 비용을 동일 dataset·SLO에서 비교"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "region": "Global",
+      "related_links": [],
+      "id": "news-679",
+      "title_ko": "Amazon Bedrock, 모든 Anthropic Claude 모델에 schema-compliant structured outputs 지원",
+      "title_original": "Structured outputs for Claude models available on Amazon Bedrock",
+      "summary": "핵심: Amazon Bedrock이 모든 Anthropic Claude 모델에서 정의된 schema에 맞는 JSON structured outputs를 지원함. `bedrock-runtime`의 boto3 호출과 `bedrock-mantle`의 Messages API 모두 대상이며, custom parsing·retry·post-processing 없이 schema-compliant 응답을 받는 경로를 제공한다는 범위임.",
+      "detail": "AWS What’s New RSS는 Bedrock의 모든 Anthropic Claude 모델에서 structured outputs를 지원한다고 공지함. boto3와 `bedrock-runtime` API, Messages API와 `bedrock-mantle` endpoint에서 정의한 구조에 맞는 JSON 응답을 받을 수 있는 범위임. AWS는 재무 문서 field extraction, 임상 note의 EHR parsing, product catalog enrichment, contract key term 분석, support ticket intent·sentiment·entity routing을 예시로 제시함. 제공 범위는 Claude 모델 가용 리전에 따르며, schema compliance가 업무 사실 정확도, semantic validation, authorization, PII 처리, downstream write 안전성을 보장하는 것은 아님.",
+      "why_it_matters": "agent와 automation pipeline은 자유 텍스트를 parse하는 단계에서 retry·format drift·downstream failure가 발생함. provider-level structured output은 interface contract를 단순화할 수 있으나 schema-valid JSON과 domain-correct decision은 다른 품질 gate로 운영해야 함.",
+      "engineering_implication": "시사점: JSON Schema를 API contract와 versioning 대상으로 관리하고, schema validation 뒤에도 business rule·range·cross-field·authorization validation을 적용할 것. model·schema·prompt version, validation failure, repair/fallback, human override를 trace로 남기고 side-effect tool 호출은 별도 approval gate로 분리할 것.",
+      "korea_implication": "국내 금융·의료·상담 문서 적용 시 Claude 모델 리전 가용성, cross-Region inference, 개인정보 처리·보관·접근 통제와 Korean field format validation을 함께 확인할 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Amazon Bedrock",
+        "Anthropic Claude",
+        "Structured Outputs",
+        "JSON Schema",
+        "Agent",
+        "Governance"
+      ],
+      "importance": "high",
+      "score": 87,
+      "published_kst": "2026-10-20 23:00",
+      "source_name": "AWS What’s New RSS",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/claude-structured-outputs-bedrock/",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Bedrock이 모든 Anthropic Claude 모델의 structured outputs를 지원한다고 AWS가 공지함. 정의된 structure에 맞는 JSON 응답을 받는 interface 범위임.",
+          "items": [
+            "지원: 모든 Anthropic Claude 모델 대상 structured outputs",
+            "endpoint: boto3·`bedrock-runtime` API와 Messages API·`bedrock-mantle` endpoint 범위"
+          ]
+        },
+        {
+          "heading": "제공되는 contract",
+          "body": "AWS는 custom parsing·retry·post-processing 없이 schema-compliant JSON을 받을 수 있다고 설명함. format contract를 provider 호출에 결합하는 기능이며, JSON 형식 통과가 field value의 사실성이나 업무 적합성을 보장하지는 않음.",
+          "items": [
+            "변화: application data model에 맞는 structured response 수신 경로",
+            "경계: hallucinated value, stale source, semantic inconsistency, unauthorized action은 별도 validation 대상"
+          ]
+        },
+        {
+          "heading": "AWS가 제시한 적용 예시",
+          "body": "공지는 financial earnings·compliance document field extraction, clinical note의 EHR parsing, product catalog enrichment, contract 분석, support ticket routing을 예시로 제시함. 모두 schema validation 뒤 domain rule과 human review가 필요한 high-impact data path일 수 있음.",
+          "items": [
+            "예시: intent·sentiment·entity가 application data model과 맞는 support ticket routing",
+            "예시: key term·party·obligation을 대상으로 한 contract information extraction"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "structured output을 tool invocation 또는 database write의 승인 증거로 취급하면 안 됨. schema는 transport contract로, business validation·policy enforcement·side-effect authorization은 별도 control plane으로 분리하는 구성이 필요함.",
+          "items": [
+            "팀 액션: schema·prompt·model version과 validation failure·repair·fallback·human override를 request trace에 연결",
+            "팀 액션: PII field masking, confidence/exception queue, business rule·cross-field validation, write approval을 production gate로 적용"
+          ]
+        }
+      ],
+      "rank": 2
+    },
+    {
       "id": "news-673",
       "title_ko": "Amazon Connect Customer Global Resiliency, 연결 리전 전환 준비 상태 화면 제공",
       "title_original": "Amazon Connect Customer Global Resiliency now provides business users visibility into resiliency readiness across linked Regions",
@@ -263,11 +391,11 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-672",
-      "rank": 2,
+      "rank": 4,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -396,7 +524,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-670",
@@ -474,7 +602,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-675",
@@ -538,7 +666,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-671",
@@ -607,7 +735,7 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-668",
@@ -682,7 +810,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-676",
@@ -754,7 +882,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-677",
@@ -823,7 +951,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-669",
@@ -897,7 +1025,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     }
   ]
 }
