@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-21 | Total pages: 447
+> Last updated: 2026-10-21 | Total pages: 448
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-php2shell-cve-2026-109618-109619-2026-10-21]] — Cloudflare가 공개한 PHP `php2shell` CVE-2026-109618·CVE-2026-109619 WAF 완화과 origin runtime patch·restart 검증 경계.
 - [[raw/articles/cloudflare-emudhra-intermediate-certificate-compromise-2026-10-21]] — Cloudflare가 공개한 eMudhra intermediate certificate 8건 compromise와 trust-store·TLS validation·workload restart 대응 경계.
 - [[raw/articles/aws-ecs-gateway-managed-ingress-2026-10-21]] — Amazon ECS Gateway의 managed ALB ingress·gateway standard·shared ALB capacity·migration 검증 경계.
 - [[raw/articles/aws-dynamodb-global-tables-disassociate-replica-2026-10-21]] — DynamoDB global tables replica 연결 해제와 data topology·client·stream·backup·governance 검증 경계.

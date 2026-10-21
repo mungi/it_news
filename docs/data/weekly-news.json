@@ -2,13 +2,13 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-21 14:58",
+  "last_updated_kst": "2026-10-21 23:10",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Cloudflare가 PHP 5.4 이상에 영향을 줄 수 있는 `php2shell` 취약점 `CVE-2026-109618`·`CVE-2026-109619`의 기본 WAF 보호를 공개함. WAF event와 origin patch 완료를 분리하고, runtime version·container image·direct endpoint·restart 증거를 즉시 inventory로 고정해야 함.",
     "AWS `TorchNeuron` 공개 베타는 Trainium2·Trainium3에서 `.to('neuron')`, eager execution, `torch.compile`, NKI custom operator 경로를 제시함. accelerator 평가는 CUDA extension·distributed checkpoint·numerical parity·compile warm-up·step/token당 비용을 같은 SLO와 dataset에서 비교해야 함.",
     "AWS `Amazon ECS Gateway`는 ECS service ingress를 위해 계정 내 ALB lifecycle을 관리하고 gateway 표준·cluster association·service opt-in·host-based routing을 제공함. shared ALB당 service 수, DNS·certificate·WAF ownership, quota·LCU·cross-AZ cost와 rollback을 canary로 검증해야 함.",
     "Amazon Bedrock이 모든 Anthropic Claude 모델의 schema-compliant JSON structured outputs를 지원함. JSON 형식 준수와 업무 사실성·권한·downstream write 안전성은 별도이므로 schema versioning, business validation, exception queue, approval gate를 분리해야 함.",
-    "DynamoDB global tables는 MREC replica의 table·data를 지우지 않고 replication 연결을 해제해 single-Region table로 유지할 수 있게 됨. topology 변경 전 client endpoint·stream·backup·IAM/KMS·residency와 rollback evidence를 inventory로 고정해야 함.",
     "Cloudflare는 eMudhra intermediate certificate 8건의 private key compromise에 대응해 trust-store·client·server-side mitigation을 배포함. SDK update만으로 끝내지 말고 outbound TLS client·container base image·custom CA bundle의 실제 verification path, rebuild·restart·redeploy evidence를 점검해야 함."
   ],
   "deep_dives": [
@@ -203,6 +203,70 @@
   ],
   "items": [
     {
+      "id": "news-683",
+      "title_ko": "Cloudflare, PHP `php2shell` 취약점 2건의 기본 WAF 보호 배포 공개",
+      "title_original": "Cloudflare deploys protections against php2shell vulnerability",
+      "summary": "핵심: Cloudflare가 PHP 5.4 이상 웹 서버에 영향을 줄 수 있는 `CVE-2026-109618`·`CVE-2026-109619`의 기본 WAF 보호를 2026-10-21 03:02 UTC부터 배포했다고 공개함. WAF는 request와 origin response signal을 함께 쓰는 완화 계층이며, PHP runtime patch·배포 image 교체·workload restart를 대신하지 않음.",
+      "detail": "Cloudflare는 Calif.io·Wiz·OpenAI·Quarkslab과의 coordinated disclosure에서 PHP 런타임 `php2shell` 취약점 2건이 공개됐다고 설명함. specially crafted HTTP traffic 처리 시 memory-safety 결함으로 DoS·remote code execution·data exposure가 가능할 수 있으며, PHP 5.4 이상 web server가 영향 범위임. Cloudflare는 공개 약 9시간 전 WAF mitigation을 배포하고 Free·paid WAF 고객에 기본 보호를 적용했으나, application code·plugin만 업데이트해서는 해결되지 않으며 origin PHP software patch가 필요하다고 명시함.",
+      "why_it_matters": "PHP runtime은 WordPress·Magento를 포함한 다수의 internet-facing application과 hosting image에 들어감. edge WAF 완화가 있어도 origin runtime·self-hosted endpoint·WAF 우회 경로의 patch 상태가 남으므로, 공개 직후 asset inventory와 update evidence를 함께 확보해야 함.",
+      "engineering_implication": "시사점: public PHP endpoint별 runtime version·container/base image·FPM/worker process·WAF coverage·origin access log·last restart를 inventory로 연결할 것. vendor security update 적용 뒤 canary request, error rate·memory·process restart, WAF event와 origin log를 대조하고 Cloudflare 밖 endpoint도 별도 patch completion 기준으로 관리할 것.",
+      "korea_implication": "국내 CDN·hosting·on-premises PHP 서비스도 reverse proxy 또는 WAF 적용 여부와 무관하게 origin PHP package·container image·managed hosting patch 일정과 restart 증거를 별도 확인할 필요.",
+      "category": "Security",
+      "tags": [
+        "PHP",
+        "php2shell",
+        "CVE-2026-109618",
+        "CVE-2026-109619",
+        "Cloudflare",
+        "WAF",
+        "Web Security"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 96,
+      "published_kst": "2026-10-21 22:56",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5FBPSP6GA0RRJ5FDQ68S476.png",
+      "local_image": "",
+      "related_links": [],
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 `php2shell`로 지칭한 PHP runtime 취약점 두 건의 WAF 보호 배포를 공개함. 공개 원문은 specially crafted HTTP traffic 처리 시 PHP 5.4 이상 web server에서 denial of service·remote code execution·data exposure 가능성을 설명하는 범위임.",
+          "items": [
+            "식별자: `CVE-2026-109618`과 `CVE-2026-109619`",
+            "영향 조건: PHP runtime이 specially crafted HTTP traffic을 처리하는 internet-facing application 경로"
+          ]
+        },
+        {
+          "heading": "취약점·패치 범위",
+          "body": "원문은 memory pressure 또는 fatal error 처리 뒤 PHP가 초기화되지 않았거나 해제된 memory를 참조하는 흐름을 설명함. 웹 애플리케이션 코드나 plugin만의 update가 아니라 실행 중인 PHP software update가 필요한 취약점 범위임.",
+          "items": [
+            "영향: PHP process crash·sensitive data exposure·attacker-provided code execution 가능성",
+            "대상: WordPress·Magento 같은 PHP 기반 application도 origin runtime patch 대상"
+          ]
+        },
+        {
+          "heading": "Cloudflare 완화 범위",
+          "body": "Cloudflare는 coordinated disclosure 과정에서 10월 초부터 WAF mitigation을 배포했고 2026-10-21 03:02 UTC부터 WAF 사용 Free·paid plan 고객에 default protection을 적용했다고 밝힘. request만 보지 않고 origin response signal을 결합하는 full transaction detection이 첫 managed detection 적용 사례라는 설명임.",
+          "items": [
+            "완화: matching origin response를 requester에 전달하기 전 차단하는 WAF rule 범위",
+            "관측: 공개 전 정보 유출 뒤 공격 traffic과 payload mutation을 관측한 범위"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "WAF event는 edge 경로의 탐지 증거일 뿐 origin patch 완료 증명이 아님. CDN 밖 public endpoint, internal ingress, direct origin address, 서로 다른 container image와 FPM worker를 포함해 runtime asset과 restart state를 확인해야 함.",
+          "items": [
+            "팀 액션: endpoint·runtime version·image digest·WAF coverage·owner·last restart의 patch inventory 작성",
+            "팀 액션: vendor update 뒤 canary request·error/memory metric·WAF event·origin log를 대조하고 rollback과 incident escalation 조건 검증"
+          ]
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-680",
       "title_ko": "AWS, ECS 서비스용 관리형 ingress `Amazon ECS Gateway` 발표",
       "title_original": "Announcing Amazon ECS Gateway, a managed ingress solution for your ECS services",
@@ -272,7 +336,7 @@
           ]
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-681",
@@ -340,7 +404,7 @@
           ]
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-682",
@@ -404,7 +468,7 @@
           ]
         }
       ],
-      "rank": 3
+      "rank": 4
     },
     {
       "region": "Global",
@@ -468,7 +532,7 @@
           ]
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "region": "Global",
@@ -532,7 +596,7 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-673",
@@ -595,11 +659,11 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-672",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -728,7 +792,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-670",
@@ -806,7 +870,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-675",
@@ -870,7 +934,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-671",
@@ -939,7 +1003,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-668",
@@ -1014,7 +1078,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-676",
@@ -1086,7 +1150,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-677",
@@ -1155,7 +1219,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-669",
@@ -1229,7 +1293,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     }
   ]
 }
