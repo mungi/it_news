@@ -40,6 +40,8 @@
 
 ## Raw Articles
 - [[raw/articles/cloudflare-php2shell-cve-2026-109618-109619-2026-10-21]] — Cloudflare가 공개한 PHP `php2shell` CVE-2026-109618·CVE-2026-109619 WAF 완화과 origin runtime patch·restart 검증 경계.
+- [[raw/articles/aws-aurora-rds-on-demand-capacity-reservations-2026-10-22]] — Aurora·RDS On-Demand Capacity Reservations의 AZ별 DB compute capacity·restore/scale·Multi-AZ·미사용 예약 비용 검증 경계.
+- [[raw/articles/cisa-php2shell-immediate-patching-2026-10-22]] — CISA php2shell 긴급 패치 권고의 fixed release·unsupported runtime offline·WAF 임시 보호·runtime hunting 검증 경계.
 - [[raw/articles/cloudflare-emudhra-intermediate-certificate-compromise-2026-10-21]] — Cloudflare가 공개한 eMudhra intermediate certificate 8건 compromise와 trust-store·TLS validation·workload restart 대응 경계.
 - [[raw/articles/aws-ecs-gateway-managed-ingress-2026-10-21]] — Amazon ECS Gateway의 managed ALB ingress·gateway standard·shared ALB capacity·migration 검증 경계.
 - [[raw/articles/aws-dynamodb-global-tables-disassociate-replica-2026-10-21]] — DynamoDB global tables replica 연결 해제와 data topology·client·stream·backup·governance 검증 경계.
