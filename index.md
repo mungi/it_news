@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-21 | Total pages: 444
+> Last updated: 2026-10-21 | Total pages: 446
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-ecs-gateway-managed-ingress-2026-10-21]] — Amazon ECS Gateway의 managed ALB ingress·gateway standard·shared ALB capacity·migration 검증 경계.
+- [[raw/articles/aws-dynamodb-global-tables-disassociate-replica-2026-10-21]] — DynamoDB global tables replica 연결 해제와 data topology·client·stream·backup·governance 검증 경계.
 - [[raw/articles/aws-torchneuron-native-pytorch-trainium-2026-10-21]] — AWS `TorchNeuron` 공개 베타: Trainium용 native PyTorch·NKI custom operator·compatibility 검증 경계.
 - [[raw/articles/aws-bedrock-claude-structured-outputs-2026-10-20]] — Amazon Bedrock Claude structured outputs: schema-compliant JSON·business validation·write approval 운영 경계.
 - [[raw/articles/cloudflare-netscaler-front-door-defense-2026-10-19]] — Cloudflare, NetScaler Gateway 취약점 대응을 패치 외 전면 접근 통제로 분리 제안
