@@ -3663,3 +3663,8 @@
 - 확인 시각: 2026-10-22 11:24 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·GitHub·Cloudflare·CNCF·Kubernetes·CISA feed를 current research pass에 포함함.
 - 인공지능신문 canonical 보도의 발행 시각 `2026-10-22 10:32 KST`, OG image와 본문을 직접 대조하고, NVIDIA OpenShell GitHub repository와 NVIDIA Secure Agent Workspace reference architecture의 logical plane·network·trusted access broker·credential proxy·OpenShift/Azure implementation 목차를 교차 확인함.
 - `news-687`을 KST `2026-10-22 10:32` 기준 newest-first rank 1로 삽입해 W44 20건·rank 1–20을 유지함. raw capture SHA-256은 작성 후 frontmatter 제외 body로 계산해 기록하고 `index.md`, canonical `weekly/2026-W44.md`를 동기화함. reference architecture를 침해 방지·밀리초 차단·규제 준수·운영 성과 보장으로 확대하지 않았으며, 동일 KST 날짜에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-22] update | OpenAI 모델·Codex의 Google Cloud Model Garden 제공 예고 추가
+- 확인 시각: 2026-10-22 15:33 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·GitHub·Cloudflare·CNCF·Kubernetes·OpenAI·Google AI feed를 current research pass에 포함함.
+- OpenAI 공식 RSS의 `Wed, 21 Oct 2026 12:00:00 GMT`를 KST `2026-10-21 21:00`으로 변환하고, RSS description의 frontier model·Codex workflow·Gemini Model Garden·Google Cloud Marketplace 범위를 직접 대조함. canonical OpenAI page는 수집 시 HTTP 403이어서 RSS description만을 공식 사실 범위로 사용하고, 인공지능신문의 2026-10-22 12:18 KST 보도·OG image는 data boundary·Marketplace 구매 보조 맥락으로 기록함.
+- `news-688`을 KST `2026-10-21 21:00` 기준 newest-first rank 6으로 삽입해 W44 21건·rank 1–21을 유지함. raw capture SHA-256 `c65b4e356e2128af976e3680a94a85411eaefd9b8dd31999bdc11c78144562f0`, local article image, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. 지원 모델·Region·가격·quota·ZDR 제공 시점·API surface를 확정하지 않았으며, 동일 KST 날짜에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
