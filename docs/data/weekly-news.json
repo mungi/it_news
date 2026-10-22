@@ -2,7 +2,7 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-23 03:45",
+  "last_updated_kst": "2026-10-23 07:48",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare WAF가 request·origin response 상관 분석과 response rule을 모든 요금제에 GA로 제공함. request-only signature와 분리해 response masking·false-positive·security analytics data scope·origin patch를 같은 change control에서 검증해야 함.",
@@ -203,6 +203,78 @@
   ],
   "items": [
     {
+      "id": "news-692",
+      "title_ko": "AWS Continuum for code vulnerabilities 정식 출시: 환경 그래프·격리 검증·PR 수정 제안 연결",
+      "title_original": "AWS Continuum for code vulnerabilities is now generally available",
+      "summary": "핵심: AWS가 코드 취약점용 `AWS Continuum`을 GA로 출시함. 변화: AWS resource topology·identity relationship·network reachability를 context graph로 구성하고, 기존 finding·code scan 결과를 isolated sandbox에서 exploitability로 검증한 뒤 blast radius 근거를 붙인 remediation PR을 개발 workflow에 제공하는 범위임.",
+      "detail": "AWS 공식 공지는 Continuum이 취약점 발견·검증·우선순위화·수정을 수행하며, AWS 환경의 topology·identity·network reachability를 context graph로 사용한다고 설명함. Learn mode에서는 승인할 수정안을 제안하고, 조직이 precision에 신뢰를 쌓은 뒤 설정한 guardrail 안에서 Enforce mode의 자율 동작으로 전환할 수 있음. GuardDuty·Security Hub와 함께 작동하는 서비스이며, 실제 exploit 판정 정확도·patch 안전성·PR merge·조직별 coverage는 별도 검증 대상임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS가 `AWS Continuum for code vulnerabilities`의 정식 출시를 공지함. 기존 vulnerability finding과 code scan을 AWS environment context에 결합해 remediation workflow로 연결하는 서비스 범위임.",
+          "items": [
+            "공개: code vulnerability의 discovery·validation·prioritization·remediation을 대상으로 한 GA 제공",
+            "연계: Amazon GuardDuty·AWS Security Hub를 포함한 기존 AWS security service와 함께 동작하는 범위"
+          ]
+        },
+        {
+          "heading": "context graph와 검증 경로",
+          "body": "Continuum은 resource topology, identity relationship, network reachability를 포함한 context graph를 구성해 application 구성 요소와 business risk가 큰 finding을 판단한다고 설명함. finding을 수집하고 code를 scan한 뒤 isolated sandbox에서 exploitability를 시험하는 흐름임.",
+          "items": [
+            "근거: resource·identity·network 관계를 취약점 priority의 환경 context로 사용",
+            "검증: isolated sandbox 시험으로 exploitable finding을 확인하고 business impact 기준 우선순위화",
+            "산출물: exploitability proof와 blast radius assessment를 첨부한 remediation patch pull request 제공"
+          ]
+        },
+        {
+          "heading": "수정 자동화의 제어 경계",
+          "body": "AWS는 처음에는 Learn mode에서 승인 가능한 remediation fix를 제안하고, precision에 대한 신뢰가 쌓인 뒤 조직 guardrail 안에서 Enforce mode로 전환하는 모델을 제시함. 서비스의 AI model selection과 automated action은 source code·CI/CD·production configuration의 승인 체계를 대체하지 않음.",
+          "items": [
+            "단계: Learn mode의 proposal·human approval에서 Enforce mode의 guardrail-bound autonomous action으로 전환",
+            "검토: sandbox proof의 dependency·fixture·network·IAM 조건이 production exploit path와 일치하는지 확인 필요",
+            "경계: vendor 기능 설명은 개별 finding의 exploitability, patch correctness, merge safety 보장 범위 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "context-aware remediation은 CVE count보다 asset exposure와 attack path를 우선할 수 있으나, graph 입력의 freshness와 identity·network inventory 오류가 priority와 patch 대상에 영향을 줄 수 있음. 자동 PR은 build·test·policy·rollback evidence를 가진 release path에서만 확대할 대상임.",
+          "items": [
+            "팀 액션: representative repository에서 finding ingest→sandbox proof→PR→test→approval→rollback의 evidence와 owner를 연결",
+            "운영 과제: Learn mode에서 false positive·missed exposure·PR acceptance·patch rollback·sandbox cost를 release metric으로 수집",
+            "통제: Enforce mode 전환 전 IAM write scope, branch protection, CI secret exposure, emergency disable·audit export 검증"
+          ]
+        }
+      ],
+      "why_it_matters": "코드 취약점의 우선순위를 CVSS나 scanner 결과만으로 정하면 실제 network reachability·identity privilege·asset criticality를 놓칠 수 있음. 환경 graph와 sandbox proof를 결합하면 triage 근거를 보강할 수 있으나 graph freshness와 test environment fidelity가 안전한 자동 수정의 전제임.",
+      "engineering_implication": "시사점: production Enforce mode 전에 Learn mode로 고위험 repository 한 곳을 canary 운영하고, exploit proof 재현성·PR test pass·human override·rollback time·IAM write scope를 acceptance criterion으로 고정할 것.",
+      "korea_implication": "국내 조직은 AWS account·VPC·IAM 관계와 source code·취약점 evidence가 서비스에 전달되는 범위, 보안관제·변경관리·망분리 정책, 자동 PR의 승인 책임을 도입 전에 대조할 필요.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "AWS Continuum",
+        "Vulnerability Management",
+        "DevSecOps",
+        "Application Security",
+        "AI Agent",
+        "Security Hub"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 93,
+      "published_kst": "2026-10-23 06:00",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-continuum-for-code-vulnerabilities-is-now-generally-available",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [
+        {
+          "title": "AWS Continuum product page",
+          "url": "https://aws.amazon.com/security/continuum/"
+        }
+      ],
+      "rank": 1
+    },
+    {
       "id": "news-690",
       "title_ko": "Cloudflare WAF, 요청·응답 상관 분석과 origin 응답 차단 기능 GA",
       "title_original": "Introducing full transaction detection for Cloudflare WAF",
@@ -268,7 +340,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-691",
@@ -337,7 +409,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-689",
@@ -401,7 +473,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-687",
@@ -474,7 +546,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-686",
@@ -545,7 +617,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-685",
@@ -609,11 +681,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-684",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -739,7 +811,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-688",
@@ -809,7 +881,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-680",
@@ -881,7 +953,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-681",
@@ -949,7 +1021,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-682",
@@ -1013,7 +1085,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 13
     },
     {
       "region": "Global",
@@ -1077,7 +1149,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "region": "Global",
@@ -1141,7 +1213,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-673",
@@ -1204,11 +1276,11 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-672",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -1337,7 +1409,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-670",
@@ -1415,7 +1487,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "id": "news-675",
@@ -1479,7 +1551,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-671",
@@ -1548,7 +1620,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-668",
@@ -1623,7 +1695,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-676",
@@ -1695,7 +1767,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-677",
@@ -1764,7 +1836,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-669",
@@ -1838,7 +1910,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     }
   ]
 }

@@ -3680,6 +3680,11 @@
 - CNCF member post의 `2026-10-22 11:00 UTC` 발행 시각과 본문을 직접 대조. Claude Code 한 실행의 181 record·289KB 사례, tool content trace/log 중복, identity attribute metric cardinality, raw/optimized OTLP fan-out 비교 범위를 수록함. sample config를 모든 agent·backend의 비용 절감·privacy·detection coverage 보장으로 확대하지 않음.
 - `news-690`·`news-691`을 KST `23:10`·`20:00` 기준 newest-first에 삽입해 W44 24건·rank 1–24를 유지. raw source SHA-256 `3ab8b74d1b3d74bf27d3f983e73d08a32aabd98d63c89e5bca54af0b8db0ecd2`·`d5a3fbd1cdb703d74b1e6a7054d2ed3b4fc8685e9f2e7a388e27d458971065c3`, `index.md`, canonical `weekly/2026-W44.md`를 동기화. Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
 
+## [2026-10-23] update | AWS Continuum code vulnerabilities GA 추가
+- 확인 시각: 2026-10-23 07:48 KST. GeekNews는 HTTP 200, GeekNews Plus는 HTTP 404 접근 제약, AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·OpenAI·Google AI feed를 current research pass에 포함함.
+- AWS What’s New canonical announcement와 RSS `Thu, 22 Oct 2026 21:00:00 GMT`를 직접 대조해 KST `2026-10-23 06:00`으로 변환함. context graph의 resource topology·identity relationship·network reachability, isolated sandbox exploitability 검증, blast radius proof가 붙은 remediation PR, Learn→Enforce mode와 GuardDuty·Security Hub 연계 범위를 수록함.
+- `news-692`를 newest-first rank 1에 삽입해 W44 25건·rank 1–25를 유지함. raw capture SHA-256 `5c4b55a0842f2ad5687c91f8604930eb0ebd95df3a4d974c709ce7e39ecebc5b`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. exploitability 판정·patch correctness·PR merge·coverage를 보장으로 확대하지 않았으며, Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
 ## [2026-10-23] update | KST 첫 실행 Deep Dive 전면 교체: Cloudflare WAF full transaction detection·GitHub agent-scale Git infrastructure
 - 확인 시각: 2026-10-23 03:45 KST. GeekNews·GeekNews Plus는 HTTP 403으로 접근 제약을 확인했고, AI타임스KR·AI타임스는 HTTP 200 surface를 확인함. Cloudflare와 GitHub 공식 원문을 직접 재검증함.
 - 전일 Aurora·RDS Capacity Reservations와 CISA php2shell Deep Dive를 유지하지 않고 서로 다른 primary URL의 Cloudflare WAF full transaction detection과 GitHub agent-scale Git infrastructure로 전면 교체함. Cloudflare 원문의 `2026-10-21T14:10:42Z` 발행 시각·OG metadata·request/origin response 상관 분석·`403` response replacement·php2shell managed protection 범위를, GitHub 원문의 `2026-10-21T16:00:00+00:00` 발행 시각·OG metadata·99.99999% dual placement·Azure traffic 약 절반·약 25ms RTT·per-reference quorum 방향을 대조함.

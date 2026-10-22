@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-continuum-code-vulnerabilities-ga-2026-10-23]] — AWS Continuum GA의 AWS context graph·isolated sandbox exploitability 검증·Learn/Enforce remediation PR 통제 경계.
 - [[raw/articles/cloudflare-full-transaction-waf-2026-10-22]] — Cloudflare WAF의 request·origin response 상관 분석·response rule과 origin patch·로그 데이터 경계.
 - [[raw/articles/cncf-ai-agent-telemetry-otel-collector-2026-10-22]] — AI coding agent telemetry의 OpenTelemetry Collector raw/optimized pipeline·content 중복·고카디널리티·보존 경계.
 - [[raw/articles/aitimes-anthropic-claude-security-continuous-analysis-2026-10-22]] — Anthropic Claude Security 공개 베타의 지속 분석·수정 추적·위협 모델·API/MCP·RBAC와 DevSecOps 검증 경계.
