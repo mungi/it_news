@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-21 | Total pages: 448
+> Last updated: 2026-10-22 | Total pages: 450
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-full-transaction-waf-2026-10-22]] — Cloudflare WAF의 request·origin response 상관 분석·response rule과 origin patch·로그 데이터 경계.
+- [[raw/articles/cncf-ai-agent-telemetry-otel-collector-2026-10-22]] — AI coding agent telemetry의 OpenTelemetry Collector raw/optimized pipeline·content 중복·고카디널리티·보존 경계.
 - [[raw/articles/aitimes-anthropic-claude-security-continuous-analysis-2026-10-22]] — Anthropic Claude Security 공개 베타의 지속 분석·수정 추적·위협 모델·API/MCP·RBAC와 DevSecOps 검증 경계.
 - [[raw/articles/openai-models-google-cloud-model-garden-2026-10-22]] — OpenAI 모델·Codex workflow의 Google Cloud Model Garden·Marketplace 제공 예고와 entitlement·data·billing·fallback 검증 경계.
 - [[raw/articles/nvidia-openshell-secure-agent-workspace-2026-10-22]] — NVIDIA OpenShell secure agent workspace의 권한·격리·credential proxy·network·audit 검증 경계.
