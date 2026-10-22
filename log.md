@@ -3658,3 +3658,8 @@
 - AWS Transform은 공식 RSS `Wed, 21 Oct 2026 19:10:00 GMT`와 canonical announcement를 대조해 KST `2026-10-22 04:10`으로 변환. on-premises storage inventory, S3·EBS·EFS·FSx mapping, sizing·projected cost, Single-AZ/Multi-AZ와 cost/performance what-if 범위를 수록함. protocol compatibility·data integrity·cutover·SLO 보장은 확인하지 않음.
 - GitHub 공식 Engineering 원문과 feed `Wed, 21 Oct 2026 16:00:00 +0000`을 대조해 KST `2026-10-22 01:00`으로 기록. repository 사본 99.99999% 이중 배치, 5 replica 중 대다수 repository의 Azure 2 replica, Azure Git traffic 약 절반, 약 25ms RTT 병목, per-reference quorum·object storage read scale을 수록함. GitHub 내부 architecture를 일반 performance·availability 보장으로 확대하지 않음.
 - `news-685`·`news-686`을 verified KST 발행 시각 newest-first으로 삽입해 W44 19건·rank 1–19 유지. raw capture SHA-256·`index.md`·canonical `weekly/2026-W44.md`를 동기화함. 동일 KST 날짜에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
+
+## [2026-10-22] update | NVIDIA OpenShell secure agent workspace 레퍼런스 아키텍처 추가
+- 확인 시각: 2026-10-22 11:24 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·GitHub·Cloudflare·CNCF·Kubernetes·CISA feed를 current research pass에 포함함.
+- 인공지능신문 canonical 보도의 발행 시각 `2026-10-22 10:32 KST`, OG image와 본문을 직접 대조하고, NVIDIA OpenShell GitHub repository와 NVIDIA Secure Agent Workspace reference architecture의 logical plane·network·trusted access broker·credential proxy·OpenShift/Azure implementation 목차를 교차 확인함.
+- `news-687`을 KST `2026-10-22 10:32` 기준 newest-first rank 1로 삽입해 W44 20건·rank 1–20을 유지함. raw capture SHA-256은 작성 후 frontmatter 제외 body로 계산해 기록하고 `index.md`, canonical `weekly/2026-W44.md`를 동기화함. reference architecture를 침해 방지·밀리초 차단·규제 준수·운영 성과 보장으로 확대하지 않았으며, 동일 KST 날짜에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.

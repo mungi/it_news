@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/nvidia-openshell-secure-agent-workspace-2026-10-22]] — NVIDIA OpenShell secure agent workspace의 권한·격리·credential proxy·network·audit 검증 경계.
 - [[raw/articles/aws-transform-storage-migration-assessments-2026-10-22]] — AWS Transform storage migration assessment의 inventory·target mapping·sizing·TCO scenario와 validation 경계.
 - [[raw/articles/github-agent-scale-git-infrastructure-2026-10-22]] — GitHub agent-scale Git infrastructure의 Azure 이중 배치·reference 단위 quorum·object storage read scale 경계.
 - [[raw/articles/cloudflare-php2shell-cve-2026-109618-109619-2026-10-21]] — Cloudflare가 공개한 PHP `php2shell` CVE-2026-109618·CVE-2026-109619 WAF 완화과 origin runtime patch·restart 검증 경계.
