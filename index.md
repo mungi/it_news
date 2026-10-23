@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-23 | Total pages: 455
+> Last updated: 2026-10-24 | Total pages: 459
 
 ## Entities
 
@@ -39,6 +39,10 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-post-quantum-geo-key-manager-2026-10-24]] — Cloudflare PQ GeoKey Manager closed beta의 regional root key·hybrid ML-KEM-768/X25519·fail-closed data sovereignty 경계.
+- [[raw/articles/aws-transit-gateway-cloud-wan-1-1-nat-2026-10-24]] — AWS Transit Gateway·Cloud WAN attachment 기반 managed 1:1 NAT와 CIDR overlap·route/security canary 경계.
+- [[raw/articles/cisa-arista-velocloud-orchestrator-kev-2026-10-24]] — CISA KEV 등록 Arista VeloCloud Orchestrator SQL injection의 asset inventory·vendor remediation·incident hunt 경계.
+- [[raw/articles/aws-emr-eks-charge-reduction-2026-10-24]] — Amazon EMR on EKS EMR surcharge 30% 인하와 total workload cost 재산정 경계.
 - [[raw/articles/cncf-kamaji-hami-multitenant-gpu-2026-10-23]] — Kamaji tenant control plane·HAMi GPU memory/compute 분할 scheduling·Konnectivity admission 경로와 real GPU canary 검증 경계.
 - [[raw/articles/aitimes-openai-decisions-api-ga-2026-10-23]] — OpenAI Decisions API 정식 출시 보도의 선택지 제한·score/probability 출력·latency·action control 검증 경계.
 - [[raw/articles/cloudflare-korea-isms-consent-flow-2026-10-22]] — Cloudflare 한국 ISMS 인증의 80개 통제 심사·국가별 동의 gate·소셜 가입 우회 차단 구현 경계.

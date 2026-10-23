@@ -2,7 +2,7 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-24 00:07",
+  "last_updated_kst": "2026-10-24 04:14",
   "audience": "developers and engineers",
   "executive_summary": [
     "AWS Continuum이 code finding을 resource topology·identity·network reachability context graph와 sandbox exploitability 검증에 결합해 remediation PR로 연결함. Enforce mode는 graph freshness·sandbox parity·CI test·branch 권한·rollback evidence가 확인된 좁은 canary에서만 확대해야 함.",
@@ -193,6 +193,192 @@
   ],
   "items": [
     {
+      "id": "news-702",
+      "title_ko": "Cloudflare, PQ GeoKey Manager closed beta: 지역 경계 key unwrap에 ML-KEM-768·X25519 적용",
+      "title_original": "Bringing post-quantum cryptography to geographically fenced key management",
+      "summary": "핵심: Cloudflare가 Data Localization Suite용 `PQ GeoKey Manager` closed beta를 공개함. 변화: 고객 decryption key를 선택한 geography의 edge에서만 unwrap하도록 `ML-KEM-768`·`X25519` hybrid 구조와 regional root key provisioning path를 적용한 범위임.",
+      "detail": "Cloudflare는 global network에 wrapped customer key와 metadata를 배포하되, regional root key는 별도 path로 승인된 edge에만 전달하는 구조를 설명함. key geography control은 harvest-now-decrypt-later 위험과 data sovereignty 요구를 다루지만 routing·tunnel termination·traffic inspection·plaintext processing 위치 자체를 결정하지 않음. 현재 closed beta이며 GA는 2027년 1분기 계획임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 Data Localization Suite용 post-quantum geographically restricted key manager를 closed beta로 공개함. customer decryption key가 지정 geography의 server에서만 사용되도록 wrapping하는 범위임.",
+          "items": [
+            "공개: `PQ GeoKey Manager` closed beta와 2027년 1분기 GA 계획",
+            "목적: 장기 보관 ciphertext의 harvest-now-decrypt-later 위험과 key-use geography 요구 대응"
+          ]
+        },
+        {
+          "heading": "키 계층과 배포 경로",
+          "body": "regional root key와 service별 application-specific key pair를 사용하며, wrapped private key에는 service context·regional boundary·epoch metadata가 포함됨. global config path와 root-key provisioning path를 분리한 구조임.",
+          "items": [
+            "암호: hybrid `ML-KEM-768`·`X25519` 보호와 regional root key 기반 key hierarchy",
+            "분리: wrapped key·metadata는 global distribution, regional root key는 authorized edge 전용 provisioning"
+          ]
+        },
+        {
+          "heading": "fail-closed 동작",
+          "body": "edge key service는 필요한 regional root key가 없거나 malformed이면 시작하지 않음. request metadata가 local에 없는 regional key를 요구하면 out-of-region unwrap 대신 request를 거부하는 동작임.",
+          "items": [
+            "보호: missing·malformed root key에서 service start 차단",
+            "보호: Germany key를 Spain·France edge에서 unwrap하려는 경로의 fail-closed 처리"
+          ]
+        },
+        {
+          "heading": "적용 경계와 시사점",
+          "body": "이 기능은 key unwrap geography를 통제하며 traffic routing·tunnel termination·inspection·plaintext processing 위치 자체를 통제하지 않음. data residency evidence는 각 plane을 별도 검증해야 함.",
+          "items": [
+            "경계: key region control을 end-to-end data residency 보장으로 해석하지 않을 것",
+            "팀 액션: key-use·routing·inspection·plaintext region과 rotation epoch·region outage failure mode를 분리 검증"
+          ]
+        }
+      ],
+      "why_it_matters": "규제·금융·의료 workload는 암호화 여부뿐 아니라 private key가 어느 geography에서 사용되는지와 장기 암호 민첩성을 함께 증명해야 함.",
+      "engineering_implication": "시사점: beta 도입 전 key hierarchy, region authorization, rotation, fail-closed availability, traffic/plaintext data plane을 하나의 residency claim으로 묶지 말고 evidence를 분리할 것.",
+      "korea_implication": "국내 개인정보·금융 data 경로는 Cloudflare의 key geography 기능만으로 보관·처리·위탁 location이 확정되지 않으므로 계약·service configuration·audit scope를 별도 대조할 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "Post-Quantum",
+        "Key Management",
+        "Data Sovereignty",
+        "Zero Trust"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 92,
+      "published_kst": "2026-10-24 03:06",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/post-quantum-geo-key-manager/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5MYF84W5ZDM8VYGGMCPH1ZZ.png",
+      "local_image": "",
+      "related_links": [],
+      "rank": 1
+    },
+    {
+      "id": "news-700",
+      "title_ko": "AWS Transit Gateway·Cloud WAN, attachment 기반 managed 1:1 NAT 지원",
+      "title_original": "AWS Transit Gateway and AWS Cloud WAN now support 1:1 NAT",
+      "summary": "핵심: AWS Transit Gateway와 Cloud WAN이 attachment에 `Regional Private NAT Gateway` 기반 managed 1:1 NAT를 제공함. 변화: overlapping CIDR network를 renumbering·NAT appliance·별도 return rule 없이 연결하도록 양방향 address translation을 적용하는 범위임.",
+      "detail": "AWS는 attachment에서 source CIDR이 translate될 private IP range를 정의하면 Transit Gateway와 Cloud WAN이 양방향 변환을 자동 적용한다고 설명함. VPC, Site-to-Site VPN, Direct Connect, Transit Gateway Connect SD-WAN appliance가 대상이며 CloudWatch metric·EventBridge event로 translated traffic을 관측할 수 있음. route·security policy·DNS·MTU·stateful inspection 호환성은 별도 검증 대상임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS Transit Gateway와 Cloud WAN attachment에 Regional Private NAT Gateway 기반 managed 1:1 NAT가 추가됨. private network의 overlapping CIDR을 연결하는 control-plane 기능 범위임.",
+          "items": [
+            "기능: attachment별 source CIDR→translated private range rule 정의",
+            "대상: VPC·Site-to-Site VPN·Direct Connect·Transit Gateway Connect SD-WAN appliance"
+          ]
+        },
+        {
+          "heading": "변환 경로",
+          "body": "두 서비스가 양방향 translation을 자동 적용해 별도 return-traffic rule과 NAT appliance 배포 부담을 줄이는 모델임. 인수 뒤 양측 VPC가 같은 `10.0.0.0/16`을 쓰는 경우 한쪽 range를 변환하는 사례를 제시함.",
+          "items": [
+            "자동화: outbound·return traffic 변환을 attachment service가 관리",
+            "제거: network renumbering과 별도 NAT appliance 배포가 필요한 기존 경로 축소"
+          ]
+        },
+        {
+          "heading": "운영 관측",
+          "body": "Console·CLI·SDK·CloudFormation으로 설정할 수 있고 CloudWatch metric·EventBridge event로 translated traffic을 관측하는 범위임. 제공 범위는 두 서비스가 동작하는 AWS commercial Region임.",
+          "items": [
+            "관측: translated flow를 CloudWatch·EventBridge로 연결",
+            "IaC: attachment rule과 route·security policy를 CloudFormation drift review에 포함"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "CIDR collision만 해결해도 application connectivity가 자동으로 성립하지는 않음. DNS, security group, NACL, return path, stateful firewall, MTU와 cost path를 같은 canary에서 검증해야 함.",
+          "items": [
+            "팀 액션: representative flow에서 bidirectional path·flow log·DNS·security policy·failure recovery 확인",
+            "비용 변수: NAT processing·cross-AZ·data transfer와 legacy appliance cost를 workload별 비교"
+          ]
+        }
+      ],
+      "why_it_matters": "M&A, partner connectivity, multicloud, independently provisioned VPC 환경에서는 CIDR overlap이 연결·migration을 막는 반복적 제약임.",
+      "engineering_implication": "시사점: production 적용 전 collision network 한 쌍에서 route symmetry·security policy·DNS·MTU·NAT cost·CloudFormation rollback을 canary acceptance criterion으로 고정할 것.",
+      "korea_implication": "국내 리전·해외 partner network를 잇는 환경은 실제 제공 Region, cross-border traffic 경로와 망 정책을 architecture review에서 분리 확인할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Transit Gateway",
+        "Cloud WAN",
+        "NAT",
+        "Networking"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 89,
+      "published_kst": "2026-10-24 00:43",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-transit-gateway-cloud-wan-1-1-nat/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "rank": 2
+    },
+    {
+      "id": "news-703",
+      "title_ko": "CISA, Arista VeloCloud Orchestrator SQL injection을 KEV에 추가",
+      "title_original": "CISA Adds One Known Exploited Vulnerability to Catalog",
+      "summary": "핵심: CISA가 active exploitation evidence를 근거로 `CVE-2026-114625` Arista VeloCloud Orchestrator SQL injection을 KEV Catalog에 추가함. 변화: exposed orchestrator inventory·vendor remediation·compromise hunt를 patch만큼 병행할 security operations 대상임.",
+      "detail": "CISA alert는 Arista VeloCloud Orchestrator SQL Injection Vulnerability를 KEV에 등록했다고 공지하고 BOD 26-04의 risk-based remediation 방향을 설명함. 해당 alert 본문은 affected version·fixed release·exploitation detail을 제공하지 않으므로 vendor advisory와 local asset inventory로 별도 확인해야 함. Internet-exposed management plane은 access restriction·credential review·log preservation·incident hunting을 patch workflow와 병행해야 함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "CISA가 `CVE-2026-114625` Arista VeloCloud Orchestrator SQL injection vulnerability를 KEV Catalog에 추가함. CISA는 active exploitation evidence를 KEV 등록 근거로 명시함.",
+          "items": [
+            "등록: Arista VeloCloud Orchestrator SQL injection KEV 추가",
+            "근거: CISA가 active exploitation evidence를 확인한 범위"
+          ]
+        },
+        {
+          "heading": "우선순위",
+          "body": "CISA는 KEV를 risk-based vulnerability management의 high-priority signal로 다룸. BOD 26-04는 public exposure와 post-exploitation total control 가능성이 있는 KEV의 신속 remediation 방향을 설명함.",
+          "items": [
+            "우선: internet-exposed orchestrator와 privileged management account inventory 확인",
+            "병행: patch 전 compromise 여부 점검의 기본 기대 반영"
+          ]
+        },
+        {
+          "heading": "증거 경계",
+          "body": "이번 CISA alert 본문에는 affected version, fixed release, exposure condition, exploitation technique이 수록되지 않음. vendor advisory와 installed version·configuration을 직접 대조해야 함.",
+          "items": [
+            "확인: vendor remediation·fixed version·maintenance procedure 별도 확보",
+            "경계: KEV 등록만으로 local exposure·compromise·patch applicability 확정 불가"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "network management plane의 SQL injection은 patch 완료만으로 incident closure가 되지 않을 수 있음. external reachability, admin identity, SQL/application log, configuration export를 보존하고 hunting과 access restriction을 병행해야 함.",
+          "items": [
+            "팀 액션: exposed asset·administrator identity·log retention·configuration backup 즉시 점검",
+            "통제: vendor remediation 전 management interface access restriction과 anomaly hunt 병행"
+          ]
+        }
+      ],
+      "why_it_matters": "KEV는 실제 악용 evidence가 있는 vulnerability를 asset ownership·patch SLA·forensics 우선순위에 연결하는 신호임.",
+      "engineering_implication": "시사점: VeloCloud Orchestrator 배포 여부를 먼저 inventory로 확정하고, exposed instance는 vendor advisory 기준 patch·access restriction·credential/log review를 하나의 incident record로 관리할 것.",
+      "korea_implication": "국내 SD-WAN·network management 운영 조직은 managed service 책임 경계와 vendor patch window, remote administration exposure를 함께 확인할 필요.",
+      "category": "Security",
+      "tags": [
+        "CISA",
+        "KEV",
+        "Arista",
+        "VeloCloud",
+        "SQL Injection"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-10-23 21:00",
+      "source_name": "CISA",
+      "source_url": "https://www.cisa.gov/news-events/alerts/2026/10/23/cisa-adds-one-known-exploited-vulnerability-catalog",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "assets/images/fallback-security.svg",
+      "related_links": [],
+      "rank": 3
+    },
+    {
       "id": "news-699",
       "title_ko": "Kamaji·HAMi 멀티테넌트 GPU Kubernetes 실험: control plane 격리와 GPU 분할 scheduling 연결",
       "title_original": "Multi-tenant GPU Kubernetes on simulated hardware with Kamaji and HAMi",
@@ -261,7 +447,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
       "related_links": [],
-      "rank": 1
+      "rank": 4
     },
     {
       "id": "news-698",
@@ -326,7 +512,69 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
       "local_image": "",
       "related_links": [],
-      "rank": 2
+      "rank": 5
+    },
+    {
+      "id": "news-701",
+      "title_ko": "Amazon EMR on EKS, EMR 추가 과금 30% 인하",
+      "title_original": "Amazon EMR on EKS reduces EMR charge by 30 percent",
+      "summary": "핵심: AWS가 EMR on EKS의 per-vCPU-hour·per-GB-hour `EMR charge`를 30% 인하함. 변화: 모든 EMR on EKS workload에 추가 action 없이 적용되지만 underlying EKS charge는 유지되는 범위임.",
+      "detail": "AWS 공지는 EKS deployment option에서 EMR이 더하는 vCPU-hour·GB-hour charge의 30% 인하를 명시함. Apache Spark workload를 포함한 EMR on EKS workload가 대상이고 제공 모든 리전에 자동 적용됨. total job cost는 EMR surcharge 외 EKS, compute, storage, network, observability 비용에 따라 달라지므로 CUR 기반 재계산이 필요함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon EMR이 EKS deployment option에서 EMR이 더하는 usage charge를 30% 인하함. per-vCPU-hour와 per-GB-hour 양쪽에 적용되는 가격 변경임.",
+          "items": [
+            "변경: EMR on EKS EMR charge `30%` 인하",
+            "대상: EMR on EKS로 실행되는 모든 EMR workload"
+          ]
+        },
+        {
+          "heading": "적용 범위",
+          "body": "AWS는 Apache Spark workload를 EKS에서 더 낮은 비용으로 실행할 수 있다고 설명함. 고객 action 없이 새 가격이 자동 적용되고, EMR on EKS 제공 모든 Region이 범위임.",
+          "items": [
+            "자동 적용: deployment configuration 변경 없이 새 가격 반영",
+            "리전: Amazon EMR on EKS 제공 Region 전체 범위"
+          ]
+        },
+        {
+          "heading": "비용 경계",
+          "body": "인하 대상은 EMR surcharge이며 underlying Amazon EKS charge는 변경되지 않음. node compute, storage, S3 request, network transfer, log·metric 비용도 공지의 인하 범위가 아님.",
+          "items": [
+            "유지: underlying EKS charge 변동 없음",
+            "경계: total completed-job cost의 30% 절감 보장 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "가격 변화는 autoscaling, Spot/on-demand mix, Spark tuning, data locality, idle cluster 비용을 대체하지 않음. unit economics를 component별로 분리해 새 baseline을 계산해야 함.",
+          "items": [
+            "팀 액션: CUR에서 EMR surcharge·compute·storage·network를 분리해 job당 비용 재계산",
+            "운영 과제: workload별 p95 runtime·retry·resource utilization과 completed-job cost 동시 비교"
+          ]
+        }
+      ],
+      "why_it_matters": "Spark 기반 batch·ETL·feature engineering은 EMR surcharge와 Kubernetes compute·storage 비용의 조합으로 운영 예산이 결정됨.",
+      "engineering_implication": "시사점: 가격 인하를 migration justification으로 단독 사용하지 말고 workload별 EMR surcharge·EKS·compute·S3·network 비용과 SLO를 동일 baseline에서 재측정할 것.",
+      "korea_implication": "국내 조직은 실제 사용 리전의 EMR on EKS 제공 여부와 enterprise discount·Savings Plan·chargeback 모델에 반영되는 시점을 CUR로 확인할 필요.",
+      "category": "Data",
+      "tags": [
+        "AWS",
+        "EMR",
+        "EKS",
+        "Spark",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-10-23 17:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/emr-eks-reduces-emr-charge-30-percent/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "rank": 6
     },
     {
       "id": "news-692",
@@ -398,7 +646,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 3
+      "rank": 7
     },
     {
       "id": "news-693",
@@ -461,7 +709,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 4
+      "rank": 8
     },
     {
       "id": "news-694",
@@ -524,7 +772,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-695",
@@ -587,7 +835,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-690",
@@ -655,7 +903,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-697",
@@ -727,7 +975,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 8
+      "rank": 12
     },
     {
       "id": "news-691",
@@ -796,7 +1044,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-689",
@@ -860,7 +1108,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-696",
@@ -923,7 +1171,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-687",
@@ -996,7 +1244,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-686",
@@ -1067,7 +1315,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "id": "news-685",
@@ -1131,11 +1379,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 14
+      "rank": 18
     },
     {
       "id": "news-684",
-      "rank": 15,
+      "rank": 19,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -1261,7 +1509,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-688",
@@ -1331,7 +1579,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 17
+      "rank": 21
     },
     {
       "id": "news-680",
@@ -1403,7 +1651,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 22
     },
     {
       "id": "news-681",
@@ -1471,7 +1719,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 23
     },
     {
       "id": "news-682",
@@ -1535,7 +1783,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "region": "Global",
@@ -1599,7 +1847,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 25
     },
     {
       "region": "Global",
@@ -1663,7 +1911,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-673",
@@ -1726,11 +1974,11 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-672",
-      "rank": 24,
+      "rank": 28,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -1859,7 +2107,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 29
     },
     {
       "id": "news-670",
@@ -1937,7 +2185,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 30
     },
     {
       "id": "news-675",
@@ -2001,7 +2249,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 31
     },
     {
       "id": "news-671",
@@ -2070,7 +2318,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 32
     },
     {
       "id": "news-668",
@@ -2145,7 +2393,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 33
     },
     {
       "id": "news-676",
@@ -2217,7 +2465,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 34
     },
     {
       "id": "news-677",
@@ -2286,7 +2534,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 35
     },
     {
       "id": "news-669",
@@ -2360,7 +2608,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 36
     }
   ]
 }
