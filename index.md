@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-23 | Total pages: 454
+> Last updated: 2026-10-23 | Total pages: 455
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-korea-isms-consent-flow-2026-10-22]] — Cloudflare 한국 ISMS 인증의 80개 통제 심사·국가별 동의 gate·소셜 가입 우회 차단 구현 경계.
 - [[raw/articles/aws-opensearch-serverless-five-second-refresh-2026-10-23]] — Amazon OpenSearch Serverless now supports a 5-second default refresh interval
 - [[raw/articles/aws-cloudformation-force-rollback-2026-10-23]] — AWS CloudFormation now simplifies stack update rollback operations
 - [[raw/articles/aws-sagemaker-training-session-api-2026-10-23]] — Amazon SageMaker AI announces training session APIs for serverless model customization

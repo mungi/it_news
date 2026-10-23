@@ -3694,3 +3694,8 @@
 - 확인 시각: 2026-10-23 11:51 KST. GeekNews HTTP 200, GeekNews Plus HTTP 404, AI타임스KR·AI타임스, AWS What’s New RSS, GitHub·CNCF·Kubernetes feed를 current research pass에 포함함.
 - AWS canonical announcement와 RSS를 직접 대조해 AgentCore Gateway의 InvokeModel·streaming API·ordered fallback chain·circuit breaker, SageMaker training session API의 stateful Python operation·managed GPU/fault recovery·token billing·3개 리전, OpenSearch Serverless의 10초→5초 default refresh·24개 리전, CloudFormation force rollback·drift-aware change set 범위를 수록함.
 - `news-693`~`news-696`을 KST 발행 시각 newest-first으로 삽입해 W44 29건·rank 1–29를 유지함. raw capture 4건, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. fallback routing을 output parity·data residency·side-effect safety 보장으로, training session을 model quality·cost 보장으로, force rollback을 workload consistency 보장으로 확대하지 않음. Deep Dive 2건은 KST 첫 실행에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-23] update | Cloudflare 한국 ISMS 인증·가입 동의 경로 추가
+- 확인 시각: 2026-10-23 15:58 KST. GeekNews HTTP 200, GeekNews Plus HTTP 404, AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·OpenAI·Google AI feed를 current research pass에 포함함.
+- Cloudflare canonical 원문의 `article:published_time` `2026-10-22T13:00:00Z`, OG image, 본문을 직접 대조. KISA 지정 심사원의 10일·80개 통제 심사, 국가 선택·IP 지리정보 기반 한국 가입 분기, 4개 동의 항목·3개 required hard gate, 한국 내 social sign-up 미제공 범위를 수록함.
+- `news-697`을 KST `2026-10-22 22:00` 기준 newest-first rank 6에 삽입해 W44 30건·rank 1–30을 유지함. raw capture SHA-256 `a072124f1c7be4551b02a4c5af3d45a82b923fa667b330f5c86beffbe2ca7ca5`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. 공급자 인증을 고객 워크로드의 자동 규제 적합성·데이터 보관·위탁 처리 보장으로 확대하지 않았으며, Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.

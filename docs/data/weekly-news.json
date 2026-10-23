@@ -2,7 +2,7 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-23 11:51",
+  "last_updated_kst": "2026-10-23 15:58",
   "audience": "developers and engineers",
   "executive_summary": [
     "Amazon Bedrock AgentCore Gateway가 `InvokeModel`·streaming API와 model fallback routing을 지원함. fallback chain은 throttle·server error·timeout에 대응하지만 provider 전환 뒤 output contract·data path·token cost·write idempotency는 model별 acceptance test와 route audit로 통제해야 함.",
@@ -532,6 +532,78 @@
       "rank": 5
     },
     {
+      "id": "news-697",
+      "title_ko": "Cloudflare, 한국 ISMS 인증 획득: 국가별 동의 흐름·소셜 가입 경로를 서비스 경계로 분리",
+      "title_original": "Localizing compliance at scale: achieving South Korea’s ISMS certification",
+      "summary": "핵심: Cloudflare가 KISA 지정 심사원의 10일간 80개 통제 감사 뒤 한국 ISMS 인증을 획득했다고 공개함. 변화: 한국 가입은 국가 선택·IP 지리정보로 분기해 4개 동의 항목 중 3개 필수 동의를 강제하고, 해당 동의 단계를 우회하는 Google·Apple·GitHub 소셜 가입은 제공하지 않는 구현 범위임.",
+      "detail": "Cloudflare 공식 원문은 한국 ISMS 인증을 위해 KISA 지정 심사원이 80개 통제를 10일간 검토했다고 설명함. 한국 가입 경로는 국가 선택과 IP 기반 국가 코드로 분기하며, 4개 동의 항목을 각각 표시하고 3개 필수 항목이 모두 선택되기 전에는 계정 생성 버튼을 비활성화함. 자체 가입 화면을 거치지 않는 소셜 로그인에는 동일 동의 화면을 삽입할 수 없어 한국에서는 소셜 가입을 제거했다고 밝힘. 이는 Cloudflare의 인증·가입 구현 사례이며, 고객 서비스의 자동 규제 적합성이나 모든 데이터 처리 범위를 보장하는 내용은 아님.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare가 한국 ISMS 인증을 획득했다고 공개함. 원문은 KISA가 지정한 심사원이 10일 동안 80개 통제를 함께 검토한 과정을 인증 근거로 제시함.",
+          "items": [
+            "인증: 한국 ISMS-P 체계 아래 Cloudflare의 보안·개인정보 프로그램 심사 완료 범위",
+            "감사: KISA 지정 심사원과 10일간 80개 통제를 검토한 사실 공개"
+          ]
+        },
+        {
+          "heading": "한국 가입 흐름의 구현",
+          "body": "한국 사용자용 가입 화면은 국가 선택과 한국 내 IP 지리정보를 바탕으로 별도 동의 흐름을 적용함. 약관·개인정보·쿠키 관련 4개 항목을 분리해 표시하고, 그중 3개 필수 항목의 적극적 동의가 있어야 계정 생성을 진행하는 방식임.",
+          "items": [
+            "분기: `CF-IPCountry` header 또는 Worker의 `request.cf.country`로 국가 코드 사용 범위",
+            "통제: 필수 3개 동의가 선택되기 전 가입 버튼을 비활성화하는 hard gate 구현",
+            "선택: 마케팅 동의 1개는 미선택 상태에서도 계정 생성에 영향을 주지 않는 범위"
+          ]
+        },
+        {
+          "heading": "우회 경로와 서비스 경계",
+          "body": "Google·Apple·GitHub 소셜 가입은 Cloudflare 자체 가입 화면을 거치지 않아 동일한 항목별 동의를 강제할 위치가 없다고 설명함. Cloudflare는 한국에서 별도 post-authentication 동의 단계를 만들지 않고, 해당 소셜 가입 경로를 제공하지 않는 선택을 했음.",
+          "items": [
+            "제약: 외부 identity provider 화면에는 Cloudflare가 한국어 동의 항목을 삽입할 수 없는 경계",
+            "조치: 한국 가입에서 소셜 로그인 경로를 제거해 동의 화면 우회 경로를 차단",
+            "검증: 국가 판별 오류·VPN·계정 복구·API provisioning 등 비정상 가입 경로를 별도 test 대상으로 관리 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "국가별 규제 요구는 번역된 약관만 추가하는 작업이 아니라 identity federation, signup API, consent record, feature flag와 함께 설계해야 하는 서비스 경계 문제임. 인증 사실은 고객 워크로드의 규제 적합성·데이터 보관·위탁 처리 범위를 대신 보장하지 않으므로 계약과 실제 데이터 흐름을 별도 검토할 필요.",
+          "items": [
+            "팀 액션: 가입·SSO·SCIM·초대·API provisioning을 포함한 account creation path별 동의 증적과 bypass 여부 점검",
+            "팀 액션: 국가 판별 signal, consent version·timestamp, withdrawal·recovery 흐름을 audit log와 retention policy에 연결",
+            "경계: 공급자 ISMS 인증을 고객 서비스의 개인정보 처리·망분리·보관 위치 적합성 보장으로 확대하지 않는 계약 검토"
+          ]
+        }
+      ],
+      "why_it_matters": "국가별 개인정보·보안 통제는 UI 문구가 아니라 account creation path와 identity federation의 우회 가능성까지 포함해야 함. 특히 SSO·소셜 로그인·SCIM·API provisioning이 동의 및 기록 정책을 건너뛰지 않는지 검증해야 함.",
+      "engineering_implication": "시사점: 한국 대상 서비스는 가입·SSO·초대·SCIM·API provisioning별 consent gate와 audit evidence를 매핑하고, 국가 판별 오류·계정 복구·동의 철회가 같은 정책을 유지하는지 release test에 추가할 것.",
+      "korea_implication": "국내 사용자가 있는 SaaS는 제품 UI의 동의 항목뿐 아니라 외부 IdP·소셜 로그인·관리자 초대·자동 계정 생성의 우회 경로와 위탁 처리·보관 범위를 함께 검토할 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "ISMS",
+        "Korea",
+        "Privacy",
+        "Identity",
+        "Consent Management",
+        "Compliance"
+      ],
+      "region": "Korea",
+      "importance": "high",
+      "score": 81,
+      "published_kst": "2026-10-22 22:00",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/k-isms/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5G8NJVXNM9DRRQJ5VYMS2HQ.01M5G8NKJYW5D2XYREE348C9VT.png",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Cloudflare ISMS certificate notice",
+          "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
+        }
+      ],
+      "rank": 6
+    },
+    {
       "id": "news-691",
       "title_ko": "OpenTelemetry Collector로 AI coding agent telemetry의 본문·고카디널리티 축소 설계",
       "title_original": "Filtering and reducing AI agent telemetry with the OpenTelemetry Collector",
@@ -598,7 +670,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-689",
@@ -662,7 +734,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-696",
@@ -725,7 +797,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-687",
@@ -798,7 +870,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-686",
@@ -869,7 +941,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-685",
@@ -933,11 +1005,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-684",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -1063,7 +1135,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-688",
@@ -1133,7 +1205,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-680",
@@ -1205,7 +1277,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-681",
@@ -1273,7 +1345,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-682",
@@ -1337,7 +1409,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "region": "Global",
@@ -1401,7 +1473,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "region": "Global",
@@ -1465,7 +1537,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-673",
@@ -1528,11 +1600,11 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-672",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -1661,7 +1733,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-670",
@@ -1739,7 +1811,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-675",
@@ -1803,7 +1875,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-671",
@@ -1872,7 +1944,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-668",
@@ -1947,7 +2019,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-676",
@@ -2019,7 +2091,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-677",
@@ -2088,7 +2160,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-669",
@@ -2162,7 +2234,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     }
   ]
 }
