@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-24 | Total pages: 459
+> Last updated: 2026-10-24 | Total pages: 461
 
 ## Entities
 
@@ -39,7 +39,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-connect-global-resiliency-persistent-chat-2026-10-24]] — Amazon Connect linked Region persistent chat의 conversation context·transcript·attachment 전달과 multi-Region contact-center recovery 검증 경계.
 - [[raw/articles/cloudflare-post-quantum-geo-key-manager-2026-10-24]] — Cloudflare PQ GeoKey Manager closed beta의 regional root key·hybrid ML-KEM-768/X25519·fail-closed data sovereignty 경계.
+- [[raw/articles/nvidia-minerva-ai-factory-observability-2026-10-23]] — NVIDIA Minerva의 AI factory topology graph·infrastructure/workload telemetry·AIOps correlation 운영 경계.
 - [[raw/articles/aws-transit-gateway-cloud-wan-1-1-nat-2026-10-24]] — AWS Transit Gateway·Cloud WAN attachment 기반 managed 1:1 NAT와 CIDR overlap·route/security canary 경계.
 - [[raw/articles/cisa-arista-velocloud-orchestrator-kev-2026-10-24]] — CISA KEV 등록 Arista VeloCloud Orchestrator SQL injection의 asset inventory·vendor remediation·incident hunt 경계.
 - [[raw/articles/aws-emr-eks-charge-reduction-2026-10-24]] — Amazon EMR on EKS EMR surcharge 30% 인하와 total workload cost 재산정 경계.

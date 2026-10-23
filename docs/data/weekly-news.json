@@ -2,14 +2,14 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-24 04:14",
+  "last_updated_kst": "2026-10-24 08:20",
   "audience": "developers and engineers",
   "executive_summary": [
     "AWS Continuum이 code finding을 resource topology·identity·network reachability context graph와 sandbox exploitability 검증에 결합해 remediation PR로 연결함. Enforce mode는 graph freshness·sandbox parity·CI test·branch 권한·rollback evidence가 확인된 좁은 canary에서만 확대해야 함.",
     "Amazon SageMaker AI가 serverless model customization용 stateful training session API를 GA로 제공함. custom loss·RL reward·data curriculum은 Python loop로 구성할 수 있으나 reward validity·holdout·checkpoint lineage·token unit cost·dataset access는 별도 MLOps gate가 필요함.",
     "Amazon OpenSearch Serverless가 search·vector collection의 기본 refresh interval을 `10초`에서 `5초`로 낮춤. RAG corpus의 source-to-search freshness는 좋아질 수 있으나 embedding·bulk ingest·cache TTL·retrieval quality를 포함한 end-to-end lag를 다시 계측해야 함.",
     "OpenAI의 `Decisions API`가 모든 고객 대상 정식 출시됐다는 AI타임스 보도임. agent의 분류·routing·다음 행동 선택을 제한된 choice·score·probability 출력으로 분리할 수 있지만, 성능 수치는 workload별 측정 대상이며 write action에는 별도 approval·idempotency·rollback control이 필요함.",
-    "Kamaji·HAMi 조합의 CNCF lab은 tenant별 Kubernetes control plane과 GPU memory·compute fraction scheduling을 연결함. mock device 결과는 admission·quota 경로의 증거이며, real GPU의 isolation·throughput·noisy-neighbor·device plugin failure는 별도 canary에서 측정해야 함."
+    "NVIDIA Minerva는 GPU·network·storage·scheduler·workload telemetry를 topology-aware knowledge graph와 AI 분석에 묶어 AI factory yield를 다루는 AIOps 플랫폼임. root-cause 정확도·MTTR·비용 효과는 보장 범위가 아니므로 metric coverage·tenant boundary·read-only assistant·incident canary를 기존 SRE baseline과 비교해야 함."
   ],
   "deep_dives": [
     {
@@ -255,6 +255,68 @@
       "rank": 1
     },
     {
+      "id": "news-704",
+      "title_ko": "AWS Amazon Connect Global Resiliency: 연결 리전 간 persistent chat 지원",
+      "title_original": "Amazon Connect Customer Global Resiliency now supports persistent chat across linked AWS Regions",
+      "summary": "핵심: Amazon Connect Customer Global Resiliency가 연결된 AWS Region 사이에서 long-lived chat을 이어가는 기능을 제공함. 변화: end user가 다른 연결 리전에서 이전 대화를 재개할 때 conversation context·metadata·transcript·attachment를 전달하는 범위임.",
+      "detail": "AWS는 US-East (N. Virginia)에서 시작한 chat을 linked US-West (Oregon)에서 전체 conversation history와 attachment를 가진 채 이어가는 예를 제시함. 이 기능은 Global routing onboarding과 Customer Global Resiliency 지원 리전이 전제이며, cross-Region state 전달이 contact-center failover, identity, retention, attachment access, data residency의 완전한 보장을 의미하지는 않음.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Connect Customer Global Resiliency에 linked AWS Region 간 persistent chat 지원이 추가됨. 장시간 고객 대화를 다른 연결 리전에서 재개하는 기능 범위임.",
+          "items": [
+            "공개: linked Region 간 long-lived chat의 persistent conversation 지원",
+            "전달: 이전 conversation context·metadata·transcript·chat attachment를 재개 경로에 포함"
+          ]
+        },
+        {
+          "heading": "동작 범위",
+          "body": "AWS가 제시한 예에서는 US-East (N. Virginia)에서 시작한 chat을 linked US-West (Oregon)에서 재개하며, agent가 전체 conversation history와 attachment에 접근하는 경로임.",
+          "items": [
+            "사례: customer가 다른 linked Region으로 돌아와 같은 conversation을 재개하는 흐름",
+            "전제: Amazon Connect Global routing onboarding과 Customer Global Resiliency 지원 Region"
+          ]
+        },
+        {
+          "heading": "운영 경계",
+          "body": "대화 continuity는 customer experience 경로의 기능임. contact routing, agent availability, identity session, CRM integration, transcript·attachment retention, downstream automation이 같은 방식으로 failover된다는 공지는 아님.",
+          "items": [
+            "경계: linked Region 구성이 모든 Region pair 또는 모든 contact channel의 자동 failover를 뜻하지 않음",
+            "경계: transcript·attachment 전달을 data residency·retention·access-control 자동 충족으로 해석하지 않을 것"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "contact center의 regional resilience 설계에는 chat state뿐 아니라 routing, identity, agent desktop, CRM, recording, attachment, observability를 하나의 recovery test로 묶어야 함.",
+          "items": [
+            "팀 액션: representative chat에서 Region switch 뒤 history·attachment·customer identity·agent assignment·CRM correlation 검증",
+            "팀 액션: Region outage drill에 transcript access, data path, retention policy, fallback message, RTO/RPO evidence 포함"
+          ]
+        }
+      ],
+      "why_it_matters": "고객지원 chat은 대화 이력과 첨부물이 분리되면 재인증·반복 설명·업무 재처리가 발생함. multi-Region contact center는 state continuity와 data-control evidence를 함께 설계해야 함.",
+      "engineering_implication": "시사점: Global routing 전환 canary에서 conversation ID·transcript·attachment·CRM case·agent assignment·audit log가 같은 trace로 이어지는지와 Region별 data policy를 검증할 것.",
+      "korea_implication": "국내 고객 데이터가 포함된 contact center는 linked Region의 실제 구성, transcript·attachment 보관 위치, 위탁처리·접근 권한을 서비스 계약과 privacy control 기준으로 별도 확인할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon Connect",
+        "Multi-Region",
+        "Resiliency",
+        "Contact Center"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-24 02:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-connect-global-resiliency-persistent-chat",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "rank": 2
+    },
+    {
       "id": "news-700",
       "title_ko": "AWS Transit Gateway·Cloud WAN, attachment 기반 managed 1:1 NAT 지원",
       "title_original": "AWS Transit Gateway and AWS Cloud WAN now support 1:1 NAT",
@@ -314,7 +376,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-703",
@@ -376,7 +438,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-699",
@@ -447,7 +509,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
       "related_links": [],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-698",
@@ -512,7 +574,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
       "local_image": "",
       "related_links": [],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-701",
@@ -574,7 +636,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-692",
@@ -646,7 +708,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-693",
@@ -709,7 +771,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-694",
@@ -772,7 +834,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-695",
@@ -835,7 +897,69 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 10
+      "rank": 11
+    },
+    {
+      "id": "news-705",
+      "title_ko": "NVIDIA Minerva 공개: AI factory infrastructure·workload telemetry를 연결하는 AIOps 플랫폼",
+      "title_original": "NVIDIA Unveils Minerva to Bring End-to-End Observability for AI Factories",
+      "summary": "핵심: NVIDIA가 AI factory용 AIOps 플랫폼 `Minerva`를 공개함. 변화: GPU·network·storage·scheduler·workload telemetry를 topology-aware knowledge graph에 연결하고, supervised·unsupervised model로 anomaly·failure·event correlation을 다루는 범위임.",
+      "detail": "NVIDIA는 Minerva가 billions of data points per hour를 분석하고, GPU hours·goodput·cluster uptime·token production으로 정의한 AI factory yield를 겨냥한다고 설명함. native AI assistant와 external agentic tool 연결도 제공하지만, vendor 발표는 특정 fleet의 MTTR·availability·cost reduction 또는 root-cause accuracy를 보장하지 않으므로 existing observability·incident workflow와 canary 비교가 필요함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "NVIDIA가 AI factory의 infrastructure와 AI workload telemetry를 함께 다루는 AIOps 플랫폼 `Minerva`를 공개함. GPU fleet의 useful work와 incident triage를 연결하는 제품 범위임.",
+          "items": [
+            "목표: GPU hours·goodput·cluster uptime·token production을 포함한 AI factory yield 관측",
+            "입력: GPU·SuperNIC·switch·cable·storage·scheduler·job signal을 함께 연결"
+          ]
+        },
+        {
+          "heading": "분석 경로",
+          "body": "Minerva는 infrastructure topology와 실행 job을 logical dynamic knowledge graph로 매핑하고, supervised·unsupervised machine learning으로 normal behavior·unknown anomaly·emerging failure·related event를 분석한다고 설명함.",
+          "items": [
+            "규모 주장: 시간당 billions of data points 분석 범위",
+            "triage: event storm을 likely root cause가 있는 focused incident로 묶는 기능 방향"
+          ]
+        },
+        {
+          "heading": "운영·데이터 경계",
+          "body": "telemetry correlation은 source metric의 coverage·timestamp·label cardinality·retention과 topology inventory 품질에 의존함. AI assistant 또는 external agentic tool 연결은 read/write tool scope, prompt·log data handling, human escalation을 별도 통제해야 함.",
+          "items": [
+            "경계: vendor 공지가 root-cause accuracy·MTTR·availability·cost reduction 수치를 보장하지 않음",
+            "통제: AI assistant와 external agent의 telemetry access·action 권한·audit trail을 incident system과 분리 관리"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI infrastructure 운영팀은 GPU utilization 하나가 아니라 job goodput·queue·network retry·storage tail latency·thermal signal을 correlation 가능한 time series로 정리해야 함. 도입 전에는 기존 monitoring과 동일 incident set에서 precision·latency·operator action을 비교할 필요.",
+          "items": [
+            "팀 액션: representative training·inference incident에서 topology mapping completeness·alert-to-incident latency·false correlation 측정",
+            "팀 액션: read-only assistant canary로 access scope·redaction·recommendation acceptance·rollback path를 검증"
+          ]
+        }
+      ],
+      "why_it_matters": "대규모 GPU cluster는 component degradation이 job goodput과 token production에 연결되며, compute·network·storage·scheduler team의 분리된 dashboard만으로 incident 경로를 추적하기 어려움.",
+      "engineering_implication": "시사점: platform telemetry를 도입 제품에 넘기기 전 asset topology, metric schema, tenant boundary, retention, incident correlation ID를 정리하고 기존 SRE baseline과 canary로 비교할 것.",
+      "korea_implication": "국내 AI data center와 GPUaaS 운영 조직은 tenant workload·network·storage telemetry가 외부 AIOps plane으로 전달되는 범위와 access control·보관 정책을 계약·보안 검토에 포함할 필요.",
+      "category": "Infra",
+      "tags": [
+        "NVIDIA",
+        "AIOps",
+        "AI Factory",
+        "Observability",
+        "GPU Infrastructure"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-10-23 00:00",
+      "source_name": "NVIDIA Blog",
+      "source_url": "https://blogs.nvidia.com/blog/minerva-platform-infrastructure/",
+      "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/10/ethernet-corp-blog-minerva-kv-1280x680-5595752.png",
+      "local_image": "",
+      "related_links": [],
+      "rank": 12
     },
     {
       "id": "news-690",
@@ -903,7 +1027,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-697",
@@ -975,7 +1099,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-691",
@@ -1044,7 +1168,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-689",
@@ -1108,7 +1232,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-696",
@@ -1171,7 +1295,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-687",
@@ -1244,7 +1368,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-686",
@@ -1315,7 +1439,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 17
+      "rank": 19
     },
     {
       "id": "news-685",
@@ -1379,11 +1503,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 18
+      "rank": 20
     },
     {
       "id": "news-684",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -1509,7 +1633,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 22
     },
     {
       "id": "news-688",
@@ -1579,7 +1703,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-680",
@@ -1651,7 +1775,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-681",
@@ -1719,7 +1843,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-682",
@@ -1783,7 +1907,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 26
     },
     {
       "region": "Global",
@@ -1847,7 +1971,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 27
     },
     {
       "region": "Global",
@@ -1911,7 +2035,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-673",
@@ -1974,11 +2098,11 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-672",
-      "rank": 28,
+      "rank": 30,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -2107,7 +2231,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-670",
@@ -2185,7 +2309,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-675",
@@ -2249,7 +2373,7 @@
           ]
         }
       ],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-671",
@@ -2318,7 +2442,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-668",
@@ -2393,7 +2517,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-676",
@@ -2465,7 +2589,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-677",
@@ -2534,7 +2658,7 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-669",
@@ -2608,7 +2732,7 @@
           ]
         }
       ],
-      "rank": 36
+      "rank": 38
     }
   ]
 }
