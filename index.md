@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-openai-decisions-api-ga-2026-10-23]] — OpenAI Decisions API 정식 출시 보도의 선택지 제한·score/probability 출력·latency·action control 검증 경계.
 - [[raw/articles/cloudflare-korea-isms-consent-flow-2026-10-22]] — Cloudflare 한국 ISMS 인증의 80개 통제 심사·국가별 동의 gate·소셜 가입 우회 차단 구현 경계.
 - [[raw/articles/aws-opensearch-serverless-five-second-refresh-2026-10-23]] — Amazon OpenSearch Serverless now supports a 5-second default refresh interval
 - [[raw/articles/aws-cloudformation-force-rollback-2026-10-23]] — AWS CloudFormation now simplifies stack update rollback operations

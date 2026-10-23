@@ -3699,3 +3699,8 @@
 - 확인 시각: 2026-10-23 15:58 KST. GeekNews HTTP 200, GeekNews Plus HTTP 404, AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·OpenAI·Google AI feed를 current research pass에 포함함.
 - Cloudflare canonical 원문의 `article:published_time` `2026-10-22T13:00:00Z`, OG image, 본문을 직접 대조. KISA 지정 심사원의 10일·80개 통제 심사, 국가 선택·IP 지리정보 기반 한국 가입 분기, 4개 동의 항목·3개 required hard gate, 한국 내 social sign-up 미제공 범위를 수록함.
 - `news-697`을 KST `2026-10-22 22:00` 기준 newest-first rank 6에 삽입해 W44 30건·rank 1–30을 유지함. raw capture SHA-256 `a072124f1c7be4551b02a4c5af3d45a82b923fa667b330f5c86beffbe2ca7ca5`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. 공급자 인증을 고객 워크로드의 자동 규제 적합성·데이터 보관·위탁 처리 보장으로 확대하지 않았으며, Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-23] update | OpenAI Decisions API 정식 출시 보도 추가
+- 확인 시각: 2026-10-23 20:02 KST. GeekNews HTTP 200, GeekNews Plus HTTP 403, AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·CISA feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-23T18:59:59+09:00`, OG image, 본문을 직접 대조. 모든 고객 대상 Decisions API 정식 제공, `GPT-6 Luna` 기반, text·image·structured JSON 입력과 allowed answer, probability·choice·score 출력, 분류·routing·agent next action 선택 범위를 수록함.
+- `news-698`을 KST `2026-10-23 18:59` 기준 newest-first rank 1에 삽입해 W44 31건·rank 1–31을 유지함. raw capture SHA-256 `fd60d6dd0baf039f2c74c2fb700c8bb1d62dae75174ac656c9fd28c4dc08185e`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. OpenAI 공식 페이지는 수집 시 bot challenge로 본문 확인 불가해 이 보도를 evidence boundary로 유지했으며, 최대 10배·100~180ms를 조직별 latency·cost·quality 보장으로 확대하지 않음. Deep Dive 2건은 KST 첫 실행에 전면 갱신돼 timestamp-only 변경 없이 유지.

@@ -2,13 +2,13 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-23 15:58",
+  "last_updated_kst": "2026-10-23 20:02",
   "audience": "developers and engineers",
   "executive_summary": [
     "Amazon Bedrock AgentCore Gateway가 `InvokeModel`·streaming API와 model fallback routing을 지원함. fallback chain은 throttle·server error·timeout에 대응하지만 provider 전환 뒤 output contract·data path·token cost·write idempotency는 model별 acceptance test와 route audit로 통제해야 함.",
     "Amazon SageMaker AI가 serverless model customization용 stateful training session API를 GA로 제공함. custom loss·RL reward·data curriculum은 Python loop로 구성할 수 있으나 reward validity·holdout·checkpoint lineage·token unit cost·dataset access는 별도 MLOps gate가 필요함.",
     "Amazon OpenSearch Serverless가 search·vector collection의 기본 refresh interval을 `10초`에서 `5초`로 낮춤. RAG corpus의 source-to-search freshness는 좋아질 수 있으나 embedding·bulk ingest·cache TTL·retrieval quality를 포함한 end-to-end lag를 다시 계측해야 함.",
-    "Cloudflare WAF가 request·origin response 상관 분석과 response rule을 모든 요금제에 GA로 제공함. request-only signature와 분리해 response masking·false-positive·security analytics data scope·origin patch를 같은 change control에서 검증해야 함.",
+    "OpenAI의 `Decisions API`가 모든 고객 대상 정식 출시됐다는 AI타임스 보도임. agent의 분류·routing·다음 행동 선택을 제한된 choice·score·probability 출력으로 분리할 수 있지만, 성능 수치는 workload별 측정 대상이며 write action에는 별도 approval·idempotency·rollback control이 필요함.",
     "GitHub는 agent-scale Git traffic 대응으로 Azure 이중 배치와 per-reference quorum 전환을 공개함. agent concurrency가 늘어나는 Git platform은 repository 단위 지표만 보지 말고 ref contention·write lock·replica RTT·read fan-out·rollback consistency를 분리해 계측해야 함."
   ],
   "deep_dives": [
@@ -203,6 +203,71 @@
   ],
   "items": [
     {
+      "id": "news-698",
+      "title_ko": "OpenAI Decisions API 정식 출시 보도: 분류·경로 선택을 생성 경로에서 분리",
+      "title_original": "Decisions API",
+      "summary": "핵심: AI타임스는 OpenAI가 `Decisions API`를 모든 고객에게 정식 제공했다고 보도함. 변화: `GPT-6 Luna`를 기반으로 text·image·structured JSON 입력에서 개발자가 정의한 답변 범위의 probability·choice·score를 반환하며, 분류·request routing·agent next action 같은 반복 판단을 대상으로 한 범위임.",
+      "detail": "AI타임스 보도는 Decisions API가 Responses API에서 GPT-6 Luna를 사용할 때보다 특정 의사결정 작업을 최대 10배 빠르게 처리할 수 있다는 OpenAI 설명과, 1~3초 작업을 100~180ms 수준으로 줄인다는 제품 책임자 발언을 전함. 이는 자유 형식 생성 결과를 다시 parsing하는 경로와 다른 제한된 decision layer의 제품 범위이며, 성능은 workload·choice set·input·fallback에 따른 조직별 측정 대상임. 공식 OpenAI 원문은 수집 시 bot challenge로 본문을 확인하지 못했으므로 pricing·rate limit·region·retention·schema 계약은 이 보도만으로 확정하지 않음.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AI타임스가 OpenAI의 `Decisions API` 정식 출시와 모든 고객 제공을 보도함. 반복적인 분류·선택·경로 결정을 생성형 응답과 분리해 다루는 API 범위임.",
+          "items": [
+            "공개: `GPT-6 Luna` 기반 Decisions API의 GA 제공 보도",
+            "대상: content classification·request routing·agent next action 선택 같은 반복 판단 경로"
+          ]
+        },
+        {
+          "heading": "입력·출력과 처리 경계",
+          "body": "개발자는 질문과 허용되는 답변 범위를 정의하고 text·image·structured JSON을 입력함. 응답은 probability·choice·score 형식이며, application이 후속 흐름을 고르는 재료로 쓰는 구조임.",
+          "items": [
+            "입력: text·image·structured JSON과 개발자 정의 allowed answer 범위",
+            "출력: probability·choice·score를 통한 제한된 판단 결과",
+            "경계: decision 결과가 downstream tool execution·write authority를 자동 승인하는 계약 아님"
+          ]
+        },
+        {
+          "heading": "성능 주장과 검증 범위",
+          "body": "보도는 특정 decision task에서 Responses API 대비 최대 10배, 1~3초 작업의 100~180ms 처리라는 OpenAI 설명을 인용함. input size·answer set·concurrency·fallback·network path가 달라지는 production latency와 비용은 별도 benchmark가 필요함.",
+          "items": [
+            "성능: 최대 10배와 100~180ms는 보도에 인용된 OpenAI 설명 범위",
+            "측정: route별 p50·p95·p99, abstention·fallback·false allow/deny와 completed-task cost 비교 필요"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agent system에서는 생성·판단·실행을 한 모델 출력으로 묶기보다 decision layer의 action set과 policy version을 별도로 관리할 수 있음. 다만 빠른 분류 결과가 틀렸을 때의 write side effect가 더 빨리 발생할 수 있어 approval·idempotency·rollback은 별도 control로 남음.",
+          "items": [
+            "팀 액션: read-only routing canary에서 baseline 대비 latency·quality·fallback·cost를 trace ID로 비교",
+            "통제: input provenance·policy version·decision output·tool call·human approval을 동일 audit trail에 연결",
+            "확인: pricing·rate limit·region·retention·schema는 OpenAI 공식 문서 접근 가능 시 재검증 필요"
+          ]
+        }
+      ],
+      "why_it_matters": "대규모 agent·application은 작은 분류·경로 선택을 반복하며, 생성 모델 호출·후처리·retry가 누적한 지연과 비용이 전체 workflow를 좌우할 수 있음. 제한된 output decision layer는 이를 줄일 경로이지만 action quality와 failure handling을 대체하지 않음.",
+      "engineering_implication": "시사점: low-risk read-only routing 한 경로에서 allowed choice set·abstention·fallback을 명시하고, false allow/deny·p95·completed-task cost·downstream write 차단을 acceptance criterion으로 고정할 것.",
+      "korea_implication": "국내 서비스는 customer input·image·structured data가 API에 전달되는 범위와 리전·보관·위탁처리 조건을 OpenAI 공식 계약·문서로 재확인한 뒤 도입할 필요.",
+      "category": "AI",
+      "tags": [
+        "OpenAI",
+        "Decisions API",
+        "AI Agent",
+        "Routing",
+        "Classification",
+        "API"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-23 18:59",
+      "source_name": "AI타임스",
+      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216581",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
+      "local_image": "",
+      "related_links": [],
+      "rank": 1
+    },
+    {
       "id": "news-692",
       "title_ko": "AWS Continuum for code vulnerabilities 정식 출시: 환경 그래프·격리 검증·PR 수정 제안 연결",
       "title_original": "AWS Continuum for code vulnerabilities is now generally available",
@@ -272,7 +337,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 1
+      "rank": 2
     },
     {
       "id": "news-693",
@@ -335,7 +400,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 2
+      "rank": 3
     },
     {
       "id": "news-694",
@@ -398,7 +463,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 3
+      "rank": 4
     },
     {
       "id": "news-695",
@@ -461,7 +526,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-690",
@@ -529,7 +594,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-697",
@@ -601,7 +666,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-691",
@@ -670,7 +735,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-689",
@@ -734,7 +799,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-696",
@@ -797,7 +862,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-687",
@@ -870,7 +935,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-686",
@@ -941,7 +1006,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-685",
@@ -1005,11 +1070,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 12
+      "rank": 13
     },
     {
       "id": "news-684",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -1135,7 +1200,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-688",
@@ -1205,7 +1270,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-680",
@@ -1277,7 +1342,7 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-681",
@@ -1345,7 +1410,7 @@
           ]
         }
       ],
-      "rank": 17
+      "rank": 18
     },
     {
       "id": "news-682",
@@ -1409,7 +1474,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 19
     },
     {
       "region": "Global",
@@ -1473,7 +1538,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 20
     },
     {
       "region": "Global",
@@ -1537,7 +1602,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-673",
@@ -1600,11 +1665,11 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-672",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -1733,7 +1798,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-670",
@@ -1811,7 +1876,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-675",
@@ -1875,7 +1940,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-671",
@@ -1944,7 +2009,7 @@
           ]
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-668",
@@ -2019,7 +2084,7 @@
           ]
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-676",
@@ -2091,7 +2156,7 @@
           ]
         }
       ],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-677",
@@ -2160,7 +2225,7 @@
           ]
         }
       ],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-669",
@@ -2234,7 +2299,7 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 31
     }
   ]
 }
