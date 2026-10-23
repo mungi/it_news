@@ -2,14 +2,14 @@
   "week": "2026-W44",
   "coverage_start_kst": "2026-10-19 17:00",
   "coverage_end_kst": "2026-10-26 13:00",
-  "last_updated_kst": "2026-10-23 07:48",
+  "last_updated_kst": "2026-10-23 11:51",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Amazon Bedrock AgentCore Gateway가 `InvokeModel`·streaming API와 model fallback routing을 지원함. fallback chain은 throttle·server error·timeout에 대응하지만 provider 전환 뒤 output contract·data path·token cost·write idempotency는 model별 acceptance test와 route audit로 통제해야 함.",
+    "Amazon SageMaker AI가 serverless model customization용 stateful training session API를 GA로 제공함. custom loss·RL reward·data curriculum은 Python loop로 구성할 수 있으나 reward validity·holdout·checkpoint lineage·token unit cost·dataset access는 별도 MLOps gate가 필요함.",
+    "Amazon OpenSearch Serverless가 search·vector collection의 기본 refresh interval을 `10초`에서 `5초`로 낮춤. RAG corpus의 source-to-search freshness는 좋아질 수 있으나 embedding·bulk ingest·cache TTL·retrieval quality를 포함한 end-to-end lag를 다시 계측해야 함.",
     "Cloudflare WAF가 request·origin response 상관 분석과 response rule을 모든 요금제에 GA로 제공함. request-only signature와 분리해 response masking·false-positive·security analytics data scope·origin patch를 같은 change control에서 검증해야 함.",
-    "CNCF member post는 AI coding agent trace·log·metric에서 tool content 중복과 identity attribute 고카디널리티를 줄이는 OpenTelemetry Collector 이중 pipeline을 제안함. raw/optimized canary에는 bytes·series·query latency뿐 아니라 detection loss·sensitive field·incident retrieval을 release metric으로 포함해야 함.",
-    "앤트로픽이 Claude Enterprise용 `Claude Security` 공개 베타에 repository 변경 기반 지속 분석·수정 추적·위협 모델 우선순위 기능을 제시함. DevSecOps 도입 시 finding 생성보다 token·MCP write scope·triage·예외 만료·재발 탐지·audit export를 release gate로 검증해야 함.",
-    "GitHub는 agent-scale Git traffic 대응으로 Azure 이중 배치와 per-reference quorum 전환을 공개함. agent concurrency가 늘어나는 Git platform은 repository 단위 지표만 보지 말고 ref contention·write lock·replica RTT·read fan-out·rollback consistency를 분리해 계측해야 함.",
-    "Amazon Aurora·RDS가 AZ별 DB compute capacity를 예약하는 On-Demand Capacity Reservations를 지원함. DR·migration·peak 대응에서는 reservation ID·AZ topology·DB class를 restore·scale canary, backup·quota·budget alert와 함께 runbook에 고정해야 함."
+    "GitHub는 agent-scale Git traffic 대응으로 Azure 이중 배치와 per-reference quorum 전환을 공개함. agent concurrency가 늘어나는 Git platform은 repository 단위 지표만 보지 말고 ref contention·write lock·replica RTT·read fan-out·rollback consistency를 분리해 계측해야 함."
   ],
   "deep_dives": [
     {
@@ -275,6 +275,195 @@
       "rank": 1
     },
     {
+      "id": "news-693",
+      "title_ko": "Amazon OpenSearch Serverless, search·vector collection 기본 refresh 간격 5초로 단축",
+      "title_original": "Amazon OpenSearch Serverless now supports a 5-second default refresh interval",
+      "summary": "핵심: Amazon OpenSearch Serverless가 search·vector collection의 기본 refresh interval을 `10초`에서 `5초`로 낮춤. 변화: 새로 ingest한 문서가 별도 설정 없이 더 빨리 검색·RAG retrieval 대상이 되며, 제공 범위는 차세대 OpenSearch Serverless와 현재 제공 24개 리전임.",
+      "detail": "AWS 공식 공지는 OpenSearch Serverless search·vector collection의 기본 refresh interval을 5초로 변경했다고 설명함. refresh interval은 ingest한 문서가 검색 가능해질 때까지의 시간을 제어하며, 지속 ingest·빈번한 corpus update가 있는 full-text search, RAG, semantic search, recommendation workload의 read-after-write visibility를 줄이는 범위임. query freshness가 빨라져도 embedding 생성·ingest pipeline·application cache·retrieval quality·end-to-end latency는 별도 측정 대상임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon OpenSearch Serverless가 search collection과 vector collection의 기본 refresh interval을 5초로 낮춤. 신규 문서가 search index에 반영되는 기본 가시성 지연을 줄이는 서비스 변경임.",
+          "items": [
+            "변경: 기본 refresh interval을 `10초`에서 `5초`로 단축",
+            "대상: search·vector collection과 차세대 OpenSearch Serverless 제공 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "refresh interval은 새로 ingest한 문서가 검색 가능한 상태가 되는 시점을 제어함. AWS는 별도 configuration 변경이나 사용자 action 없이 적용되며 현재 OpenSearch Serverless 제공 24개 리전에서 이용 가능하다고 명시함.",
+          "items": [
+            "효과: 새 문서의 read-after-write search visibility 단축",
+            "적용: service default 변경이며 application별 per-index SLA 설정 기능 공지 범위 아님"
+          ]
+        },
+        {
+          "heading": "RAG·데이터 파이프라인 영향",
+          "body": "자주 변하는 문서 corpus에서 retrieval이 최신 write를 더 빨리 반영할 수 있으나 freshness는 index refresh 하나로 완성되지 않음. chunking·embedding worker·bulk ingest·alias switch·application cache가 남긴 지연을 함께 분리해야 함.",
+          "items": [
+            "측정: source update→embedding→index write→search hit까지 단계별 p50·p95 계측",
+            "경계: refresh 단축이 embedding quality·retrieval relevance·agent answer correctness를 보장하는 범위 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "기본값 변경은 near-real-time 검색 workload의 latency budget과 indexing overhead 균형을 다시 확인하게 만드는 조건임. production 변경 전에는 기존 10초 가정의 batch size·cache TTL·consistency test가 5초 refresh와 충돌하지 않는지 검증이 필요함.",
+          "items": [
+            "팀 액션: ingest rate·refresh cost·search p95·freshness lag·segment merge 지표를 변경 전후 비교",
+            "운영 과제: RAG corpus update test에 stale retrieval 허용 시간과 rollback cache policy 등록"
+          ]
+        }
+      ],
+      "why_it_matters": "RAG와 operational search는 index write 뒤 최신 문서가 언제 retrieval에 포함되는지가 user-facing correctness에 영향을 줌. 기본 5초 refresh는 freshness budget을 줄이지만 ingest·embedding·cache path의 병목을 제거하지는 않음.",
+      "engineering_implication": "시사점: high-churn index 한 곳에서 source-to-search freshness, indexing throughput, query p95, refresh 관련 resource 지표를 canary로 비교하고 cache TTL·bulk ingest 기준을 재조정할 것.",
+      "korea_implication": "국내 리전 제공 여부와 cross-region corpus replication 지연은 AWS 공지에서 확인되지 않으므로 실제 배포 리전·data residency·failover path를 별도 확인할 필요.",
+      "category": "Data",
+      "tags": [
+        "AWS",
+        "OpenSearch Serverless",
+        "Vector Search",
+        "RAG",
+        "Search",
+        "Data"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 86,
+      "published_kst": "2026-10-23 03:34",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-opensearch-serverless-supports-5-second-refresh-interval/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "rank": 2
+    },
+    {
+      "id": "news-694",
+      "title_ko": "AWS CloudFormation force rollback: 단일 작업으로 update rollback 완료·drift 검토 연결",
+      "title_original": "AWS CloudFormation now simplifies stack update rollback operations",
+      "summary": "핵심: AWS CloudFormation이 자동 rollback하지 못한 resource가 있어도 `force rollback`으로 update rollback을 한 번에 완료하는 기능을 추가함. 변화: CLI·SDK·CDK·AI agent workflow에서 deployable state 복귀를 지원하되, 외부 변경 resource의 remediation과 drift-aware change set 검토는 다음 배포 전 별도 수행 대상임.",
+      "detail": "AWS는 force rollback이 실패한 resource를 개별 식별·list·retry하던 절차 대신 단일 operation으로 update rollback을 완료하고 stack을 deployable state로 돌린다고 설명함. CloudFormation 밖에서 변경돼 별도 주의가 필요한 resource는 기록되며, 다음 deployment 전 drift-aware change set으로 configuration difference를 검토하는 흐름임. 이 기능은 rollback 완료 절차를 단순화하지만 application data consistency·external side effect·IaC drift 해결 또는 안전한 재배포를 자동 보장하지 않음.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS CloudFormation에 stack update rollback을 단일 작업으로 마무리하는 force rollback이 추가됨. 자동 rollback이 막힌 resource가 있는 stack을 deployable state로 되돌리는 control-plane 기능 범위임.",
+          "items": [
+            "기능: `continue update rollback`의 force rollback option 제공",
+            "경로: AWS CLI·SDK·CDK·AI agent를 포함한 CloudFormation workflow 지원"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "기존에는 rollback하지 못한 resource별로 원인을 식별하고 list와 retry를 반복해야 할 수 있었음. force rollback은 update rollback을 완료하지만, CloudFormation 외부 변경 등 주의가 필요한 resource를 기록해 후속 검토 대상으로 남김.",
+          "items": [
+            "변화: affected resource별 반복 조작 대신 single operation으로 rollback completion",
+            "후속: next deployment 전 drift-aware change set으로 configuration difference 검토 필요"
+          ]
+        },
+        {
+          "heading": "운영·복구 경계",
+          "body": "stack state가 deployable로 복귀하는 것과 workload가 정상·일관된 상태라는 판정은 분리해야 함. database migration, external DNS, third-party API, retained resource처럼 IaC transaction 밖의 side effect는 application owner의 verification과 compensation 절차가 필요함.",
+          "items": [
+            "검증: rollback event·skipped resource·drift result·application health를 같은 incident evidence로 연결",
+            "경계: force rollback이 data consistency·external side effect rollback·next deploy success를 보장하는 범위 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "AI agent 또는 CDK 자동 배포가 rollback command를 호출할 수 있다면 force option은 write authority가 큰 operation임. emergency runbook에는 invocation role, allowed stack, post-rollback drift review, change freeze와 human approval 조건을 명시해야 함.",
+          "items": [
+            "팀 액션: failure injection stack에서 force rollback 뒤 drift·resource health·application SLO recovery rehearsal",
+            "운영 과제: CI/CD role의 force rollback 권한과 break-glass audit·next-deploy gate 분리"
+          ]
+        }
+      ],
+      "why_it_matters": "IaC rollback이 중간에 멈추면 배포 복구 시간이 길어지고 수동 조작이 늘어남. force rollback은 control-plane 복구를 단순화하지만 skipped resource와 external side effect의 책임을 제거하지 않음.",
+      "engineering_implication": "시사점: force rollback을 standard retry가 아닌 incident runbook action으로 등록하고, post-rollback drift·health check·data migration 상태·next deployment approval을 release gate로 묶을 것.",
+      "korea_implication": "국내 조직의 변경관리 절차에서는 force rollback 호출 주체·승인 기록·CloudTrail evidence·장애 공지 기준을 기존 IaC emergency change와 연결할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "CloudFormation",
+        "IaC",
+        "CDK",
+        "Rollback",
+        "DevOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-10-23 02:30",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aws-cloudformation-cdk/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [],
+      "rank": 3
+    },
+    {
+      "id": "news-695",
+      "title_ko": "SageMaker AI serverless model customization, stateful training session API GA",
+      "title_original": "Amazon SageMaker AI announces training session APIs for serverless model customization",
+      "summary": "핵심: Amazon SageMaker AI가 serverless model customization용 training session API를 제공함. 변화: 팀이 Python에서 `forward_backward()`·`optim_step()`·`sample()`로 post-training loop를 구성하고, GPU allocation·LoRA/model loading·distributed execution·fault recovery·checkpoint storage는 managed session이 담당하는 범위임.",
+      "detail": "AWS 공지에 따르면 training session API는 SFT·DPO 재현, custom loss, RL reward signal, data curriculum 등 post-training algorithm을 team code로 구성하는 stateful session interface임. API는 local GPU provisioning 없이 live session에 Python operation을 보내며 managed side는 GPU allocation, model·LoRA loading, distributed execution, fault recovery, checkpoint storage와 security를 담당함. token processed 기준 과금과 US East (N. Virginia)·US West (Oregon)·Asia Pacific (Mumbai) GA 범위가 공지됐으며, custom loop의 reward validity·data governance·model quality·총비용은 별도 검증 대상임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon SageMaker AI가 serverless model customization을 위한 training session API를 GA로 제공함. 자체 post-training loop를 작성하면서 GPU infrastructure provisioning을 service에 맡기는 stateful session 모델임.",
+          "items": [
+            "제어: `forward_backward()`·`optim_step()`·`sample()` operation을 Python에서 호출",
+            "관리 범위: GPU allocation·model/LoRA loading·distributed execution·fault recovery·checkpoint storage"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "AWS는 managed SFT·DPO 선택형 기능 외에 custom loss, 신규 RL reward signal, data curriculum, 연구 algorithm을 직접 구현할 수 있는 범위를 제시함. checkpointing과 resume가 built-in이며 SageMaker training sessions cookbook에 SFT·RL recipe를 제공함.",
+          "items": [
+            "사용: supervised fine-tuning·reinforcement learning·custom training objective 구성 범위",
+            "과금: local reward scoring 같은 local computation은 GPU time이 아니라 processed token 기준 billing 설명"
+          ]
+        },
+        {
+          "heading": "아키텍처·거버넌스 경계",
+          "body": "training loop를 서비스가 아닌 team code가 소유하므로 reward function, dataset split, evaluator, checkpoint promotion은 MLOps control plane으로 관리해야 함. managed GPU가 있어도 training data provenance·secret handling·artifact access·model registry approval은 자동 해결되지 않음.",
+          "items": [
+            "검증: reward·holdout·safety evaluation·checkpoint lineage·resume behavior를 experiment evidence로 보존",
+            "경계: custom API가 quality improvement·fault-free distributed training·cost predictability를 보장하는 범위 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "serverless session은 prototype의 infrastructure 부담을 줄일 수 있으나 장기 RL workload에는 token unit cost, queueing, checkpoint egress, evaluation compute가 실제 비용 변수임. 작은 dataset과 fixed seed부터 canary를 만들고 managed technique baseline과 비교하는 순서가 필요함.",
+          "items": [
+            "팀 액션: SFT/DPO baseline과 custom loop의 reward·holdout·token cost·wall-clock·resume success 비교",
+            "운영 과제: dataset access role·checkpoint retention·artifact promotion·budget limit·emergency stop policy 등록"
+          ]
+        }
+      ],
+      "why_it_matters": "custom post-training은 managed fine-tuning preset으로 표현하기 어려운 reward·curriculum·algorithm을 production toolchain에 연결하는 경로임. session abstraction은 GPU 운영을 감추지만 experiment correctness와 model governance 책임은 팀에 남음.",
+      "engineering_implication": "시사점: custom reward를 바로 production training에 연결하지 말고 fixed dataset·seed·holdout에서 managed baseline 대비 quality·token cost·recovery·checkpoint lineage를 검증할 것.",
+      "korea_implication": "한국 리전 제공은 공지 범위에 포함되지 않으므로 data residency가 필요한 조직은 학습 data·checkpoint·artifact의 cross-region path와 계약 조건을 사전 확인할 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "SageMaker AI",
+        "Fine-tuning",
+        "RL",
+        "MLOps",
+        "Serverless"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-23 01:30",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/training-session-apis-on-sagemaker-ai",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "rank": 4
+    },
+    {
       "id": "news-690",
       "title_ko": "Cloudflare WAF, 요청·응답 상관 분석과 origin 응답 차단 기능 GA",
       "title_original": "Introducing full transaction detection for Cloudflare WAF",
@@ -340,7 +529,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 2
+      "rank": 5
     },
     {
       "id": "news-691",
@@ -409,7 +598,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 3
+      "rank": 6
     },
     {
       "id": "news-689",
@@ -473,7 +662,70 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 4
+      "rank": 7
+    },
+    {
+      "id": "news-696",
+      "title_ko": "AgentCore Gateway, Bedrock InvokeModel·streaming API와 model fallback routing 지원",
+      "title_original": "AgentCore Gateway now supports Bedrock InvokeModel APIs and model fallback",
+      "summary": "핵심: Amazon Bedrock AgentCore Gateway가 inference endpoint에서 `InvokeModel`·`InvokeModelWithResponseStream`과 model fallback routing을 지원함. 변화: ordered fallback chain·throttling/server error/timeout 조건·built-in circuit breaker로 primary provider가 실패할 때 alternative destination을 선택하는 범위이며, client는 기존 Bedrock SDK integration을 gateway endpoint로 전환 가능함.",
+      "detail": "AWS는 AgentCore Gateway inference endpoint가 Bedrock InvokeModel 및 InvokeModelWithResponseStream API를 지원하고, fallback rule에 ordered alternative destination과 switch condition을 설정할 수 있다고 공지함. primary가 throttled·out of capacity·unreachable이거나 server error·response timeout 조건일 때 gateway가 fallback을 수행하고, circuit breaker는 현재 failing destination을 건너뜀. 내부 retry와 model/provider switch가 client에 한 request·one response로 보일 수 있으므로 output contract, data boundary, cost attribution, model-specific safety·quality와 side-effect idempotency를 gateway observability와 application policy에서 별도 확인해야 함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Bedrock AgentCore Gateway inference endpoint가 `InvokeModel`·`InvokeModelWithResponseStream` API와 model fallback routing을 지원함. 기존 Bedrock SDK integration을 gateway endpoint로 향하게 해 governed endpoint에서 model provider를 연결하는 기능 범위임.",
+          "items": [
+            "API: synchronous invoke와 response streaming invoke 지원",
+            "대상: AgentCore Gateway 제공 AWS Region 중 China 제외 범위"
+          ]
+        },
+        {
+          "heading": "fallback rule 동작",
+          "body": "fallback rule에는 alternative destination의 ordered chain과 switch condition을 정의함. throttling, server error, response timeout, capacity 또는 reachability 문제에서 gateway가 대체 model/provider로 route할 수 있으며 built-in circuit breaker가 failing destination을 skip함.",
+          "items": [
+            "설정: destination 순서와 throttle·server error·timeout 조건 기반 switching",
+            "동작: client에는 one request·one response로 보이고 internal trial은 gateway 뒤에서 처리"
+          ]
+        },
+        {
+          "heading": "아키텍처·운영 경계",
+          "body": "fallback은 availability control이지 model equivalence control이 아님. provider와 model이 달라지면 schema adherence, tool-call format, safety behavior, latency, token pricing, data processing location이 달라질 수 있으며 streaming partial response의 retry semantics도 별도 설계가 필요함.",
+          "items": [
+            "검증: primary/fallback별 output schema·tool contract·safety policy·latency·token cost canary",
+            "경계: fallback routing이 response quality·provider parity·side-effect idempotency·data residency를 보장하는 범위 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agent가 fallback 뒤에 external write를 수행하면 response가 바뀌는 문제보다 duplicate action과 audit attribution이 더 큰 위험이 될 수 있음. model route, fallback reason, circuit state, provider response, approval decision을 같은 trace에 기록해야 함.",
+          "items": [
+            "팀 액션: read-only workflow부터 fallback chain·circuit breaker·stream retry·budget alert chaos test 실행",
+            "운영 과제: write tool에는 idempotency key·human approval·model route audit·per-destination quota와 kill switch 적용"
+          ]
+        }
+      ],
+      "why_it_matters": "model fallback은 agent availability를 높일 수 있지만 provider·model 전환이 output contract, safety, cost, data path를 바꿀 수 있음. 단순 retry 대체가 아니라 routing policy와 application acceptance control의 결합이 필요함.",
+      "engineering_implication": "시사점: fallback model마다 structured output·tool-call·safety evaluation을 별도 통과시키고, route reason·token cost·write action·circuit state를 trace와 budget alert에 연결할 것.",
+      "korea_implication": "국내 조직은 primary와 fallback destination별 data processing region·model access·가격·log retention을 계약과 privacy policy 기준으로 매핑할 필요.",
+      "category": "AI",
+      "tags": [
+        "AWS",
+        "Bedrock",
+        "AgentCore",
+        "Model Routing",
+        "AI Agent",
+        "Resilience"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-10-22 17:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/agentcore-gateway-invokemodel-fallback/",
+      "image_url": "assets/images/fallback-ai.svg",
+      "local_image": "assets/images/fallback-ai.svg",
+      "related_links": [],
+      "rank": 8
     },
     {
       "id": "news-687",
@@ -546,7 +798,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 5
+      "rank": 9
     },
     {
       "id": "news-686",
@@ -617,7 +869,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 6
+      "rank": 10
     },
     {
       "id": "news-685",
@@ -681,11 +933,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 7
+      "rank": 11
     },
     {
       "id": "news-684",
-      "rank": 8,
+      "rank": 12,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -811,7 +1063,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 13
     },
     {
       "id": "news-688",
@@ -881,7 +1133,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 10
+      "rank": 14
     },
     {
       "id": "news-680",
@@ -953,7 +1205,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 15
     },
     {
       "id": "news-681",
@@ -1021,7 +1273,7 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 16
     },
     {
       "id": "news-682",
@@ -1085,7 +1337,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 17
     },
     {
       "region": "Global",
@@ -1149,7 +1401,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 18
     },
     {
       "region": "Global",
@@ -1213,7 +1465,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 19
     },
     {
       "id": "news-673",
@@ -1276,11 +1528,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 20
     },
     {
       "id": "news-672",
-      "rank": 17,
+      "rank": 21,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -1409,7 +1661,7 @@
           ]
         }
       ],
-      "rank": 18
+      "rank": 22
     },
     {
       "id": "news-670",
@@ -1487,7 +1739,7 @@
           ]
         }
       ],
-      "rank": 19
+      "rank": 23
     },
     {
       "id": "news-675",
@@ -1551,7 +1803,7 @@
           ]
         }
       ],
-      "rank": 20
+      "rank": 24
     },
     {
       "id": "news-671",
@@ -1620,7 +1872,7 @@
           ]
         }
       ],
-      "rank": 21
+      "rank": 25
     },
     {
       "id": "news-668",
@@ -1695,7 +1947,7 @@
           ]
         }
       ],
-      "rank": 22
+      "rank": 26
     },
     {
       "id": "news-676",
@@ -1767,7 +2019,7 @@
           ]
         }
       ],
-      "rank": 23
+      "rank": 27
     },
     {
       "id": "news-677",
@@ -1836,7 +2088,7 @@
           ]
         }
       ],
-      "rank": 24
+      "rank": 28
     },
     {
       "id": "news-669",
@@ -1910,7 +2162,7 @@
           ]
         }
       ],
-      "rank": 25
+      "rank": 29
     }
   ]
 }

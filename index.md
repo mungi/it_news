@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-22 | Total pages: 450
+> Last updated: 2026-10-23 | Total pages: 454
 
 ## Entities
 
@@ -39,6 +39,10 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-opensearch-serverless-five-second-refresh-2026-10-23]] — Amazon OpenSearch Serverless now supports a 5-second default refresh interval
+- [[raw/articles/aws-cloudformation-force-rollback-2026-10-23]] — AWS CloudFormation now simplifies stack update rollback operations
+- [[raw/articles/aws-sagemaker-training-session-api-2026-10-23]] — Amazon SageMaker AI announces training session APIs for serverless model customization
+- [[raw/articles/aws-agentcore-gateway-model-fallback-2026-10-22]] — AgentCore Gateway now supports Bedrock InvokeModel APIs and model fallback
 - [[raw/articles/aws-continuum-code-vulnerabilities-ga-2026-10-23]] — AWS Continuum GA의 AWS context graph·isolated sandbox exploitability 검증·Learn/Enforce remediation PR 통제 경계.
 - [[raw/articles/cloudflare-full-transaction-waf-2026-10-22]] — Cloudflare WAF의 request·origin response 상관 분석·response rule과 origin patch·로그 데이터 경계.
 - [[raw/articles/cncf-ai-agent-telemetry-otel-collector-2026-10-22]] — AI coding agent telemetry의 OpenTelemetry Collector raw/optimized pipeline·content 중복·고카디널리티·보존 경계.
