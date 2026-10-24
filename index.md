@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-web-search-domain-user-location-2026-10-24]] — AWS Bedrock Web Search의 `allowed_domains`·`blocked_domains` 최대 100개와 user location controls, grounding provenance·location data boundary 검증 경계.
 - [[raw/articles/aws-connect-global-resiliency-persistent-chat-2026-10-24]] — Amazon Connect linked Region persistent chat의 conversation context·transcript·attachment 전달과 multi-Region contact-center recovery 검증 경계.
 - [[raw/articles/cloudflare-post-quantum-geo-key-manager-2026-10-24]] — Cloudflare PQ GeoKey Manager closed beta의 regional root key·hybrid ML-KEM-768/X25519·fail-closed data sovereignty 경계.
 - [[raw/articles/nvidia-minerva-ai-factory-observability-2026-10-23]] — NVIDIA Minerva의 AI factory topology graph·infrastructure/workload telemetry·AIOps correlation 운영 경계.
