@@ -43,6 +43,7 @@
 - [[raw/articles/aitimes-google-gemini-api-cli-preview-2026-10-24]] — Gemini API CLI 실험적 프리뷰 보도의 terminal agent API 호출·binary provenance·API key·file data-boundary 검증 경계.
 - [[raw/articles/aws-connect-global-resiliency-persistent-chat-2026-10-24]] — Amazon Connect linked Region persistent chat의 conversation context·transcript·attachment 전달과 multi-Region contact-center recovery 검증 경계.
 - [[raw/articles/cloudflare-post-quantum-geo-key-manager-2026-10-24]] — Cloudflare PQ GeoKey Manager closed beta의 regional root key·hybrid ML-KEM-768/X25519·fail-closed data sovereignty 경계.
+- [[raw/articles/cloudflare-origin-range-requests-2026-10-24]] — Cloudflare Origin Range Requests의 Pingora chunk coordinator·ETag/If-Range correctness·origin egress 및 p99 latency canary 경계.
 - [[raw/articles/nvidia-minerva-ai-factory-observability-2026-10-23]] — NVIDIA Minerva의 AI factory topology graph·infrastructure/workload telemetry·AIOps correlation 운영 경계.
 - [[raw/articles/aws-transit-gateway-cloud-wan-1-1-nat-2026-10-24]] — AWS Transit Gateway·Cloud WAN attachment 기반 managed 1:1 NAT와 CIDR overlap·route/security canary 경계.
 - [[raw/articles/cisa-arista-velocloud-orchestrator-kev-2026-10-24]] — CISA KEV 등록 Arista VeloCloud Orchestrator SQL injection의 asset inventory·vendor remediation·incident hunt 경계.
