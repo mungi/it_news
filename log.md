@@ -3745,3 +3745,8 @@
 - SK하이퍼의 2035년 15GW 구상, 2029년부터 1단계 5GW, 5GW 3,500억달러 추산, 울산 900MW·AWS 협력 100MW·수요 연동 투자 계획을 보도 범위로 수록함. 목표 GW를 usable compute·secured power·매출·SLA 보장으로 확대하지 않음.
 - `news-709`·`news-710`을 KST 발행 시각 newest-first으로 삽입해 W44 43건·rank 1–43을 유지. raw capture 2건·`index.md`·canonical `weekly/2026-W44.md`를 동기화함.
 - KST 첫 실행 정책에 따라 AWS Continuum·Kamaji/HAMi Deep Dive를 서로 다른 Anthropic·SK 이벤트로 전면 교체함. title·summary·details·source·image metadata·8개 전문가 section을 재구성해 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-25 00:37`로 설정함. Google Cloud IAM 연동을 tool/data governance 보장으로, 장기 GW 계획을 실제 가용 capacity 보장으로 확대하지 않음.
+
+## [2026-10-25] update | Google Cloud Agent Compute Engine microVM 격리 보도 추가
+- 확인 시각: 2026-10-25 08:48 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·Google AI·OpenAI·NVIDIA feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-24T17:30:12+09:00`, OG image, JSON-LD headline·description·keywords를 직접 대조함. Google Cloud의 agent별 독립 실행 환경 `Agent Compute Engine`, agent별 hardware-level microVM, code execution·browser operation·enterprise workflow automation, network access restriction·control-plane separation 언급 범위를 수록함.
+- `news-711`을 KST `2026-10-24 17:30` 기준 newest-first rank 3으로 삽입해 W44 44건·rank 1–44를 유지함. raw capture SHA-256 `773035a13fe817676c4951d18479433ae54b027b336c3389c7f15ea2ad28f307`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. 제공 리전·quota·SLA·image lifecycle·network policy와 microVM의 tenant isolation·egress·secret protection 보장은 원문 보도만으로 확정하지 않았으며, 같은 KST 날짜에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지.
