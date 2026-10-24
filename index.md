@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-24 | Total pages: 461
+> Last updated: 2026-10-25 | Total pages: 461
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-sk-ai-datacenter-15gw-2026-10-24]] — SK AI 데이터센터 15GW 구상과 1단계 5GW 투자 추산의 power·capacity·commissioning·FinOps 검증 경계.
+- [[raw/articles/aitimes-anthropic-managed-claude-google-cloud-2026-10-24]] — Anthropic 관리형 Claude on Google Cloud의 IAM·billing·data processing·tool authorization 경계.
 - [[raw/articles/aws-bedrock-web-search-domain-user-location-2026-10-24]] — AWS Bedrock Web Search의 `allowed_domains`·`blocked_domains` 최대 100개와 user location controls, grounding provenance·location data boundary 검증 경계.
 - [[raw/articles/aitimes-google-gemini-api-cli-preview-2026-10-24]] — Gemini API CLI 실험적 프리뷰 보도의 terminal agent API 호출·binary provenance·API key·file data-boundary 검증 경계.
 - [[raw/articles/aws-connect-global-resiliency-persistent-chat-2026-10-24]] — Amazon Connect linked Region persistent chat의 conversation context·transcript·attachment 전달과 multi-Region contact-center recovery 검증 경계.

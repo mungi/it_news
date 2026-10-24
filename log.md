@@ -3738,3 +3738,10 @@
 - 확인 시각: 2026-10-24 20:33 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·OpenAI·Google AI·NVIDIA·CISA feed를 current research pass에 포함함.
 - Cloudflare canonical 원문의 `article:published_time` `2026-10-23T18:22:59.215Z`, OG image, 본문을 직접 대조해 KST `2026-10-24 03:22`으로 기록. Pingora fixed-size disk chunk, cached·in-flight·new byte 조정, `Content-Range`·object size·ETag 검증, `If-Range` mismatch의 full representation fallback, decompression 예정 representation 제외, Cache Rule/API activation 범위를 수록함.
 - `news-708`을 verified KST 발행 시각 newest-first rank 3에 삽입해 W44 41건·rank 1–41을 유지. raw capture SHA-256 `82ce40de821ae8b15f1ddf88649dcdf5f3b6b557e9c8233669558c6e50ce7edc`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. R2의 p99 TTFB 약 절반·tiered cache traffic 약 6% 감소는 Cloudflare 내부 workload 관측값으로만 기록했으며 모든 origin의 성능 개선·cache eligibility·range support 보장으로 확대하지 않음. Deep Dive 2건은 KST 첫 실행에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-25] update | Anthropic 관리형 Claude·SK AI 데이터센터 15GW 추가 및 KST 첫 실행 Deep Dive 전면 교체
+- 확인 시각: 2026-10-25 00:37 KST. GeekNews RSS·GeekNews Plus(HTTP 404)·AI타임스KR·AI타임스, AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·Google AI·NVIDIA·CISA feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time`·OG image·본문을 직접 대조. Anthropic 관리형 Claude의 Google Cloud IAM·ADC·통합 청구와 Managed Agents·code execution·computer use·Files·web search·MCP connector 범위, Anthropic-managed와 Google-managed data processing 책임 구분을 수록함.
+- SK하이퍼의 2035년 15GW 구상, 2029년부터 1단계 5GW, 5GW 3,500억달러 추산, 울산 900MW·AWS 협력 100MW·수요 연동 투자 계획을 보도 범위로 수록함. 목표 GW를 usable compute·secured power·매출·SLA 보장으로 확대하지 않음.
+- `news-709`·`news-710`을 KST 발행 시각 newest-first으로 삽입해 W44 43건·rank 1–43을 유지. raw capture 2건·`index.md`·canonical `weekly/2026-W44.md`를 동기화함.
+- KST 첫 실행 정책에 따라 AWS Continuum·Kamaji/HAMi Deep Dive를 서로 다른 Anthropic·SK 이벤트로 전면 교체함. title·summary·details·source·image metadata·8개 전문가 section을 재구성해 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-25 00:37`로 설정함. Google Cloud IAM 연동을 tool/data governance 보장으로, 장기 GW 계획을 실제 가용 capacity 보장으로 확대하지 않음.
