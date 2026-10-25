@@ -40,6 +40,7 @@
 
 ## Raw Articles
 - [[raw/articles/aitimes-google-agent-compute-engine-microvm-2026-10-24]] — Google Cloud Agent Compute Engine 보도의 agent별 microVM·실행 경계와 identity·egress·tool authorization 검증 경계.
+- [[raw/articles/aitimes-openai-frontier-training-offline-world-2026-10-24]] — OpenAI 첨단 모델 학습 환경의 offline world·DNS egress·VM escape·model-driven red team·자동 중단 검증 경계.
 - [[raw/articles/aitimes-sk-ai-datacenter-15gw-2026-10-24]] — SK AI 데이터센터 15GW 구상과 1단계 5GW 투자 추산의 power·capacity·commissioning·FinOps 검증 경계.
 - [[raw/articles/aitimes-anthropic-managed-claude-google-cloud-2026-10-24]] — Anthropic 관리형 Claude on Google Cloud의 IAM·billing·data processing·tool authorization 경계.
 - [[raw/articles/aws-bedrock-web-search-domain-user-location-2026-10-24]] — AWS Bedrock Web Search의 `allowed_domains`·`blocked_domains` 최대 100개와 user location controls, grounding provenance·location data boundary 검증 경계.
