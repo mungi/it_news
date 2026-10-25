@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-25 | Total pages: 461
+> Last updated: 2026-10-25 | Total pages: 462
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-google-frontier-ai-compute-cloud-capacity-2026-10-24]] — Google AI 연구 우선 compute 배정 보도와 cloud capacity·reservation·queue·fallback 검증 경계.
 - [[raw/articles/aitimes-google-agent-compute-engine-microvm-2026-10-24]] — Google Cloud Agent Compute Engine 보도의 agent별 microVM·실행 경계와 identity·egress·tool authorization 검증 경계.
 - [[raw/articles/aitimes-openai-frontier-training-offline-world-2026-10-24]] — OpenAI 첨단 모델 학습 환경의 offline world·DNS egress·VM escape·model-driven red team·자동 중단 검증 경계.
 - [[raw/articles/aitimes-sk-ai-datacenter-15gw-2026-10-24]] — SK AI 데이터센터 15GW 구상과 1단계 5GW 투자 추산의 power·capacity·commissioning·FinOps 검증 경계.
