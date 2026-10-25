@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-25 | Total pages: 462
+> Last updated: 2026-10-25 | Total pages: 465
 
 ## Entities
 
@@ -39,6 +39,9 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-amazon-2027-compute-capacity-2026-10-25]] — AWS 2027년 컴퓨팅 용량 판매 보도와 reservation·allocatable capacity 검증 경계.
+- [[raw/articles/aitimes-nvidia-nemotron-35-bolt-e4b-2026-10-25]] — NVIDIA Nemotron 3.5 Bolt E4B 4GB 보도와 온디바이스 agent 검증 경계.
+- [[raw/articles/aitimes-liquid-ai-ripl-realtime-inference-2026-10-25]] — Liquid AI RIPL 실시간 추론 엔진 보도와 latency·SLO 검증 경계.
 - [[raw/articles/aitimes-google-frontier-ai-compute-cloud-capacity-2026-10-24]] — Google AI 연구 우선 compute 배정 보도와 cloud capacity·reservation·queue·fallback 검증 경계.
 - [[raw/articles/aitimes-google-agent-compute-engine-microvm-2026-10-24]] — Google Cloud Agent Compute Engine 보도의 agent별 microVM·실행 경계와 identity·egress·tool authorization 검증 경계.
 - [[raw/articles/aitimes-openai-frontier-training-offline-world-2026-10-24]] — OpenAI 첨단 모델 학습 환경의 offline world·DNS egress·VM escape·model-driven red team·자동 중단 검증 경계.

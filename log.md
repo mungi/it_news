@@ -3760,3 +3760,8 @@
 - 확인 시각: 2026-10-25 16:52 KST. GeekNews·GeekNews Plus는 HTTP 403 접근 제약을 재확인했고, AI타임스KR·AI타임스, AWS What’s New·GitHub·CNCF·Kubernetes·Google AI·NVIDIA·CISA feed를 current research pass에 포함함.
 - AI타임스 canonical 원문의 `article:published_time` `2026-10-24T20:38:59+09:00`, OG image, 본문을 직접 대조. 순다르 피차이 CEO의 frontier AI research compute 우선, cloud 단기 매출 일부 포기, customer demand·contract 기반 long-term plan, 자체 chip·data center buildout lead time, Gemini 4 Argon 첫 72시간 약 25조 token과 내부 개발 지표의 CEO 발언 범위를 수록함.
 - `news-713`을 KST `2026-10-24 20:38` 기준 newest-first rank 1으로 삽입해 W44 46건·rank 1–46을 유지함. raw capture SHA-256 `d61637fee25e420f295afcd386a5d99c343e51a0523cbbf90ed3a333872fc25b`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. 내부 usage·productivity 수치와 provider capacity priority를 고객별 capacity·SLA·ROI 보장으로 확대하지 않았으며, Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
+
+## [2026-10-25] update | AWS capacity·NVIDIA on-device model·Liquid AI 실시간 추론 추가
+- 확인 시각: 2026-10-25 20:56 KST. GeekNews RSS는 HTTP 200, GeekNews Plus는 HTTP 403 접근 제약을 확인했으며 AI타임스KR·AI타임스, AWS What’s New·GitHub·CNCF·Kubernetes·Google AI·NVIDIA feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time`·OG image·본문을 직접 대조해 Amazon CEO의 2027년 AWS capacity 판매 발언 보도, NVIDIA `Nemotron 3.5 Bolt E4B 4GB`, Liquid AI `RIPL`의 짧은 응답 workload·자체 B200 benchmark 범위를 수록함.
+- `news-714`~`news-716`을 KST 발행 시각 newest-first으로 삽입해 W44 49건·rank 1–49를 유지. raw capture 3건·`index.md`·canonical `weekly/2026-W44.md`를 동기화함. CEO 발언·device benchmark·vendor p95를 고객별 capacity·SLA·privacy·production latency·quality·cost 보장으로 확대하지 않았으며 Deep Dive 2건은 같은 KST 날짜에 전면 갱신돼 timestamp-only 변경 없이 유지.
