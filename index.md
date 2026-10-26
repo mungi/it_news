@@ -690,6 +690,8 @@
 - [[raw/articles/openssl-dtls-cve-2026-84782-2026-10-01]] — OpenSSL DTLS retransmission stale buffer offset `CVE-2026-84782`의 plaintext heap disclosure·crash·runtime patch 검증 경계.
 - [[raw/articles/aitimes-naver-whale-ai-chat-2026-10-01]] — 네이버 웨일 `AI 챗`의 페이지·탭 문맥 질의·요약·번역과 browser data path·관리 정책 검증 경계.
 
+- [[raw/articles/cncf-kagent-agent-substrate-isolation-2026-10-26]] — kagent·Agent Substrate의 gVisor·microVM·`Harness`/`AgentTemplate` 기반 agent sandboxing과 egress·credential·snapshot·RBAC 검증 경계.
+
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
 - `docs/data/weekly-news.json` — 주간 뉴스 사이트 데이터.
