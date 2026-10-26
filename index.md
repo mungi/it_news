@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-25 | Total pages: 465
+> Last updated: 2026-10-26 | Total pages: 466
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/jetbrains-thinkrail-agentic-ide-nightly-2026-10-25]] — JetBrains ThinkRail nightly의 `pi`·git worktree·living spec·MCP 권한·artifact provenance 운영 경계.
 - [[raw/articles/aitimes-amazon-2027-compute-capacity-2026-10-25]] — AWS 2027년 컴퓨팅 용량 판매 보도와 reservation·allocatable capacity 검증 경계.
 - [[raw/articles/aitimes-nvidia-nemotron-35-bolt-e4b-2026-10-25]] — NVIDIA Nemotron 3.5 Bolt E4B 4GB 보도와 온디바이스 agent 검증 경계.
 - [[raw/articles/aitimes-liquid-ai-ripl-realtime-inference-2026-10-25]] — Liquid AI RIPL 실시간 추론 엔진 보도와 latency·SLO 검증 경계.
