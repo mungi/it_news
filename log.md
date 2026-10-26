@@ -3791,3 +3791,10 @@
 - CNCF Ambassador canonical 원문의 `article:published_time` `2026-10-26T11:30:00+00:00`, OG image, 본문을 직접 대조해 KST `2026-10-26 20:30`으로 기록. kagent·Agent Substrate의 Worker Pod·Actor·`ateapi`, gVisor Sentry·microVM, `Harness`·`AgentTemplate` CRD, Helm 기본 WorkerPool/Worker, snapshot·session lifecycle 설명 범위를 수록함.
 - `news-720`을 W45 current-window 첫 카드로 newest-first rank 1에 삽입하고 cap 최저순위 `news-676`을 제외해 50건·rank 1–50을 유지. raw capture·`index.md`·canonical `weekly/2026-W45.md`를 동기화함. Ambassador tutorial을 CNCF project release·security certification·production SLA, runtime isolation을 egress·secret·tenant isolation 보장으로 확대하지 않음.
 - W45 rollover Deep Dive 재검토에서 서로 다른 high-signal primary replacement를 확인하지 못해 AWS Continuum·NVIDIA Minerva를 유지하고, 확인 surface·candidate 판단을 각 `refresh_note`에 기록함.
+
+## [2026-10-27] update | Bedrock GPT-6.1 Terra GA·Q Labs Noise 추가 및 KST 첫 실행 Deep Dive 전면 교체
+- 확인 시각: 2026-10-27 05:29 KST. GeekNews·GeekNews Plus는 HTTP 403 접근 제약을 확인했고 AI타임스KR·AI타임스, AWS What’s New·CNCF·GitHub·Kubernetes·Google AI·Docker surface를 current research pass에 포함함.
+- AWS canonical 공지와 RSS `Mon, 26 Oct 2026 18:27:00 GMT`를 대조해 GPT-6.1 Terra Bedrock GA를 KST `2026-10-27 03:27`로 기록함. text·image input, 최대 100만 input-token context, Bedrock API·ChatGPT Work·Codex 사용 경로와 provider benchmark·price 주장 범위를 수록했으며 workload별 quality·latency·cost·Region·endpoint 보장으로 확대하지 않음.
+- Q Labs GitHub repository·README·commit API와 AI타임스 canonical 보도를 대조해 Noise의 no-autograd/no-backprop rule, 30M-token·loss 3.5·single 8×H100 조건, 과거 10M-token·loss 4.2에서의 1.6초 기록 범위를 수록함. 1.6초를 frontier-scale training·energy·cost 우위로 확대하지 않음.
+- `news-721`·`news-722`를 verified KST 발행 시각 newest-first으로 삽입하고 최저순위 `news-668`·`news-671`을 제외해 W45 50건·rank 1–50을 유지함. raw capture 2건·`index.md`·canonical `weekly/2026-W45.md`를 동기화함.
+- KST 첫 실행 정책에 따라 전일 AWS Continuum·NVIDIA Minerva Deep Dive를 서로 다른 AWS·Q Labs primary source 기반 주제로 전면 교체함. title·summary·details·source·image metadata·8개 전문가 section을 재구성하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-27 05:29`로 설정함.
