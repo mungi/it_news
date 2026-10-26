@@ -3775,3 +3775,8 @@
 - 확인 시각: 2026-10-26 09:05 KST. GeekNews RSS, AI타임스 RSS, AWS What's New·GitHub·CNCF·Kubernetes·NVIDIA·Google AI·CISA feed를 current research pass에 포함함. GeekNews Plus·AI타임스KR·Cloudflare·OpenAI RSS는 HTTP 403 접근 제약을 확인함.
 - GeekNews의 07:33 KST 후보를 JetBrains 공식 GitHub repository와 `v0.3.0-nightly.6` release로 교차 검증함. 해당 prerelease의 `published_at` `2026-10-25T06:49:25Z`를 KST `2026-10-25 15:49`로 변환하고, `pi` agent·git worktree workspace·`SPEC.md` graph·skills·MCP 승인 흐름·SHA256SUMS 및 Linux unsigned artifact 표기 범위만 수록함.
 - `news-717`을 newest-first rank 4로 삽입해 W44 50건·rank 1–50을 유지함. raw capture SHA-256 `049a646af6cc958ab2ea10e06a95516b54418ca07696b69f6105149574c9a846`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. workspace 분리·MCP 승인 설명을 merge safety·tool safety·secret isolation·production readiness 보장으로 확대하지 않음.
+
+## [2026-10-26] update | NVIDIA GPU당 agent software 라이선스 언급 보도 추가
+- 확인 시각: 2026-10-26 13:08 KST. GeekNews·GeekNews Plus는 HTTP 403 접근 제약을 확인했고, AI타임스KR·AI타임스와 AWS What's New·GitHub·Cloudflare·CNCF·Kubernetes feed를 current research pass에 포함함.
+- AI타임스 canonical 원문의 `article:published_time` `2026-10-26T12:56:50+09:00`, OG image와 본문을 직접 대조함. 젠슨 황 CEO의 GTC Berlin 발언 보도에서 AI factory agent 구동 NVIDIA software 전체의 GPU당 연 약 2,000달러 예시, 확정 SKU·적용 시점·포함 기능·license term·유료 GPU 수 미공개, 기존 `AI Enterprise` GPU당 연 4,500달러와의 관계 미확정 범위만 수록함.
+- `news-718`을 KST `12:56` 기준 newest-first rank 1로 추가하고 기존 50개 cap의 최저순위 `news-669`를 제외해 W44 50건·rank 1–50을 유지함. raw capture SHA-256은 canonical HTML 기준 `c2edf8269e49ecde7d5f3421913d1c8df70a045fe06550e692c490b38821d4e0`, `index.md`, canonical `weekly/2026-W44.md`를 동기화함. 발언의 예시 가격·기사 내 가정 매출을 확정 가격표·제품 entitlement·NVIDIA 매출 forecast·조직별 TCO로 확대하지 않음.
