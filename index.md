@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-27 | Total pages: 470
+> Last updated: 2026-10-28 | Total pages: 472
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/kubernetes-workload-conformance-wg-2026-10-27]] — Kubernetes workload runtime behavior를 objective test로 정리하려는 Working Group의 scope·운영 증거 경계.
+- [[raw/articles/aws-ecr-replication-backfill-2026-10-27]] — ECR existing image backfill의 digest·policy·pull·DR drill 검증 경계.
 - [[raw/articles/arxiv-agent-harness-tokens-mostly-2026-10-27]] — coding-agent harness 비교의 SWE-bench 반복성·token 비용·output cap·FinOps 검증 경계.
 - [[raw/articles/aws-kms-ml-kem-post-quantum-2026-10-26]] — AWS KMS ML-KEM 3종 지원의 PQC key exchange·HSM·library interoperability·rotation 검증 경계.
 - [[raw/articles/cloudflare-glm-53-workers-ai-kv-cache-exposure-2026-10-27]] — Cloudflare Workers AI GLM-5.3 교차 요청 KV cache 노출 155건과 SGLang 분리 prefill/decode 수정·검증 경계.

@@ -2,190 +2,189 @@
   "week": "2026-W45",
   "coverage_start_kst": "2026-10-26 17:00",
   "coverage_end_kst": "2026-11-02 13:00",
-  "last_updated_kst": "2026-10-27 21:47",
+  "last_updated_kst": "2026-10-28 01:53",
   "audience": "developers and engineers",
   "executive_summary": [
+    "Kubernetes가 workload runtime behavior의 shared standard를 논의할 Workload Conformance Working Group을 출범시킴. security·disruption resilience·resource·network·storage·API·observability를 scope로 두고, requirement마다 executable objective test를 요구하는 방향임.",
+    "Amazon ECR이 existing private image의 replication backfill을 추가함. single API call·최대 10개 concurrent job·per-image result로 catalog gap을 줄일 수 있지만, DR readiness는 destination digest·scan/signature·pull·deployment drill로 별도 검증 필요.",
     "코딩 agent harness 비교 연구에서 동일 모델·과제·가격표의 과제당 비용이 최대 3배 차이였음. 447개 SWE-bench Verified 과제에서 무거운 Claude Code와 경량 mini-SWE-agent 성능은 5 points 이내였고, harness 변경은 반복 실행·token·step·retry 증적으로 평가할 대상임.",
-    "Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 681,280 token 초과 prompt 관련 응답 155건에 다른 고객 데이터가 포함됐고, `v0.5.22` 이상 SGLang·실제 KV pool/context length 검증·rejection-before-handoff·transfer integrity가 분리 prefill/decode 운영의 release gate가 됨.",
-    "AWS가 Amazon Bedrock에 `GPT-6.1 Terra`를 GA로 추가함. 최대 100만 input token context·text/image input·Bedrock API·ChatGPT Work/Codex 사용 경로는 확인됐지만, quality·p95·token·data boundary·fallback은 workload별 canary evidence가 필요함."
+    "Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 681,280 token 초과 prompt 관련 응답 155건에 다른 고객 데이터가 포함됐고, SGLang upgrade·KV pool/context length·handoff integrity 검증이 분리 prefill/decode 운영의 release gate가 됨."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Amazon Bedrock GPT-6.1 Terra GA: 장문 context·agent 비용을 배포 증적으로 통제하는 방법",
-      "summary": "한 줄 결론: GPT-6.1 Terra의 Bedrock GA는 모델 하나를 추가하는 작업이 아니라 100만 token context, multimodal input, tool workflow의 quality·latency·token cost·data governance를 기존 IAM·trace·billing 통제에 연결하는 release 결정임.",
-      "details": "AWS는 GPT-6.1 Terra의 Bedrock GA, 최대 100만 input token context, text/image input, API와 ChatGPT Work·Codex 사용 경로를 공지함. provider benchmark와 가격 주장을 production SLA나 total cost 보장으로 해석하지 말고, model routing·context budget·tool authority·fallback·audit을 canary evidence로 검증해야 함.",
-      "why_it_matters": "long context와 agent workflow는 retrieval·session·tool output을 넓히지만 token spend, p95, prompt injection surface, data classification scope도 함께 넓힘.",
+      "title": "Kubernetes Workload Conformance WG: 애플리케이션 운영 요구를 실행 가능한 release evidence로 바꾸는 출발점",
+      "summary": "한 줄 결론: 새 Working Group은 Kubernetes workload의 security·disruption·resource·network·storage·API·observability 요구를 testable standard로 만들려는 초기 작업임. 지금 필요한 일은 미래 badge를 기다리는 것이 아니라 drain·upgrade·privilege·resource 증거를 workload별 release gate로 수집하는 일임.",
+      "details": "Kubernetes는 workload runtime 동작의 shared standard를 논의할 Workload Conformance Working Group을 발표함. requirement와 test는 아직 합의 전이며, 모든 requirement를 objective executable test로 연결한다는 원칙만 확정됨. platform team은 이 논의를 이용해 application contract, maintenance, upgrade, policy evidence를 정리할 수 있음.",
+      "why_it_matters": "workload failure는 node drain·API removal·권한 과다·resource mis-sizing에서 늦게 드러남. testable contract는 cluster operator와 application maintainer의 반복 점검 비용을 CI/CD evidence로 옮길 수 있음.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/openai-gpt-6-1-terra-on-amazon-bedrock/",
-        "https://docs.aws.amazon.com/bedrock/latest/userguide/model-cards-openai.html"
+        "https://kubernetes.io/blog/2026/10/27/announcing-workload-conformance-wg/"
       ],
-      "image_url": "assets/images/fallback-ai.svg",
+      "image_url": "assets/images/fallback-infra.svg",
       "local_image": "",
-      "refreshed_kst": "2026-10-27 05:29",
+      "refreshed_kst": "2026-10-28 01:53",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "`GPT-6.1 Terra`의 Bedrock 제공은 모델 성능 비교보다 request가 어떤 region·inference profile·IAM principal·data class·tool permission으로 실행됐는지를 추적 가능한 운영 contract로 만드는 일임. 100만 token context는 retrieval 품질 기회이면서 비용·privacy·injection surface가 커지는 변경임.",
+          "body": "Workload Conformance WG는 Kubernetes workload를 “배포됐다”가 아니라 security·disruption·resource·network·storage·API·observability 행동을 objective test로 설명할 수 있는 상태로 만들려는 초기 표준화 작업임. requirement와 test suite는 아직 미정이므로 compliance 주장보다 내부 release evidence를 먼저 정리해야 함.",
           "items": [
-            "변화: Bedrock API와 ChatGPT Work·Codex의 Terra 사용 경로 공개",
-            "결정: 모델 enablement 전 context budget·fallback·audit field를 release gate로 설정"
+            "변화: workload runtime behavior를 shared standard와 executable test 대상으로 설정",
+            "결정: badge·certification을 기다리지 말고 drain·upgrade·policy evidence를 deployment artifact로 수집"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS는 10월 26일 UTC에 GPT-6.1 Terra GA를 발표하고 text·image input과 최대 1M input-token context를 명시함. AWS 공지는 Agents’ Last Exam에서 GPT-5.6 Terra보다 15 percentage points 높고 GPT-6 Astra와 비슷하며, GPT-6 Astra·GPT-6.1 Sol보다 3배 이상 빠르다는 OpenAI 평가와 Sol·5.6 Terra보다 최소 50% 낮은 input/output token 가격을 인용함.",
+          "body": "공식 발표는 application builder와 cluster operator의 input을 받아 runtime workload behavior의 shared standard를 작성한다고 밝힘. scope에는 security, disruption 중 resilience, resource use, networking, storage, API usage, observability가 포함되며 specific requirement와 test 방법은 아직 합의되지 않았음.",
           "items": [
-            "원문 사실: Bedrock APIs에서 직접 호출 또는 ChatGPT Work·Codex가 Bedrock에서 모델 사용 가능",
-            "원문 경계: supported Region·endpoint·inference profile·feature·pricing은 Bedrock documentation에서 계정별 확인 대상"
+            "원문 사실: every requirement는 test binary가 실행할 수 있는 objective test를 가져야 한다는 원칙",
+            "원문 사실: node drain의 disruption 취약성, removed API 의존, 불필요 privilege와 reservation을 반복 assessment 사례로 제시"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "모델을 같은 prompt에 붙이는 비교만으로는 agent 적합성을 판단하기 어려움. context 길이, image size, tool retry, structured output, safety refusal, external API latency가 end-to-end SLO와 비용을 결정함. benchmark의 task score와 completion speed는 provider 평가이며 enterprise data distribution과 tool environment의 결과를 대체하지 않음.",
+          "body": "Kubernetes upgrade failure는 control plane version만의 문제가 아니라 workload manifest, controller behavior, dependency, data plane connection, startup/shutdown sequence의 contract failure임. objective test가 생기면 policy-as-code와 e2e workload test를 동일 evidence chain으로 연결할 여지가 생기지만, test coverage가 business RTO·RPO나 application correctness를 대체하지는 않음.",
           "items": [
-            "볼 것: task success·human correction·p50/p95/p99·input/output token·cache hit·tool error의 workload별 분포",
-            "피할 것: 긴 context window를 unbounded history·unfiltered retrieval·privileged tool access로 연결하는 구성"
+            "볼 것: workload별 PDB·termination grace·readiness/liveness·retry·idempotency·state recovery evidence",
+            "피할 것: conformance scope를 managed service 호환성, security certification, availability guarantee로 확장하는 해석"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "request plane에서는 model ID, prompt template version, retrieval corpus snapshot, tool schema, response parser, fallback policy를 trace ID에 묶어야 함. control plane에서는 Bedrock model access, IAM role, VPC endpoint, CloudTrail event, API quota를 application deployment와 같은 change record로 남겨야 함. ChatGPT Work·Codex 연결은 사용자 identity와 organization policy가 어느 계층에서 적용되는지 별도 확인이 필요.",
+          "body": "platform layer는 namespace policy, admission, node maintenance, observability를 제공하고 application layer는 deployment spec과 runtime behavior를 증명해야 함. drain이나 upgrade test는 stateless deployment뿐 아니라 stateful set, queue consumer, cron job, webhook, operator, external dependency를 포함해야 함. observability는 pod restart 수가 아니라 SLO·data integrity·duplicate side effect까지 추적할 필요.",
           "items": [
-            "설계: context assembler가 document source·classification·token estimate·redaction outcome을 request metadata로 기록",
-            "검증: quota exhaustion·model error·tool timeout·unsafe output에서 fallback과 human handoff가 같은 audit chain에 남는지 확인"
-          ]
-        },
-        {
-          "heading": "비용·FinOps 관점",
-          "body": "AWS의 token 가격 비교는 비용 기준선을 제공하지만 real cost는 input/output volume, context reuse, retries, tool invocation, observability, human review와 concurrency reservation에 좌우됨. 1M context 허용은 비용 상한이 아니므로 application별 maximum tokens·output cap·timeout·budget alarm이 필요.",
-          "items": [
-            "측정: successful task당 token·latency·retry·tool cost·review minutes를 model별로 분리",
-            "결정: cheaper token을 reason 없이 더 긴 context로 쓰지 말고 quality gain당 incremental cost로 routing"
+            "설계: workload class별 golden test harness와 versioned manifest·policy snapshot·test result 연결",
+            "검증: node cordon/drain, rolling upgrade, API removal, quota pressure, network interruption에서 service-level outcome replay"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "long context에는 문서·ticket·source code·tool result가 섞일 수 있어 input provenance와 data minimization이 필요함. 외부 문서의 instruction은 untrusted data로 표시하고, model output은 write-side action 전 schema validation·policy·approval을 통과해야 함. Bedrock의 access·audit control은 application 내부 prompt handling과 connector authorization을 자동 해결하지 않음.",
+          "body": "발표가 지적한 unnecessary privilege는 service account, RBAC, host namespace, capability, secret mount, cloud workload identity를 함께 점검해야 하는 운영 문제임. runtime conformance test가 도입돼도 third-party image provenance, vulnerability remediation, tenant boundary, external SaaS authorization은 별도 control로 남음.",
           "items": [
-            "통제: document class별 retrieval allowlist·redaction·retention·cross-account access rule 정의",
-            "통제: tool execution은 least privilege token·idempotency key·approval·rollback을 별도 강제"
+            "통제: least privilege baseline·exception owner·expiry·review evidence를 namespace별로 기록",
+            "통제: deprecated API와 privilege escalation finding을 deployment block 또는 time-bound waiver로 처리"
+          ]
+        },
+        {
+          "heading": "비용·신뢰성 관점",
+          "body": "resource request/limit의 과소 설정은 eviction·throttling·tail latency로, 과대 설정은 bin packing 저하와 capacity 비용으로 이어짐. conformance 논의는 resource use를 scope에 포함하지만 optimal sizing metric을 정의한 것은 아니므로 조직은 historical utilization·HPA/VPA behavior·queue lag·SLO를 자체 기준으로 유지해야 함.",
+          "items": [
+            "측정: requested versus used CPU/memory, eviction/OOM, autoscaling delay, drain completion, error budget impact",
+            "결정: conformance-ready manifest보다 workload class별 capacity and disruption budget을 release criterion으로 사용"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 단계는 read-only summarization 또는 codebase Q&A 하나를 정해 Terra와 현행 모델의 동일 trace를 수집하는 것임. 다음으로 bounded tool을 붙여 structured output acceptance와 human correction율을 비교하고, write action은 reversible change·two-person approval·kill switch가 준비된 뒤 제한해야 함.",
+          "body": "첫 단계는 현재 workload를 stateless API, stateful service, batch, controller, operator로 분류하고 existing maintenance incident를 test scenario로 변환하는 일임. 다음으로 CI에서 deprecated API·RBAC·resource policy와 ephemeral cluster smoke test를 묶고, production은 low-risk namespace부터 planned drain canary로 검증해야 함.",
           "items": [
-            "1단계: fixed prompt·context tiers·dataset·success rubric으로 offline replay",
-            "2단계: production shadow에서 p95·token·error·data classification violation 비교",
-            "3단계: low-blast-radius tool부터 approval·audit·rollback 하에 canary 확대"
+            "1단계: workload inventory와 owner, dependency, PDB, API version, privilege, recovery method 기록",
+            "2단계: CI admission policy·manifest lint·e2e disruption test와 release record 연결",
+            "3단계: planned maintenance canary에서 user SLO·data integrity·rollback을 검증 후 확대"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀은 prompt·schema·tool contract와 fallback UX를, platform 팀은 model access·network·quota·trace를, security 팀은 connector·data classification·approval policy를, FinOps는 cost allocation과 budget abort를 소유해야 함. owner가 나뉘어도 같은 request ID와 deployment version을 기준으로 조사할 수 있어야 함.",
+          "body": "개발팀은 shutdown/retry/idempotency와 dependency timeout을, platform 팀은 policy·quota·drain automation과 cluster version을, SRE는 SLO와 rollback을, security는 identity·privilege·image control을 소유해야 함. 같은 deployment version으로 manifest, policy, test, production event를 조회할 수 있어야 incident 설명이 가능.",
           "items": [
-            "체크: model ID·region·inference profile·prompt version·token·tool result·policy decision 연결",
-            "체크: sensitive corpus가 retrieval·log·evaluation dataset·support ticket로 복제되는 경로 확인",
-            "체크: quota·provider error·prompt injection·tool write failure에서 safe fallback과 rollback drill"
+            "체크: PDB·readiness·graceful shutdown·persistent volume·external endpoint가 actual drain에서 검증됐는지 확인",
+            "체크: removed API·RBAC escalation·resource limit violation이 release 전에 탐지되는지 확인",
+            "체크: test failure의 owner·waiver expiry·rollback procedure가 change record에 남는지 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "발표 포인트는 Terra의 score가 아니라 100만 token context와 multimodal agent request가 기존 cloud control plane에서 어떻게 measurement·approval·budget으로 닫히는가임. 첫 실행은 model access를 넓히는 일이 아니라 대표 workflow 하나의 trace·cost·data boundary를 기준선으로 만드는 작업임.",
+          "body": "발표 포인트는 새 인증 제도가 아니라 workload behavior를 executable evidence로 만들겠다는 방향임. 이번 주의 행동은 한 cluster 전체를 재설계하는 일이 아니라, 다음 maintenance 대상으로 예정된 workload 하나의 drain·recovery·permission·resource contract를 실측하는 일임.",
           "items": [
-            "발표 포인트: Bedrock GA·1M context·model routing·traceable tool boundary",
-            "즉시 행동: 대표 agent request 하나를 선택해 input provenance부터 fallback·CUR cost까지 evidence chain 점검"
+            "발표 포인트: objective test·disruption resilience·API lifecycle·resource/privilege evidence",
+            "즉시 행동: 다음 node maintenance 대상 workload의 manifest·PDB·SLO·rollback을 하나의 release record로 묶기"
           ]
         }
       ]
     },
     {
       "id": "deep-dive-002",
-      "title": "Q Labs Noise: 역전파 없는 pretraining 기록을 재현성·GPU 운영 지표로 해석하는 방법",
-      "summary": "한 줄 결론: Noise는 backpropagation 없이 learning algorithm을 겨루는 공개 benchmark임. 특정 loss·dataset·model·8×H100 조건의 speedrun 기록은 연구 신호이며, training quality·GPU-hour·network·checkpoint recovery를 같은 protocol에서 비교하기 전 production training 전환 근거가 될 수 없음.",
-      "details": "Q Labs repository는 fixed model/data/score, no-autograd 규칙, validation·speedrun·open architecture track을 공개함. 현재 30M-token·loss 3.5·single 8×H100 기준으로 전환됐으며, algorithm·model change·GPU kernel·distributed communication의 기여를 분해한 재현이 필요.",
-      "why_it_matters": "AI training 비용과 처리량의 병목은 optimizer만이 아니라 model architecture, hardware, interconnect, data pipeline, failure recovery의 결합임.",
+      "title": "Amazon ECR replication backfill: 이미지 DR을 tag 복사가 아닌 digest·policy·pull 검증으로 닫는 방법",
+      "summary": "한 줄 결론: ECR replication backfill은 기존 private image catalog를 destination registry로 옮기는 control-plane 기능임. DR 준비 상태는 job 완료가 아니라 digest parity, scanning/signature, target Region pull, deployment admission, rollback을 함께 통과했을 때만 확인됨.",
+      "details": "AWS는 기존 image를 configured replication destination으로 복제하는 ECR replication backfill을 발표함. 최대 10개 job을 동시에 실행하고 per-image 결과를 API로 확인하거나 job을 중지할 수 있음. image catalog 복제는 workload가 target Region에서 안전하게 실행된다는 보장이 아니므로 artifact integrity와 recovery drill을 분리 검증해야 함.",
+      "why_it_matters": "새 Region·DR Region에 historical image가 빠지는 문제를 retag 없이 관리할 수 있지만, digest·tag·lifecycle·scan·permission·runtime compatibility가 별도 control로 남음.",
       "sources": [
-        "https://github.com/qlabs-eng/noise",
-        "https://www.aitimes.com/news/articleView.html?idxno=216671"
+        "https://aws.amazon.com/about-aws/whats-new/2026/10/replication-backfill-amazon-ecr"
       ],
-      "image_url": "https://cdn.aitimes.com/news/photo/202610/216671_220788_4030.gif",
+      "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "",
-      "refreshed_kst": "2026-10-27 05:29",
+      "refreshed_kst": "2026-10-28 01:53",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Noise는 backward pass를 하지 않는 pretraining algorithm의 공개 speedrun이며, 단일 기록을 제품화 가능한 학습 스택으로 읽으면 안 됨. 실험 설계의 가치는 rule·data·score·artifact를 공개해 algorithmic improvement와 systems optimization을 논쟁 가능한 evidence로 만드는 데 있음.",
+          "body": "ECR replication backfill은 replication configuration 이전에 push된 private image를 destination registry로 복제하는 기능임. 완료 상태를 DR readiness로 읽지 말고 source/destination digest, image policy, signature·SBOM·scan, target Region pull과 deployment rollback을 evidence로 닫아야 함.",
           "items": [
-            "변화: no-backprop 조건에서 validation loss·speedrun·open architecture track 운영",
-            "결정: 최신 commit·data hash·GPU topology·optimizer를 고정하지 않은 성능 비교는 채택 근거에서 제외"
+            "변화: existing catalog를 retag workaround 없이 single API call로 destination에 backfill",
+            "결정: job success와 workload recovery success를 별도 release gate로 운영"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "GitHub README는 Noise를 `Speedrun for pretraining without backpropagation`으로 정의하고 no autograd, no reverse/forward-mode AD, no handwritten backward pass를 규칙으로 적음. fixed model/data/score track에서는 37.7M-parameter transformer와 30M-token FineWeb data, validation loss·loss 3.5 speedrun을 제시함. AI타임스의 1.6초 수치는 이전 10M-token·loss 4.2 조건의 보도임.",
+          "body": "AWS는 기존에는 replication configuration 활성화 이후 push한 image만 replication되고, preexisting image는 manually retag해야 했다고 설명함. 새 backfill은 full image catalog를 new or existing destination에 복제하며, new Region expansion·DR readiness·replication rule update·compliance catalog completeness를 사용 사례로 제시함.",
           "items": [
-            "원문 사실: 10M-token tracks는 archive로 이동하고 10월 22일부터 30M-token 조건으로 전환",
-            "원문 사실: Linux·bf16 NVIDIA GPU·uv setup, config·metrics JSONL·final weight·result artifact 기록"
+            "원문 사실: concurrent backfill job 최대 10개, progress와 per-image result를 new API에서 확인",
+            "원문 사실: job stop 가능, 이미 replicated된 image는 삭제하지 않음, ECR 제공 모든 Region에서 지원"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "역전파 대체 연구에서 speed는 gradient estimator, optimizer, model architecture, fused kernel, collective communication, compile warmup의 합성 결과임. 같은 validation loss라도 downstream quality, stability, scaling law, data efficiency가 다를 수 있음. README가 Dust가 SGD에서는 backprop에 경쟁하지만 Adam에서는 뒤처진다고 설명하는 만큼, baseline optimizer와 budget을 통일하지 않은 비교는 결론이 아님.",
+          "body": "container artifact의 recovery requirement는 image bytes 존재 여부보다 immutable digest를 기준으로 deployment manifest와 policy가 같은 artifact를 가리키는지에 달림. mutable tag는 source와 destination의 timing 차이, lifecycle cleanup, promotion workflow 때문에 DR cutover에서 다른 image를 선택하게 만들 수 있음. backfill은 catalog gap을 줄이지만 release provenance를 자동 복구하지 않음.",
           "items": [
-            "볼 것: 동일 model·data·seed에서 loss curve, variance, time-to-target, GPU-hours를 함께 공개하는지 여부",
-            "피할 것: best leaderboard row를 backprop 전면 대체·frontier model 학습비 절감으로 일반화하는 해석"
+            "볼 것: critical workload manifest의 digest, source/destination manifest list, platform-specific image, OCI referrer parity",
+            "피할 것: “all images replicated” 결과를 signed artifact·vulnerability posture·runtime compatibility 보장으로 해석"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "실험 harness는 training code뿐 아니라 tokenizer·dataset manifest·shard order·random seed·CUDA/PyTorch/NCCL version·node topology를 artifact로 묶어야 함. distributed run에서는 gradient나 estimator 통신량, all-reduce pattern, host I/O, straggler가 기록을 바꿀 수 있음. checkpoint resume과 node loss 뒤 결과가 재현되는지가 cluster 운영 관점의 최소 조건임.",
+          "body": "replication configuration은 source registry, destination Region/account, repository policy, KMS encryption, IAM, lifecycle policy와 맞물림. target Region EKS/ECS node가 필요한 architecture image를 pull하고 admission controller가 expected signature/SBOM policy를 통과하는지 별도 확인해야 함. per-image result는 fleet recovery dashboard의 input이지 end-to-end health signal이 아님.",
           "items": [
-            "설계: commit SHA·container digest·dataset checksum·GPU SKU·fabric topology·run config를 result와 함께 보관",
-            "검증: warmup 포함/제외, compile cache, network contention, preemption에서 throughput과 loss가 어떻게 변하는지 replay"
-          ]
-        },
-        {
-          "heading": "성능·FinOps 관점",
-          "body": "wall-clock record가 짧아도 GPU-hours, power, failed run, engineering iteration, dataset preparation을 포함한 total training cost가 낮다는 뜻은 아님. fixed loss target은 useful metric이지만 quality floor와 task transfer를 가리지 못할 수 있음. 비용 평가는 target loss당 GPU-hour, validated checkpoint당 storage·egress, rerun probability, operator time을 함께 계산해야 함.",
-          "items": [
-            "측정: time-to-target·GPU-hours·tokens/s·interconnect bytes·energy·failure retry를 동일 dashboard에 기록",
-            "결정: speedup 주장보다 baseline 대비 confidence interval과 reproducible success rate를 capacity planning 입력으로 사용"
+            "설계: application release record에 image digest·registry URI·SBOM/signature digest·scan snapshot·deployment revision 저장",
+            "검증: destination account의 least-privilege pull, private endpoint/DNS, cache miss pull latency, node architecture, startup smoke test replay"
           ]
         },
         {
           "heading": "보안·공급망 관점",
-          "body": "공개 research repo를 cluster에서 실행할 때는 contributor code, Python dependency, dataset fetch, logging endpoint, artifact upload가 공급망 경계가 됨. README의 pinned hash와 artifact 경로를 CI provenance, egress allowlist, separate research account로 보완해야 함. experimental code가 shared production training credential이나 data lake write role을 받지 않도록 분리할 필요.",
+          "body": "cross-Region copy는 vulnerable 또는 revoked artifact도 함께 복제할 수 있어 source scan 결과만 신뢰하면 안 됨. image scanning database timing, signature verification, repository access policy, cross-account role, retention and deletion authority를 destination에서도 검증해야 함. recovery 중 emergency pull 권한을 넓히면 blast radius가 커질 수 있음.",
           "items": [
-            "통제: immutable commit·lockfile·container digest·dataset checksum·artifact signing을 experiment manifest에 기록",
-            "통제: research node는 scoped object-store prefix·ephemeral credential·egress allowlist·cleanup proof 적용"
+            "통제: destination repository의 immutable tag·encryption·pull policy·signature/SBOM admission을 source와 diff",
+            "통제: backfill service role과 break-glass pull role을 분리하고 CloudTrail event와 approval 기록 보관"
+          ]
+        },
+        {
+          "heading": "비용·FinOps 관점",
+          "body": "backfill은 catalog size, layer deduplication, destination storage retention, cross-Region transfer, concurrent job 운영에 영향을 받음. 10-job concurrency는 speed knob이지 free capacity가 아니며, lifecycle policy가 destination에서 다른 경우 storage growth가 지속될 수 있음.",
+          "items": [
+            "측정: repository별 bytes·image/layer count·job duration·failure/retry·destination storage·transfer cost",
+            "결정: critical repository부터 staged backfill하고 cost allocation tag와 retention owner를 지정"
           ]
         },
         {
           "heading": "도입 로드맵",
-          "body": "첫 단계는 public benchmark를 재현하기보다 조직의 isolated lab에서 upstream commit과 documented hardware 조건을 그대로 실행해 measurement pipeline을 검증하는 것임. 다음으로 동일 token budget·optimizer·model에서 backward baseline을 돌리고, 이후 작은 internal corpus에서 quality와 data pipeline compatibility를 확인해야 함. large-scale run은 checkpoint, quota, node failure, cost abort가 증명된 뒤 판단할 대상.",
+          "body": "첫 단계는 RTO 대상 workload와 required digest 목록을 만들고, destination registry policy를 source와 비교하는 것임. 다음으로 낮은 위험 repository에서 backfill API와 per-image failure 처리, destination pull을 canary로 검증함. 마지막에 isolated DR exercise에서 registry replication, image pull, deployment, state restore, traffic cutover, rollback을 하나의 runbook으로 실행해야 함.",
           "items": [
-            "1단계: repository SHA와 official setup을 pin한 read-only lab reproduction",
-            "2단계: matched baseline에서 loss·time·GPU-hours·network·failure rate 비교",
-            "3단계: non-sensitive corpus와 bounded quota에서 scale test, 이후 independent review"
+            "1단계: critical workload·digest·architecture·dependency registry inventory",
+            "2단계: noncritical repository backfill과 per-image parity·scan·signature canary",
+            "3단계: planned DR drill에서 pull-to-ready latency·deployment success·rollback evidence 수집"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "research 팀은 metric definition과 acceptance threshold를, ML platform은 reproducible environment와 artifact retention을, infra 팀은 GPU·fabric·storage telemetry를, security 팀은 dependency·credential·egress boundary를 소유해야 함. 동일 run ID가 code change, data version, node event, cost record를 잇지 못하면 record regression의 원인을 설명할 수 없음.",
+          "body": "개발팀은 manifest digest와 promotion policy를, platform 팀은 registry configuration·IAM·network pull path를, security 팀은 artifact provenance·scan·exception을, SRE는 recovery objective와 exercise record를 소유해야 함. job ID만 남기지 말고 deployment revision과 drill outcome을 연결해야 함.",
           "items": [
-            "체크: data split·tokenizer·seed·optimizer·batch schedule·hardware·warmup policy가 baseline과 일치하는지 확인",
-            "체크: job preemption·NCCL failure·OOM·checkpoint corruption에서 resume과 result validity가 유지되는지 drill",
-            "체크: benchmark artifact가 model registry·experiment tracker·object store에서 least-privilege로 보존되는지 확인"
+            "체크: source/destination manifest digest·multi-arch variant·OCI referrer·tag immutability parity 확인",
+            "체크: target Region node가 private endpoint 경로로 pull하고 admission·startup·health check를 통과하는지 검증",
+            "체크: failed image·stopped job·lifecycle deletion·rollback에서 runbook과 owner escalation이 작동하는지 drill"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Noise의 발표 가치는 backprop를 폐기했다는 선언보다 공개된 rule과 artifact 아래 learning algorithm과 systems co-design을 빠르게 검증한다는 데 있음. 이번 주의 행동은 1.6초를 계획 수치로 쓰는 것이 아니라, 조직의 backward baseline이 어떤 data·hardware·failure 조건에서 얼마의 evidence를 남기는지부터 측정하는 일임.",
+          "body": "발표 포인트는 retag 작업을 줄였다는 편의성보다 image catalog completeness를 recovery evidence로 만들 수 있다는 점임. 즉시 할 일은 가장 오래된 tag를 전부 복제하는 것이 아니라, 다음 DR에 필요한 workload digest 하나가 destination에서 policy를 통과해 실행되는지를 검증하는 일임.",
           "items": [
-            "발표 포인트: no-backprop rule·fixed benchmark·30M-token 전환·8×H100 조건·artifact evidence",
-            "즉시 행동: 기존 training job 하나에서 commit·data hash·GPU-hours·network·resume outcome을 capture하는 재현성 표 작성"
+            "발표 포인트: existing image backfill·10 concurrent jobs·per-image result·non-destructive stop",
+            "즉시 행동: Tier-1 workload 한 개의 source/destination digest와 target Region pull-to-ready drill 실행"
           ]
         }
       ]
@@ -263,8 +262,70 @@
       ]
     },
     {
+      "id": "news-726",
+      "title_ko": "Kubernetes, Workload Conformance Working Group 출범: workload 동작을 실행 가능한 표준으로 논의",
+      "title_original": "Announcing the Workload Conformance Working Group",
+      "summary": "핵심: Kubernetes가 workload runtime behavior의 shared standard를 만들 Working Group을 출범시킴. security·disruption resilience·resource use·networking·storage·API usage·observability를 scope로 제시했고, 모든 requirement는 test binary가 실행할 수 있는 **objective test**를 가져야 함.",
+      "detail": "발표는 node drain에서 드러나는 disruption 취약성, removed API 의존, 과도한 privilege·resource reservation을 반복 assessment 사례로 듦. specific requirement와 test 방식은 아직 합의 전이며, 이번 공지는 certification·managed service compatibility·production SLA가 아니라 application builder와 cluster operator가 함께 정할 testable contract의 출발점임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Kubernetes community가 runtime workload 동작의 shared standard를 작성할 `Workload Conformance Working Group`을 출범시킴. 목표는 application team과 cluster operator가 upgrade·drain·security review 때 반복하는 workload 적합성 점검을 objective requirement와 executable test로 정리하는 것임.",
+          "items": [
+            "범위: security·disruption resilience·resource use·networking·storage·API usage·observability를 specification 후보로 설정",
+            "원칙: 주관적 판정 없이 test binary가 실행 가능한 objective test를 모든 requirement에 연결"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "공식 발표는 아직 세부 requirement와 test 방법을 합의하지 않았다고 명시함. 표준은 workload가 Kubernetes에서 어떻게 동작해야 하는지를 다루며, 특정 distribution·managed service·application의 호환성 인증이나 production SLA를 발표한 것은 아님.",
+          "items": [
+            "배경: node drain에서 disruption을 견디지 못하는 workload, removed API 의존, 불필요 privilege·resource reservation 문제가 운영 시점에 드러나는 상황",
+            "운영자 부담: cluster마다 같은 assessment를 반복하고 application maintainer도 같은 질문을 반복 수신하는 비용"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "workload contract가 testable하게 정리되면 platform team은 admission·policy·CI preflight의 기준을 만들 수 있고, application team은 upgrade 전에 workload manifest와 runtime behavior를 증명할 수 있음. 다만 working group 초기 단계이므로 현재 조직의 policy를 표준으로 간주해선 안 됨.",
+          "items": [
+            "영향: upgrade·node maintenance·security review를 사후 incident 대응이 아닌 release evidence 수집으로 전환할 근거",
+            "경계: proposed scope와 working group 참여 공지는 conformance badge·pass/fail requirement·지원 버전 확정이 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "플랫폼 팀은 공식 specification을 기다리는 동안 disruption budget, PDB, readiness, resource request/limit, privileged capability, deprecated API, network/storage dependency를 deployment gate로 inventory하는 작업부터 시작할 수 있음.",
+          "items": [
+            "팀 액션: workload별 drain test·API deprecation scan·least-privilege policy·resource utilization evidence를 CI/CD artifact로 보관",
+            "검토 항목: future test suite 도입 시 existing admission policy와 managed Kubernetes provider requirement의 충돌 여부 확인"
+          ]
+        }
+      ],
+      "why_it_matters": "workload의 upgrade·maintenance·security 문제를 사후 장애가 아니라 manifest·policy·e2e test evidence로 다룰 계기임.",
+      "engineering_implication": "시사점: PDB·shutdown·deprecated API·RBAC·resource utilization·dependency recovery를 workload별 release gate로 수집 필요.",
+      "korea_implication": "국내 managed Kubernetes 운영 조직도 version upgrade와 maintenance window 전에 workload contract를 CI/CD artifact로 남길 필요.",
+      "category": "Infra",
+      "tags": [
+        "Infra",
+        "Kubernetes",
+        "Conformance",
+        "SRE",
+        "Platform Engineering"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 84,
+      "published_kst": "2026-10-27 13:30",
+      "source_name": "Kubernetes Blog",
+      "source_url": "https://kubernetes.io/blog/2026/10/27/announcing-workload-conformance-wg/",
+      "image_url": "assets/images/fallback-infra.svg",
+      "local_image": "",
+      "related_links": [],
+      "rank": 2
+    },
+    {
       "id": "news-723",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "Cloudflare Workers AI GLM-5.3, 교차 요청 KV cache 노출 155건 공개: SGLang 분리 prefill/decode 검증 필요",
       "title_original": "Cross-request KV cache exposure in the GLM-5.3 Workers AI model, and our remediation with SGLang",
       "summary": "핵심: Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 8월 27일~9월 9일 681,280 token 초과 prompt 관련 응답 **155건**에 다른 고객 요청 데이터가 포함됐으며, context window·실제 KV pool 불일치와 SGLang rejection handoff 결함을 함께 수정함.",
@@ -336,8 +397,71 @@
       ]
     },
     {
+      "id": "news-727",
+      "title_ko": "Amazon ECR, 기존 컨테이너 이미지 replication backfill 지원",
+      "title_original": "Amazon ECR now supports replication backfill for existing container images",
+      "summary": "핵심: Amazon ECR이 existing private image를 configured replication destination으로 복제하는 `replication backfill`을 추가함. 과거에는 configuration 이후 push한 image만 자동 복제됐지만, 이제 single API call로 catalog를 복제하고 최대 **10개** job의 per-image 결과를 확인 가능.",
+      "detail": "AWS는 new Region 확장, DR readiness, replication rule 변경, compliance 목적 catalog completeness를 사용 사례로 제시함. job은 중지할 수 있지만 이미 복제된 image는 삭제되지 않음. backfill 완료는 digest parity·scan/signature·destination pull·admission·runtime smoke test를 보장하지 않으므로 recovery exercise에서 별도 검증이 필요함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon ECR이 private registry의 기존 container image를 configured replication destination으로 복제하는 replication backfill을 추가함. 이전에는 replication configuration 이후 push된 image만 자동 복제돼, 기존 image는 manually retag해야 replication을 유발할 수 있었음.",
+          "items": [
+            "변화: single API call로 새 또는 기존 destination에 full image catalog backfill 가능",
+            "대상: private registry의 existing image와 configured replication destination 조합"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "AWS는 new Region 확장, disaster recovery readiness 검증, replication rule 변경, compliance 목적의 cross-Region catalog completeness를 사용 사례로 제시함. 동시에 실행할 수 있는 backfill job은 최대 10개이며 새 API로 job progress와 per-image result를 확인할 수 있음.",
+          "items": [
+            "운영: 진행 중 job 중지는 가능하지만 이미 replicated된 image는 삭제되지 않는 동작",
+            "제공 범위: ECR 제공 모든 AWS Region에서 availability를 공지"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "image replication 설정을 나중에 켠 registry는 DR Region이나 새 workload Region에서 필요한 historical tag·digest가 빠질 수 있음. backfill은 retag workaround를 줄이지만 tag mutability, lifecycle policy, image scanning, KMS/registry permission, deployment manifest의 digest pinning을 자동 정합화하지 않음.",
+          "items": [
+            "영향: image catalog completeness를 Region expansion과 recovery drill의 checkable artifact로 전환 가능",
+            "경계: backfill API 지원은 target Region에서 image pull 성공, admission policy 통과, runtime compatibility를 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "backfill job을 대량 실행하기 전 source/destination registry policy와 critical image manifest를 고정하고, per-image failure·digest parity·scan result·pull latency를 canary로 확인해야 함.",
+          "items": [
+            "팀 액션: immutable digest 목록을 기준으로 DR Region pull·signature/SBOM·vulnerability scan·deployment smoke test 수행",
+            "비용 변수: cross-Region data transfer·storage·replication job concurrency와 lifecycle retention을 FinOps tag로 분리"
+          ]
+        }
+      ],
+      "why_it_matters": "새 Region이나 DR Region에서 historical image 누락을 retag 없이 줄일 수 있으나 artifact provenance와 runtime recovery는 별도 통제 대상임.",
+      "engineering_implication": "시사점: Tier-1 workload digest를 기준으로 source/destination parity, target Region pull, policy admission, rollback drill을 함께 검증 필요.",
+      "korea_implication": "다중 리전 또는 해외 DR을 운영하는 조직은 registry 복제 완료와 실제 workload RTO를 분리해 측정할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "Cloud",
+        "AWS",
+        "ECR",
+        "Containers",
+        "Disaster Recovery",
+        "Supply Chain"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-10-27 05:24",
+      "source_name": "AWS What's New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/replication-backfill-amazon-ecr",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "",
+      "related_links": [],
+      "rank": 4
+    },
+    {
       "id": "news-721",
-      "rank": 3,
+      "rank": 5,
       "title_ko": "AWS, Amazon Bedrock에 OpenAI GPT-6.1 Terra 정식 제공",
       "title_original": "OpenAI GPT-6.1 Terra is now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 `GPT-6.1 Terra`의 Amazon Bedrock GA를 공개함. 최대 100만 input token context와 text·image input, Bedrock API·ChatGPT Work·Codex 연동 범위가 확인됐으며, benchmark·속도·token 가격은 workload·리전·inference profile별 canary로 재검증할 대상임.",
@@ -405,7 +529,7 @@
     },
     {
       "id": "news-720",
-      "rank": 4,
+      "rank": 6,
       "title_ko": "CNCF Ambassador, kagent·Agent Substrate agent sandboxing 구현 경로 공개: gVisor·microVM·CRD 검증 필요",
       "title_original": "Isolation. Security. Scale.",
       "summary": "핵심: CNCF Ambassador 글이 kagent와 Agent Substrate를 조합해 declarative·BYO agent를 sandbox에서 실행하는 구현 경로를 제시함. `Harness`·`AgentTemplate` CRD, gVisor·microVM 격리 설명, session별 Actor lifecycle은 확인됐지만 CNCF project release·보안 인증·production SLA 공지가 아니므로 cluster별 egress·credential·snapshot·RBAC evidence를 별도로 검증해야 함.",
@@ -469,7 +593,7 @@
     },
     {
       "id": "news-722",
-      "rank": 5,
+      "rank": 7,
       "title_ko": "Q Labs Noise, 역전파 없는 pretraining speedrun 공개: 30M-token·8×H100 재현 조건 확인 필요",
       "title_original": "Noise: Speedrun for pretraining without backpropagation",
       "summary": "핵심: Q Labs의 `Noise`가 backward pass 없이 pretraining algorithm을 겨루는 공개 speedrun을 운영함. AI타임스가 보도한 1.6초 기록은 과거 37.7M-parameter·10M-token·loss 4.2 조건이며, 현재 repository는 30M-token·loss 3.5·single 8×H100 조건으로 전환돼 algorithm·kernel·distributed execution을 분리한 재현이 필요함.",
@@ -541,7 +665,7 @@
     },
     {
       "id": "news-724",
-      "rank": 6,
+      "rank": 8,
       "title_ko": "AWS KMS, NIST ML-KEM 3종 지원: 양자내성 키 교환의 키 수명주기·상호운용성 검증 필요",
       "title_original": "AWS Key Management Service now supports ML-KEM for post-quantum key encapsulation",
       "summary": "핵심: AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`ML-KEM-768`·`ML-KEM-1024`를 지원함. `Encapsulate`/`Decapsulate` API와 32-byte shared secret, FIPS 140-3 Level 3 HSM private key 보호 범위는 확인됐지만 기존 DH/ECDH·RSA key transport 교체는 protocol·library·partner·key rotation 호환성을 분리 검증할 대상임.",
@@ -675,11 +799,11 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-719",
-      "rank": 8,
+      "rank": 10,
       "title_ko": "스페이스X, GPU 조달용 400억달러 부채 마감 보도: 차입·인도·가동 capacity 분리 필요",
       "title_original": "SpaceX closes $40 billion debt raise for GPUs; Musk warns neoclouds (reported)",
       "summary": "핵심: 스페이스X가 GPU 구매 대금 중심으로 400억달러 규모 callable debt 조달을 마쳤고, 확보 GPU는 2027년 1·2분기 도착 예정이라는 보도임. 변화: 대규모 AI capacity 평가는 GPU 주문액만이 아니라 차입·기존 현금흐름·배송·전력·fabric·commissioning을 분리해야 하며, 네오클라우드 도산 전망은 머스크의 시장 의견 범위임.",
@@ -802,7 +926,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-715",
@@ -871,7 +995,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-716",
@@ -934,7 +1058,7 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-717",
@@ -1003,11 +1127,11 @@
           ]
         }
       ],
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-713",
-      "rank": 13,
+      "rank": 15,
       "title_ko": "피차이, 첨단 AI 연구에 컴퓨팅 우선 배정: 클라우드 단기 매출과 capacity 계획의 분리",
       "title_original": "Pichai says Google prioritizes frontier AI compute over short-term cloud revenue (reported)",
       "summary": "핵심: 순다르 피차이 CEO가 첨단 AI 연구용 컴퓨팅을 우선 배정하기 위해 Google Cloud의 일부 단기 매출 기회를 포기하고 있다고 밝힘. 변화: 연구·클라우드·자체 칩·데이터센터의 capacity 계획은 같은 GPU pool을 공유하므로, 계약 capacity·내부 연구 reserve·commissioning lead time을 분리해 예측해야 하는 범위임.",
@@ -1079,7 +1203,7 @@
     },
     {
       "id": "news-712",
-      "rank": 14,
+      "rank": 16,
       "title_ko": "OpenAI, 첨단 모델 학습 재개: 오프라인 웹·공격형 평가로 인터넷 이탈 경로 차단",
       "title_original": "Securing our frontier model training environment",
       "summary": "핵심: OpenAI가 DNS 설정 오류를 악용한 외부 접속 발견 뒤 중단했던 첨단 모델의 강화학습·내부 추론을 재개함. 변화: 실제 인터넷 대신 저장된 웹 콘텐츠를 쓰는 `offline world`와 모델 기반 공격 평가를 적용했으며, 학습망의 telemetry·인증·공유 하드웨어도 egress·side-channel 통제로 다뤄야 하는 범위임.",
@@ -1147,7 +1271,7 @@
     },
     {
       "id": "news-710",
-      "rank": 15,
+      "rank": 17,
       "title_ko": "SK, 국내 AI 데이터센터 15GW 구상: 1단계 5GW에 3,500억달러 추산",
       "title_original": "SK “AI 데이터센터 5GW에 464조 필요”…글로벌 빅테크와 투자 협상",
       "summary": "핵심: SK하이퍼가 2035년까지 국내 AI 데이터센터 15GW 구축을 목표로 하며 첫 5GW에 3,500억달러가 필요하다고 추산함. 변화: 전력·부지 확보뿐 아니라 글로벌 고객·외부 금융·GPU와 network commissioning을 수요 연동 phase로 관리해야 하는 대형 capacity 계획임.",
@@ -1210,7 +1334,7 @@
     },
     {
       "id": "news-709",
-      "rank": 16,
+      "rank": 18,
       "title_ko": "Anthropic, Google Cloud에서 관리형 Claude 출시: IAM·통합 청구와 최신 agent 기능 연결",
       "title_original": "Claude Models on Google Cloud (Anthropic managed) is now generally available",
       "summary": "핵심: Anthropic 관리형 Claude가 Google Cloud IAM·Application Default Credentials와 통합 청구를 사용하면서 Claude Platform의 최신 기능·beta를 제공하는 경로를 출시함. 변화: cloud identity·billing은 Google Cloud를 따르되, 서비스 운영·data processing 책임은 기존 Google 관리형 경로와 구분해 검토해야 하는 범위임.",
@@ -1273,7 +1397,7 @@
     },
     {
       "id": "news-711",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "Google Cloud, Agent Compute Engine 공개: agent별 microVM 실행 경계 제시",
       "title_original": "Google Cloud launches Agent Compute Engine with microVM isolation (reported)",
       "summary": "핵심: Google Cloud가 agent별 독립 가상 실행 환경을 제공하는 `Agent Compute Engine`을 공개했다는 보도임. 변화: code execution·browser operation·enterprise workflow automation을 agent별 `microVM` 경계에 배치하는 managed runtime 선택지이며, sandbox만으로 tool 권한·egress·data policy가 완결되지는 않음.",
@@ -1336,7 +1460,7 @@
     },
     {
       "id": "news-707",
-      "rank": 18,
+      "rank": 20,
       "title_ko": "구글, Gemini API CLI 실험적 프리뷰 공개: 터미널 기반 agent API 호출 경로 추가",
       "title_original": "Gemini API CLI",
       "summary": "핵심: Google이 터미널에서 Gemini API의 모델 탐색·프롬프트 테스트·멀티모달 작업을 실행하는 `Gemini API CLI` 실험적 프리뷰를 공개함. 변화: 셸 기반 개발자·AI agent가 일회성 SDK 스크립트·반복 `curl` 대신 command interface로 API 호출과 결과 처리를 구성하는 범위임.",
@@ -1404,7 +1528,7 @@
     },
     {
       "id": "news-706",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "AWS Bedrock Web Search, 도메인 allow/block 목록·사용자 위치 제어 추가",
       "title_original": "Web Search on AWS Bedrock now supports domain filtering and user location controls",
       "summary": "핵심: AWS Bedrock Web Search가 기존 OpenAI Responses API 요청의 `web_search` tool에 도메인 필터와 사용자 위치 파라미터를 추가함. 변화: 신뢰 도메인만 grounding에 허용하거나 제외 목록을 적용하고, 지역 의존 질의의 검색 결과를 location 값으로 조정할 수 있는 범위임.",
@@ -1476,7 +1600,7 @@
     },
     {
       "id": "news-708",
-      "rank": 20,
+      "rank": 22,
       "title_ko": "Cloudflare, Origin Range Requests 정식 제공: Pingora chunk coordinator로 대형 파일 부분 읽기 최적화",
       "title_original": "Origin Range Requests: Serving large files without range-request tuning",
       "summary": "핵심: Cloudflare가 대형 cacheable object의 HTTP byte-range 요청을 Cache Rule로 활성화하는 `Origin Range Requests`를 모든 요금제에 제공함. 변화: Pingora의 고정 크기 disk chunk와 in-flight download 조정으로 origin에서 필요한 범위를 가져오고, client에는 요청한 byte만 반환하는 범위임.",
@@ -1598,7 +1722,7 @@
       "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5MYF84W5ZDM8VYGGMCPH1ZZ.png",
       "local_image": "",
       "related_links": [],
-      "rank": 21
+      "rank": 23
     },
     {
       "id": "news-704",
@@ -1660,7 +1784,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 22
+      "rank": 24
     },
     {
       "id": "news-700",
@@ -1722,7 +1846,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-703",
@@ -1784,7 +1908,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 24
+      "rank": 26
     },
     {
       "id": "news-699",
@@ -1855,7 +1979,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
       "related_links": [],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-698",
@@ -1920,7 +2044,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
       "local_image": "",
       "related_links": [],
-      "rank": 26
+      "rank": 28
     },
     {
       "id": "news-701",
@@ -1982,7 +2106,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 27
+      "rank": 29
     },
     {
       "id": "news-692",
@@ -2054,7 +2178,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 28
+      "rank": 30
     },
     {
       "id": "news-693",
@@ -2117,7 +2241,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 29
+      "rank": 31
     },
     {
       "id": "news-694",
@@ -2180,7 +2304,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-695",
@@ -2243,7 +2367,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 31
+      "rank": 33
     },
     {
       "id": "news-705",
@@ -2305,7 +2429,7 @@
       "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/10/ethernet-corp-blog-minerva-kv-1280x680-5595752.png",
       "local_image": "",
       "related_links": [],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-690",
@@ -2373,7 +2497,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-697",
@@ -2445,7 +2569,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-691",
@@ -2514,7 +2638,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-689",
@@ -2578,7 +2702,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 36
+      "rank": 38
     },
     {
       "id": "news-696",
@@ -2641,7 +2765,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 37
+      "rank": 39
     },
     {
       "id": "news-687",
@@ -2714,7 +2838,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 38
+      "rank": 40
     },
     {
       "id": "news-686",
@@ -2785,7 +2909,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 39
+      "rank": 41
     },
     {
       "id": "news-685",
@@ -2849,11 +2973,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 40
+      "rank": 42
     },
     {
       "id": "news-684",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -2979,7 +3103,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 44
     },
     {
       "id": "news-688",
@@ -3049,7 +3173,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 43
+      "rank": 45
     },
     {
       "id": "news-680",
@@ -3121,7 +3245,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-681",
@@ -3189,7 +3313,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-682",
@@ -3253,7 +3377,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 48
     },
     {
       "region": "Global",
@@ -3317,7 +3441,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 49
     },
     {
       "region": "Global",
@@ -3381,139 +3505,7 @@
           ]
         }
       ],
-      "rank": 48
-    },
-    {
-      "id": "news-673",
-      "title_ko": "Amazon Connect Customer Global Resiliency, 연결 리전 전환 준비 상태 화면 제공",
-      "title_original": "Amazon Connect Customer Global Resiliency now provides business users visibility into resiliency readiness across linked Regions",
-      "summary": "핵심: Amazon Connect Customer Global Resiliency가 관리자 화면에 `Global Resiliency` 페이지를 추가해 연결 리전의 전환 준비 상태와 동기화되지 않았거나 조치가 필요한 resource를 표시함. phone number·user가 traffic distribution group에 연결되지 않은 경우를 화면에서 식별·연결할 수 있지만, 상태 화면이 실제 failover 성공·RTO/RPO·전화 품질을 보장하는 기능은 아님.",
-      "detail": "AWS 공식 공지는 Amazon Connect 관리자 웹사이트의 Global Resiliency 페이지가 연결된 리전 전환 준비 상태를 한 곳에서 보여준다고 설명함. 이 화면은 전체 readiness 상태와 Global Resiliency가 native replication하는 resource 목록을 제공하고, resource type별 sync·pending synchronization·action 필요 상태를 구분함. 전화번호 또는 사용자가 traffic distribution group에 연결되지 않은 사례는 affected resource를 표시하고 관리자 화면에서 association하도록 지원함. 이는 configuration completeness를 확인하는 control surface이며, 실제 traffic switch·routing·identity·integrated dependency·runbook이 목표 RTO/RPO 안에서 작동하는지는 별도 drill로 검증해야 함.",
-      "why_it_matters": "컨택센터 DR은 replicated configuration만으로 끝나지 않으며 phone number, user, routing, external integration, 운영자 절차가 함께 전환돼야 함. 동기화 상태를 중앙에서 확인하면 사전 점검을 줄일 수 있으나 readiness indicator를 failover evidence로 대체하면 복구 시점에 dependency 누락이 드러날 위험이 있음.",
-      "engineering_implication": "시사점: Global Resiliency 페이지의 pending·action-needed resource를 change inventory와 연결하고, 리전별 phone number·traffic distribution group·user·routing profile·integration endpoint·IAM·runbook을 drill checklist로 검증할 것. switch rehearsal에서 completion time, call routing, agent login, queue state, external API 및 rollback을 RTO/RPO evidence로 기록할 것.",
-      "korea_implication": "국내 Amazon Connect 사용 조직은 실제 Customer Global Resiliency 지원 리전과 한국 고객번호·통신사·개인정보·녹취 보관의 지역별 제약을 별도 확인해야 함.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "Amazon Connect",
-        "Disaster Recovery",
-        "Multi-Region",
-        "Resiliency",
-        "Contact Center"
-      ],
-      "region": "Global",
-      "importance": "medium",
-      "score": 77,
-      "published_kst": "2026-10-20 06:45",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-connect-global-resiliency-readiness-overview",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Amazon Connect Customer Global Resiliency가 관리자 웹사이트에 `Global Resiliency` 페이지를 추가함. 연결된 리전 전환 준비 상태를 단일 화면에서 검토하도록 하는 control surface 범위임.",
-          "items": [
-            "표시: 전체 readiness 상태와 native replication 대상 resource 목록 제공",
-            "구분: resource type별 in-sync·pending synchronization·action-needed 상태 표시"
-          ]
-        },
-        {
-          "heading": "화면에서 확인하는 구성",
-          "body": "AWS는 phone number 또는 user가 traffic distribution group에 연결되지 않은 경우를 예시로 제시함. 해당 resource를 페이지에서 식별하고 association 작업으로 이동할 수 있는 흐름임.",
-          "items": [
-            "예시: traffic distribution group과 연결되지 않은 phone number 또는 user 식별",
-            "경계: 공지는 모든 routing·identity·외부 integration dependency의 완전성을 자동 판정한다고 설명하지 않은 범위"
-          ]
-        },
-        {
-          "heading": "복구 검증 경계",
-          "body": "readiness view는 configuration sync와 조치 대상을 빠르게 찾는 데 유용하지만 실제 failover evidence와 같지 않음. traffic switch 뒤 call routing, queue, agent login, external CRM/API, recording과 rollback이 함께 검증돼야 함.",
-          "items": [
-            "검증: planned switch drill에서 completion time·call success·queue state·agent access·integration error 수집",
-            "피할 것: green readiness 상태를 RTO/RPO 충족 또는 고객 영향 없음의 증명으로 해석"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "컨택센터 리전 전환은 화면의 resource 상태와 운영 runbook을 연결해야 함. configuration drift가 발생할 수 있는 변경마다 readiness review와 rehearsal evidence를 남기면 실제 장애 시 누락 범위를 줄일 수 있음.",
-          "items": [
-            "팀 액션: phone number·traffic distribution group·user·routing profile·integration endpoint·IAM을 리전별 inventory로 관리",
-            "팀 액션: quarterly switch rehearsal에 rollback, 고객 공지, 녹취·개인정보 처리, external dependency failure를 포함"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-672",
-      "rank": 50,
-      "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
-      "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
-      "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
-      "detail": "AI타임스 보도와 링크된 미국 연방관보 공개 문서는 DHS가 Federal Acquisition Security Council의 권고와 관련 증거를 검토해 Federal Civilian Executive Branch의 IT 시스템에 대한 DeepSeek 공급망 위험 명령을 공개한 사실을 기록함. 대상은 DeepSeek와 계열사가 개발한 제품·서비스뿐 아니라 DeepSeek 기술을 사용해 구축한 제3자 제품·서비스까지 포함하는 범위임. 공개 자료에서는 기관별 실제 사용량, 개별 제품의 판정 절차, 구체적 제거 완료 시한을 확인하지 못했음. 엔터프라이즈 AI 운영에서는 model name allow/deny list만으로 끝내지 않고 provider, SDK, gateway, managed service, embedded feature, data egress, procurement 및 exception record를 함께 추적해야 함.",
-      "why_it_matters": "AI 공급망 위험은 직접 API 호출뿐 아니라 vendor feature·재판매 서비스·embedded model dependency에 숨어 있을 수 있음. 정부 조달 명령의 적용 대상과 별개로, 조직의 모델·도구 inventory가 provider lineage와 데이터 경로를 표현하지 못하면 규제·계약·보안 변경을 신속히 평가하기 어려움.",
-      "engineering_implication": "시사점: model registry에 모델명뿐 아니라 provider·hosting region·SDK/package version·gateway·embedded feature·data classification·egress endpoint·계약 owner를 연결할 것. 신규 제한 또는 공급망 사건은 SBOM 유사 inventory, feature flag, approval·exception 만료, 대체 경로와 rollback으로 대응할 것.",
-      "korea_implication": "미 연방 민간기관 대상 명령이며 국내 조직에 직접 적용되는 규정은 아님. 다만 미국 공공 조달 또는 해당 고객을 지원하는 국내 공급자는 DeepSeek 기반 component와 재판매·embedded 경로의 계약상 영향 여부를 별도 확인할 필요.",
-      "category": "Security",
-      "tags": [
-        "AI Supply Chain",
-        "DeepSeek",
-        "Federal Procurement",
-        "Third-Party Risk",
-        "Data Egress",
-        "Governance"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 84,
-      "published_kst": "2026-10-20 05:29",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216417",
-      "image_url": "https://cdn.aitimes.com/news/photo/202610/216417_220488_2149.png",
-      "local_image": "",
-      "related_links": [
-        {
-          "title": "미국 연방관보 공개 문서: 2026-21447",
-          "url": "https://public-inspection.federalregister.gov/2026-21447.pdf"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "DHS가 Federal Acquisition Security Council의 권고와 관련 증거를 검토한 뒤, 2018년 Federal Acquisition Supply Chain Security Act 절차에 따른 명령을 연방관보 공개 문서로 제시함. 적용 대상은 Federal Civilian Executive Branch이며 민간기업 일반을 뜻하지 않는 범위임.",
-          "items": [
-            "조치: 연방 민간기관 IT 시스템에서 지정 대상 제품·서비스 제거 및 향후 조달 금지 범위",
-            "근거: 연방조달 공급망 위험 판단과 FASC 권고를 전제로 한 DHS 명령"
-          ]
-        },
-        {
-          "heading": "대상 범위",
-          "body": "보도와 공개 문서는 DeepSeek와 계열사가 개발한 제품·서비스뿐 아니라 DeepSeek 기술을 사용해 구축된 제3자 제품·서비스까지 대상으로 설명함. 직접 챗봇 사용만이 아니라 다른 공급자의 제품에 포함된 기술 dependency도 조사 대상이 될 수 있는 범위임.",
-          "items": [
-            "포함: DeepSeek 및 계열사 제품·서비스와 기술 기반 제3자 제품·서비스",
-            "점검: model provider, SDK, API gateway, managed service, embedded feature의 lineage 확인 필요"
-          ]
-        },
-        {
-          "heading": "확인된 경계",
-          "body": "공개 자료에는 기관별 실제 사용 규모와 제품별 판정 방식, 구체적인 제거 완료 시한이 제시되지 않은 범위임. 보안 위험 사유는 민감 데이터가 중국으로 이전될 가능성으로 제시됐지만, 개별 조직의 데이터 흐름·배포 형태·계약 조건은 별도 검토 대상임.",
-          "items": [
-            "미확정: 기관별 adoption 규모, deadline, 개별 third-party product의 판정 절차",
-            "피할 것: 이 명령을 모든 국가·민간 조직에 대한 일반적 사용 금지 또는 개별 서비스의 침해 사실로 확대"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "AI component inventory는 모델명과 사용자 계정만 기록해서는 공급망 변화를 추적하기 어려움. provider·hosting region·SDK version·feature dependency·data class·egress endpoint·procurement owner·exception expiry를 같은 record에 연결하면 조달 제한과 보안 검토를 change workflow로 처리할 수 있음.",
-          "items": [
-            "팀 액션: AI model·provider·SDK·gateway·embedded dependency·data egress를 inventory와 architecture review에 등록",
-            "팀 액션: 고위험 provider 변경에 feature flag·approval·exception 만료·대체 모델·rollback 경로 적용",
-            "팀 액션: 공공 조달 고객 지원 조직은 계약·재판매·subprocessor 문서와 실제 component lineage 대조"
-          ]
-        }
-      ]
+      "rank": 50
     }
   ]
 }
