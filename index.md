@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aitimes-naver-brookfield-ai-factory-2026-10-27]] — 네이버·브룩필드 90억달러 컴퓨팅 인프라 계약 보도와 1GW AI 팩토리의 전력·GPU·commissioning·capacity 검증 경계.
 - [[raw/articles/kubernetes-workload-conformance-wg-2026-10-27]] — Kubernetes workload runtime behavior를 objective test로 정리하려는 Working Group의 scope·운영 증거 경계.
 - [[raw/articles/aws-ecr-replication-backfill-2026-10-27]] — ECR existing image backfill의 digest·policy·pull·DR drill 검증 경계.
 - [[raw/articles/arxiv-agent-harness-tokens-mostly-2026-10-27]] — coding-agent harness 비교의 SWE-bench 반복성·token 비용·output cap·FinOps 검증 경계.
