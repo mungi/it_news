@@ -3798,3 +3798,8 @@
 - Q Labs GitHub repository·README·commit API와 AI타임스 canonical 보도를 대조해 Noise의 no-autograd/no-backprop rule, 30M-token·loss 3.5·single 8×H100 조건, 과거 10M-token·loss 4.2에서의 1.6초 기록 범위를 수록함. 1.6초를 frontier-scale training·energy·cost 우위로 확대하지 않음.
 - `news-721`·`news-722`를 verified KST 발행 시각 newest-first으로 삽입하고 최저순위 `news-668`·`news-671`을 제외해 W45 50건·rank 1–50을 유지함. raw capture 2건·`index.md`·canonical `weekly/2026-W45.md`를 동기화함.
 - KST 첫 실행 정책에 따라 전일 AWS Continuum·NVIDIA Minerva Deep Dive를 서로 다른 AWS·Q Labs primary source 기반 주제로 전면 교체함. title·summary·details·source·image metadata·8개 전문가 section을 재구성하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-27 05:29`로 설정함.
+
+## [2026-10-27] update | Cloudflare Workers AI GLM-5.3 교차 요청 KV cache 노출 추가
+- 확인 시각: 2026-10-27 09:37 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스(HTTP 403), AWS What’s New·Cloudflare·GitHub·CNCF·Kubernetes·NVIDIA·Google AI·Hugging Face·CISA feed를 current research pass에 포함함.
+- Cloudflare canonical incident report의 `article:published_time` `2026-10-26T22:01:23.889Z`, OG image와 본문을 직접 대조해 KST `2026-10-27 07:01`로 기록함. `@cf/zai-org/glm-5.3`의 8월 27일~9월 9일 cross-request KV cache 노출, 681,280 token 초과 prompt 관련 155개 응답, 1,048,576-token context window·681,280-token prefill pool 불일치, SGLang disaggregated rejection handoff 결함, 2.04M pool 조정·engine patch·`v0.5.22` 이상 권고 범위를 수록함.
+- `news-723`을 newest-first rank 1에 삽입하고 50개 cap의 최저순위 `news-675`을 제외해 W45 50건·rank 1–50을 유지함. raw capture SHA-256 `398743fc21a1d31c0167205e7a55355947f9344a11c3b7d9d7730ae5ead2fdbc`, `index.md`, canonical `weekly/2026-W45.md`를 동기화함. Cloudflare의 다른 model 무영향 확인을 self-hosted·다른 topology의 안전 보장으로 확대하지 않았으며, 오늘 KST 첫 실행에서 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지함.

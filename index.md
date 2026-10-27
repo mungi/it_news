@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-27 | Total pages: 469
+> Last updated: 2026-10-27 | Total pages: 470
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-glm-53-workers-ai-kv-cache-exposure-2026-10-27]] — Cloudflare Workers AI GLM-5.3 교차 요청 KV cache 노출 155건과 SGLang 분리 prefill/decode 수정·검증 경계.
 - [[raw/articles/aws-bedrock-openai-gpt-6-1-terra-ga-2026-10-27]] — Amazon Bedrock GPT-6.1 Terra GA의 100만 token context·model routing·trace·FinOps 검증 경계.
 - [[raw/articles/qlabs-noise-no-backprop-pretraining-2026-10-26]] — Q Labs Noise no-backprop pretraining speedrun의 30M-token·8×H100·재현성·GPU 운영 검증 경계.
 - [[raw/articles/aitimes-spacex-gpu-debt-neocloud-2026-10-26]] — 스페이스X GPU 조달용 400억달러 부채 보도와 차입·배송·전력·commissioning·allocatable capacity 분리 검증 경계.
