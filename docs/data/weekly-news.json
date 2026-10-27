@@ -2,12 +2,12 @@
   "week": "2026-W45",
   "coverage_start_kst": "2026-10-26 17:00",
   "coverage_end_kst": "2026-11-02 13:00",
-  "last_updated_kst": "2026-10-27 09:37",
+  "last_updated_kst": "2026-10-27 17:41",
   "audience": "developers and engineers",
   "executive_summary": [
     "Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 681,280 token 초과 prompt 관련 응답 155건에 다른 고객 데이터가 포함됐고, `v0.5.22` 이상 SGLang·실제 KV pool/context length 검증·rejection-before-handoff·transfer integrity가 분리 prefill/decode 운영의 release gate가 됨.",
     "AWS가 Amazon Bedrock에 `GPT-6.1 Terra`를 GA로 추가함. 최대 100만 input token context·text/image input·Bedrock API·ChatGPT Work/Codex 사용 경로는 확인됐지만, quality·p95·token·data boundary·fallback은 workload별 canary evidence가 필요함.",
-    "Q Labs `Noise`는 backward pass 없이 pretraining algorithm을 시험하는 공개 speedrun을 30M-token·loss 3.5·single 8×H100 조건으로 운영 중임. 과거 10M-token 1.6초 기록을 대규모 training 우위로 확대하지 말고 algorithm·kernel·distributed execution을 분리 비교해야 함."
+    "AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`768`·`1024`를 지원함. `Encapsulate`/`Decapsulate`, 32-byte shared secret, Level 3 HSM 보호는 확인됐지만 PQC 전환은 KMS key spec 변경이 아니라 protocol·peer library·key rotation·audit 경로를 검증하는 migration 작업임."
   ],
   "deep_dives": [
     {
@@ -470,6 +470,80 @@
       ]
     },
     {
+      "id": "news-724",
+      "rank": 5,
+      "title_ko": "AWS KMS, NIST ML-KEM 3종 지원: 양자내성 키 교환의 키 수명주기·상호운용성 검증 필요",
+      "title_original": "AWS Key Management Service now supports ML-KEM for post-quantum key encapsulation",
+      "summary": "핵심: AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`ML-KEM-768`·`ML-KEM-1024`를 지원함. `Encapsulate`/`Decapsulate` API와 32-byte shared secret, FIPS 140-3 Level 3 HSM private key 보호 범위는 확인됐지만 기존 DH/ECDH·RSA key transport 교체는 protocol·library·partner·key rotation 호환성을 분리 검증할 대상임.",
+      "detail": "AWS는 ML-KEM을 classical key-establishment exchange를 저장한 뒤 미래 양자 컴퓨터로 복호화를 노리는 harvest-now-decrypt-later 위험 대응 경로로 설명함. KMS public key를 `GetPublicKey`로 내보내 AWS-LC·OpenSSL·Bouncy Castle 같은 외부 library에서 encapsulate할 수 있으며, KMS 사용 리전 중 UAE·Bahrain·China를 제외한 리전에 제공됨.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "AWS KMS가 10월 26일 UTC에 Module-Lattice-Based Key-Encapsulation Mechanism `ML-KEM` 지원을 공개함. ML-KEM은 NIST FIPS 203 표준의 두 당사자 shared-secret 설정 방식이며, AWS는 DH/ECDH key agreement와 RSA key transport 대체를 위한 NIST 전략 암호 로드맵의 한 축으로 설명함.",
+          "items": [
+            "제공: `ML-KEM-512`·`ML-KEM-768`·`ML-KEM-1024` 세 key spec 지원",
+            "위협 모델: 현재 key-establishment 교환을 수집해 미래 양자 컴퓨팅으로 shared secret을 복구하는 harvest-now-decrypt-later 위험 대응 범위"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "`Encapsulate` API는 public key로 random 32-byte shared secret과 ciphertext를 만들고, 대응 private key의 `Decapsulate` API는 ciphertext에서 shared secret을 복원함. ML-KEM key pair의 private key는 FIPS 140-3 Level 3 validated HSM에 보관되며, `GetPublicKey`로 public key를 export해 partner·client·external system에 배포할 수 있음.",
+          "items": [
+            "API: KMS 내부 private key 경계를 유지한 encapsulate·decapsulate 호출 경로",
+            "상호운용: AWS-LC·OpenSSL·Bouncy Castle 등 crypto library에서 local encapsulate 가능한 public-key 배포 범위",
+            "리전: KMS 제공 리전 중 Middle East UAE·Bahrain 및 China Regions 제외"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "PQC 전환은 KMS key spec 하나를 바꾸는 작업이 아니라 TLS·VPN·service mesh·partner API·device enrollment가 어떤 key-establishment protocol과 crypto library를 쓰는지 재고화하는 작업임. KMS API 지원은 application protocol의 cipher suite 협상, certificate chain, peer library의 ML-KEM 구현, data retention 기간을 자동으로 전환하지 않음.",
+          "items": [
+            "영향: 장기 비밀성 데이터와 외부 trust boundary를 보유 기간·교환 방식·상대 peer별로 분류할 필요",
+            "경계: FIPS 203 key encapsulation 지원을 전체 workload의 post-quantum readiness·protocol interoperability 보장으로 해석하지 않을 것"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "보안·플랫폼 팀은 먼저 long-lived confidential data가 지나가는 key exchange를 inventory로 만들고, representative client와 partner에서 ciphertext format·library version·failure handling·key rotation을 canary로 확인해야 함. KMS key policy, CloudTrail event, region residency, shared-secret가 전달되는 application memory·log 경로를 함께 점검해야 HSM boundary 밖의 노출을 줄일 수 있음.",
+          "items": [
+            "팀 액션: `GetPublicKey` 배포 대상·key policy·caller IAM·Encapsulate/Decapsulate CloudTrail event를 asset owner와 연결",
+            "팀 액션: ML-KEM spec별 ciphertext size·library compatibility·retry·rotation·rollback을 partner integration과 staging에서 검증",
+            "팀 액션: UAE·Bahrain·China 제외 리전 범위와 cross-Region data path를 deployment matrix에 반영"
+          ]
+        }
+      ],
+      "why_it_matters": "키 교환은 TLS, service mesh, client enrollment, partner API의 신뢰 경계에 걸쳐 있으며, 장기 보관 데이터는 현재 수집된 exchange가 미래에 복호화될 위험을 별도로 평가해야 함.",
+      "engineering_implication": "시사점: 장기 비밀성 workload부터 key-establishment inventory를 만들고 ML-KEM key spec·library·peer·ciphertext handling·KMS policy·CloudTrail·rotation rollback을 같은 canary evidence로 검증할 것.",
+      "korea_implication": "국내 리전과 해외 partner를 함께 쓰는 조직은 KMS 제공 리전 예외, cross-Region key·data path, 국내외 crypto library와 거래 상대의 ML-KEM 호환성을 계약·staging 증적으로 확인할 필요.",
+      "category": "Security",
+      "tags": [
+        "Security",
+        "AWS",
+        "KMS",
+        "Post-Quantum Cryptography",
+        "ML-KEM",
+        "Key Management"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-26 17:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/kms-ml-kem-post-quantum/",
+      "image_url": "assets/images/fallback-security.svg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "AWS KMS key spec reference",
+          "url": "https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose.html"
+        },
+        {
+          "title": "NIST FIPS 203",
+          "url": "https://csrc.nist.gov/pubs/fips/203/final"
+        }
+      ]
+    },
+    {
       "id": "news-718",
       "title_ko": "NVIDIA, GPU당 연 2,000달러 agent 소프트웨어 구상 언급: 라이선스 범위·총소유비용 검증 필요",
       "title_original": "NVIDIA discusses approximately $2,000 per GPU annual software licensing for AI agents (reported)",
@@ -531,11 +605,11 @@
           ]
         }
       ],
-      "rank": 5
+      "rank": 6
     },
     {
       "id": "news-719",
-      "rank": 6,
+      "rank": 7,
       "title_ko": "스페이스X, GPU 조달용 400억달러 부채 마감 보도: 차입·인도·가동 capacity 분리 필요",
       "title_original": "SpaceX closes $40 billion debt raise for GPUs; Musk warns neoclouds (reported)",
       "summary": "핵심: 스페이스X가 GPU 구매 대금 중심으로 400억달러 규모 callable debt 조달을 마쳤고, 확보 GPU는 2027년 1·2분기 도착 예정이라는 보도임. 변화: 대규모 AI capacity 평가는 GPU 주문액만이 아니라 차입·기존 현금흐름·배송·전력·fabric·commissioning을 분리해야 하며, 네오클라우드 도산 전망은 머스크의 시장 의견 범위임.",
@@ -658,7 +732,7 @@
           ]
         }
       ],
-      "rank": 7
+      "rank": 8
     },
     {
       "id": "news-715",
@@ -727,7 +801,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-716",
@@ -790,7 +864,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-717",
@@ -859,11 +933,11 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-713",
-      "rank": 11,
+      "rank": 12,
       "title_ko": "피차이, 첨단 AI 연구에 컴퓨팅 우선 배정: 클라우드 단기 매출과 capacity 계획의 분리",
       "title_original": "Pichai says Google prioritizes frontier AI compute over short-term cloud revenue (reported)",
       "summary": "핵심: 순다르 피차이 CEO가 첨단 AI 연구용 컴퓨팅을 우선 배정하기 위해 Google Cloud의 일부 단기 매출 기회를 포기하고 있다고 밝힘. 변화: 연구·클라우드·자체 칩·데이터센터의 capacity 계획은 같은 GPU pool을 공유하므로, 계약 capacity·내부 연구 reserve·commissioning lead time을 분리해 예측해야 하는 범위임.",
@@ -935,7 +1009,7 @@
     },
     {
       "id": "news-712",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "OpenAI, 첨단 모델 학습 재개: 오프라인 웹·공격형 평가로 인터넷 이탈 경로 차단",
       "title_original": "Securing our frontier model training environment",
       "summary": "핵심: OpenAI가 DNS 설정 오류를 악용한 외부 접속 발견 뒤 중단했던 첨단 모델의 강화학습·내부 추론을 재개함. 변화: 실제 인터넷 대신 저장된 웹 콘텐츠를 쓰는 `offline world`와 모델 기반 공격 평가를 적용했으며, 학습망의 telemetry·인증·공유 하드웨어도 egress·side-channel 통제로 다뤄야 하는 범위임.",
@@ -1003,7 +1077,7 @@
     },
     {
       "id": "news-710",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "SK, 국내 AI 데이터센터 15GW 구상: 1단계 5GW에 3,500억달러 추산",
       "title_original": "SK “AI 데이터센터 5GW에 464조 필요”…글로벌 빅테크와 투자 협상",
       "summary": "핵심: SK하이퍼가 2035년까지 국내 AI 데이터센터 15GW 구축을 목표로 하며 첫 5GW에 3,500억달러가 필요하다고 추산함. 변화: 전력·부지 확보뿐 아니라 글로벌 고객·외부 금융·GPU와 network commissioning을 수요 연동 phase로 관리해야 하는 대형 capacity 계획임.",
@@ -1066,7 +1140,7 @@
     },
     {
       "id": "news-709",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "Anthropic, Google Cloud에서 관리형 Claude 출시: IAM·통합 청구와 최신 agent 기능 연결",
       "title_original": "Claude Models on Google Cloud (Anthropic managed) is now generally available",
       "summary": "핵심: Anthropic 관리형 Claude가 Google Cloud IAM·Application Default Credentials와 통합 청구를 사용하면서 Claude Platform의 최신 기능·beta를 제공하는 경로를 출시함. 변화: cloud identity·billing은 Google Cloud를 따르되, 서비스 운영·data processing 책임은 기존 Google 관리형 경로와 구분해 검토해야 하는 범위임.",
@@ -1129,7 +1203,7 @@
     },
     {
       "id": "news-711",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Google Cloud, Agent Compute Engine 공개: agent별 microVM 실행 경계 제시",
       "title_original": "Google Cloud launches Agent Compute Engine with microVM isolation (reported)",
       "summary": "핵심: Google Cloud가 agent별 독립 가상 실행 환경을 제공하는 `Agent Compute Engine`을 공개했다는 보도임. 변화: code execution·browser operation·enterprise workflow automation을 agent별 `microVM` 경계에 배치하는 managed runtime 선택지이며, sandbox만으로 tool 권한·egress·data policy가 완결되지는 않음.",
@@ -1192,7 +1266,7 @@
     },
     {
       "id": "news-707",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "구글, Gemini API CLI 실험적 프리뷰 공개: 터미널 기반 agent API 호출 경로 추가",
       "title_original": "Gemini API CLI",
       "summary": "핵심: Google이 터미널에서 Gemini API의 모델 탐색·프롬프트 테스트·멀티모달 작업을 실행하는 `Gemini API CLI` 실험적 프리뷰를 공개함. 변화: 셸 기반 개발자·AI agent가 일회성 SDK 스크립트·반복 `curl` 대신 command interface로 API 호출과 결과 처리를 구성하는 범위임.",
@@ -1260,7 +1334,7 @@
     },
     {
       "id": "news-706",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "AWS Bedrock Web Search, 도메인 allow/block 목록·사용자 위치 제어 추가",
       "title_original": "Web Search on AWS Bedrock now supports domain filtering and user location controls",
       "summary": "핵심: AWS Bedrock Web Search가 기존 OpenAI Responses API 요청의 `web_search` tool에 도메인 필터와 사용자 위치 파라미터를 추가함. 변화: 신뢰 도메인만 grounding에 허용하거나 제외 목록을 적용하고, 지역 의존 질의의 검색 결과를 location 값으로 조정할 수 있는 범위임.",
@@ -1332,7 +1406,7 @@
     },
     {
       "id": "news-708",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "Cloudflare, Origin Range Requests 정식 제공: Pingora chunk coordinator로 대형 파일 부분 읽기 최적화",
       "title_original": "Origin Range Requests: Serving large files without range-request tuning",
       "summary": "핵심: Cloudflare가 대형 cacheable object의 HTTP byte-range 요청을 Cache Rule로 활성화하는 `Origin Range Requests`를 모든 요금제에 제공함. 변화: Pingora의 고정 크기 disk chunk와 in-flight download 조정으로 origin에서 필요한 범위를 가져오고, client에는 요청한 byte만 반환하는 범위임.",
@@ -1454,7 +1528,7 @@
       "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5MYF84W5ZDM8VYGGMCPH1ZZ.png",
       "local_image": "",
       "related_links": [],
-      "rank": 19
+      "rank": 20
     },
     {
       "id": "news-704",
@@ -1516,7 +1590,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-700",
@@ -1578,7 +1652,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-703",
@@ -1640,7 +1714,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-699",
@@ -1711,7 +1785,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
       "related_links": [],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-698",
@@ -1776,7 +1850,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
       "local_image": "",
       "related_links": [],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-701",
@@ -1838,7 +1912,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-692",
@@ -1910,7 +1984,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-693",
@@ -1973,7 +2047,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-694",
@@ -2036,7 +2110,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-695",
@@ -2099,7 +2173,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-705",
@@ -2161,7 +2235,7 @@
       "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/10/ethernet-corp-blog-minerva-kv-1280x680-5595752.png",
       "local_image": "",
       "related_links": [],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-690",
@@ -2229,7 +2303,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-697",
@@ -2301,7 +2375,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-691",
@@ -2370,7 +2444,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-689",
@@ -2434,7 +2508,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-696",
@@ -2497,7 +2571,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-687",
@@ -2570,7 +2644,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-686",
@@ -2641,7 +2715,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-685",
@@ -2705,11 +2779,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-684",
-      "rank": 39,
+      "rank": 40,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -2835,7 +2909,7 @@
           ]
         }
       ],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-688",
@@ -2905,7 +2979,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-680",
@@ -2977,7 +3051,7 @@
           ]
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-681",
@@ -3045,7 +3119,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-682",
@@ -3109,7 +3183,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "region": "Global",
@@ -3173,7 +3247,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "region": "Global",
@@ -3237,7 +3311,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-673",
@@ -3300,11 +3374,11 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-672",
-      "rank": 48,
+      "rank": 49,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -3430,84 +3504,6 @@
             "팀 액션: cache hit/read/write token·model/effort·acceptance·p95 latency·human rework를 request trace에 연결",
             "팀 액션: prompt/model/routing 변경은 shadow·holdout·quality gate·fallback·rollback을 가진 release workflow로 운영",
             "팀 액션: repository-specific context와 secret·PII가 shared cache prefix에 섞이지 않도록 prompt assembly와 provider retention 검토"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-670",
-      "title_ko": "Amazon CloudWatch Omni, 8개 리전으로 제공 확대",
-      "title_original": "Amazon CloudWatch Omni is now available in additional AWS Regions",
-      "summary": "핵심: AWS가 AI 기반 observability 경험 `CloudWatch Omni`를 **8개 추가 리전**으로 확대함. 중앙 account의 space에서 AWS 계정·리전뿐 아니라 Azure·GCP telemetry를 보고, 서비스 discovery·dependency mapping·golden metric·AWS DevOps Agent 기반 root-cause 탐색을 제공하는 범위임. LangGraph·CrewAI·OpenAI Agents SDK·Vercel AI SDK·Strands용 evaluation-driven agent observability도 포함하지만, cross-cloud telemetry 완전성·자동 원인 규명·SLO 개선을 보장하는 공지는 아님.",
-      "detail": "AWS 공식 What’s New RSS는 CloudWatch Omni가 Canada (Central), Mumbai, Singapore, Sydney, Tokyo, Frankfurt, London, São Paulo로 확대됐다고 밝힘. Omni는 OpenTelemetry 상호운용성과 CloudWatch의 scale·reliability를 결합한 observability 경험으로, SSO 기반 standalone web experience 또는 local IDE extension에서 사용할 수 있음. 중앙 account의 Omni space는 AWS account·Region·Azure·GCP의 telemetry를 볼 수 있게 하며, service discovery·dependency mapping·golden metric surface와 chat·point-and-click·Agent Toolkit for AWS를 통한 telemetry 탐색을 제공함. Agent observability workflow는 LangGraph, CrewAI, OpenAI Agents SDK, Vercel AI SDK, Strands를 대상으로 명시됐으나, source별 ingestion 범위·비용·cross-cloud identity·data residency·agent evaluation 결과의 정확도는 조직별로 검증해야 함.",
-      "why_it_matters": "AI agent와 분산 workload의 trace·metric·log를 한 화면에 모으려는 조직에서는 telemetry schema와 account boundary가 운영 품질을 좌우함. 리전 확대는 Tokyo를 포함하지만, collector coverage·cross-account permission·외부 cloud data path를 검증하지 않으면 빈 observability view 또는 비용 증가로 이어질 수 있음.",
-      "engineering_implication": "시사점: 대표 agent workload에서 OpenTelemetry resource attribute·trace context·account/tenant identity·retention을 먼저 맞추고, CloudWatch Omni view와 원본 telemetry·incident record가 같은 service dependency를 가리키는지 canary로 비교할 것. Azure·GCP 연동은 SSO, IAM, egress, data residency, pricing을 별도 change record로 승인할 것.",
-      "korea_implication": "한국 리전은 이번 공지의 추가 제공 목록에 포함되지 않음. 국내 조직은 Tokyo 제공을 서울 리전 제공으로 해석하지 말고 실제 workload 리전·cross-Region telemetry 전송·개인정보 및 로그 보관 경계를 확인할 필요.",
-      "category": "Cloud",
-      "tags": [
-        "AWS",
-        "CloudWatch",
-        "Observability",
-        "OpenTelemetry",
-        "AI Agent",
-        "Cross-Cloud",
-        "SRE"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-10-20 04:10",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-cloudwatch-omni-8-regions/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
-      "related_links": [
-        {
-          "title": "Amazon CloudWatch Omni 제품 페이지",
-          "url": "https://aws.amazon.com/cloudwatch/omni/"
-        },
-        {
-          "title": "Amazon CloudWatch Omni 문서",
-          "url": "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-omni.html"
-        },
-        {
-          "title": "CloudWatch Omni 요금",
-          "url": "https://aws.amazon.com/cloudwatch/omni/pricing/"
-        }
-      ],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AWS가 CloudWatch Omni를 Canada (Central), Asia Pacific의 Mumbai·Singapore·Sydney·Tokyo, Europe의 Frankfurt·London, South America의 São Paulo로 확대함. 기존 제공 리전은 US East (N. Virginia), US West (Oregon), Europe (Ireland)임.",
-          "items": [
-            "제공 방식: SSO 기반 standalone web experience 또는 local IDE extension 범위",
-            "대상: application과 agent를 한 곳에서 observe·troubleshoot하려는 CloudWatch 사용자 범위"
-          ]
-        },
-        {
-          "heading": "관측 데이터와 탐색 기능",
-          "body": "Omni는 OpenTelemetry 상호운용성과 CloudWatch의 scale·reliability를 결합한다고 AWS가 설명함. 중앙 account의 space에서 AWS account·Region·Azure·GCP telemetry를 보고, 서비스 발견·dependency mapping·golden metric surface·AWS DevOps Agent 기반 root-cause 탐색을 제공하는 범위임.",
-          "items": [
-            "탐색: chat·point-and-click·Agent Toolkit for AWS를 통한 telemetry signal 및 dynamic view 구성",
-            "경계: 공지는 source별 ingestion completeness·자동 root cause 정확도·SLO 개선 수치를 제시하지 않은 범위"
-          ]
-        },
-        {
-          "heading": "Agent observability 범위",
-          "body": "전용 agent observability 경험은 LangGraph, CrewAI, OpenAI Agents SDK, Vercel AI SDK, Strands의 evaluation-driven workflow를 포함한다고 명시함. framework 지원 표기는 production trace completeness나 evaluator 품질을 보장하지 않으므로 framework·version·instrumentation 단위로 확인이 필요함.",
-          "items": [
-            "확인: agent trace·tool call·evaluation result의 resource attribute와 tenant identity 연결 필요",
-            "피할 것: IDE extension 또는 chat 탐색을 incident evidence·human approval의 대체 수단으로 취급"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "cross-account·cross-cloud observability는 collector, identity, schema, retention, egress cost가 함께 맞아야 운영 가능한 view가 됨. 대표 workload에서 원본 telemetry와 Omni dependency view를 대조하고, missing span·attribute drift·query latency·cross-account access failure를 release gate로 측정해야 함.",
-          "items": [
-            "팀 액션: OpenTelemetry semantic convention·trace propagation·account/tenant tag·retention을 service별 inventory화",
-            "팀 액션: SSO·IAM·Azure/GCP connector·data residency·pricing을 분리 검토하고 Tokyo와 Seoul 리전 제공 범위를 구분",
-            "팀 액션: incident 한 건을 이용해 discovery·dependency·golden metric·agent evaluation이 원본 evidence와 일치하는지 drill 실행"
           ]
         }
       ],
