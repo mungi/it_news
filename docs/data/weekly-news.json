@@ -2,12 +2,12 @@
   "week": "2026-W45",
   "coverage_start_kst": "2026-10-26 17:00",
   "coverage_end_kst": "2026-11-02 13:00",
-  "last_updated_kst": "2026-10-27 17:41",
+  "last_updated_kst": "2026-10-27 21:47",
   "audience": "developers and engineers",
   "executive_summary": [
+    "코딩 agent harness 비교 연구에서 동일 모델·과제·가격표의 과제당 비용이 최대 3배 차이였음. 447개 SWE-bench Verified 과제에서 무거운 Claude Code와 경량 mini-SWE-agent 성능은 5 points 이내였고, harness 변경은 반복 실행·token·step·retry 증적으로 평가할 대상임.",
     "Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 681,280 token 초과 prompt 관련 응답 155건에 다른 고객 데이터가 포함됐고, `v0.5.22` 이상 SGLang·실제 KV pool/context length 검증·rejection-before-handoff·transfer integrity가 분리 prefill/decode 운영의 release gate가 됨.",
-    "AWS가 Amazon Bedrock에 `GPT-6.1 Terra`를 GA로 추가함. 최대 100만 input token context·text/image input·Bedrock API·ChatGPT Work/Codex 사용 경로는 확인됐지만, quality·p95·token·data boundary·fallback은 workload별 canary evidence가 필요함.",
-    "AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`768`·`1024`를 지원함. `Encapsulate`/`Decapsulate`, 32-byte shared secret, Level 3 HSM 보호는 확인됐지만 PQC 전환은 KMS key spec 변경이 아니라 protocol·peer library·key rotation·audit 경로를 검증하는 migration 작업임."
+    "AWS가 Amazon Bedrock에 `GPT-6.1 Terra`를 GA로 추가함. 최대 100만 input token context·text/image input·Bedrock API·ChatGPT Work/Codex 사용 경로는 확인됐지만, quality·p95·token·data boundary·fallback은 workload별 canary evidence가 필요함."
   ],
   "deep_dives": [
     {
@@ -193,8 +193,78 @@
   ],
   "items": [
     {
-      "id": "news-723",
+      "id": "news-725",
       "rank": 1,
+      "title_ko": "코딩 agent harness 비교 연구: 성공률 차이보다 token 비용 최대 3배·반복 검증이 관건",
+      "title_original": "What Does a Harness Buy? Tokens, Mostly",
+      "summary": "핵심: arXiv 연구가 `Claude Code`·`mini-SWE-agent`·`OpenCode`를 SWE-bench Verified에서 비교함. 동일 모델·과제·가격표에서 harness별 과제당 비용은 최대 **3배** 차이였지만, 447개 과제에서 가장 무거운 Claude Code와 가장 가벼운 mini-SWE-agent의 성능 차이는 5 points 이내였음.",
+      "detail": "연구는 447개 일반 과제와 45개 고난도 과제에서 다섯 모델과 세 harness를 반복 실행함. 고난도 subset에서는 harness 교체와 동일 harness 재실행 모두 13%의 성공·실패 전환을 보여 단일 run 비교의 불확실성을 드러냈고, 비용 차이는 매 step에 반복되는 system prompt·tool schema preamble과 step 수에서 주로 발생했음.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "arXiv:2610.04433은 language model을 repository에서 작동하게 만드는 system prompt·tool set·context management의 묶음을 harness로 정의하고, `Claude Code`·`mini-SWE-agent`·`OpenCode`를 비교함. 논문은 vendor release와 leaderboard가 harness와 model 효과를 함께 섞는 문제를 반복 실행으로 분리하려 시도함.",
+          "items": [
+            "대상: SWE-bench Verified 447개 과제와 45개 고난도 subset, 세 harness·다섯 모델 비교",
+            "방법: 같은 configuration을 재실행해 harness 교체 효과와 run-to-run stochasticity를 함께 측정"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "447개 과제의 두 모델 실험에서 가장 무거운 `Claude Code`와 가장 가벼운 `mini-SWE-agent`는 5 points 이내였음. 45개 고난도 subset에서는 harness를 바꿀 때와 그대로 재실행할 때 모두 13% 과제가 성공·실패 사이를 바꿔, 작은 benchmark의 단발 score를 우위 증거로 쓰기 어렵다는 결과임.",
+          "items": [
+            "성능: `OpenCode`는 큰 pool에서 최대 9 points 낮았고, 한 모델 gap의 약 절반은 output cap으로 patch 전 중단된 실행과 연결",
+            "검정력: 45개 과제는 관측된 13-point 차이도 절반 정도만 포착하며, 447개 과제도 5 points보다 작은 차이를 구분하기 어려운 범위"
+          ]
+        },
+        {
+          "heading": "비용·운영 영향",
+          "body": "동일 모델·과제·가격표에서 과제당 비용은 harness별 최대 3배 차이였음. 비용 순서는 첫 API call에서 반복 전송되는 system prompt·tool schema preamble이 만들고 step 수가 이를 확대했으며, cached-input 가격은 청구액을 낮춰도 harness 비용 순서를 뒤집지 않았다는 논문 범위임.",
+          "items": [
+            "비용: 고정 preamble과 tool definition이 매 step input token에 누적되는 구조",
+            "측정: task success와 함께 input·output·cached token, step 수, tool output, retry, wall-clock을 run ID로 연결할 대상"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "agent platform 변경은 새로운 tool·prompt를 많이 넣는 작업보다 representative repository·issue·권한 조건에서 quality와 unit cost를 반복 측정하는 release 실험으로 다뤄야 함. 논문은 offline SWE-bench 결과이므로 production tool latency, secret scope, human review, online drift의 효과를 직접 보장하지 않음.",
+          "items": [
+            "팀 액션: harness 변경마다 고정 task set·seed·model version·token/step budget으로 baseline과 최소 세 번 이상 비교",
+            "팀 액션: success rate뿐 아니라 task당 token·tool call·retry·p95·human correction을 deployment gate와 FinOps dashboard에 기록",
+            "팀 액션: output cap·tool timeout·context truncation에서 partial patch와 safe fallback이 어떻게 처리되는지 failure drill"
+          ]
+        }
+      ],
+      "why_it_matters": "coding agent의 비용과 신뢰도는 모델 선택만이 아니라 prompt·tool schema·context loop·output cap으로 구성된 harness가 함께 결정함. 한 번의 benchmark run은 stochastic variation을 harness 개선으로 오판할 수 있음.",
+      "engineering_implication": "시사점: agent harness는 기능 수가 아니라 대표 task의 반복 성공률·task당 token·tool call·retry·p95·human correction을 같은 trace로 비교해 채택하고, output cap·context truncation·tool timeout을 release gate에서 fault test할 것.",
+      "korea_implication": "국내 조직도 해외 coding-agent 제품의 pass rate를 그대로 조달 지표로 쓰지 말고, 한국어 issue·사내 repository·망 분리·승인 workflow에서 token 비용과 재실행 분산을 함께 측정할 필요.",
+      "category": "DevTools",
+      "tags": [
+        "AI",
+        "Coding Agent",
+        "DevTools",
+        "Agent Harness",
+        "SWE-bench",
+        "FinOps",
+        "Research"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-27 18:20",
+      "source_name": "arXiv / AI타임스",
+      "source_url": "https://arxiv.org/abs/2610.04433",
+      "image_url": "https://cdn.aitimes.com/news/photo/202610/216712_220853_546.jpg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "AI타임스 보도 및 한국어 기사 발행 시각",
+          "url": "https://www.aitimes.com/news/articleView.html?idxno=216712"
+        }
+      ]
+    },
+    {
+      "id": "news-723",
+      "rank": 2,
       "title_ko": "Cloudflare Workers AI GLM-5.3, 교차 요청 KV cache 노출 155건 공개: SGLang 분리 prefill/decode 검증 필요",
       "title_original": "Cross-request KV cache exposure in the GLM-5.3 Workers AI model, and our remediation with SGLang",
       "summary": "핵심: Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 8월 27일~9월 9일 681,280 token 초과 prompt 관련 응답 **155건**에 다른 고객 요청 데이터가 포함됐으며, context window·실제 KV pool 불일치와 SGLang rejection handoff 결함을 함께 수정함.",
@@ -267,7 +337,7 @@
     },
     {
       "id": "news-721",
-      "rank": 2,
+      "rank": 3,
       "title_ko": "AWS, Amazon Bedrock에 OpenAI GPT-6.1 Terra 정식 제공",
       "title_original": "OpenAI GPT-6.1 Terra is now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 `GPT-6.1 Terra`의 Amazon Bedrock GA를 공개함. 최대 100만 input token context와 text·image input, Bedrock API·ChatGPT Work·Codex 연동 범위가 확인됐으며, benchmark·속도·token 가격은 workload·리전·inference profile별 canary로 재검증할 대상임.",
@@ -335,7 +405,7 @@
     },
     {
       "id": "news-720",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "CNCF Ambassador, kagent·Agent Substrate agent sandboxing 구현 경로 공개: gVisor·microVM·CRD 검증 필요",
       "title_original": "Isolation. Security. Scale.",
       "summary": "핵심: CNCF Ambassador 글이 kagent와 Agent Substrate를 조합해 declarative·BYO agent를 sandbox에서 실행하는 구현 경로를 제시함. `Harness`·`AgentTemplate` CRD, gVisor·microVM 격리 설명, session별 Actor lifecycle은 확인됐지만 CNCF project release·보안 인증·production SLA 공지가 아니므로 cluster별 egress·credential·snapshot·RBAC evidence를 별도로 검증해야 함.",
@@ -399,7 +469,7 @@
     },
     {
       "id": "news-722",
-      "rank": 4,
+      "rank": 5,
       "title_ko": "Q Labs Noise, 역전파 없는 pretraining speedrun 공개: 30M-token·8×H100 재현 조건 확인 필요",
       "title_original": "Noise: Speedrun for pretraining without backpropagation",
       "summary": "핵심: Q Labs의 `Noise`가 backward pass 없이 pretraining algorithm을 겨루는 공개 speedrun을 운영함. AI타임스가 보도한 1.6초 기록은 과거 37.7M-parameter·10M-token·loss 4.2 조건이며, 현재 repository는 30M-token·loss 3.5·single 8×H100 조건으로 전환돼 algorithm·kernel·distributed execution을 분리한 재현이 필요함.",
@@ -471,7 +541,7 @@
     },
     {
       "id": "news-724",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "AWS KMS, NIST ML-KEM 3종 지원: 양자내성 키 교환의 키 수명주기·상호운용성 검증 필요",
       "title_original": "AWS Key Management Service now supports ML-KEM for post-quantum key encapsulation",
       "summary": "핵심: AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`ML-KEM-768`·`ML-KEM-1024`를 지원함. `Encapsulate`/`Decapsulate` API와 32-byte shared secret, FIPS 140-3 Level 3 HSM private key 보호 범위는 확인됐지만 기존 DH/ECDH·RSA key transport 교체는 protocol·library·partner·key rotation 호환성을 분리 검증할 대상임.",
@@ -605,11 +675,11 @@
           ]
         }
       ],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-719",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "스페이스X, GPU 조달용 400억달러 부채 마감 보도: 차입·인도·가동 capacity 분리 필요",
       "title_original": "SpaceX closes $40 billion debt raise for GPUs; Musk warns neoclouds (reported)",
       "summary": "핵심: 스페이스X가 GPU 구매 대금 중심으로 400억달러 규모 callable debt 조달을 마쳤고, 확보 GPU는 2027년 1·2분기 도착 예정이라는 보도임. 변화: 대규모 AI capacity 평가는 GPU 주문액만이 아니라 차입·기존 현금흐름·배송·전력·fabric·commissioning을 분리해야 하며, 네오클라우드 도산 전망은 머스크의 시장 의견 범위임.",
@@ -732,7 +802,7 @@
           ]
         }
       ],
-      "rank": 8
+      "rank": 9
     },
     {
       "id": "news-715",
@@ -801,7 +871,7 @@
           ]
         }
       ],
-      "rank": 9
+      "rank": 10
     },
     {
       "id": "news-716",
@@ -864,7 +934,7 @@
           ]
         }
       ],
-      "rank": 10
+      "rank": 11
     },
     {
       "id": "news-717",
@@ -933,11 +1003,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-713",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "피차이, 첨단 AI 연구에 컴퓨팅 우선 배정: 클라우드 단기 매출과 capacity 계획의 분리",
       "title_original": "Pichai says Google prioritizes frontier AI compute over short-term cloud revenue (reported)",
       "summary": "핵심: 순다르 피차이 CEO가 첨단 AI 연구용 컴퓨팅을 우선 배정하기 위해 Google Cloud의 일부 단기 매출 기회를 포기하고 있다고 밝힘. 변화: 연구·클라우드·자체 칩·데이터센터의 capacity 계획은 같은 GPU pool을 공유하므로, 계약 capacity·내부 연구 reserve·commissioning lead time을 분리해 예측해야 하는 범위임.",
@@ -1009,7 +1079,7 @@
     },
     {
       "id": "news-712",
-      "rank": 13,
+      "rank": 14,
       "title_ko": "OpenAI, 첨단 모델 학습 재개: 오프라인 웹·공격형 평가로 인터넷 이탈 경로 차단",
       "title_original": "Securing our frontier model training environment",
       "summary": "핵심: OpenAI가 DNS 설정 오류를 악용한 외부 접속 발견 뒤 중단했던 첨단 모델의 강화학습·내부 추론을 재개함. 변화: 실제 인터넷 대신 저장된 웹 콘텐츠를 쓰는 `offline world`와 모델 기반 공격 평가를 적용했으며, 학습망의 telemetry·인증·공유 하드웨어도 egress·side-channel 통제로 다뤄야 하는 범위임.",
@@ -1077,7 +1147,7 @@
     },
     {
       "id": "news-710",
-      "rank": 14,
+      "rank": 15,
       "title_ko": "SK, 국내 AI 데이터센터 15GW 구상: 1단계 5GW에 3,500억달러 추산",
       "title_original": "SK “AI 데이터센터 5GW에 464조 필요”…글로벌 빅테크와 투자 협상",
       "summary": "핵심: SK하이퍼가 2035년까지 국내 AI 데이터센터 15GW 구축을 목표로 하며 첫 5GW에 3,500억달러가 필요하다고 추산함. 변화: 전력·부지 확보뿐 아니라 글로벌 고객·외부 금융·GPU와 network commissioning을 수요 연동 phase로 관리해야 하는 대형 capacity 계획임.",
@@ -1140,7 +1210,7 @@
     },
     {
       "id": "news-709",
-      "rank": 15,
+      "rank": 16,
       "title_ko": "Anthropic, Google Cloud에서 관리형 Claude 출시: IAM·통합 청구와 최신 agent 기능 연결",
       "title_original": "Claude Models on Google Cloud (Anthropic managed) is now generally available",
       "summary": "핵심: Anthropic 관리형 Claude가 Google Cloud IAM·Application Default Credentials와 통합 청구를 사용하면서 Claude Platform의 최신 기능·beta를 제공하는 경로를 출시함. 변화: cloud identity·billing은 Google Cloud를 따르되, 서비스 운영·data processing 책임은 기존 Google 관리형 경로와 구분해 검토해야 하는 범위임.",
@@ -1203,7 +1273,7 @@
     },
     {
       "id": "news-711",
-      "rank": 16,
+      "rank": 17,
       "title_ko": "Google Cloud, Agent Compute Engine 공개: agent별 microVM 실행 경계 제시",
       "title_original": "Google Cloud launches Agent Compute Engine with microVM isolation (reported)",
       "summary": "핵심: Google Cloud가 agent별 독립 가상 실행 환경을 제공하는 `Agent Compute Engine`을 공개했다는 보도임. 변화: code execution·browser operation·enterprise workflow automation을 agent별 `microVM` 경계에 배치하는 managed runtime 선택지이며, sandbox만으로 tool 권한·egress·data policy가 완결되지는 않음.",
@@ -1266,7 +1336,7 @@
     },
     {
       "id": "news-707",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "구글, Gemini API CLI 실험적 프리뷰 공개: 터미널 기반 agent API 호출 경로 추가",
       "title_original": "Gemini API CLI",
       "summary": "핵심: Google이 터미널에서 Gemini API의 모델 탐색·프롬프트 테스트·멀티모달 작업을 실행하는 `Gemini API CLI` 실험적 프리뷰를 공개함. 변화: 셸 기반 개발자·AI agent가 일회성 SDK 스크립트·반복 `curl` 대신 command interface로 API 호출과 결과 처리를 구성하는 범위임.",
@@ -1334,7 +1404,7 @@
     },
     {
       "id": "news-706",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "AWS Bedrock Web Search, 도메인 allow/block 목록·사용자 위치 제어 추가",
       "title_original": "Web Search on AWS Bedrock now supports domain filtering and user location controls",
       "summary": "핵심: AWS Bedrock Web Search가 기존 OpenAI Responses API 요청의 `web_search` tool에 도메인 필터와 사용자 위치 파라미터를 추가함. 변화: 신뢰 도메인만 grounding에 허용하거나 제외 목록을 적용하고, 지역 의존 질의의 검색 결과를 location 값으로 조정할 수 있는 범위임.",
@@ -1406,7 +1476,7 @@
     },
     {
       "id": "news-708",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "Cloudflare, Origin Range Requests 정식 제공: Pingora chunk coordinator로 대형 파일 부분 읽기 최적화",
       "title_original": "Origin Range Requests: Serving large files without range-request tuning",
       "summary": "핵심: Cloudflare가 대형 cacheable object의 HTTP byte-range 요청을 Cache Rule로 활성화하는 `Origin Range Requests`를 모든 요금제에 제공함. 변화: Pingora의 고정 크기 disk chunk와 in-flight download 조정으로 origin에서 필요한 범위를 가져오고, client에는 요청한 byte만 반환하는 범위임.",
@@ -1528,7 +1598,7 @@
       "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5MYF84W5ZDM8VYGGMCPH1ZZ.png",
       "local_image": "",
       "related_links": [],
-      "rank": 20
+      "rank": 21
     },
     {
       "id": "news-704",
@@ -1590,7 +1660,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 21
+      "rank": 22
     },
     {
       "id": "news-700",
@@ -1652,7 +1722,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 22
+      "rank": 23
     },
     {
       "id": "news-703",
@@ -1714,7 +1784,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 23
+      "rank": 24
     },
     {
       "id": "news-699",
@@ -1785,7 +1855,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
       "related_links": [],
-      "rank": 24
+      "rank": 25
     },
     {
       "id": "news-698",
@@ -1850,7 +1920,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
       "local_image": "",
       "related_links": [],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-701",
@@ -1912,7 +1982,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-692",
@@ -1984,7 +2054,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-693",
@@ -2047,7 +2117,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-694",
@@ -2110,7 +2180,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-695",
@@ -2173,7 +2243,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-705",
@@ -2235,7 +2305,7 @@
       "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/10/ethernet-corp-blog-minerva-kv-1280x680-5595752.png",
       "local_image": "",
       "related_links": [],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-690",
@@ -2303,7 +2373,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-697",
@@ -2375,7 +2445,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-691",
@@ -2444,7 +2514,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-689",
@@ -2508,7 +2578,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-696",
@@ -2571,7 +2641,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-687",
@@ -2644,7 +2714,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-686",
@@ -2715,7 +2785,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-685",
@@ -2779,11 +2849,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-684",
-      "rank": 40,
+      "rank": 41,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -2909,7 +2979,7 @@
           ]
         }
       ],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-688",
@@ -2979,7 +3049,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-680",
@@ -3051,7 +3121,7 @@
           ]
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-681",
@@ -3119,7 +3189,7 @@
           ]
         }
       ],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-682",
@@ -3183,7 +3253,7 @@
           ]
         }
       ],
-      "rank": 45
+      "rank": 46
     },
     {
       "region": "Global",
@@ -3247,7 +3317,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "region": "Global",
@@ -3311,7 +3381,7 @@
           ]
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-673",
@@ -3374,11 +3444,11 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-672",
-      "rank": 49,
+      "rank": 50,
       "title_ko": "미 DHS, 연방 민간기관에서 DeepSeek 및 기반 제3자 서비스 제거 명령 공개",
       "title_original": "Determination Pursuant to Section 1823 of the Federal Acquisition Supply Chain Security Act of 2018",
       "summary": "핵심: 미국 DHS의 연방조달 공급망 명령이 **DeepSeek 및 계열사 제품·서비스와 해당 기술 기반 제3자 제품·서비스**를 연방 민간기관 IT 시스템에서 제거하고 향후 조달하지 않는 범위로 규정함. 모델명만 차단하는 조치가 아니라 provider·SDK·embedded feature·외부 service dependency까지 확인해야 하는 공급망 통제 범위임.",
@@ -3444,70 +3514,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "news-674",
-      "title_ko": "Cloudflare, AI 코드 리뷰어의 prompt cache·모델 라우팅 최적화로 실행당 비용 68% 절감 공개",
-      "title_original": "Cutting our inference bill by 68% by being obsessive about optimization",
-      "summary": "핵심: Cloudflare가 내부 AI 코드 리뷰어의 평균 실행당 비용을 고비용 2주 평균 **$2.43에서 $0.77로 68%** 낮추고 median 처리 시간을 4분 9초에서 1분 32초로 줄인 최적화 사례를 공개함. shared prompt prefix의 cache breakpoint 분리, 호출 수 절감, workload별 model·effort 조정이 원인이며 자체 reviewer·provider·repository mix의 내부 결과임.",
-      "detail": "Cloudflare는 AI 코드 리뷰어의 비용이 8월 말 약 $2.46까지 증가한 뒤, 9월 중순부터 token 사용을 계측·최적화했다고 설명함. 고비용 2주 평균 $2.43 대비 현재 평균은 $0.77이며, median review 시간은 4분 9초에서 1분 32초로 바뀌었다고 공개함. 절감의 약 40%는 reviewer code 변경, 나머지는 model 선택과 effort 실험에서 왔다고 설명함. OpenCode v2는 canary repository에서 v1과 shadow comparison을 수행했고 승인 결정이 98% 일치한 조건에서 전환했으며 full-tier review가 약 13% 빨라졌다고 기록함. 이 수치는 Cloudflare 내부 workload의 관측값으로 다른 모델·prompt·pricing·review policy에 일반화할 수 없으므로, 조직별 cache hit·token·quality·latency·human rework를 함께 비교해야 함.",
-      "why_it_matters": "agentic code review는 context 증가와 다중 호출 때문에 cache hit rate가 높아도 token 비용이 커질 수 있음. prompt prefix 안정성, cache breakpoint 위치, model routing, effort tier는 품질·지연·비용을 동시에 바꾸므로 단가만 보고 최적화하면 review coverage나 regression을 놓칠 수 있음.",
-      "engineering_implication": "시사점: agent session의 system prompt·tool definition·repository-specific context를 분리하고 cacheable prefix hash, read/write token, cache hit, model/effort, acceptance, latency, human rework를 run 단위로 계측할 것. 변경은 shadow evaluation과 holdout repository를 거쳐 quality regression·cost·p95 latency·fallback/rollback 기준을 함께 통과시킬 것.",
-      "korea_implication": "국내 개발 조직도 코드·비밀정보·repository metadata가 외부 model context로 전달되는 경로와 provider별 cache retention·regional processing·계약 조건을 비용 최적화 전 함께 검토할 필요.",
-      "category": "DevTools",
-      "tags": [
-        "Cloudflare",
-        "AI Code Review",
-        "Prompt Caching",
-        "Model Routing",
-        "FinOps",
-        "Developer Tools"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 89,
-      "published_kst": "2026-10-20 04:12",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/obsessive-inference-optimization/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M58NMFG35J21WVMK7QGMANJT.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare는 내부 AI 코드 리뷰어의 고비용 2주 평균 실행당 비용이 $2.43에서 $0.77로 감소했고 median review 시간이 4분 9초에서 1분 32초로 줄었다고 공개함. 절감의 약 40%는 reviewer code 최적화, 나머지는 model·effort 실험이라는 설명임.",
-          "items": [
-            "관측: 평균 비용 **68% 절감**, 공개한 내부 workload 기준",
-            "경계: 조직별 repository 크기·모델 가격·review tier·quality policy에 대한 일반 성능 보장은 아님"
-          ]
-        },
-        {
-          "heading": "token 비용이 커진 조건",
-          "body": "8월 말 평균 비용은 약 $2.46이었고, session당 평균 LLM call은 16.6회였음. cache hit rate는 4월 85.7%에서 9월 97%로 올랐지만 review당 token은 0.91M에서 2.99M으로 증가해 cache read 비용도 누적되는 구조였음.",
-          "items": [
-            "비용 구성: 최적화 직전 output token 약 23%, cache write 43%, cache read 34%라는 내부 분해",
-            "원인: 반복 호출마다 전체 conversation context가 전송돼 call 수와 context 크기가 함께 비용 변수로 작동"
-          ]
-        },
-        {
-          "heading": "cache prefix와 runtime 변경",
-          "body": "첫 LLM call의 shared system block이 repository-specific environment와 같은 block에 있고 cache breakpoint가 끝에 있어 repository 간 prefix 재사용이 어렵다는 점을 확인함. agent prompt 끝 marker와 plugin hook으로 block을 나누고, 공유 prefix 앞의 repository-specific 정보를 제거해 reuse를 높이는 방식임.",
-          "items": [
-            "변경: 공통 agent prompt·tool definition을 stable prefix로 분리하고 cache breakpoint를 별도 배치",
-            "검증: OpenCode v2를 canary repository에서 v1과 shadow 비교해 approval decision 98% 일치 조건으로 전환"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "cache 최적화는 prompt formatting 변경이면서 품질·보안·운영 정책 변경이기도 함. tool description 또는 skill list를 안정화하려고 context를 제거할 때 필요한 capability가 빠지지 않는지, provider cache data path와 retention이 정책에 맞는지 함께 검증해야 함.",
-          "items": [
-            "팀 액션: cache hit/read/write token·model/effort·acceptance·p95 latency·human rework를 request trace에 연결",
-            "팀 액션: prompt/model/routing 변경은 shadow·holdout·quality gate·fallback·rollback을 가진 release workflow로 운영",
-            "팀 액션: repository-specific context와 secret·PII가 shared cache prefix에 섞이지 않도록 prompt assembly와 provider retention 검토"
-          ]
-        }
-      ],
-      "rank": 50
     }
   ]
 }
