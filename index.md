@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-28 | Total pages: 474
+> Last updated: 2026-10-29 | Total pages: 476
 
 ## Entities
 
@@ -703,6 +703,8 @@
 - [[raw/articles/aitimes-naver-whale-ai-chat-2026-10-01]] — 네이버 웨일 `AI 챗`의 페이지·탭 문맥 질의·요약·번역과 browser data path·관리 정책 검증 경계.
 
 - [[raw/articles/cncf-kagent-agent-substrate-isolation-2026-10-26]] — kagent·Agent Substrate의 gVisor·microVM·`Harness`/`AgentTemplate` 기반 agent sandboxing과 egress·credential·snapshot·RBAC 검증 경계.
+- [[raw/articles/github-universe-2026-agent-delivery-system-2026-10-29]] — GitHub Universe 2026의 agent fleet orchestration·completed work·delivery evidence·CI/review/rollback 운영 경계.
+- [[raw/articles/liquid-ai-lfm3-specialized-edge-models-2026-10-29]] — Liquid AI LFM3 2B급 open-weight 멀티모달 모델의 device·tool permission·data path·release evidence 검증 경계.
 
 ## Static Website
 - `docs/index.html` — GitHub Pages 정적 뉴스 사이트 진입점.
