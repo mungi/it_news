@@ -2,7 +2,7 @@
   "week": "2026-W45",
   "coverage_start_kst": "2026-10-26 17:00",
   "coverage_end_kst": "2026-11-02 13:00",
-  "last_updated_kst": "2026-10-28 10:05",
+  "last_updated_kst": "2026-10-28 14:10",
   "audience": "developers and engineers",
   "executive_summary": [
     "네이버가 브룩필드와 90억달러 규모 컴퓨팅 인프라 확보 계약을 체결했다는 보도가 나옴. 2027년 상반기 55MW·2028년 200MW 확대 계획과 1GW 목표는 계약·전력·GPU 납품·commissioning·tenant allocation을 분리해 검증할 capacity roadmap 대상임.",
@@ -258,8 +258,82 @@
       "related_links": []
     },
     {
-      "id": "news-725",
+      "id": "news-730",
       "rank": 2,
+      "title_ko": "Amazon Aurora Serverless v2, 최대 384 ACU 지원: PostgreSQL 호환 DB의 scale-to-zero와 고용량 burst 범위 확대",
+      "title_original": "Amazon Aurora serverless now supports up to 384 ACUs",
+      "summary": "핵심: Aurora PostgreSQL 호환 Serverless v2가 최대 **384 ACU**를 지원해 이전 256 ACU보다 50% 늘어남. ACU당 약 2 GiB memory 기준 단일 DB cluster는 최대 768 GiB까지 확장하며, idle 시 zero로 축소하는 capacity 범위임.",
+      "detail": "새 cluster는 지원 engine version에서 최대 384 ACU를 설정할 수 있고, Platform Version 4의 기존 cluster는 최대 capacity 설정 변경으로 반영 가능함. 구형 platform은 pending maintenance를 통한 Platform Version 4 upgrade가 필요하며, 이 변경을 connection capacity·query latency·failover·실제 비용의 자동 개선으로 해석해서는 안 됨.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon Aurora Serverless v2가 Aurora PostgreSQL-Compatible Edition에서 최대 384 Aurora Capacity Unit(ACU)을 지원함. 이전 최대 256 ACU 대비 50% 확대이며, ACU는 약 2 GiB memory와 이에 상응하는 CPU·networking capacity를 제공하는 AWS 설명 범위임.",
+          "items": [
+            "용량: 단일 Aurora Serverless database의 최대 memory가 약 **768 GiB**로 확대",
+            "동작: workload 종료 뒤 capacity를 zero까지 자동 축소하는 Serverless v2 동작 범위"
+          ]
+        },
+        {
+          "heading": "적용 조건과 변경 경로",
+          "body": "새 cluster는 지원 Aurora PostgreSQL engine version을 선택하고 maximum capacity를 384 ACU까지 지정하는 방식임. 기존 cluster는 Platform Version 4이면 cluster modification으로 반영할 수 있고, 구형 platform은 pending maintenance action을 통해 Platform Version 4 upgrade가 선행 조건임.",
+          "items": [
+            "지원 엔진: Aurora PostgreSQL 18.4·17.10·16.14·15.18·14.23, Platform Version 4 대상",
+            "무중단 범위: 이미 Platform Version 4인 cluster의 maximum capacity 변경에 한정된 AWS 설명"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "agentic AI와 event-driven backend는 burst traffic과 긴 idle window가 섞일 수 있어 min/max capacity와 connection behavior가 비용·지연을 함께 좌우함. maximum ceiling 증가는 단일 cluster가 수용할 수 있는 upper bound를 높이지만, application connection pool, query plan, lock contention, downstream dependency가 함께 확장되는 것은 아님.",
+          "items": [
+            "영향: 급격한 read/write burst에서 vertical headroom을 늘릴 선택지 추가",
+            "경계: 384 ACU 설정이 query throughput·p99 latency·failover duration·regional quota 보장은 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "운영팀은 peak concurrency와 ACU scaling event, connection saturation, commit latency, buffer/cache behavior, cost를 같은 trace에서 비교해야 함. Platform Version upgrade는 maintenance window·parameter group·extension·client driver·rollback path를 먼저 검증하고, agent workload는 uncontrolled retry가 DB burst와 비용을 동시에 키우지 않도록 queue·rate limit·idempotency를 분리할 필요.",
+          "items": [
+            "팀 액션: production replica 또는 canary cluster에서 256→384 ACU ceiling 변경 전후 connection·query·commit·scaling latency 측정",
+            "팀 액션: Platform Version 4 upgrade 대상의 maintenance·engine compatibility·parameter diff·restore/rollback runbook 점검",
+            "팀 액션: agent별 retry·concurrency·query budget과 ACU-hour·I/O·storage cost를 FinOps dashboard에 연결"
+          ]
+        }
+      ],
+      "why_it_matters": "Aurora Serverless v2의 단일 cluster 상한이 커져 bursty database workload의 vertical scaling 선택지가 늘었지만, scale-to-zero 절감 효과와 peak 성능은 min capacity·connection·query·retry 정책에 따라 별도 검증이 필요.",
+      "engineering_implication": "시사점: 384 ACU를 즉시 성능 보장으로 읽지 말고 Platform Version·engine compatibility, peak query/connection profile, scaling latency, failover와 ACU-hour 비용을 canary에서 함께 측정할 것.",
+      "korea_implication": "국내 리전 사용 여부와 가격은 AWS Aurora pricing 및 Region availability를 별도 확인하고, 글로벌 primary/replica topology는 리전별 engine·platform version과 운영 창을 분리 점검할 필요.",
+      "category": "Cloud",
+      "tags": [
+        "AWS",
+        "Amazon Aurora",
+        "PostgreSQL",
+        "Serverless",
+        "Database",
+        "Agentic AI",
+        "FinOps"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 85,
+      "published_kst": "2026-10-28 01:00",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/aurora-serverless-supports-384-acu/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "",
+      "related_links": [
+        {
+          "title": "Aurora Serverless v2 capacity 문서",
+          "url": "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.how-it-works.html#aurora-serverless-v2.how-it-works.capacity"
+        },
+        {
+          "title": "Amazon Aurora 요금 및 리전 확인",
+          "url": "https://aws.amazon.com/rds/aurora/pricing/"
+        }
+      ]
+    },
+    {
+      "id": "news-725",
+      "rank": 3,
       "title_ko": "코딩 agent harness 비교 연구: 성공률 차이보다 token 비용 최대 3배·반복 검증이 관건",
       "title_original": "What Does a Harness Buy? Tokens, Mostly",
       "summary": "핵심: arXiv 연구가 `Claude Code`·`mini-SWE-agent`·`OpenCode`를 SWE-bench Verified에서 비교함. 동일 모델·과제·가격표에서 harness별 과제당 비용은 최대 **3배** 차이였지만, 447개 과제에서 가장 무거운 Claude Code와 가장 가벼운 mini-SWE-agent의 성능 차이는 5 points 이내였음.",
@@ -329,7 +403,7 @@
     },
     {
       "id": "news-728",
-      "rank": 3,
+      "rank": 4,
       "title_ko": "네이버·브룩필드, 90억달러 컴퓨팅 인프라 계약 보도: 1GW AI 팩토리의 전력·자금·가동 단계 분리 필요",
       "title_original": "Naver signs $9B computing infrastructure deal with Brookfield for global 1GW AI infrastructure project",
       "summary": "핵심: AI타임스 보도 기준 네이버가 브룩필드와 **90억달러** 규모 컴퓨팅 인프라 확보 계약을 체결했고, 엔비디아의 전략적 지분 투자 절차와 1GW급 AI 팩토리 추진의 선결 조건을 충족했다고 밝힘. 보도상 2027년 상반기 55MW 가동 뒤 2028년 200MW 확대 계획이며, 계약·투자 발표를 실제 energized capacity·GPU 납품·워크로드 가동 보장으로 읽어서는 안 됨.",
@@ -453,11 +527,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "",
       "related_links": [],
-      "rank": 4
+      "rank": 5
     },
     {
       "id": "news-723",
-      "rank": 5,
+      "rank": 6,
       "title_ko": "Cloudflare Workers AI GLM-5.3, 교차 요청 KV cache 노출 155건 공개: SGLang 분리 prefill/decode 검증 필요",
       "title_original": "Cross-request KV cache exposure in the GLM-5.3 Workers AI model, and our remediation with SGLang",
       "summary": "핵심: Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 8월 27일~9월 9일 681,280 token 초과 prompt 관련 응답 **155건**에 다른 고객 요청 데이터가 포함됐으며, context window·실제 KV pool 불일치와 SGLang rejection handoff 결함을 함께 수정함.",
@@ -589,11 +663,11 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "",
       "related_links": [],
-      "rank": 6
+      "rank": 7
     },
     {
       "id": "news-721",
-      "rank": 7,
+      "rank": 8,
       "title_ko": "AWS, Amazon Bedrock에 OpenAI GPT-6.1 Terra 정식 제공",
       "title_original": "OpenAI GPT-6.1 Terra is now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 `GPT-6.1 Terra`의 Amazon Bedrock GA를 공개함. 최대 100만 input token context와 text·image input, Bedrock API·ChatGPT Work·Codex 연동 범위가 확인됐으며, benchmark·속도·token 가격은 workload·리전·inference profile별 canary로 재검증할 대상임.",
@@ -661,7 +735,7 @@
     },
     {
       "id": "news-720",
-      "rank": 8,
+      "rank": 9,
       "title_ko": "CNCF Ambassador, kagent·Agent Substrate agent sandboxing 구현 경로 공개: gVisor·microVM·CRD 검증 필요",
       "title_original": "Isolation. Security. Scale.",
       "summary": "핵심: CNCF Ambassador 글이 kagent와 Agent Substrate를 조합해 declarative·BYO agent를 sandbox에서 실행하는 구현 경로를 제시함. `Harness`·`AgentTemplate` CRD, gVisor·microVM 격리 설명, session별 Actor lifecycle은 확인됐지만 CNCF project release·보안 인증·production SLA 공지가 아니므로 cluster별 egress·credential·snapshot·RBAC evidence를 별도로 검증해야 함.",
@@ -725,7 +799,7 @@
     },
     {
       "id": "news-722",
-      "rank": 9,
+      "rank": 10,
       "title_ko": "Q Labs Noise, 역전파 없는 pretraining speedrun 공개: 30M-token·8×H100 재현 조건 확인 필요",
       "title_original": "Noise: Speedrun for pretraining without backpropagation",
       "summary": "핵심: Q Labs의 `Noise`가 backward pass 없이 pretraining algorithm을 겨루는 공개 speedrun을 운영함. AI타임스가 보도한 1.6초 기록은 과거 37.7M-parameter·10M-token·loss 4.2 조건이며, 현재 repository는 30M-token·loss 3.5·single 8×H100 조건으로 전환돼 algorithm·kernel·distributed execution을 분리한 재현이 필요함.",
@@ -797,7 +871,7 @@
     },
     {
       "id": "news-724",
-      "rank": 10,
+      "rank": 11,
       "title_ko": "AWS KMS, NIST ML-KEM 3종 지원: 양자내성 키 교환의 키 수명주기·상호운용성 검증 필요",
       "title_original": "AWS Key Management Service now supports ML-KEM for post-quantum key encapsulation",
       "summary": "핵심: AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`ML-KEM-768`·`ML-KEM-1024`를 지원함. `Encapsulate`/`Decapsulate` API와 32-byte shared secret, FIPS 140-3 Level 3 HSM private key 보호 범위는 확인됐지만 기존 DH/ECDH·RSA key transport 교체는 protocol·library·partner·key rotation 호환성을 분리 검증할 대상임.",
@@ -931,11 +1005,11 @@
           ]
         }
       ],
-      "rank": 11
+      "rank": 12
     },
     {
       "id": "news-719",
-      "rank": 12,
+      "rank": 13,
       "title_ko": "스페이스X, GPU 조달용 400억달러 부채 마감 보도: 차입·인도·가동 capacity 분리 필요",
       "title_original": "SpaceX closes $40 billion debt raise for GPUs; Musk warns neoclouds (reported)",
       "summary": "핵심: 스페이스X가 GPU 구매 대금 중심으로 400억달러 규모 callable debt 조달을 마쳤고, 확보 GPU는 2027년 1·2분기 도착 예정이라는 보도임. 변화: 대규모 AI capacity 평가는 GPU 주문액만이 아니라 차입·기존 현금흐름·배송·전력·fabric·commissioning을 분리해야 하며, 네오클라우드 도산 전망은 머스크의 시장 의견 범위임.",
@@ -1058,7 +1132,7 @@
           ]
         }
       ],
-      "rank": 13
+      "rank": 14
     },
     {
       "id": "news-715",
@@ -1127,7 +1201,7 @@
           ]
         }
       ],
-      "rank": 14
+      "rank": 15
     },
     {
       "id": "news-716",
@@ -1190,7 +1264,7 @@
           ]
         }
       ],
-      "rank": 15
+      "rank": 16
     },
     {
       "id": "news-717",
@@ -1259,11 +1333,11 @@
           ]
         }
       ],
-      "rank": 16
+      "rank": 17
     },
     {
       "id": "news-713",
-      "rank": 17,
+      "rank": 18,
       "title_ko": "피차이, 첨단 AI 연구에 컴퓨팅 우선 배정: 클라우드 단기 매출과 capacity 계획의 분리",
       "title_original": "Pichai says Google prioritizes frontier AI compute over short-term cloud revenue (reported)",
       "summary": "핵심: 순다르 피차이 CEO가 첨단 AI 연구용 컴퓨팅을 우선 배정하기 위해 Google Cloud의 일부 단기 매출 기회를 포기하고 있다고 밝힘. 변화: 연구·클라우드·자체 칩·데이터센터의 capacity 계획은 같은 GPU pool을 공유하므로, 계약 capacity·내부 연구 reserve·commissioning lead time을 분리해 예측해야 하는 범위임.",
@@ -1335,7 +1409,7 @@
     },
     {
       "id": "news-712",
-      "rank": 18,
+      "rank": 19,
       "title_ko": "OpenAI, 첨단 모델 학습 재개: 오프라인 웹·공격형 평가로 인터넷 이탈 경로 차단",
       "title_original": "Securing our frontier model training environment",
       "summary": "핵심: OpenAI가 DNS 설정 오류를 악용한 외부 접속 발견 뒤 중단했던 첨단 모델의 강화학습·내부 추론을 재개함. 변화: 실제 인터넷 대신 저장된 웹 콘텐츠를 쓰는 `offline world`와 모델 기반 공격 평가를 적용했으며, 학습망의 telemetry·인증·공유 하드웨어도 egress·side-channel 통제로 다뤄야 하는 범위임.",
@@ -1403,7 +1477,7 @@
     },
     {
       "id": "news-710",
-      "rank": 19,
+      "rank": 20,
       "title_ko": "SK, 국내 AI 데이터센터 15GW 구상: 1단계 5GW에 3,500억달러 추산",
       "title_original": "SK “AI 데이터센터 5GW에 464조 필요”…글로벌 빅테크와 투자 협상",
       "summary": "핵심: SK하이퍼가 2035년까지 국내 AI 데이터센터 15GW 구축을 목표로 하며 첫 5GW에 3,500억달러가 필요하다고 추산함. 변화: 전력·부지 확보뿐 아니라 글로벌 고객·외부 금융·GPU와 network commissioning을 수요 연동 phase로 관리해야 하는 대형 capacity 계획임.",
@@ -1466,7 +1540,7 @@
     },
     {
       "id": "news-709",
-      "rank": 20,
+      "rank": 21,
       "title_ko": "Anthropic, Google Cloud에서 관리형 Claude 출시: IAM·통합 청구와 최신 agent 기능 연결",
       "title_original": "Claude Models on Google Cloud (Anthropic managed) is now generally available",
       "summary": "핵심: Anthropic 관리형 Claude가 Google Cloud IAM·Application Default Credentials와 통합 청구를 사용하면서 Claude Platform의 최신 기능·beta를 제공하는 경로를 출시함. 변화: cloud identity·billing은 Google Cloud를 따르되, 서비스 운영·data processing 책임은 기존 Google 관리형 경로와 구분해 검토해야 하는 범위임.",
@@ -1529,7 +1603,7 @@
     },
     {
       "id": "news-711",
-      "rank": 21,
+      "rank": 22,
       "title_ko": "Google Cloud, Agent Compute Engine 공개: agent별 microVM 실행 경계 제시",
       "title_original": "Google Cloud launches Agent Compute Engine with microVM isolation (reported)",
       "summary": "핵심: Google Cloud가 agent별 독립 가상 실행 환경을 제공하는 `Agent Compute Engine`을 공개했다는 보도임. 변화: code execution·browser operation·enterprise workflow automation을 agent별 `microVM` 경계에 배치하는 managed runtime 선택지이며, sandbox만으로 tool 권한·egress·data policy가 완결되지는 않음.",
@@ -1592,7 +1666,7 @@
     },
     {
       "id": "news-707",
-      "rank": 22,
+      "rank": 23,
       "title_ko": "구글, Gemini API CLI 실험적 프리뷰 공개: 터미널 기반 agent API 호출 경로 추가",
       "title_original": "Gemini API CLI",
       "summary": "핵심: Google이 터미널에서 Gemini API의 모델 탐색·프롬프트 테스트·멀티모달 작업을 실행하는 `Gemini API CLI` 실험적 프리뷰를 공개함. 변화: 셸 기반 개발자·AI agent가 일회성 SDK 스크립트·반복 `curl` 대신 command interface로 API 호출과 결과 처리를 구성하는 범위임.",
@@ -1660,7 +1734,7 @@
     },
     {
       "id": "news-706",
-      "rank": 23,
+      "rank": 24,
       "title_ko": "AWS Bedrock Web Search, 도메인 allow/block 목록·사용자 위치 제어 추가",
       "title_original": "Web Search on AWS Bedrock now supports domain filtering and user location controls",
       "summary": "핵심: AWS Bedrock Web Search가 기존 OpenAI Responses API 요청의 `web_search` tool에 도메인 필터와 사용자 위치 파라미터를 추가함. 변화: 신뢰 도메인만 grounding에 허용하거나 제외 목록을 적용하고, 지역 의존 질의의 검색 결과를 location 값으로 조정할 수 있는 범위임.",
@@ -1732,7 +1806,7 @@
     },
     {
       "id": "news-708",
-      "rank": 24,
+      "rank": 25,
       "title_ko": "Cloudflare, Origin Range Requests 정식 제공: Pingora chunk coordinator로 대형 파일 부분 읽기 최적화",
       "title_original": "Origin Range Requests: Serving large files without range-request tuning",
       "summary": "핵심: Cloudflare가 대형 cacheable object의 HTTP byte-range 요청을 Cache Rule로 활성화하는 `Origin Range Requests`를 모든 요금제에 제공함. 변화: Pingora의 고정 크기 disk chunk와 in-flight download 조정으로 origin에서 필요한 범위를 가져오고, client에는 요청한 byte만 반환하는 범위임.",
@@ -1854,7 +1928,7 @@
       "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5MYF84W5ZDM8VYGGMCPH1ZZ.png",
       "local_image": "",
       "related_links": [],
-      "rank": 25
+      "rank": 26
     },
     {
       "id": "news-704",
@@ -1916,7 +1990,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 26
+      "rank": 27
     },
     {
       "id": "news-700",
@@ -1978,7 +2052,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 27
+      "rank": 28
     },
     {
       "id": "news-703",
@@ -2040,7 +2114,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 28
+      "rank": 29
     },
     {
       "id": "news-699",
@@ -2111,7 +2185,7 @@
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
       "related_links": [],
-      "rank": 29
+      "rank": 30
     },
     {
       "id": "news-698",
@@ -2176,7 +2250,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
       "local_image": "",
       "related_links": [],
-      "rank": 30
+      "rank": 31
     },
     {
       "id": "news-701",
@@ -2238,7 +2312,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 31
+      "rank": 32
     },
     {
       "id": "news-692",
@@ -2310,7 +2384,7 @@
           "url": "https://aws.amazon.com/security/continuum/"
         }
       ],
-      "rank": 32
+      "rank": 33
     },
     {
       "id": "news-693",
@@ -2373,7 +2447,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 33
+      "rank": 34
     },
     {
       "id": "news-694",
@@ -2436,7 +2510,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 34
+      "rank": 35
     },
     {
       "id": "news-695",
@@ -2499,7 +2573,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 35
+      "rank": 36
     },
     {
       "id": "news-705",
@@ -2561,7 +2635,7 @@
       "image_url": "https://blogs.nvidia.com/wp-content/uploads/2026/10/ethernet-corp-blog-minerva-kv-1280x680-5595752.png",
       "local_image": "",
       "related_links": [],
-      "rank": 36
+      "rank": 37
     },
     {
       "id": "news-690",
@@ -2629,7 +2703,7 @@
           "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"
         }
       ],
-      "rank": 37
+      "rank": 38
     },
     {
       "id": "news-697",
@@ -2701,7 +2775,7 @@
           "url": "https://www.cloudflare.com/trust-hub/compliance-resources/"
         }
       ],
-      "rank": 38
+      "rank": 39
     },
     {
       "id": "news-691",
@@ -2770,7 +2844,7 @@
           "url": "https://opentelemetry.io/docs/collector/"
         }
       ],
-      "rank": 39
+      "rank": 40
     },
     {
       "id": "news-689",
@@ -2834,7 +2908,7 @@
       "image_url": "https://cdn.aitimes.com/news/photo/202610/216549_220643_5410.png",
       "local_image": "",
       "related_links": [],
-      "rank": 40
+      "rank": 41
     },
     {
       "id": "news-696",
@@ -2897,7 +2971,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 41
+      "rank": 42
     },
     {
       "id": "news-687",
@@ -2970,7 +3044,7 @@
           "url": "https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/index.html"
         }
       ],
-      "rank": 42
+      "rank": 43
     },
     {
       "id": "news-686",
@@ -3041,7 +3115,7 @@
           "url": "https://docs.aws.amazon.com/transform/latest/userguide/what-is-aws-transform.html"
         }
       ],
-      "rank": 43
+      "rank": 44
     },
     {
       "id": "news-685",
@@ -3105,11 +3179,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 44
+      "rank": 45
     },
     {
       "id": "news-684",
-      "rank": 45,
+      "rank": 46,
       "title_ko": "Amazon Aurora·RDS, AZ별 DB compute capacity 예약 지원",
       "title_original": "Amazon Aurora and Amazon RDS now support On-Demand Capacity Reservations",
       "summary": "핵심: Amazon Aurora·RDS가 DB instance class·engine·Availability Zone별 compute capacity를 예약하는 On-Demand Capacity Reservations 지원을 공개함. 변화: create·restore·scale-compute·start의 capacity 부족 실패를 줄이는 범위이며, active reservation은 DB instance 실행 여부와 무관하게 On-Demand rate로 과금됨.",
@@ -3235,7 +3309,7 @@
           ]
         }
       ],
-      "rank": 46
+      "rank": 47
     },
     {
       "id": "news-688",
@@ -3305,7 +3379,7 @@
           "url": "https://www.aitimes.kr/news/articleView.html?idxno=42390"
         }
       ],
-      "rank": 47
+      "rank": 48
     },
     {
       "id": "news-680",
@@ -3377,7 +3451,7 @@
           ]
         }
       ],
-      "rank": 48
+      "rank": 49
     },
     {
       "id": "news-681",
@@ -3442,70 +3516,6 @@
           "items": [
             "팀 액션: replica별 writer 차단, client endpoint, stream/PITR/backup, alarm, IAM·KMS·resource policy의 cutover checklist 작성",
             "팀 액션: canary에서 last replicated state·consumer lag·restore·rollback/reassociation 가능성과 data residency evidence 검증"
-          ]
-        }
-      ],
-      "rank": 49
-    },
-    {
-      "id": "news-682",
-      "title_ko": "Cloudflare, eMudhra intermediate certificate 8건 private key compromise 대응 공개",
-      "title_original": "8 eMudhra certificates are compromised. Here's what you need to know",
-      "summary": "핵심: Cloudflare가 weak key를 쓰는 eMudhra intermediate certificate 8건의 private key compromise를 공개하고 trust-store·client·server-side mitigation을 배포함. 취약 key가 있으면 임의 domain의 forged certificate로 server impersonation·traffic interception 또는 modification을 시도할 수 있으므로, SDK 업데이트만으로 끝내지 말고 실제 TLS verification path와 container image·runtime을 점검해야 함.",
-      "detail": "Cloudflare는 2026-10-19 약 17:00 UTC에 eMudhra intermediate certificate 8건과 연결된 private key compromise를 인지했다고 밝힘. CDN·Developer·Zero Trust의 mitigation, shared trust store·base image update, Cloudflare Tunnel과 Cloudflare One/WARP client update를 배포했으며 자사 서비스에서 active exploitation은 식별하지 못했다고 설명함. 그러나 browser test 또는 `curl` 성공만으로 background service·custom verifier까지 보호됐다는 뜻은 아니며, application이 실제로 쓰는 CA bundle·HTTP library·language runtime·custom trust store를 기준으로 dependency update, image rebuild, reload·restart·redeploy를 검증해야 함.",
-      "why_it_matters": "WebPKI trust store는 outbound API client, proxy-to-origin, service mesh, container base image처럼 인프라 전반에 간접 의존성으로 들어감. certificate error를 피하려 verification을 끄면 인증 보호가 사라지므로, 일회성 패치가 아니라 trust-store lifecycle과 workload restart evidence를 관리해야 함.",
-      "engineering_implication": "시사점: public endpoint와 outbound TLS client별 CA bundle·runtime·base image·custom trust store·dependency tree·last restart를 inventory로 고정할 것. 대표 production transaction에서 certificate validation을 재시험하고 update 뒤 rebuild·reload·restart·redeploy 여부를 evidence로 남길 것; browser 또는 `curl` 단일 테스트를 전체 보호 판정에 사용하지 말 것.",
-      "korea_implication": "국내 리전 또는 온프레미스 환경도 OS package mirror·language runtime·container registry·custom CA bundle의 업데이트 경로가 다를 수 있으므로, 배포 artifact별 trust-store provenance와 restart 완료 상태를 별도로 확인할 필요.",
-      "category": "Security",
-      "tags": [
-        "Cloudflare",
-        "eMudhra",
-        "Certificate Authority",
-        "TLS",
-        "WebPKI",
-        "Trust Store",
-        "Supply Chain"
-      ],
-      "region": "Global",
-      "importance": "must-know",
-      "score": 93,
-      "published_kst": "2026-10-21 07:20",
-      "source_name": "Cloudflare Blog",
-      "source_url": "https://blog.cloudflare.com/emudhra-certificate-compromise/",
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5DK5EH8PE8PVBNH2XNFEF7Y.png",
-      "local_image": "",
-      "related_links": [],
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Cloudflare가 2026-10-19 약 17:00 UTC에 weak key를 쓰는 eMudhra intermediate certificate 8건의 private key compromise를 인지했다고 공개함. 해당 intermediate는 browser·operating system·Cloudflare 내부에서 널리 신뢰되는 certificate chain의 일부였다는 설명임.",
-          "items": [
-            "영향 조건: 공격자가 취약 key로 임의 domain의 forged certificate를 만들어 server impersonation·traffic interception·modification을 시도할 수 있는 범위",
-            "경계: TLS encryption algorithm 자체의 취약점이 아니라 certificate-based endpoint authentication의 신뢰 경로 문제"
-          ]
-        },
-        {
-          "heading": "Cloudflare의 대응 범위",
-          "body": "Cloudflare는 공개 전 critical service 우선 패치를 진행했고 CDN·Developer·Zero Trust product의 mitigation, shared trust store·base image·shared foundation update를 배포했다고 밝힘. Cloudflare Tunnel과 Cloudflare One/WARP client security update도 포함됨.",
-          "items": [
-            "원문 사실: Cloudflare는 자사 서비스에서 active exploitation을 식별하지 못했다고 설명",
-            "원문 사실: Cloudflare One Client와 1.1.1.1 app, `cloudflared` update 및 product별 reload·restart·image deployment 수행 범위"
-          ]
-        },
-        {
-          "heading": "사용자·개발자 점검 항목",
-          "body": "API client의 certificate verification은 SDK가 아닌 HTTP library·language runtime·operating system·custom trust configuration에 위임될 수 있음. SDK만 바꿔 underlying policy가 바뀐다는 보장은 없으며 indirect dependency도 영향 범위에 들어갈 수 있음.",
-          "items": [
-            "점검: application이 실제로 사용하는 CA bundle·custom trust store·runtime·container base image와 dependency tree 확인",
-            "조치: dependency update 뒤 affected image rebuild, workload reload·restart·redeploy를 수행하고 실제 TLS path에서 validation 재시험"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "browser test와 `curl` test는 그 verifier path만 확인함. background service·proxy·sidecar·batch worker가 다른 trust store를 쓰면 동일 host에서 결과가 달라질 수 있음. certificate error를 없애려 verification을 disable하면 remediation 목적의 authentication protection이 사라짐.",
-          "items": [
-            "팀 액션: public endpoint와 outbound TLS client별 trust-store provenance·artifact digest·last restart·owner를 inventory로 연결",
-            "팀 액션: representative production transaction에서 certificate validation failure·fallback·rollback을 검증하고 update completion evidence를 change record에 보존"
           ]
         }
       ],
