@@ -3851,3 +3851,8 @@
 - GitHub Universe canonical 원문의 `article:published_time` `2026-10-28T16:09:28+00:00`, OG image와 본문을 직접 대조함. agent fleet orchestration, end-to-end software delivery system, completed software work 정의를 수록했으며 개별 기능 GA·가격·SLA·entitlement로 확대하지 않음.
 - Liquid AI canonical 원문의 발표일 `2026-10-27`, OG image와 본문을 직접 대조함. `LFM3-1.7B-Base`의 22T token pretraining, text·vision·audio·omni·decision 6개 2B-class family, tri-hybrid 24-layer 구성, 256K context·4-bit 약 1GB·single-GPU fine-tuning 설명을 수록했으며 vendor benchmark를 target task quality·Korean accuracy·device thermal·tool safety 보장으로 확대하지 않음.
 - KST 첫 실행 정책에 따라 전일 Kubernetes Workload Conformance WG·Amazon ECR replication backfill Deep Dive를 GitHub·Liquid AI의 non-overlapping primary URL 기반 주제로 전면 교체함. 두 raw capture, `index.md`, canonical `weekly/2026-W45.md`를 동기화하고 `refreshed_kst`·`last_updated_kst`를 actual `2026-10-29 02:25`로 설정함.
+
+## [2026-10-29] update | Volcano v1.16 및 AWS EKS·Lambda·OpenSearch 최신 공지 반영
+- 확인 시각: 2026-10-29 06:28 KST. GeekNews RSS, AI타임스KR·AI타임스 RSS, AWS What’s New, GitHub, Cloudflare, Kubernetes, CNCF, OpenAI, Google AI, NVIDIA, CISA, The Hacker News feed를 current research pass에 포함함. GeekNews Plus는 HTTP 404 접근 제약을 확인함.
+- CNCF Volcano v1.16 canonical, AWS What’s New canonical 4건을 RSS 발행시각·본문과 직접 대조함. NamespaceQueue/fairshare, EKS CA rotation fleet view, Lambda durable execution telemetry exporter/MCP, OpenSearch Serverless time series hot/warm tier, EKS Auto Mode Gateway API의 명시 범위만 수록함.
+- `news-733`~`news-737`을 KST 발행 시각 newest-first으로 삽입하고 50건 cap의 최저순위 5건을 제외해 W45 50건·rank 1–50을 유지함. raw capture 5건, `index.md`, canonical `weekly/2026-W45.md`를 동기화함. 오늘 KST 첫 실행에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지함.

@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-29 | Total pages: 476
+> Last updated: 2026-10-29 | Total pages: 481
 
 ## Entities
 
@@ -39,6 +39,11 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cncf-volcano-v1-16-namespacequeue-fairshare-2026-10-29]] — Volcano v1.16 공개: NamespaceQueue·fairshare로 멀티테넌트 batch/GPU queue 제어 범위 확대
+- [[raw/articles/aws-eks-dashboard-ca-rotation-visibility-2026-10-29]] — Amazon EKS Dashboard, fleet-wide CA rotation 가시성 추가: 계정·리전별 만료·자동 rotation event 통합 확인
+- [[raw/articles/aws-lambda-durable-execution-telemetry-mcp-2026-10-29]] — AWS Lambda Durable Functions, execution telemetry exporter·MCP server 추가: 장기 workflow step trace의 export 경로 제공
+- [[raw/articles/aws-opensearch-serverless-time-series-warm-storage-2026-10-29]] — Amazon OpenSearch Serverless 차세대 time series collection: hot/warm tier·100TB hot storage·alerting 추가
+- [[raw/articles/aws-eks-auto-mode-gateway-api-2026-10-29]] — Amazon EKS Auto Mode, Kubernetes Gateway API 지원: 별도 controller 없이 HTTP·gRPC·weighted routing·ACM TLS discovery 제공
 - [[raw/articles/anthropic-openai-eth-3sat-formal-math-2026-10-28]] — Anthropic·OpenAI ETH 반박 3-SAT 결과의 공개 Lean artifact·점근 이론·독립 검토·practical solver 해석 경계.
 - [[raw/articles/liquid-ai-lfm3-ondevice-multimodal-2026-10-28]] — Liquid AI LFM3 1.7B~2B open-weight text·vision·audio·omni·decision 모델군의 단말 resource·tool permission·data boundary·현장 평가 검증 경계.
 - [[raw/articles/aws-aurora-serverless-384-acu-2026-10-28]] — Aurora Serverless v2 최대 384 ACU·768 GiB memory 범위와 Platform Version 4·connection·query·cost canary 검증 경계.
