@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-28 | Total pages: 473
+> Last updated: 2026-10-28 | Total pages: 474
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/anthropic-openai-eth-3sat-formal-math-2026-10-28]] — Anthropic·OpenAI ETH 반박 3-SAT 결과의 공개 Lean artifact·점근 이론·독립 검토·practical solver 해석 경계.
 - [[raw/articles/liquid-ai-lfm3-ondevice-multimodal-2026-10-28]] — Liquid AI LFM3 1.7B~2B open-weight text·vision·audio·omni·decision 모델군의 단말 resource·tool permission·data boundary·현장 평가 검증 경계.
 - [[raw/articles/aws-aurora-serverless-384-acu-2026-10-28]] — Aurora Serverless v2 최대 384 ACU·768 GiB memory 범위와 Platform Version 4·connection·query·cost canary 검증 경계.
 - [[raw/articles/aws-ecs-gpu-sharing-nvidia-mps-2026-10-28]] — Amazon ECS NVIDIA MPS GPU sharing의 task별 memory·compute share, MPS daemon 복구·shared GPU SLO·FinOps 검증 경계.
