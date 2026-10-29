@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-29 | Total pages: 481
+> Last updated: 2026-10-29 | Total pages: 483
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-quick-smart-approvals-agentic-actions-2026-10-29]] — Amazon Quick smart approvals의 classifier 기반 action review·policy·CloudTrail audit·timeout fallback 운영 경계.
+- [[raw/articles/cisa-kev-vmware-esx-linux-kernel-2026-10-28]] — CISA KEV 등록 VMware ESX·Linux Kernel active exploitation의 patch·forensic·rebuild 판단 경계.
 - [[raw/articles/aws-bedrock-agentcore-cli-v1-2026-10-29]] — Amazon Bedrock AgentCore CLI v1.0 GA: terminal에서 harness·runtime·memory·identity·gateway를 project 없이 직접 제어
 - [[raw/articles/cncf-volcano-v1-16-namespacequeue-fairshare-2026-10-29]] — Volcano v1.16 공개: NamespaceQueue·fairshare로 멀티테넌트 batch/GPU queue 제어 범위 확대
 - [[raw/articles/aws-eks-dashboard-ca-rotation-visibility-2026-10-29]] — Amazon EKS Dashboard, fleet-wide CA rotation 가시성 추가: 계정·리전별 만료·자동 rotation event 통합 확인
