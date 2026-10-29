@@ -3856,3 +3856,8 @@
 - 확인 시각: 2026-10-29 06:28 KST. GeekNews RSS, AI타임스KR·AI타임스 RSS, AWS What’s New, GitHub, Cloudflare, Kubernetes, CNCF, OpenAI, Google AI, NVIDIA, CISA, The Hacker News feed를 current research pass에 포함함. GeekNews Plus는 HTTP 404 접근 제약을 확인함.
 - CNCF Volcano v1.16 canonical, AWS What’s New canonical 4건을 RSS 발행시각·본문과 직접 대조함. NamespaceQueue/fairshare, EKS CA rotation fleet view, Lambda durable execution telemetry exporter/MCP, OpenSearch Serverless time series hot/warm tier, EKS Auto Mode Gateway API의 명시 범위만 수록함.
 - `news-733`~`news-737`을 KST 발행 시각 newest-first으로 삽입하고 50건 cap의 최저순위 5건을 제외해 W45 50건·rank 1–50을 유지함. raw capture 5건, `index.md`, canonical `weekly/2026-W45.md`를 동기화함. 오늘 KST 첫 실행에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지함.
+
+## [2026-10-29] update | Amazon Bedrock AgentCore CLI v1.0 GA 추가
+- 확인 시각: 2026-10-29 10:34 KST. GeekNews RSS·GeekNews Plus(HTTP 403)·AI타임스KR·AI타임스 RSS, AWS What’s New, GitHub, Cloudflare, CNCF, Kubernetes, OpenAI, Google AI, NVIDIA, CISA, The Hacker News feed를 current research pass에 포함함.
+- AWS canonical 공지의 embedded `postDateTime` `2026-10-28T20:00:00Z`와 RSS를 직접 대조해 KST `2026-10-29 05:00`으로 기록함. `@aws/agentcore` 1.0.0 GA, project 없이 harness·runtime·memory·identity·gateway·payments resource 직접 제어, ID/ARN invoke·interactive shell·harness export·공통 global flag·`agentcore migrate` 범위만 수록함.
+- `news-738`을 verified KST 시각 newest-first rank 2로 삽입하고 50건 cap의 최저순위 `news-687`을 제외해 W45 50건·rank 1–50을 유지함. raw capture SHA-256 `636c2242bc33f6bbe3cb5764361cd2f4046c4a14c3b58f9995841a03bcb54df0`, `index.md`, canonical `weekly/2026-W45.md`를 동기화함. CLI GA를 resource IAM 최소 권한·migration 성공·region availability·production deploy safety 보장으로 확대하지 않았으며, 오늘 KST 첫 실행에 전면 갱신된 Deep Dive 2건은 timestamp-only 변경 없이 유지함.

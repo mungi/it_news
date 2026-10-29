@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-agentcore-cli-v1-2026-10-29]] — Amazon Bedrock AgentCore CLI v1.0 GA: terminal에서 harness·runtime·memory·identity·gateway를 project 없이 직접 제어
 - [[raw/articles/cncf-volcano-v1-16-namespacequeue-fairshare-2026-10-29]] — Volcano v1.16 공개: NamespaceQueue·fairshare로 멀티테넌트 batch/GPU queue 제어 범위 확대
 - [[raw/articles/aws-eks-dashboard-ca-rotation-visibility-2026-10-29]] — Amazon EKS Dashboard, fleet-wide CA rotation 가시성 추가: 계정·리전별 만료·자동 rotation event 통합 확인
 - [[raw/articles/aws-lambda-durable-execution-telemetry-mcp-2026-10-29]] — AWS Lambda Durable Functions, execution telemetry exporter·MCP server 추가: 장기 workflow step trace의 export 경로 제공
