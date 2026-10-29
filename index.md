@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-29 | Total pages: 485
+> Last updated: 2026-10-29 | Total pages: 486
 
 ## Entities
 
@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/cloudflare-ddos-threat-report-q3-2026-10-29]] — Cloudflare Q3 2026 DDoS telemetry의 short-burst 증가·CLDAP 감소·DNS/UDP vector 전환과 edge/origin 방어 검증 경계.
 - [[raw/articles/aws-lambda-soci-lazy-loading-managed-instances-2026-10-29]] — AWS Lambda Managed Instances의 Seekable OCI lazy loading, SOCI index·ECR artifact·cold-start 검증 경계.
 - [[raw/articles/aws-ecs-managed-instances-cross-instance-spot-consolidation-2026-10-29]] — Amazon ECS Managed Instances cross-instance·Spot consolidation의 task repack·drain·capacity·FinOps 검증 경계.
 - [[raw/articles/aws-quick-smart-approvals-agentic-actions-2026-10-29]] — Amazon Quick smart approvals의 classifier 기반 action review·policy·CloudTrail audit·timeout fallback 운영 경계.
