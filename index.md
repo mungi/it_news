@@ -39,6 +39,7 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-sagemaker-soci-indexed-images-training-2026-10-29]] — SageMaker AI SOCI-indexed image의 lazy loading·GPU idle 비용·ECR artifact 검증 경계.
 - [[raw/articles/aws-aurora-postgresql-post-quantum-tls-key-exchange-2026-10-30]] — Aurora PostgreSQL PQ-TLS key exchange와 `ssl_groups` 변경의 client·proxy·pool 호환성 검증 경계.
 - [[raw/articles/kubernetes-ai-conformance-sig-architecture-2026-10-29]] — Kubernetes AI Conformance의 SIG Architecture 전환·KAR·DRA 기반 platform 검증 경계.
 - [[raw/articles/cloudflare-ddos-threat-report-q3-2026-10-29]] — Cloudflare Q3 2026 DDoS telemetry의 short-burst 증가·CLDAP 감소·DNS/UDP vector 전환과 edge/origin 방어 검증 경계.
