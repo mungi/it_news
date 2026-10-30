@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-29 | Total pages: 486
+> Last updated: 2026-10-30 | Total pages: 488
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-aurora-postgresql-post-quantum-tls-key-exchange-2026-10-30]] — Aurora PostgreSQL PQ-TLS key exchange와 `ssl_groups` 변경의 client·proxy·pool 호환성 검증 경계.
+- [[raw/articles/kubernetes-ai-conformance-sig-architecture-2026-10-29]] — Kubernetes AI Conformance의 SIG Architecture 전환·KAR·DRA 기반 platform 검증 경계.
 - [[raw/articles/cloudflare-ddos-threat-report-q3-2026-10-29]] — Cloudflare Q3 2026 DDoS telemetry의 short-burst 증가·CLDAP 감소·DNS/UDP vector 전환과 edge/origin 방어 검증 경계.
 - [[raw/articles/aws-lambda-soci-lazy-loading-managed-instances-2026-10-29]] — AWS Lambda Managed Instances의 Seekable OCI lazy loading, SOCI index·ECR artifact·cold-start 검증 경계.
 - [[raw/articles/aws-ecs-managed-instances-cross-instance-spot-consolidation-2026-10-29]] — Amazon ECS Managed Instances cross-instance·Spot consolidation의 task repack·drain·capacity·FinOps 검증 경계.
