@@ -2,207 +2,315 @@
   "week": "2026-W45",
   "coverage_start_kst": "2026-10-26 17:00",
   "coverage_end_kst": "2026-11-02 13:00",
-  "last_updated_kst": "2026-10-30 23:09",
+  "last_updated_kst": "2026-10-31 07:19",
   "audience": "developers and engineers",
   "executive_summary": [
-    "Amazon Quick smart approvals가 agent action을 별도 classifier로 검토해 routine action은 자동 승인하고 외부 전송·권한 변경·삭제·결제·요청 범위 밖 action은 user review로 넘김. policy deny·timeout fallback·CloudTrail evidence와 action taxonomy를 함께 검증해야 함.",
-    "CISA KEV가 GitLab CE/EE `CVE-2026-97229`와 Cisco Secure Firewall ASA/FTD `CVE-2026-76418`의 active exploitation evidence를 반영함. Git hosting·firewall management plane은 vendor fixed version 대조, patch 전후 access/configuration telemetry 보존, prior compromise·credential rotation 판단을 하나의 incident record로 처리해야 함.",
-    "CNCF Volcano v1.16.0이 `NamespaceQueue`·`fairshare`를 추가함. shared GPU·batch cluster에서는 scheduler 기능 자체보다 tenant quota·priority·preemption·GPU topology별 대기 시간과 공정성을 canary로 검증해야 함.",
-    "Amazon Aurora PostgreSQL-Compatible Edition이 `ssl_groups`를 통한 PQ-TLS key exchange 암호 그룹 선택을 지원함. driver·proxy·connection pool별 handshake와 rollback을 staging에서 검증하고, server parameter 변경을 end-to-end post-quantum 전환으로 확대하지 않아야 함.",
-    "Cloudflare Q3 telemetry에서 network-layer DDoS 1,820만 건과 HTTP DDoS 요청 14.4조 건이 자동 완화됨. 10분 미만·1Gbps 미만 공격이 전년 동기 대비 208% 늘고 DNS amplification·UDP flood 비중이 확대돼, 평균 대역폭보다 detection-to-mitigation latency·connection saturation·direct-origin 차단을 drill로 확인해야 함."
+    "Cloudflare Private Origins가 proxied DNS와 기존 private connectivity로 private IP origin에 WAF·bot management·Workers를 적용하는 GA 경로를 제공함. public exposure 축소와 application authorization·route availability는 별도 검증 항목으로 관리해야 함.",
+    "Amazon CloudFront가 viewer ISP와 PQC TLS handshake detail을 origin request header로 전달함. header coverage·TLS alert·origin error·latency를 같은 trace로 수집해 실제 client migration을 판단해야 함.",
+    "CISA KEV가 GitLab CE/EE `CVE-2026-97229`와 Cisco Secure Firewall ASA/FTD `CVE-2026-76418`의 active exploitation evidence를 반영함. fixed version 대조·patch·prior compromise hunt·credential 처리의 증거를 같은 incident record로 연결해야 함.",
+    "CNCF Volcano v1.16.0의 `NamespaceQueue`·`fairshare`와 Kubernetes AI Conformance 작업은 shared GPU cluster의 policy 선택지를 넓힘. tenant quota·priority·preemption·GPU topology별 대기 시간은 canary workload로 검증해야 함.",
+    "Amazon Aurora PostgreSQL-Compatible Edition의 `ssl_groups` PQ-TLS key exchange 선택은 driver·proxy·connection pool별 handshake와 rollback 검증을 요구함. server parameter 변경을 end-to-end post-quantum 전환으로 확대하지 않아야 함."
   ],
   "deep_dives": [
     {
       "id": "deep-dive-001",
-      "title": "Cloudflare Q3 DDoS: short-burst·DNS/UDP 전환에 맞춘 edge-to-origin 방어 검증",
-      "summary": "한 줄 결론: Cloudflare는 2026년 3분기 network-layer DDoS 1,820만 건과 HTTP DDoS 요청 14.4조 건을 자동 완화했다고 집계함. 10분 미만·1Gbps 미만 공격이 전년 동기 대비 208% 늘어, 최대 대역폭 수치보다 짧은 burst에서 edge·L4·origin이 실제로 차단·복구되는지 같은 시간축에서 검증해야 함.",
-      "details": "Cloudflare의 Q3 telemetry는 보호 중인 자사 네트워크 관측치임. CLDAP 비중은 99.5% 줄었지만 DNS amplification은 215% 늘고 일반 UDP flood 비중은 14.06%에서 31.31%로 확대됨. Cloudflare의 자동 완화와 500Tbps capacity를 다른 CDN·transit·on-premise·직접 origin의 방어 성능으로 일반화할 수 없음.",
-      "why_it_matters": "짧은 저대역 공격도 stateful firewall, NAT, load balancer, connection pool, autoscaling signal을 먼저 포화시킬 수 있음. 1분·5분 평균만 보는 운영 체계는 피해 구간과 mitigation latency를 놓칠 수 있어 flow·packet·edge event·application error를 같은 incident evidence로 보존해야 함.",
+      "title": "Cloudflare Private Origins GA: public exposure를 줄이되 private-path 증거를 남기는 운영 설계",
+      "summary": "한 줄 결론: Cloudflare Private Origins는 private IP origin에 edge WAF·bot·cache·Workers를 적용하는 GA 경로임. public inbound IP를 없애는 변경과 origin authorization·private route availability·failure rollback을 각각 검증해야 함.",
+      "details": "공식 원문은 proxied private A/AAAA record, Cloudflare One connectivity, 자동 private-routing address ranges, supported controls와 feature limitation을 설명함. private routing은 reachability layer이며 application identity·service authorization·secret scope·tenant boundary의 대체 통제가 아님.",
+      "why_it_matters": "internal API·AI agent backend·MCP server의 public exposure를 줄이는 요구가 커지고 있음. DNS·network route·connector·origin firewall·service auth가 동시에 바뀌므로 네트워크 제품 도입을 application security 완료로 오해하면 우회와 장애 복구 공백이 생길 수 있음.",
       "sources": [
-        "https://blog.cloudflare.com/ddos-threat-report-2026-q3/"
+        "https://blog.cloudflare.com/private-origins-public-to-private/"
       ],
-      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M625AT8W5NEDCQ4SDQJ2JVTQ.01M625AVQAYADACFRF4VVYAYK4.png",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M64VA9XKX4ECCVY30EQZ7MM5.01M64VAB4BY2EFWH6MV691D933.png",
       "local_image": "",
-      "refreshed_kst": "2026-10-30 06:55",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "Q3 관측에서 두드러진 변화는 대형 단발 공격의 절대 건수보다 짧고 반복적인 burst의 증가임. 방어 설계는 최고 Gbps를 견디는지뿐 아니라 10분 이내 UDP·DNS burst가 edge에서 origin까지 도달하기 전에 자동으로 식별·제한되고, 사용자 오류와 connection saturation이 정상화되는지를 검증해야 함.",
+          "body": "Cloudflare가 proxied DNS record를 private IP에 연결하고 기존 Cloudflare One 연결을 통해 origin에 도달하는 Private Origins를 GA로 제공함. public inbound IP·firewall exception을 줄일 수 있지만, DNS proxy 설정이 application authorization·egress control·origin identity·private network routing 검증을 대체하지는 않음.",
           "items": [
-            "변화: 10분 미만·1Gbps 미만 공격이 전년 동기 대비 `208%` 증가한 관측",
-            "결정: 최대 대역폭 중심 capacity test에 detection-to-mitigation latency·connection error·origin bypass 검증 추가"
+            "변화: private IP origin에도 WAF·bot management·rate limiting·cache·Workers 적용 경로 제공",
+            "결정: public exposure 제거와 private-path reachability를 별개의 acceptance criterion으로 관리 필요"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "Cloudflare는 2026년 7~9월 자사 네트워크에서 자동 완화한 DDoS telemetry를 공개함. 이 수치는 Cloudflare 보호 traffic의 관측치이며 인터넷 전체나 개별 조직의 위협 빈도를 직접 대표하지 않음.",
+          "body": "Cloudflare는 proxied A/AAAA record가 private IP를 가리키면 private network routing을 사용한다고 설명함. RFC 1918 IPv4, RFC 6598 `100.64.0.0/10`, RFC 4193 `fc00::/7`은 자동 활성화되며, Cloudflare WAN에서는 origin connector 없이도 기존 private connectivity를 이용할 수 있고 Mesh에서는 private network connector가 여러 origin을 제공할 수 있음.",
           "items": [
-            "집계: network-layer DDoS `1,820만 건`, HTTP DDoS 요청 `14.4조 건`, network-layer 시간당 약 `8,226건`",
-            "규모: network-layer 272.6PB, HTTP layer 95.1PB 완화 traffic 범위",
-            "대조: 1Tbps 초과 공격은 Q2 `805건`에서 Q3 `251건`으로 감소했으나 위험 감소 일반화 불가"
-          ]
-        },
-        {
-          "heading": "공격 벡터와 관측 경계",
-          "body": "CLDAP 반사·증폭 비중은 크게 줄었지만 connectionless protocol 위험이 사라진 것이 아니라 DNS amplification과 일반 UDP flood 쪽으로 구성 비중이 이동한 것으로 집계됨. 특정 벡터가 줄었다는 사실은 open resolver, 노출 UDP service, spoofed traffic path가 안전하다는 증거가 아님.",
-          "items": [
-            "변화: CLDAP 비중 `99.5%` 감소 후 network-layer attack의 `0.05%` 범위",
-            "변화: DNS amplification `215%` 증가해 `3.43%`, 일반 UDP flood `14.06%→31.31%` 확대",
-            "경계: provider telemetry와 고객 origin·transit·on-premise packet visibility의 coverage 차이 확인 필요"
+            "제공: WAF·managed rules·bot management·rate limiting·cache·transform/rewrite rules·Workers의 public-origin과 유사한 적용 범위",
+            "제한: Argo Smart Routing·Dedicated CDN Egress IP는 지원하지 않으며 origin health check는 Load Balancing 필요"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "short-burst 공격은 사람이 ticket을 열고 판단하기 전에 끝나거나 재시작될 수 있음. 따라서 control plane은 burst 자체를 탐지하는 rule, data plane은 drop·rate limit·scrubbing 경로, application plane은 connection·CPU·egress·error budget 영향을 각각 남기되 공통 incident ID로 묶어야 함.",
+          "body": "internal API, MCP server, agent backend를 public ingress에 직접 노출하지 않으려는 요구는 늘고 있음. 그러나 private addressing은 network reachability를 바꾸는 기능이며, agent tool authorization·service identity·secret scope·request validation·tenant boundary를 자동으로 만드는 기능은 아님.",
           "items": [
-            "볼 것: edge mitigation event와 L4/L7 error·connection count·autoscaling event의 timestamp 정렬",
-            "피할 것: CDN dashboard의 mitigated 수치만으로 origin saturation 또는 사용자 영향 부재를 결론내는 운영"
+            "관점: edge security control과 private network path를 service authorization의 대체물로 사용하지 않을 것",
+            "경계: private IP가 origin application의 least privilege·prompt injection 방어·data classification을 보장하지 않음"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "방어 경로는 public ingress, CDN/WAF, L4 load balancer, stateful firewall/NAT, origin subnet, upstream transit의 순서로 inventory화해야 함. direct-origin CIDR이나 관리 endpoint가 남아 있으면 edge rule이 정상 작동해도 우회 traffic이 back-end state를 소진할 수 있음.",
+          "body": "request는 Cloudflare proxy가 Origin API metadata의 `private_routing` signal을 보고 customer의 IPsec, GRE, Cloudflare Tunnel, CNI 또는 Mesh connectivity로 넘기는 구조임. DNS record와 network route, connector/overlay 상태, origin listener, health check, return path가 함께 맞아야 실제 availability가 성립함.",
           "items": [
-            "설계: origin inbound를 known proxy·load balancer source로 제한하고 public UDP listener와 resolver를 service owner별로 등록",
-            "운영: 10분 미만 burst에 대해 edge decision·drop counter·NAT/state table·connection pool·p95/p99 error를 동일 dashboard로 조회"
-          ]
-        },
-        {
-          "heading": "비용·신뢰성 관점",
-          "body": "방어 비용은 scrubbing 계약이나 egress 단가만이 아니라 로그 보존, false positive investigation, upstream escalation, autoscaling, incident recovery를 포함함. 낮은 대역폭도 요청·connection rate가 높으면 service degradation을 만들 수 있어 Mbps와 PPS/CPS, state exhaustion, detection delay를 함께 측정해야 함.",
-          "items": [
-            "측정: detection-to-mitigation latency, PPS/CPS, dropped/served ratio, connection error, recovery time, false positive",
-            "결정: DDoS drill의 pass 기준을 평균 throughput이 아닌 customer-facing error budget과 origin resource saturation으로 설정"
+            "검증: public IP direct path가 열리지 않은 상태에서도 proxy path가 정상 동작하는지 확인",
+            "검증: DNS update·route withdrawal·connector failure·origin restart에서 fail-closed와 recovery time 측정"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "DNS recursion, UDP service, open resolver, direct-origin address는 공격 표적이면서 reflection source가 될 수 있음. 운영 책임자는 public exposure와 방어 provider configuration을 분리하지 말고 change record·asset owner·exception expiry·upstream contact를 함께 관리해야 함.",
+          "body": "private origin 도입 뒤에도 WAF rule bypass, internal CIDR overlap, lateral movement, overly broad private routes, DNS write permission, origin log source attribution은 별도 위험임. private routing configuration과 network attachment를 infrastructure-as-code로 관리하고 변경 승인·audit log·emergency revoke를 운영해야 함.",
           "items": [
-            "통제: public DNS resolver·UDP listener·origin CIDR·management endpoint의 exposure inventory를 정기 대조",
-            "통제: emergency rate-limit 또는 ACL 변경의 승인·rollback·customer impact evidence를 runbook에 기록"
+            "통제: zone DNS write, private network route, connector credential, origin firewall rule의 owner 분리",
+            "통제: origin access log와 Cloudflare edge event를 request ID·time window로 상관 분석"
+          ]
+        },
+        {
+          "heading": "비용·가용성 관점",
+          "body": "Cloudflare가 명시한 feature availability와 조직의 private connectivity 비용·bandwidth·connector capacity·Load Balancing 의존성은 구분해야 함. health check가 필요한 서비스, supported하지 않은 Argo/Dedicated Egress 기능, multi-region failover는 pilot에서 실제 architecture와 비용을 검증할 대상.",
+          "items": [
+            "비용 변수: existing private connectivity·Load Balancing·connector/overlay 운영·log retention",
+            "가용성: DNS propagation, private path saturation, health-check topology, secondary origin failover를 분리 계측"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "SRE와 network 팀은 synthetic burst 또는 안전한 test traffic으로 탐지부터 정상화까지의 경로를 재현해야 함. application 팀은 rate limit이 legitimate client, webhook, DNS dependency에 주는 false positive도 함께 측정해야 함.",
+          "body": "한 서비스만 골라 read-only endpoint로 시작하고 DNS record·private route·WAF policy·origin listener·observability를 하나의 manifest로 검증해야 함. deployment 이전에 direct-origin probe가 차단되는지, authorized edge path만 허용되는지, network failure에서 unintended public fallback이 없는지 확인할 필요.",
           "items": [
-            "체크: 10분 미만 UDP/DNS scenario에서 edge·WAF·L4·firewall·origin alert 시간이 순서대로 남는지 확인",
-            "체크: direct-origin 접근, public resolver, UDP listener, upstream scrubbing escalation 번호가 최신인지 확인",
-            "체크: mitigated event와 p95/p99 latency·5xx·connection saturation·autoscaling을 단일 timeline에서 조사 가능한지 확인"
+            "체크: RFC1918/CGNAT/ULA address와 overlapping CIDR·route precedence 검토",
+            "체크: WAF·rate limit·bot policy가 private-origin path에서 기대대로 적용되는지 replay test",
+            "체크: connector/overlay down, route withdrawal, origin health failure, DNS rollback drill"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "Cloudflare 보고서의 실무 메시지는 공격의 평균 크기가 작아졌다는 안도가 아니라, short-burst 방어가 사람보다 자동 control plane의 품질에 의존한다는 점임. 이번 주에는 대역폭 benchmark를 다시 수행하기보다 가장 취약한 public endpoint 하나로 detection·mitigation·origin isolation·forensic log retrieval drill을 실행할 필요.",
+          "body": "Private Origins는 public-to-private exposure 경계를 바꾸는 network product이며, private라는 이름만으로 service trust boundary가 완성되지는 않음. 운영 성공 기준은 public ingress 제거, private path의 가용성, origin identity, application authorization, failure rollback을 각각 증명하는 것임.",
           "items": [
-            "발표 포인트: `1,820만 건`·`14.4조 요청`·short-burst `208%` 증가·DNS/UDP vector 전환",
-            "즉시 행동: service 한 개의 10분 미만 burst runbook에서 edge event부터 origin recovery까지 실제 timestamp를 수집"
+            "강조: DNS proxy와 private routing은 identity·authorization·data policy의 대체 통제가 아님",
+            "팀 액션: edge policy·route table·origin firewall·service auth·incident trace를 하나의 threat model에서 재검토"
           ]
         }
-      ]
+      ],
+      "refreshed_kst": "2026-10-31 07:19"
     },
     {
       "id": "deep-dive-002",
-      "title": "Amazon Bedrock AgentCore CLI v1.0: terminal control plane을 agent 운영 증거로 닫는 방법",
-      "summary": "한 줄 결론: AWS는 `@aws/agentcore` 1.0.0을 GA로 공개하고 project 없이 harness·runtime·memory·identity·gateway·payments resource를 terminal에서 직접 다루는 경로를 제공함. CLI의 편의성은 workstation·CI·agent tool의 cloud write surface를 넓히므로, command·identity·target ARN/Region·결과·rollback을 하나의 deployment evidence로 연결해야 함.",
-      "details": "공식 공지는 faster startup, 일관된 command structure, 확대된 AgentCore resource 지원, existing resource ID/ARN invoke, interactive shell, harness export, `agentcore migrate`를 설명함. 공지 자체는 개별 resource의 IAM 최소 권한, migration 성공, Region availability, production write safety를 보장하지 않으므로 환경별 canary와 audit 설계가 필요함.",
-      "why_it_matters": "CLI는 개발자 workstation, CI runner, coding agent가 cloud control plane에 접근하는 공통 경로가 될 수 있음. project abstraction 없이 resource를 직접 조작하면 자동화 범위가 넓어지지만 잘못된 profile·Region·ARN·session credential 또는 interactive command의 blast radius도 확대됨.",
+      "title": "Amazon CloudFront PQC TLS telemetry: edge handshake를 migration evidence로 바꾸는 방법",
+      "summary": "한 줄 결론: CloudFront가 viewer ISP와 PQC TLS cryptography detail을 origin으로 전달함. product 지원 여부가 아니라 실제 client handshake·legacy failure·origin impact를 측정해 PQC rollout을 결정해야 함.",
+      "details": "공식 공지는 `CloudFront-Viewer-ISP`와 `CloudFront-Viewer-TLS-Details` optional header, origin request policy attachment, key exchange·signature scheme·public-key type 관측 범위를 설명함. 이 값은 viewer-to-edge 구간의 telemetry이며 internal TLS·upstream protocol·application authorization을 보장하지 않음.",
+      "why_it_matters": "PQC migration은 edge·client·origin·internal service·partner endpoint에 걸친 dependency program임. header를 통해 client cohort를 측정할 수 있지만 raw connection metadata의 privacy·retention·parser correctness와 missing-header fallback을 함께 운영해야 함.",
       "sources": [
-        "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-agentcore-cli-version-1-0-available/"
+        "https://aws.amazon.com/about-aws/whats-new/2026/10/cloudfront-viewer-isp-post-quantum-visbility/"
       ],
-      "image_url": "assets/images/fallback-ai.svg",
-      "local_image": "assets/images/fallback-ai.svg",
-      "refreshed_kst": "2026-10-30 06:55",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
       "detailed_content": [
         {
           "heading": "한 줄 결론",
-          "body": "AgentCore CLI v1.0의 운영상 변화는 agent resource를 terminal에서 직접 다룰 수 있다는 점임. 생산성 판단은 command 수나 shell 편의성이 아니라 누가 어떤 credential로 어느 Region의 어떤 ARN에 변경을 적용했고, 결과와 rollback을 재현할 수 있는지로 내려야 함.",
+          "body": "CloudFront가 viewer ISP와 TLS 암호 세부 정보를 origin request로 전달할 수 있게 됨. PQC 전환 여부를 실제 연결 단위에서 측정할 단서가 생겼지만, header를 받는다고 origin·viewer 구간 전체의 post-quantum 전환이나 보안 강도가 자동으로 증명되는 것은 아님.",
           "items": [
-            "변화: project workflow 없이 supporting resource direct control 경로 제공",
-            "결정: CLI command를 deployment artifact와 같은 change evidence로 취급"
+            "변화: `CloudFront-Viewer-ISP`와 `CloudFront-Viewer-TLS-Details` optional header 추가",
+            "결정: TLS handshake telemetry를 origin log·성능 지표·rollout policy에 연결할 수 있는 관측 지점"
           ]
         },
         {
           "heading": "원문과 관련 뉴스의 핵심 내용",
-          "body": "AWS는 `@aws/agentcore` 1.0.0 general availability를 공지함. terminal에서 agent와 지원 resource를 create·develop·deploy·operate하는 CLI이며 faster startup, consistent command structure, broader resource support가 공식 범위임.",
+          "body": "AWS 공지는 ISP header에 viewer의 인터넷 서비스 제공자 이름을, TLS details header에 viewer TLS connection의 key exchange·signature scheme·signature public-key type을 담는다고 설명함. 두 header는 origin request policy에 추가하고 distribution에 연결해야 origin으로 전달됨.",
           "items": [
-            "공식 범위: harness·runtime·memory·identity·gateway·payments resource 직접 제어",
-            "공식 범위: existing resource ID 또는 ARN invoke, interactive shell, harness export, searchable menu·resource picker·guided workflow",
-            "공식 범위: common global flag의 Region·JSON output·debug·version 적용과 `agentcore migrate` 제공"
+            "확인: header 전달은 origin request policy와 distribution attachment가 필요한 opt-in 구성",
+            "범위: PQC 사용 viewer 비율과 미사용 client 식별에 쓰는 telemetry 제공"
           ]
         },
         {
           "heading": "AI/Infra 전문가 해석",
-          "body": "agent framework CLI는 단순 local developer tool이 아니라 identity broker와 resource control plane 사이의 translation layer가 될 수 있음. 같은 command라도 local profile, federated role, CI OIDC session, agent-run credential에 따라 권한·network path·audit principal이 달라져 automation 안전성은 CLI 문법보다 execution context에서 결정됨.",
+          "body": "PQC migration은 CDN edge의 지원 여부보다 실제 client population, TLS termination 지점, upstream mTLS, API gateway, service mesh, legacy SDK의 negotiated algorithm을 분리해 보는 작업임. 이 header는 edge-to-origin request에 viewer handshake 관측값을 전달할 뿐, origin이 client certificate를 검증하거나 TLS를 재협상하는 기능은 아님.",
           "items": [
-            "볼 것: command invocation·effective principal·target account/Region·ARN·request ID·result artifact의 연결",
-            "피할 것: GA 표기를 IAM least privilege, resource availability, migration correctness의 자동 증거로 해석"
+            "관점: handshake metadata와 application error·latency·ISP별 실패율을 같은 trace로 상관 분석 필요",
+            "경계: CDN viewer TLS 관측이 origin-to-upstream, service-to-service, VPN 구간의 PQC 상태를 대변하지 않음"
           ]
         },
         {
           "heading": "아키텍처·운영 관점",
-          "body": "개발자 terminal·CI runner·self-hosted agent는 서로 다른 trust zone으로 모델링해야 함. discovery, plan, deploy, invoke, migrate, interactive shell은 write 영향도와 recovery 방식이 다르므로 동일 role 또는 장기 access key로 묶지 않아야 함.",
+          "body": "origin은 header 값을 사용자 입력에 준하는 관측 데이터로 다뤄야 함. application routing·authorization·rate limit의 단독 신뢰 근거로 쓰면 header forwarding 경로, cache key, log pipeline, privacy boundary가 새 attack surface가 될 수 있음. header schema와 null/unknown 값, multiple distribution behavior, downstream log parsing을 deployment artifact로 고정할 필요.",
           "items": [
-            "설계: read-only discovery role과 scoped deployment role을 분리하고 target account·Region·resource type을 condition으로 제한",
-            "운영: JSON output과 command log를 secret redaction 뒤 immutable build/deploy record에 연결",
-            "운영: interactive shell command는 session identity·start/end·target resource·approval ticket을 별도 audit event로 보존"
+            "볼 것: origin request policy 변경 뒤 header presence·format·cache behavior·log schema의 실제 결과",
+            "피할 것: ISP 또는 TLS attribute만으로 client identity·risk level·regional compliance를 결론내리는 정책"
           ]
         },
         {
           "heading": "보안·거버넌스 관점",
-          "body": "terminal과 agent tool은 shell history, environment variable, debug output, copied ARN, cached credential을 통해 민감 정보를 남길 수 있음. command argument가 external input 또는 agent planning 결과에서 유래할 수 있으므로 untrusted instruction을 privileged action으로 바로 변환하지 않는 policy gate가 필요함.",
+          "body": "ISP 정보는 network segmentation·support triage에 유용하지만 개인정보·connection metadata로 취급될 수 있음. TLS detail에는 cryptographic attribute가 포함되므로 raw request log의 retention, access control, SIEM export, analytics vendor 전송 범위를 data classification 기준으로 정해야 함.",
           "items": [
-            "통제: short-lived federated credential·MFA 또는 workload identity를 사용하고 shared profile·long-lived secret을 제거",
-            "통제: destructive/write command에 account/Region allowlist, human approval, change window, rate limit과 break-glass audit 적용"
+            "통제: raw header retention·masking·role-based query·export destination을 log policy에 명시",
+            "검증: privacy notice·regional logging policy·incident evidence 보존 기간을 분리 확인"
           ]
         },
         {
-          "heading": "migration·rollback 관점",
-          "body": "`agentcore migrate`는 기존 project의 v1 전환 경로를 제공하지만, 생성된 configuration과 resource mapping이 환경마다 동일한 runtime behavior를 보장하지는 않음. migration은 sandbox에서 diff를 검토하고 canary를 거쳐 기존 configuration, artifact version, credential policy로 되돌릴 수 있어야 함.",
+          "heading": "측정과 도입 로드맵",
+          "body": "첫 단계는 shadow logging으로 header coverage와 unknown value 비율을 측정하는 것임. 다음으로 ISP·client family·endpoint별 PQC adoption, handshake failure, TLS alert, origin 4xx/5xx, p50/p95 latency를 baseline과 비교해야 함. routing이나 enforcement는 관측 결과가 충분히 안정된 뒤 좁은 cohort에서 검토할 대상.",
           "items": [
-            "검증: migrate 전후 resource ID·ARN·Region·IAM action·runtime configuration diff를 machine-readable로 저장",
-            "검증: failed migration·partial resource creation·permission denial·Region mismatch에서 cleanup과 rollback이 재현되는지 확인"
-          ]
-        },
-        {
-          "heading": "비용·신뢰성 관점",
-          "body": "agent resource의 운영 비용은 CLI package 자체가 아니라 runtime invocation, memory, gateway traffic, observability, failed retry, human review에서 발생함. direct resource control은 orphan resource와 unintended invocation을 만들 수 있으므로 tag, budget, TTL, concurrency, cleanup을 command workflow에 포함해야 함.",
-          "items": [
-            "측정: command success/failure, retry, orphan resource count, invocation cost, interactive session duration, rollback time",
-            "결정: deploy/migrate 권한은 cost budget·environment capacity·error budget breach signal과 함께 제한"
-          ]
-        },
-        {
-          "heading": "도입 로드맵",
-          "body": "첫 단계에서는 read-only inventory와 sandbox resource invoke로 command audit 및 identity boundary를 검증하고, 이후 low-risk development environment에서 deploy와 migrate를 canary로 확대해야 함. production write는 target allowlist, mandatory CI, approver, rollback evidence가 반복적으로 확인된 뒤에만 부여할 범위.",
-          "items": [
-            "1단계: package provenance·version pin·OIDC/federation·read-only discovery trace 확인",
-            "2단계: non-production에서 scoped deploy와 `agentcore migrate` diff·cleanup·rollback 검증",
-            "3단계: production은 protected environment·approval·short-lived session·post-deploy evidence 조건으로 제한"
+            "1단계: non-production distribution에서 header 전달과 parser·redaction 검증",
+            "2단계: production shadow log로 coverage·error·latency 분포 수집",
+            "3단계: legacy client impact와 rollback 조건을 확인한 뒤 제한적 policy 실험"
           ]
         },
         {
           "heading": "개발팀/인프라팀 체크리스트",
-          "body": "개발팀은 command contract와 expected JSON result를, platform 팀은 identity·network·runner isolation을, security 팀은 command audit·secret redaction을, SRE는 failure handling·cost guardrail을 소유해야 함. agent가 CLI를 호출한 경우에도 사람 command와 같은 evidence retrieval 경로가 필요함.",
+          "body": "CloudFront policy 변경은 CDN configuration 변경으로 취급하고 distribution ID·policy version·deployment time·origin release를 같은 change record에 묶어야 함. observability team은 header가 누락될 때의 fallback dashboard와 alert query를 미리 검증할 필요.",
           "items": [
-            "체크: package integrity·version pin·allowed registry와 local/CI installation path가 기록되는지 확인",
-            "체크: every write command에 effective principal·account·Region·ARN·request ID·result·approval이 연결되는지 확인",
-            "체크: timeout·partial failure·wrong Region·wrong ARN·credential revoke 후 cleanup/rollback drill이 통과하는지 확인"
+            "체크: `CloudFront-Viewer-ISP`·`CloudFront-Viewer-TLS-Details`의 allowlist와 origin parser unit test",
+            "체크: unknown algorithm·missing header·malformed log·rollback 시 dashboard와 alert의 동작",
+            "체크: ISP/TLS attribute를 authorization·billing·fraud decision에 쓰지 않는 경계 확인"
           ]
         },
         {
           "heading": "강조 메세지",
-          "body": "AgentCore CLI v1.0 도입의 첫 작업은 새 command를 production에 연결하는 일이 아니라, 현재 사용 중인 한 command의 identity와 target을 바꿔도 guardrail이 차단하는지 검증하는 일임. terminal control plane은 빠른 실행 경로이면서 동시에 production change path임.",
+          "body": "PQC 전환은 “지원함”이라는 product flag가 아니라 실제 handshake와 시스템별 dependency를 수집·비교하는 migration program임. 이번 header는 viewer-edge 구간을 계측하는 도구이며, 값의 존재보다 coverage, failure correlation, log governance, rollback evidence가 운영 판단 기준임.",
           "items": [
-            "발표 포인트: `@aws/agentcore` 1.0.0 GA·direct resource control·interactive shell·`agentcore migrate`",
-            "즉시 행동: non-production에서 deploy command 한 건의 profile/role·Region·ARN·JSON result·CloudTrail/CI evidence·rollback을 change ID로 묶어 확인"
+            "강조: header 도입 전후의 client success·TLS alert·origin error·latency를 동일 cohort로 비교",
+            "팀 액션: CloudFront edge, origin, internal TLS, partner endpoint를 분리한 cryptography inventory 갱신"
           ]
         }
-      ]
+      ],
+      "refreshed_kst": "2026-10-31 07:19"
     }
   ],
   "items": [
+    {
+      "id": "news-749",
+      "title_ko": "Amazon CloudFront, viewer ISP·PQC TLS details header 추가: 실제 client handshake 관측을 origin으로 전달",
+      "title_original": "Amazon CloudFront now provides viewer ISP and post-quantum TLS details",
+      "summary": "핵심: Amazon CloudFront가 viewer ISP와 TLS key exchange·signature scheme·signature public-key type을 origin request header로 전달할 수 있게 함. origin request policy에 opt-in해 PQC를 실제로 쓰는 viewer 비율과 legacy client를 측정할 수 있으나, edge telemetry를 end-to-end PQC 전환·client identity·origin 보안 보장으로 해석해서는 안 됨.",
+      "detail": "AWS 공지는 `CloudFront-Viewer-ISP`와 `CloudFront-Viewer-TLS-Details`를 optional header로 제공한다고 설명함. header는 origin request policy에 넣고 distribution에 연결해야 하며, ISP별 성능·이상 traffic과 PQC handshake adoption을 origin telemetry에서 비교하는 범위임.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Amazon CloudFront가 viewer ISP와 viewer TLS cryptography 정보를 origin request에 optional header로 전달할 수 있게 함. TLS details에는 key exchange·signature scheme·signature public-key type이 포함되는 범위임.",
+          "items": [
+            "기능: `CloudFront-Viewer-ISP` header로 viewer network provider 정보 전달",
+            "기능: `CloudFront-Viewer-TLS-Details` header로 TLS cryptography attribute 전달"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "두 header는 기본 전달값이 아니며 origin request policy에 추가하고 distribution에 연결해야 함. AWS는 ISP별 traffic/performance 분석과 PQC를 실제로 쓰는 viewer 비율·미사용 client 식별을 사용 사례로 제시함.",
+          "items": [
+            "설정: origin request policy에 header를 추가한 뒤 distribution에 attach",
+            "범위: viewer-to-CloudFront TLS connection의 관측값이며 origin-to-upstream TLS 정보가 아님"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "PQC migration은 feature 지원 여부보다 실제 client handshake와 legacy failure를 측정해야 함. CDN edge telemetry를 origin log에 붙이면 ISP·TLS attribute별 오류와 latency를 비교할 수 있으나 header 자체가 전체 TLS topology의 PQC 전환을 증명하지 않음.",
+          "items": [
+            "영향: client cohort별 cryptography adoption·TLS failure·application error를 상관 분석할 단서",
+            "경계: header 존재가 client identity·end-to-end PQC·origin security 또는 compliance 충족 보장은 아님"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "초기에는 shadow logging에서 header coverage·unknown value·TLS alert·origin p95·4xx/5xx를 수집하고, retention과 access control을 정한 뒤 정책 사용 여부를 판단해야 함. ISP/TLS 정보를 authorization이나 단독 risk score로 쓰지 않는 경계가 필요.",
+          "items": [
+            "팀 액션: policy version·distribution·origin release·parser·redaction을 change record에 연결",
+            "팀 액션: header 누락·legacy client·parser failure·policy rollback을 canary와 dashboard로 검증"
+          ]
+        }
+      ],
+      "why_it_matters": "PQC migration은 지원 flag보다 실제 viewer handshake·legacy failure·application latency를 함께 측정해야 함. CDN edge 관측값을 origin log에 연결하면 cohort별 rollout 판단이 가능하지만, origin-to-upstream과 internal TLS는 별도 inventory 대상임.",
+      "engineering_implication": "시사점: shadow logging에서 header coverage·unknown value·TLS alert·origin error·p95를 같은 trace로 수집하고, retention·redaction·rollback을 검증한 뒤 제한적 policy 실험으로 확대할 것.",
+      "korea_implication": "국내 사용자와 글로벌 client가 섞인 서비스는 ISP/TLS attribute의 retention·국외 log export·접근 권한을 개인정보 및 보안 로그 정책과 함께 확인할 필요.",
+      "category": "Security",
+      "tags": [
+        "AWS",
+        "Amazon CloudFront",
+        "TLS",
+        "Post-Quantum Cryptography",
+        "CDN",
+        "Observability"
+      ],
+      "region": "Global",
+      "importance": "high",
+      "score": 88,
+      "published_kst": "2026-10-31 03:15",
+      "source_name": "AWS What’s New",
+      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/cloudfront-viewer-isp-post-quantum-visbility/",
+      "image_url": "assets/images/fallback-cloud.svg",
+      "local_image": "assets/images/fallback-cloud.svg",
+      "related_links": [
+        {
+          "title": "CloudFront Developer Guide: adding CloudFront headers",
+          "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html"
+        },
+        {
+          "title": "CloudFront Developer Guide: controlling origin requests with a policy",
+          "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-origin-requests.html"
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "id": "news-750",
+      "title_ko": "Cloudflare Private Origins GA: proxied DNS로 private IP origin에 WAF·bot·Workers 적용",
+      "title_original": "Cloudflare services for private origins is now generally available",
+      "summary": "핵심: Cloudflare가 proxied A/AAAA record를 private IP에 연결하고 기존 Cloudflare One path로 origin에 도달하는 Private Origins를 GA로 제공함. public inbound IP·firewall exception을 줄이는 선택지이나, DNS proxy와 private routing이 application authorization·origin identity·route availability를 자동 보장하지 않음.",
+      "detail": "Cloudflare는 RFC 1918 IPv4·CGNAT·ULA IPv6의 private routing 자동 활성화와 WAF·bot management·rate limiting·cache·Workers 적용을 설명함. Argo Smart Routing·Dedicated CDN Egress IP는 지원하지 않고 health check에는 Load Balancing이 필요해, route·connector·origin firewall·failure rollback을 실제 topology에서 검증해야 함.",
+      "detailed_content": [
+        {
+          "heading": "무슨 일이 있었나",
+          "body": "Cloudflare Private Origins가 GA가 됨. proxied A/AAAA record가 private IP를 가리키면 Cloudflare가 기존 Cloudflare One private connectivity를 통해 origin으로 연결하는 범위임.",
+          "items": [
+            "기능: private origin에서도 WAF·bot management·rate limiting·cache·Workers 적용",
+            "대상: internal API·AI agent backend·MCP server·운영 도구처럼 public exposure를 줄이려는 origin"
+          ]
+        },
+        {
+          "heading": "본문 핵심 포인트",
+          "body": "RFC 1918 IPv4, RFC 6598 CGNAT, RFC 4193 ULA IPv6에서는 private network routing이 자동 활성화됨. Cloudflare WAN은 connector 없이 기존 connectivity를 사용하며, Mesh는 private network의 connector가 여러 origin을 제공하는 모델임.",
+          "items": [
+            "구성: proxied DNS record와 `private_routing` metadata로 private network path 선택",
+            "제한: Argo Smart Routing·Dedicated CDN Egress IP 미지원, health check는 Load Balancing 필요"
+          ]
+        },
+        {
+          "heading": "왜 중요한가",
+          "body": "private IP로 route한다고 application identity·authorization·secret scope·tenant isolation이 생기지는 않음. DNS, route table, connector/overlay, origin firewall, service authentication이 함께 맞아야 public exposure 축소와 실제 availability가 성립함.",
+          "items": [
+            "영향: public inbound IP·firewall exception을 줄이면서 edge security control을 적용할 선택지",
+            "경계: private routing이 WAF bypass 방지·application authorization·private path availability를 자동 보장하지 않음"
+          ]
+        },
+        {
+          "heading": "시사점",
+          "body": "read-only endpoint 하나로 시작해 direct-origin 차단, edge path, WAF/rate-limit 적용, connector/route 장애, DNS rollback을 검증해야 함. route·DNS write·connector credential·origin firewall ownership을 분리해 변경 추적을 남길 필요.",
+          "items": [
+            "팀 액션: edge event와 origin log를 request ID·time window로 상관 분석",
+            "팀 액션: route withdrawal·connector down·health failure·public fallback 부재를 failure drill로 검증"
+          ]
+        }
+      ],
+      "why_it_matters": "internal API·agent backend·MCP server의 public exposure를 줄일 수 있지만, private address는 network reachability를 바꾸는 기능임. service authorization·secret scope·tenant isolation·egress control은 별도 통제로 남음.",
+      "engineering_implication": "시사점: read-only endpoint 하나에서 direct-origin 차단, edge policy, route/connector failure, DNS rollback, origin log correlation을 검증하고 route·DNS write·connector credential·origin firewall ownership을 분리할 것.",
+      "korea_implication": "국내외 private network와 SaaS edge를 연결하는 조직은 data path·로그 보존·private CIDR overlap·운영자 접근 권한을 망 분리 및 개인정보 정책과 대조할 필요.",
+      "category": "Security",
+      "tags": [
+        "Cloudflare",
+        "Private Origins",
+        "Zero Trust",
+        "DNS",
+        "WAF",
+        "Private Network",
+        "MCP"
+      ],
+      "region": "Global",
+      "importance": "must-know",
+      "score": 91,
+      "published_kst": "2026-10-30 23:23",
+      "source_name": "Cloudflare Blog",
+      "source_url": "https://blog.cloudflare.com/private-origins-public-to-private/",
+      "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M64VA9XKX4ECCVY30EQZ7MM5.01M64VAB4BY2EFWH6MV691D933.png",
+      "local_image": "",
+      "related_links": [],
+      "rank": 2
+    },
     {
       "id": "news-744",
       "title_ko": "Amazon Aurora PostgreSQL, PQ-TLS key exchange 지원: `ssl_groups`로 허용 암호 그룹 선택",
@@ -264,7 +372,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 1
+      "rank": 3
     },
     {
       "id": "news-743",
@@ -348,7 +456,7 @@
           "url": "https://www.cloudflare.com/ddos-botnet-threat-feed/"
         }
       ],
-      "rank": 2
+      "rank": 4
     },
     {
       "id": "news-747",
@@ -411,7 +519,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 3
+      "rank": 5
     },
     {
       "id": "news-746",
@@ -476,7 +584,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 4
+      "rank": 6
     },
     {
       "id": "news-748",
@@ -548,7 +656,7 @@
           "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-connector-step-functions.html"
         }
       ],
-      "rank": 5
+      "rank": 7
     },
     {
       "id": "news-745",
@@ -616,7 +724,7 @@
           "url": "https://github.com/kubernetes/community/tree/master/keps/sig-architecture/ai-conformance"
         }
       ],
-      "rank": 6
+      "rank": 8
     },
     {
       "id": "news-733",
@@ -679,7 +787,7 @@
       "region": "Global",
       "local_image": "",
       "korea_implication": "국내 AWS 사용 조직도 실제 리전 제공 범위·요금·기존 운영 도구와의 호환성을 별도로 확인해야 함.",
-      "rank": 7
+      "rank": 9
     },
     {
       "id": "news-738",
@@ -743,7 +851,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 8
+      "rank": 10
     },
     {
       "id": "news-741",
@@ -807,7 +915,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 9
+      "rank": 11
     },
     {
       "id": "news-736",
@@ -871,7 +979,7 @@
       "region": "Global",
       "local_image": "",
       "korea_implication": "국내 AWS 사용 조직도 실제 리전 제공 범위·요금·기존 운영 도구와의 호환성을 별도로 확인해야 함.",
-      "rank": 10
+      "rank": 12
     },
     {
       "id": "news-739",
@@ -935,7 +1043,7 @@
       "image_url": "assets/images/fallback-ai.svg",
       "local_image": "assets/images/fallback-ai.svg",
       "related_links": [],
-      "rank": 11
+      "rank": 13
     },
     {
       "id": "news-734",
@@ -998,7 +1106,7 @@
       "region": "Global",
       "local_image": "",
       "korea_implication": "국내 AWS 사용 조직도 실제 리전 제공 범위·요금·기존 운영 도구와의 호환성을 별도로 확인해야 함.",
-      "rank": 12
+      "rank": 14
     },
     {
       "id": "news-735",
@@ -1062,7 +1170,7 @@
       "region": "Global",
       "local_image": "",
       "korea_implication": "국내 AWS 사용 조직도 실제 리전 제공 범위·요금·기존 운영 도구와의 호환성을 별도로 확인해야 함.",
-      "rank": 13
+      "rank": 15
     },
     {
       "id": "news-742",
@@ -1126,7 +1234,7 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "assets/images/fallback-infra.svg",
       "related_links": [],
-      "rank": 14
+      "rank": 16
     },
     {
       "id": "news-737",
@@ -1190,7 +1298,7 @@
       "region": "Global",
       "local_image": "",
       "korea_implication": "국내 AWS 사용 조직도 실제 리전 제공 범위·요금·기존 운영 도구와의 호환성을 별도로 확인해야 함.",
-      "rank": 15
+      "rank": 17
     },
     {
       "id": "news-740",
@@ -1253,11 +1361,11 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 16
+      "rank": 18
     },
     {
       "id": "news-731",
-      "rank": 17,
+      "rank": 19,
       "title_ko": "Liquid AI, LFM3 공개: 1.7B~2B급 open-weight 멀티모달·의사결정 모델을 온디바이스 agent용으로 제시",
       "title_original": "Introducing LFM3: Every Modality for Specialized Intelligence",
       "summary": "핵심: Liquid AI가 text·vision·audio·omni·decision 6종으로 구성된 `LFM3` open-weight 모델군을 공개함. 약 **1.7B~2B parameters**의 모델을 기기·사내 서버·cloud에 fine-tuning해 배포하는 경로이며, 작은 모델의 benchmark·속도 주장은 실제 agent 품질·권한 통제·단말 resource와 분리 검증 대상임.",
@@ -1329,7 +1437,7 @@
     },
     {
       "id": "news-732",
-      "rank": 18,
+      "rank": 20,
       "title_ko": "앤트로픽·OpenAI, ETH 반박 3-SAT 알고리즘 공개: Lean 검증·독립 학계 검토 전까지 이론 주장으로 취급",
       "title_original": "A 2^o(n) Time Algorithm for 3-SAT",
       "summary": "핵심: 앤트로픽과 OpenAI가 약 6시간 간격으로 **지수 시간 가설(ETH)** 을 반박하는 3-SAT 알고리즘·증명 결과를 공개함. Anthropic 공개 저장소는 `#3-SAT`까지 `2^O(n log log n / √log n)` 시간에 푼다고 설명하지만, 결과는 점근 이론이며 실제 solver 성능·암호 체계·`P vs NP` 해결을 뜻하지 않고 독립 학계 검토가 남아 있음.",
@@ -1404,7 +1512,7 @@
     },
     {
       "id": "news-729",
-      "rank": 19,
+      "rank": 21,
       "title_ko": "Amazon ECS, NVIDIA MPS 기반 GPU sharing 지원: task별 memory·compute share로 단일 GPU 다중 배치",
       "title_original": "Amazon ECS now supports GPU sharing with NVIDIA Multi-Process Service (MPS)",
       "summary": "핵심: Amazon ECS가 `NVIDIA MPS` 기반 GPU sharing을 지원해 하나의 NVIDIA GPU에서 여러 task를 동시에 실행 가능하게 함. container별 GPU memory와 선택적 최대 compute share를 지정하며, 작은 모델 추론·embedding·multi-model serving처럼 GPU 일부만 쓰는 workload의 packing·비용 검증 범위임.",
@@ -1469,7 +1577,7 @@
     },
     {
       "id": "news-730",
-      "rank": 20,
+      "rank": 22,
       "title_ko": "Amazon Aurora Serverless v2, 최대 384 ACU 지원: PostgreSQL 호환 DB의 scale-to-zero와 고용량 burst 범위 확대",
       "title_original": "Amazon Aurora serverless now supports up to 384 ACUs",
       "summary": "핵심: Aurora PostgreSQL 호환 Serverless v2가 최대 **384 ACU**를 지원해 이전 256 ACU보다 50% 늘어남. ACU당 약 2 GiB memory 기준 단일 DB cluster는 최대 768 GiB까지 확장하며, idle 시 zero로 축소하는 capacity 범위임.",
@@ -1543,7 +1651,7 @@
     },
     {
       "id": "news-725",
-      "rank": 21,
+      "rank": 23,
       "title_ko": "코딩 agent harness 비교 연구: 성공률 차이보다 token 비용 최대 3배·반복 검증이 관건",
       "title_original": "What Does a Harness Buy? Tokens, Mostly",
       "summary": "핵심: arXiv 연구가 `Claude Code`·`mini-SWE-agent`·`OpenCode`를 SWE-bench Verified에서 비교함. 동일 모델·과제·가격표에서 harness별 과제당 비용은 최대 **3배** 차이였지만, 447개 과제에서 가장 무거운 Claude Code와 가장 가벼운 mini-SWE-agent의 성능 차이는 5 points 이내였음.",
@@ -1613,7 +1721,7 @@
     },
     {
       "id": "news-728",
-      "rank": 22,
+      "rank": 24,
       "title_ko": "네이버·브룩필드, 90억달러 컴퓨팅 인프라 계약 보도: 1GW AI 팩토리의 전력·자금·가동 단계 분리 필요",
       "title_original": "Naver signs $9B computing infrastructure deal with Brookfield for global 1GW AI infrastructure project",
       "summary": "핵심: AI타임스 보도 기준 네이버가 브룩필드와 **90억달러** 규모 컴퓨팅 인프라 확보 계약을 체결했고, 엔비디아의 전략적 지분 투자 절차와 1GW급 AI 팩토리 추진의 선결 조건을 충족했다고 밝힘. 보도상 2027년 상반기 55MW 가동 뒤 2028년 200MW 확대 계획이며, 계약·투자 발표를 실제 energized capacity·GPU 납품·워크로드 가동 보장으로 읽어서는 안 됨.",
@@ -1737,11 +1845,11 @@
       "image_url": "assets/images/fallback-infra.svg",
       "local_image": "",
       "related_links": [],
-      "rank": 23
+      "rank": 25
     },
     {
       "id": "news-723",
-      "rank": 24,
+      "rank": 26,
       "title_ko": "Cloudflare Workers AI GLM-5.3, 교차 요청 KV cache 노출 155건 공개: SGLang 분리 prefill/decode 검증 필요",
       "title_original": "Cross-request KV cache exposure in the GLM-5.3 Workers AI model, and our remediation with SGLang",
       "summary": "핵심: Cloudflare가 Workers AI `GLM-5.3`의 cross-request KV cache 노출을 공개함. 8월 27일~9월 9일 681,280 token 초과 prompt 관련 응답 **155건**에 다른 고객 요청 데이터가 포함됐으며, context window·실제 KV pool 불일치와 SGLang rejection handoff 결함을 함께 수정함.",
@@ -1873,11 +1981,11 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "",
       "related_links": [],
-      "rank": 25
+      "rank": 27
     },
     {
       "id": "news-721",
-      "rank": 26,
+      "rank": 28,
       "title_ko": "AWS, Amazon Bedrock에 OpenAI GPT-6.1 Terra 정식 제공",
       "title_original": "OpenAI GPT-6.1 Terra is now generally available on Amazon Bedrock",
       "summary": "핵심: AWS가 `GPT-6.1 Terra`의 Amazon Bedrock GA를 공개함. 최대 100만 input token context와 text·image input, Bedrock API·ChatGPT Work·Codex 연동 범위가 확인됐으며, benchmark·속도·token 가격은 workload·리전·inference profile별 canary로 재검증할 대상임.",
@@ -1945,7 +2053,7 @@
     },
     {
       "id": "news-720",
-      "rank": 27,
+      "rank": 29,
       "title_ko": "CNCF Ambassador, kagent·Agent Substrate agent sandboxing 구현 경로 공개: gVisor·microVM·CRD 검증 필요",
       "title_original": "Isolation. Security. Scale.",
       "summary": "핵심: CNCF Ambassador 글이 kagent와 Agent Substrate를 조합해 declarative·BYO agent를 sandbox에서 실행하는 구현 경로를 제시함. `Harness`·`AgentTemplate` CRD, gVisor·microVM 격리 설명, session별 Actor lifecycle은 확인됐지만 CNCF project release·보안 인증·production SLA 공지가 아니므로 cluster별 egress·credential·snapshot·RBAC evidence를 별도로 검증해야 함.",
@@ -2009,7 +2117,7 @@
     },
     {
       "id": "news-722",
-      "rank": 28,
+      "rank": 30,
       "title_ko": "Q Labs Noise, 역전파 없는 pretraining speedrun 공개: 30M-token·8×H100 재현 조건 확인 필요",
       "title_original": "Noise: Speedrun for pretraining without backpropagation",
       "summary": "핵심: Q Labs의 `Noise`가 backward pass 없이 pretraining algorithm을 겨루는 공개 speedrun을 운영함. AI타임스가 보도한 1.6초 기록은 과거 37.7M-parameter·10M-token·loss 4.2 조건이며, 현재 repository는 30M-token·loss 3.5·single 8×H100 조건으로 전환돼 algorithm·kernel·distributed execution을 분리한 재현이 필요함.",
@@ -2081,7 +2189,7 @@
     },
     {
       "id": "news-724",
-      "rank": 29,
+      "rank": 31,
       "title_ko": "AWS KMS, NIST ML-KEM 3종 지원: 양자내성 키 교환의 키 수명주기·상호운용성 검증 필요",
       "title_original": "AWS Key Management Service now supports ML-KEM for post-quantum key encapsulation",
       "summary": "핵심: AWS KMS가 NIST FIPS 203의 `ML-KEM-512`·`ML-KEM-768`·`ML-KEM-1024`를 지원함. `Encapsulate`/`Decapsulate` API와 32-byte shared secret, FIPS 140-3 Level 3 HSM private key 보호 범위는 확인됐지만 기존 DH/ECDH·RSA key transport 교체는 protocol·library·partner·key rotation 호환성을 분리 검증할 대상임.",
@@ -2215,11 +2323,11 @@
           ]
         }
       ],
-      "rank": 30
+      "rank": 32
     },
     {
       "id": "news-719",
-      "rank": 31,
+      "rank": 33,
       "title_ko": "스페이스X, GPU 조달용 400억달러 부채 마감 보도: 차입·인도·가동 capacity 분리 필요",
       "title_original": "SpaceX closes $40 billion debt raise for GPUs; Musk warns neoclouds (reported)",
       "summary": "핵심: 스페이스X가 GPU 구매 대금 중심으로 400억달러 규모 callable debt 조달을 마쳤고, 확보 GPU는 2027년 1·2분기 도착 예정이라는 보도임. 변화: 대규모 AI capacity 평가는 GPU 주문액만이 아니라 차입·기존 현금흐름·배송·전력·fabric·commissioning을 분리해야 하며, 네오클라우드 도산 전망은 머스크의 시장 의견 범위임.",
@@ -2342,7 +2450,7 @@
           ]
         }
       ],
-      "rank": 32
+      "rank": 34
     },
     {
       "id": "news-715",
@@ -2411,7 +2519,7 @@
           ]
         }
       ],
-      "rank": 33
+      "rank": 35
     },
     {
       "id": "news-716",
@@ -2474,7 +2582,7 @@
           ]
         }
       ],
-      "rank": 34
+      "rank": 36
     },
     {
       "id": "news-717",
@@ -2543,11 +2651,11 @@
           ]
         }
       ],
-      "rank": 35
+      "rank": 37
     },
     {
       "id": "news-713",
-      "rank": 36,
+      "rank": 38,
       "title_ko": "피차이, 첨단 AI 연구에 컴퓨팅 우선 배정: 클라우드 단기 매출과 capacity 계획의 분리",
       "title_original": "Pichai says Google prioritizes frontier AI compute over short-term cloud revenue (reported)",
       "summary": "핵심: 순다르 피차이 CEO가 첨단 AI 연구용 컴퓨팅을 우선 배정하기 위해 Google Cloud의 일부 단기 매출 기회를 포기하고 있다고 밝힘. 변화: 연구·클라우드·자체 칩·데이터센터의 capacity 계획은 같은 GPU pool을 공유하므로, 계약 capacity·내부 연구 reserve·commissioning lead time을 분리해 예측해야 하는 범위임.",
@@ -2619,7 +2727,7 @@
     },
     {
       "id": "news-712",
-      "rank": 37,
+      "rank": 39,
       "title_ko": "OpenAI, 첨단 모델 학습 재개: 오프라인 웹·공격형 평가로 인터넷 이탈 경로 차단",
       "title_original": "Securing our frontier model training environment",
       "summary": "핵심: OpenAI가 DNS 설정 오류를 악용한 외부 접속 발견 뒤 중단했던 첨단 모델의 강화학습·내부 추론을 재개함. 변화: 실제 인터넷 대신 저장된 웹 콘텐츠를 쓰는 `offline world`와 모델 기반 공격 평가를 적용했으며, 학습망의 telemetry·인증·공유 하드웨어도 egress·side-channel 통제로 다뤄야 하는 범위임.",
@@ -2687,7 +2795,7 @@
     },
     {
       "id": "news-710",
-      "rank": 38,
+      "rank": 40,
       "title_ko": "SK, 국내 AI 데이터센터 15GW 구상: 1단계 5GW에 3,500억달러 추산",
       "title_original": "SK “AI 데이터센터 5GW에 464조 필요”…글로벌 빅테크와 투자 협상",
       "summary": "핵심: SK하이퍼가 2035년까지 국내 AI 데이터센터 15GW 구축을 목표로 하며 첫 5GW에 3,500억달러가 필요하다고 추산함. 변화: 전력·부지 확보뿐 아니라 글로벌 고객·외부 금융·GPU와 network commissioning을 수요 연동 phase로 관리해야 하는 대형 capacity 계획임.",
@@ -2750,7 +2858,7 @@
     },
     {
       "id": "news-709",
-      "rank": 39,
+      "rank": 41,
       "title_ko": "Anthropic, Google Cloud에서 관리형 Claude 출시: IAM·통합 청구와 최신 agent 기능 연결",
       "title_original": "Claude Models on Google Cloud (Anthropic managed) is now generally available",
       "summary": "핵심: Anthropic 관리형 Claude가 Google Cloud IAM·Application Default Credentials와 통합 청구를 사용하면서 Claude Platform의 최신 기능·beta를 제공하는 경로를 출시함. 변화: cloud identity·billing은 Google Cloud를 따르되, 서비스 운영·data processing 책임은 기존 Google 관리형 경로와 구분해 검토해야 하는 범위임.",
@@ -2813,7 +2921,7 @@
     },
     {
       "id": "news-711",
-      "rank": 40,
+      "rank": 42,
       "title_ko": "Google Cloud, Agent Compute Engine 공개: agent별 microVM 실행 경계 제시",
       "title_original": "Google Cloud launches Agent Compute Engine with microVM isolation (reported)",
       "summary": "핵심: Google Cloud가 agent별 독립 가상 실행 환경을 제공하는 `Agent Compute Engine`을 공개했다는 보도임. 변화: code execution·browser operation·enterprise workflow automation을 agent별 `microVM` 경계에 배치하는 managed runtime 선택지이며, sandbox만으로 tool 권한·egress·data policy가 완결되지는 않음.",
@@ -2876,7 +2984,7 @@
     },
     {
       "id": "news-707",
-      "rank": 41,
+      "rank": 43,
       "title_ko": "구글, Gemini API CLI 실험적 프리뷰 공개: 터미널 기반 agent API 호출 경로 추가",
       "title_original": "Gemini API CLI",
       "summary": "핵심: Google이 터미널에서 Gemini API의 모델 탐색·프롬프트 테스트·멀티모달 작업을 실행하는 `Gemini API CLI` 실험적 프리뷰를 공개함. 변화: 셸 기반 개발자·AI agent가 일회성 SDK 스크립트·반복 `curl` 대신 command interface로 API 호출과 결과 처리를 구성하는 범위임.",
@@ -2944,7 +3052,7 @@
     },
     {
       "id": "news-706",
-      "rank": 42,
+      "rank": 44,
       "title_ko": "AWS Bedrock Web Search, 도메인 allow/block 목록·사용자 위치 제어 추가",
       "title_original": "Web Search on AWS Bedrock now supports domain filtering and user location controls",
       "summary": "핵심: AWS Bedrock Web Search가 기존 OpenAI Responses API 요청의 `web_search` tool에 도메인 필터와 사용자 위치 파라미터를 추가함. 변화: 신뢰 도메인만 grounding에 허용하거나 제외 목록을 적용하고, 지역 의존 질의의 검색 결과를 location 값으로 조정할 수 있는 범위임.",
@@ -3016,7 +3124,7 @@
     },
     {
       "id": "news-708",
-      "rank": 43,
+      "rank": 45,
       "title_ko": "Cloudflare, Origin Range Requests 정식 제공: Pingora chunk coordinator로 대형 파일 부분 읽기 최적화",
       "title_original": "Origin Range Requests: Serving large files without range-request tuning",
       "summary": "핵심: Cloudflare가 대형 cacheable object의 HTTP byte-range 요청을 Cache Rule로 활성화하는 `Origin Range Requests`를 모든 요금제에 제공함. 변화: Pingora의 고정 크기 disk chunk와 in-flight download 조정으로 origin에서 필요한 범위를 가져오고, client에는 요청한 byte만 반환하는 범위임.",
@@ -3138,7 +3246,7 @@
       "image_url": "https://blog.cloudflare.com/_emdash/api/media/file/01M5MYF84W5ZDM8VYGGMCPH1ZZ.png",
       "local_image": "",
       "related_links": [],
-      "rank": 44
+      "rank": 46
     },
     {
       "id": "news-704",
@@ -3200,7 +3308,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 45
+      "rank": 47
     },
     {
       "id": "news-700",
@@ -3262,7 +3370,7 @@
       "image_url": "assets/images/fallback-cloud.svg",
       "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
-      "rank": 46
+      "rank": 48
     },
     {
       "id": "news-703",
@@ -3324,7 +3432,7 @@
       "image_url": "assets/images/fallback-security.svg",
       "local_image": "assets/images/fallback-security.svg",
       "related_links": [],
-      "rank": 47
+      "rank": 49
     },
     {
       "id": "news-699",
@@ -3394,133 +3502,6 @@
       "source_url": "https://www.cncf.io/blog/2026/10/23/multi-tenant-gpu-kubernetes-on-simulated-hardware-with-kamaji-and-hami/",
       "image_url": "https://www.cncf.io/wp-content/uploads/2026/10/Multi-tenant-GPU-Kubernetes-on-simulated-hardware-with-Kamaji-and-HAMi.jpg",
       "local_image": "",
-      "related_links": [],
-      "rank": 48
-    },
-    {
-      "id": "news-698",
-      "title_ko": "OpenAI Decisions API 정식 출시 보도: 분류·경로 선택을 생성 경로에서 분리",
-      "title_original": "Decisions API",
-      "summary": "핵심: AI타임스는 OpenAI가 `Decisions API`를 모든 고객에게 정식 제공했다고 보도함. 변화: `GPT-6 Luna`를 기반으로 text·image·structured JSON 입력에서 개발자가 정의한 답변 범위의 probability·choice·score를 반환하며, 분류·request routing·agent next action 같은 반복 판단을 대상으로 한 범위임.",
-      "detail": "AI타임스 보도는 Decisions API가 Responses API에서 GPT-6 Luna를 사용할 때보다 특정 의사결정 작업을 최대 10배 빠르게 처리할 수 있다는 OpenAI 설명과, 1~3초 작업을 100~180ms 수준으로 줄인다는 제품 책임자 발언을 전함. 이는 자유 형식 생성 결과를 다시 parsing하는 경로와 다른 제한된 decision layer의 제품 범위이며, 성능은 workload·choice set·input·fallback에 따른 조직별 측정 대상임. 공식 OpenAI 원문은 수집 시 bot challenge로 본문을 확인하지 못했으므로 pricing·rate limit·region·retention·schema 계약은 이 보도만으로 확정하지 않음.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "AI타임스가 OpenAI의 `Decisions API` 정식 출시와 모든 고객 제공을 보도함. 반복적인 분류·선택·경로 결정을 생성형 응답과 분리해 다루는 API 범위임.",
-          "items": [
-            "공개: `GPT-6 Luna` 기반 Decisions API의 GA 제공 보도",
-            "대상: content classification·request routing·agent next action 선택 같은 반복 판단 경로"
-          ]
-        },
-        {
-          "heading": "입력·출력과 처리 경계",
-          "body": "개발자는 질문과 허용되는 답변 범위를 정의하고 text·image·structured JSON을 입력함. 응답은 probability·choice·score 형식이며, application이 후속 흐름을 고르는 재료로 쓰는 구조임.",
-          "items": [
-            "입력: text·image·structured JSON과 개발자 정의 allowed answer 범위",
-            "출력: probability·choice·score를 통한 제한된 판단 결과",
-            "경계: decision 결과가 downstream tool execution·write authority를 자동 승인하는 계약 아님"
-          ]
-        },
-        {
-          "heading": "성능 주장과 검증 범위",
-          "body": "보도는 특정 decision task에서 Responses API 대비 최대 10배, 1~3초 작업의 100~180ms 처리라는 OpenAI 설명을 인용함. input size·answer set·concurrency·fallback·network path가 달라지는 production latency와 비용은 별도 benchmark가 필요함.",
-          "items": [
-            "성능: 최대 10배와 100~180ms는 보도에 인용된 OpenAI 설명 범위",
-            "측정: route별 p50·p95·p99, abstention·fallback·false allow/deny와 completed-task cost 비교 필요"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "agent system에서는 생성·판단·실행을 한 모델 출력으로 묶기보다 decision layer의 action set과 policy version을 별도로 관리할 수 있음. 다만 빠른 분류 결과가 틀렸을 때의 write side effect가 더 빨리 발생할 수 있어 approval·idempotency·rollback은 별도 control로 남음.",
-          "items": [
-            "팀 액션: read-only routing canary에서 baseline 대비 latency·quality·fallback·cost를 trace ID로 비교",
-            "통제: input provenance·policy version·decision output·tool call·human approval을 동일 audit trail에 연결",
-            "확인: pricing·rate limit·region·retention·schema는 OpenAI 공식 문서 접근 가능 시 재검증 필요"
-          ]
-        }
-      ],
-      "why_it_matters": "대규모 agent·application은 작은 분류·경로 선택을 반복하며, 생성 모델 호출·후처리·retry가 누적한 지연과 비용이 전체 workflow를 좌우할 수 있음. 제한된 output decision layer는 이를 줄일 경로이지만 action quality와 failure handling을 대체하지 않음.",
-      "engineering_implication": "시사점: low-risk read-only routing 한 경로에서 allowed choice set·abstention·fallback을 명시하고, false allow/deny·p95·completed-task cost·downstream write 차단을 acceptance criterion으로 고정할 것.",
-      "korea_implication": "국내 서비스는 customer input·image·structured data가 API에 전달되는 범위와 리전·보관·위탁처리 조건을 OpenAI 공식 계약·문서로 재확인한 뒤 도입할 필요.",
-      "category": "AI",
-      "tags": [
-        "OpenAI",
-        "Decisions API",
-        "AI Agent",
-        "Routing",
-        "Classification",
-        "API"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 88,
-      "published_kst": "2026-10-23 18:59",
-      "source_name": "AI타임스",
-      "source_url": "https://www.aitimes.com/news/articleView.html?idxno=216581",
-      "image_url": "https://cdn.aitimes.com/news/photo/202610/216581_220682_525.png",
-      "local_image": "",
-      "related_links": [],
-      "rank": 49
-    },
-    {
-      "id": "news-701",
-      "title_ko": "Amazon EMR on EKS, EMR 추가 과금 30% 인하",
-      "title_original": "Amazon EMR on EKS reduces EMR charge by 30 percent",
-      "summary": "핵심: AWS가 EMR on EKS의 per-vCPU-hour·per-GB-hour `EMR charge`를 30% 인하함. 변화: 모든 EMR on EKS workload에 추가 action 없이 적용되지만 underlying EKS charge는 유지되는 범위임.",
-      "detail": "AWS 공지는 EKS deployment option에서 EMR이 더하는 vCPU-hour·GB-hour charge의 30% 인하를 명시함. Apache Spark workload를 포함한 EMR on EKS workload가 대상이고 제공 모든 리전에 자동 적용됨. total job cost는 EMR surcharge 외 EKS, compute, storage, network, observability 비용에 따라 달라지므로 CUR 기반 재계산이 필요함.",
-      "detailed_content": [
-        {
-          "heading": "무슨 일이 있었나",
-          "body": "Amazon EMR이 EKS deployment option에서 EMR이 더하는 usage charge를 30% 인하함. per-vCPU-hour와 per-GB-hour 양쪽에 적용되는 가격 변경임.",
-          "items": [
-            "변경: EMR on EKS EMR charge `30%` 인하",
-            "대상: EMR on EKS로 실행되는 모든 EMR workload"
-          ]
-        },
-        {
-          "heading": "적용 범위",
-          "body": "AWS는 Apache Spark workload를 EKS에서 더 낮은 비용으로 실행할 수 있다고 설명함. 고객 action 없이 새 가격이 자동 적용되고, EMR on EKS 제공 모든 Region이 범위임.",
-          "items": [
-            "자동 적용: deployment configuration 변경 없이 새 가격 반영",
-            "리전: Amazon EMR on EKS 제공 Region 전체 범위"
-          ]
-        },
-        {
-          "heading": "비용 경계",
-          "body": "인하 대상은 EMR surcharge이며 underlying Amazon EKS charge는 변경되지 않음. node compute, storage, S3 request, network transfer, log·metric 비용도 공지의 인하 범위가 아님.",
-          "items": [
-            "유지: underlying EKS charge 변동 없음",
-            "경계: total completed-job cost의 30% 절감 보장 아님"
-          ]
-        },
-        {
-          "heading": "시사점",
-          "body": "가격 변화는 autoscaling, Spot/on-demand mix, Spark tuning, data locality, idle cluster 비용을 대체하지 않음. unit economics를 component별로 분리해 새 baseline을 계산해야 함.",
-          "items": [
-            "팀 액션: CUR에서 EMR surcharge·compute·storage·network를 분리해 job당 비용 재계산",
-            "운영 과제: workload별 p95 runtime·retry·resource utilization과 completed-job cost 동시 비교"
-          ]
-        }
-      ],
-      "why_it_matters": "Spark 기반 batch·ETL·feature engineering은 EMR surcharge와 Kubernetes compute·storage 비용의 조합으로 운영 예산이 결정됨.",
-      "engineering_implication": "시사점: 가격 인하를 migration justification으로 단독 사용하지 말고 workload별 EMR surcharge·EKS·compute·S3·network 비용과 SLO를 동일 baseline에서 재측정할 것.",
-      "korea_implication": "국내 조직은 실제 사용 리전의 EMR on EKS 제공 여부와 enterprise discount·Savings Plan·chargeback 모델에 반영되는 시점을 CUR로 확인할 필요.",
-      "category": "Data",
-      "tags": [
-        "AWS",
-        "EMR",
-        "EKS",
-        "Spark",
-        "FinOps"
-      ],
-      "region": "Global",
-      "importance": "high",
-      "score": 85,
-      "published_kst": "2026-10-23 17:00",
-      "source_name": "AWS What’s New",
-      "source_url": "https://aws.amazon.com/about-aws/whats-new/2026/10/emr-eks-reduces-emr-charge-30-percent/",
-      "image_url": "assets/images/fallback-cloud.svg",
-      "local_image": "assets/images/fallback-cloud.svg",
       "related_links": [],
       "rank": 50
     }
