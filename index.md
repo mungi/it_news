@@ -1,7 +1,7 @@
 # Wiki Index
 
 > AI, Cloud, Infra, and IT news intelligence wiki.
-> Last updated: 2026-10-30 | Total pages: 488
+> Last updated: 2026-10-31 | Total pages: 488
 
 ## Entities
 
@@ -39,6 +39,8 @@
 - [[weekly/2026-W28]] — 이전 주 AI/Cloud/Infra/IT 발표 자료와 주간 뉴스 사이트 데이터.
 
 ## Raw Articles
+- [[raw/articles/aws-bedrock-openai-gpt56-govcloud-cross-region-inference-2026-10-31]] — Bedrock GovCloud OpenAI GPT-5.6 API·Cross-Region Inference의 data path·observability·FinOps 검증 경계.
+- [[raw/articles/aws-msk-tls13-encryption-policy-2026-10-31]] — MSK Provisioned TLS 1.3 encryption policy의 client fleet·cipher negotiation·rollback 검증 경계.
 - [[raw/articles/aws-cloudfront-viewer-isp-pqc-tls-details-2026-10-30]] — CloudFront viewer ISP·PQC TLS handshake detail header의 client cohort·origin telemetry·log governance 검증 경계.
 - [[raw/articles/cloudflare-private-origins-ga-2026-10-30]] — Cloudflare Private Origins GA의 proxied DNS·private routing·origin reachability·authorization 분리 검증 경계.
 - [[raw/articles/cisa-kev-gitlab-cisco-secure-firewall-2026-10-29]] — CISA KEV 등록 GitLab CE/EE·Cisco Secure Firewall active exploitation의 patch·forensic·credential 대응 경계.
